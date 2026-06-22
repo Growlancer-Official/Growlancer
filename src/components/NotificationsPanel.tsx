@@ -369,7 +369,7 @@ export function NotificationsPanel() {
           />
 
           {/* Panel */}
-          <div className="absolute right-0 top-12 w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 max-h-[85vh] flex flex-col animate-in slide-in-from-top-2 fade-in duration-200">
+          <div className="fixed md:absolute top-16 md:top-12 left-1/2 md:left-auto -translate-x-1/2 md:-translate-x-0 md:right-0 w-[calc(100vw-2rem)] sm:w-[90vw] md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-100 z-50 max-h-[85vh] flex flex-col animate-in slide-in-from-top-2 fade-in duration-200">
             {/* Header */}
             <div className="p-4 border-b border-slate-100">
               <div className="flex items-center justify-between mb-3">
