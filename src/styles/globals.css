@@ -1,0 +1,393 @@
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+
+  html {
+    @apply scroll-smooth;
+    font-family: 'Satoshi', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    @apply font-sans text-slate-900 antialiased bg-cream;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500;
+  }
+
+  .btn-secondary {
+    @apply btn bg-secondary-600 text-white hover:bg-secondary-700 focus:ring-secondary-500;
+  }
+
+  .btn-outline {
+    @apply btn border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50;
+  }
+
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animation-delay-80 {
+    animation-delay: 80ms;
+  }
+
+  .animation-delay-120 {
+    animation-delay: 120ms;
+  }
+
+  .animation-delay-140 {
+    animation-delay: 140ms;
+  }
+
+  .animation-delay-180 {
+    animation-delay: 180ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-260 {
+    animation-delay: 260ms;
+  }
+
+  .animation-delay-320 {
+    animation-delay: 320ms;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 200ms ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 300ms ease-out;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes shrink {
+    from {
+      width: 100%;
+    }
+    to {
+      width: 0%;
+    }
+  }
+
+  .animate-shrink {
+    animation: shrink linear forwards;
+  }
+
+  @keyframes fadeInContent {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in-content {
+    animation: fadeInContent 300ms ease-out;
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 2px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(148, 163, 184, 0.25);
+    border-radius: 20px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(148, 163, 184, 0.4);
+  }
+
+  /* Industry-level workflow animations */
+  @keyframes workflowPulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    }
+    50% {
+      transform: scale(1.05);
+      box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+  }
+
+  @keyframes workflowFlow {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  @keyframes workflowRotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes workflowBounce {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+
+  @keyframes workflowGlow {
+    0%, 100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(1.2);
+    }
+  }
+
+  @keyframes workflowConnect {
+    0% {
+      opacity: 0;
+      transform: translateX(-10px);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateX(10px);
+    }
+  }
+
+  /* Instant - Lightning flash animation */
+  @keyframes instantFlash {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    10%, 30%, 50%, 70%, 90% {
+      opacity: 0.5;
+      transform: scale(0.95);
+    }
+    20%, 40%, 60%, 80% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+  }
+
+  /* Secure - Shield lock animation */
+  @keyframes secureLock {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    25% {
+      transform: rotate(-5deg);
+    }
+    75% {
+      transform: rotate(5deg);
+    }
+  }
+
+  @keyframes securePulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+    }
+  }
+
+  /* Precise - Target crosshair animation */
+  @keyframes preciseTarget {
+    0%, 100% {
+      transform: scale(1) rotate(0deg);
+    }
+    50% {
+      transform: scale(1.1) rotate(180deg);
+    }
+  }
+
+  @keyframes preciseRing {
+    0% {
+      transform: scale(0.8);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1.5);
+      opacity: 0;
+    }
+  }
+
+  /* Fast - Speed dash animation */
+  @keyframes fastDash {
+    0% {
+      transform: translateX(-10px);
+      opacity: 0;
+    }
+    50% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(10px);
+      opacity: 0;
+    }
+  }
+
+  @keyframes fastBlur {
+    0%, 100% {
+      filter: blur(0px);
+    }
+    50% {
+      filter: blur(2px);
+    }
+  }
+
+  .animate-workflow-pulse {
+    animation: workflowPulse 2s ease-in-out infinite;
+  }
+
+  .animate-workflow-flow {
+    background-size: 200% 200%;
+    animation: workflowFlow 3s ease infinite;
+  }
+
+  .animate-workflow-rotate {
+    animation: workflowRotate 10s linear infinite;
+  }
+
+  .animate-workflow-bounce {
+    animation: workflowBounce 2s ease-in-out infinite;
+  }
+
+  .animate-workflow-glow {
+    animation: workflowGlow 2s ease-in-out infinite;
+  }
+
+  .animate-workflow-connect {
+    animation: workflowConnect 1.5s ease-in-out infinite;
+  }
+
+  .animate-instant-flash {
+    animation: instantFlash 1.5s ease-in-out infinite;
+  }
+
+  .animate-secure-lock {
+    animation: secureLock 3s ease-in-out infinite;
+  }
+
+  .animate-secure-pulse {
+    animation: securePulse 2s ease-in-out infinite;
+  }
+
+  .animate-precise-target {
+    animation: preciseTarget 4s ease-in-out infinite;
+  }
+
+  .animate-precise-ring {
+    animation: preciseRing 2s ease-out infinite;
+  }
+
+  .animate-fast-dash {
+    animation: fastDash 1s ease-in-out infinite;
+  }
+
+  .animate-fast-blur {
+    animation: fastBlur 2s ease-in-out infinite;
+  }
+
+  .workflow-icon-container {
+    position: relative;
+  }
+
+  .workflow-icon-container::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 16px;
+    background: linear-gradient(45deg, #10b981, #3b82f6, #8b5cf6, #f97316);
+    background-size: 400% 400%;
+    animation: workflowFlow 4s ease infinite;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: -1;
+  }
+
+  .workflow-icon-container:hover::before {
+    opacity: 1;
+  }
+
+  .workflow-icon-container::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: inherit;
+    z-index: -1;
+  }
+}

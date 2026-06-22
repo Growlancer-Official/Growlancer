@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+coverage/
+.vite/
+
+# Local environment files must never be committed.
+.env
+.env.local
+.env.*.local
+
+# Keep only templates in source control.
+!.env.example
+
+.vercel
+nul

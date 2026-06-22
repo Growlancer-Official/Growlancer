@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - '4173:4173'
+    environment:
+      - NODE_ENV=production
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
+    restart: unless-stopped
+    volumes:
+      - ./node_modules:/app/node_modules
+      - .:/app
+
+  # Optional: Add Supabase for local development
+  # supabase:
+  #   image: supabase/supabase:latest
+  #   container_name: supabase
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - supabase-data:/var/lib/postgresql/data
+
+volumes:
+  supabase-data:

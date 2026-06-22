@@ -1,0 +1,322 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { invitesService } from '../lib/dataService';
+import { Calendar, Clock, ExternalLink, Filter, List, MailCheck, MoreVertical, Plus, RefreshCw, Send, View, X,  } from 'lucide-react';
+
+interface Invite {
+  id: string;
+  project_id: string;
+  client_id: string;
+  freelancer_id: string;
+  message?: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  expires_at: string;
+  created_at: string;
+  project?: {
+    id: string;
+    title: string;
+  };
+  freelancer?: {
+    id: string;
+    name: string;
+    avatar?: string;
+    email?: string;
+  };  }
+
+/* ── Dropdown menu for each invite card ── */
+function InviteMenu({
+  inviteId,
+  onCancel,
+  onResend,
+}: {
+  inviteId: string;
+  onCancel: () => void;
+  onResend: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
+        className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
+      >
+        <MoreVertical className="w-5 h-5 text-slate-400" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-white rounded-xl border border-slate-200 shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1">
+          <button
+            onClick={() => { setOpen(false); onResend(); }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            <RefreshCw className="w-4 h-4 text-slate-400" />
+            <span>Resend Invite</span>
+          </button>
+          <div className="h-px bg-slate-100 my-1.5 mx-3" />
+          <button
+            onClick={() => { setOpen(false); onCancel(); }}
+            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <X className="w-4 h-4" />
+            <span>Cancel Invite</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function ClientInvitesPage() {
+  const { user } = useAuth();
+  const [invites, setInvites] = useState<Invite[]>([]);
+  const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'declined'>('all');
+  const [loading, setLoading] = useState(true);
+  const [actionId, setActionId] = useState<string | null>(null);
+
+  const fetchInvites = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const data = await invitesService.getByClient(user.id);
+      setInvites(data as unknown as Invite[]);
+    } catch (error) {
+      console.error('Error fetching invites:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id]);
+
+  const handleCancel = async (inviteId: string) => {
+    setActionId(inviteId);
+    const ok = await invitesService.cancel(inviteId);
+    if (ok) await fetchInvites();
+    setActionId(null);
+  };
+
+  const handleResend = async (inviteId: string) => {
+    setActionId(inviteId);
+    const ok = await invitesService.resend(inviteId);
+    if (ok) await fetchInvites();
+    setActionId(null);
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    void fetchInvites();
+
+    const sub = invitesService.subscribe(user.id, fetchInvites);
+    return () => sub.unsubscribe();
+  }, [user, fetchInvites]);
+
+  const filteredInvites = invites.filter((i) =>
+    filter === 'all' ? true : i.status === filter
+  );
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'accepted':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'declined':
+        return 'bg-red-100 text-red-700';
+      case 'expired':
+        return 'bg-slate-100 text-slate-700';
+      default:
+        return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  const isExpired = (expiresAt: string) => {
+    return new Date(expiresAt) < new Date();
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Invites</h1>
+          <p className="text-slate-500 mt-1">Manage invitations sent to freelancers</p>
+        </div>
+        <Link
+          to="/client/matches"
+          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+        >
+          <Send className="w-5 h-5" />
+          Send New Invite
+        </Link>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex gap-2 border-b border-slate-200">
+        {(['all', 'pending', 'accepted', 'declined'] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-2 font-medium transition-colors ${
+              filter === f
+                ? 'text-emerald-600 border-b-2 border-emerald-600'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+          </button>
+        ))}
+      </div>
+
+      {/* Invites List */}
+      {filteredInvites.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-white rounded-2xl border border-slate-100">
+          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+            <MailCheck className="w-10 h-10 text-slate-300" />
+          </div>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">
+            {filter === 'all' ? 'No invites yet' : `No ${filter} invites`}
+          </h3>
+          <p className="text-slate-500 max-w-sm mx-auto mb-6">
+            {filter === 'all'
+              ? 'Browse AI-matched freelancers and send them personalized project invitations.'
+              : `You don\'t have any ${filter} invites at the moment.`}
+          </p>
+          {filter === 'all' ? (
+            <Link
+              to="/client/matches"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+            >
+              <Plus className="w-5 h-5" />
+              Send an Invite
+            </Link>
+          ) : (
+            <Link
+              to="/client/invites"
+              className="text-emerald-600 font-medium hover:underline text-sm"
+            >
+              View all invites →
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {filteredInvites.map((invite) => {
+            const expired = isExpired(invite.expires_at);
+            return (
+              <div
+                key={invite.id}
+                className={`bg-white p-6 rounded-2xl border ${
+                  expired ? 'border-slate-200 opacity-60' : 'border-slate-100'
+                } hover:shadow-md transition-shadow`}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                      {invite.freelancer?.avatar ? (
+                        <img 
+                          src={invite.freelancer.avatar} 
+                          alt={invite.freelancer.name}
+                          className="w-full h-full object-cover object-top"
+                          style={{
+                            objectPosition: 'center 20%',
+                            filter: 'brightness(1.05) contrast(1.02)'
+                          }}
+                        />
+                      ) : (
+                        <MailCheck className="w-6 h-6 text-slate-400" />
+                      )}
+                    </div>
+                    <div>
+                      <h3 className="font-display font-bold text-slate-900">
+                        {invite.freelancer?.name || 'Unknown Freelancer'}
+                      </h3>
+                      <p className="text-sm text-slate-500">{invite.freelancer?.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${getStatusColor(
+                        expired ? 'expired' : invite.status
+                      )}`}
+                    >
+                      {expired ? 'Expired' : invite.status}
+                    </span>
+                    <InviteMenu inviteId={invite.id} onCancel={() => handleCancel(invite.id)} onResend={() => handleResend(invite.id)} />
+                  </div>
+                </div>
+
+                {invite.project && (
+                  <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                    <p className="text-sm text-slate-600">
+                      <span className="font-medium">Project:</span> {invite.project.title}
+                    </p>
+                  </div>
+                )}
+
+                {invite.message && (
+                  <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                    <p className="text-sm text-slate-600 italic">"{invite.message}"</p>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    <span>Sent: {new Date(invite.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    <span>
+                      Expires: {new Date(invite.expires_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+
+                {invite.status === 'pending' && !expired && (
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={actionId === invite.id}
+                      onClick={() => void handleCancel(invite.id)}
+                      className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                      <X className="w-4 h-4" />
+                      Cancel Invite
+                    </button>
+                    <button
+                      type="button"
+                      disabled={actionId === invite.id}
+                      onClick={() => void handleResend(invite.id)}
+                      className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    >
+                      <Send className="w-4 h-4" />
+                      Resend
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

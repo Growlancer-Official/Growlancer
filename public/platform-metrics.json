@@ -1,0 +1,6 @@
+{
+  "note": "Registered users are counted live from Supabase on the About page. Update paymentsProcessedUsd, avgSatisfactionPercent, and countriesWithMembers here (or via your deploy pipeline) as real data becomes available. Omit a field or use null until you have a trustworthy number.",
+  "paymentsProcessedUsd": 0,
+  "avgSatisfactionPercent": null,
+  "countriesWithMembers": null
+}

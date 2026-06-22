@@ -1,0 +1,252 @@
+import { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  Zap, Crown, Loader2, RefreshCw, Search, Ban, Mail, RotateCcw, Clock
+} from 'lucide-react';
+import { supabase, realtimeChannels } from '../../lib/supabase';
+
+interface SubscriptionPlan {
+  id: string; name: string; description: string | null; price: number;
+  interval: string; features: Record<string, unknown> | null; active: boolean;
+}
+
+interface UserSubscription {
+  id: string; user_id: string; plan_id: string; status: string;
+  start_date: string | null; end_date: string | null; created_at: string;
+  profile?: { name: string; email: string } | null;
+  plan?: { name: string; price: number } | null;
+}
+
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+}
+
+const statusColors: Record<string, string> = {
+  active: 'bg-emerald-500/10 text-emerald-400',
+  cancelled: 'bg-red-500/10 text-red-400',
+  expired: 'bg-slate-500/10 text-slate-400',
+  pending: 'bg-amber-500/10 text-amber-400',
+};
+
+export function AdminSubscriptionsPage() {
+  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
+  const [subscriptions, setSubscriptions] = useState<UserSubscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [plansRes, subsRes] = await Promise.all([
+        supabase.from('subscription_plans').select('*').order('price'),
+        supabase.from('subscriptions').select('*').order('created_at', { ascending: false }).limit(100),
+      ]);
+
+      const plansData = (plansRes.data || []) as SubscriptionPlan[];
+      const subsData = (subsRes.data || []) as UserSubscription[];
+
+      const userIds = [...new Set(subsData.map(s => s.user_id))];
+      const { data: profiles } = await supabase.from('profiles').select('id, name, email').in('id', userIds);
+      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
+      const planMap = new Map(plansData.map(p => [p.id, { name: p.name, price: p.price }]));
+
+      setPlans(plansData);
+      setSubscriptions(subsData.map(s => ({
+        ...s,
+        profile: profileMap.get(s.user_id) || null,
+        plan: planMap.get(s.plan_id) || null,
+      })));
+    } catch (err) { console.error('Failed to fetch subscriptions:', err); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    const channel = realtimeChannels.profiles(`admin-subs-${Date.now()}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'subscriptions' }, () => fetchData())
+      .subscribe();
+    channelRef.current = channel;
+    return () => { channel.unsubscribe(); };
+  }, [fetchData]);
+
+  // ─── ACTIONS ─────────────────────────────────────────────────────
+  const handleCancelSubscription = async (subId: string, userName: string) => {
+    if (!confirm(`🚫 Cancel subscription for "${userName}"? They will lose Pro access immediately.`)) return;
+    setActionLoading(`cancel-${subId}`);
+    try {
+      await supabase.from('subscriptions').update({
+        status: 'cancelled',
+        end_date: new Date().toISOString(),
+        cancel_at_period_end: true,
+        updated_at: new Date().toISOString(),
+      }).eq('id', subId);
+      await fetchData();
+    } catch (err) { console.error(err); }
+    finally { setActionLoading(null); }
+  };
+
+  const handleReactivateSubscription = async (subId: string, userName: string) => {
+    if (!confirm(`🔄 Reactivate subscription for "${userName}"? They will regain Pro access.`)) return;
+    setActionLoading(`reactivate-${subId}`);
+    try {
+      await supabase.from('subscriptions').update({
+        status: 'active',
+        cancel_at_period_end: false,
+        updated_at: new Date().toISOString(),
+      }).eq('id', subId);
+      await fetchData();
+    } catch (err) { console.error(err); }
+    finally { setActionLoading(null); }
+  };
+
+  const handleSendEmail = (email: string) => {
+    window.open(`mailto:${email}?subject=Growlancer%20Subscription%20Update`, '_blank');
+  };
+
+  // ─── STATS ────────────────────────────────────────────────────────
+  const activeSubs = subscriptions.filter(s => s.status === 'active');
+  const monthlyMRR = activeSubs.reduce((sum, s) => {
+    const price = s.plan?.price || 0;
+    return sum + (s.plan?.name?.toLowerCase().includes('yearly') ? price / 12 : price);
+  }, 0);
+
+  const filtered = subscriptions.filter(s =>
+    (s.profile?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.plan?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  ).filter(s => statusFilter === 'all' || s.status === statusFilter);
+
+  return (
+    <div className="space-y-6 pb-20 lg:pb-0">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Subscriptions</h1>
+          <p className="text-slate-400 text-sm mt-1">Manage plans and user subscriptions with full control</p>
+        </div>
+        <button onClick={fetchData} className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
+          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </button>
+      </div>
+
+      {/* Plans Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {plans.map(plan => (
+          <div key={plan.id} className="p-4 rounded-2xl" style={{ background: '#1E293B', border: `1px solid ${plan.active ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
+            <div className="flex items-center gap-2 mb-2">
+              {plan.price > 0 ? <Crown className="w-4 h-4 text-amber-400" /> : <Zap className="w-4 h-4 text-slate-400" />}
+              <h3 className="font-bold text-white text-sm">{plan.name}</h3>
+              {!plan.active && <span className="text-[7px] bg-red-500/10 text-red-400 px-1 py-0.5 rounded uppercase font-bold">Inactive</span>}
+            </div>
+            <p className="text-xl font-bold text-white">{formatCurrency(plan.price)}<span className="text-xs text-slate-500 font-normal">/{plan.interval}</span></p>
+            <p className="text-[9px] text-slate-500 mt-1">{plan.description}</p>
+            <p className="mt-2 text-[9px] text-slate-500">{subscriptions.filter(s => s.plan_id === plan.id && s.status === 'active').length} active</p>
+          </div>
+        ))}
+        <div className="p-4 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(16,185,129,0.2)' }}>
+          <p className="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-1">Monthly Recurring Revenue</p>
+          <p className="text-xl font-bold text-emerald-400">{formatCurrency(monthlyMRR)}</p>
+          <p className="text-[9px] text-slate-500 mt-1">{activeSubs.length} active subscriptions</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between p-4 rounded-2xl"
+        style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="flex items-center gap-3 flex-1 flex-wrap">
+          <div className="relative flex-1 min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search by user or plan..." className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
+          </div>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
+            className="bg-slate-800 border border-white/5 text-[10px] font-bold uppercase rounded-lg px-3 py-2 text-slate-300 cursor-pointer">
+            <option value="all">All</option>
+            <option value="active">Active</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="expired">Expired</option>
+            <option value="pending">Pending</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Subscriptions Table with Actions */}
+      <div className="rounded-[2rem] overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="text-slate-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
+                <th className="px-6 py-4">User</th>
+                <th className="px-6 py-4">Plan</th>
+                <th className="px-6 py-4">Price</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Duration</th>
+                <th className="px-6 py-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {loading ? (
+                <tr><td colSpan={6} className="px-6 py-12 text-center"><Loader2 className="w-6 h-6 animate-spin text-slate-500 mx-auto" /></td></tr>
+              ) : filtered.length === 0 ? (
+                <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-500 text-xs">No subscriptions found</td></tr>
+              ) : (
+                filtered.map(sub => (
+                  <tr key={sub.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="px-6 py-4">
+                      <p className="text-xs text-slate-300 font-bold">{sub.profile?.name || 'Unknown'}</p>
+                      <p className="text-[10px] text-slate-500">{sub.profile?.email || ''}</p>
+                    </td>
+                    <td className="px-6 py-4 text-xs text-slate-300 font-bold">{sub.plan?.name || sub.plan_id}</td>
+                    <td className="px-6 py-4 text-xs text-emerald-400 font-bold">{sub.plan?.price ? formatCurrency(sub.plan.price) : '—'}</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${statusColors[sub.status] || ''}`}>{sub.status}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-[10px] text-slate-500">
+                        {sub.start_date ? new Date(sub.start_date).toLocaleDateString() : '—'}
+                        {sub.end_date ? ` → ${new Date(sub.end_date).toLocaleDateString()}` : ''}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        {/* Send Email */}
+                        {sub.profile?.email && (
+                          <button onClick={() => handleSendEmail(sub.profile.email!)}
+                            className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-emerald-400 transition-colors" title="Send Email">
+                            <Mail className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                        {/* Cancel Subscription */}
+                        {sub.status === 'active' && (
+                          <button onClick={() => handleCancelSubscription(sub.id, sub.profile?.name || 'User')}
+                            disabled={actionLoading === `cancel-${sub.id}`}
+                            className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Cancel Subscription">
+                            {actionLoading === `cancel-${sub.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
+                        {/* Reactivate Subscription */}
+                        {(sub.status === 'cancelled' || sub.status === 'expired') && (
+                          <button onClick={() => handleReactivateSubscription(sub.id, sub.profile?.name || 'User')}
+                            disabled={actionLoading === `reactivate-${sub.id}`}
+                            className="p-1.5 hover:bg-emerald-500/10 rounded-lg text-emerald-400 transition-colors" title="Reactivate Subscription">
+                            {actionLoading === `reactivate-${sub.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <RotateCcw className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
+                        {/* Status indicator for pending */}
+                        {sub.status === 'pending' && (
+                          <span className="text-[9px] text-amber-400 flex items-center gap-1">
+                            <Clock className="w-3 h-3" /> Awaiting
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
