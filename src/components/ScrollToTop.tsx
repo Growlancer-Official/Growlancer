@@ -21,12 +21,11 @@ export function ScrollToTop() {
         });
       }
     } else {
-      // Otherwise scroll to top
-      window.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: 'smooth',
-      });
+      // Otherwise scroll to top instantly
+      window.scrollTo(0, 0);
+      // Fallback for browsers that don't support scrollTo
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
     }
   }, [pathname, hash]);
 

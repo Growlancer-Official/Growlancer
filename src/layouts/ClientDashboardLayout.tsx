@@ -532,36 +532,35 @@ export function ClientDashboardLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col min-w-0">
-        {/* Top Bar */}
-        <header className="h-20 bg-white sticky top-0 z-40 border-b border-slate-100 px-4 sm:px-6 lg:px-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-3 w-full lg:w-auto">
+      <main className="flex-1 flex flex-col min-w-0">          {/* Top Bar */}
+        <header className="min-h-16 sm:h-20 bg-white sticky top-0 z-40 border-b border-slate-100 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <button
               onClick={() => setMobileNavOpen(true)}
-              className="lg:hidden inline-flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all"
+              className="lg:hidden inline-flex items-center justify-center h-9 w-9 sm:h-10 sm:w-10 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 transition-all shrink-0"
               aria-label="Open navigation"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="flex items-center gap-4 w-full">
-              <div className="relative w-full max-w-full md:max-w-lg group">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+            <div className="hidden sm:flex items-center gap-4 flex-1 min-w-0">
+              <div className="relative w-full max-w-xs md:max-w-sm group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                 <input
                   type="text"
-                  placeholder="Search freelancers, proposals, or project history..."
-                  className="w-full pl-11 pr-4 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  placeholder="Search..."
+                  className="w-full pl-9 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
                 />
               </div>
             </div>
           </div>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-4 w-full justify-between md:w-auto md:justify-end">
+          <div className="flex items-center gap-2 sm:gap-4 w-full justify-end md:w-auto md:justify-end">
             {/* AI Match Engine Badge */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-100">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 rounded-full border border-emerald-100">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
               <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest">
-                AI Match Engine Active
+                AI Active
               </span>
             </div>
 
@@ -573,7 +572,7 @@ export function ClientDashboardLayout() {
             {/* User Menu */}
             <button className="flex items-center gap-3 pl-1 pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
               {user?.avatar ? (
-                <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
+                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
                   <img
                     src={user.avatar}
                     alt={user.name || 'Client'}
@@ -585,21 +584,12 @@ export function ClientDashboardLayout() {
                   />
                 </div>
               ) : (
-                <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center border-2 border-emerald-500/20">
+                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-slate-100 flex items-center justify-center border-2 border-emerald-500/20">
                   <User className="w-5 h-5 text-slate-400" />
                 </div>
               )}
-              <div className="text-left hidden md:block">
-                <p className="text-sm font-bold leading-tight">{user?.name || 'Client'}</p>
-                <div className="flex items-center gap-1">
-                  <p className="text-[10px] text-slate-500 font-medium tracking-wide">{getRatingBadge()}</p>
-                  {userProfile && userProfile.rating > 0 && (
-                    <>
-                      <span className="text-[10px] text-emerald-600">★</span>
-                      <span className="text-[10px] text-slate-400">({userProfile.total_reviews})</span>
-                    </>
-                  )}
-                </div>
+              <div className="text-left hidden sm:block">
+                <p className="text-sm font-bold leading-tight truncate max-w-[120px]">{user?.name || 'Client'}</p>
               </div>
             </button>
           </div>

@@ -11,16 +11,27 @@ export type ReferralLeader = {
 };
 
 export function shareReferralLink(link: string, platform: 'linkedin' | 'twitter' | 'email' | 'whatsapp') {
-  const text = encodeURIComponent('Join me on Growlancer — AI-powered freelancing with escrow protection.');
-  const url = encodeURIComponent(link);
+  const referralUrl = link.startsWith('http') ? link : `${window.location.origin}/signup?ref=${encodeURIComponent(link)}`;
+  const url = encodeURIComponent(referralUrl);
+  
+  const subject = encodeURIComponent('Join me on Growlancer – AI-Powered Freelancing Marketplace');
+  
+  const body = encodeURIComponent(
+    `Hey! 👋\n\nI've been using Growlancer to find and manage freelance projects with AI-powered matching and secure escrow payments. It's been a game-changer for my workflow.\n\nUse my referral link below to join and we both earn rewards:\n${referralUrl}\n\nWhat you get:\n✅ AI-powered project matching\n✅ Secure escrow payments\n✅ Real-time collaboration tools\n✅ Professional freelancer/client community\n\nSee you there! 🚀`
+  );
+  
+  const shortText = encodeURIComponent(
+    `🚀 Join me on Growlancer – the AI-powered freelancing marketplace! Get secure escrow payments, smart project matching, and more. Use my referral link: ${referralUrl}`
+  );
+
   if (platform === 'linkedin') {
     window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener');
   } else if (platform === 'twitter') {
-    window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'noopener');
+    window.open(`https://twitter.com/intent/tweet?text=${shortText}`, '_blank', 'noopener');
   } else if (platform === 'whatsapp') {
-    window.open(`https://api.whatsapp.com/send?text=${text}%20${url}`, '_blank', 'noopener');
+    window.open(`https://api.whatsapp.com/send?text=${shortText}`, '_blank', 'noopener');
   } else {
-    window.location.href = `mailto:?subject=${encodeURIComponent('Join Growlancer')}&body=${text}%20${url}`;
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
   }
 }
 

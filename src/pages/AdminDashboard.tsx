@@ -229,7 +229,7 @@ function UserManagementTable() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      let q = supabase.from('profiles').select('*').is('deleted_at', null)
+      let q = supabase.from('profiles').select('*').is('deleted_at', null).is('suspended_at', null)
         .order('created_at', { ascending: false }).limit(10);
       if (roleFilter !== 'all') q = q.eq('role', roleFilter);
       const { data } = await q;
@@ -635,16 +635,18 @@ function AIRiskAnalysis() {
 function LiveActivityFeed() {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('connecting');
+  const [newActivityIds, setNewActivityIds] = useState<Set<string>>(new Set());
 
   const fetchActivities = useCallback(async () => {
     try {
-      setLoading(true);
       const results = await Promise.allSettled([
-        supabase.from('profiles').select('id, name, created_at, role').is('deleted_at', null).order('created_at', { ascending: false }).limit(3),
+        supabase.from('profiles').select('id, name, created_at, role').is('deleted_at', null).is('suspended_at', null).order('created_at', { ascending: false }).limit(3),
         supabase.from('contracts').select('id, amount, created_at, status').order('created_at', { ascending: false }).limit(3),
         tables.disputeCases().select('id, reason, created_at, status').order('created_at', { ascending: false }).limit(3),
-        supabase.from('projects').select('id, title, created_at').order('created_at', { ascending: false }).limit(3),
+        supabase.from('projects').select('id, title, created_at, status').order('created_at', { ascending: false }).limit(3),
         supabase.from('transactions').select('id, amount, created_at, type, status').in('status', ['completed', 'pending']).order('created_at', { ascending: false }).limit(3),
+        supabase.from('messages').select('id, created_at').order('created_at', { ascending: false }).limit(2),
       ]);
 
       const items: ActivityItem[] = [];
@@ -655,7 +657,7 @@ function LiveActivityFeed() {
       if (results[1].status === 'fulfilled' && results[1].value.data) {
         (results[1].value.data as any[]).forEach(c => {
           const t = c.status === 'completed' ? 'contract_completed' : 'contract_created';
-          items.push({ id: `contract-${c.id}`, type: t as any, description: c.status === 'completed' ? `Contract completed` : `New contract: ${formatCurrency(c.amount || 0)}`, created_at: c.created_at, amount: c.amount });
+          items.push({ id: `contract-${c.id}`, type: t as any, description: c.status === 'completed' ? `Contract completed (${formatCurrency(c.amount || 0)})` : `New contract: ${formatCurrency(c.amount || 0)}`, created_at: c.created_at, amount: c.amount });
         });
       }
 
@@ -663,39 +665,75 @@ function LiveActivityFeed() {
         (results[2].value.data as any[]).forEach(d => items.push({ id: `dispute-${d.id}`, type: 'dispute_filed', description: `Dispute: ${(d.reason || '').slice(0, 50)}`, created_at: d.created_at }));
 
       if (results[3].status === 'fulfilled' && results[3].value.data)
-        (results[3].value.data as any[]).forEach(p => items.push({ id: `project-${p.id}`, type: 'project_created', description: `Project: ${(p.title || 'Untitled').slice(0, 40)}`, created_at: p.created_at }));
+        (results[3].value.data as any[]).forEach(p => items.push({ id: `project-${p.id}`, type: 'project_created', description: `Project: ${(p.title || 'Untitled').slice(0, 40)} (${p.status || 'open'})`, created_at: p.created_at }));
 
       if (results[4].status === 'fulfilled' && results[4].value.data)
-        (results[4].value.data as any[]).forEach(w => items.push({ id: `payment-${w.id}`, type: 'payment_received', description: `${w.type === 'withdrawal' ? 'Withdrawal' : 'Payment'} of ${formatCurrency(w.amount || 0)}`, created_at: w.created_at, amount: w.amount }));
+        (results[4].value.data as any[]).forEach(w => items.push({ id: `payment-${w.id}`, type: 'payment_received', description: `${w.type === 'withdrawal' ? 'Withdrawal' : 'Payment'} of ${formatCurrency(w.amount || 0)} (${w.status})`, created_at: w.created_at, amount: w.amount }));
 
       items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      setActivities(items.slice(0, 12));
+      setActivities(items.slice(0, 15));
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   }, []);
 
   useEffect(() => {
-    fetchActivities();
-    const interval = setInterval(fetchActivities, 15000);
+    setConnectionStatus('connecting');
+    fetchActivities().then(() => setConnectionStatus('connected'));
+
+    // Poll every 10s for fresh data
+    const interval = setInterval(() => {
+      fetchActivities();
+    }, 10000);
+
     return () => clearInterval(interval);
   }, [fetchActivities]);
 
+  // Real-time subscriptions with enhanced event handling
   useEffect(() => {
-    const channel = supabase.channel(`admin-feed-ov-${Date.now()}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, (p) => {
-        const n = p.new as any;
-        setActivities(prev => [{ id: `user-${n.id}`, type: 'user_joined', description: `${n.name || 'Someone'} joined as ${n.role}`, created_at: n.created_at || new Date().toISOString() } as ActivityItem, ...prev].slice(0, 12));
+    const channel = supabase.channel(`admin-feed-enhanced-${Date.now()}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, (p) => {
+        setConnectionStatus('connected');
+        if (p.eventType === 'INSERT') {
+          const n = p.new as any;
+          const item = { id: `user-${n.id}-${Date.now()}`, type: 'user_joined' as const, description: `${n.name || 'Someone'} joined as ${n.role}`, created_at: n.created_at || new Date().toISOString(), user_name: n.name } as ActivityItem;
+          setActivities(prev => [item, ...prev].slice(0, 15));
+          setNewActivityIds(prev => new Set(prev).add(item.id));
+          setTimeout(() => setNewActivityIds(prev => { const s = new Set(prev); s.delete(item.id); return s; }), 3000);
+        }
       })
-      .on('postgres_changes' as any, { event: 'INSERT', schema: 'public', table: 'dispute_cases' }, (p) => {
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'dispute_cases' }, (p) => {
+        setConnectionStatus('connected');
         const n = p.new as any;
-        setActivities(prev => [{ id: `dispute-${n.id}`, type: 'dispute_filed', description: `Dispute: ${(n.reason || '').slice(0, 50)}`, created_at: n.created_at || new Date().toISOString() } as ActivityItem, ...prev].slice(0, 12));
+        const item = { id: `dispute-${n.id}-${Date.now()}`, type: 'dispute_filed' as const, description: `Dispute ${p.eventType === 'INSERT' ? 'filed' : 'updated'}: ${(n.reason || '').slice(0, 50)}`, created_at: n.created_at || new Date().toISOString() } as ActivityItem;
+        setActivities(prev => [item, ...prev].slice(0, 15));
+        setNewActivityIds(prev => new Set(prev).add(item.id));
+        setTimeout(() => setNewActivityIds(prev => { const s = new Set(prev); s.delete(item.id); return s; }), 3000);
       })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'contracts' }, (p) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'contracts' }, (p) => {
+        setConnectionStatus('connected');
         const n = p.new as any;
-        setActivities(prev => [{ id: `contract-${n.id}`, type: 'contract_created', description: `New contract: ${formatCurrency(n.amount || 0)}`, created_at: n.created_at || new Date().toISOString(), amount: n.amount } as ActivityItem, ...prev].slice(0, 12));
+        const type = p.eventType === 'INSERT' ? 'contract_created' : (n.status === 'completed' ? 'contract_completed' : 'escrow_funded');
+        const item = { id: `contract-${n.id}-${Date.now()}`, type: type as any, description: p.eventType === 'INSERT' ? `New contract: ${formatCurrency(n.amount || 0)}` : `Contract ${n.status}: ${formatCurrency(n.amount || 0)}`, created_at: n.created_at || new Date().toISOString(), amount: n.amount } as ActivityItem;
+        setActivities(prev => [item, ...prev].slice(0, 15));
+        setNewActivityIds(prev => new Set(prev).add(item.id));
+        setTimeout(() => setNewActivityIds(prev => { const s = new Set(prev); s.delete(item.id); return s; }), 3000);
       })
-      .subscribe();
-    return () => channel.unsubscribe();
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'projects' }, (p) => {
+        setConnectionStatus('connected');
+        const n = p.new as any;
+        const item = { id: `project-${n.id}-${Date.now()}`, type: 'project_created' as const, description: `New project: ${(n.title || 'Untitled').slice(0, 40)}`, created_at: n.created_at || new Date().toISOString() } as ActivityItem;
+        setActivities(prev => [item, ...prev].slice(0, 15));
+        setNewActivityIds(prev => new Set(prev).add(item.id));
+        setTimeout(() => setNewActivityIds(prev => { const s = new Set(prev); s.delete(item.id); return s; }), 3000);
+      })
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') setConnectionStatus('connected');
+        else if (status === 'CLOSED' || status === 'CHANNEL_ERROR') setConnectionStatus('disconnected');
+      });
+
+    return () => {
+      channel.unsubscribe();
+    };
   }, []);
 
   const dotColors: Record<string, string> = {
@@ -714,11 +752,13 @@ function LiveActivityFeed() {
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <h2 className="font-bold text-sm">Live Feed</h2>
         <div className="flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[8px] text-slate-500 font-bold uppercase">LIVE</span>
+          <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${connectionStatus === 'connected' ? 'bg-emerald-400' : connectionStatus === 'connecting' ? 'bg-amber-400' : 'bg-red-400'}`} />
+          <span className="text-[8px] text-slate-500 font-bold uppercase">
+            {connectionStatus === 'connected' ? 'LIVE' : connectionStatus === 'connecting' ? 'CONNECTING' : 'DISCONNECTED'}
+          </span>
         </div>
       </div>
-      <div className="divide-y divide-white/5 max-h-[280px] overflow-y-auto">
+      <div className="divide-y divide-white/5 max-h-[320px] overflow-y-auto">
         {loading ? new Array(5).fill(0).map((_, i) => (
           <div key={i} className="flex items-center gap-3 p-3 animate-pulse">
             <div className="h-1.5 w-1.5 rounded-full bg-slate-700" />
@@ -726,8 +766,8 @@ function LiveActivityFeed() {
           </div>
         )) : activities.length === 0 ? (
           <div className="p-6 text-center"><Activity className="w-8 h-8 text-slate-600 mx-auto mb-1" /><p className="text-slate-500 text-xs">No activity yet</p></div>
-        ) : activities.slice(0, 10).map(a => (
-          <div key={a.id} className="flex items-start gap-3 p-3 hover:bg-white/[0.02] transition-colors">
+        ) : activities.slice(0, 12).map(a => (
+          <div key={a.id} className={`flex items-start gap-3 p-3 hover:bg-white/[0.02] transition-colors ${newActivityIds.has(a.id) ? 'bg-emerald-500/5 animate-pulse' : ''}`}>
             <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${dotColors[a.type] || 'bg-slate-500'}`} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -741,8 +781,15 @@ function LiveActivityFeed() {
           </div>
         ))}
       </div>
-      <div className="p-3 border-t border-white/5 text-center">
-        <span className="text-[8px] text-slate-500 font-bold uppercase">Auto-refreshes every 15s</span>
+      <div className="p-3 border-t border-white/5 flex items-center justify-between">
+        <span className="text-[7px] text-slate-600 font-bold uppercase">Auto-refreshes every 10s</span>
+        <button
+          onClick={() => { setLoading(true); fetchActivities().then(() => setLoading(false)); }}
+          className="text-[7px] text-emerald-500 hover:text-emerald-400 font-bold uppercase transition-colors"
+        >
+          <RefreshCw className={`w-2.5 h-2.5 inline-block mr-1 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
     </section>
   );

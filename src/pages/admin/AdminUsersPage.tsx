@@ -69,6 +69,7 @@ export function AdminUsersPage() {
         .from('profiles')
         .select('id, email, name, role, avatar, created_at, is_pro, onboarding_completed, referral_code, suspended_at, suspend_reason, deleted_at')
         .is('deleted_at', null)
+        .is('suspended_at', null)
         .order('created_at', { ascending: false })
         .limit(100);
 

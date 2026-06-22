@@ -141,7 +141,11 @@ export function CategoriesSection({
           <p className="text-slate-500">No categories found</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div
+          className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 transition-all duration-500 ease-in-out ${
+            showAll ? 'max-h-[10000px] opacity-100' : 'max-h-[600px] opacity-100'
+          }`}
+        >
           {displayCategories.map((cat) => {
             const meta = resolveCategoryMeta(cat.name);
             const Icon = meta.icon;
@@ -172,17 +176,19 @@ export function CategoriesSection({
         </div>
       )}
 
-      {/* Show More / Show Less */}
+      {/* Show More / Show Less with slide animation */}
       {showToggleButton && !loading && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="mt-6 w-full py-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-2xl border border-slate-200 hover:border-emerald-200 transition-all flex items-center justify-center gap-2"
+          className="mt-6 w-full py-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-2xl border border-slate-200 hover:border-emerald-200 transition-all flex items-center justify-center gap-2 group"
         >
-          {showAll ? (
-            <>Show Less <ChevronUp className="w-4 h-4" /></>
-          ) : (
-            <>Show All Categories ({sortedCategories.length}) <ChevronDown className="w-4 h-4" /></>
-          )}
+          <span className="transition-transform duration-300 inline-flex items-center gap-2">
+            {showAll ? (
+              <>Show Less <ChevronUp className="w-4 h-4 transition-transform duration-300 rotate-0" /></>
+            ) : (
+              <>Show All Categories ({sortedCategories.length}) <ChevronDown className="w-4 h-4 transition-transform duration-300 group-hover:translate-y-0.5" /></>
+            )}
+          </span>
         </button>
       )}
     </div>

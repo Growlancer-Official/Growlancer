@@ -38,6 +38,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [referralCode, setReferralCode] = useState(referralCodeFromUrl || '');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +99,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     setError(null);
     setSuccessMessage(null);
 
-    const result = await signup(normalizedEmail, password, normalizedName, role, referralCodeFromUrl || undefined);
+    const result = await signup(normalizedEmail, password, normalizedName, role, referralCode.trim() || undefined);
 
     if (result.success) {
       setSuccessMessage(result.message || 'Confirmation email sent. Please check your inbox.');
@@ -356,6 +357,30 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
             {passwordError && (
               <p className="text-[11px] text-red-500 mt-1">{passwordError}</p>
             )}
+          </div>
+
+          {/* Referral Code (Optional) */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1">
+              Referral Code <span className="text-slate-300 normal-case">(optional)</span>
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <svg className="w-4 h-4 text-slate-400 group-focus-within:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+              </div>
+              <input
+                type="text"
+                id="referral-code"
+                value={referralCode}
+                onChange={e => setReferralCode(e.target.value)}
+                autoComplete="off"
+                placeholder="Enter referral code (e.g. GRW-FR-XXXX)"
+                className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl outline-none transition-all text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
+              />
+            </div>
+            <p className="text-[10px] text-slate-400 ml-1">Have a referral code? Paste it here to earn rewards for both you and the person who invited you.</p>
           </div>
 
           {/* Terms Checkbox */}
