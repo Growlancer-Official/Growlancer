@@ -121,6 +121,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
           authUser.email?.split('@')[0] ||
           'User';
+        
+        // 🆕 Check for saved referral code from localStorage (preserved during OAuth)
+        let oauthRefCode: string | undefined;
+        const savedRef = localStorage.getItem('growlancer_oauth_ref');
+        if (savedRef) {
+          oauthRefCode = savedRef;
+          localStorage.removeItem('growlancer_oauth_ref');
+        }
+        
         const refCode = createReferralCode('FR');
         profile = await createUserProfile(
           authUser.id,
@@ -129,6 +138,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           roleHint || 'freelancer',
           refCode,
         );
+
+        // 🆕 Process referral if this OAuth signup came from a referral link
+        if (oauthRefCode && profile) {
+          try {
+            await supabase.rpc('process_referral' as any, {
+              p_referral_code: oauthRefCode,
+              p_new_user_id: authUser.id,
+              p_new_user_email: authUser.email || '',
+            } as any);
+            devLog('[Auth] OAuth referral processed for code:', oauthRefCode);
+            // 🆕 Grant referred OAuth user 5 free connects as welcome bonus
+            try {
+              await supabase.from('connects_transactions' as any).insert({
+                user_id: authUser.id,
+                amount: 5,
+                type: 'bonus',
+                description: 'Welcome bonus - referred by friend',
+              } as any);
+              devLog('[Auth] OAuth referred user granted 5 free connects');
+            } catch (bonusErr) {
+              devWarn('[Auth] OAuth referral bonus grant error:', bonusErr);
+            }
+          } catch (refErr) {
+            devWarn('[Auth] OAuth referral processing error:', refErr);
+          }
+        }
       }
 
       if (!profile) {
@@ -367,6 +402,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     provider: 'google' | 'linkedin_oidc'
   ): Promise<{ success: boolean; error?: string }> => {
     try {
+      // 🆕 Preserve referral code from URL before OAuth redirect
+      const refParam = new URLSearchParams(window.location.search).get('ref');
+      if (refParam) {
+        localStorage.setItem('growlancer_oauth_ref', refParam);
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -518,6 +559,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // Non-fatal: don't block signup if referral fails
             } else {
               devLog('[Auth] Referral processed successfully for code:', referrerCode);
+              // 🆕 Grant referred user 5 free connects as welcome bonus
+              try {
+                await supabase.from('connects_transactions' as any).insert({
+                  user_id: data.user.id,
+                  amount: 5,
+                  type: 'bonus',
+                  description: 'Welcome bonus - referred by friend',
+                } as any);
+                devLog('[Auth] Referred user granted 5 free connects');
+              } catch (bonusErr) {
+                devWarn('[Auth] Referral bonus grant error:', bonusErr);
+              }
             }
           } catch (refErr) {
             devWarn('[Auth] Referral processing exception:', refErr);

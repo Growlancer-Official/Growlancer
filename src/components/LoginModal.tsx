@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Mail,
@@ -9,6 +9,7 @@ import {
   Loader2,
   AlertCircle,
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { validateEmail, validateRequired } from '../utils/validation';
 import { Modal } from './Modal';
@@ -27,6 +28,19 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [oauthProvider, setOauthProvider] = useState<'google' | 'linkedin' | null>(null);
+  const [existingUser, setExistingUser] = useState(false);
+
+  // Check if there's already a session on this device
+  useEffect(() => {
+    async function checkSession() {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user) {
+        setExistingUser(true);
+      }
+    }
+    checkSession();
+  }, [isOpen]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,9 +66,10 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
       const result = await login(normalizedEmail, password);
 
       if (result.success && result.role) {
-        // Navigate based on role
-        const dashboardRoute =
-          result.role === 'freelancer'
+        // If onboarding not completed, redirect to onboarding first
+        const redirectPath = result.onboardingNeeded
+          ? '/onboarding'
+          : result.role === 'freelancer'
             ? '/dashboard'
             : result.role === 'client'
               ? '/client'
@@ -68,13 +83,13 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
         
         // Use setTimeout to ensure modal is fully unmounted before navigation
         setTimeout(() => {
-          navigate(dashboardRoute, { replace: true });
+          navigate(redirectPath, { replace: true });
         }, 100);
       } else {
         setError(result.error || 'Login failed. Please check your credentials.');
         setIsLoading(false);
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
       setIsLoading(false);
     }
@@ -89,33 +104,70 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
       <div className="relative animate-fade-in-content">
         <p className="text-slate-500 mb-5 text-sm">Log in to your dashboard to manage your projects.</p>
 
+        {/* Account Already Exists Alert */}
+        {existingUser && (
+          <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-bold text-amber-800 mb-1">Account already exists on this device</p>
+                <p className="text-xs text-amber-700">
+                  You are already logged in. Please log out first if you want to use a different account.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Social Auth — Google & LinkedIn */}
         <div className="mb-5 space-y-3">
           <button
             type="button"
-            onClick={() => signInWithOAuth('google')}
-            className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm"
+            disabled={!!oauthProvider}
+            onClick={async () => {
+              setError(null);
+              setOauthProvider('google');
+              const result = await signInWithOAuth('google');
+              setOauthProvider(null);
+              if (!result.success) setError(result.error || 'Google sign in failed. Make sure Google is configured in the Supabase Dashboard.');
+            }}
+            className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.79 15.73 17.57V20.34H19.28C21.36 18.42 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
-              <path d="M12 23C14.97 23 17.46 21.92 19.28 20.34L15.73 17.57C14.73 18.23 13.45 18.64 12 18.64C9.14 18.64 6.71 16.7 5.84 14.12H2.18V16.96C3.99 20.57 7.7 23 12 23Z" fill="#34A853"/>
-              <path d="M5.84 14.12C5.62 13.46 5.49 12.75 5.49 12C5.49 11.25 5.62 10.54 5.84 9.88V7.04H2.18C1.43 8.54 1 10.23 1 12C1 13.77 1.43 15.46 2.18 16.96L5.84 14.12Z" fill="#FBBC05"/>
-              <path d="M12 5.36C13.59 5.36 15 5.94 16.11 7L19.36 3.75C17.46 1.98 15 1 12 1C7.7 1 3.99 3.43 2.18 7.04L5.84 9.88C6.71 7.3 9.14 5.36 12 5.36Z" fill="#EA4335"/>
-            </svg>
-            Continue with Google
+            {oauthProvider === 'google' ? (
+              <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            ) : (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.79 15.73 17.57V20.34H19.28C21.36 18.42 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
+                <path d="M12 23C14.97 23 17.46 21.92 19.28 20.34L15.73 17.57C14.73 18.23 13.45 18.64 12 18.64C9.14 18.64 6.71 16.7 5.84 14.12H2.18V16.96C3.99 20.57 7.7 23 12 23Z" fill="#34A853"/>
+                <path d="M5.84 14.12C5.62 13.46 5.49 12.75 5.49 12C5.49 11.25 5.62 10.54 5.84 9.88V7.04H2.18C1.43 8.54 1 10.23 1 12C1 13.77 1.43 15.46 2.18 16.96L5.84 14.12Z" fill="#FBBC05"/>
+                <path d="M12 5.36C13.59 5.36 15 5.94 16.11 7L19.36 3.75C17.46 1.98 15 1 12 1C7.7 1 3.99 3.43 2.18 7.04L5.84 9.88C6.71 7.3 9.14 5.36 12 5.36Z" fill="#EA4335"/>
+              </svg>
+            )}
+            {oauthProvider === 'google' ? 'Redirecting to Google...' : 'Continue with Google'}
           </button>
           <button
             type="button"
-            onClick={() => signInWithOAuth('linkedin_oidc')}
-            className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm"
+            disabled={!!oauthProvider}
+            onClick={async () => {
+              setError(null);
+              setOauthProvider('linkedin');
+              const result = await signInWithOAuth('linkedin_oidc');
+              setOauthProvider(null);
+              if (!result.success) setError(result.error || 'LinkedIn sign in failed. Make sure LinkedIn is configured in the Supabase Dashboard.');
+            }}
+            className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="2" y="2" width="20" height="20" rx="4" fill="#0A66C2"/>
-              <path d="M8 10.5V17H5.5V10.5H8Z" fill="white"/>
-              <path d="M6.75 8.75C6.06 8.75 5.5 8.19 5.5 7.5C5.5 6.81 6.06 6.25 6.75 6.25C7.44 6.25 8 6.81 8 7.5C8 8.19 7.44 8.75 6.75 8.75Z" fill="white"/>
-              <path d="M14.5 17H12V13.5C12 12.67 11.33 12 10.5 12C9.67 12 9 12.67 9 13.5V17H6.5V10.5H9V11.3C9.63 10.62 10.7 10.15 11.75 10.15C13.5 10.15 14.5 11.35 14.5 13V17Z" fill="white"/>
-            </svg>
-            Continue with LinkedIn
+            {oauthProvider === 'linkedin' ? (
+              <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+            ) : (
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="2" width="20" height="20" rx="4" fill="#0A66C2"/>
+                <path d="M8 10.5V17H5.5V10.5H8Z" fill="white"/>
+                <path d="M6.75 8.75C6.06 8.75 5.5 8.19 5.5 7.5C5.5 6.81 6.06 6.25 6.75 6.25C7.44 6.25 8 6.81 8 7.5C8 8.19 7.44 8.75 6.75 8.75Z" fill="white"/>
+                <path d="M14.5 17H12V13.5C12 12.67 11.33 12 10.5 12C9.67 12 9 12.67 9 13.5V17H6.5V10.5H9V11.3C9.63 10.62 10.7 10.15 11.75 10.15C13.5 10.15 14.5 11.35 14.5 13V17Z" fill="white"/>
+              </svg>
+            )}
+            {oauthProvider === 'linkedin' ? 'Redirecting to LinkedIn...' : 'Continue with LinkedIn'}
           </button>
           <div className="relative flex items-center gap-3 py-1">
             <div className="flex-1 h-px bg-slate-200"></div>
