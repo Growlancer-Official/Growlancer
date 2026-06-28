@@ -1,4 +1,5 @@
 ﻿import { Link } from 'react-router-dom';
+import { NewsletterForm } from './NewsletterForm';
 
 type SiteFooterProps = {
   onOpenSignup?: (role?: 'freelancer' | 'client') => void;
@@ -8,7 +9,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
   return (
     <footer className="border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4">
             <Link to="/" className="flex items-center gap-3">
               <img src="/Growlancer Logo (2).png" alt="Growlancer" className="h-10 w-10 rounded-2xl" />
@@ -58,6 +59,11 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <li><Link to="/escrow-policy" className="text-slate-700 hover:text-slate-900 transition-colors">Escrow policy</Link></li>
               <li><Link to="/cookies" className="text-slate-700 hover:text-slate-900 transition-colors">Cookies</Link></li>
             </ul>
+          </div>
+
+          {/* Newsletter */}
+          <div className="lg:col-span-4 sm:col-span-2">
+            <NewsletterForm />
           </div>
         </div>
 
