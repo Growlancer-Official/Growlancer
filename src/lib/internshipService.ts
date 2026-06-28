@@ -58,7 +58,6 @@ export interface InternshipRole {
   tools: string[];
   outcomes: string[];
   learningOpportunities: string[];
-  assessmentTask: string;
 }
 
 export const INTERNSHIP_ROLES: InternshipRole[] = [
@@ -113,7 +112,6 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Startup product development cycle',
       'Code review and collaborative development workflows',
     ],
-    assessmentTask: 'Build a reusable FreelancerCard component (name, avatar, hourly rate, skills, rating stars, availability) with loading/empty states, TypeScript types, accessibility, responsive design, and 2 unit tests.',
   },
   {
     id: 'backend-supabase',
@@ -170,7 +168,6 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Payment system integration (PayPal)',
       'Real-time data synchronization',
     ],
-    assessmentTask: 'Create a Supabase Edge Function handling the "invite freelancer to project" flow with validation, duplicate checking, error handling, RLS policy recommendations, and 2 test cases.',
   },
   {
     id: 'qa-testing',
@@ -227,7 +224,6 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Bug tracking and QA best practices',
       'Startup launch preparation processes',
     ],
-    assessmentTask: 'Given a sample React payment form component — write a comprehensive test plan, 4 unit tests using Vitest, bug report for 3 identified issues, and a regression test strategy.',
   },
   {
     id: 'ui-ux-design',
@@ -283,7 +279,6 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Pre-launch product design processes',
       'AI-powered product UX patterns',
     ],
-    assessmentTask: 'Design a "Project Invitation" flow — wireframes, high-fidelity mockup of invite card, design tokens, responsive considerations, and interaction notes.',
   },
 ];
 

@@ -235,16 +235,6 @@ function RoleCard({
             </div>
           </div>
 
-          {/* Assessment Task */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-            <div className="flex items-start gap-3">
-              <FileText className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-              <div>
-                <h4 className="font-bold text-slate-900 text-sm mb-1">Assessment Task</h4>
-                <p className="text-sm text-slate-600 leading-relaxed">{role.assessmentTask}</p>
-              </div>
-            </div>
-          </div>
         </div>
       )}
     </div>
@@ -289,8 +279,8 @@ function ApplicationForm({
     e.preventDefault();
     setError(null);
 
-    if (!fullName.trim() || !email.trim() || !coverLetter.trim()) {
-      setError('Please fill in all required fields (Name, Email, and Cover Letter).');
+    if (!fullName.trim() || !email.trim() || !portfolioUrl.trim() || !coverLetter.trim()) {
+      setError('Please fill in all required fields: Name, Email, Portfolio/GitHub link, and Cover Letter.');
       return;
     }
 
@@ -385,8 +375,7 @@ function ApplicationForm({
                 <h5 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">What happens next?</h5>
                 <ol className="space-y-2 text-sm text-slate-600">
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Application review (3–5 days)</li>
-                  <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Portfolio/GitHub assessment</li>
-                  <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Technical interview invitation</li>
+                  <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Interview invitation (single round)</li>
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Onboarding &amp; start</li>
                 </ol>
               </div>
@@ -543,12 +532,15 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Portfolio URL (optional)</label>
+                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                      Portfolio / GitHub Link <span className="text-red-400">*</span>
+                    </label>
                     <input
                       type="url"
+                      required
                       value={portfolioUrl}
                       onChange={(e) => setPortfolioUrl(e.target.value)}
-                      placeholder="https://myportfolio.com"
+                      placeholder="https://github.com/username or https://myportfolio.com"
                       className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm transition-all"
                     />
                   </div>
@@ -748,7 +740,7 @@ const FAQS = [
   },
   {
     q: 'What happens after I submit my application?',
-    a: 'We review applications within 5–7 business days. If shortlisted, you\'ll receive a portfolio/GitHub review request, a technical assessment task (2–4 hours), and then a virtual interview.',
+    a: 'We review applications within 5-7 business days. If shortlisted, you\'ll receive an interview invitation. The interview is a single round with the founder - no technical assessment or test required.',
   },
   {
     q: 'Do I need prior professional experience?',
@@ -947,12 +939,11 @@ export function InternshipsPage() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 sm:p-10 text-white">
           <h2 className="font-display text-2xl font-bold mb-8 text-center">Application Process</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               { step: '1', title: 'Submit Application', desc: 'Fill out the form with your background, portfolio, and motivation.' },
-              { step: '2', title: 'Technical Assessment', desc: 'Complete a 2–4 hour task relevant to your desired role.' },
-              { step: '3', title: 'Virtual Interview', desc: 'Chat with the founder about your work, approach, and fit.' },
-              { step: '4', title: 'Onboarding & Build', desc: 'Get set up, pick your first task, and start contributing.' },
+              { step: '2', title: 'Virtual Interview', desc: 'Chat with the founder about your work, approach, and fit. Single round, no technical assessment.' },
+              { step: '3', title: 'Onboarding & Start', desc: 'Get set up, pick your first task, and start contributing.' },
             ].map((item) => (
               <div key={item.step} className="text-center">
                 <div className="h-12 w-12 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mx-auto mb-3 text-emerald-400 font-bold text-lg">

@@ -118,9 +118,8 @@ function buildReceivedEmailHtml(data: ApplicationData): string {
       <h3 style="font-size: 14px; color: #166534; margin: 0 0 12px;">📋 What happens next?</h3>
       <table style="font-size: 14px; color: #166534;">
         <tr><td style="padding: 4px 12px 4px 0;">1.</td><td>Application review (within 24 hours)</td></tr>
-        <tr><td style="padding: 4px 12px 4px 0;">2.</td><td>Portfolio/GitHub assessment</td></tr>
-        <tr><td style="padding: 4px 12px 4px 0;">3.</td><td>Technical interview invitation</td></tr>
-        <tr><td style="padding: 4px 12px 4px 0;">4.</td><td>Onboarding & start</td></tr>
+        <tr><td style="padding: 4px 12px 4px 0;">2.</td><td>Interview invitation (single round)</td></tr>
+        <tr><td style="padding: 4px 12px 4px 0;">3.</td><td>Onboarding &amp; start</td></tr>
       </table>
     </div>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
@@ -212,12 +211,11 @@ function buildShortlistedEmailHtml(name: string, roleName: string): string {
     <div style="margin: 28px 0; padding: 20px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;">
       <h3 style="font-size: 14px; color: #92400e; margin: 0 0 8px;">⭐ Next Step</h3>
       <p style="font-size: 14px; color: #92400e; margin: 0;">
-        Our team will reach out to you within 48 hours to schedule a technical assessment.
+        Our team will reach out to you within 48 hours to schedule an interview.
         Please keep an eye on your inbox (and spam folder).
       </p>
     </div>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-      In the meantime, you can prepare by reviewing the assessment task mentioned in the job description.
       Questions? Email us at <a href="mailto:${ADMIN_EMAIL}" style="color: #059669;">${ADMIN_EMAIL}</a>.
     </p>`
   return baseEmailHtml('Congratulations — You\'re Shortlisted! 🎉', body)
@@ -241,7 +239,6 @@ function buildInterviewEmailHtml(name: string, roleName: string): string {
       <strong>Tips for success:</strong>
     </p>
     <ul style="font-size: 14px; color: #64748b; line-height: 1.7;">
-      <li>Review the assessment task you completed</li>
       <li>Prepare questions about the role and Growlancer</li>
       <li>Have a stable internet connection ready</li>
     </ul>`
