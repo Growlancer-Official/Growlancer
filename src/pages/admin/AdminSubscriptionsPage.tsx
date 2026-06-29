@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Zap, Crown, Loader2, RefreshCw, Search, Ban, Mail, RotateCcw, Clock
+  Zap, Crown, Loader2, RefreshCw, Search, Ban, Mail, RotateCcw, Clock, Trash2
 } from 'lucide-react';
-import { adminQuery, adminUpdate } from '../../lib/adminDataProxy';
+import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 
 interface SubscriptionPlan {
@@ -98,6 +98,16 @@ export function AdminSubscriptionsPage() {
         cancel_at_period_end: false,
         updated_at: new Date().toISOString(),
       });
+      await fetchData();
+    } catch (err) { console.error(err); }
+    finally { setActionLoading(null); }
+  };
+
+  const handleDeleteSubscription = async (subId: string, userName: string) => {
+    if (!confirm(`🗑️ Delete subscription record for "${userName}"? This cannot be undone!`)) return;
+    setActionLoading(`delete-${subId}`);
+    try {
+      await adminDelete('subscriptions', subId);
       await fetchData();
     } catch (err) { console.error(err); }
     finally { setActionLoading(null); }
@@ -240,6 +250,11 @@ export function AdminSubscriptionsPage() {
                             <Clock className="w-3 h-3" /> Awaiting
                           </span>
                         )}
+                        <button onClick={() => handleDeleteSubscription(sub.id, sub.profile?.name || 'User')}
+                          disabled={actionLoading === `delete-${sub.id}`}
+                          className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Delete Subscription">
+                          {actionLoading === `delete-${sub.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
                     </td>
                   </tr>

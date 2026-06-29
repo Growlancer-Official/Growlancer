@@ -30,6 +30,7 @@ import {
   Upload,
   History,
   CheckCheck,
+  Trash2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -149,6 +150,25 @@ export function AdminInternshipsPage() {
       .subscribe();
     return () => { channel.unsubscribe(); };
   }, [fetchApplications]);
+
+  const handleDeleteApplication = async (id: string, name: string) => {
+    if (!confirm(`🗑️ Delete application from "${name}"? This cannot be undone!`)) return;
+    setActionLoading(`delete-${id}`);
+    try {
+      await supabase.functions.invoke('internship-applications', {
+        method: 'DELETE',
+        body: { application_id: id },
+      }).catch(async () => {
+        // Fallback: delete via edge function admin-data
+        await supabase.functions.invoke('admin-data', {
+          method: 'DELETE',
+          body: { table: 'internship_applications', id },
+        });
+      });
+      await fetchApplications();
+    } catch (err) { console.error('Delete error:', err); }
+    finally { setActionLoading(null); }
+  };
 
   const handleStatusChange = async (id: string, status: ApplicationStatus) => {
     setActionLoading(`status-${id}`);
@@ -492,6 +512,12 @@ export function AdminInternshipsPage() {
                       disabled={actionLoading === `status-${app.id}` || app.status === 'rejected'}
                       className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-30 transition-colors">
                       Reject
+                    </button>
+                    <button onClick={() => handleDeleteApplication(app.id, app.full_name)}
+                      disabled={actionLoading === `delete-${app.id}`}
+                      className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-30 transition-colors flex items-center gap-1">
+                      {actionLoading === `delete-${app.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
+                      Delete
                     </button>
                   </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Loader2, RefreshCw, Search, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
-import { adminQuery, adminUpdate, adminInsert } from '../../lib/adminDataProxy';
+import { Loader2, RefreshCw, Search, CheckCircle, XCircle, RotateCcw, Trash2 } from 'lucide-react';
+import { adminQuery, adminUpdate, adminInsert, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 
 interface Transaction {
@@ -75,6 +75,16 @@ export function AdminPaymentsPage() {
     channelRef.current = channel;
     return () => { channel.unsubscribe(); };
   }, [fetchTransactions]);
+
+  const handleDeleteTransaction = async (txId: string) => {
+    if (!confirm(`🗑️ Delete this transaction? This cannot be undone!`)) return;
+    setActionLoading(`delete-${txId}`);
+    try {
+      await adminDelete('transactions', txId);
+      await fetchTransactions();
+    } catch (err) { console.error(err); }
+    finally { setActionLoading(null); }
+  };
 
   const handleUpdateStatus = async (txId: string, status: string) => {
     if (!confirm(`Mark transaction as "${status}"?`)) return;
@@ -195,6 +205,11 @@ export function AdminPaymentsPage() {
                             {actionLoading === `${tx.id}-failed` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
                           </button>
                         )}
+                        <button onClick={() => handleDeleteTransaction(tx.id)}
+                          disabled={actionLoading === `delete-${tx.id}`}
+                          className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Delete Transaction">
+                          {actionLoading === `delete-${tx.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
                         {tx.status === 'completed' && tx.type === 'payment' && (
                           <button onClick={async () => {
                             if (!confirm(`Create a refund transaction for ${formatCurrency(tx.amount)}?`)) return;

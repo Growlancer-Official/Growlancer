@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Eye, Loader2, RefreshCw, Search, DollarSign,
-  CheckCircle, XCircle, Lock, Unlock
+  CheckCircle, XCircle, Lock, Unlock, Trash2
 } from 'lucide-react';
-import { adminQuery, adminUpdate } from '../../lib/adminDataProxy';
+import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 
 interface AdminContract {
@@ -84,6 +84,16 @@ export function AdminContractsPage() {
     setActionLoading(`${contractId}-${status}`);
     try {
       await adminUpdate('contracts', contractId, { status, updated_at: new Date().toISOString() });
+      await fetchContracts();
+    } catch (err) { console.error(err); }
+    finally { setActionLoading(null); }
+  };
+
+  const handleDeleteContract = async (contractId: string) => {
+    if (!confirm(`🗑️ Delete this contract? This cannot be undone!`)) return;
+    setActionLoading(`delete-${contractId}`);
+    try {
+      await adminDelete('contracts', contractId);
       await fetchContracts();
     } catch (err) { console.error(err); }
     finally { setActionLoading(null); }
@@ -215,6 +225,11 @@ export function AdminContractsPage() {
                             {actionLoading === `${c.id}-cancelled` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
                           </button>
                         )}
+                        <button onClick={() => handleDeleteContract(c.id)}
+                          disabled={actionLoading === `delete-${c.id}`}
+                          className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Delete Contract">
+                          {actionLoading === `delete-${c.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                        </button>
                       </div>
                     </td>
                   </tr>

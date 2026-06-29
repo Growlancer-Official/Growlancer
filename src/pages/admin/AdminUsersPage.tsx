@@ -19,8 +19,9 @@ import {
   MessageSquare,
   X,
   ChevronDown,
+  Trash2,
 } from 'lucide-react';
-import { adminQuery, adminCounts, adminUpdate } from '../../lib/adminDataProxy';
+import { adminQuery, adminCounts, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import type { UserRole } from '../../types/auth';
 
@@ -57,7 +58,7 @@ export function AdminUsersPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'freelancer' | 'client' | 'admin'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'pending' | 'pro'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'pending' | 'pro' | 'suspended'>('all');
   const [statsData, setStatsData] = useState<{ total: number; freelancers: number; clients: number; admins: number; pro: number; active: number } | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -103,6 +104,11 @@ export function AdminUsersPage() {
       if (statusFilter === 'active') opts.filters = { ...opts.filters, onboarding_completed: 'true' };
       if (statusFilter === 'pending') opts.filters = { ...opts.filters, onboarding_completed: 'false' };
       if (statusFilter === 'pro') opts.filters = { ...opts.filters, is_pro: 'true' };
+      
+      // Show suspended users when 'suspended' filter is active
+      if (statusFilter === 'suspended') {
+        delete opts.isNull;
+      }
 
       const { data, error } = await adminQuery(opts);
       if (error) throw error;
@@ -200,6 +206,16 @@ export function AdminUsersPage() {
     setOpenDropdown(null);
   };
 
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`🗑️ PERMANENTLY DELETE "${userName}"? This will remove their profile and all associated data. This cannot be undone!`)) return;
+    setActionLoading(`delete-${userId}`);
+    try {
+      await adminDelete('profiles', userId);
+      await fetchUsers();
+    } catch (err) { console.error(err); }
+    finally { setActionLoading(null); setOpenDropdown(null); }
+  };
+
   const handleSendEmail = (email: string) => {
     window.open(`mailto:${email}`, '_blank');
     setOpenDropdown(null);
@@ -259,6 +275,7 @@ export function AdminUsersPage() {
             <option value="active">Active</option>
             <option value="pending">Pending</option>
             <option value="pro">Pro</option>
+            <option value="suspended">Suspended</option>
           </select>
         </div>
         <button onClick={fetchUsers}
@@ -371,6 +388,18 @@ export function AdminUsersPage() {
                                 </button>
                               )}
                               {/* Divider */}
+                              <div className="my-1 border-t border-slate-700/50" />
+                              {/* Hard Delete */}
+                              <button onClick={() => handleDeleteUser(user.id, user.name)}
+                                disabled={actionLoading === `delete-${user.id}`}
+                                className="w-full flex items-center gap-3 px-4 py-2.5 text-xs text-red-400 hover:bg-red-500/10 transition-colors">
+                                {actionLoading === `delete-${user.id}` ? (
+                                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                )}
+                                Delete User Permanently
+                              </button>
                               <div className="my-1 border-t border-slate-700/50" />
                               {user.suspended_at ? (
                                 <button onClick={() => handleReactivateUser(user.id, user.name)}

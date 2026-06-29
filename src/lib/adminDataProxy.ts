@@ -81,6 +81,19 @@ export async function adminUpdate(table: string, id: string, data: Record<string
 }
 
 /**
+ * Delete a record via the admin-data edge function.
+ */
+export async function adminDelete(table: string, id: string, idField = 'id'): Promise<any> {
+  const { data: result, error } = await supabase.functions.invoke(FN, {
+    method: 'DELETE',
+    body: { table, id, id_field: idField },
+  });
+
+  if (error) throw error;
+  return (result as any)?.data;
+}
+
+/**
  * Insert a record via the admin-data edge function.
  */
 export async function adminInsert(table: string, data: Record<string, any>): Promise<any> {

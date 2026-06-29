@@ -2,10 +2,10 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Award, Search, Loader2, RefreshCw, User, Mail, Shield, AlertTriangle,
   CheckCircle2, XCircle, ExternalLink, FileText, Calendar, Clock, Filter,
-  Plus, X, ChevronDown, ChevronUp, Ban, Crown, Copy, CheckCheck,
+  Plus, X, ChevronDown, ChevronUp, Ban, Crown, Copy, CheckCheck, Trash2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { adminQuery } from '../../lib/adminDataProxy';
+import { adminQuery, adminDelete } from '../../lib/adminDataProxy';
 import {
   issueCertificate, revokeCertificate, getAllCertificates,
   type Certificate, CERT_LEVEL_STYLES, getCertificateTitle,
@@ -232,6 +232,16 @@ export function AdminCertificatesPage() {
     return () => { channel.unsubscribe(); };
   }, [fetchCerts]);
 
+  const handleDeleteCert = async (certId: string, skill: string, userName: string) => {
+    if (!confirm(`🗑️ PERMANENTLY DELETE "${skill}" certificate for ${userName}? This cannot be undone!`)) return;
+    setActionLoading(`delete-${certId}`);
+    try {
+      await adminDelete('skill_certifications', certId);
+      await fetchCerts();
+    } catch { /* ignore */ }
+    finally { setActionLoading(null); }
+  };
+
   const handleRevoke = async (certId: string, skill: string, userName: string) => {
     const reason = prompt(`Reason for revoking "${skill}" certificate for ${userName}:`);
     if (!reason) return;
@@ -378,6 +388,11 @@ export function AdminCertificatesPage() {
                         {actionLoading === `revoke-${cert.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />}
                       </button>
                     )}
+                    <button onClick={() => handleDeleteCert(cert.id, cert.skill, cert.recipient_name)}
+                      disabled={actionLoading === `delete-${cert.id}`}
+                      className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Delete Certificate">
+                      {actionLoading === `delete-${cert.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
                 {cert.revoked_reason && (

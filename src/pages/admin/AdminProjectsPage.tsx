@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Eye, Loader2, RefreshCw, Search, CheckCircle, XCircle,
-  ArrowRight
+  ArrowRight, Trash2
 } from 'lucide-react';
-import { adminQuery, adminUpdate } from '../../lib/adminDataProxy';
+import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 
 interface AdminProject {
@@ -98,6 +98,16 @@ export function AdminProjectsPage() {
       await fetchProjects();
     } catch (err) { console.error(err); }
     finally { setActionLoading(null); setOpenDropdown(null); }
+  };
+
+  const handleDeleteProject = async (projectId: string, title: string) => {
+    if (!confirm(`🗑️ Delete project "${title}"? This cannot be undone!`)) return;
+    setActionLoading(`delete-${projectId}`);
+    try {
+      await adminDelete('projects', projectId);
+      await fetchProjects();
+    } catch (err) { console.error(err); }
+    finally { setActionLoading(null); }
   };
 
   const handleViewProject = (projectId: string) => {
@@ -230,6 +240,13 @@ export function AdminProjectsPage() {
                             disabled={actionLoading === `${project.id}-completed`}
                             className="p-1.5 hover:bg-emerald-500/10 rounded-lg text-emerald-400 transition-colors" title="Mark Completed">
                             {actionLoading === `${project.id}-completed` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                          </button>
+                        )}
+                        {project.status !== 'completed' && (
+                          <button onClick={() => handleDeleteProject(project.id, project.title)}
+                            disabled={actionLoading === `delete-${project.id}`}
+                            className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Delete Project">
+                            {actionLoading === `delete-${project.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                           </button>
                         )}
                       </div>

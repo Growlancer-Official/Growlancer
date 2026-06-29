@@ -298,6 +298,35 @@ serve(async (req) => {
       })
     }
 
+    // ─── DELETE: delete a record ────────────────────────────────────────
+    if (req.method === 'DELETE') {
+      const { table, id, id_field } = body
+
+      if (!table || !id) {
+        return new Response(JSON.stringify({ error: 'table and id are required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      const idCol = id_field || 'id'
+      const { data, error } = await supabaseClient
+        .from(table)
+        .delete()
+        .eq(idCol, id)
+        .select()
+        .single()
+
+      if (error) {
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+
+      return new Response(JSON.stringify({ success: true, data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
