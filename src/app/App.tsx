@@ -249,6 +249,9 @@ const AdminReportsPage = lazy(() =>
 const AdminInternshipsPage = lazy(() =>
   import('@pages/admin/AdminInternshipsPage').then(m => ({ default: m.AdminInternshipsPage }))
 );
+const AdminCertificatesPage = lazy(() =>
+  import('@pages/admin/AdminCertificatesPage').then(m => ({ default: m.AdminCertificatesPage }))
+);
 const ClientReferralsPage = lazy(() =>
   import('@pages/ClientReferralsPage').then(m => ({ default: m.ClientReferralsPage }))
 );
@@ -276,6 +279,11 @@ const MagicLinkPage = lazy(() =>
 );
 const EmailConfirmPage = lazy(() =>
   import('@pages/auth/EmailConfirmPage').then(m => ({ default: m.EmailConfirmPage }))
+);
+
+// Public Certificate Verification
+const CertificateVerifyPage = lazy(() =>
+  import('@pages/CertificateVerifyPage').then(m => ({ default: m.CertificateVerifyPage }))
 );
 
 // System Pages
@@ -332,6 +340,10 @@ function App() {
                 <Route path="contests" element={<ContestsPage />} />
                 <Route path="contests/:contestId" element={<ContestDetailPage />} />
               </Route>
+
+              {/* Public Certificate Verification Route */}
+              <Route path="verify-certificate/:code" element={<CertificateVerifyPage />} />
+              <Route path="verify-certificate" element={<CertificateVerifyPage />} />
 
               {/* Auth Email Action Routes */}
               <Route path="auth/callback" element={<AuthCallbackPage />} />
@@ -453,6 +465,7 @@ function App() {
                 <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
                 <Route path="reports" element={<AdminReportsPage />} />
                 <Route path="internships" element={<AdminInternshipsPage />} />
+                <Route path="certificates" element={<AdminCertificatesPage />} />
               </Route>
 
               {/* 404 Fallback */}

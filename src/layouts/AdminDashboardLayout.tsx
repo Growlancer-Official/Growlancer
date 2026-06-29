@@ -13,6 +13,7 @@ import {
   ShieldCheck,
   ExternalLink,
   Search,
+  Award,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -30,6 +31,7 @@ const sidebarLinks = [
   { id: 'subscriptions', path: '/admin/subscriptions', icon: Zap, label: 'Subscriptions' },
   { id: 'reports', path: '/admin/reports', icon: BarChart3, label: 'Reports' },
   { id: 'internships', path: '/admin/internships', icon: Users, label: 'Internships' },
+  { id: 'certificates', path: '/admin/certificates', icon: Award, label: 'Certificates' },
 ];
 
 export function AdminDashboardLayout() {

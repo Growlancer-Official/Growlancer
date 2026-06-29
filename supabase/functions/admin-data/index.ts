@@ -79,6 +79,79 @@ serve(async (req) => {
       })
     }
 
+    // ─── POST: issue_certificate ─────────────────────────────────────────
+    if (req.method === 'POST' && action === 'issue_certificate') {
+      const { user_id, skill, level, recipient_name, recipient_email, certificate_type, metadata } = body;
+
+      if (!user_id || !skill || !level || !recipient_name) {
+        return new Response(JSON.stringify({ success: false, error: 'user_id, skill, level, and recipient_name are required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Generate verification code
+      const { data: codeData } = await supabaseClient.rpc('generate_certificate_code');
+      const verificationCode = codeData || ('GRW-CERT-' + Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join(''));
+
+      const { data, error } = await supabaseClient
+        .from('skill_certifications')
+        .insert({
+          user_id,
+          skill,
+          level,
+          recipient_name,
+          recipient_email,
+          certificate_type: certificate_type || 'platform',
+          verification_code: verificationCode,
+          issued_at: new Date().toISOString(),
+          status: 'active',
+          metadata: metadata || {},
+          passed_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        return new Response(JSON.stringify({ success: false, error: error.message }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ success: true, certificate: data }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // ─── POST: verify_certificate ────────────────────────────────────────
+    if (req.method === 'POST' && action === 'verify_certificate') {
+      const { verification_code } = body;
+
+      if (!verification_code) {
+        return new Response(JSON.stringify({ valid: false, error: 'Verification code is required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { data, error } = await supabaseClient
+        .from('skill_certifications')
+        .select('*')
+        .eq('verification_code', verification_code.toUpperCase())
+        .single();
+
+      if (error || !data) {
+        return new Response(JSON.stringify({ valid: false, error: 'Certificate not found' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({ 
+        valid: data.status === 'active',
+        certificate: data,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // ─── POST: counts ──────────────────────────────────────────────────
     if (req.method === 'POST' && action === 'counts') {
       const tables: string[] = body.tables || []

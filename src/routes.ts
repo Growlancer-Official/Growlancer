@@ -97,7 +97,12 @@ export const ROUTES = {
     DISPUTES: '/admin/disputes',
     SUBSCRIPTIONS: '/admin/subscriptions',
     REPORTS: '/admin/reports',
+    CERTIFICATES: '/admin/certificates',
   },
+  
+  // Certificate Verification
+  VERIFY_CERTIFICATE: '/verify-certificate',
+  VERIFY_CERTIFICATE_CODE: '/verify-certificate/:code',
   
   // Onboarding
   ONBOARDING: {
