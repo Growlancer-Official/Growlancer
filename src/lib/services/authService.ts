@@ -59,11 +59,14 @@ export function createReferralCode(prefix: string): string {
  */
 export async function fetchUserProfile(userId: string): Promise<AuthUser | null> {
   try {
+    // Use limit(1) instead of .single() to avoid 'multiple rows returned' errors
+    // in case of unexpected duplicates (e.g., from failed cleanup or race conditions)
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
-      .single();
+      .limit(1)
+      .maybeSingle();
 
     if (error || !data) {
       return null;
@@ -126,6 +129,35 @@ export async function createUserProfile(
 
   if (rpcError) {
     console.warn('[Auth] create_user_profile RPC failed (non-fatal):', rpcError?.message || rpcError);
+    
+    // 🆕 Check if the email already exists (duplicate email with different auth ID)
+    // This can happen if user signs up again with same email after previous account was deleted
+    const errMsg = rpcError?.message || '';
+    const isDupEmail = errMsg.includes('profiles_email_unique') || 
+                       errMsg.includes('duplicate key value') ||
+                       String(rpcError?.code) === '23505';
+    if (isDupEmail) {
+      try {
+        // Try updating the existing profile by email instead
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update({
+            id: userId,
+            name: name,
+            role: safeRole,
+            referral_code: code,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('email', email);
+        
+        if (!updateError) {
+          console.log('[Auth] Updated existing profile by email for:', email);
+          return fetchUserProfile(userId);
+        }
+      } catch {
+        // fall through to direct insert fallback
+      }
+    }
     
     // 🆕 Fallback: try direct insert (works when email is confirmed / session is valid)
     try {
