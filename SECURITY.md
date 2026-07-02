@@ -13,7 +13,7 @@ Please do NOT create a public Issue.
 Report security vulnerabilities privately.
 
 Email:
-security@growlancer.com
+security.growlancer@gmail.com
 
 Include:
 
