@@ -1,94 +1,241 @@
-# Growlancer
+<p align="center">
+  <img src="assets/banner.png" alt="Growlancer Banner" width="100%">
+</p>
 
-AI-powered freelancing marketplace platform.
+<h1 align="center">Growlancer</h1>
 
-## Tech Stack
+<p align="center">
+  <strong>AI-Powered Global Freelancing Marketplace</strong>
+</p>
 
-- **Frontend**: React 18, TypeScript, Vite, TailwindCSS
-- **Backend**: Supabase (Auth, Database, Realtime, Storage)
-- **State Management**: Zustand
-- **Routing**: React Router DOM
-- **Payments**: PayPal (client funding / freelancer payouts—verify Edge Functions + env in each environment)
+<p align="center">
+Connecting Businesses with Skilled Freelancers through Intelligent Matching, Secure Payments and Real-Time Collaboration.
+</p>
 
-## Project Structure
+<p align="center">
 
-```
-src/
-├── app/           # Application root and routing
-├── components/    # Reusable UI components
-├── features/      # Feature-based modules
-├── hooks/         # Custom React hooks
-├── layouts/       # Page layouts
-├── lib/           # Utilities and configurations
-├── pages/         # Route pages
-├── services/      # API and external services
-├── styles/        # Global styles and Tailwind
-└── types/         # TypeScript type definitions
-```
+![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss)
+![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel)
+![Razorpay](https://img.shields.io/badge/Razorpay-0C2451?style=for-the-badge)
+![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal)
 
-## Getting Started
-
-1. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-2. Configure environment variables:
-   ```bash
-   cp .env.example .env
-   ```
-   Update `.env` with your Supabase credentials.
-
-3. Start development server:
-   ```bash
-   npm run dev
-   ```
-
-## Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run build:check` - Typecheck then production build (recommended before release)
-- `npm run preview` - Preview production build
-- `npm run typecheck` - TypeScript only
-- `npm run test` - Vitest + coverage
-- `npm run lint` - Run ESLint
-- `npm run lint:fix` - Fix ESLint issues
-- `npm run format` - Format code with Prettier
-
-## Realtime (Supabase)
-
-The UI subscribes to `postgres_changes` on workflow tables (messages, contracts, invites, etc.). **Those tables must be part of the `supabase_realtime` publication** on your Supabase project, or browsers will never receive live events.
-
-- Run migrations (includes `*_enable_realtime_workflow_tables.sql`) via `supabase db push` or paste the SQL in the Supabase SQL editor.
-- Workflow ↔ table map for engineers: `src/lib/realtimeWorkflow.ts`
-
-## Product status (pre-launch)
-
-The app is a **working React + Supabase codebase** with public marketing pages, auth, freelancer and client dashboard areas, contracts/workspace/payments surfaces, PayPal-related flows, referrals, subscriptions UI, and CI (lint, typecheck, test, build, audit). Treat marketing copy and aggregate numbers as **honest for your stage** (see About page + `public/platform-metrics.json` for non-user metrics you control).
-
-**Next priorities for a clean launch** (typical order):
-
-1. **RLS & data** — Review every table’s policies for anon vs authenticated; add minimal `platform_metrics` or Edge aggregation only when you are ready to expose numbers publicly.
-2. **Core path QA** — Run end-to-end checks on: project → proposal → contract → workspace → escrow/PayPal happy paths (and failure/cancel).
-3. **Observability** — Set `VITE_SENTRY_DSN` in production; confirm Supabase logs/alerts for Edge Functions (e.g. PayPal).
-4. **Legal & trust** — Keep Terms/Privacy/Cookies aligned with what you actually ship; bump dates only when content changes (see legal tooling in repo).
-
-## Platform workflow (target)
-
-1. Client posts project
-2. AI matches freelancers
-3. Client invites freelancers
-4. Freelancer accepts or bids
-5. Client hires
-6. Contract created
-7. Escrow funded (PayPal)
-8. Work begins
-9. Work delivered
-10. Client approves
-11. Payment released
-12. Review
+</p>
 
 ---
 
-**Note**: Growlancer is **pre-launch**; depth of automation and payment coverage should match what is deployed and tested in your Supabase project—iterate in small vertical slices on the workflow above. Thank You
+# 🚀 About
+
+Growlancer is an AI-powered global freelancing marketplace designed to simplify hiring, empower freelancers, and create a transparent ecosystem for remote work.
+
+Our goal is to build a modern freelancing platform where businesses discover the right professionals through intelligent matching while freelancers gain access to meaningful opportunities and secure payments.
+
+---
+
+# ✨ Features
+
+- 🤖 AI-Powered Talent Matching
+- 💼 Client Dashboard
+- 👨‍💻 Freelancer Dashboard
+- 📂 Project Management
+- 📄 Proposal System
+- 💬 Real-Time Messaging
+- 🔔 Smart Notifications
+- 💳 Razorpay (India)
+- 🌍 PayPal (International)
+- 🔒 Secure Authentication
+- 📊 Analytics Dashboard
+- ⭐ Reviews & Ratings
+- 🎯 Skill-Based Recommendations
+- 📱 Fully Responsive Design
+
+---
+
+# 🛠 Tech Stack
+
+## Frontend
+
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+
+## Backend
+
+- Supabase
+
+## Database
+
+- PostgreSQL
+
+## Authentication
+
+- Supabase Auth
+
+## Payments
+
+- Razorpay
+- PayPal
+
+## Deployment
+
+- Vercel
+
+---
+
+# 🌐 Live Website
+
+https://growlancer.vercel.app
+
+---
+
+# 📁 Project Structure
+
+```text
+src/
+ ├── assets/
+ ├── components/
+ ├── context/
+ ├── hooks/
+ ├── layouts/
+ ├── pages/
+ ├── services/
+ ├── types/
+ ├── utils/
+
+supabase/
+ ├── functions/
+ ├── migrations/
+
+public/
+```
+
+---
+
+# 🚀 Local Development
+
+Clone Repository
+
+```bash
+git clone https://github.com/Growlancer-Official/Growlancer.git
+```
+
+Install Dependencies
+
+```bash
+npm install
+```
+
+Run Development Server
+
+```bash
+npm run dev
+```
+
+Build Production
+
+```bash
+npm run build
+```
+
+Preview Production Build
+
+```bash
+npm run preview
+```
+
+---
+
+# 🖥 Screenshots
+
+Project screenshots will be added as development progresses.
+
+---
+
+# 🗺 Roadmap
+
+## Phase 1
+
+- Authentication
+- Client Dashboard
+- Freelancer Dashboard
+- Project Feed
+- Proposal System
+
+## Phase 2
+
+- AI Matching
+- Messaging
+- Notifications
+- Contracts
+- Escrow Workflow
+
+## Phase 3
+
+- Mobile Application
+- AI Career Assistant
+- Team Collaboration
+- Enterprise Hiring
+- Advanced Analytics
+
+---
+
+# 🤝 Contributing
+
+We welcome contributions from developers, designers, QA testers, and open-source contributors.
+
+Please open an Issue before creating a Pull Request.
+
+---
+
+# 🐞 Issues
+
+Found a bug or have a feature request?
+
+Please create a GitHub Issue with complete details.
+
+---
+
+# 📄 License
+
+This repository is licensed under the MIT License.
+
+---
+
+# 👨‍💼 Founder
+
+**Mohammed Miran Khan**
+
+Founder & CEO — Growlancer
+
+---
+
+# 📬 Contact
+
+🌐 Website
+
+https://growlancer.vercel.app
+
+📧 Email
+
+growlancer.own@gmail.com
+
+💼 LinkedIn
+
+https://www.linkedin.com/company/growlancercom
+
+---
+
+<p align="center">
+
+<b>Building Talent. Shaping Futures.</b>
+
+</p>
+
+<p align="center">
+Made with ❤️ by Growlancer
+</p>
