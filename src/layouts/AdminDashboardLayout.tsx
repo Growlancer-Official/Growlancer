@@ -30,6 +30,7 @@ const sidebarLinks = [
   { id: 'reports', path: '/admin/reports', icon: BarChart3, label: 'Reports' },
   { id: 'internships', path: '/admin/internships', icon: Users, label: 'Internships' },
   { id: 'certificates', path: '/admin/certificates', icon: Award, label: 'Certificates' },
+  { id: 'identity-verification', path: '/admin/identity-verification', icon: ShieldCheck, label: 'Verification' },
 ];
 
 export function AdminDashboardLayout() {

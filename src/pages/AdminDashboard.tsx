@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Award, Ban, Briefcase,
   CheckCircle2, DollarSign, Eye, Handshake, Loader2,
-  RefreshCw, Scale, Shield, ShieldAlert, Star, Users, XCircle, Zap, Mail,
+  RefreshCw, Scale, Shield, ShieldAlert, ShieldCheck, Star, Users, XCircle, Zap, Mail,
   TrendingUp
 } from 'lucide-react';
 import { adminQuery, adminCounts, adminUpdate } from '../lib/adminDataProxy';
@@ -813,6 +813,9 @@ export function AdminDashboard() {
         </a>
         <a href="/admin/subscriptions" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
           <Star className="w-3 h-3" /> Subscriptions
+        </a>
+        <a href="/admin/identity-verification" className="px-3 py-1.5 bg-emerald-500/10 rounded-lg text-[9px] font-bold uppercase text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5">
+          <ShieldCheck className="w-3 h-3" /> Verification
         </a>
         <a href="/admin/reports" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
           <TrendingUp className="w-3 h-3" /> Reports

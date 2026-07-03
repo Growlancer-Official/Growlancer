@@ -165,11 +165,6 @@ export const identityVerificationService = {
     }
   },
 
-  // TODO(review): The admin verification review page (where document_url is displayed) needs
-  // to call getSignedDocumentUrl() at render time to get a fresh signed URL instead of using
-  // the stored document_url from the database. The bucket is now private, so stored URLs
-  // will be broken after the migration runs.
-
   /**
    * Admin: Update verification status.
    */
