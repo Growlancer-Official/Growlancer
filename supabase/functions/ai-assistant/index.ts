@@ -3,7 +3,7 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyCa3NrfL2MQUThSxBxmOonz_JfXtOPpKUI';
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
