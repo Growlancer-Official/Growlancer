@@ -210,7 +210,7 @@ This repository is licensed under the MIT License.
 
 **Mohammed Miran Khan**
 
-Founder & CEO — Growlancer
+Founder & CEO — Growlancer.
 
 ---
 
