@@ -92,6 +92,8 @@ export async function fetchUserProfile(userId: string): Promise<AuthUser | null>
       referralCode: data.referral_code || undefined,
       createdAt: data.created_at || undefined,
       onboardingCompleted: data.onboarding_completed || false,
+      country: data.country || undefined,
+      phone: data.phone || undefined,
     };
   } catch {
     return null;

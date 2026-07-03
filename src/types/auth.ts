@@ -15,6 +15,8 @@ export interface AuthUser {
   referralCode?: string;
   createdAt?: string;
   onboardingCompleted?: boolean;
+  country?: string;
+  phone?: string;
 }
 
 export interface AuthResponse {

@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { fetchUserProfile } from '../lib/services/authService';
-import { CheckCircle2, Loader2, XCircle, Mail, KeyRound, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Loader2, XCircle, Mail, KeyRound, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
 
-type CallbackStatus = 'processing' | 'success' | 'error';
+type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate';
 type AuthAction = 'signup' | 'recovery' | 'magiclink' | 'email_change' | 'invite' | 'reauthentication' | 'unknown';
 
 export function AuthCallbackPage() {
@@ -126,7 +126,8 @@ export function AuthCallbackPage() {
           return;
         }
 
-        // ── 7. Default: redirect based on onboarding status (for OAuth signup) ──
+        // ── 7. Country gate for OAuth signups ──
+        // If user authenticated via OAuth and has no country set, show country confirmation.
         setStatus('success');
 
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -139,6 +140,14 @@ export function AuthCallbackPage() {
           profile = authUser?.id ? await fetchUserProfile(authUser.id) : null;
           if (profile) break;
           await new Promise(r => setTimeout(r, 600));
+        }
+
+        // 🆕 Country gate: If user has no profile country set (first-time OAuth), show country confirmation
+        // Only for OAuth signups (detectedAction === 'signup' or profile was just created)
+        if (profile && !profile.country) {
+          setStatus('country_gate');
+          if (cancelled) return;
+          return; // Stop — country confirmation UI will handle the redirect
         }
 
         if (profile && !profile.onboardingCompleted) {
@@ -172,6 +181,64 @@ export function AuthCallbackPage() {
       cancelled = true;
     };
   }, [navigate, searchParams]);
+
+  // ── Country Gate State ──
+  const [countryGateLoading, setCountryGateLoading] = useState(false);
+  const [countryGateError, setCountryGateError] = useState<string | null>(null);
+
+  const handleCountrySelect = async (selectedCountry: string) => {
+    setCountryGateLoading(true);
+    setCountryGateError(null);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+
+      if (!userId) {
+        setCountryGateError('Session expired. Please log in again.');
+        setCountryGateLoading(false);
+        return;
+      }
+
+      if (selectedCountry === 'IN') {
+        // Save country as India — proceed normally
+        await supabase.rpc('update_user_country' as any, {
+          p_user_id: userId,
+          p_country: 'IN',
+        } as any);
+
+        // Now determine redirect based on profile
+        const profile = await fetchUserProfile(userId);
+        if (profile && !profile.onboardingCompleted) {
+          navigate('/onboarding?mode=oauth', { replace: true });
+        } else if (profile) {
+          const dashboardRoute =
+            profile.role === 'client' ? '/client' :
+            profile.role === 'admin' ? '/admin' :
+            '/dashboard';
+          navigate(dashboardRoute, { replace: true });
+        } else {
+          navigate('/onboarding?mode=oauth', { replace: true });
+        }
+      } else {
+        // Non-India country — insert into waitlist, redirect to /waitlist
+        const email = sessionData.session?.user?.email || '';
+        await supabase.rpc('join_waitlist' as any, {
+          p_email: email,
+          p_country: selectedCountry,
+          p_signup_source: 'oauth',
+          p_user_id: userId,
+        } as any);
+
+        navigate('/waitlist', { replace: true });
+      }
+    } catch (err) {
+      setCountryGateError(
+        err instanceof Error ? err.message : 'Something went wrong. Please try again.'
+      );
+      setCountryGateLoading(false);
+    }
+  };
 
   const actionIcons: Record<AuthAction, React.ReactNode> = {
     signup: <Mail className="w-8 h-8 text-emerald-600" />,
@@ -244,6 +311,79 @@ export function AuthCallbackPage() {
               </h2>
               <p className="text-sm text-slate-500">
                 {actionDescriptions[action]}
+              </p>
+            </div>
+          )}
+
+          {/* 🆕 Country Gate UI — shown after OAuth for users without country set */}
+          {status === 'country_gate' && (
+            <div className="animate-fade-in">
+              <div className="flex justify-center mb-4">
+                <div className="h-16 w-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                  <MapPin className="w-8 h-8 text-emerald-600" />
+                </div>
+              </div>
+              <h2 className="font-display text-xl font-bold text-slate-900 mb-2">
+                Where are you located?
+              </h2>
+              <p className="text-sm text-slate-500 mb-6">
+                Growlancer is currently available in <strong>India</strong>. Select your country to continue.
+              </p>
+
+              {/* Country Options */}
+              <div className="space-y-3 mb-6">
+                {/* India — Enabled */}
+                <button
+                  onClick={() => handleCountrySelect('IN')}
+                  disabled={countryGateLoading}
+                  className="w-full flex items-center gap-4 p-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl hover:bg-emerald-100 transition-colors text-left group disabled:opacity-50"
+                >
+                  <span className="text-3xl">🇮🇳</span>
+                  <div className="flex-1">
+                    <p className="font-bold text-slate-900">India</p>
+                    <p className="text-xs text-emerald-600 font-medium">Available now</p>
+                  </div>
+                  {countryGateLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+                  ) : (
+                    <ArrowRight className="w-5 h-5 text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  )}
+                </button>
+
+                {/* Other Countries — Click to join waitlist (Coming Soon) */}
+                {[
+                  { code: 'US', flag: '🇺🇸', name: 'United States' },
+                  { code: 'GB', flag: '🇬🇧', name: 'United Kingdom' },
+                  { code: 'CA', flag: '🇨🇦', name: 'Canada' },
+                  { code: 'AU', flag: '🇦🇺', name: 'Australia' },
+                  { code: 'AE', flag: '🇦🇪', name: 'United Arab Emirates' },
+                  { code: 'SG', flag: '🇸🇬', name: 'Singapore' },
+                  { code: 'OTHER', flag: '🌍', name: 'Other Country' },
+                ].map((country) => (
+                  <button
+                    key={country.code}
+                    onClick={() => handleCountrySelect(country.code)}
+                    disabled={countryGateLoading}
+                    className="w-full flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:border-amber-300 transition-colors text-left group"
+                  >
+                    <span className="text-3xl">{country.flag}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-slate-700 group-hover:text-slate-900">{country.name}</p>
+                      <p className="text-xs text-amber-600 font-medium">Coming soon — join waitlist →</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {countryGateError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-xs text-red-600">{countryGateError}</p>
+                </div>
+              )}
+
+              <p className="text-[10px] text-slate-400">
+                By continuing, you agree to our{' '}
+                <a href="/terms" className="text-emerald-600 hover:underline">Terms of Service</a>
               </p>
             </div>
           )}
