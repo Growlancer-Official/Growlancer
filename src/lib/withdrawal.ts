@@ -24,8 +24,9 @@ export interface Withdrawal {
   paypal_email: string | null;
   /** For razorpay_payout: Razorpay payout ID */
   razorpay_payout_id?: string | null;
-  /** For razorpay_payout: linked fund account ID */
+  /** For razorpay_payout: linked fund account ID (DB column: razorpay_fund_account_id) */
   fund_account_id?: string | null;
+  razorpay_fund_account_id?: string | null;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   paypal_payout_id: string | null;
   failure_reason: string | null;

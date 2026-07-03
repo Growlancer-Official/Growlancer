@@ -271,6 +271,80 @@ serve(async req => {
         break;
       }
 
+      // ─── PAYOUT EVENTS (PayPal Payouts async status updates) ──────────
+      case 'PAYMENT.PAYOUTSBATCH.SUCCESS': {
+        const batchId = resource.batch_header?.payout_batch_id;
+        if (batchId) {
+          const batchStatus = resource.batch_header?.batch_status || 'SUCCESS';
+          await supabaseClient
+            .from('withdrawals')
+            .update({ status: 'completed', processed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+            .eq('paypal_payout_id', batchId);
+          await supabaseClient
+            .from('transactions')
+            .update({ status: 'completed' })
+            .filter('metadata->>withdrawal_id', 'in', `(select id from withdrawals where paypal_payout_id = '${batchId}')`);
+        }
+        break;
+      }
+
+      case 'PAYMENT.PAYOUTSBATCH.DENIED':
+      case 'PAYMENT.PAYOUTSBATCH.CANCELED': {
+        const deniedBatchId = resource.batch_header?.payout_batch_id;
+        if (deniedBatchId) {
+          const errorMsg = resource.batch_header?.errors?.message || `Payout batch ${resource.batch_header?.batch_status || 'denied'}`;
+          const { data: wd } = await supabaseClient
+            .from('withdrawals')
+            .select('id, user_id, amount')
+            .eq('paypal_payout_id', deniedBatchId)
+            .single();
+          if (wd) {
+            await supabaseClient.rpc('release_wallet_funds', { p_user_id: wd.user_id, p_amount: wd.amount }).catch(() => {});
+            await supabaseClient
+              .from('withdrawals')
+              .update({ status: 'failed', failure_reason: errorMsg, updated_at: new Date().toISOString() })
+              .eq('id', wd.id);
+            await supabaseClient
+              .from('transactions')
+              .update({ status: 'failed', description: `Withdrawal failed: ${errorMsg}` })
+              .eq('metadata->>withdrawal_id', wd.id);
+          }
+        }
+        break;
+      }
+
+      case 'PAYMENT.PAYOUTS.ITEM.SUCCESS': {
+        const itemBatchId = resource.payout_batch_id;
+        if (itemBatchId) {
+          await supabaseClient
+            .from('withdrawals')
+            .update({ status: 'completed', processed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+            .eq('paypal_payout_id', itemBatchId);
+        }
+        break;
+      }
+
+      case 'PAYMENT.PAYOUTS.ITEM.DENIED':
+      case 'PAYMENT.PAYOUTS.ITEM.FAILED': {
+        const failedItemBatchId = resource.payout_batch_id;
+        if (failedItemBatchId) {
+          const itemError = resource.errors?.message || 'Payout item failed';
+          const { data: wd } = await supabaseClient
+            .from('withdrawals')
+            .select('id, user_id, amount')
+            .eq('paypal_payout_id', failedItemBatchId)
+            .single();
+          if (wd) {
+            await supabaseClient.rpc('release_wallet_funds', { p_user_id: wd.user_id, p_amount: wd.amount }).catch(() => {});
+            await supabaseClient
+              .from('withdrawals')
+              .update({ status: 'failed', failure_reason: itemError, updated_at: new Date().toISOString() })
+              .eq('id', wd.id);
+          }
+        }
+        break;
+      }
+
       default:
         console.log(`Unhandled webhook event: ${eventType}`);
     }
