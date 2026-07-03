@@ -8,7 +8,7 @@
 import { supabase } from './supabase';
 import { adminQuery, adminUpdate, adminInsert } from './adminDataProxy';
 
-export type CertificateType = 'skill_test' | 'platform' | 'internship' | 'achievement';
+export type CertificateType = 'skill_test' | 'platform' | 'internship' | 'achievement' | 'lor';
 export type CertStatus = 'active' | 'revoked' | 'expired';
 
 export interface Certificate {
@@ -50,6 +50,7 @@ export async function issueCertificate(params: {
   recipientEmail: string;
   type?: CertificateType;
   metadata?: Record<string, unknown>;
+  certificateUrl?: string;
 }): Promise<{ success: boolean; certificate?: Certificate; error?: string }> {
   try {
     const { data: result, error } = await supabase.functions.invoke(EDGE_FN, {
@@ -63,6 +64,7 @@ export async function issueCertificate(params: {
         recipient_email: params.recipientEmail,
         certificate_type: params.type || 'platform',
         metadata: params.metadata || {},
+        certificate_url: params.certificateUrl || null,
       },
     });
 
@@ -171,6 +173,50 @@ export async function getAllCertificates(options?: {
 /**
  * Get certificates for a specific user.
  */
+/**
+ * Send a certificate/LOR email to the recipient via edge function.
+ */
+export async function sendCertificateEmail(params: {
+  certificateId: string;
+  recipientEmail: string;
+  recipientName: string;
+  certificateType: CertificateType;
+  roleName: string;
+  level: string;
+  verificationCode: string;
+  performanceSummary?: string;
+  skillsDemonstrated?: string[];
+  certificateUrl?: string;
+}): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase.functions.invoke(EDGE_FN, {
+      method: 'POST',
+      body: {
+        action: 'send_certificate_email',
+        certificate_id: params.certificateId,
+        recipient_email: params.recipientEmail,
+        recipient_name: params.recipientName,
+        certificate_type: params.certificateType,
+        role_name: params.roleName,
+        level: params.level,
+        verification_code: params.verificationCode,
+        certificate_url: params.certificateUrl || null,
+        performance_summary: params.performanceSummary || '',
+        skills_demonstrated: params.skillsDemonstrated?.join(', ') || '',
+      },
+    });
+
+    if (error) throw new Error(error.message);
+    const res = data as { success: boolean; error?: string };
+    return res || { success: false, error: 'No response' };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to send email',
+    };
+  }
+}
+
 export async function getUserCertificates(userId: string): Promise<Certificate[]> {
   try {
     const { data } = await adminQuery<Certificate>({
@@ -206,6 +252,7 @@ export function getCertificateTitle(cert: Certificate): string {
     skill_test: 'Skill Certification',
     internship: 'Internship Completion Certificate',
     achievement: 'Achievement Badge',
+    lor: 'Letter of Recommendation',
   };
   return `${prefixMap[cert.certificate_type] || 'Certificate'} — ${cert.skill}`;
 }

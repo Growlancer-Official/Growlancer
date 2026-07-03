@@ -163,6 +163,8 @@ export function WalletPage() {
   const [newMethodAccountHolder, setNewMethodAccountHolder] = useState('');
   const [newMethodAccountNumber, setNewMethodAccountNumber] = useState('');
   const [newMethodRoutingNumber, setNewMethodRoutingNumber] = useState('');
+  const [newMethodIfscCode, setNewMethodIfscCode] = useState('');
+  const [newMethodUpiId, setNewMethodUpiId] = useState('');
   const [newMethodSaving, setNewMethodSaving] = useState(false);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [deleteProcessing, setDeleteProcessing] = useState(false);
@@ -370,10 +372,14 @@ export function WalletPage() {
     setWithdrawError(null);
 
     try {
+      // Determine withdrawal method type from selected payout method
+      const isRazorpayPayout = method.type === 'bank_transfer' || method.type === 'razorpay_payout';
+      
       const result = await withdrawalService.createWithdrawal({
         amount,
-        method: 'paypal',
-        paypal_email: method.email || '',
+        method: isRazorpayPayout ? 'razorpay_payout' : 'paypal',
+        paypal_email: !isRazorpayPayout ? method.email || '' : undefined,
+        fund_account_id: isRazorpayPayout ? method.account_number || method.upi_id || undefined : undefined,
       });
 
       if (result.success && result.withdrawal) {
@@ -414,8 +420,8 @@ export function WalletPage() {
       return;
     }
     if (newMethodType === 'bank_transfer') {
-      if (!newMethodAccountHolder || !newMethodAccountNumber || !newMethodRoutingNumber) {
-        setMethodError('Please fill in all bank account fields');
+      if (!newMethodAccountHolder || !newMethodAccountNumber || !newMethodIfscCode) {
+        setMethodError('Please fill in account holder name, account number, and IFSC code');
         return;
       }
     }
@@ -429,8 +435,10 @@ export function WalletPage() {
         email: newMethodType === 'paypal' ? newMethodEmail : null,
         account_holder_name: newMethodType === 'bank_transfer' ? newMethodAccountHolder : null,
         account_number: newMethodType === 'bank_transfer' ? newMethodAccountNumber : null,
-        routing_number: newMethodType === 'bank_transfer' ? newMethodRoutingNumber : null,
+        routing_number: newMethodType === 'bank_transfer' ? newMethodRoutingNumber || null : null,
         bank_name: newMethodType === 'bank_transfer' ? newMethodBankName || null : null,
+        ifsc_code: newMethodType === 'bank_transfer' ? newMethodIfscCode || null : null,
+        upi_id: newMethodType === 'bank_transfer' ? newMethodUpiId || null : null,
       });
 
       if (result.success && result.method) {
@@ -442,6 +450,8 @@ export function WalletPage() {
         setNewMethodAccountHolder('');
         setNewMethodAccountNumber('');
         setNewMethodRoutingNumber('');
+        setNewMethodIfscCode('');
+        setNewMethodUpiId('');
       } else {
         setMethodError(result.error || 'Failed to add payout method');
       }
@@ -1415,14 +1425,26 @@ export function WalletPage() {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">
-                          Routing Number
+                          IFSC Code <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
-                          value={newMethodRoutingNumber}
-                          onChange={(e) => setNewMethodRoutingNumber(e.target.value)}
+                          value={newMethodIfscCode}
+                          onChange={(e) => setNewMethodIfscCode(e.target.value.toUpperCase())}
                           className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                          placeholder="021000021"
+                          placeholder="SBIN0001234"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          UPI ID <span className="text-xs text-slate-400">(optional)</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={newMethodUpiId}
+                          onChange={(e) => setNewMethodUpiId(e.target.value)}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                          placeholder="username@upi"
                         />
                       </div>
                     </>

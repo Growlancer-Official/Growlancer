@@ -41,6 +41,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [referralCode, setReferralCode] = useState(referralCodeFromUrl || '');
+  const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,6 +96,17 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     const nameValidation = validateRequired(normalizedName, 'Full name');
     if (!nameValidation.isValid) {
       setError(nameValidation.error || 'Full name is required');
+      return;
+    }
+
+    // India-only phone validation
+    const cleanedPhone = phone.replace(/[^0-9]/g, '');
+    if (cleanedPhone.length !== 10) {
+      setError('Please enter a valid 10-digit Indian phone number (+91)');
+      return;
+    }
+    if (!cleanedPhone.startsWith('6') && !cleanedPhone.startsWith('7') && !cleanedPhone.startsWith('8') && !cleanedPhone.startsWith('9')) {
+      setError('Please enter a valid Indian mobile number starting with 6, 7, 8, or 9');
       return;
     }
 
@@ -409,6 +421,35 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
             {passwordError && (
               <p className="text-[11px] text-red-500 mt-1">{passwordError}</p>
             )}
+          </div>
+
+          {/* Phone Number — India only (+91) */}
+          <div className="space-y-1.5">
+            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1">
+              Phone Number
+            </label>
+            <div className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                <span className="text-sm font-semibold text-slate-500">+91</span>
+              </div>
+              <input
+                type="tel"
+                id="phone"
+                value={phone}
+                onChange={e => {
+                  const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                  setPhone(val);
+                }}
+                required
+                autoComplete="tel"
+                placeholder="9876543210"
+                className="w-full h-11 pl-12 pr-4 bg-white border border-slate-200 rounded-xl outline-none transition-all text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
+              />
+            </div>
+    {/* TODO(review): Add server-side phone validation in the signup flow (edge function or trigger) to reject/soft-gate any phone not starting with +91. Frontend-only validation can be bypassed. */}
+    <p className="text-[10px] text-slate-400 ml-1">
+      India only (<strong>+91</strong>). Other countries coming soon.
+    </p>
           </div>
 
           {/* Referral Code (Optional) */}

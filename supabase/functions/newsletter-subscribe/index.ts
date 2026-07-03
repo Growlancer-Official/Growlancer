@@ -4,7 +4,6 @@
 //   2) Welcome email via Brevo
 //   3) Brevo contact sync for future campaigns
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
@@ -12,9 +11,20 @@ const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gma
 const BREVO_FROM_NAME = 'Growlancer Team'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
+// ─── HTML Escape Helper ─────────────────────────────────────────────────
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
 }
 
 // ─── Brevo API helper ──────────────────────────────────────────────────────
@@ -90,6 +100,7 @@ async function addToBrevoList(email: string, name: string): Promise<string | nul
 
 // ─── Welcome Email Template ────────────────────────────────────────────────
 function welcomeEmailHtml(name: string, email: string): string {
+  const escapedName = escapeHtml(name || 'there');
   const unsubLink = `${APP_URL}/unsubscribe?email=${encodeURIComponent(email)}`
   return `
 <!DOCTYPE html>
@@ -101,7 +112,7 @@ function welcomeEmailHtml(name: string, email: string): string {
       <h1 style="color: white; font-size: 22px; font-weight: 700; margin: 0;">Welcome to Growlancer! 🎉</h1>
     </div>
     <div style="padding: 32px;">
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${name || 'there'},</p>
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${escapedName},</p>
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
         Thanks for subscribing to the Growlancer newsletter! You'll now receive:
       </p>
@@ -134,7 +145,7 @@ function welcomeEmailHtml(name: string, email: string): string {
 }
 
 // ─── Main Server ────────────────────────────────────────────────────────────
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }

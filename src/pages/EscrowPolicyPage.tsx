@@ -96,7 +96,7 @@ export function EscrowPolicyPage() {
             </p>
             
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
-              The AI Mediator evaluates workspace logs, chat archives, and task cards, proposing a fair split ratio (e.g. 70% payout / 30% refund). Both parties can view or adjust the split ratio slider in real time. Once accepted by both sides, funds are instantly credited programmatically.
+              The AI Mediator evaluates workspace logs, chat archives, and task cards, proposing a fair split ratio (e.g. 70% payout / 30% refund) as a starting point. A human dispute resolution specialist reviews the AI's recommendation and confirms or adjusts it before any funds are released. Once confirmed and accepted by both parties, funds are released.
             </p>
             
             <div className="pt-4 flex flex-wrap gap-4">

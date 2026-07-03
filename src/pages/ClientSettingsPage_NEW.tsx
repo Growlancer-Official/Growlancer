@@ -322,7 +322,7 @@ export function ClientSettingsPage() {
     setTwoFactorLoading(true);
     setErrorMessage(null);
     try {
-      const { data, error } = await supabase.functions.invoke('2fa-management', {
+      const { data, error } = await supabase.functions.invoke('twofa-management', {
         body: { action: 'enroll' },
       });
       if (error) throw error;
@@ -354,7 +354,7 @@ export function ClientSettingsPage() {
         throw new Error('Please enter a valid 6-digit verification code.');
       }
 
-      const { data, error } = await supabase.functions.invoke('2fa-management', {
+      const { data, error } = await supabase.functions.invoke('twofa-management', {
         body: {
           action: 'verify',
           factor_id: factorId,
@@ -384,7 +384,7 @@ export function ClientSettingsPage() {
   const handleDisable2FA = async () => {
     setTwoFactorLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('2fa-management', {
+      const { data, error } = await supabase.functions.invoke('twofa-management', {
         body: { action: 'disable' },
       });
 

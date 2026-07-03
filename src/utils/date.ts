@@ -157,18 +157,22 @@ export function formatCurrency(amount: number, currency = 'USD'): string {
 
 /**
  * Calculate platform fee
- * @param amount - Project amount
- * @param feePercentage - Platform fee percentage (default: 5%)
- * @returns Object with fee, total, and freelancer amount
+ * @deprecated Use the shared helpers from src/lib/config.ts instead:
+ *   - calculatePlatformFee(amount) — returns the 5% fee
+ *   - calculateTotalWithFee(amount) — returns amount + 5% (client pays this)
+ *   - calculateFreelancerAmount(amount) — returns full amount (freelancer gets 100%)
+ * 
+ * This function is kept for backwards compatibility but delegates to config.
  */
 export function calculatePlatformFee(
   amount: number,
   feePercentage = 5
 ): { fee: number; total: number; freelancerAmount: number } {
   const fee = (amount * feePercentage) / 100;
+  // Per Terms of Service: client pays 5% on top, freelancer gets full amount
   return {
     fee,
-    total: amount,
-    freelancerAmount: amount - fee,
+    total: amount + fee,
+    freelancerAmount: amount,
   };
 }

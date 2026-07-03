@@ -15,8 +15,6 @@ import {
   Search,
   Award,
 } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
 import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { getAdminSession, adminLogout } from '../components/AdminAuthGuard';
@@ -37,37 +35,15 @@ const sidebarLinks = [
 export function AdminDashboardLayout() {
   const location = useLocation();
   const currentPath = location.pathname;
-  const { user } = useAuth();
-  const [adminProfile, setAdminProfile] = useState<{ name: string; avatar: string | null } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<{ label: string; path: string; icon: React.ReactNode }[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!user) return;
-    const fetchProfile = async () => {
-      try {
-        const { data: userData } = await supabase.auth.getUser();
-        if (userData?.user?.user_metadata) {
-          const meta = userData.user.user_metadata;
-          setAdminProfile({
-            name: meta.name || meta.full_name || userData.user.email || 'Admin',
-            avatar: meta.picture || meta.avatar_url || null,
-          });
-        }
-      } catch {
-        // Profile fetch is non-critical; just show fallback
-        setAdminProfile({ name: 'Admin', avatar: null });
-      }
-    };
-    fetchProfile();
-  }, [user]);
-
-  // Get admin session info for display
+  // Get admin session info from localStorage (fast — no Supabase Auth call)
   const adminSession = getAdminSession();
-  const adminName = adminSession?.label || adminProfile?.name || 'Admin';
+  const adminName = adminSession?.label || 'Admin';
   const adminEmail = adminSession?.email || '';
 
   // Search functionality
@@ -231,13 +207,9 @@ export function AdminDashboardLayout() {
             {/* User Menu */}
             <button className="flex items-center gap-3 pl-1 pr-3 py-1 hover:bg-white/5 rounded-full transition-all group">
               <div className="h-9 w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
-                {adminProfile?.avatar ? (
-                  <img src={adminProfile.avatar} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
-                    {adminProfile?.name?.charAt(0)?.toUpperCase() || 'A'}
-                  </div>
-                )}
+                <div className="w-full h-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white">
+                  {adminName.charAt(0).toUpperCase()}
+                </div>
               </div>
               <div className="text-left hidden md:block">
                 <p className="text-sm font-bold leading-tight">{adminName}</p>

@@ -17,3 +17,5 @@ coverage/
 nul
 supabase/supabase/
 supabase/functions/test-*/
+output.txt
+test-base64.txt

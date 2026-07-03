@@ -2,6 +2,7 @@
 import { supabase, realtimeChannels } from './supabase';
 import { captureError } from './telemetry';
 import { CacheManager } from './services/cacheManager';
+import { calculatePlatformFee } from './config';
 
 // Types
 export interface Project {
@@ -413,8 +414,14 @@ export const contractsService = {
       }
 
       const bidAmount = Number(proposal.proposed_rate || 0);
-      const platformFee = bidAmount * 0.05;
-      const freelancerAmount = bidAmount - platformFee;
+      // Client pays bid + 5% platform fee (added on top). Freelancer gets full bid amount.
+      // This matches the Terms of Service: "Client Fee 5%, Freelancer Fee 0%"
+      const platformFee = calculatePlatformFee(bidAmount);
+      // TODO(review): Ensure the downstream payment components (EscrowRazorpayPayment, EscrowPayPalPayment)
+      // charge the client using calculateTotalWithFee(bidAmount) = bidAmount + platformFee,
+      // not just bidAmount alone. The client should pay the 5% platform fee on top.
+      // freelancer_amount = full bid amount (freelancer gets paid in full)
+      const freelancerAmount = bidAmount;
 
       const { data, error } = await supabase
         .from('contracts')

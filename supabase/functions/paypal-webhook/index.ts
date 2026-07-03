@@ -14,10 +14,19 @@ const PAYPAL_API_URL =
     : 'https://api-m.paypal.com';
 const PAYPAL_WEBHOOK_ID = Deno.env.get('PAYPAL_WEBHOOK_ID') || '';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+const ALLOWED_ORIGINS = [
+  'https://growlancer.vercel.app',
+  'https://growlancer.com',
+  'https://www.growlancer.com',
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  }
+}
 
 // Verify webhook signature
 async function verifyWebhookSignature(
@@ -25,8 +34,8 @@ async function verifyWebhookSignature(
   body: string
 ): Promise<boolean> {
   if (!PAYPAL_WEBHOOK_ID) {
-    console.warn('PAYPAL_WEBHOOK_ID not set, skipping signature verification');
-    return true; // Allow in dev mode without verification
+    // Fail closed: refuse to process webhooks if webhook ID is not configured
+    throw new Error('PAYPAL_WEBHOOK_ID is not configured. Webhook processing is disabled.');
   }
 
   try {
@@ -71,6 +80,9 @@ async function verifyWebhookSignature(
 }
 
 serve(async req => {
+  const origin = req.headers.get('origin')
+  const corsHeaders = getCorsHeaders(origin)
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -79,7 +91,7 @@ serve(async req => {
     const body = await req.text();
     const event = JSON.parse(body);
 
-    // Verify webhook signature
+    // Verify webhook signature (throws if PAYPAL_WEBHOOK_ID is not configured — fail closed)
     const isValid = await verifyWebhookSignature(req.headers, body);
     if (!isValid) {
       console.error('Invalid webhook signature');

@@ -3,7 +3,10 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || 'AIzaSyCa3NrfL2MQUThSxBxmOonz_JfXtOPpKUI';
+const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY environment variable is not set');
+}
 
 interface TicketData {
   ticket_id: string;
@@ -33,6 +36,12 @@ const PRIORITY_RESPONSES: Record<string, string> = {
 };
 
 async function generateAIReponse(ticket: TicketData): Promise<string | null> {
+  // Fail fast if Gemini API key is not configured
+  if (!GEMINI_API_KEY) {
+    console.error('GEMINI_API_KEY is not set. Cannot generate AI response.');
+    return null;
+  }
+
   const categoryGuidance = CATEGORY_PROMPTS[ticket.category] || CATEGORY_PROMPTS.general;
   const priorityResponse = PRIORITY_RESPONSES[ticket.priority] || PRIORITY_RESPONSES.normal;
 

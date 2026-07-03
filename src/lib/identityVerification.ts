@@ -15,6 +15,28 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zttwsjehcgaic
 
 export const identityVerificationService = {
   /**
+   * Get a fresh signed URL for an existing verification document.
+   * Used when an admin needs to review a document.
+   */
+  async getSignedDocumentUrl(filePath: string, expirySeconds: number = 300): Promise<{ success: boolean; url?: string; error?: string }> {
+    try {
+      const { data: signedData, error } = await supabase
+        .storage
+        .from('verification-documents')
+        .createSignedUrl(filePath, expirySeconds);
+
+      if (error || !signedData?.signedUrl) {
+        return { success: false, error: error?.message || 'Failed to generate signed URL' };
+      }
+
+      return { success: true, url: signedData.signedUrl };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to generate signed URL';
+      return { success: false, error: errorMessage };
+    }
+  },
+
+  /**
    * Upload verification document securely to Supabase Storage
    */
   async uploadVerificationDocument(
@@ -47,13 +69,17 @@ export const identityVerificationService = {
         return { success: false, error: uploadError.message };
       }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase
+      // Generate a signed URL instead of public URL (security: bucket is private)
+      const { data: signedData, error: signedError } = await supabase
         .storage
         .from('verification-documents')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 300); // 5 minute expiry
 
-      return { success: true, url: publicUrl };
+      if (signedError || !signedData?.signedUrl) {
+        return { success: false, error: signedError?.message || 'Failed to generate signed URL' };
+      }
+
+      return { success: true, url: signedData.signedUrl };
     } catch (error) {
       console.error('Document upload error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Upload failed';
@@ -138,6 +164,11 @@ export const identityVerificationService = {
       return { success: false, error: msg };
     }
   },
+
+  // TODO(review): The admin verification review page (where document_url is displayed) needs
+  // to call getSignedDocumentUrl() at render time to get a fresh signed URL instead of using
+  // the stored document_url from the database. The bucket is now private, so stored URLs
+  // will be broken after the migration runs.
 
   /**
    * Admin: Update verification status.

@@ -4,7 +4,6 @@
 //   2) Proposal is REJECTED → "Application update" email
 // Also creates in-app notifications for the freelancer.
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
@@ -13,9 +12,20 @@ const BREVO_FROM_NAME = 'Growlancer Team'
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
+// ─── HTML Escape Helper ─────────────────────────────────────────────────
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
 }
 
 // ─── Brevo Email Sender ─────────────────────────────────────────────────────
@@ -76,9 +86,9 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
 /** Proposal Accepted — freelancer hired! */
 function buildAcceptedEmailHtml(freelancerName: string, projectTitle: string, clientName: string): string {
   const body = `
-    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${freelancerName},</p>
+    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${escapeHtml(freelancerName)},</p>
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      🎉 <strong>Congratulations!</strong> Your proposal for <strong>"${projectTitle}"</strong> has been accepted by <strong>${clientName}</strong>!
+      🎉 <strong>Congratulations!</strong> Your proposal for <strong>"${escapeHtml(projectTitle)}"</strong> has been accepted by <strong>${escapeHtml(clientName)}</strong>!
     </p>
     <div style="margin: 28px 0; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
       <h3 style="font-size: 14px; color: #166534; margin: 0 0 8px;">✅ What's Next?</h3>
@@ -102,9 +112,9 @@ function buildAcceptedEmailHtml(freelancerName: string, projectTitle: string, cl
 /** Proposal Rejected */
 function buildRejectedEmailHtml(freelancerName: string, projectTitle: string): string {
   const body = `
-    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${freelancerName},</p>
+    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${escapeHtml(freelancerName)},</p>
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      Thank you for submitting a proposal for <strong>"${projectTitle}"</strong>. After careful review, the client has decided to move forward with another freelancer for this project.
+      Thank you for submitting a proposal for <strong>"${escapeHtml(projectTitle)}"</strong>. After careful review, the client has decided to move forward with another freelancer for this project.
     </p>
     <div style="margin: 28px 0; padding: 20px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px;">
       <h3 style="font-size: 14px; color: #991b1b; margin: 0 0 8px;">💡 Don't Lose Heart</h3>
@@ -125,7 +135,7 @@ function buildRejectedEmailHtml(freelancerName: string, projectTitle: string): s
 }
 
 // ─── Main Server ────────────────────────────────────────────────────────────
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }

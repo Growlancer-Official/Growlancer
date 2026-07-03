@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import {
   Award, Shield, CheckCircle2, XCircle, Loader2, Search, ExternalLink,
   User, Mail, Calendar, Clock, FileText, Copy, CheckCheck, AlertTriangle,
-  Share2, Printer, Sparkles, BookOpen, Zap, BadgeCheck, ArrowLeft,
+  Share2, Printer, Sparkles,  BookOpen, Zap, BadgeCheck, ArrowLeft, Star,
 } from 'lucide-react';
 import { verifyCertificateByCode, CERT_LEVEL_STYLES, getCertificateTitle, type Certificate } from '../lib/certificateService';
 
@@ -29,6 +29,7 @@ const typeIcons: Record<string, React.ReactNode> = {
   skill_test: <BookOpen className="w-5 h-5" />,
   internship: <Zap className="w-5 h-5" />,
   achievement: <Sparkles className="w-5 h-5" />,
+  lor: <Star className="w-5 h-5" />,
 };
 
 const typeLabels: Record<string, string> = {
@@ -36,6 +37,7 @@ const typeLabels: Record<string, string> = {
   skill_test: 'Skill Certification',
   internship: 'Internship Completion',
   achievement: 'Achievement Badge',
+  lor: 'Letter of Recommendation',
 };
 
 // ─── Certificate Display Card ───────────────────────────────────────
@@ -54,6 +56,167 @@ function CertificateCard({ cert }: { cert: Certificate }) {
   const handlePrint = () => {
     window.print();
   };
+
+  if (cert.certificate_type === 'lor') {
+    // LOR Display — Letter of Recommendation format
+    const meta = cert.metadata as Record<string, any> || {};
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        {/* Verification Badge */}
+        <div className="flex items-center justify-center gap-2 mb-6 animate-in fade-in slide-in-from-bottom-4">
+          <div className="flex items-center gap-2 px-4 py-1.5 bg-violet-500/10 rounded-full border border-violet-500/20">
+            <BadgeCheck className="w-4 h-4 text-violet-400" />
+            <span className="text-xs font-bold text-violet-400 uppercase tracking-wider">
+              Verified — Letter of Recommendation
+            </span>
+          </div>
+        </div>
+
+        {/* Main LOR Card */}
+        <div
+          className="relative overflow-hidden rounded-[2rem] p-[2px] animate-in fade-in slide-in-from-bottom-4 duration-500"
+          style={{ background: 'linear-gradient(135deg, #7c3aed, #6d28d9, #5b21b6)' }}
+        >
+          <div className="relative bg-[#0F172A] rounded-[calc(2rem-2px)] p-8 md:p-12">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2" />
+
+            <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
+              <Star className="w-64 h-64 text-violet-500" />
+            </div>
+
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <img src="/Growlancer Logo (2).png" alt="Growlancer" className="h-10 w-10 rounded-xl" />
+                  <div>
+                    <h2 className="font-bold text-lg text-white leading-none">Growlancer</h2>
+                    <p className="text-[10px] uppercase tracking-widest text-violet-400 font-bold">Letter of Recommendation</p>
+                  </div>
+                </div>
+                <div className={`p-3 rounded-xl ${levelStyle.bg}`}>
+                  <span className="text-2xl">{levelStyle.icon}</span>
+                </div>
+              </div>
+
+              <div className="h-px bg-gradient-to-r from-transparent via-violet-500/20 to-transparent mb-8" />
+
+              {/* LOR Header */}
+              <div className="text-center mb-8">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-slate-500 font-bold mb-3">
+                  To Whom It May Concern
+                </p>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">
+                  Letter of Recommendation
+                </h1>
+                <p className="text-slate-400 text-sm">
+                  This letter is issued in recognition of exceptional performance by
+                </p>
+                <h2 className="text-2xl md:text-3xl font-bold text-violet-400 mt-4 mb-2">
+                  {cert.recipient_name}
+                </h2>
+                <div className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-full"
+                  style={{ background: levelStyle.bg, border: `1px solid ${levelStyle.border || 'transparent'}70` }}
+                >
+                  <span className="text-lg">{levelStyle.icon}</span>
+                  <span className={`font-bold text-sm ${levelStyle.color}`}>{getCertificateTitle(cert)}</span>
+                </div>
+              </div>
+
+              {/* Performance Summary */}
+              {meta.performance_summary && (
+                <div className="mb-6 p-5 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                  <h3 className="text-sm font-bold text-violet-400 mb-3 flex items-center gap-2">
+                    <Star className="w-4 h-4" /> Outstanding Contributions
+                  </h3>
+                  <p className="text-sm text-slate-300 leading-relaxed">{meta.performance_summary}</p>
+                </div>
+              )}
+
+              {/* Skills Demonstrated */}
+              {meta.skills_demonstrated && Array.isArray(meta.skills_demonstrated) && meta.skills_demonstrated.length > 0 && (
+                <div className="mb-6 p-5 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                  <h3 className="text-sm font-bold text-violet-400 mb-3 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" /> Key Skills Demonstrated
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {meta.skills_demonstrated.map((skill: string, i: number) => (
+                      <span key={i} className="px-3 py-1 rounded-full bg-violet-500/10 text-violet-300 text-xs font-medium border border-violet-500/20">
+                        {skill.trim()}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                  <User className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Recipient</p>
+                    <p className="text-sm font-semibold text-white">{cert.recipient_name}</p>
+                    <p className="text-xs text-slate-400">{cert.recipient_email}</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                  <Calendar className="w-4 h-4 text-violet-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Issued On</p>
+                    <p className="text-sm font-semibold text-white">{issuedDate}</p>
+                    <p className="text-xs text-slate-400">{issueRelative}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Verification Code */}
+              <div className="p-4 rounded-xl bg-slate-800/50 border border-white/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-violet-400" />
+                    <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Verification Code</span>
+                  </div>
+                  <button onClick={handleCopyLink}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-400 transition-colors">
+                    {copied ? <><CheckCheck className="w-3 h-3 text-emerald-400" /> Copied!</> : <><Copy className="w-3 h-3" /> Copy Link</>}
+                  </button>
+                </div>
+                <p className="mt-2 text-lg font-mono font-bold tracking-wider text-violet-400 select-all">
+                  {cert.verification_code}
+                </p>
+                <p className="mt-1 text-[10px] text-slate-600">Share this code to verify the authenticity of this letter</p>
+              </div>
+
+              {/* Signature */}
+              <div className="mt-8 text-center">
+                <div className="border-t border-white/10 pt-6 inline-block px-12">
+                  <p className="text-sm font-bold text-white">Mohammad Miran Khan</p>
+                  <p className="text-[11px] text-slate-400">Founder & CEO, Growlancer</p>
+                </div>
+              </div>
+
+              <div className="mt-6 text-center">
+                <p className="text-[9px] text-slate-700">This letter is digitally verified and can be checked at any time.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center justify-center gap-3 mt-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <button onClick={handlePrint}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-xs font-bold text-slate-300 transition-all">
+            <Printer className="w-4 h-4" /> Print
+          </button>
+          <button onClick={handleCopyLink}
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-xs font-bold text-slate-300 transition-all">
+            {copied ? <CheckCheck className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
+            {copied ? 'Copied!' : 'Share'}
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto">

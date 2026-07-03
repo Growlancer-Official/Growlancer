@@ -4,10 +4,34 @@
  * All admin pages use this instead of direct supabase queries because
  * RLS blocks unauthenticated requests. The edge function uses service_role
  * key internally (bypasses RLS).
+ * 
+ * IMPORTANT: Every request includes the admin session token from localStorage
+ * in the X-Admin-Token header for server-side authentication.
  */
 import { supabase } from './supabase';
 
 const FN = 'admin-data';
+
+/** Get the admin session token from localStorage */
+function getAdminToken(): string {
+  try {
+    const raw = localStorage.getItem('growlancer_admin_session');
+    if (!raw) return '';
+    const session = JSON.parse(raw);
+    return session.token || '';
+  } catch {
+    return '';
+  }
+}
+
+/** Build headers with admin token for all requests to the admin-data edge function */
+function buildHeaders(): Record<string, string> {
+  const token = getAdminToken();
+  if (!token) return {};
+  return {
+    'X-Admin-Token': token,
+  };
+}
 
 type QueryOptions = {
   table: string;
@@ -32,6 +56,7 @@ type QueryOptions = {
 export async function adminQuery<T = any>(options: QueryOptions): Promise<{ data: T[]; total?: number }> {
   const { data: result, error } = await supabase.functions.invoke(FN, {
     method: 'POST',
+    headers: buildHeaders(),
     body: {
       action: 'query',
       table: options.table,
@@ -60,6 +85,7 @@ export async function adminQuery<T = any>(options: QueryOptions): Promise<{ data
 export async function adminCounts(tables: string[]): Promise<Record<string, number>> {
   const { data: result, error } = await supabase.functions.invoke(FN, {
     method: 'POST',
+    headers: buildHeaders(),
     body: { action: 'counts', tables },
   });
 
@@ -73,6 +99,7 @@ export async function adminCounts(tables: string[]): Promise<Record<string, numb
 export async function adminUpdate(table: string, id: string, data: Record<string, any>, idField = 'id'): Promise<any> {
   const { data: result, error } = await supabase.functions.invoke(FN, {
     method: 'PATCH',
+    headers: buildHeaders(),
     body: { table, id, id_field: idField, data },
   });
 
@@ -86,6 +113,7 @@ export async function adminUpdate(table: string, id: string, data: Record<string
 export async function adminDelete(table: string, id: string, idField = 'id'): Promise<any> {
   const { data: result, error } = await supabase.functions.invoke(FN, {
     method: 'DELETE',
+    headers: buildHeaders(),
     body: { table, id, id_field: idField },
   });
 
@@ -99,6 +127,7 @@ export async function adminDelete(table: string, id: string, idField = 'id'): Pr
 export async function adminInsert(table: string, data: Record<string, any>): Promise<any> {
   const { data: result, error } = await supabase.functions.invoke(FN, {
     method: 'POST',
+    headers: buildHeaders(),
     body: { action: 'insert', table, data },
   });
 

@@ -8,8 +8,10 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zttwsjehcgaic
 
 export interface WithdrawalRequest {
   amount: number;
-  method: 'paypal';
-  paypal_email: string;
+  method: 'paypal' | 'razorpay_payout';
+  paypal_email?: string;
+  /** For razorpay_payout: the bank account or UPI fund account ID */
+  fund_account_id?: string;
 }
 
 export interface Withdrawal {
@@ -18,8 +20,12 @@ export interface Withdrawal {
   amount: number;
   fee: number;
   net_amount: number;
-  method: 'paypal';
+  method: 'paypal' | 'razorpay_payout';
   paypal_email: string | null;
+  /** For razorpay_payout: Razorpay payout ID */
+  razorpay_payout_id?: string | null;
+  /** For razorpay_payout: linked fund account ID */
+  fund_account_id?: string | null;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   paypal_payout_id: string | null;
   failure_reason: string | null;
@@ -38,6 +44,10 @@ export interface PayoutMethod {
   account_number: string | null;
   routing_number: string | null;
   bank_name: string | null;
+  /** IFSC code for Indian bank transfers */
+  ifsc_code: string | null;
+  /** UPI ID for Indian payments */
+  upi_id: string | null;
   is_default: boolean;
   created_at: string;
   updated_at: string;

@@ -1,0 +1,81 @@
+name: Deploy to Vercel Production
+
+on:
+  push:
+    branches: [master]
+  # Allow manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+# Prevent multiple deploys running at once on the same branch
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  NODE_VERSION: '20'
+
+jobs:
+  deploy:
+    name: Build & Deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Build project (for Vercel prebuilt)
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+
+      - name: Deploy to Vercel Production (prebuilt)
+        id: deploy
+        run: |
+          echo "🚀 Deploying to Vercel Production..."
+          DEPLOY_OUTPUT=$(npx vercel deploy --prod --prebuilt --yes \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=mrkhan154212s-projects \
+            2>&1)
+          echo "$DEPLOY_OUTPUT"
+
+          # Extract deployment URL
+          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' | tail -1)
+          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+          if [ -z "$DEPLOY_URL" ]; then
+            echo "❌ Could not extract deployment URL"
+            exit 1
+          fi
+          echo "✅ Deployed to: $DEPLOY_URL"
+
+      - name: Alias to growlancer.vercel.app
+        run: |
+          DEPLOY_URL="${{ steps.deploy.outputs.deploy_url }}"
+          echo "🔗 Aliasing $DEPLOY_URL → growlancer.vercel.app"
+          npx vercel alias "$DEPLOY_URL" growlancer.vercel.app \
+            --token=${{ secrets.VERCEL_TOKEN }} \
+            --scope=mrkhan154212s-projects \
+            --yes
+          echo "✅ Alias set! https://growlancer.vercel.app is now live."
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Check the logs above for details."
+          echo "   Commit: ${{ github.sha }}"
+          echo "   Branch: ${{ github.ref_name }}"
+          echo "   Author: ${{ github.actor }}"

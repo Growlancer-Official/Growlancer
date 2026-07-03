@@ -21,7 +21,7 @@ const privacySections: Section[] = [
             At Growlancer ("Platform", "we", "us", or "our"), your privacy is a foundational pillar of our service architecture. Unlike legacy freelancing platforms that rely on static database scraping and third-party advertising tracking, Growlancer is built to coordinate real-time workspaces with the highest standard of client and freelancer confidentiality.
           </p>
           <p className="text-slate-600 leading-relaxed mb-4">
-            This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the enterprise-grade cryptographic standards we employ to safeguard it, and your explicit rights under global data protection acts (including GDPR, CCPA, and COPPA).
+            This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the enterprise-grade cryptographic standards we employ to safeguard it, and your explicit rights under applicable data protection laws (including GDPR and CCPA where they apply to you).
           </p>
           <div className="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-4 flex gap-3 text-emerald-800 text-sm font-medium">
             <Lock className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
@@ -88,7 +88,7 @@ const privacySections: Section[] = [
           <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-6 text-sm">
             <li><strong>Data Encryption at Rest:</strong> All user databases, canvas assets, and profiles are encrypted using <strong>AES-256 (Advanced Encryption Standard)</strong> security keys.</li>
             <li><strong>Data Encryption in Transit:</strong> Session streams and Supabase broadcast updates are routed exclusively over encrypted TLS 1.3 channels.</li>
-            <li><strong>SOC-2 Type II Hosted Centers:</strong> Our physical server instances and cloud backends are hosted within secure, audited data centers audited strictly to SOC-2 Type II and ISO/IEC 27001 standards.</li>
+            <li><strong>Security Best Practices:</strong> We follow industry-standard security practices including encryption in transit (TLS) and at rest, and we are working toward formal third-party security certifications as we scale. Our infrastructure is hosted on trusted cloud providers with robust physical and network security controls.</li>
             <li><strong>Dispute Isolation:</strong> In the event of a raised dispute, the workspace asset locker undergoes immediate read-only lock isolation, preventing modification or tampering of evidence while our mediation team audits the logs.</li>
           </ul>
         </>

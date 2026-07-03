@@ -2,18 +2,18 @@
 // Handles TOTP two-factor authentication via Supabase Auth MFA
 // Includes recovery codes management and backup email setup
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
 }
 
 // Rate limiting constants (DB-backed via rate_limits table)
 const RATE_LIMIT = 10;
 const RATE_WINDOW_MS = 60000;
-const ROUTE = '2fa-management';
+const ROUTE = 'twofa-management';
 
 // DB-backed rate limit check (persists across cold starts)
 async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
@@ -57,7 +57,7 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
   return true;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })

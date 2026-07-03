@@ -3,12 +3,22 @@
 // Supports real-time balance updates and transaction tracking
 // PayPal-only withdrawal method
 
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const ALLOWED_ORIGINS = [
+  'https://growlancer.vercel.app',
+  'https://growlancer.com',
+  'https://www.growlancer.com',
+  'http://localhost:5173',
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+  }
 }
 
 // Rate limiting constants (DB-backed via rate_limits table)
@@ -58,7 +68,10 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
   return true;
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  const origin = req.headers.get('origin')
+  const corsHeaders = getCorsHeaders(origin)
+
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -87,7 +100,6 @@ serve(async (req) => {
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
-
     // Check rate limit (DB-backed, using user ID as identifier)
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = user.id || clientIP;
@@ -103,7 +115,8 @@ serve(async (req) => {
 
     if (method === 'POST') {
       // Create withdrawal request
-      const { amount, paypal_email } = await req.json()
+      const body = await req.json()
+      const { amount, withdrawal_method, paypal_email, fund_account_id } = body
 
       // Validate input
       if (!amount || amount <= 0) {
@@ -113,9 +126,18 @@ serve(async (req) => {
         )
       }
 
-      if (!paypal_email) {
+      const wdMethod = withdrawal_method || 'paypal'
+
+      if (wdMethod === 'paypal' && !paypal_email) {
         return new Response(
-          JSON.stringify({ error: 'PayPal email is required' }),
+          JSON.stringify({ error: 'PayPal email is required for PayPal withdrawals' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      if (wdMethod === 'razorpay_payout' && !fund_account_id) {
+        return new Response(
+          JSON.stringify({ error: 'Fund account ID is required for Razorpay payouts' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
@@ -144,18 +166,31 @@ serve(async (req) => {
         )
       }
 
+      // Determine fee based on withdrawal method
+      const feeRate = wdMethod === 'razorpay_payout' ? 0.02 : 0.029; // 2% for RazorpayX, 2.9% for PayPal
+      const fee = Math.round(amount * feeRate);
+      const netAmount = Math.round(amount * (1 - feeRate));
+
       // Create withdrawal record
+      const insertData: Record<string, any> = {
+        user_id: user.id,
+        amount,
+        method: wdMethod,
+        status: 'pending',
+        fee,
+        net_amount: netAmount,
+      }
+
+      if (wdMethod === 'paypal') {
+        insertData.paypal_email = paypal_email
+      }
+      if (wdMethod === 'razorpay_payout') {
+        insertData.fund_account_id = fund_account_id
+      }
+
       const { data: withdrawal, error: withdrawalError } = await supabaseClient
         .from('withdrawals')
-        .insert({
-          user_id: user.id,
-          amount,
-          method: 'paypal',
-          paypal_email,
-          status: 'pending',
-          fee: Math.round(amount * 0.029), // 2.9% PayPal fee
-          net_amount: Math.round(amount * 0.971), // Amount after fee
-        })
+        .insert(insertData)
         .select()
         .single()
 
@@ -174,6 +209,10 @@ serve(async (req) => {
       }
 
       // Create transaction record for the withdrawal
+      const transactionDescription = wdMethod === 'paypal'
+        ? `Withdrawal to PayPal (${paypal_email})`
+        : `Withdrawal via Razorpay Payout (${fund_account_id || 'N/A'})`;
+
       const { error: transactionError } = await supabaseClient
         .from('transactions')
         .insert({
@@ -182,10 +221,10 @@ serve(async (req) => {
           type: 'debit',
           source: 'withdrawal',
           status: 'pending',
-          description: `Withdrawal to PayPal (${paypal_email})`,
+          description: transactionDescription,
           metadata: {
             withdrawal_id: withdrawal.id,
-            method: 'paypal',
+            method: wdMethod,
           },
         })
 

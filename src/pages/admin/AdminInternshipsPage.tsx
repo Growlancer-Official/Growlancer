@@ -13,26 +13,28 @@ import {
   FileText,
   Calendar,
   Clock,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Briefcase,
   MapPin,
   Building,
-  BookOpen,
-  Award,
-  MoreHorizontal,
-  X,
   Link2,
   CheckSquare,
   Square,
   FilterX,
-  Upload,
   History,
   CheckCheck,
   Trash2,
+  FileCheck,
+  ShieldCheck,
+  ScrollText,
+  FileUp,
+  FileDown,
+  Video,
+  Send,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
 
 type ApplicationStatus = 'applied' | 'shortlisted' | 'interview_scheduled' | 'selected' | 'rejected';
 
@@ -56,11 +58,16 @@ interface InternshipApplication {
   resume_file_name: string | null;
   cover_letter: string;
   why_growlancer: string | null;
+  google_meet_link: string | null;
+  interview_time: string | null;
   weekly_availability: number | null;
   available_from: string | null;
   available_to: string | null;
   status: ApplicationStatus;
   notes: string | null;
+  offer_letter_url: string | null;
+  nda_url: string | null;
+  internship_letter_url: string | null;
 }
 
 const STATUS_COLORS: Record<ApplicationStatus, string> = {
@@ -110,11 +117,67 @@ export function AdminInternshipsPage() {
   const [bulkStatus, setBulkStatus] = useState<ApplicationStatus>('shortlisted');
   const [emailLogs, setEmailLogs] = useState<Record<string, { status: string; sent: boolean; time: string }[]>>({});
   const selectAllRef = useRef<HTMLButtonElement>(null);
+  const toast = useToast();
+  const [uploadingDoc, setUploadingDoc] = useState<Record<string, { type: string; loading: boolean }>>({});
 
-  const fetchApplications = useCallback(async () => {
-    setLoading(true);
+  const handleDocumentUpload = async (appId: string, field: 'offer_letter_url' | 'nda_url' | 'internship_letter_url', file: File) => {
+    if (!file) return;
+    const label = { offer_letter_url: 'Offer Letter', nda_url: 'NDA', internship_letter_url: 'Internship Letter' }[field];
+    setUploadingDoc(prev => ({ ...prev, [`${appId}-${field}`]: { type: field, loading: true } }));
     try {
-      // Fetch via edge function (uses service_role key, bypasses RLS)
+      // Read file as base64
+      const fileBase64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = reader.result as string;
+          const base64 = result.split(',')[1]; // Remove data:application/pdf;base64, prefix
+          resolve(base64);
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      const fileExt = file.name.split('.').pop() || 'pdf';
+      const filePath = `${appId}/${field.replace('_url', '')}.${fileExt}`;
+
+      // Use edge function with service_role to bypass storage RLS
+      const { data: uploadResult, error: fnError } = await supabase.functions.invoke('admin-data', {
+        method: 'POST',
+        body: {
+          action: 'storage_upload',
+          bucket: 'internship_documents',
+          file_path: filePath,
+          file_base64: fileBase64,
+          content_type: file.type || 'application/pdf',
+        },
+      });
+
+      if (fnError || uploadResult?.error) throw new Error(uploadResult?.error || fnError?.message || 'Upload failed');
+      
+      const publicUrl = uploadResult.publicUrl;
+      if (!publicUrl) throw new Error('No public URL returned');
+
+      const { error: updateError } = await supabase
+        .from('internship_applications')
+        .update({ [field]: publicUrl })
+        .eq('id', appId);
+      if (updateError) throw updateError;
+      toast.success('Uploaded', `${label} PDF uploaded successfully.`);
+      // Update local state directly to avoid auto-refresh
+      setApplications(prev => 
+        prev.map(a => a.id === appId ? { ...a, [field]: publicUrl } : a)
+      );
+    } catch (err) {
+      console.error('Document upload error:', err);
+      toast.error('Upload Failed', `Failed to upload ${label}. Please try again.`);
+    } finally {
+      setUploadingDoc(prev => ({ ...prev, [`${appId}-${field}`]: { type: field, loading: false } }));
+    }
+  };
+
+  const fetchApplications = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
+    try {
       const { data: fnData, error } = await supabase.functions.invoke(
         'internship-applications',
         { method: 'GET' }
@@ -122,7 +185,6 @@ export function AdminInternshipsPage() {
       
       if (error) throw error;
       
-      // Apply client-side date range filter
       let apps = (fnData?.applications || []) as InternshipApplication[];
       if (dateFrom) {
         const from = new Date(dateFrom).getTime();
@@ -137,29 +199,36 @@ export function AdminInternshipsPage() {
     } catch (err) {
       console.error('Failed to fetch internship applications:', err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, [roleFilter, statusFilter, dateFrom, dateTo]);
 
   useEffect(() => { fetchApplications(); }, [fetchApplications]);
 
-  // Real-time subscription
+  // Polling fallback for cross-session sync (replaces realtime WebSocket which requires Supabase JWT)
+  const isActiveRef = useRef(false);
   useEffect(() => {
-    const channel = supabase.channel(`admin-internships-${Date.now()}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'internship_applications' }, () => fetchApplications())
-      .subscribe();
-    return () => { channel.unsubscribe(); };
-  }, [fetchApplications]);
+    const interval = setInterval(() => {
+      if (!isActiveRef.current && !actionLoading && !expandedId && Object.keys(uploadingDoc).length === 0) {
+        fetchApplications(false);
+      }
+    }, 25000);
+    return () => clearInterval(interval);
+  }, [fetchApplications, actionLoading, expandedId, uploadingDoc]);
+
+  // Track when user is actively interacting
+  useEffect(() => {
+    isActiveRef.current = !!expandedId || !!actionLoading || Object.keys(uploadingDoc).length > 0;
+  }, [expandedId, actionLoading, uploadingDoc]);
 
   const handleDeleteApplication = async (id: string, name: string) => {
-    if (!confirm(`🗑️ Delete application from "${name}"? This cannot be undone!`)) return;
+    if (!confirm(`Delete application from "${name}"? This cannot be undone!`)) return;
     setActionLoading(`delete-${id}`);
     try {
       await supabase.functions.invoke('internship-applications', {
         method: 'DELETE',
         body: { application_id: id },
       }).catch(async () => {
-        // Fallback: delete via edge function admin-data
         await supabase.functions.invoke('admin-data', {
           method: 'DELETE',
           body: { table: 'internship_applications', id },
@@ -170,29 +239,131 @@ export function AdminInternshipsPage() {
     finally { setActionLoading(null); }
   };
 
-  const handleStatusChange = async (id: string, status: ApplicationStatus) => {
+  const getCurrentAppStatus = (id: string): ApplicationStatus | undefined =>
+    applications.find(a => a.id === id)?.status;
+
+  const [meetLinkInput, setMeetLinkInput] = useState<Record<string, string>>({});
+  const [interviewTimeInput, setInterviewTimeInput] = useState<Record<string, string>>({});
+  const [sendEmailOnStatus, setSendEmailOnStatus] = useState<Record<string, boolean>>({});
+
+  const handleSendEmail = async (id: string) => {
+    const app = applications.find(a => a.id === id);
+    if (!app) return;
+    const statusLabel = STATUS_LABELS[app.status];
+    if (!confirm(`Send "${statusLabel}" email to ${app.full_name} (${app.email})?`)) return;
+
+    setActionLoading(`email-${id}`);
+    try {
+      const { data, error } = await supabase.functions.invoke('internship-applications', {
+        method: 'PATCH',
+        body: {
+          application_id: id,
+          status: app.status,
+          send_email_only: true,
+        },
+      });
+
+      const emailSent = data?.status_email_sent === true;
+      if (error || !emailSent) {
+        toast.error('Email Failed', `Could not send "${statusLabel}" email. Check Brevo settings.`);
+      } else {
+        toast.success('Email Sent', `"${statusLabel}" email delivered to ${app.full_name}.`);
+      }
+
+      setEmailLogs(prev => ({
+        ...prev,
+        [id]: [...(prev[id] || []), { status: app.status, sent: emailSent, time: new Date().toISOString() }],
+      }));
+    } catch (err) {
+      console.error('Send email error:', err);
+      toast.error('Email Failed', 'An unexpected error occurred.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleStatusChange = async (id: string, status: ApplicationStatus, sendEmail = false) => {
+    const prevStatus = getCurrentAppStatus(id);
+    const isRealStatusChange = prevStatus !== undefined && prevStatus !== status;
+    const app = applications.find(a => a.id === id);
+
     setActionLoading(`status-${id}`);
+    let emailSent = false;
     try {
       const notes = notesInput[id] || undefined;
-      const { error } = await supabase.functions.invoke('internship-applications', {
+      // Use typed input OR existing DB value as fallback to always persist meet link/time
+      const googleMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
+      const interviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
+      
+      // First update the status
+      const { data, error } = await supabase.functions.invoke('internship-applications', {
         method: 'PATCH',
-        body: { application_id: id, status, notes },
+        body: {
+          application_id: id,
+          status,
+          notes,
+          google_meet_link: googleMeetLink,
+          interview_time: interviewTime || undefined,
+        },
       });
+
       if (error) {
         console.error('Status update via edge function failed:', error);
         await supabase
           .from('internship_applications')
           .update({ status, notes: notes || null })
           .eq('id', id);
+        toast.error('Status Update Failed', 'Status was not updated. Please try again.');
+      } else {
+        // If status changed successfully AND email requested, send email now
+        if (sendEmail && isRealStatusChange && app) {
+          try {
+            const emailResult = await supabase.functions.invoke('internship-applications', {
+              method: 'PATCH',
+              body: {
+                application_id: id,
+                status,
+                send_email_only: true,
+              },
+            });
+            emailSent = emailResult.data?.status_email_sent === true;
+            if (emailSent) {
+              setEmailLogs(prev => ({
+                ...prev,
+                [id]: [...(prev[id] || []), { status, sent: true, time: new Date().toISOString() }],
+              }));
+            }
+          } catch (emailErr) {
+            console.error('Auto email send error:', emailErr);
+            // Don't throw — status was already updated successfully
+          }
+        }
+
+        const msg = isRealStatusChange
+          ? sendEmail
+            ? emailSent
+              ? `Status updated to "${STATUS_LABELS[status]}" & email sent!`
+              : `Status updated to "${STATUS_LABELS[status]}" (email failed)`
+            : `Status updated to "${STATUS_LABELS[status]}" (email not sent yet)`
+          : 'Notes updated successfully.';
+        toast.success(isRealStatusChange ? 'Status Updated' : 'Note Saved', msg);
       }
+
+      // Update local state directly to avoid auto-refresh
+      setApplications(prev => prev.map(a => 
+        a.id === id ? { 
+          ...a, 
+          status, 
+          notes: notes || a.notes,
+          google_meet_link: googleMeetLink ?? a.google_meet_link,
+          interview_time: interviewTime || a.interview_time,
+        } : a
+      ));
       setNotesInput(prev => ({ ...prev, [id]: '' }));
-      setEmailLogs(prev => ({
-        ...prev,
-        [id]: [...(prev[id] || []), { status, sent: true, time: new Date().toISOString() }],
-      }));
-      await fetchApplications();
+      setSendEmailOnStatus(prev => ({ ...prev, [id]: false })); // Reset checkbox
     } catch (err) {
       console.error('Status update error:', err);
+      toast.error('Update Failed', 'An unexpected error occurred.');
     } finally {
       setActionLoading(null);
     }
@@ -222,24 +393,37 @@ export function AdminInternshipsPage() {
   const handleBulkStatusUpdate = async () => {
     if (selectedIds.size === 0) return;
     setActionLoading('bulk');
+    let successCount = 0;
+    let failCount = 0;
     try {
       const ids = Array.from(selectedIds);
       for (const id of ids) {
-        await supabase.functions.invoke('internship-applications', {
-          method: 'PATCH',
-          body: { application_id: id, status: bulkStatus },
-        }).catch(() =>
-          supabase.from('internship_applications').update({ status: bulkStatus }).eq('id', id)
-        );
-        setEmailLogs(prev => ({
-          ...prev,
-          [id]: [...(prev[id] || []), { status: bulkStatus, sent: true, time: new Date().toISOString() }],
-        }));
+        try {
+          const { error } = await supabase.functions.invoke('internship-applications', {
+            method: 'PATCH',
+            body: { application_id: id, status: bulkStatus },
+          });
+          if (error) {
+            await supabase.from('internship_applications').update({ status: bulkStatus }).eq('id', id);
+            failCount++;
+          } else {
+            successCount++;
+          }
+        } catch {
+          failCount++;
+        }
       }
       setSelectedIds(new Set());
       await fetchApplications();
+
+      if (failCount === 0) {
+        toast.success('Bulk Complete', `${successCount} statuses updated (emails not sent).`);
+      } else {
+        toast.warning('Bulk Partial', `${successCount} updated, ${failCount} failed.`);
+      }
     } catch (err) {
       console.error('Bulk update error:', err);
+      toast.error('Bulk Update Error', 'An unexpected error occurred during bulk update.');
     } finally {
       setActionLoading(null);
     }
@@ -325,7 +509,6 @@ export function AdminInternshipsPage() {
 
       {/* Filters + Actions */}
       <div className="space-y-3" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '1rem', padding: '1rem' }}>
-        {/* Row 1: Search + Filters */}
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
           <div className="flex items-center gap-3 flex-1 flex-wrap">
             <div className="relative flex-1 min-w-[180px]">
@@ -352,19 +535,16 @@ export function AdminInternshipsPage() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            {/* CSV Export */}
             <button onClick={handleExportCSV}
               className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-emerald-400 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
               <Download className="w-3.5 h-3.5" /> CSV
             </button>
-            {/* Refresh */}
             <button onClick={fetchApplications}
               className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
             </button>
           </div>
         </div>
-        {/* Row 2: Date Range */}
         <div className="flex flex-wrap items-center gap-3">
           <Calendar className="w-3.5 h-3.5 text-slate-500" />
           <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
@@ -420,7 +600,6 @@ export function AdminInternshipsPage() {
           </div>
         ) : (
           <>
-            {/* Select All Header */}
             {filteredApplications.length > 0 && (
               <div className="flex items-center gap-3 px-1 py-1" style={{ color: '#64748B' }}>
                 <button
@@ -449,7 +628,6 @@ export function AdminInternshipsPage() {
               >
                 <div className="flex items-start gap-4 flex-1 min-w-0 cursor-pointer"
                   onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}>
-                  {/* Bulk Select Checkbox */}
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
                     className="mt-0.5 shrink-0 hover:text-emerald-400 transition-colors"
@@ -491,24 +669,24 @@ export function AdminInternshipsPage() {
               {/* Expanded Details */}
               {expandedId === app.id && (
                 <div className="border-t border-white/5 px-5 py-5 space-y-6 animate-fade-in">
-                  {/* Quick Actions */}
-                  <div className="flex flex-wrap gap-2">
-                    <button onClick={() => handleStatusChange(app.id, 'shortlisted')}
+                  {/* Quick Actions - Status Update Buttons */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button onClick={() => handleStatusChange(app.id, 'shortlisted', sendEmailOnStatus[app.id])}
                       disabled={actionLoading === `status-${app.id}` || app.status === 'shortlisted'}
                       className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 disabled:opacity-30 transition-colors">
                       Shortlist
                     </button>
-                    <button onClick={() => handleStatusChange(app.id, 'interview_scheduled')}
+                    <button onClick={() => handleStatusChange(app.id, 'interview_scheduled', sendEmailOnStatus[app.id])}
                       disabled={actionLoading === `status-${app.id}` || app.status === 'interview_scheduled'}
                       className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 disabled:opacity-30 transition-colors">
                       Interview Scheduled
                     </button>
-                    <button onClick={() => handleStatusChange(app.id, 'selected')}
+                    <button onClick={() => handleStatusChange(app.id, 'selected', sendEmailOnStatus[app.id])}
                       disabled={actionLoading === `status-${app.id}` || app.status === 'selected'}
                       className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-30 transition-colors">
                       Select
                     </button>
-                    <button onClick={() => handleStatusChange(app.id, 'rejected')}
+                    <button onClick={() => handleStatusChange(app.id, 'rejected', sendEmailOnStatus[app.id])}
                       disabled={actionLoading === `status-${app.id}` || app.status === 'rejected'}
                       className="text-[10px] font-bold px-3 py-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 disabled:opacity-30 transition-colors">
                       Reject
@@ -519,7 +697,152 @@ export function AdminInternshipsPage() {
                       {actionLoading === `delete-${app.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                       Delete
                     </button>
+                    <label className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-700/30 text-slate-400 text-[10px] font-bold cursor-pointer hover:bg-slate-700/50 hover:text-emerald-400 transition-colors select-none"
+                      onClick={(e) => e.stopPropagation()}>
+                      <input type="checkbox" checked={!!sendEmailOnStatus[app.id]}
+                        onChange={(e) => setSendEmailOnStatus(prev => ({ ...prev, [app.id]: e.target.checked }))}
+                        className="w-3 h-3 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/20 cursor-pointer" />
+                      <Send className="w-3 h-3" />
+                      Auto Email
+                    </label>
                   </div>
+
+                  {/* Type-Specific Send Email Buttons - One per status */}
+                  {app.status === 'shortlisted' && (
+                    <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
+                          <Send className="w-4 h-4 text-amber-400" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-amber-400">Send Shortlisted Email</h4>
+                          <p className="text-[10px] text-slate-500">Notify {app.full_name} they have been shortlisted for interview</p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleSendEmail(app.id)}
+                        disabled={actionLoading === `email-${app.id}`}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 disabled:opacity-30 text-white text-xs font-bold transition-all">
+                        {actionLoading === `email-${app.id}` ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...</> : <><Send className="w-3.5 h-3.5" /> Send</>}
+                      </button>
+                    </div>
+                  )}
+
+                  {app.status === 'interview_scheduled' && (
+                    <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'rgba(124, 58, 237, 0.05)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                          <Send className="w-4 h-4 text-purple-400" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-purple-400">Send Interview Invitation</h4>
+                          <p className="text-[10px] text-slate-500">Send Google Meet link & time to {app.full_name}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleSendEmail(app.id)}
+                        disabled={actionLoading === `email-${app.id}`}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-30 text-white text-xs font-bold transition-all">
+                        {actionLoading === `email-${app.id}` ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...</> : <><Send className="w-3.5 h-3.5" /> Send</>}
+                      </button>
+                    </div>
+                  )}
+
+                  {app.status === 'selected' && (
+                    <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                          <Send className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-emerald-400">Send Selected Email</h4>
+                          <p className="text-[10px] text-slate-500">Send offer letter, NDA & documents to {app.full_name}</p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleSendEmail(app.id)}
+                        disabled={actionLoading === `email-${app.id}`}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 text-white text-xs font-bold transition-all">
+                        {actionLoading === `email-${app.id}` ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...</> : <><Send className="w-3.5 h-3.5" /> Send</>}
+                      </button>
+                    </div>
+                  )}
+
+                  {app.status === 'rejected' && (
+                    <div className="p-4 rounded-xl flex items-center justify-between" style={{ background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-red-500/10 flex items-center justify-center">
+                          <Send className="w-4 h-4 text-red-400" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-red-400">Send Rejection Email</h4>
+                          <p className="text-[10px] text-slate-500">Politely inform {app.full_name} about the decision</p>
+                        </div>
+                      </div>
+                      <button onClick={() => handleSendEmail(app.id)}
+                        disabled={actionLoading === `email-${app.id}`}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-30 text-white text-xs font-bold transition-all">
+                        {actionLoading === `email-${app.id}` ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending...</> : <><Send className="w-3.5 h-3.5" /> Send</>}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Interview Scheduling - Google Meet + Time */}
+                  {(app.status === 'shortlisted' || app.status === 'interview_scheduled') && (
+                    <div className="p-4 rounded-xl" style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                        <Video className="w-3.5 h-3.5 text-purple-400" />
+                        Interview Scheduling
+                        {app.status === 'interview_scheduled' && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 ml-1">
+                            Scheduled
+                          </span>
+                        )}
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[11px] font-medium text-slate-400 mb-1.5">Google Meet Link</label>
+                          <div className="relative">
+                            <Video className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                            <input
+                              type="url"
+                              value={meetLinkInput[app.id] ?? app.google_meet_link ?? ''}
+                              onChange={(e) => setMeetLinkInput(prev => ({ ...prev, [app.id]: e.target.value }))}
+                              placeholder="https://meet.google.com/..."
+                              className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-slate-600"
+                            />
+                          </div>
+                          {app.google_meet_link && !meetLinkInput[app.id] && (
+                            <p className="text-[10px] text-slate-500 mt-1">Current: {app.google_meet_link}</p>
+                          )}
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-medium text-slate-400 mb-1.5">Interview Date & Time</label>
+                          <div className="relative">
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                            <input
+                              type="datetime-local"
+                              value={interviewTimeInput[app.id] ?? (app.interview_time ? app.interview_time.slice(0, 16) : '')}
+                              onChange={(e) => setInterviewTimeInput(prev => ({ ...prev, [app.id]: e.target.value }))}
+                              className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 [color-scheme:dark]"
+                            />
+                          </div>
+                          {app.interview_time && !interviewTimeInput[app.id] && (
+                            <p className="text-[10px] text-slate-500 mt-1">Current: {new Date(app.interview_time).toLocaleString()}</p>
+                          )}
+                        </div>
+                      </div>
+                      {app.status === 'interview_scheduled' && (
+                        <div className="mt-3 flex justify-end">
+                          <button
+                            onClick={() => handleStatusChange(app.id, 'interview_scheduled')}
+                            disabled={actionLoading === `status-${app.id}`}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-30 text-white text-xs font-bold transition-all"
+                          >
+                            {actionLoading === `status-${app.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Video className="w-3 h-3" />}
+                            Save Interview Details
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Contact Info & Links */}
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -617,6 +940,79 @@ export function AdminInternshipsPage() {
                       </a>
                     </div>
                   )}
+
+                  {/* Documents Section - Upload Offer Letter, NDA, Internship Letter */}
+                  <div>
+                    <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                      <FileCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      Internship Documents
+                      {app.status === 'selected' && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 ml-1">
+                          Upload PDFs for Selected Intern
+                        </span>
+                      )}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      {[
+                        { key: 'offer_letter_url' as const, label: 'Offer Letter', icon: ScrollText, desc: 'Formal offer letter PDF' },
+                        { key: 'nda_url' as const, label: 'NDA', icon: ShieldCheck, desc: 'Non-Disclosure Agreement PDF' },
+                        { key: 'internship_letter_url' as const, label: 'Internship Letter', icon: FileText, desc: 'Internship confirmation letter PDF' },
+                      ].map(({ key, label, icon: Icon, desc }) => {
+                        const docKey = `${app.id}-${key}`;
+                        const isUploading = uploadingDoc[docKey]?.loading;
+                        const existingUrl = app[key];
+                        return (
+                          <div key={key} className="p-4 rounded-xl" style={{ background: 'rgba(15, 23, 42, 0.5)', border: existingUrl ? '1px solid rgba(5, 150, 105, 0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
+                            <div className="flex items-center gap-2 mb-2">
+                              <Icon className={`w-4 h-4 ${existingUrl ? 'text-emerald-400' : 'text-slate-500'}`} />
+                              <span className="text-sm font-semibold text-slate-300">{label}</span>
+                              {existingUrl && (
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 ml-auto">
+                                  Uploaded
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mb-3">{desc}</p>
+                            <div className="flex gap-2">
+                              <label className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold cursor-pointer transition-colors ${
+                                isUploading
+                                  ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                                  : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                              }`}>
+                                {isUploading ? (
+                                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...</>
+                                ) : (
+                                  <><FileUp className="w-3.5 h-3.5" /> {existingUrl ? 'Replace' : 'Upload PDF'}</>
+                                )}
+                                <input
+                                  type="file"
+                                  accept=".pdf,application/pdf"
+                                  className="hidden"
+                                  disabled={isUploading}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleDocumentUpload(app.id, key, file);
+                                    e.target.value = '';
+                                  }}
+                                />
+                              </label>
+                              {existingUrl && (
+                                <a
+                                  href={existingUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-slate-700/50 text-slate-400 text-xs font-bold hover:text-emerald-400 transition-colors"
+                                  title="Download PDF"
+                                >
+                                  <FileDown className="w-3.5 h-3.5" />
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
                   {/* Cover Letter */}
                   <div>

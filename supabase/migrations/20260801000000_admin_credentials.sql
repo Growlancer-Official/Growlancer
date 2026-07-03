@@ -26,27 +26,15 @@ CREATE POLICY "Service role can manage admin_credentials"
 -- Enable realtime for admin_credentials
 ALTER PUBLICATION supabase_realtime ADD TABLE public.admin_credentials;
 
--- Seed default admin credential
--- Password is SHA-256 hash of user's chosen password
--- Default: admin@growlancer.com / Admin@123
--- IMPORTANT: Change this password after first login!
-INSERT INTO public.admin_credentials (email, password_hash, label, is_active)
-VALUES (
-  'admin@growlancer.com',
-  -- SHA-256 hash of 'Admin@123'
-  '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
-  'Main Admin',
-  true
-)
-ON CONFLICT (email) DO NOTHING;
-
--- Add second admin credential placeholder
-INSERT INTO public.admin_credentials (email, password_hash, label, is_active)
-VALUES (
-  'support@growlancer.com',
-  -- SHA-256 hash of 'Support@456'
-  '9649b2ce9bad42f3d6c1ffaffd85fa52f2cf0314bc0fb46f6401e7a5c5c2d114',
-  'Support Admin',
-  true
-)
-ON CONFLICT (email) DO NOTHING;
+-- Admin accounts must be created via a one-time secure script, not committed to the repo.
+--
+-- To create an admin, run the following operations in Supabase SQL editor or via a migration script:
+--
+-- 1. Hash your password using bcrypt (run this in a script or use https://bcrypt-generator.com/):
+--    const bcrypt = require('bcryptjs');
+--    const hash = await bcrypt.hash('YourSecurePassword', 10);
+--    console.log(hash);
+--
+-- 2. Insert the admin credential:
+--    INSERT INTO public.admin_credentials (email, password_hash, label, is_active)
+--    VALUES ('admin@yourdomain.com', '<bcrypt_hash>', 'Main Admin', true);

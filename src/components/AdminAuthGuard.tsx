@@ -96,9 +96,9 @@ export function adminLogout(): void {
 }
 
 /**
- * Get current admin session info.
+ * Get current admin session info (includes token for API calls).
  */
-export function getAdminSession(): { email: string; label: string; loggedInAt: string } | null {
+export function getAdminSession(): { email: string; label: string; loggedInAt: string; token: string; expiresAt: string } | null {
   try {
     const raw = localStorage.getItem('growlancer_admin_session');
     if (!raw) return null;
@@ -108,7 +108,13 @@ export function getAdminSession(): { email: string; label: string; loggedInAt: s
       localStorage.removeItem('growlancer_admin_session');
       return null;
     }
-    return { email: session.email, label: session.label, loggedInAt: session.loggedInAt };
+    return {
+      email: session.email,
+      label: session.label,
+      loggedInAt: session.loggedInAt,
+      token: session.token || '',
+      expiresAt: session.expiresAt || '',
+    };
   } catch {
     return null;
   }

@@ -79,6 +79,11 @@ const termsSections: Section[] = [
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                   We believe in empowering creators. Growlancer charges freelancers zero percentage fees on standard contracts. The amount earned is the amount received in your wallet!
                 </p>
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                  <p className="text-[10px] text-amber-800 font-medium">
+                    <strong>Note:</strong> A separate payment-processing fee applies when you withdraw funds from your wallet, charged by our payment processor, not by Growlancer. PayPal withdrawals incur a 2.9% processing fee. Razorpay (India) withdrawals incur a 2% processing fee. These fees are deducted from the withdrawal amount and are clearly displayed before you confirm any withdrawal.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -147,8 +152,8 @@ const termsSections: Section[] = [
             </h5>
             <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-2">
               <li><strong>1. Coordination Check (48 Hours):</strong> Upon raising a dispute, the contract status is changed to "disputed". The workspace asset locker is frozen, preventing any further uploads or modifications. The client and freelancer are given 48 hours to communicate and resolve the issue mutually (e.g. adjust task requirements or agree to a partial refund).</li>
-              <li><strong>2. Audit Phase:</strong> If no agreement is reached, either party may escalate the dispute to the Growlancer Dispute Center. Our neutral mediation desk will step in to audit the entire shared workspace canvas, including the message history, task logs, file deliverables, and the collaborative notes.</li>
-              <li><strong>3. Binding Decision:</strong> Growlancer will issue a final, binding escrow allocation decision (releasing funds to the freelancer, refunding the client, or dividing the balance proportionally based on verifiable milestone progress). Both parties agree to abide by this decision.</li>
+              <li><strong>2. AI-Assisted Audit:</strong> If no agreement is reached, either party may escalate the dispute to the Growlancer Dispute Center. Our AI Mediator evaluates the workspace logs, chat archives, and task cards, then proposes a fair split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point for resolution.</li>
+              <li><strong>3. Human Review & Binding Decision:</strong> A human dispute resolution specialist reviews the AI's recommendation, along with all evidence, and confirms or adjusts the proposed split. Growlancer then issues a final, binding escrow allocation decision. Both parties agree to abide by this decision. Funds are moved only after human confirmation.</li>
             </ol>
           </div>
         </>
@@ -178,11 +183,64 @@ const termsSections: Section[] = [
       ),
     },
     {
+      id: 'liability',
+      title: '8. Limitation of Liability',
+      icon: AlertOctagon,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            <strong>IMPORTANT: PLEASE READ THIS SECTION CAREFULLY. IT LIMITS THE LIABILITY OF GROWLANCER AND ITS AFFILIATES.</strong>
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            To the fullest extent permitted by applicable law, in no event shall Growlancer, its officers, directors, employees, or agents be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses, arising out of or in connection with your use of the Platform, whether based on warranty, contract, tort (including negligence), or any other legal theory, even if Growlancer has been advised of the possibility of such damages.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            Growlancer's total liability to you for any claims arising from or relating to these Terms or your use of the Platform shall be limited to the aggregate amount of fees paid by you to Growlancer in the twelve (12) months preceding the event giving rise to the claim.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            The limitations in this section do not apply to liability that cannot be excluded or limited by applicable law, such as liability for gross negligence, fraud, or death or personal injury caused by negligence.
+          </p>
+          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl">
+            <p className="text-[10px] text-red-700 font-medium">
+              ⚠️ A lawyer should review this Limitation of Liability clause before launch to ensure it complies with applicable local laws and is appropriately tailored to the platform's operations.
+            </p>
+          </div>
+        </>
+      ),
+    },
+    {
+      id: 'disclaimer',
+      title: '9. Disclaimer of Warranties',
+      icon: Shield,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            <strong>IMPORTANT: PLEASE READ THIS SECTION CAREFULLY. IT DISCLAIMS CERTAIN WARRANTIES.</strong>
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, GROWLANCER DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, AND COURSE OF DEALING OR USAGE OF TRADE.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            Growlancer does not warrant that: (a) the Platform will function uninterrupted, secure, or available at any particular time or location; (b) any errors or defects will be corrected; (c) the results of using the Platform will meet your requirements or expectations; or (d) the Platform is free of viruses or other harmful components.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            No advice or information, whether oral or written, obtained by you from Growlancer or through the Platform shall create any warranty not expressly stated in these Terms.
+          </p>
+          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl">
+            <p className="text-[10px] text-red-700 font-medium">
+              ⚠️ A lawyer should review this Disclaimer of Warranties clause before launch to ensure it complies with applicable local laws, particularly regarding consumer protection rights that may not allow certain disclaimers.
+            </p>
+          </div>
+        </>
+      ),
+    },
+    {
       id: 'support',
-      title: '8. Legal Administration & Contact',
+      title: '10. Legal Administration & Contact',
       icon: HelpCircle,
       content: (
         <>
+          {/* TODO: Replace with actual incorporation jurisdiction once the company is registered, e.g. "the laws of India" */}
           <p className="text-slate-600 leading-relaxed mb-4">
             These Terms of Service shall be governed by and construed in accordance with the laws of the jurisdiction of the Platform's incorporation, without regard to conflict of law principles.
           </p>

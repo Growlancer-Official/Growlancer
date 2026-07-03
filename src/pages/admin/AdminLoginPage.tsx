@@ -42,14 +42,16 @@ export function AdminLoginPage() {
         throw new Error(fnError.message);
       }
 
-      const res = result as { success?: boolean; error?: string; label?: string };
+      const res = result as { success?: boolean; error?: string; label?: string; token?: string; expires_at?: string };
       if (res?.success) {
-        // Store admin session in localStorage
+        // Store admin session in localStorage (includes the session token for API calls)
+        const expiresAt = res.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
         const session = {
           email: email.trim().toLowerCase(),
           label: res.label || 'Admin',
+          token: res.token || '',
           loggedInAt: new Date().toISOString(),
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // 24 hours
+          expiresAt,
         };
         localStorage.setItem('growlancer_admin_session', JSON.stringify(session));
         navigate('/admin', { replace: true });
