@@ -473,7 +473,6 @@ function App() {
                 <Route path="certificates" element={<AdminCertificatesPage />} />
               </Route>
 
-              {/* TODO(review): Add logic to route OAuth users from non-India countries to WaitlistPage instead of their dashboard. Requires a 'confirm your country' step after OAuth callback in AuthCallbackPage.tsx, plus insertion into the waitlist table. */}
               {/* Waitlist Route (public, no layout) */}
               <Route path="/waitlist" element={<WaitlistPage />} />
 

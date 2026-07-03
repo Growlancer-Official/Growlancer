@@ -417,9 +417,6 @@ export const contractsService = {
       // Client pays bid + 5% platform fee (added on top). Freelancer gets full bid amount.
       // This matches the Terms of Service: "Client Fee 5%, Freelancer Fee 0%"
       const platformFee = calculatePlatformFee(bidAmount);
-      // TODO(review): Ensure the downstream payment components (EscrowRazorpayPayment, EscrowPayPalPayment)
-      // charge the client using calculateTotalWithFee(bidAmount) = bidAmount + platformFee,
-      // not just bidAmount alone. The client should pay the 5% platform fee on top.
       // freelancer_amount = full bid amount (freelancer gets paid in full)
       const freelancerAmount = bidAmount;
 

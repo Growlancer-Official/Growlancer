@@ -446,7 +446,6 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                 className="w-full h-11 pl-12 pr-4 bg-white border border-slate-200 rounded-xl outline-none transition-all text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
               />
             </div>
-    {/* TODO(review): Add server-side phone validation in the signup flow (edge function or trigger) to reject/soft-gate any phone not starting with +91. Frontend-only validation can be bypassed. */}
     <p className="text-[10px] text-slate-400 ml-1">
       India only (<strong>+91</strong>). Other countries coming soon.
     </p>
