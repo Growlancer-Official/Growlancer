@@ -520,7 +520,7 @@ Deno.serve(async (req) => {
       const pdfDocSection = certificate_url ? `
       <div style="margin: 28px 0; padding: 28px; background: #f8fafc; border: 2px solid ${isLOR ? '#7c3aed' : '#059669'}; border-radius: 16px;">
         <div style="text-align: center; margin-bottom: 12px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">\u{1F4C4}</div>
+          <div style="font-size: 36px; margin-bottom: 8px;">📄</div>
           <h3 style="font-size: 18px; color: ${isLOR ? '#6d28d9' : '#059669'}; margin: 0;">Your ${isLOR ? 'Recommendation Letter' : 'Certificate'} Document</h3>
           <p style="font-size: 14px; color: #475569; margin: 8px 0 0;">
             Download the official PDF document below. This is your formal ${isLOR ? 'letter of recommendation' : 'completion certificate'}.
@@ -529,7 +529,7 @@ Deno.serve(async (req) => {
         <div style="text-align: center; margin: 20px 0;">
           <a href="${certificate_url}" target="_blank" rel="noopener noreferrer"
              style="display: inline-block; padding: 16px 40px; background: ${isLOR ? '#7c3aed' : '#059669'}; color: white; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.1);">
-            \u{1F4E5} Download ${isLOR ? 'LOR' : 'Certificate'} PDF
+            📥 Download ${isLOR ? 'LOR' : 'Certificate'} PDF
           </a>
         </div>
       </div>` : '';
@@ -553,12 +553,10 @@ Deno.serve(async (req) => {
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${recipient_name},</p>
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
         On behalf of the entire team at <strong>Growlancer</strong>, I am pleased to provide you with this
-        <strong style="color: #7c3aed;">Letter of Recommendation</strong> for your outstanding performance during your
-        <strong>${role_name || \'Internship\'}</strong> with us.
-      </p>
+        <strong style="color: #7c3aed;">Letter of Recommendation</strong> for your outstanding performance during your<strong>${role_name || 'Internship'}</strong> with us.</p>
       <p style="font-size: 14px; color: #475569; line-height: 1.7;">
         Throughout your time with us, you demonstrated exceptional skill, dedication, and professionalism.
-        ${performance_summary ? \`Your contributions included: \${performance_summary}\` : \'Your contributions have made a meaningful impact on our team and projects.\'}
+        ${performance_summary ? `Your contributions included: ${performance_summary}` : 'Your contributions have made a meaningful impact on our team and projects.'}
       </p>
       ${pdfDocSection}
       <div style="margin: 28px 0; padding: 24px; background: #f8fafc; border: 2px solid #7c3aed; border-radius: 16px; text-align: center;">
@@ -571,7 +569,7 @@ Deno.serve(async (req) => {
           View Online
         </a>
         <p style="font-size: 11px; color: #94a3b8; margin: 12px 0 0;">
-          Verification Code: <strong>${verification_code || \'\'}</strong>
+          Verification Code: <strong>${verification_code || ''}</strong>
         </p>
       </div>
       <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
@@ -603,7 +601,7 @@ Deno.serve(async (req) => {
     <div style="padding: 32px;">
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${recipient_name},</p>
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-        Congratulations on successfully completing your <strong>${role_name || \'Internship\'}</strong> at
+        Congratulations on successfully completing your <strong>${role_name || 'Internship'}</strong> at
         <strong>Growlancer</strong>! We are proud of the work you have done.
       </p>
       <p style="font-size: 14px; color: #475569; line-height: 1.7;">
@@ -620,7 +618,7 @@ Deno.serve(async (req) => {
           View Online
         </a>
         <p style="font-size: 11px; color: #94a3b8; margin: 12px 0 0;">
-          Verification Code: <strong>${verification_code || \'\'}</strong>
+          Verification Code: <strong>${verification_code || ''}</strong>
         </p>
       </div>
       <p style="font-size: 14px; color: #64748b; line-height: 1.7;">

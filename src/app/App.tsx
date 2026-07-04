@@ -283,6 +283,9 @@ const MagicLinkPage = lazy(() =>
 const EmailConfirmPage = lazy(() =>
   import('@pages/auth/EmailConfirmPage').then(m => ({ default: m.EmailConfirmPage }))
 );
+const VerifyEmailPage = lazy(() =>
+  import('@pages/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage }))
+);
 
 // Public Certificate Verification
 const CertificateVerifyPage = lazy(() =>
@@ -359,6 +362,7 @@ function App() {
               <Route path="auth/reset-password" element={<ResetPasswordPage />} />
               <Route path="auth/magic-link" element={<MagicLinkPage />} />
               <Route path="auth/email-confirm" element={<EmailConfirmPage />} />
+              <Route path="auth/verify-email" element={<VerifyEmailPage />} />
 
               {/* Debug route is only available in development */}
               {isDev && DevDebugPage && <Route path="/debug" element={<DevDebugPage />} />}
