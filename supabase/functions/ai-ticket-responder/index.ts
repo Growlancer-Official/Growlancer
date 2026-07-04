@@ -8,6 +8,22 @@ if (!GEMINI_API_KEY) {
   console.error('GEMINI_API_KEY environment variable is not set');
 }
 
+const ALLOWED_ORIGINS = [
+  'https://growlancer.vercel.app',
+  'https://growlancer.com',
+  'https://www.growlancer.com',
+  'http://localhost:5173',
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name, x-admin-token',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+  };
+}
+
 interface TicketData {
   ticket_id: string;
   user_id: string;
@@ -108,7 +124,13 @@ ${categoryGuidance}`;
 }
 
 Deno.serve(async (req: Request) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
 
   try {
     // Verify request is authorized (service role key)
@@ -121,13 +143,13 @@ Deno.serve(async (req: Request) => {
         if (error || !user) {
           return new Response(JSON.stringify({ error: 'Unauthorized' }), {
             status: 401,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
         }
       } else {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
           status: 401,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
@@ -138,7 +160,7 @@ Deno.serve(async (req: Request) => {
     } catch {
       return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -149,7 +171,7 @@ Deno.serve(async (req: Request) => {
         JSON.stringify({ error: 'Missing required fields: ticket_id, user_id, subject, description' }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -194,7 +216,7 @@ Growlancer Support Team`;
       if (msgError) {
         return new Response(JSON.stringify({ error: 'Failed to create message' }), {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
@@ -211,7 +233,7 @@ Growlancer Support Team`;
           fallback: true,
           message: fallbackResponse,
         }),
-        { status: 200, headers: { 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
@@ -228,7 +250,7 @@ Growlancer Support Team`;
     if (msgError) {
       return new Response(JSON.stringify({ error: 'Failed to create message' }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -244,13 +266,13 @@ Growlancer Support Team`;
         auto_responded: true,
         message: aiResponse,
       }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('AI Ticket Responder error:', error);
     return new Response(JSON.stringify({ error: error.message || 'Internal server error' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

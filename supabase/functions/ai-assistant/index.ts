@@ -5,6 +5,22 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
+const ALLOWED_ORIGINS = [
+  'https://growlancer.vercel.app',
+  'https://growlancer.com',
+  'https://www.growlancer.com',
+  'http://localhost:5173',
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name, x-admin-token',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+  };
+}
+
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -262,7 +278,13 @@ Remember: Be concise but thorough. Offer actionable advice.`;
 }
 
 Deno.serve(async (req: Request) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
 
   try {
     let body: ChatRequest;
@@ -271,7 +293,7 @@ Deno.serve(async (req: Request) => {
     } catch {
       return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -280,14 +302,14 @@ Deno.serve(async (req: Request) => {
     if (!user_id || !user_role || !messages) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     if (!['freelancer', 'client'].includes(user_role)) {
       return new Response(JSON.stringify({ error: 'Invalid user_role' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -302,7 +324,7 @@ Deno.serve(async (req: Request) => {
         }),
         {
           status: 403,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -314,7 +336,7 @@ Deno.serve(async (req: Request) => {
     if (!rateAllowed) {
       return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
         status: 429,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
@@ -369,7 +391,7 @@ Deno.serve(async (req: Request) => {
         const errText = await geminiResponse.text();
         return new Response(JSON.stringify({ error: `Gemini API error: ${errText}` }), {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
@@ -443,6 +465,7 @@ Deno.serve(async (req: Request) => {
       return new Response(stream, {
         status: 200,
         headers: {
+          ...corsHeaders,
           'Content-Type': 'text/event-stream',
           'Cache-Control': 'no-cache',
           Connection: 'keep-alive',
@@ -465,7 +488,7 @@ Deno.serve(async (req: Request) => {
           JSON.stringify({ error: data.error?.message || 'Gemini API error' }),
           {
             status: 500,
-            headers: { 'Content-Type': 'application/json' },
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           }
         );
       }
@@ -491,7 +514,7 @@ Deno.serve(async (req: Request) => {
         }),
         {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       );
     }
@@ -501,7 +524,7 @@ Deno.serve(async (req: Request) => {
       JSON.stringify({ error: error.message || 'Internal server error' }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     );
   }

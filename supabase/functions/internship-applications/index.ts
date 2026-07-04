@@ -25,10 +25,20 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
+const ALLOWED_ORIGINS = [
+  'https://growlancer.vercel.app',
+  'https://growlancer.com',
+  'https://www.growlancer.com',
+  'http://localhost:5173',
+];
+
+function getCorsHeaders(origin: string | null) {
+  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name, x-admin-token',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+  };
 }
 
 interface ApplicationData {
@@ -785,6 +795,8 @@ function sendStatusEmail(
 
 // ─── Main Server ────────────────────────────────────────────────────────────
 Deno.serve(async (req) => {
+  const origin = req.headers.get('origin');
+  const corsHeaders = getCorsHeaders(origin);
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
