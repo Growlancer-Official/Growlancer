@@ -133,18 +133,6 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     if (result.success) {
       onClose();
 
-      // Send welcome email via Brevo (fire-and-forget — don't block UI)
-      supabase.functions.invoke('admin-data', {
-        method: 'POST',
-        body: {
-          action: 'send_welcome_email',
-          recipient_email: normalizedEmail,
-          recipient_name: normalizedName,
-        },
-      }).catch(() => {
-        // Silent fail — welcome email is non-critical
-      });
-
       // Redirect to verify-email page (persists across refresh)
       navigate(`/auth/verify-email?email=${encodeURIComponent(normalizedEmail)}`);
     } else {

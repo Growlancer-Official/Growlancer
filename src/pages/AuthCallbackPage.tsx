@@ -65,6 +65,26 @@ export function AuthCallbackPage() {
           }
         }
 
+        // ── 4b. After signup verification, send professional welcome email via Brevo ──
+        if (detectedAction === 'signup') {
+          // Get user data for the welcome email
+          const { data: userData } = await supabase.auth.getUser();
+          const userEmail = userData?.user?.email || searchParams.get('email') || '';
+          const userName = userData?.user?.user_metadata?.name || userEmail.split('@')[0] || 'there';
+
+          // Fire-and-forget: send welcome email
+          supabase.functions.invoke('admin-data', {
+            method: 'POST',
+            body: {
+              action: 'send_welcome_email',
+              recipient_email: userEmail,
+              recipient_name: userName,
+            },
+          }).catch(() => {
+            // Silent fail — welcome email is non-critical
+          });
+        }
+
         // ── 5. Get the current session ──
         const { data, error: sessionError } = await supabase.auth.getSession();
 

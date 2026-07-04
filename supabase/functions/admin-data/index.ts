@@ -394,76 +394,181 @@ Deno.serve(async (req) => {
       const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
       const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
-      const subject = `Welcome to Growlancer! Your account is ready 🚀`;
+      const subject = `Welcome to Growlancer, ${recipient_name}! Your AI-powered journey begins now 🚀`;
 
       const bodyHtml = `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
-  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
-      <img src="${APP_URL}/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 48px; width: auto; margin-bottom: 16px;" />
-      <h1 style="color: white; font-size: 24px; font-weight: 700; margin: 0;">Welcome to Growlancer! 🎉</h1>
-      <p style="color: #a7f3d0; font-size: 15px; margin: 10px 0 0;">Your account has been created successfully</p>
-    </div>
-    <div style="padding: 32px;">
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi <strong>${recipient_name}</strong>,</p>
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-        Thank you for joining <strong>Growlancer</strong> — the AI-powered freelancing marketplace!
-      </p>
-      
-      <div style="margin: 28px 0; padding: 24px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
-        <h3 style="font-size: 16px; color: #065f46; margin: 0 0 16px; text-align: center;">What you can do now 🚀</h3>
-        <table style="width: 100%; border-collapse: collapse;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0fdf4; padding: 40px 20px; margin: 0;">
+  <!-- Main Container -->
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.08);">
+    
+    <!-- Hero Section -->
+    <tr>
+      <td style="background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); padding: 48px 40px 40px; text-align: center;">
+        <img src="${APP_URL}/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 56px; width: auto; margin-bottom: 24px; border-radius: 14px;" />
+        <div style="width: 64px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 0 auto 24px;"></div>
+        <h1 style="color: #ffffff; font-size: 28px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.5px;">
+          Welcome to Growlancer! 🎉
+        </h1>
+        <p style="color: #a7f3d0; font-size: 16px; margin: 0; line-height: 1.5;">
+          Your email has been verified — your journey starts now
+        </p>
+      </td>
+    </tr>
+
+    <!-- Content Section -->
+    <tr>
+      <td style="padding: 40px;">
+        <p style="font-size: 16px; color: #0f172a; line-height: 1.8; margin: 0 0 8px;">
+          Hey <strong style="color: #059669;">${recipient_name}</strong> 👋
+        </p>
+        <p style="font-size: 15px; color: #475569; line-height: 1.8; margin: 0 0 24px;">
+          Thank you for joining <strong style="color: #0f172a;">Growlancer</strong> — India's first AI-powered freelancing marketplace.
+          We're thrilled to have you on board!
+        </p>
+
+        <!-- Three Feature Cards -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
           <tr>
-            <td style="padding: 8px 12px; vertical-align: top; width: 28px; font-size: 16px;">✅</td>
-            <td style="padding: 8px 12px; font-size: 14px; color: #475569;">
-              <strong style="color: #0f172a;">Browse Projects</strong> — Find freelance work that matches your skills
+            <td style="padding: 20px; background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0;" valign="top">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="44" valign="top" style="padding-right: 16px;">
+                    <div style="width: 44px; height: 44px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 44px; font-size: 20px;">🔍</div>
+                  </td>
+                  <td valign="top">
+                    <h3 style="font-size: 15px; color: #065f46; font-weight: 700; margin: 0 0 4px;">Explore Projects</h3>
+                    <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">Discover freelance opportunities that match your unique skills and expertise.</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
+          <tr><td style="height: 12px;"></td></tr>
           <tr>
-            <td style="padding: 8px 12px; vertical-align: top; width: 28px; font-size: 16px;">✅</td>
-            <td style="padding: 8px 12px; font-size: 14px; color: #475569;">
-              <strong style="color: #0f172a;">Complete Your Profile</strong> — Stand out to clients with a professional profile
+            <td style="padding: 20px; background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0;" valign="top">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="44" valign="top" style="padding-right: 16px;">
+                    <div style="width: 44px; height: 44px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 44px; font-size: 20px;">🤖</div>
+                  </td>
+                  <td valign="top">
+                    <h3 style="font-size: 15px; color: #065f46; font-weight: 700; margin: 0 0 4px;">AI Matchmaking</h3>
+                    <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">Our AI connects you with the perfect projects — no more endless scrolling.</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
+          <tr><td style="height: 12px;"></td></tr>
           <tr>
-            <td style="padding: 8px 12px; vertical-align: top; width: 28px; font-size: 16px;">✅</td>
-            <td style="padding: 8px 12px; font-size: 14px; color: #475569;">
-              <strong style="color: #0f172a;">AI Matchmaking</strong> — Get matched with the perfect projects automatically
+            <td style="padding: 20px; background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0;" valign="top">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="44" valign="top" style="padding-right: 16px;">
+                    <div style="width: 44px; height: 44px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 44px; font-size: 20px;">⚡</div>
+                  </td>
+                  <td valign="top">
+                    <h3 style="font-size: 15px; color: #065f46; font-weight: 700; margin: 0 0 4px;">Secure Payments</h3>
+                    <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">Built-in escrow and milestone tracking — get paid reliably and on time.</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
         </table>
-      </div>
 
-      <div style="text-align: center; margin: 28px 0;">
-        <a href="${APP_URL}/login" target="_blank" rel="noopener noreferrer"
-           style="display: inline-block; padding: 16px 48px; background: #059669; color: white; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);">
-          Go to Dashboard
-        </a>
-      </div>
+        <!-- CTA Button -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
+          <tr>
+            <td align="center">
+              <table cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background: #059669; border-radius: 14px; text-align: center; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);">
+                    <a href="${APP_URL}/login" target="_blank" rel="noopener noreferrer"
+                       style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; line-height: 1;">
+                      Go to Dashboard 🚀
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
 
-      <div style="padding: 20px; background: #fefce8; border: 1px solid #fde68a; border-radius: 12px; margin: 24px 0;">
-        <p style="font-size: 13px; color: #92400e; margin: 0; text-align: center;">
-          💡 <strong>Pro Tip:</strong> Complete your profile and add your skills to get matched with the best projects!
+        <!-- Pro Tip Box -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
+          <tr>
+            <td style="padding: 20px; background: #fffbeb; border-radius: 16px; border: 1px solid #fde68a;">
+              <p style="font-size: 13px; color: #92400e; margin: 0; text-align: center; line-height: 1.6;">
+                💡 <strong>Pro Tip:</strong> Complete your profile and add your skills to unlock AI-powered project matches!
+              </p>
+            </td>
+          </tr>
+        </table>
+
+        <!-- Divider -->
+        <div style="width: 100%; height: 1px; background: #e2e8f0; margin-bottom: 24px;"></div>
+
+        <!-- Quick Links -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+          <tr>
+            <td align="center" style="padding: 0 8px;">
+              <a href="${APP_URL}/how-it-works" target="_blank" rel="noopener noreferrer"
+                 style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 12px;">How it Works</a>
+              <span style="color: #d1d5db; font-size: 13px;">|</span>
+              <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer"
+                 style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 12px;">Help Center</a>
+              <span style="color: #d1d5db; font-size: 13px;">|</span>
+              <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer"
+                 style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 12px;">Contact Us</a>
+            </td>
+          </tr>
+        </table>
+
+        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 16px;">
+          If you have any questions, simply reply to this email or visit our Help Center. We're here for you!
         </p>
-      </div>
 
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-        If you have any questions, feel free to reach out to our support team. We're here to help!
-      </p>
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Welcome aboard! 🚀</p>
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-        Warm regards,<br/>
-        <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-        <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
-      </p>
-    </div>
-    <div style="padding: 24px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Growlancer — AI-Powered Freelancing Marketplace</p>
-    </div>
-  </div>
+        <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 24px;">
+          Welcome aboard, and here's to your success! 🚀
+        </p>
+
+        <!-- Signature -->
+        <div style="padding-top: 24px; border-top: 1px solid #e2e8f0;">
+          <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
+            Warm regards,<br/>
+            <strong style="font-size: 16px; color: #059669;">Mohammad Miran Khan</strong><br/>
+            <span style="color: #94a3b8; font-size: 13px;">Founder & CEO, Growlancer</span>
+          </p>
+          <div style="margin-top: 16px;">
+            <p style="font-size: 12px; color: #94a3b8; margin: 0;">
+              📍 India · 🌐 AI-Powered Freelancing Marketplace
+            </p>
+          </div>
+        </div>
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td style="padding: 24px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+        <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px; line-height: 1.6;">
+          Growlancer — India's First AI-Powered Freelancing Marketplace<br/>
+          © 2026 Growlancer. All rights reserved.
+        </p>
+        <p style="color: #cbd5e1; font-size: 11px; margin: 0; line-height: 1.5;">
+          You received this email because you created an account on Growlancer.<br/>
+          If you didn't create this account, please ignore this email.
+        </p>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 
