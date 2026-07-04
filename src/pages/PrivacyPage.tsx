@@ -21,7 +21,7 @@ const privacySections: Section[] = [
             At Growlancer ("Platform", "we", "us", or "our"), your privacy is a foundational pillar of our service architecture. Unlike legacy freelancing platforms that rely on static database scraping and third-party advertising tracking, Growlancer is built to coordinate real-time workspaces with the highest standard of client and freelancer confidentiality.
           </p>
           <p className="text-slate-600 leading-relaxed mb-4">
-            This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the enterprise-grade cryptographic standards we employ to safeguard it, and your explicit rights under applicable data protection laws (including GDPR and CCPA where they apply to you).
+            This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the enterprise-grade cryptographic standards we employ to safeguard it, and your explicit rights under applicable data protection laws, including the Indian Digital Personal Data Protection (DPDP) Act, 2023.
           </p>
           <div className="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-4 flex gap-3 text-emerald-800 text-sm font-medium">
             <Lock className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
@@ -78,7 +78,7 @@ const privacySections: Section[] = [
     },
     {
       id: 'security',
-      title: '4. AES-256 & SOC-2 Security',
+      title: '4. AES-256 Encryption & Security Practices',
       icon: Lock,
       content: (
         <>
@@ -139,22 +139,27 @@ const privacySections: Section[] = [
       ),
     },
     {
-      id: 'rights',
-      title: '7. Global Compliance & Rights',
-      icon: Globe,
-      content: (
-        <>
-          <p className="text-slate-600 leading-relaxed mb-4">
-            Regardless of your geographic location, we extend comprehensive data sovereignty controls over your personal information:
-          </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
-            <li><strong>GDPR (European Union):</strong> You have the right to request a copy of your personal data in a structured, portable layout (Right to Portability), demand correction of incomplete parameters (Right to Rectification), or require data erasure (Right to be Forgotten).</li>
-            <li><strong>CCPA (California):</strong> You possess the right to know what personal categories we collect, opt out of any analytical modeling, and receive equal pricing and services even after exercising your privacy rights.</li>
-          </ul>
-          <p className="text-slate-600 text-sm">
-            To execute any data request or download your workspace history, submit a support ticket through our AI assistant and we'll process your request.
-          </p>
-        </>
+    id: 'rights',
+    title: '7. Data Protection & Your Rights',
+    icon: Globe,
+    content: (
+      <>
+        <p className="text-slate-600 leading-relaxed mb-4">
+          Growlancer is an India-first platform, and your data is protected in accordance with applicable Indian data protection law, including the Digital Personal Data Protection (DPDP) Act, 2023. We extend the following rights to all users regardless of location:
+        </p>
+        <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <li><strong>Right to Access:</strong> You may request a copy of the personal data we hold about you in a structured, portable format.</li>
+          <li><strong>Right to Correction:</strong> You may request correction of inaccurate or incomplete personal information.</li>
+          <li><strong>Right to Erasure:</strong> You may request deletion of your personal data, subject to legal retention requirements (e.g., financial records retained for 7 years).</li>
+          <li><strong>Right to Withdraw Consent:</strong> You may withdraw consent for data processing at any time, though this may affect your ability to use certain platform features.</li>
+        </ul>
+        <p className="text-slate-600 text-sm">
+          As Growlancer expands to other regions, we will extend equivalent rights to users in those jurisdictions in accordance with local law (e.g., GDPR for EU users, CCPA for California users).
+        </p>
+        <p className="text-slate-600 text-sm mt-4">
+          To execute any data request or download your workspace history, submit a support ticket through our AI assistant and we'll process your request.
+        </p>
+      </>
       ),
     },
     {
@@ -249,7 +254,7 @@ export function PrivacyPage() {
             Privacy & <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Data Protections</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto font-medium">
-            Your workspace privacy and secure contract data is our utmost priority. Read our AES-256 and SOC-2 standard controls.
+            Your workspace privacy and secure contract data is our utmost priority. Read about our AES-256 encryption and security practices.
           </p>
           <p className="text-slate-400 text-xs font-bold pt-2">{formatLegalLastUpdatedLine()}</p>
         </div>
