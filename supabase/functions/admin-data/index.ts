@@ -237,7 +237,7 @@ Deno.serve(async (req) => {
 
     // ─── Require admin session for all remaining actions ────────────
     // Exception: verify_certificate (public verification endpoint)
-    if (action !== 'verify_certificate' && action !== 'verify_certificate_code') {
+    if (action !== 'verify_certificate' && action !== 'verify_certificate_code' && action !== 'send_welcome_email') {
       const session = await verifyAdminSession(supabaseClient, req)
       if (!session) {
         return new Response(JSON.stringify({ error: 'Unauthorized: Valid admin session required' }), {
@@ -379,6 +379,127 @@ Deno.serve(async (req) => {
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    // ─── POST: send_welcome_email (PUBLIC — used after signup) ────
+    if (req.method === 'POST' && action === 'send_welcome_email') {
+      const { recipient_email, recipient_name } = body;
+
+      if (!recipient_email || !recipient_name) {
+        return new Response(JSON.stringify({ success: false, error: 'recipient_email and recipient_name are required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
+      const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
+
+      const subject = `Welcome to Growlancer! Your account is ready 🚀`;
+
+      const bodyHtml = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
+      <img src="${APP_URL}/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 48px; width: auto; margin-bottom: 16px;" />
+      <h1 style="color: white; font-size: 24px; font-weight: 700; margin: 0;">Welcome to Growlancer! 🎉</h1>
+      <p style="color: #a7f3d0; font-size: 15px; margin: 10px 0 0;">Your account has been created successfully</p>
+    </div>
+    <div style="padding: 32px;">
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi <strong>${recipient_name}</strong>,</p>
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
+        Thank you for joining <strong>Growlancer</strong> — the AI-powered freelancing marketplace!
+      </p>
+      
+      <div style="margin: 28px 0; padding: 24px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+        <h3 style="font-size: 16px; color: #065f46; margin: 0 0 16px; text-align: center;">What you can do now 🚀</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 8px 12px; vertical-align: top; width: 28px; font-size: 16px;">✅</td>
+            <td style="padding: 8px 12px; font-size: 14px; color: #475569;">
+              <strong style="color: #0f172a;">Browse Projects</strong> — Find freelance work that matches your skills
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; vertical-align: top; width: 28px; font-size: 16px;">✅</td>
+            <td style="padding: 8px 12px; font-size: 14px; color: #475569;">
+              <strong style="color: #0f172a;">Complete Your Profile</strong> — Stand out to clients with a professional profile
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 12px; vertical-align: top; width: 28px; font-size: 16px;">✅</td>
+            <td style="padding: 8px 12px; font-size: 14px; color: #475569;">
+              <strong style="color: #0f172a;">AI Matchmaking</strong> — Get matched with the perfect projects automatically
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="text-align: center; margin: 28px 0;">
+        <a href="${APP_URL}/login" target="_blank" rel="noopener noreferrer"
+           style="display: inline-block; padding: 16px 48px; background: #059669; color: white; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);">
+          Go to Dashboard
+        </a>
+      </div>
+
+      <div style="padding: 20px; background: #fefce8; border: 1px solid #fde68a; border-radius: 12px; margin: 24px 0;">
+        <p style="font-size: 13px; color: #92400e; margin: 0; text-align: center;">
+          💡 <strong>Pro Tip:</strong> Complete your profile and add your skills to get matched with the best projects!
+        </p>
+      </div>
+
+      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
+        If you have any questions, feel free to reach out to our support team. We're here to help!
+      </p>
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Welcome aboard! 🚀</p>
+      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
+        Warm regards,<br/>
+        <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
+        <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+      </p>
+    </div>
+    <div style="padding: 24px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Growlancer — AI-Powered Freelancing Marketplace</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+      try {
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'api-key': BREVO_API_KEY,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify({
+            sender: { name: 'Growlancer Team', email: Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com' },
+            to: [{ email: recipient_email, name: recipient_name }],
+            subject,
+            htmlContent: bodyHtml,
+          }),
+        });
+
+        const text = await res.text();
+        console.error('Welcome email Brevo response:', res.status, text);
+
+        if (!res.ok) {
+          return new Response(JSON.stringify({ success: false, error: 'Failed to send welcome email', details: text }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        return new Response(JSON.stringify({ success: true, message: 'Welcome email sent!' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ success: false, error: err instanceof Error ? err.message : 'Failed to send welcome email' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     // ─── POST: send_certificate_email ──────────────────────────────
