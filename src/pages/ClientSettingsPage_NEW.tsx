@@ -107,6 +107,24 @@ export function ClientSettingsPage() {
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // ── Email verification state ──
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [checkingEmailVerification, setCheckingEmailVerification] = useState(true);
+
+  useEffect(() => {
+    async function checkEmailVerified() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        setEmailVerified(!!data?.user?.email_confirmed_at);
+      } catch {
+        setEmailVerified(false);
+      } finally {
+        setCheckingEmailVerification(false);
+      }
+    }
+    checkEmailVerified();
+  }, []);
+
   // ── Billing / Payment Methods state ──
   const [paymentMethods, setPaymentMethods] = useState<ClientPaymentMethod[]>([]);
   const [billingLoading, setBillingLoading] = useState(false);
@@ -799,6 +817,19 @@ export function ClientSettingsPage() {
                         <p className="text-sm text-slate-500">Email</p>
                         <p className="font-medium text-slate-900">{accountData.email}</p>
                       </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {checkingEmailVerification ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                      ) : emailVerified ? (
+                        <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
+                          <Check className="w-3.5 h-3.5" /> Verified
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
+                          <AlertCircle className="w-3.5 h-3.5" /> Not Verified
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">

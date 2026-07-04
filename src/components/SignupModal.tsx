@@ -10,6 +10,8 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
+  ExternalLink,
+  RefreshCw,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -51,6 +53,10 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [oauthProvider, setOauthProvider] = useState<'google' | 'linkedin' | null>(null);
   const [existingUser, setExistingUser] = useState(false);
+  const [showVerifyScreen, setShowVerifyScreen] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [resending, setResending] = useState(false);
+  const [resendMessage, setResendMessage] = useState<string | null>(null);
 
   // Check if there's already a session on this device
   useEffect(() => {
@@ -129,16 +135,138 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     const result = await signup(normalizedEmail, password, normalizedName, role, referralCode.trim() || undefined);
 
     if (result.success) {
-      setSuccessMessage(result.message || 'Confirmation email sent. Please check your inbox.');
-      setTimeout(() => {
-        onClose();
-        onSwitchToLogin();
-      }, 3000);
+      setVerificationEmail(normalizedEmail);
+      setShowVerifyScreen(true);
     } else {
       setError(result.error || 'Signup failed');
     }
     setIsLoading(false);
   };
+
+  // Detect email provider for "Go to Inbox" button
+  const getEmailProviderUrl = (email: string): string => {
+    const domain = email.split('@')[1]?.toLowerCase() || '';
+    if (domain.includes('gmail')) return 'https://mail.google.com';
+    if (domain.includes('outlook') || domain.includes('hotmail')) return 'https://outlook.live.com';
+    if (domain.includes('yahoo')) return 'https://mail.yahoo.com';
+    if (domain.includes('proton')) return 'https://mail.proton.me';
+    if (domain.includes('icloud')) return 'https://icloud.com/mail';
+    if (domain.includes('aol')) return 'https://mail.aol.com';
+    if (domain.includes('zoho')) return 'https://mail.zoho.com';
+    if (domain.includes('yandex')) return 'https://mail.yandex.com';
+    return 'https://mail.google.com'; // fallback
+  };
+
+  const getEmailProviderName = (email: string): string => {
+    const domain = email.split('@')[1]?.toLowerCase() || '';
+    if (domain.includes('gmail')) return 'Gmail';
+    if (domain.includes('outlook')) return 'Outlook';
+    if (domain.includes('hotmail')) return 'Hotmail';
+    if (domain.includes('yahoo')) return 'Yahoo Mail';
+    if (domain.includes('proton')) return 'Proton Mail';
+    if (domain.includes('icloud')) return 'iCloud Mail';
+    return 'your inbox';
+  };
+
+  const handleResendEmail = async () => {
+    setResending(true);
+    setResendMessage(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: verificationEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
+      if (error) {
+        setResendMessage(error.message);
+      } else {
+        setResendMessage('Verification email resent! Check your inbox.');
+      }
+    } catch {
+      setResendMessage('Failed to resend. Please try again.');
+    } finally {
+      setResending(false);
+    }
+  };
+
+  // ── Verify Email Screen ──
+  if (showVerifyScreen) {
+    const providerUrl = getEmailProviderUrl(verificationEmail);
+    const providerName = getEmailProviderName(verificationEmail);
+
+    return (
+      <Modal isOpen={isOpen} onClose={onClose} title="Verify your email">
+        <div className="relative animate-fade-in-content">
+          <div className="text-center mb-6">
+            <div className="flex justify-center mb-4">
+              <div className="h-16 w-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+                <Mail className="w-8 h-8 text-emerald-600" />
+              </div>
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">Check your inbox</h2>
+            <p className="text-sm text-slate-500">
+              We sent a verification email to
+            </p>
+            <p className="text-sm font-semibold text-slate-900 mt-1">{verificationEmail}</p>
+          </div>
+
+          {/* Go to Inbox Button */}
+          <a
+            href={providerUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-3 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0 transition-all mb-4"
+          >
+            <ExternalLink className="w-5 h-5" />
+            Open {providerName}
+          </a>
+
+          {/* Resend */}
+          <div className="text-center">
+            <p className="text-xs text-slate-400 mb-2">Didn't receive the email?</p>
+            <button
+              onClick={handleResendEmail}
+              disabled={resending}
+              className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors disabled:opacity-50"
+            >
+              {resending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4" />
+              )}
+              {resending ? 'Sending...' : 'Resend verification email'}
+            </button>
+            {resendMessage && (
+              <p className={`text-xs mt-2 ${resendMessage.includes('Failed') || resendMessage.includes('error') ? 'text-red-500' : 'text-emerald-600'}`}>
+                {resendMessage}
+              </p>
+            )}
+          </div>
+
+          <div className="mt-6 p-3 bg-amber-50 border border-amber-100 rounded-xl">
+            <p className="text-[11px] text-amber-700 text-center">
+              Please verify your email to access your dashboard. The link expires in 24 hours.
+            </p>
+          </div>
+
+          {/* Back to Login */}
+          <div className="mt-6 text-center">
+            <p className="text-slate-600 text-sm">
+              Already verified?{' '}
+              <button
+                onClick={() => { onClose(); onSwitchToLogin(); }}
+                className="text-emerald-600 font-semibold hover:text-emerald-700 transition-all"
+              >
+                Log in here
+              </button>
+            </p>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create your account">

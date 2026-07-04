@@ -18,12 +18,15 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\""
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.8",
     "@sentry/react": "^10.52.0",
     "@supabase/supabase-js": "^2.39.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "ai": "^7.0.15",
     "clsx": "^2.1.0",
     "compression": "^1.8.1",
+    "eve": "^0.19.0",
     "express": "^4.22.2",
     "lucide-react": "^1.8.0",
     "react": "^18.2.0",

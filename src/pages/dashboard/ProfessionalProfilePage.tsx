@@ -67,6 +67,24 @@ export function ProfessionalProfilePage() {
     availability: true,
   });
 
+  // ── Email verification state ──
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [checkingEmailVerification, setCheckingEmailVerification] = useState(true);
+
+  useEffect(() => {
+    async function checkEmailVerified() {
+      try {
+        const { data } = await supabase.auth.getUser();
+        setEmailVerified(!!data?.user?.email_confirmed_at);
+      } catch {
+        setEmailVerified(false);
+      } finally {
+        setCheckingEmailVerification(false);
+      }
+    }
+    checkEmailVerified();
+  }, []);
+
   // ── Account form state ──
   const [accountData, setAccountData] = useState({
     name: '',
@@ -1036,7 +1054,22 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                      <input type="email" value={accountData.email} disabled className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed" />
+                      <div className="relative">
+                        <input type="email" value={accountData.email} disabled className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed pr-28" />
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          {checkingEmailVerification ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                          ) : emailVerified ? (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
+                              <Check className="w-3 h-3" /> Verified
+                            </span>
+                          ) : (
+                            <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
+                              <AlertCircle className="w-3 h-3" /> Not Verified
+                            </span>
+                          )}
+                        </div>
+                      </div>
                       <p className="text-xs text-slate-400 mt-1">Email cannot be changed here. Contact support.</p>
                     </div>
                   </div>
