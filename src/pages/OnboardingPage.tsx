@@ -314,21 +314,7 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const isOAuthMode = searchParams.get('mode') === 'oauth';
 
-  // OAuth users get a simpler 1-step form
-  if (isOAuthMode) {
-    return (
-      <OAuthMiniForm
-        onComplete={() => {
-          const route = user?.role === 'client' ? '/client' : user?.role === 'admin' ? '/admin' : '/dashboard';
-          navigate(route, { replace: true });
-        }}
-      />
-    );
-  }
-
-  const isFreelancer = user?.role === 'freelancer';
-  const isClient = user?.role === 'client';
-
+  // ── ALL hooks declared BEFORE any early return ──
   const [step, setStep] = useState<Step>('welcome');
   const [animationDir, setAnimationDir] = useState<'next' | 'prev'>('next');
   const [saving, setSaving] = useState(false);
@@ -363,6 +349,21 @@ export function OnboardingPage() {
   // Skills selector state (freelancer only)
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [skillNames, setSkillNames] = useState<string[]>([]);
+
+  // OAuth users get a simpler 1-step form
+  if (isOAuthMode) {
+    return (
+      <OAuthMiniForm
+        onComplete={() => {
+          const route = user?.role === 'client' ? '/client' : user?.role === 'admin' ? '/admin' : '/dashboard';
+          navigate(route, { replace: true });
+        }}
+      />
+    );
+  }
+
+  const isFreelancer = user?.role === 'freelancer';
+  const isClient = user?.role === 'client';
 
   // Sync selectedSkillIds to skillNames for form submission
   useEffect(() => {

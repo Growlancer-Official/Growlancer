@@ -94,6 +94,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   const { isAuthenticated, isLoading, role, getDashboardRoute, user } = useAuth();
   const [serverRole, setServerRole] = useState<UserRole | null>(null);
   const [verifying, setVerifying] = useState(true);
+  // ── Email verification state (ALWAYS declared before any early return) ──
+  const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
+  const [checkingEmail, setCheckingEmail] = useState(true);
 
   // ── Server-side role verification + suspension check (ALWAYS called) ──
   useEffect(() => {
@@ -155,28 +158,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     return () => { cancelled = true; };
   }, [user?.id, role]);
 
-  // ── Loading state ──
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-cream">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-      </div>
-    );
-  }
-
-  // ── Unauthenticated → redirect to login ──
-  if (!isAuthenticated || !user) {
-    captureInfo('Protected route blocked unauthenticated access', {
-      routeType: 'protected',
-    });
-    return <Navigate to="/?modal=login" replace />;
-  }
-
-  // ── Email verification check ──
-  // Get the current auth session to check email_confirmed_at
-  const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
-  const [checkingEmail, setCheckingEmail] = useState(true);
-
+  // ── Email verification check effect (ALWAYS called before early returns) ──
   useEffect(() => {
     let cancelled = false;
     async function checkEmailVerified() {
@@ -193,6 +175,23 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     checkEmailVerified();
     return () => { cancelled = true; };
   }, []);
+
+  // ── Loading state ──
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-cream">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  // ── Unauthenticated → redirect to login ──
+  if (!isAuthenticated || !user) {
+    captureInfo('Protected route blocked unauthenticated access', {
+      routeType: 'protected',
+    });
+    return <Navigate to="/?modal=login" replace />;
+  }
 
   if (checkingEmail) {
     return (
