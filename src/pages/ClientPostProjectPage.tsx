@@ -290,7 +290,7 @@ export function ClientPostProjectPage() {
               <input
                 type="number"
                 required
-                min="0"
+                min="500"
                 value={formData.budget_min}
                 onChange={(e) => setFormData({ ...formData, budget_min: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
@@ -302,7 +302,7 @@ export function ClientPostProjectPage() {
               <input
                 type="number"
                 required
-                min="0"
+                min="500"
                 value={formData.budget_max}
                 onChange={(e) => setFormData({ ...formData, budget_max: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"

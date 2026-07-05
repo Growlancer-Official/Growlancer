@@ -135,7 +135,7 @@ export const analyticsService = {
           .select('amount, created_at')
           .eq('user_id', freelancerId)
           .eq('type', 'credit')
-          .gte('created_at', startOfLastMonth),
+          .gte('created_at', timeframeStart),
       ]);
 
       // Process contracts

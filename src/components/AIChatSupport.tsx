@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { ticketService } from '../lib/supportTicketService';
 import {
   Bot,
   Check,
@@ -296,21 +297,17 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     try {
       // Create a support ticket with the chat transcript
       const transcript = messages.map(m => `[${m.role}] ${m.content}`).join('\n\n');
-      const { data, error } = await supabase
-        .from('support_tickets')
-        .insert({
-          user_id: user.id,
-          user_role: context,
-          subject: ticketContext?.subject || 'AI Chat Escalation',
-          description: `Escalated from AI Chat Support.\n\nContext: ${context}\nCategory: ${ticketContext?.category || 'general'}\nPriority: ${ticketContext?.priority || 'normal'}\n\n--- Chat Transcript ---\n${transcript}`,
-          category: (ticketContext?.category as any) || 'general',
-          priority: (ticketContext?.priority as any) || 'normal',
-          status: 'open',
-        })
-        .select()
-        .single();
+      const result = await ticketService.create({
+        userId: user.id,
+        userRole: context,
+        subject: ticketContext?.subject || 'AI Chat Escalation',
+        description: `Escalated from AI Chat Support.\n\nContext: ${context}\nCategory: ${ticketContext?.category || 'general'}\nPriority: ${ticketContext?.priority || 'normal'}\n\n--- Chat Transcript ---\n${transcript}`,
+        category: ticketContext?.category as any,
+        priority: ticketContext?.priority as any,
+      });
 
-      if (error) throw error;
+      if (!result.success) throw new Error(result.error || 'Failed to create ticket');
+      const ticketId = result.ticket?.id;
 
       // Send confirmation email via email-notifications edge function
       await supabase.functions.invoke('email-notifications', {
@@ -319,7 +316,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
           recipient_email: user.email,
           recipient_name: user.name || user.email?.split('@')[0] || 'User',
           subject: ticketContext?.subject || 'Support Request Received',
-          ticket_id: data.id,
+          ticket_id: ticketId,
         },
       });
 
