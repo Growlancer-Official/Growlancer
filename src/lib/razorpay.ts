@@ -42,6 +42,22 @@ export interface RazorpayPaymentData {
   razorpay_signature: string;
 }
 
+export interface SavedPaymentCard {
+  id: string;
+  user_id: string;
+  card_id: string;
+  card_type: string | null;
+  card_network: string | null;
+  card_last_four: string;
+  card_expiry_month: string | null;
+  card_expiry_year: string | null;
+  card_holder_name: string | null;
+  is_default: boolean;
+  used_count: number;
+  last_used_at: string | null;
+  created_at: string;
+}
+
 // Razorpay checkout options
 export interface RazorpayCheckoutOptions {
   key: string;
@@ -204,6 +220,37 @@ class RazorpayService {
 
     if (error) throw new Error(`Failed to fetch orders: ${error.message}`);
     return (data || []) as RazorpayOrder[];
+  }
+
+  /**
+   * Save a card token after successful payment
+   */
+  async saveCard(data: {
+    razorpay_payment_id: string;
+    card_id: string;
+    card_last_four: string;
+    card_type?: string;
+    card_network?: string;
+    card_expiry_month?: string;
+    card_expiry_year?: string;
+    card_holder_name?: string;
+  }): Promise<any> {
+    return await this.callEdgeFunction('save_card', data);
+  }
+
+  /**
+   * Get all saved payment cards for the current user
+   */
+  async getSavedCards(): Promise<SavedPaymentCard[]> {
+    const result = await this.callEdgeFunction('get_saved_cards', {});
+    return result.cards || [];
+  }
+
+  /**
+   * Delete a saved payment card
+   */
+  async deleteSavedCard(cardId: string): Promise<void> {
+    await this.callEdgeFunction('delete_saved_card', { card_id: cardId });
   }
 
   /**

@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
+import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
-import { AlertCircle, ArrowDownLeft, ArrowUpRight, Banknote, Building2, Calendar, CheckCircle2, CreditCard, DollarSign, Download, FileText, Filter, List, Loader2, Plus, PlusCircle, Save, Trash2, Type, View, XCircle,  } from 'lucide-react';
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle2, CreditCard, DollarSign, Download, FileText, Filter, Loader2, Plus, PlusCircle, Save, Shield, Trash2, XCircle } from 'lucide-react';
 
 interface Transaction {
   id: string;
@@ -31,7 +32,7 @@ export function ClientPaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'credit' | 'debit'>('all');
 
-  // Payment methods state
+  // Payment methods state (manual reference records)
   const [paymentMethods, setPaymentMethods] = useState<ClientPaymentMethod[]>([]);
   const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(false);
   const [paymentMethodsError, setPaymentMethodsError] = useState<string | null>(null);
@@ -50,6 +51,11 @@ export function ClientPaymentsPage() {
     bankName: '',
     isDefault: false,
   });
+
+  // Saved cards from Razorpay tokenization
+  const [savedCards, setSavedCards] = useState<SavedPaymentCard[]>([]);
+  const [savedCardsLoading, setSavedCardsLoading] = useState(false);
+  const [deletingSavedCardId, setDeletingSavedCardId] = useState<string | null>(null);
 
   const fetchTransactions = useCallback(async () => {
     if (!user?.id) return;
@@ -91,9 +97,22 @@ export function ClientPaymentsPage() {
     }
   }, []);
 
+  const fetchSavedCards = useCallback(async () => {
+    setSavedCardsLoading(true);
+    try {
+      const cards = await razorpayService.getSavedCards();
+      setSavedCards(cards);
+    } catch {
+      // Saved cards fetch is non-critical
+    } finally {
+      setSavedCardsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchTransactions();
     void fetchPaymentMethods();
+    void fetchSavedCards();
 
     const subscription = realtimeChannels.transactions(`client-payments-${user?.id}`)
       .on(
@@ -129,7 +148,7 @@ export function ClientPaymentsPage() {
       subscription.unsubscribe();
       void paypalSub.unsubscribe();
     };
-  }, [user?.id, fetchTransactions, fetchPaymentMethods]);
+  }, [user?.id, fetchTransactions, fetchPaymentMethods, fetchSavedCards]);
 
   const handleAddPaymentMethod = async () => {
     if (!user?.id) return;
@@ -361,20 +380,109 @@ export function ClientPaymentsPage() {
         </div>
       </div>
 
-      {/* ===== Saved Payment Methods Section ===== */}
+      {/* ===== Razorpay Saved Cards Section ===== */}
       <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-emerald-600" />
-            Payment Method Reference
+            <Shield className="w-5 h-5 text-emerald-600" />
+            Saved Payment Cards
           </h2>
+        </div>
+
+        {/* Loading */}
+        {savedCardsLoading && (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+            <span className="ml-2 text-sm text-slate-500">Loading saved cards...</span>
+          </div>
+        )}
+
+        {/* Saved cards list */}
+        {!savedCardsLoading && savedCards.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            {savedCards.map((card) => (
+              <div
+                key={card.id}
+                className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all"
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-emerald-600" />
+                    <div>
+                      <span className="font-medium text-slate-900 text-sm">
+                        {card.card_network || 'Card'} •••• {card.card_last_four}
+                      </span>
+                      <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium uppercase">
+                        {card.card_type || 'Card'}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      setDeletingSavedCardId(card.card_id);
+                      try {
+                        await razorpayService.deleteSavedCard(card.card_id);
+                        await fetchSavedCards();
+                      } catch { /* ignore */ }
+                      setDeletingSavedCardId(null);
+                    }}
+                    disabled={deletingSavedCardId === card.card_id}
+                    className="text-slate-400 hover:text-red-500 transition-colors"
+                    title="Remove saved card"
+                  >
+                    {deletingSavedCardId === card.card_id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+
+                <div className="text-xs text-slate-500 space-y-0.5">
+                  {card.card_expiry_month && card.card_expiry_year && (
+                    <p>Expires {card.card_expiry_month}/{card.card_expiry_year}</p>
+                  )}
+                  {card.card_holder_name && <p>{card.card_holder_name}</p>}
+                  {card.last_used_at && (
+                    <p>Last used {new Date(card.last_used_at).toLocaleDateString()}</p>
+                  )}
+                  <p>Used {card.used_count} time{card.used_count !== 1 ? 's' : ''}</p>
+                </div>
+
+                <div className="mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                  <p className="text-[10px] text-emerald-700 font-medium flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" />
+                    One-click pay enabled — cards are tokenized via Razorpay
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {!savedCardsLoading && savedCards.length === 0 && (
+          <div className="text-center py-8 text-slate-500 mb-4">
+            <Shield className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+            <p className="font-medium">No saved cards yet</p>
+            <p className="text-sm mt-1">Save a card during your next escrow payment for one-click checkout</p>
+          </div>
+        )}
+
+        <div className="h-px bg-slate-200 my-4" />
+
+        {/* ===== Manual Payment Method References ===== */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-base font-bold text-slate-900 flex items-center gap-2">
+            <CreditCard className="w-4 h-4 text-slate-400" />
+            Payment Method References
+          </h3>
           {!showAddPaymentMethod && (
             <button
               onClick={() => setShowAddPaymentMethod(true)}
               className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all text-sm"
             >
               <PlusCircle className="w-4 h-4" />
-              Add Method
+              Add Reference
             </button>
           )}
         </div>
@@ -496,13 +604,6 @@ export function ClientPaymentsPage() {
             ))}
           </div>
         )}
-
-        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
-          <p className="text-xs text-amber-700">
-            <strong>Note:</strong> This is a record-keeping reference only. Actual payments are processed through
-            Razorpay Checkout during escrow funding. One-click charging from saved cards is not yet available.
-          </p>
-        </div>
 
         {!paymentMethodsLoading && paymentMethods.length === 0 && !showAddPaymentMethod && (
           <div className="text-center py-8 text-slate-500">

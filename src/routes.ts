@@ -98,6 +98,8 @@ export const ROUTES = {
     SUBSCRIPTIONS: '/admin/subscriptions',
     REPORTS: '/admin/reports',
     CERTIFICATES: '/admin/certificates',
+    SUPPORT_TICKETS: '/admin/support-tickets',
+    IDENTITY_VERIFICATION: '/admin/identity-verification',
   },
   
   // Certificate Verification

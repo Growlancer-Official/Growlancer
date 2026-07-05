@@ -31,6 +31,7 @@ const sidebarLinks = [
   { id: 'internships', path: '/admin/internships', icon: Users, label: 'Internships' },
   { id: 'certificates', path: '/admin/certificates', icon: Award, label: 'Certificates' },
   { id: 'identity-verification', path: '/admin/identity-verification', icon: ShieldCheck, label: 'Verification' },
+  { id: 'support-tickets', path: '/admin/support-tickets', icon: AlertOctagon, label: 'Support Tickets' },
 ];
 
 export function AdminDashboardLayout() {

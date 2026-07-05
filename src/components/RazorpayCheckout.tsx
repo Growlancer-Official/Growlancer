@@ -4,6 +4,7 @@ import {
   CreditCard,
   IndianRupee,
   Loader2,
+  Save,
   XCircle,
 } from 'lucide-react';
 import { razorpayService, type RazorpayOrderRequest, type RazorpayPaymentData } from '../lib/razorpay';
@@ -38,6 +39,7 @@ export function RazorpayCheckout({
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'creating' | 'checkout' | 'verifying' | 'success' | 'error'>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [saveCard, setSaveCard] = useState(false);
 
   const handleRazorpayClick = useCallback(async () => {
     setIsLoading(true);
@@ -63,11 +65,33 @@ export function RazorpayCheckout({
           contact: userInfo?.contact || '',
         },
         theme: { color: themeColor },
+        card: saveCard ? { save: true } : undefined,
         handler: async (response: RazorpayPaymentData) => {
           // 3. Verify payment on backend
           setStatus('verifying');
           try {
             await razorpayService.verifyPayment(response);
+
+            // 4. If user opted to save card, capture the card token from the Razorpay response
+            // The Razorpay checkout handler response includes card info when card[save] was enabled
+            if (saveCard) {
+              const card = (response as any).card;
+              if (card?.id && card?.last4) {
+                try {
+                  await razorpayService.saveCard({
+                    razorpay_payment_id: response.razorpay_payment_id,
+                    card_id: card.id,
+                    card_last_four: card.last4,
+                    card_type: card.type || null,
+                    card_network: card.network || null,
+                    card_expiry_month: card.expiry_month?.toString() || null,
+                    card_expiry_year: card.expiry_year?.toString() || null,
+                    card_holder_name: card.name || null,
+                  });
+                } catch { /* card saving is best-effort */ }
+              }
+            }
+
             setStatus('success');
             onSuccess?.(order.id, response);
           } catch (verifyErr) {
@@ -157,6 +181,23 @@ export function RazorpayCheckout({
           <CreditCard className="w-8 h-8 text-emerald-600" />
         </div>
       </div>
+
+      {orderData.currency !== 'USD' && (
+        <label className="flex items-center gap-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 transition-colors cursor-pointer">
+          <input
+            type="checkbox"
+            checked={saveCard}
+            onChange={(e) => setSaveCard(e.target.checked)}
+            className="w-4 h-4 text-emerald-600 rounded border-slate-300"
+          />
+          <div className="flex items-center gap-2 text-sm text-slate-700">
+            <Save className="w-4 h-4 text-emerald-500" />
+            <span>
+              <strong>Save card</strong> for future one-click payments
+            </span>
+          </div>
+        </label>
+      )}
 
       <button
         onClick={handleRazorpayClick}

@@ -255,6 +255,9 @@ const AdminCertificatesPage = lazy(() =>
 const AdminIdentityVerificationPage = lazy(() =>
   import('@pages/admin/AdminIdentityVerificationPage').then(m => ({ default: m.AdminIdentityVerificationPage }))
 );
+const AdminSupportTicketsPage = lazy(() =>
+  import('@pages/admin/AdminSupportTicketsPage').then(m => ({ default: m.AdminSupportTicketsPage }))
+);
 const ClientReferralsPage = lazy(() =>
   import('@pages/ClientReferralsPage').then(m => ({ default: m.ClientReferralsPage }))
 );
@@ -479,6 +482,7 @@ function App() {
                 <Route path="internships" element={<AdminInternshipsPage />} />
                 <Route path="certificates" element={<AdminCertificatesPage />} />
                 <Route path="identity-verification" element={<AdminIdentityVerificationPage />} />
+                <Route path="support-tickets" element={<AdminSupportTicketsPage />} />
               </Route>
 
               {/* Waitlist Route (public, no layout) */}

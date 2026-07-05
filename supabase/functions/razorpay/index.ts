@@ -339,6 +339,95 @@ serve(async req => {
         break;
       }
 
+      // ─── SAVE CARD TOKEN ──────────────────────────────
+      case 'save_card': {
+        const {
+          razorpay_payment_id,
+          card_id,
+          card_type,
+          card_network,
+          card_last_four,
+          card_expiry_month,
+          card_expiry_year,
+          card_holder_name,
+        } = data;
+
+        if (!razorpay_payment_id || !card_id || !card_last_four) {
+          throw new Error('Missing required card fields');
+        }
+
+        // Upsert saved card (avoid duplicates per card_id)
+        const { data: existing } = await supabaseClient
+          .from('saved_payment_cards')
+          .select('id, used_count')
+          .eq('user_id', user.id)
+          .eq('card_id', card_id)
+          .maybeSingle();
+
+        if (existing) {
+          // Card already saved — update usage count
+          await supabaseClient
+            .from('saved_payment_cards')
+            .update({
+              used_count: (existing as any).used_count + 1,
+              last_used_at: new Date().toISOString(),
+            })
+            .eq('id', existing.id);
+
+          result = { saved: existing, already_existed: true };
+        } else {
+          const { data: savedCard, error: insertErr } = await supabaseClient
+            .from('saved_payment_cards')
+            .insert({
+              user_id: user.id,
+              card_id,
+              card_type: card_type || null,
+              card_network: card_network || null,
+              card_last_four,
+              card_expiry_month: card_expiry_month || null,
+              card_expiry_year: card_expiry_year || null,
+              card_holder_name: card_holder_name || null,
+              used_count: 1,
+              last_used_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
+
+          if (insertErr) throw new Error(`Failed to save card: ${insertErr.message}`);
+          result = { saved: savedCard, already_existed: false };
+        }
+        break;
+      }
+
+      // ─── GET SAVED CARDS ──────────────────────────────
+      case 'get_saved_cards': {
+        const { data: cards, error: cardsErr } = await supabaseClient
+          .from('saved_payment_cards')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('last_used_at', { ascending: false, nullsLast: true });
+
+        if (cardsErr) throw new Error(`Failed to fetch saved cards: ${cardsErr.message}`);
+        result = { cards: cards || [] };
+        break;
+      }
+
+      // ─── DELETE SAVED CARD ──────────────────────────────
+      case 'delete_saved_card': {
+        const { card_id } = data;
+        if (!card_id) throw new Error('Missing card_id');
+
+        const { error: delErr } = await supabaseClient
+          .from('saved_payment_cards')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('card_id', card_id);
+
+        if (delErr) throw new Error(`Failed to delete card: ${delErr.message}`);
+        result = { deleted: true };
+        break;
+      }
+
       // ─── CREATE PAYOUT (for withdrawals) ──────────────
       case 'create_payout': {
         const { amount, fund_account_id, purpose = 'payout', description } = data;
