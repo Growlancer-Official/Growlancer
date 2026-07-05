@@ -258,6 +258,9 @@ const AdminIdentityVerificationPage = lazy(() =>
 const AdminSupportTicketsPage = lazy(() =>
   import('@pages/admin/AdminSupportTicketsPage').then(m => ({ default: m.AdminSupportTicketsPage }))
 );
+const AdminSignupPage = lazy(() =>
+  import('@pages/admin/AdminSignupPage').then(m => ({ default: m.AdminSignupPage }))
+);
 const ClientReferralsPage = lazy(() =>
   import('@pages/ClientReferralsPage').then(m => ({ default: m.ClientReferralsPage }))
 );
@@ -462,7 +465,10 @@ function App() {
                 <Route path="tickets" element={<ClientSupportTicketsPage />} />
               </Route>
 
-              {/* Admin Dashboard Routes - Protected by Prelogin */}
+              {/* Admin Setup Route (outside AuthGuard — user isn't admin yet) */}
+              <Route path="/admin/setup" element={<AdminSignupPage />} />
+
+              {/* Admin Dashboard Routes - Protected by Supabase Auth */}
               <Route
                 path="/admin"
                 element={

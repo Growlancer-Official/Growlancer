@@ -1,13 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Lock, Eye, EyeOff, Shield, Loader2, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { Lock, Eye, EyeOff, Shield, Loader2, AlertCircle, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 /**
- * AdminLoginPage — Simple prelogin for admin section
- * 
- * Validates against the `admin_credentials` table via edge function
- * (bypasses RLS since admin section has no auth).
+ * AdminLoginPage — Real-time login via Supabase Auth.
+ * Uses supabase.auth.signInWithPassword() for proper authentication.
+ * Real-time redirect via onAuthStateChange in AdminAuthGuard.
  */
 export function AdminLoginPage() {
   const navigate = useNavigate();
@@ -16,6 +15,26 @@ export function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Auto-redirect if already logged in (real-time via auth state)
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        // Check if admin
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', session.user.id)
+          .single();
+        
+        if ((profile as any)?.is_admin === true) {
+          navigate('/admin', { replace: true });
+        }
+      }
+    };
+    checkSession();
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,36 +47,43 @@ export function AdminLoginPage() {
 
     setLoading(true);
     try {
-      // Verify credentials via admin-data edge function
-      const { data: result, error: fnError } = await supabase.functions.invoke('admin-data', {
-        method: 'POST',
-        body: {
-          action: 'verify_admin',
-          email: email.trim().toLowerCase(),
-          password: password.trim(),
-        },
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password: password.trim(),
       });
 
-      if (fnError) {
-        throw new Error(fnError.message);
+      if (authError) {
+        if (authError.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Please try again.');
+        } else if (authError.message.includes('Email not confirmed')) {
+          setError('Please verify your email first. Check your inbox.');
+        } else {
+          setError(authError.message);
+        }
+        return;
       }
 
-      const res = result as { success?: boolean; error?: string; label?: string; token?: string; expires_at?: string };
-      if (res?.success) {
-        // Store admin session in localStorage (includes the session token for API calls)
-        const expiresAt = res.expires_at || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-        const session = {
-          email: email.trim().toLowerCase(),
-          label: res.label || 'Admin',
-          token: res.token || '',
-          loggedInAt: new Date().toISOString(),
-          expiresAt,
-        };
-        localStorage.setItem('growlancer_admin_session', JSON.stringify(session));
-        navigate('/admin', { replace: true });
-      } else {
-        setError(res?.error || 'Invalid credentials');
+      if (!data.user) {
+        setError('Login failed. Please try again.');
+        return;
       }
+
+      // Check admin status — onAuthStateChange in AdminAuthGuard will handle real-time redirect
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_admin')
+        .eq('id', data.user.id)
+        .single();
+
+      if ((profile as any)?.is_admin !== true) {
+        // Not an admin — sign out and show error
+        await supabase.auth.signOut();
+        setError('Access denied. This account does not have admin privileges.');
+        return;
+      }
+
+      // Real-time redirect happens via onAuthStateChange in AdminAuthGuard (< 1 sec)
+      navigate('/admin', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed. Please try again.');
     } finally {
@@ -96,7 +122,7 @@ export function AdminLoginPage() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Admin Login</h2>
-              <p className="text-xs text-slate-500">Enter your predefined credentials</p>
+              <p className="text-xs text-slate-500">Sign in with your admin account</p>
             </div>
           </div>
 
@@ -154,11 +180,22 @@ export function AdminLoginPage() {
             className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2"
           >
             {loading ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Verifying...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> Signing in...</>
             ) : (
               <><Lock className="w-4 h-4" /> Access Admin Panel</>
             )}
           </button>
+
+          {/* Link to Setup */}
+          <div className="mt-4 text-center">
+            <Link
+              to="/admin/setup"
+              className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors flex items-center justify-center gap-1"
+            >
+              <Sparkles className="w-3 h-3" />
+              First time? Set up admin account here
+            </Link>
+          </div>
         </form>
 
         {/* Footer */}

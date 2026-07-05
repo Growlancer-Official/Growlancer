@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
-import { getAdminSession, adminLogout } from '../components/AdminAuthGuard';
+import { subscribeAdmin, adminLogout } from '../components/AdminAuthGuard';
 
 const sidebarLinks = [
   { id: 'overview', path: '/admin', icon: LayoutDashboard, label: 'Overview' },
@@ -43,10 +43,17 @@ export function AdminDashboardLayout() {
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Get admin session info from localStorage (fast — no Supabase Auth call)
-  const adminSession = getAdminSession();
-  const adminName = adminSession?.label || 'Admin';
-  const adminEmail = adminSession?.email || '';
+  // Get admin session info from global state (real-time via Supabase Auth)
+  const [adminName, setAdminName] = useState('Admin');
+  const [adminEmail, setAdminEmail] = useState('');
+
+  useEffect(() => {
+    const unsub = subscribeAdmin((admin) => {
+      setAdminName(admin?.label || 'Admin');
+      setAdminEmail(admin?.email || '');
+    });
+    return unsub;
+  }, []);
 
   // Search functionality
   const handleSearch = (query: string) => {
@@ -221,7 +228,7 @@ export function AdminDashboardLayout() {
             </button>
             {/* Logout button - visible on hover */}
             <button
-              onClick={adminLogout}
+              onClick={() => void adminLogout()}
               className="p-2 hover:bg-red-500/10 rounded-lg text-slate-400 hover:text-red-400 transition-colors"
               title="Logout from Admin"
             >
