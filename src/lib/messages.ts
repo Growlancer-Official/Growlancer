@@ -46,13 +46,20 @@ export const messagesService = {
   // -----------------------------------------------------------------------
 
   /**
-   * Fetch all conversations for a user — contracts with their latest message.
+   * Fetch conversations for a user — contracts with their latest message.
+   * Supports pagination via page parameter (1-based, 20 per page).
    */
-  async getConversations(userId: string): Promise<Conversation[]> {
+  async getConversations(userId: string, page?: number): Promise<Conversation[]> {
+    const pageSize = 20;
+    const from = page ? (page - 1) * pageSize : 0;
+    const to = from + pageSize - 1;
+
     const { data: contracts, error: contractsError } = await supabase
       .from('contracts')
       .select('id, freelancer_id, client_id')
-      .or(`freelancer_id.eq.${userId},client_id.eq.${userId}`);
+      .or(`freelancer_id.eq.${userId},client_id.eq.${userId}`)
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (contractsError) throw contractsError;
     if (!contracts || contracts.length === 0) return [];

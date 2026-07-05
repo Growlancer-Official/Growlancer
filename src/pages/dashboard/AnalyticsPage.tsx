@@ -35,14 +35,14 @@ export function AnalyticsPage() {
     if (!user) return;
     setLoading(true);
     try {
-      const result = await analyticsService.getFreelancerAnalytics(user.id);
+      const result = await analyticsService.getFreelancerAnalytics(user.id, timeframe);
       setData(result);
     } catch (err) {
       console.error('Failed to fetch analytics:', err);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, timeframe]);
 
   useEffect(() => {
     fetchAnalytics();

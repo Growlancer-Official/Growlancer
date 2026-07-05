@@ -10,6 +10,7 @@ import {
   Timer,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../components/Toast';
 import { supabase } from '../../lib/supabase';
 
 interface TimeEntry {
@@ -53,6 +54,7 @@ export function TimeTrackingPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('timer');
   const [manualHours, setManualHours] = useState('');
   const [manualDate, setManualDate] = useState(new Date().toISOString().split('T')[0]);
+  const toast = useToast();
 
   // Timer tick
   useEffect(() => {
@@ -168,6 +170,23 @@ export function TimeTrackingPage() {
     if (!user || !activeContract || !manualHours) return;
     const hours = parseFloat(manualHours);
     if (isNaN(hours) || hours <= 0) return;
+
+    // Sanity validation
+    if (hours > 24) {
+      toast.error('A single time entry cannot exceed 24 hours.');
+      return;
+    }
+    if (hours > 16) {
+      const confirmed = window.confirm(`You entered ${hours} hours for one day. This is unusually high. Are you sure this is correct?`);
+      if (!confirmed) return;
+    }
+    const selectedDate = new Date(manualDate);
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (selectedDate > today) {
+      toast.error('Cannot log time entries for future dates.');
+      return;
+    }
 
     await supabase.from('time_entries').insert({
       contract_id: activeContract,

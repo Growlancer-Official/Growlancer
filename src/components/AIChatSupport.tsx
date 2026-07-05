@@ -12,6 +12,10 @@ import {
   Sparkles,
   User,
   Zap,
+  MessageSquare,
+  Headphones,
+  Loader2,
+  CheckCircle2,
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -44,6 +48,8 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [usageLimit, setUsageLimit] = useState({ used: 0, limit: 10, isPro: false });
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const [escalating, setEscalating] = useState(false);
+  const [escalated, setEscalated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -283,6 +289,61 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     setLoading(false);
   };
 
+  // ── Escalate to human ──
+  const handleEscalate = async () => {
+    if (!user || escalating) return;
+    setEscalating(true);
+    try {
+      // Create a support ticket with the chat transcript
+      const transcript = messages.map(m => `[${m.role}] ${m.content}`).join('\n\n');
+      const { data, error } = await supabase
+        .from('support_tickets')
+        .insert({
+          user_id: user.id,
+          user_role: context,
+          subject: ticketContext?.subject || 'AI Chat Escalation',
+          description: `Escalated from AI Chat Support.\n\nContext: ${context}\nCategory: ${ticketContext?.category || 'general'}\nPriority: ${ticketContext?.priority || 'normal'}\n\n--- Chat Transcript ---\n${transcript}`,
+          category: (ticketContext?.category as any) || 'general',
+          priority: (ticketContext?.priority as any) || 'normal',
+          status: 'open',
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Send confirmation email via email-notifications edge function
+      await supabase.functions.invoke('email-notifications', {
+        body: {
+          type: 'support_ticket_created',
+          recipient_email: user.email,
+          recipient_name: user.name || user.email?.split('@')[0] || 'User',
+          subject: ticketContext?.subject || 'Support Request Received',
+          ticket_id: data.id,
+        },
+      });
+
+      // Show confirmation in chat
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `✅ **Your request has been escalated!** Our support team will review it within 24 hours at your registered email.`,
+        timestamp: new Date(),
+      }]);
+      setEscalated(true);
+    } catch (err) {
+      console.error('Failed to escalate:', err);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `Sorry, I couldn't create a support ticket right now. Please try again later or contact support directly.`,
+        timestamp: new Date(),
+      }]);
+    } finally {
+      setEscalating(false);
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -483,6 +544,23 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                 </button>
               </div>
             </div>
+          </div>
+        )}
+        {/* Escalate to Human */}
+        {!escalated && messages.length >= 2 && (
+          <div className="mb-3">
+            <button
+              onClick={handleEscalate}
+              disabled={escalating}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all disabled:opacity-50"
+            >
+              {escalating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Headphones className="w-4 h-4" />
+              )}
+              {escalating ? 'Escalating...' : 'Escalate to a Human'}
+            </button>
           </div>
         )}
         <div className="flex gap-2">

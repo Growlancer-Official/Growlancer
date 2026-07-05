@@ -366,7 +366,7 @@ export function ClientPaymentsPage() {
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-emerald-600" />
-            Saved Payment Methods
+            Payment Method Reference
           </h2>
           {!showAddPaymentMethod && (
             <button
@@ -497,11 +497,18 @@ export function ClientPaymentsPage() {
           </div>
         )}
 
+        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl mb-4">
+          <p className="text-xs text-amber-700">
+            <strong>Note:</strong> This is a record-keeping reference only. Actual payments are processed through
+            Razorpay Checkout during escrow funding. One-click charging from saved cards is not yet available.
+          </p>
+        </div>
+
         {!paymentMethodsLoading && paymentMethods.length === 0 && !showAddPaymentMethod && (
           <div className="text-center py-8 text-slate-500">
             <CreditCard className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-            <p className="font-medium">No saved payment methods</p>
-            <p className="text-sm mt-1">Add a payment method for faster checkout</p>
+            <p className="font-medium">No payment method references saved</p>
+            <p className="text-sm mt-1">Add a payment method for record-keeping purposes</p>
           </div>
         )}
 

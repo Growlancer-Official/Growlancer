@@ -116,9 +116,14 @@ export function ClientProposalsPage() {
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const pageSize = 20;
+  const pageRef = useRef(0);
 
-  const fetchProposals = useCallback(async () => {
+  const fetchProposals = useCallback(async (loadMore = false) => {
     if (!user) return;
+    if (loadMore) setLoadingMore(true);
     try {
       const { data: projects } = await supabase
         .from('projects')
@@ -132,6 +137,10 @@ export function ClientProposalsPage() {
         setLoading(false);
         return;
       }
+
+      const currentPage = pageRef.current;
+      const from = loadMore ? (currentPage + 1) * pageSize : 0;
+      const to = from + pageSize - 1;
 
       const { data, error } = await supabase
         .from('proposals')
@@ -147,7 +156,8 @@ export function ClientProposalsPage() {
             )
           `)
         .in('project_id', projectIds)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
       if (data) {
@@ -155,12 +165,20 @@ export function ClientProposalsPage() {
         const validProposals = (data as unknown as Proposal[]).filter(p => {
           return p.freelancer && !p.freelancer.deleted_at;
         });
-        setProposals(validProposals);
+        if (loadMore) {
+          setProposals(prev => [...prev, ...validProposals]);
+          pageRef.current = currentPage + 1;
+        } else {
+          setProposals(validProposals);
+          pageRef.current = 0;
+        }
+        setHasMore(validProposals.length === pageSize);
       }
     } catch (error) {
       console.error('Error fetching proposals:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [user]);
 
@@ -302,8 +320,9 @@ export function ClientProposalsPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
-          {filteredProposals.map((proposal) => (
+        <>
+          <div className="grid gap-4">
+            {filteredProposals.map((proposal) => (
             <div
               key={proposal.id}
               className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow"
@@ -426,6 +445,20 @@ export function ClientProposalsPage() {
               )}
             </div>
           ))}
+            </div>
+          </>
+      )}
+
+      {/* Load More */}
+      {filteredProposals.length > 0 && hasMore && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => fetchProposals(true)}
+            disabled={loadingMore}
+            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+          >
+            {loadingMore ? 'Loading...' : 'Load More Proposals'}
+          </button>
         </div>
       )}
     </div>

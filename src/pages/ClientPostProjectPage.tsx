@@ -110,6 +110,22 @@ export function ClientPostProjectPage() {
       alert('Please fill in all required fields');
       return;
     }
+
+    // Budget range validation
+    const minBudget = parseInt(formData.budget_min);
+    const maxBudget = parseInt(formData.budget_max);
+    if (isNaN(minBudget) || isNaN(maxBudget)) {
+      alert('Please enter valid budget amounts.');
+      return;
+    }
+    if (minBudget < 500) {
+      alert('Minimum budget must be at least $500.');
+      return;
+    }
+    if (maxBudget < minBudget) {
+      alert('Minimum budget cannot be greater than maximum budget.');
+      return;
+    }
     setLoading(true);
 
     try {

@@ -142,20 +142,40 @@ export function ClientProjectsPage() {
   const [closingId, setClosingId] = useState<string | null>(null);
   const [completingId, setCompletingId] = useState<string | null>(null);
   const [reopeningId, setReopeningId] = useState<string | null>(null);
-  const fetchProjects = useCallback(async () => {
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const pageSize = 20;
+  const pageRef = useRef(0);
+  const fetchProjects = useCallback(async (loadMore = false) => {
     if (!user?.id) return;
+
+    if (loadMore) setLoadingMore(true);
+
+    const currentPage = pageRef.current;
+    const from = loadMore ? (currentPage + 1) * pageSize : 0;
+    const to = from + pageSize - 1;
 
     const { data, error } = await tables.projects()
       .select('*, proposals(count)')
       .eq('client_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (error) {
       console.error('Error fetching projects:', error);
     } else {
-      setProjects(data as unknown as Project[] || []);
+      const newProjects = (data as unknown as Project[]) || [];
+      if (loadMore) {
+        setProjects(prev => [...prev, ...newProjects]);
+        pageRef.current = currentPage + 1;
+      } else {
+        setProjects(newProjects);
+        pageRef.current = 0;
+      }
+      setHasMore(newProjects.length === pageSize);
     }
     setLoading(false);
+    setLoadingMore(false);
   }, [user?.id]);
 
   useEffect(() => {
@@ -336,8 +356,9 @@ export function ClientProjectsPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
-          {filteredProjects.map((project) => (
+        <>
+          <div className="grid gap-4">
+            {filteredProjects.map((project) => (
             <div
               key={project.id}
               className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow"
@@ -411,6 +432,20 @@ export function ClientProjectsPage() {
               </div>
             </div>
           ))}
+            </div>
+          </>
+      )}
+
+      {/* Load More */}
+      {filteredProjects.length > 0 && hasMore && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => fetchProjects(true)}
+            disabled={loadingMore}
+            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+          >
+            {loadingMore ? 'Loading...' : 'Load More Projects'}
+          </button>
         </div>
       )}
 

@@ -483,21 +483,56 @@ export function ProfessionalProfilePage() {
   const addCert = () => { if (certInput.trim() && !formData.certifications.includes(certInput.trim())) { setFormData({ ...formData, certifications: [...formData.certifications, certInput.trim()] }); setCertInput(''); } };
   const removeCert = (c: string) => setFormData({ ...formData, certifications: formData.certifications.filter(x => x !== c) });
 
+  // ── 2FA state ──
+  const [factorId, setFactorId] = useState<string | null>(null);
+
   // ── 2FA ──
   const handleSetup2FA = async () => {
     setTwoFactorLoading(true); setErrorMessage(null);
     try {
-      const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+      const { data, error } = await supabase.functions.invoke('twofa-management', {
+        body: { action: 'enroll' },
+      });
       if (error) throw error;
-      if (data) { setQrCodeUrl(data.totp.qr_code || ''); setTwoFactorSecret(data.totp.secret || ''); setRecoveryCodes(('recovery_codes' in data ? (data as { recovery_codes: string[] }).recovery_codes : [])); setShowQrCode(true); }
-    } catch { setErrorMessage('Failed to setup 2FA.'); }
-    finally { setTwoFactorLoading(false); }
+      const res = data as { factor_id?: string; qr_code?: string; secret?: string; recovery_codes?: string[]; error?: string };
+      if (res.error) throw new Error(res.error);
+      if (res.factor_id) setFactorId(res.factor_id);
+      setQrCodeUrl(res.qr_code || '');
+      setTwoFactorSecret(res.secret || '');
+      setRecoveryCodes(res.recovery_codes || []);
+      setShowQrCode(true);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to setup 2FA.');
+    } finally { setTwoFactorLoading(false); }
   };
   const handleVerify2FA = async () => {
+    if (!factorId) { setErrorMessage('No 2FA session. Please re-start setup.'); return; }
     setTwoFactorLoading(true); setErrorMessage(null);
-    try { setTwoFactorEnabled(true); setShowQrCode(false); setShowRecoveryCodes(true); setSuccessMessage('2FA enabled!'); setTimeout(() => { setSuccessMessage(null); setShowRecoveryCodes(false); }, 5000); }
-    catch { setErrorMessage('Invalid code.'); }
-    finally { setTwoFactorLoading(false); }
+    try {
+      if (!twoFactorCode || twoFactorCode.length !== 6) {
+        throw new Error('Please enter a valid 6-digit verification code.');
+      }
+      const { data, error } = await supabase.functions.invoke('twofa-management', {
+        body: {
+          action: 'verify',
+          factor_id: factorId,
+          code: twoFactorCode,
+        },
+      });
+      if (error) throw error;
+      const res = data as { success?: boolean; error?: string };
+      if (res.error) throw new Error(res.error);
+      if (!res.success) throw new Error('Invalid code.');
+
+      setTwoFactorEnabled(true);
+      setShowQrCode(false);
+      setShowRecoveryCodes(true);
+      setTwoFactorCode('');
+      setSuccessMessage('2FA enabled!');
+      setTimeout(() => { setSuccessMessage(null); setShowRecoveryCodes(false); }, 5000);
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : 'Invalid code.');
+    } finally { setTwoFactorLoading(false); }
   };
   const handleDisable2FA = async () => {
     setTwoFactorLoading(true);

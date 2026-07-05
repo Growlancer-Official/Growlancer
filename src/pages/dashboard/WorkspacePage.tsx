@@ -191,6 +191,12 @@ export function WorkspacePage() {
     }
   }, [selectedContract]);
 
+  const [messagesPage, setMessagesPage] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const messagesPageSize = 50;
+  const loadMoreMessagesRef = useRef<(() => Promise<void>) | null>(null);
+
   const fetchSharedNotes = useCallback(async () => {
     if (!selectedContract) return;
     try {
@@ -262,8 +268,13 @@ export function WorkspacePage() {
   useEffect(() => {
     if (!selectedContract) return;
 
-    const fetchMessages = async () => {
+    const fetchMessages = async (loadMore = false) => {
+      if (loadMore) setLoadingMessages(true);
       try {
+        const from = loadMore ? (messagesPage + 1) * messagesPageSize : 0;
+        const to = from + messagesPageSize - 1;
+
+        // Fetch most recent messages first, then reverse for display
         const { data, error } = await supabase
           .from('messages')
           .select(`
@@ -271,17 +282,29 @@ export function WorkspacePage() {
             sender:profiles(id, name, avatar)
           `)
           .eq('contract_id', selectedContract.id)
-          .order('created_at', { ascending: true });
+          .order('created_at', { ascending: false })
+          .range(from, to);
 
         if (error) throw error;
 
         if (data) {
-          setMessages(data as unknown as Message[]);
+          const reversed = (data as unknown as Message[]).reverse();
+          if (loadMore) {
+            setMessages(prev => [...reversed, ...prev]);
+          } else {
+            setMessages(reversed);
+          }
+          setHasMoreMessages(data.length === messagesPageSize);
         }
       } catch (error) {
         console.error('Error fetching messages:', error);
+      } finally {
+        if (loadMore) setLoadingMessages(false);
       }
     };
+
+    // Store fetchMessages in ref so the button can call it with the latest messagesPage
+    loadMoreMessagesRef.current = () => fetchMessages(true);
 
     fetchMessages();
 
@@ -332,7 +355,8 @@ export function WorkspacePage() {
       void channel.unsubscribe();
       void contractSub.unsubscribe();
     };
-  }, [selectedContract, refreshContract]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedContract, refreshContract, messagesPage]);
 
   // Fetch contract files
   useEffect(() => {
@@ -749,6 +773,16 @@ export function WorkspacePage() {
 
       {selectedContract && (
         <div className="space-y-6">
+          {/* Load Earlier Messages */}
+          {hasMoreMessages && (
+            <button
+              onClick={() => { setMessagesPage(p => p + 1); loadMoreMessagesRef.current?.(); }}
+              disabled={loadingMessages}
+              className="w-full py-2 text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loadingMessages ? 'Loading...' : 'Load Earlier Messages'}
+            </button>
+          )}
           {/* Dispute Alert Banner */}
           {selectedContract.status === 'disputed' && (
             <div className="bg-red-50/90 border border-red-200 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-scale-in">

@@ -38,12 +38,20 @@ export function ClientContractsPage() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'pending'>('all');
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const pageSize = 20;
+  const pageRef = useRef(0);
 
-  const fetchContracts = useCallback(async (forceRefetch = false) => {
+  const fetchContracts = useCallback(async (loadMore = false) => {
     if (!user?.id) {
       setLoading(false);
       return;
     }
+
+    const currentPage = pageRef.current;
+    const from = loadMore ? (currentPage + 1) * pageSize : 0;
+    const to = from + pageSize - 1;
 
     const { data, error } = await supabase
       .from('contracts')
@@ -54,14 +62,24 @@ export function ClientContractsPage() {
         escrow(id, amount, status)
       `)
       .eq('client_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .range(from, to);
 
     if (error) {
       console.error('Error fetching contracts:', error);
     } else {
-      setContracts((data as Contract[]) || []);
+      const newContracts = (data as Contract[]) || [];
+      if (loadMore) {
+        setContracts(prev => [...prev, ...newContracts]);
+        pageRef.current = currentPage + 1;
+      } else {
+        setContracts(newContracts);
+        pageRef.current = 0;
+      }
+      setHasMore(newContracts.length === pageSize);
     }
     setLoading(false);
+    setLoadingMore(false);
   }, [user?.id]);
 
   useEffect(() => {
@@ -286,6 +304,19 @@ export function ClientContractsPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Load More */}
+      {filteredContracts.length > 0 && hasMore && (
+        <div className="flex justify-center pt-4">
+          <button
+            onClick={() => fetchContracts(true)}
+            disabled={loadingMore}
+            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+          >
+            {loadingMore ? 'Loading...' : 'Load More Contracts'}
+          </button>
         </div>
       )}
     </div>

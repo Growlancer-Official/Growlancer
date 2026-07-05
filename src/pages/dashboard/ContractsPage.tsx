@@ -275,9 +275,11 @@ export function ContractsPage() {
   const handleReleaseMilestone = async (contractId: string, milestoneIndex: number) => {
     setReleasingMilestone({ contractId, idx: milestoneIndex });
     try {
-      const result = await milestoneService.completeMilestone(contractId, milestoneIndex);
+      // Call releaseMilestonePayment — uses the release_milestone RPC which
+      // has FOR UPDATE row locking to prevent double-release race conditions.
+      const result = await milestoneService.releaseMilestonePayment(contractId, milestoneIndex);
       if (!result.success) {
-        console.error('Failed to complete milestone:', result.error);
+        console.error('Failed to release milestone payment:', result.error);
       }
       // Refresh escrow balance
       const balanceResult = await milestoneService.getEscrowBalance(contractId);

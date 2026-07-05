@@ -16,6 +16,10 @@ export function InboxPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const pageSize = 20;
+  const pageRef = useRef(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -39,15 +43,25 @@ export function InboxPage() {
       : `/dashboard/workspace?contract=${contractId}`;
 
   // Fetch conversations
-  const fetchConversations = useCallback(async () => {
+  const fetchConversations = useCallback(async (loadMore = false) => {
     if (!user) return;
+    if (loadMore) setLoadingMore(true);
     try {
-      const convs = await messagesService.getConversations(user.id);
-      setConversations(convs);
+      const currentPage = pageRef.current;
+      const convs = await messagesService.getConversations(user.id, loadMore ? currentPage + 1 : undefined);
+      if (loadMore) {
+        setConversations(prev => [...prev, ...convs]);
+        pageRef.current = currentPage + 1;
+      } else {
+        setConversations(convs);
+        pageRef.current = 0;
+      }
+      setHasMore(convs.length === pageSize);
     } catch (err) {
       console.error('Failed to fetch conversations:', err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, [user]);
 
@@ -220,6 +234,19 @@ export function InboxPage() {
               </div>
             )}
           </div>
+
+          {/* Load More */}
+          {filteredConversations.length > 0 && hasMore && (
+            <div className="p-3 border-t border-slate-100">
+              <button
+                onClick={() => fetchConversations(true)}
+                disabled={loadingMore}
+                className="w-full py-2 text-xs font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {loadingMore ? 'Loading...' : 'Load More Conversations'}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Chat Area */}

@@ -44,7 +44,7 @@ export const analyticsService = {
   /**
    * Get comprehensive analytics for a freelancer.
    */
-  async getFreelancerAnalytics(freelancerId: string): Promise<AnalyticsData> {
+  async getFreelancerAnalytics(freelancerId: string, timeframe: '7d' | '30d' | '90d' | '1y' = '30d'): Promise<AnalyticsData> {
     const defaultData: AnalyticsData = {
       totalEarnings: 0,
       monthlyEarnings: 0,
@@ -77,6 +77,10 @@ export const analyticsService = {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
+      // Compute date range from timeframe
+      const timeframeDays = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : timeframe === '90d' ? 90 : 365;
+      const timeframeStart = new Date(now.getTime() - timeframeDays * 24 * 60 * 60 * 1000).toISOString();
+
       // Run all queries in parallel
       const [
         contractsResult,
@@ -92,17 +96,20 @@ export const analyticsService = {
         supabase
           .from('contracts')
           .select('id, status, amount')
-          .eq('freelancer_id', freelancerId),
+          .eq('freelancer_id', freelancerId)
+          .gte('created_at', timeframeStart),
         // Proposals
         supabase
           .from('proposals')
           .select('id, status')
-          .eq('freelancer_id', freelancerId),
+          .eq('freelancer_id', freelancerId)
+          .gte('created_at', timeframeStart),
         // Reviews (using the reviews table)
         supabase
           .from('reviews')
           .select('rating, created_at')
-          .eq('reviewee_id', freelancerId),
+          .eq('reviewee_id', freelancerId)
+          .gte('created_at', timeframeStart),
         // Profile
         supabase
           .from('freelancer_profiles')

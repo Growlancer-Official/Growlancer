@@ -257,65 +257,32 @@ export const milestoneService = {
   },
 
   /**
-   * Release payment for a specific milestone. Updates the escrow record's
-   * milestones JSON and milestone status. Uses the existing release_escrow RPC
-   * when the last milestone is released, otherwise updates the escrow milestone state.
+   * Release payment for a specific milestone. Calls the release_milestone RPC
+   * which uses FOR UPDATE row locking to prevent race conditions.
+   *
+   * The RPC handles:
+   * - Row-level locking (prevents lost-update race on concurrent releases)
+   * - Auth validation (only the contract client can release)
+   * - Idempotency (already-released milestones raise an error)
+   * - All-milestones-check: calls release_escrow when the last milestone is released
    */
   async releaseMilestonePayment(
     contractId: string,
     milestoneIndex: number
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      // Fetch escrow record
-      const { data: escrow, error: escrowError } = await supabase
-        .from('escrow')
-        .select('*')
-        .eq('contract_id', contractId)
-        .maybeSingle();
+      const { data: result, error } = await supabase
+        .rpc('release_milestone', {
+          p_contract_id: contractId,
+          p_milestone_index: milestoneIndex,
+        });
 
-      if (escrowError) throw escrowError;
-      if (!escrow) {
-        return { success: false, error: 'No escrow record found for this contract' };
+      if (error) throw error;
+
+      const res = result as { success: boolean; error?: string; message?: string };
+      if (!res.success) {
+        return { success: false, error: res.error || 'Failed to release milestone' };
       }
-
-      // Parse milestones from escrow
-      const escrowMilestones = parseMilestones(escrow.milestones);
-      if (milestoneIndex < 0 || milestoneIndex >= escrowMilestones.length) {
-        throw new Error('Milestone index out of bounds in escrow');
-      }
-
-      // Update the escrow milestone status
-      escrowMilestones[milestoneIndex] = {
-        ...escrowMilestones[milestoneIndex],
-        status: 'released',
-      };
-
-      // Check if this is the last milestone - if so, release the full escrow
-      const allReleased = escrowMilestones.every(
-        (m) => COMPLETED_STATUSES.has(String(m.status || '').toLowerCase())
-      );
-
-      if (allReleased) {
-        // Use the existing release_escrow RPC for full release
-        const { data: releaseData, error: releaseError } = await supabase
-          .rpc('release_escrow', {
-            p_contract_id: contractId,
-            p_client_id: escrow.client_id,
-          });
-
-        if (releaseError) throw releaseError;
-      }
-
-      // Update escrow record with new milestone state
-      const { error: updateEscrowError } = await supabase
-        .from('escrow')
-        .update({
-          milestones: escrowMilestones as any,
-          current_milestone: Math.min(milestoneIndex + 1, escrowMilestones.length),
-        })
-        .eq('id', escrow.id);
-
-      if (updateEscrowError) throw updateEscrowError;
 
       return { success: true };
     } catch (err) {
