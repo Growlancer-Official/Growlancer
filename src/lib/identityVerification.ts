@@ -190,19 +190,44 @@ export const identityVerificationService = {
 
       if (error) throw error;
 
-      // If verified, also update the user's profile
-      if (status === 'verified') {
-        const { data: ver } = await supabase
-          .from('identity_verifications' as any)
-          .select('user_id')
-          .eq('id', verificationId)
-          .single();
+      // Get user details for email notification
+      const { data: ver } = await supabase
+        .from('identity_verifications' as any)
+        .select('user_id')
+        .eq('id', verificationId)
+        .single();
 
-        if (ver) {
+      if (ver) {
+        const userId = (ver as any).user_id;
+        
+        // If verified, also update the user's profile
+        if (status === 'verified') {
           await supabase
             .from('profiles' as any)
             .update({ identity_verified: true } as any)
-            .eq('id', (ver as any).user_id);
+            .eq('id', userId);
+        }
+
+        // Send email notification (fire-and-forget)
+        const { data: profile } = await supabase
+          .from('profiles' as any)
+          .select('name, email')
+          .eq('id', userId)
+          .single();
+
+        if (profile) {
+          const type = status === 'verified' ? 'verification_approved' : 'verification_rejected';
+          supabase.functions.invoke('email-notifications', {
+            method: 'POST',
+            body: {
+              type,
+              data: {
+                recipient_email: (profile as any).email,
+                recipient_name: (profile as any).name || (profile as any).email?.split('@')[0] || 'User',
+                rejection_reason: rejectionReason || undefined,
+              },
+            },
+          }).catch(err => console.error('[Email notification failed]', err));
         }
       }
 

@@ -637,7 +637,7 @@ export function ProSubscriptionPage() {
             <span className="font-display font-bold text-slate-900">Growlancer</span>
           </div>
           <p className="text-slate-400 text-sm">
-            &copy; {new Date().getFullYear()} Growlancer AI. Empowering the global workforce.
+            &copy; {new Date().getFullYear()} Growlancer AI. Empowering India's freelance workforce.
           </p>
         </div>
       </footer>

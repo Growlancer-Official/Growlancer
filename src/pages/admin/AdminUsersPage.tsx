@@ -184,6 +184,27 @@ export function AdminUsersPage() {
         suspend_reason: reason?.trim() || null,
       });
       await fetchUsers();
+      
+      // Send suspension email (fire-and-forget)
+      const { data: profile } = await adminQuery({
+        table: 'profiles',
+        select: 'email',
+        filters: { id: userId },
+        limit: 1,
+      });
+      if (profile?.[0]?.email) {
+        supabase.functions.invoke('email-notifications', {
+          method: 'POST',
+          body: {
+            type: 'account_suspended',
+            data: {
+              recipient_email: profile[0].email,
+              recipient_name: userName,
+              reason: reason?.trim() || undefined,
+            },
+          },
+        }).catch(err => console.error('[Email notification failed]', err));
+      }
     } catch (err) { console.error(err); }
     finally { setActionLoading(null); setOpenDropdown(null); }
   };

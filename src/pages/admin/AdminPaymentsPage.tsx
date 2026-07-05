@@ -211,6 +211,8 @@ export function AdminPaymentsPage() {
                           {actionLoading === `delete-${tx.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                         </button>
                         {tx.status === 'completed' && tx.type === 'payment' && (
+                          // TODO(review): This creates a DB refund record but does NOT call the
+                          // Razorpay/PayPal refund API. A real refund requires provider API integration.
                           <button onClick={async () => {
                             if (!confirm(`Create a refund transaction for ${formatCurrency(tx.amount)}?`)) return;
                             setActionLoading(`${tx.id}-refund`);

@@ -22,8 +22,8 @@ export function AboutPage() {
     },
     {
       icon: Globe,
-      title: 'Global Co-Working',
-      desc: 'Work borders are obsolete. Our system bridges team coordinates worldwide, providing micro-second syncing of tasks, note scratchpads, and secure assets.',
+      title: 'Real-Time Co-Working',
+      desc: 'Work borders are obsolete. Our system bridges team coordinates across distances, providing micro-second syncing of tasks, note scratchpads, and secure assets.',
       color: 'from-blue-500/10 to-indigo-500/10',
       iconColor: 'text-blue-600 bg-blue-100',
     },

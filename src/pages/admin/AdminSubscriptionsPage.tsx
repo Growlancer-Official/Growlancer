@@ -74,6 +74,9 @@ export function AdminSubscriptionsPage() {
   }, [fetchData]);
 
   // ─── ACTIONS ─────────────────────────────────────────────────────
+  // TODO(review): This only updates the DB status. Actual PayPal subscription
+  // cancellation API call is not implemented. The user's PayPal billing agreement
+  // will remain active unless cancelled separately via the PayPal API.
   const handleCancelSubscription = async (subId: string, userName: string) => {
     if (!confirm(`🚫 Cancel subscription for "${userName}"? They will lose Pro access immediately.`)) return;
     setActionLoading(`cancel-${subId}`);

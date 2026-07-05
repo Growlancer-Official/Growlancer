@@ -33,6 +33,82 @@ function getCorsHeaders(origin: string | null) {
   }
 }
 
+// ─── Email Notification Helper ────────────────────────────────────────────────
+
+const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com';
+const BREVO_FROM_NAME = 'Growlancer Team';
+const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
+
+function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(amount);
+}
+
+/** Send a transactional email via Brevo API */
+async function sendNotificationEmail(
+  to: string,
+  toName: string,
+  subject: string,
+  htmlContent: string
+): Promise<void> {
+  try {
+    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
+    await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        'api-key': BREVO_API_KEY,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify({
+        sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
+        to: [{ email: to, name: toName }],
+        subject,
+        htmlContent,
+      }),
+    });
+  } catch (err) {
+    console.error('[Email notification failed]', err);
+  }
+}
+
+function buildWithdrawalEmail(name: string, amount: number, netAmount: number, method: string, status: 'completed' | 'failed', reason?: string): string {
+  const isSuccess = status === 'completed';
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
+  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <div style="background: linear-gradient(135deg, ${isSuccess ? '#059669 0%, #047857' : '#dc2626 0%, #b91c1c'} 100%); padding: 32px; text-align: center;">
+      <h1 style="color: white; font-size: 22px; font-weight: 700; margin: 0;">${isSuccess ? 'Withdrawal Processed ✅' : 'Withdrawal Failed 💔'}</h1>
+    </div>
+    <div style="padding: 32px;">
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')},</p>
+      ${isSuccess
+        ? `<p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Your withdrawal of <strong style="color: #059669;">${formatCurrency(amount)}</strong> has been processed successfully!</p>
+           <div style="margin: 28px 0; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+             <p style="font-size: 14px; color: #166534; margin: 0;"><strong>Amount:</strong> ${formatCurrency(amount)}<br/><strong>Net Received:</strong> ${formatCurrency(netAmount)}<br/><strong>Method:</strong> ${method}</p>
+           </div>
+           <p style="font-size: 14px; color: #64748b; line-height: 1.7;">Funds should appear in 1-3 business days.</p>`
+        : `<p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Your withdrawal of <strong style="color: #dc2626;">${formatCurrency(amount)}</strong> could not be processed.</p>
+           <div style="margin: 28px 0; padding: 20px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px;">
+             <p style="font-size: 14px; color: #991b1b; margin: 0;">${reason ? reason.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : 'An unexpected error occurred.'}</p>
+           </div>
+           <p style="font-size: 14px; color: #64748b; line-height: 1.7;">The full amount has been returned to your wallet.</p>`
+      }
+      <div style="margin: 24px 0; text-align: center;">
+        <a href="${APP_URL}/dashboard/wallet" style="display: inline-block; padding: 12px 32px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">View Wallet →</a>
+      </div>
+      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">— The Growlancer Team</p>
+    </div>
+    <div style="padding: 24px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Growlancer — AI-Powered Freelancing Marketplace</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 // ─── Payout API Helpers ───────────────────────────────────────────────────────
 
 function getRazorpayBasicAuth(): string {
@@ -292,8 +368,31 @@ Deno.serve(async (req) => {
         // ── FAILURE → Rollback ──
         const errorMsg = payoutError?.message || 'Payout API call failed'
         await rollbackWithdrawal(supabaseClient, withdrawal.id, user.id, amount, errorMsg)
+        
+        // Send failure notification email (fire-and-forget)
+        sendNotificationEmail(
+          user.email || '',
+          user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          `Withdrawal of ${formatCurrency(amount)} Failed — Funds Returned 💔`,
+          buildWithdrawalEmail(
+            user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+            amount, amount, wdMethod, 'failed', errorMsg
+          ),
+        );
+
         return new Response(JSON.stringify({ success: false, error: errorMsg, withdrawal_id: withdrawal.id, rollback: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
+
+      // Send success notification email (fire-and-forget)
+      sendNotificationEmail(
+        user.email || '',
+        user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+        `Withdrawal of ${formatCurrency(amount)} Processed Successfully ✅`,
+        buildWithdrawalEmail(
+          user.user_metadata?.name || user.email?.split('@')[0] || 'User',
+          amount, netAmount, wdMethod, 'completed'
+        ),
+      );
 
       return new Response(JSON.stringify({
         success: true, payout_completed: payoutStatus === 'completed',

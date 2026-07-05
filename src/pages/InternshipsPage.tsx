@@ -108,7 +108,7 @@ function RoleCard({
                 </span>
                 <span className="flex items-center gap-1">
                   <Globe className="w-3.5 h-3.5 text-slate-400" />
-                  Remote (Global)
+                  Remote (India)
                 </span>
               </div>
             </div>
@@ -739,7 +739,7 @@ const FAQS = [
   },
   {
     q: 'Is this remote?',
-    a: 'Yes, this is a fully remote, global internship. We communicate via Google Meet for video calls and GitHub for code collaboration, with bi-weekly 1:1 mentoring sessions. You need your own laptop and stable internet.',
+    a: 'Yes, this is a fully remote internship open to candidates in India. We communicate via Google Meet for video calls and GitHub for code collaboration, with bi-weekly 1:1 mentoring sessions. You need your own laptop and stable internet.',
   },
   {
     q: 'What happens after I submit my application?',
@@ -854,7 +854,7 @@ export function InternshipsPage() {
           </p>
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
             <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-emerald-400" /> 8–12 weeks</span>
-            <span className="flex items-center gap-1.5"><Globe className="w-4 h-4 text-emerald-400" /> Remote (Global)</span>
+            <span className="flex items-center gap-1.5"><Globe className="w-4 h-4 text-emerald-400" /> Remote (India)</span>
             <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-emerald-400" /> 3–4 interns per cohort</span>
             <span className="flex items-center gap-1.5"><Award className="w-4 h-4 text-emerald-400" /> Certificate + LOR</span>
           </div>

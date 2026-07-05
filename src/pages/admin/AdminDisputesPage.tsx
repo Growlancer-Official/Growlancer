@@ -156,7 +156,11 @@ export function AdminDisputesPage() {
     finally { setActionLoading(null); }
   };
 
+  // TODO(review): This only updates the dispute status. Real escrow fund release/refund
+  // via Razorpay/PayPal API is not yet implemented. The amounts shown are for reference only.
   const handleAction = async (disputeId: string, action: 'resolved' | 'dismissed', amount?: number) => {
+    // TODO(review): This only updates the dispute status. Real escrow fund release/refund
+    // via Razorpay/PayPal API is not yet implemented. The amounts shown are for reference only.
     const actionLabel = action === 'resolved' ? 'Release funds to freelancer' : 'Refund to client';
     const amountStr = amount ? ' (' + formatCurrency(amount) + ')' : '';
     if (!confirm('\u26A0\uFE0F ' + actionLabel + amountStr + '? This action cannot be undone.')) return;
@@ -168,6 +172,41 @@ export function AdminDisputesPage() {
         : 'Funds refunded to client per admin review on ' + new Date().toLocaleDateString();
       await adminUpdate('disputes', disputeId, { status: action, resolution, updated_at: new Date().toISOString() });
       await fetchDisputes();
+
+      // Send email notifications to both parties (fire-and-forget)
+      const dispute = disputes.find(d => d.id === disputeId);
+      if (dispute) {
+        const outcome = action === 'resolved' ? 'resolved' : 'dismissed';
+        const parties = [
+          { id: dispute.raised_by, name: dispute.raiser?.name },
+          { id: dispute.raised_against, name: dispute.target?.name },
+        ];
+        for (const party of parties) {
+          if (!party.id || !party.name) continue;
+          const { data: profile } = await adminQuery({
+            table: 'profiles',
+            select: 'email',
+            filters: { id: party.id },
+            limit: 1,
+          }).catch(() => ({ data: null }));
+          const email = profile?.[0]?.email;
+          if (email) {
+            supabase.functions.invoke('email-notifications', {
+              method: 'POST',
+              body: {
+                type: 'dispute_resolved',
+                data: {
+                  recipient_email: email,
+                  recipient_name: party.name,
+                  dispute_id: disputeId,
+                  resolution,
+                  outcome,
+                },
+              },
+            }).catch(() => {});
+          }
+        }
+      }
     } catch (err) { console.error('Failed to update dispute:', err); }
     finally { setActionLoading(null); }
   };
