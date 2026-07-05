@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {ArrowLeft, BookOpen, ChevronDown, CreditCard, FileText, Filter, Home, Kanban, LifeBuoy, MessageSquare, Search, Sidebar, Columns, Type, Users, Wallet, } from 'lucide-react';
+import {ArrowLeft, BookOpen, ChevronDown, CreditCard, FileText, LifeBuoy, MessageSquare, Search, Users, } from 'lucide-react';
 
 interface FAQ {
   category: string;

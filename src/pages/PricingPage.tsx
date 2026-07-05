@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Check, Contact, Home, ShieldCheck, Sparkles, Volume, Zap } from 'lucide-react';
+import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 
 export function PricingPage() {
   const plans = [

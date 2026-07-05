@@ -5,20 +5,16 @@ import {
   ArrowUp,
   BarChart3,
   Briefcase,
-  Calendar,
   CheckCircle,
   Clock,
   DollarSign,
   Eye,
   FileText,
-  Loader2,
   RefreshCw,
-  Repeat,
   ShoppingBag,
   Star,
   TrendingUp,
   Users,
-  XCircle,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';

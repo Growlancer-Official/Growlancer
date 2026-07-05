@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, CheckCircle2, Clock, FileText, Filter, Info, List, Loader2, MessageSquare, User, View, XCircle,  } from 'lucide-react';
+import { ArrowRight, Calendar, CheckCircle2, Clock, FileText, Loader2, MessageSquare, User, XCircle,  } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';

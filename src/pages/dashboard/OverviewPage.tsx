@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, ArrowRight, Briefcase, CheckCircle2, Clock, CreditCard, DollarSign, FileText, Filter, Handshake, MessageSquare, Plus, Sparkles, Users, View, Wallet, Zap,  } from 'lucide-react';
+import { ArrowRight, Briefcase, CreditCard, FileText, Handshake, MessageSquare, Plus, Sparkles, Users, Wallet, Zap,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';

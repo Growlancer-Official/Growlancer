@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Award, Badge, Bell, ClipboardCheck, Copy, MailCheck, Share, ShieldCheck, Sparkles, Trophy, Unlock, Zap,  } from 'lucide-react';
+import { Award, Bell, ClipboardCheck, Copy, MailCheck, ShieldCheck, Sparkles, Trophy, Zap,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReferralsData, shareReferralLink } from '../hooks/useReferralsData';
 

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { List, Loader2, MessageSquare, Reply, Send, Star, User,  } from 'lucide-react';
+import { Loader2, MessageSquare, Send, Star, User,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { reviewService } from '../lib/reviews';

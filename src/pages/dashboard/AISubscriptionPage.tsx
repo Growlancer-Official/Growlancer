@@ -2,21 +2,16 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-  AlertTriangle,
   ArrowRight,
-  Badge,
   BarChart3,
   Check,
   Clock,
   Crown,
-  Info,
   Loader2,
   MessageSquare,
   RefreshCw,
-  Save,
   Shield,
   Sparkles,
-  Star,
   TrendingUp,
   X,
   Zap,

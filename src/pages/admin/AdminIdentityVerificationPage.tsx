@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Shield, Search, Loader2, RefreshCw, Mail, FileText,
   CheckCircle2, XCircle, AlertTriangle, ExternalLink, Clock,

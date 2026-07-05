@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef, type ReactNode } from 'react';
 import {
-  Scale, AlertTriangle, Loader2, RefreshCw, CheckCircle2, XCircle,
-  Eye, User, DollarSign, Calendar, Shield, MessageSquare, Clock, Filter, Trash2
+  Scale, Loader2, RefreshCw, CheckCircle2, XCircle, User, Clock, Trash2
 } from 'lucide-react';
-import { adminQuery, adminUpdate, adminInsert, adminDelete } from '../../lib/adminDataProxy';
-import { supabase, realtimeChannels } from '../../lib/supabase';
+import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
+import { supabase } from '../../lib/supabase';
 
 interface AdminDispute {
   id: string; contract_id: string; raised_by: string; raised_against: string;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Award, BookOpen, Briefcase, Building, Calendar, CheckCircle, CheckCircle2, ChevronDown, ChevronUp, Clock, Code, Database, PenTool, FileText, Globe, GraduationCap, HelpCircle, Home, Info, Lightbulb, Link2, Loader2, MessageSquare, Palette, Phone, School, Send, Ship, Sparkles, Target, Upload, User, Users, View, X,  } from 'lucide-react';
+import { ArrowLeft, Award, BookOpen, Briefcase, Calendar, CheckCircle, CheckCircle2, ChevronDown, ChevronUp, Clock, Code, Database, FileText, Globe, GraduationCap, HelpCircle, Lightbulb, Link2, Loader2, MessageSquare, Palette, Send, Sparkles, Target, Upload, User, Users, X,  } from 'lucide-react';
 import { internshipService, INTERNSHIP_ROLES, type InternshipRole } from '../lib/internshipService';
 
 // ─── Icon resolver ───────────────────────────────────────────────────────────

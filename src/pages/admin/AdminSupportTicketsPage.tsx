@@ -2,9 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { adminUpdate } from '../../lib/adminDataProxy';
 import {
-  Search, Loader2, RefreshCw, MessageSquare, User, Mail, AlertTriangle,
-  CheckCircle2, Clock, Filter, ChevronDown, ChevronUp, Eye, X,
-  Headphones, ArrowUpRight,
+  Search, Loader2, RefreshCw, MessageSquare, User, Clock,
+  Headphones,
 } from 'lucide-react';
 
 interface SupportTicket {

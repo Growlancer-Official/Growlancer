@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Briefcase, CheckCheck, ChevronDown, Clock, FileText, Filter, Inbox, List, Loader2, Mail, MessageSquare, MoreVertical, Paperclip, Search, Send, Type, User, View, X, XCircle,  } from 'lucide-react';
+import { ArrowLeft, Briefcase, CheckCheck, FileText, Inbox, Loader2, Mail, MessageSquare, MoreVertical, Paperclip, Search, Send, XCircle,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { messagesService, type Conversation, type MessageWithSender } from '../../lib/messages';

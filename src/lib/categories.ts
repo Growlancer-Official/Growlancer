@@ -19,7 +19,6 @@ import {
   ShieldCheck,
   Users,
   FolderKanban,
-  BrainCircuit,
   MoreHorizontal,
   Brain,
   Shield,

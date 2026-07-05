@@ -10,30 +10,21 @@ import {
   CircleDollarSign,
   Clock,
   CreditCard,
-  Delete,
   Filter,
-  History,
   Landmark,
   Loader2,
-  Merge,
-  Minus,
-  MoreHorizontal,
-  Navigation,
   Plus,
   RefreshCw,
-  Save,
   Search,
   Star,
   Trash2,
-  Type,
-  View,
   Wallet,
   X,
   XCircle,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
-import { supabase, realtimeChannels, tables } from '../../lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { withdrawalService, type Withdrawal, type PayoutMethod } from '../../lib/withdrawal';
 import { PLATFORM_CONFIG } from '../../lib/config';
 

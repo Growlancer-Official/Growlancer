@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { hireFreelancerFromProposal, rejectProposal } from '../lib/workflowService';
-import { CheckCircle, Clock, DollarSign, ExternalLink, Eye, FileText, Filter, List, MoreVertical, Plus, Star, User, View, XCircle,  } from 'lucide-react';
+import { CheckCircle, Clock, DollarSign, ExternalLink, Eye, FileText, MoreVertical, Plus, Star, User, XCircle,  } from 'lucide-react';
 
 interface Proposal {
   id: string;

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertCircle, CheckCircle, Clock, Database, Home, Info, Server } from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 

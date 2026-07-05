@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, Compass, Cpu, Heart, Home, Scale, MessageSquare, Columns, TrendingUp,  } from 'lucide-react';
+import { ChevronRight, Compass, Cpu, Heart, Scale, TrendingUp,  } from 'lucide-react';
 
 export function PhilosophyPage() {
   const principles = [

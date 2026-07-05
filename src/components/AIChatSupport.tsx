@@ -13,10 +13,8 @@ import {
   Sparkles,
   User,
   Zap,
-  MessageSquare,
   Headphones,
   Loader2,
-  CheckCircle2,
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;

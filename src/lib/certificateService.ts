@@ -6,7 +6,7 @@
  */
 
 import { supabase } from './supabase';
-import { adminQuery, adminUpdate, adminInsert } from './adminDataProxy';
+import { adminQuery, adminUpdate } from './adminDataProxy';
 
 export type CertificateType = 'skill_test' | 'platform' | 'internship' | 'achievement' | 'lor';
 export type CertStatus = 'active' | 'revoked' | 'expired';

@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
   BarChart3, TrendingUp, Users, DollarSign, Briefcase, Handshake,
-  Loader2, RefreshCw, ArrowUpRight, ArrowDownRight, Activity, Zap
+  Loader2, RefreshCw, ArrowUpRight, ArrowDownRight, Activity
 } from 'lucide-react';
-import { adminQuery, adminCounts } from '../../lib/adminDataProxy';
-import { supabase, realtimeChannels } from '../../lib/supabase';
+import { adminQuery } from '../../lib/adminDataProxy';
+import { realtimeChannels } from '../../lib/supabase';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);

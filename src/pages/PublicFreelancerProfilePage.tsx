@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Award, Briefcase, Calendar, CheckCircle, ChevronRight, Clock, Contact, DollarSign, ExternalLink, Globe, Home, Image, Info, Languages, Loader2, MapPin, MessageSquare, Share2, Shield, Star, Users,  } from 'lucide-react';
+import { Award, Briefcase, Calendar, CheckCircle, ChevronRight, Clock, DollarSign, Image, Loader2, MapPin, MessageSquare, Share2, Star, Users,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { portfolioService } from '../lib/portfolio';
 import { reviewService } from '../lib/reviews';

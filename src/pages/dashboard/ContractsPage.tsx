@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronRight, Clock, DollarSign, FileText, Handshake, Info, List, Loader2, MessageCircle, Shield, ThumbsUp, TrendingUp, User, View, Wallet,  } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronRight, Clock, DollarSign, FileText, Handshake, Loader2, Shield, ThumbsUp, User, Wallet,  } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';

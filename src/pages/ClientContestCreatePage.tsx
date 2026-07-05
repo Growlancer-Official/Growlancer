@@ -2,17 +2,12 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
-  Calendar,
   CheckCircle,
   DollarSign,
-  PenTool,
   FileText,
   Loader2,
   Plus,
   Tag,
-  Trophy,
-  Type,
-  Video,
   X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';

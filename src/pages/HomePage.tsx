@@ -1,7 +1,7 @@
 ﻿import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
-import { Activity, AlertCircle, ArrowRight, BadgeCheck, BarChart3, BriefcaseBusiness, CalendarCheck, CheckCircle2, CheckSquare, ClipboardCheck, ClipboardList, Clock3, Cpu, Eye, Files, Flag, FolderKanban, GitCompare, Handshake, Layers, LayoutDashboard, Loader2, Lock, LockKeyhole, MessageSquareText, MessagesSquare, Receipt, ScanText, ShieldCheck, Sparkles, Target, Timer, Users, View, Wallet, Wand2, Workflow, X, Zap,  } from 'lucide-react';
+import { Activity, AlertCircle, ArrowRight, BadgeCheck, BarChart3, BriefcaseBusiness, CalendarCheck, CheckCircle2, CheckSquare, ClipboardCheck, ClipboardList, Clock3, Cpu, Eye, Flag, FolderKanban, GitCompare, Handshake, Layers, LayoutDashboard, Loader2, Lock, LockKeyhole, MessageSquareText, MessagesSquare, Receipt, ScanText, ShieldCheck, Sparkles, Target, Timer, Users, Wallet, Wand2, X, Zap,  } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection as CategoriesSectionComponent } from '../components/CategoriesSection';
 import { supabase } from '../lib/supabase';

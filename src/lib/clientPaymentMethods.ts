@@ -1,4 +1,4 @@
-import { supabase, dbFunctions } from './supabase';
+import { supabase } from './supabase';
 
 export type ClientPaymentMethod = Record<string, any> & {
   id: string;

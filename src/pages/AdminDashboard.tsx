@@ -5,7 +5,7 @@ import {
   RefreshCw, Scale, Shield, ShieldAlert, ShieldCheck, Star, Users, XCircle, Zap, Mail,
   TrendingUp
 } from 'lucide-react';
-import { adminQuery, adminCounts, adminUpdate } from '../lib/adminDataProxy';
+import { adminQuery, adminUpdate } from '../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { disputeService, type DisputeCase } from '../lib/disputeService';
 

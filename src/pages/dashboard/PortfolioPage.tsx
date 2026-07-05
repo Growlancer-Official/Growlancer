@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Delete, Edit, Edit3, ExternalLink, Globe, GripVertical, Image, Info, Loader2, Plus, Save, Star, StarOff, Tag, Tags, Trash2, Upload, X,  } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Edit3, ExternalLink, Image, Loader2, Plus, Save, Star, StarOff, Tag, Trash2, X,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';

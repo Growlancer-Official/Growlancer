@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  Eye, Loader2, RefreshCw, Search, DollarSign,
+import { Loader2, RefreshCw, Search,
   CheckCircle, XCircle, Lock, Unlock, Trash2
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';

@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useCategories } from '../hooks/useCategories';
 import { resolveCategoryMeta } from '../lib/categories';
 import { dbFunctions } from '../lib/supabase';
-import { AlertCircle, ArrowLeft, ArrowRight, Briefcase, ChevronRight, Clock, DollarSign, ExternalLink, Home, Loader2, MapPin, Search, Star, Users, X,  } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Briefcase, ChevronRight, Clock, DollarSign, ExternalLink, Loader2, MapPin, Search, Star, Users, X,  } from 'lucide-react';
 
 interface Project {
   id: string;

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronDown, ChevronUp, Clock, Filter, Globe, Layers, Loader2, MapPin, Search, Star, Stars, Type, X,  } from 'lucide-react';
+import { ArrowRight, ChevronDown, ChevronUp, Clock, Filter, Globe, Layers, Loader2, MapPin, Search, Star, X,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';

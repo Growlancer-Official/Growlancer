@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Cookie, Home, Settings, Shield } from 'lucide-react';
+import { Cookie, Settings, Shield } from 'lucide-react';
 import { formatLegalLastUpdatedLine } from '@/lib/legalLastUpdated';
 
 export function CookiesPage() {

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Ban, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Gavel, List, Loader2, MessageCircle, MoreHorizontal, Scale, Send, Shield, ThumbsUp, Type, User, View, XCircle,  } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Ban, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Loader2, MessageCircle, Scale, Send, Shield, ThumbsUp, User,  } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { disputeService } from '../../lib/disputeService';

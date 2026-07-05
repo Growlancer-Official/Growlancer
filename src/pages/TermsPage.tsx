@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { formatLegalLastUpdatedLine } from '@/lib/legalLastUpdated';
-import { AlertOctagon, ArrowLeft, BookOpen, Check, ChevronRight, Contact, DollarSign, FileCode, Gavel, HelpCircle, Home, Kanban, Lock, Navigation, Scale, Shield, ShieldCheck, Sidebar, MessageSquare, User,  } from 'lucide-react';
+import { AlertOctagon, ArrowLeft, BookOpen, ChevronRight, DollarSign, FileCode, Gavel, HelpCircle, Lock, Scale, Shield, ShieldCheck,  } from 'lucide-react';
 
 interface Section {
   id: string;

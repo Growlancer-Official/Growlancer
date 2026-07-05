@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Award, Calendar, CheckCircle, Clock, DollarSign, Eye, FileText, Image, Info, List, Loader2, MessageSquare, Send, Sidebar, Tag, ThumbsUp, Trophy, Upload, Users, View, Vote,  } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileText, Loader2, MessageSquare, Send, ThumbsUp, Trophy, Upload, Users,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { supabase } from '../lib/supabase';

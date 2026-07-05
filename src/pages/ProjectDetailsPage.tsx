@@ -12,8 +12,6 @@ import {
   DollarSign,
   Edit3,
   ExternalLink,
-  Home,
-  Loader2,
   RefreshCw,
   Send,
   Tag,

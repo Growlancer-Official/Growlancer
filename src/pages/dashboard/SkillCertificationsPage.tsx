@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Award, Badge, BarChart3, BrainCircuit, CheckCircle2, Code, Filter, Loader2, Lock, Palette, Search, Server, Sparkles, TrendingUp, User, Verified,  } from 'lucide-react';
+import { Award, BarChart3, BrainCircuit, CheckCircle2, Code, Lock, Palette, Search, Server, Sparkles, TrendingUp,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { realtimeChannels } from '../../lib/supabase';
-import { skillCertificationService, AVAILABLE_SKILL_TESTS, CERTIFICATION_LEVELS, type SkillCertification, type SkillTest } from '../../lib/skillCertifications';
+import { skillCertificationService, CERTIFICATION_LEVELS, type SkillCertification, type SkillTest } from '../../lib/skillCertifications';
 
 export function SkillCertificationsPage() {
   const { user } = useAuth();

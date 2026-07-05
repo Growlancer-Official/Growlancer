@@ -3,7 +3,6 @@ import {
   Briefcase,
   CheckCircle2,
   Clock,
-  History,
   Loader2,
   Pause,
   Play,

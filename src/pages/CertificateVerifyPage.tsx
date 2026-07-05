@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Award, Shield, CheckCircle2, XCircle, Loader2, Search, ExternalLink,
-  User, Mail, Calendar, Clock, FileText, Copy, CheckCheck, AlertTriangle,
+  Award, Shield, XCircle, Loader2, Search,
+  User, Calendar, Clock, Copy, CheckCheck, AlertTriangle,
   Share2, Printer, Sparkles,  BookOpen, Zap, BadgeCheck, ArrowLeft, Star,
 } from 'lucide-react';
 import { verifyCertificateByCode, CERT_LEVEL_STYLES, getCertificateTitle, type Certificate } from '../lib/certificateService';

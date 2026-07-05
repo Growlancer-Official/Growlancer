@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Award, Calendar, CheckCircle, ChevronRight, Clock, Contact, DollarSign, Globe, Home, Image, Loader2, MessageSquare, Navigation, Shield, ShoppingCart, Sidebar, Star, Tag, Tags, User,  } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Shield, ShoppingCart, Star, Tag,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { reviewService } from '../lib/reviews';
 

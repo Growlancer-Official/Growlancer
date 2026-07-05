@@ -8,7 +8,7 @@ import { notificationPreferencesService } from '../../lib/notificationPreference
 import { withdrawalService } from '../../lib/withdrawal';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import {AlertCircle, AlertTriangle, ArrowLeft, Bell, Briefcase, Calendar, Camera, Check, CheckCircle2, ChevronRight, Globe, Clock, Code, Computer, Contact, Copy, CreditCard, Delete, DollarSign, Download, Edit, Edit2, Eye, EyeOff, Info, Key, Languages, Loader2, Lock, LogOut, Mail, MapPin, Monitor, Navigation, Network, Phone, Plus, QrCode, RefreshCw, Save, Scan, Search, Settings, Shield, Star, Trash2, Type, User, View, X, XCircle, } from 'lucide-react';
+import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, DollarSign, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useSkills } from '../../hooks/useSkills';
 import { SkillsSelector } from '../../components/SkillsSelector';
 import type { Tables } from '../../types/supabase';

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Building, CheckCircle, Clock, Contact, Home, Lock, Scale, Wallet,  } from 'lucide-react';
+import { ArrowRight, CheckCircle, Clock, Lock, Scale,  } from 'lucide-react';
 
 export function EscrowPolicyPage() {
   const steps = [

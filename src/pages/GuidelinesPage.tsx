@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertTriangle, ArrowRight, CheckCircle, Compass, Delete, Home, Share, Upload, XCircle,  } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle, Compass, XCircle,  } from 'lucide-react';
 
 export function GuidelinesPage() {
   const dos = [

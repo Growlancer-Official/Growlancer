@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BarChart3, Calendar, Code, PenTool, Home, Kanban, Share, ShieldCheck, Sparkles, Users, Verified, Wallet, Zap,  } from 'lucide-react';
+import { ArrowRight, BarChart3, Calendar, Code, ShieldCheck, Sparkles, Users, Wallet, Zap,  } from 'lucide-react';
 
 export function FeaturesPage() {
   const mainFeatures = [

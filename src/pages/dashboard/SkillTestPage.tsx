@@ -6,18 +6,7 @@ import {
   Award,
   CheckCircle2,
   Clock,
-  Contrast,
-  Database,
-  Images,
-  List,
   Loader2,
-  Navigation,
-  Network,
-  Ratio,
-  Search,
-  Space,
-  Timer,
-  Type,
   XCircle,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';

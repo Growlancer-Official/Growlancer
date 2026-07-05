@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, DollarSign, Eye, Filter, Grid3X3, Info, List, Loader2, Package, Search, ShoppingCart, Star, Tag, Tags, View, X,  } from 'lucide-react';
+import { Clock, Eye, Filter, Grid3X3, List, Loader2, Package, Search, ShoppingCart, Star,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 

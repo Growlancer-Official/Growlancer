@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AIChatSupport } from '../components/AIChatSupport';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Clock, Headphones, Home, Info, Shield, Sparkles, Zap,  } from 'lucide-react';
+import { ArrowLeft, Clock, Headphones, Shield, Sparkles, Zap,  } from 'lucide-react';
 
 export function ContactPage() {
   const { user } = useAuth();

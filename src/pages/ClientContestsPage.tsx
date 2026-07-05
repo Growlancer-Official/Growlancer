@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, Delete, DollarSign, Eye, Filter, List, Loader2, Plus, Trash2, Trophy, Users, View,  } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Eye, Filter, Loader2, Plus, Trash2, Trophy, Users,  } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';

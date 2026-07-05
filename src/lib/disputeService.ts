@@ -1,6 +1,6 @@
 // Dispute Resolution Service  
 // Pure data-access layer for disputes table
-import { supabase, realtimeChannels } from './supabase';
+import { supabase } from './supabase';
 import type { Tables } from '../types/supabase';
 
 export type DisputeCase = Tables<'disputes'>;

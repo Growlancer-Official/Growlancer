@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   ArrowRight,
-  Badge,
   Calendar,
   Check,
   Clock,
@@ -12,7 +11,6 @@ import {
   RefreshCw,
   Shield,
   Sparkles,
-  Unlock,
   X,
   Zap,
 } from 'lucide-react';

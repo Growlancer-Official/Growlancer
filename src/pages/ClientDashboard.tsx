@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, CheckCircle2, Clock, CreditCard, DollarSign, FileText, Handshake, Plus, Sparkles, Ticket, Users, View,  } from 'lucide-react';
+import { Briefcase, CheckCircle2, Clock, CreditCard, DollarSign, FileText, Handshake, Plus, Sparkles, Users,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
   projectsService,

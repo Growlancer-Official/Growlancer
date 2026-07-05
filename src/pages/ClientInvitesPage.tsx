@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { invitesService } from '../lib/dataService';
-import { Calendar, Clock, ExternalLink, Filter, List, MailCheck, MoreVertical, Plus, RefreshCw, Send, View, X,  } from 'lucide-react';
+import { Calendar, Clock, MailCheck, MoreVertical, Plus, RefreshCw, Send, X,  } from 'lucide-react';
 
 interface Invite {
   id: string;

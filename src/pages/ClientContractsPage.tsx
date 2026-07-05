@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
-import { AlertCircle, Calendar, Clock, DollarSign, FileText, Handshake, Laptop, User, Users, View,  } from 'lucide-react';
+import { AlertCircle, Calendar, Clock, DollarSign, FileText, Handshake, Laptop, User, Users,  } from 'lucide-react';
 
 interface Contract {
   id: string;

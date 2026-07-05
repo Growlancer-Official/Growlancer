@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
-import { ArrowRight, Briefcase, CheckCircle2, Clock, Database, Filter, Info, Loader2, Search, Send, Sparkles, Star, Tags, Type, Unlock, Wallet, X, Zap,  } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Wallet, X, Zap,  } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';

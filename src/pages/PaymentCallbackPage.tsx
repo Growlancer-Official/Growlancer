@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Home, Loader2, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Loader2, XCircle } from 'lucide-react';
 import { paypalService } from '../lib/paypal';
 import { ROUTES } from '../routes';
 

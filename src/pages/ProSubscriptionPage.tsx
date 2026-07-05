@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award, BarChart3, Check, CheckCircle, CheckCircle2, CreditCard, Crown, Eye, Loader2, Lock, MessageSquare, Power, RefreshCw, Save, ShieldCheck, Sparkles, Star, TrendingUp, User, Users, X, Zap,  } from 'lucide-react';
+import { ArrowRight, Award, BarChart3, Check, CheckCircle, CreditCard, Crown, Eye, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';

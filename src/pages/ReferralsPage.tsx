@@ -1,23 +1,17 @@
 import { useState } from 'react';
 import {
-  Activity,
   Award,
   CheckCircle,
-  Code,
   Copy,
   Cpu,
   Crown,
   Eye,
   Flame,
   Leaf,
-  Link,
-  Share,
   ShieldAlert,
   Sprout,
   Trophy,
-  User,
   UserX,
-  Verified,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Pagination } from '../components/Pagination';

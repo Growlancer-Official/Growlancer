@@ -9,19 +9,13 @@ import {
   RefreshCw,
   Search,
   Star,
-  Users,
   ExternalLink,
-  UserCheck,
-  UserX,
   Shield,
   Send,
   Ban,
-  MessageSquare,
-  X,
-  ChevronDown,
   Trash2,
 } from 'lucide-react';
-import { adminQuery, adminCounts, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
+import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import type { UserRole } from '../../types/auth';
 

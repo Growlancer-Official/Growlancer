@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, ChevronDown, Clock, DollarSign, Filter, Loader2, Search, Sparkles, Tag, Trophy, Type, Users,  } from 'lucide-react';
+import { ArrowRight, ChevronDown, Clock, DollarSign, Filter, Loader2, Search, Sparkles, Trophy, Users,  } from 'lucide-react';
 import { contestService, type Contest, CONTEST_CATEGORIES, getTimeRemaining } from '../lib/contests';
 
 type ContestType = 'all' | 'design' | 'development' | 'writing' | 'marketing' | 'other';

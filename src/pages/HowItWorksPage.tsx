@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Briefcase, Cpu, PenTool, FileText, Handshake, Home, Kanban, Lock, Sparkles, TrendingUp, Wallet,  } from 'lucide-react';
+import { ArrowRight, Briefcase, Cpu, FileText, Handshake, Lock, Sparkles, TrendingUp,  } from 'lucide-react';
 
 export function HowItWorksPage() {
   const [activeTab, setActiveTab] = useState<'client' | 'freelancer'>('client');

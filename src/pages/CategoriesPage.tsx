@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Home, Layers, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowRight, Layers, Loader2 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
 

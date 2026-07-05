@@ -4,21 +4,15 @@ import { identityVerificationService, type VerificationUpload } from '../../lib/
 import type { IdentityVerification } from '../../lib/identityVerification';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { AlertCircle,
-  AlertTriangle,
   CheckCircle2,
   Clock,
   FileText,
-  Files,
-  Image,
-  Info,
   Loader2,
   RefreshCw,
   Shield,
   ShieldAlert,
   ShieldCheck,
-  Type,
   Upload,
-  Verified,
   X,
   XCircle } from 'lucide-react';
 

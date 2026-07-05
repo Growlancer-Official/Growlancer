@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { AlertCircle, ArrowRight, Badge, Check, Clock, Filter, Image, List, Loader2, Package, RefreshCw, Scroll, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Tag, Tags, X,  } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, Clock, Loader2, RefreshCw, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Tag, X,  } from 'lucide-react';
 import { EscrowPayPalPayment } from '../components/EscrowPayPalPayment';
 import { PLATFORM_CONFIG } from '../lib/config';
 import { useCategories } from '../hooks/useCategories';

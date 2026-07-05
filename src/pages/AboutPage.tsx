@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe, Heart, Home, Kanban, ShieldCheck, Sparkles, Target, TrendingUp, Users, View, Zap } from 'lucide-react';
+import { ArrowRight, Globe, Heart, ShieldCheck, Sparkles, Target, TrendingUp, Users, Zap } from 'lucide-react';
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
 
 export function AboutPage() {

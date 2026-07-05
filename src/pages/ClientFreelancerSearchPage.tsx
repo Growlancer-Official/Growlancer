@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Award, Bell, BellOff, Briefcase, CheckCircle2, ChevronDown, ChevronUp, Clock, Filter, Globe, Layers, Loader2, MapPin, Plus, Save, Search, Star, Trash2, X,  } from 'lucide-react';
+import { Award, Bell, BellOff, Briefcase, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, Plus, Search, Star, Trash2,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, PenTool, History, Home, Lock, ShieldCheck, UserCheck,  } from 'lucide-react';
+import { ArrowRight, History, Lock, ShieldCheck, UserCheck,  } from 'lucide-react';
 
 export function SafetyPage() {
   const safetyFeatures = [
