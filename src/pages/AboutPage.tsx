@@ -181,31 +181,16 @@ export function AboutPage() {
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center">
               {/* Founder Image — Left Side */}
               <div className="lg:col-span-2 flex justify-center lg:justify-end">
-                <div className="relative group">
-                  {/* Animated gradient ring */}
-                  <div className="absolute -inset-1 bg-gradient-to-br from-emerald-400/60 via-teal-400/60 to-emerald-600/60 rounded-[2rem] opacity-60 group-hover:opacity-100 blur-sm transition-all duration-500" />
-                  
-                  {/* Image Container */}
-                  <div className="relative w-48 h-60 sm:w-56 sm:h-72 md:w-64 md:h-80 rounded-[1.5rem] overflow-hidden border-2 border-emerald-500/30 shadow-xl shadow-emerald-900/30 bg-slate-900/50">
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 via-transparent to-transparent z-10" />
+                <div className="relative">
+                  {/* Image Container — Clean & Professional */}
+                  <div className="w-56 h-64 sm:w-60 sm:h-72 md:w-72 md:h-80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black/40 bg-slate-800/30">
                     <img 
                       src="/Founder.png" 
                       alt="MOHAMMAD MIRAN KHAN — Founder & CEO of Growlancer"
-                      className="w-full h-full object-contain scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
+                      className="w-full h-full object-contain"
                       loading="lazy"
                     />
                   </div>
-
-                  {/* Verified Badge */}
-                  <div className="absolute -bottom-1.5 -right-1.5 bg-emerald-500 rounded-lg p-2 shadow-lg shadow-emerald-500/30 z-20 ring-2 ring-slate-900">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-
-                  {/* Decorative corner accent */}
-                  <div className="absolute -top-0.5 -left-0.5 w-6 h-6 border-t-2 border-l-2 border-emerald-400/30 rounded-tl-[1.5rem] z-20" />
-                  <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 border-b-2 border-r-2 border-emerald-400/30 rounded-br-[1.5rem] z-20" />
                 </div>
               </div>
 
