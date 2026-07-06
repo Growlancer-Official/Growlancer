@@ -23,9 +23,9 @@ DECLARE
   v_secret_hash TEXT;
   v_result JSONB;
 BEGIN
-  -- 🔴 IMPORTANT: Change this to your own secret code!
-  -- Default: CHANGE_ME_TO_YOUR_SECRET_CODE
-  IF p_secret_code <> 'CHANGE_ME_TO_YOUR_SECRET_CODE' THEN
+  -- 🔴 Set your secret code in Supabase Dashboard via SQL Editor
+  -- Never commit the real code to a public repo.
+  IF p_secret_code <> 'YOUR_SECRET_CODE_HERE' THEN
     RETURN jsonb_build_object(
       'success', false,
       'error', 'Invalid admin secret code'
@@ -93,11 +93,6 @@ CREATE POLICY "Service role can manage admin_users"
 -- Grant access
 GRANT ALL ON public.admin_users TO service_role;
 GRANT ALL ON public.admin_users TO authenticated;
-
--- Store admin secret code as a Supabase secret
--- Run this in Supabase dashboard: 
--- SELECT set_config('app.admin_secret_code', 'GROWLANCER_ADMIN_2024', false);
--- Or use the edge function to check it
 
 -- Remove old admin_credentials table approach
 -- (keeping table but marking it deprecated — can be dropped later)

@@ -264,7 +264,7 @@ export function AdminSignupPage() {
               className="w-full px-4 py-3 bg-slate-800/50 border border-amber-500/20 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all"
             />
             <p className="mt-1 text-[10px] text-slate-500">
-              This is the secret code you set during deployment. Check the migration file.
+              Enter the admin setup code provided to you.
             </p>
           </div>
 
