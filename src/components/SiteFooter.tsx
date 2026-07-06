@@ -64,29 +64,59 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
 
         <div className="mt-8 pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-slate-600">&copy; {new Date().getFullYear()} <span className="font-semibold text-slate-900">Growlancer</span>. Built for clarity, speed, and trust.</div>
-          <div className="flex items-center gap-2 px-5 py-2.5 bg-slate-50 rounded-lg ring-1 ring-slate-200">
-            {/* PayPal monogram: Simple Icons v11 geometry (CC0), split into two closed paths with distinct origins; brand blues per PayPal guidelines */}
-            <svg
-              className="h-7 w-7 shrink-0"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-              role="img"
-              aria-label="PayPal"
-            >
-              <path
-                fill="#003087"
-                d="M7.016 19.198h-4.2a.562.562 0 0 1-.555-.65L5.093.584A.692.692 0 0 1 5.776 0h7.222c3.417 0 5.904 2.488 5.846 5.5-.006.25-.027.5-.066.747A6.794 6.794 0 0 1 12.071 12H8.743a.69.69 0 0 0-.682.583l-.325 2.056-.013.083-.692 4.39-.015.087z"
-              />
-              <path
-                fill="#009cde"
-                d="M19.79 6.142c-.01.087-.01.175-.023.261a7.76 7.76 0 0 1-7.695 6.598H9.007l-.283 1.795-.013.083-.692 4.39-.134.843-.014.088H6.86l-.497 3.15a.562.562 0 0 0 .555.65h3.612c.34 0 .63-.249.683-.585l.952-6.031a.692.692 0 0 1 .683-.584h2.126a6.793 6.793 0 0 0 6.707-5.752c.306-1.95-.466-3.744-1.89-4.906z"
-              />
-            </svg>
-            <span className="text-sm font-semibold text-slate-700">Secure Payments via PayPal</span>
+          
+          {/* Payment Methods */}
+          <div className="flex flex-col sm:flex-row items-center gap-3">
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Secured by</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl ring-1 ring-slate-200">
+              {/* PayPal */}
+              <svg
+                className="h-6 w-6 shrink-0"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-label="PayPal"
+              >
+                <path
+                  fill="#003087"
+                  d="M7.016 19.198h-4.2a.562.562 0 0 1-.555-.65L5.093.584A.692.692 0 0 1 5.776 0h7.222c3.417 0 5.904 2.488 5.846 5.5-.006.25-.027.5-.066.747A6.794 6.794 0 0 1 12.071 12H8.743a.69.69 0 0 0-.682.583l-.325 2.056-.013.083-.692 4.39-.015.087z"
+                />
+                <path
+                  fill="#009cde"
+                  d="M19.79 6.142c-.01.087-.01.175-.023.261a7.76 7.76 0 0 1-7.695 6.598H9.007l-.283 1.795-.013.083-.692 4.39-.134.843-.014.088H6.86l-.497 3.15a.562.562 0 0 0 .555.65h3.612c.34 0 .63-.249.683-.585l.952-6.031a.692.692 0 0 1 .683-.584h2.126a6.793 6.793 0 0 0 6.707-5.752c.306-1.95-.466-3.744-1.89-4.906z"
+                />
+              </svg>
+              <span className="text-slate-300">|</span>
+              {/* Razorpay */}
+              <svg
+                className="h-5 w-[83px] shrink-0"
+                viewBox="0 0 100 24"
+                xmlns="http://www.w3.org/2000/svg"
+                role="img"
+                aria-label="Razorpay"
+              >
+                <path
+                  fill="#3395FF"
+                  d="M22.5 0L19.5 3.5L16.5 0L10.5 9L13.5 12.5L6 24H10L16.5 13.5L19.5 17L22.5 13.5L29 24H33L25.5 12.5L28.5 9L22.5 0Z"
+                />
+                <text
+                  x="38"
+                  y="16"
+                  fontFamily="Arial, sans-serif"
+                  fontWeight="bold"
+                  fontSize="12"
+                  fill="#1a1a1a"
+                >
+                  Razorpay
+                </text>
+              </svg>
+            </div>
+            <span className="text-[10px] text-slate-400 italic">PayPal &amp; Razorpay</span>
           </div>
+
           <div className="flex items-center gap-2">
-            <button onClick={() => onOpenSignup('client')} className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors shadow-sm">Get Started</button>
-            <button onClick={() => onOpenSignup('freelancer')} className="inline-flex items-center justify-center h-10 px-4 rounded-lg bg-white text-slate-900 font-semibold ring-1 ring-slate-200 hover:bg-slate-50 transition-colors">Join</button>
+            <button onClick={() => onOpenSignup('client')} className="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 transition-colors shadow-sm">Get Started</button>
+            <button onClick={() => onOpenSignup('freelancer')} className="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-white text-slate-900 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-50 transition-colors">Join</button>
           </div>
         </div>
       </div>
