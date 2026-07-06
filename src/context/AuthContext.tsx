@@ -448,20 +448,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(data.session);
         setSupabaseUser(data.user);
 
-        // Fetch profile - don't create new one during login (allowCreate = false)
+        // Fetch existing profile first
         let profile = await ensureUserProfile(data.user, undefined, false);
 
-        // If profile not found immediately, retry once after short delay
+        // If profile not found, retry once after short delay
         if (!profile) {
           await new Promise(resolve => setTimeout(resolve, 500));
           profile = await ensureUserProfile(data.user, undefined, false);
+        }
+
+        // 🆕 If still no profile, auto-create from user_metadata (handles missing profile case)
+        if (!profile && data.user?.user_metadata?.role) {
+          devLog('[Auth] No profile found during login — auto-creating from user_metadata');
+          profile = await ensureUserProfile(
+            data.user,
+            data.user.user_metadata.role as UserRole,
+            true
+          );
         }
 
         if (profile) {
           setUser(profile);
           setIsLoading(false);
           devLog('[Auth] Login successful:', profile.email, 'role:', profile.role);
-          // 🆕 Return onboarding flag so LoginModal can redirect to /onboarding if needed
           return { 
             success: true, 
             role: profile.role,
