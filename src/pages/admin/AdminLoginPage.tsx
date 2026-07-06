@@ -98,7 +98,7 @@ export function AdminLoginPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
             <img 
-              src="/Growlancer Logo (2).png" 
+              src="/UpdatedLogo.png" 
               alt="Growlancer" 
               className="h-12 w-12 rounded-xl shadow-lg"
             />

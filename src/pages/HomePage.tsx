@@ -93,7 +93,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                     playsInline
                     preload="auto"
                     className="w-full aspect-video object-cover"
-                    poster="/Growlancer Logo (2).png"
+                    poster="/UpdatedLogo.png"
                     onError={() => setVideoFailed(true)}
                     style={{
                       animation: 'none',

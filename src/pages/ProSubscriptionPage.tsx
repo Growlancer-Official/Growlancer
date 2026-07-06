@@ -147,7 +147,7 @@ export function ProSubscriptionPage() {
       <header className="backdrop-blur-xl bg-white/80 sticky top-0 z-50 border-b border-slate-200/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/Growlancer Logo (2).png" alt="Growlancer" className="h-10 w-10 rounded-xl" />
+            <img src="/UpdatedLogo.png" alt="Growlancer" className="h-10 w-10 rounded-xl" />
             <span className="font-display text-xl font-bold tracking-tight">Growlancer</span>
           </div>
           <nav className="hidden md:flex items-center gap-8">
@@ -632,7 +632,7 @@ export function ProSubscriptionPage() {
       <footer className="bg-white py-12 border-t border-slate-100">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
-            <img src="/Growlancer Logo (2).png" alt="Growlancer" className="h-8 w-8 rounded-lg" />
+            <img src="/UpdatedLogo.png" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-bold text-slate-900">Growlancer</span>
           </div>
           <p className="text-slate-400 text-sm">

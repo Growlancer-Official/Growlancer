@@ -52,8 +52,7 @@ export function AdminContractsPage() {
       };
       if (statusFilter !== 'all') opts.filters = { status: statusFilter };
 
-      const { data, error } = await adminQuery(opts);
-      if (error) throw error;
+      const data = (await adminQuery(opts)).data;
 
       const cons = (data || []) as AdminContract[];
       const userIds = [...new Set(cons.flatMap(c => [c.freelancer_id, c.client_id]))];

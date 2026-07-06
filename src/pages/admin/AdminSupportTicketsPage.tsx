@@ -42,12 +42,12 @@ export function AdminSupportTicketsPage() {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('support_tickets')
+        .from('support_tickets' as any)
         .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTickets(data as SupportTicket[] || []);
+      setTickets((data as unknown as SupportTicket[]) || []);
     } catch (err) {
       console.error('Error fetching tickets:', err);
     } finally {
@@ -61,13 +61,13 @@ export function AdminSupportTicketsPage() {
     setLoadingMessages(true);
     try {
       const { data, error } = await supabase
-        .from('ticket_messages')
+        .from('ticket_messages' as any)
         .select('*')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setTicketMessages(data as TicketMessage[] || []);
+      setTicketMessages((data as unknown as TicketMessage[]) || []);
     } catch (err) {
       console.error('Error fetching messages:', err);
     } finally {
@@ -83,13 +83,9 @@ export function AdminSupportTicketsPage() {
   const handleStatusChange = async (ticketId: string, newStatus: string) => {
     setUpdatingId(ticketId);
     try {
-      const result = await adminUpdate({
-        table: 'support_tickets',
-        values: { status: newStatus, updated_at: new Date().toISOString() },
-        filters: { id: ticketId },
-      });
+      const result = await adminUpdate('support_tickets', ticketId, { status: newStatus, updated_at: new Date().toISOString() });
 
-      if (result.error) throw new Error(result.error);
+      if ((result as { error?: string }).error) throw new Error((result as { error?: string }).error!);
       setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus as SupportTicket['status'], updated_at: new Date().toISOString() } : t));
       if (selectedTicket?.id === ticketId) {
         setSelectedTicket(prev => prev ? { ...prev, status: newStatus as SupportTicket['status'] } : null);

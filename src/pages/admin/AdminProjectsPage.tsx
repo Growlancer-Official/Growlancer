@@ -58,8 +58,7 @@ export function AdminProjectsPage() {
       };
       if (statusFilter !== 'all') opts.filters = { status: statusFilter };
 
-      const { data, error } = await adminQuery(opts);
-      if (error) throw error;
+      const data = (await adminQuery(opts)).data;
 
       const projs = (data || []) as AdminProject[];
       const clientIds = [...new Set(projs.map(p => p.client_id))];

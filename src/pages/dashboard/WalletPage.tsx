@@ -219,7 +219,7 @@ export function WalletPage() {
       let creditsData: any[] = [];
       try {
         const { data, error: creditsError } = await supabase
-          .from('transactions')
+          .from('transactions' as any)
           .select('id, created_at, amount, status, type, description, source, contract_id')
           .eq('user_id', user.id)
           .in('type', ['escrow_release', 'payment', 'credit', 'refund'])
@@ -430,7 +430,7 @@ export function WalletPage() {
         bank_name: newMethodType === 'bank_transfer' ? newMethodBankName || null : null,
         ifsc_code: newMethodType === 'bank_transfer' ? newMethodIfscCode || null : null,
         upi_id: newMethodType === 'bank_transfer' ? newMethodUpiId || null : null,
-      });
+      } as any);
 
       if (result.success && result.method) {
         await fetchPayoutMethods();

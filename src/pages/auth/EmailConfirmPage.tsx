@@ -30,7 +30,7 @@ export function EmailConfirmPage() {
 
         if (cancelled) return;
 
-        if (session?.user?.email_confirmed_at) {
+        if ((session as { user?: { email_confirmed_at?: string } } | null)?.user?.email_confirmed_at) {
           setStatus('success');
           setMessage('Email verified! Redirecting to your dashboard...');
 
@@ -45,7 +45,7 @@ export function EmailConfirmPage() {
 
           if (cancelled) return;
 
-          if (retrySession?.user?.email_confirmed_at) {
+          if ((retrySession as { user?: { email_confirmed_at?: string } } | null)?.user?.email_confirmed_at) {
             setStatus('success');
             setMessage('Email verified! Redirecting to your dashboard...');
             setTimeout(() => {
@@ -77,7 +77,7 @@ export function EmailConfirmPage() {
         <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 text-center">
           <div className="flex justify-center mb-6">
             <img
-              src="/Growlancer Logo (2).png"
+              src="/UpdatedLogo.png"
               alt="Growlancer"
               className="h-12 w-12 rounded-xl"
             />

@@ -13,13 +13,13 @@
   "categories": ["business", "productivity", "freelancing"],
   "icons": [
     {
-      "src": "/Growlancer%20Logo%20(2).png",
+      "src": "/UpdatedLogo.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/Growlancer%20Logo%20(2).png",
+      "src": "/UpdatedLogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -36,7 +36,7 @@
       "url": "/dashboard/overview",
       "icons": [
         {
-          "src": "/Growlancer%20Logo%20(2).png",
+          "src": "/UpdatedLogo.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -49,7 +49,7 @@
       "url": "/dashboard/projects",
       "icons": [
         {
-          "src": "/Growlancer%20Logo%20(2).png",
+          "src": "/UpdatedLogo.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -62,7 +62,7 @@
       "url": "/dashboard/inbox",
       "icons": [
         {
-          "src": "/Growlancer%20Logo%20(2).png",
+          "src": "/UpdatedLogo.png",
           "sizes": "192x192",
           "type": "image/png"
         }
@@ -75,7 +75,7 @@
       "url": "/dashboard/wallet",
       "icons": [
         {
-          "src": "/Growlancer%20Logo%20(2).png",
+          "src": "/UpdatedLogo.png",
           "sizes": "192x192",
           "type": "image/png"
         }

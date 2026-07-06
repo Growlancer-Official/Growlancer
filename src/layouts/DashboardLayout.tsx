@@ -295,7 +295,7 @@ export function DashboardLayout() {
         <div className="flex items-center justify-between mb-6">
           <Link to="/" className="flex items-center gap-3">
             <img
-              src="/Growlancer Logo (2).png"
+              src="/UpdatedLogo.png"
               alt="Growlancer"
               className="h-10 w-10 rounded-xl shadow-lg"
             />
@@ -434,7 +434,7 @@ export function DashboardLayout() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 mb-10 px-2">
           <img 
-            src="/Growlancer Logo (2).png" 
+            src="/UpdatedLogo.png" 
             alt="Growlancer" 
             className="h-10 w-10 rounded-xl shadow-lg"
           />

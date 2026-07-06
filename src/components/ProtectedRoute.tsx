@@ -39,7 +39,7 @@ function EmailNotVerifiedPage() {
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 text-center">
           <div className="flex justify-center mb-6">
-            <img src="/Growlancer Logo (2).png" alt="Growlancer" className="h-12 w-12 rounded-xl" />
+            <img src="/UpdatedLogo.png" alt="Growlancer" className="h-12 w-12 rounded-xl" />
           </div>
 
           <div className="flex justify-center mb-4">

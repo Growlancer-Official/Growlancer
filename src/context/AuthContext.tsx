@@ -98,15 +98,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const syncAuthUser = useCallback(
     async (authUser: SupabaseUser, roleHint?: UserRole) => {
-      // Email verification check — prevents unverified users from accessing dashboards
-      if (roleHint && !authUser.email_confirmed_at) {
-        await supabase.auth.signOut();
-        setUser(null);
-        setSession(null);
-        setSupabaseUser(null);
-        return null;
-      }
-
       // Try to fetch existing profile
       let profile = await ensureUserProfile(authUser, roleHint, !!roleHint);
 
@@ -454,17 +445,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.user) {
-        // Email verification check — prevents unverified users from logging in
-        if (!data.user.email_confirmed_at) {
-          devWarn('[Auth] Email not verified for user:', data.user.id);
-          await supabase.auth.signOut();
-          setIsLoading(false);
-          return {
-            success: false,
-            error: 'Please verify your email before logging in. Check your inbox for the verification link.',
-          };
-        }
-
         setSession(data.session);
         setSupabaseUser(data.user);
 
@@ -540,18 +520,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (data.user) {
-        // Try to create profile immediately (may fail if no valid session yet)
-        // Non-fatal: if it fails, the profile will be created lazily via
-        // syncAuthUser when the user verifies their email and returns.
-        const created = await createUserProfile(data.user.id, email, name, role, referralCode);
+        // Try to create profile immediately
+        let created = await createUserProfile(data.user.id, email, name, role, referralCode);
 
+        // Retry once if profile creation failed
         if (!created) {
-          devWarn('[Auth] Profile creation deferred — will be created on email verification');
-          captureInfo('Signup profile creation deferred', {
-            source: 'auth',
-            userId: data.user.id,
-          });
-          // 👇 Continue with signup success — profile will be created later
+          await new Promise(resolve => setTimeout(resolve, 1500));
+          created = await createUserProfile(data.user.id, email, name, role, referralCode);
+        }
+
+        if (created) {
+          devLog('[Auth] Profile created immediately for:', email);
+        } else {
+          devWarn('[Auth] Profile creation deferred');
         }
 
         // Process referral if this signup came from a referral link
@@ -564,10 +545,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             } as any);
             if (refError) {
               devWarn('[Auth] Referral processing error:', refError.message);
-              // Non-fatal: don't block signup if referral fails
             } else {
               devLog('[Auth] Referral processed successfully for code:', referrerCode);
-              // 🆕 Grant referred user 5 free connects as welcome bonus
               try {
                 await supabase.from('connects_transactions' as any).insert({
                   user_id: data.user.id,
@@ -582,12 +561,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           } catch (refErr) {
             devWarn('[Auth] Referral processing exception:', refErr);
-            // Non-fatal
           }
         }
 
+        // Auto sign-in — bypass email confirmation (temporary fix until email service is set up)
+        await supabase.auth.signInWithPassword({ email, password });
+
+        // Re-fetch session and sync
+        const { data: freshSession } = await supabase.auth.getSession();
+        if (freshSession.session?.user) {
+          setSession(freshSession.session);
+          setSupabaseUser(freshSession.session.user);
+          await syncAuthUser(freshSession.session.user, role);
+        }
+
         setIsLoading(false);
-        return { success: true, message: 'Verification link sent to your email' };
+        return { 
+          success: true, 
+          message: 'Account created successfully! Welcome to Growlancer.' 
+        };
       }
 
       setIsLoading(false);

@@ -576,6 +576,7 @@ export function AdminCertificatesPage() {
             data: { offer_letter_url: publicUrl },
           },
         });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch {} // Non-fatal - upload still works
 
       toast.success('Uploaded', 'Certificate/LOR PDF uploaded. Link saved to applicant.');
@@ -1048,7 +1049,7 @@ export function AdminCertificatesPage() {
                 <option value="expired">Expired</option>
               </select>
             </div>
-            <button onClick={fetchCerts}
+            <button onClick={() => void fetchCerts()}
               className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Refresh
             </button>

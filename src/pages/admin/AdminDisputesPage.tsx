@@ -110,8 +110,7 @@ export function AdminDisputesPage() {
       };
       if (statusFilter !== 'all') opts.filters = { status: statusFilter };
 
-      const { data, error } = await adminQuery(opts);
-      if (error) throw error;
+      const data = (await adminQuery(opts)).data;
 
       const cases = (data || []) as AdminDispute[];
 

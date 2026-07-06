@@ -133,17 +133,17 @@ function PlatformStats() {
         thisMonthUsers, lastMonthUsers,
         lastMonthContracts, flaggedProjects,
       ] = await Promise.all([
-        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'freelancer' }, isNull: { deleted_at: true, suspended_at: true } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'client' }, isNull: { deleted_at: true, suspended_at: true } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'open' } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'contracts', count: 'exact', head: true, in: { status: ['active', 'in_progress'] } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'disputes', count: 'exact', head: true, in: { status: ['pending', 'under_review'] } }).then(r => ({ count: r.total })),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'freelancer' }, isNull: { deleted_at: true, suspended_at: true } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'client' }, isNull: { deleted_at: true, suspended_at: true } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'open' } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'contracts', count: 'exact', head: true, in: { status: ['active', 'in_progress'] } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'disputes', count: 'exact', head: true, in: { status: ['pending', 'under_review'] } }).then(r => r.total ?? 0),
         adminQuery({ table: 'contracts', select: 'amount, platform_fee, created_at, status' }).then(r => ({ data: r.data })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: monthAgo } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: twoMonthsAgo } }).then(r => ({ count: r.total })),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: monthAgo } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: twoMonthsAgo } }).then(r => r.total ?? 0),
         adminQuery({ table: 'contracts', select: 'amount', gte: { created_at: twoMonthsAgo } }).then(r => ({ data: r.data })),
-        adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'flagged' } }).then(r => ({ count: r.total })),
+        adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'flagged' } }).then(r => r.total ?? 0),
       ]);
 
       const cData = (contractsData || []) as Array<{ amount: number; platform_fee: number; status: string }>;
@@ -175,7 +175,7 @@ function PlatformStats() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchMetrics())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'contracts' }, () => fetchMetrics())
       .subscribe();
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); channel.unsubscribe(); };
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); channel.unsubscribe().catch(() => {}); };
   }, [fetchMetrics]);
 
   if (loading) return <section className="grid grid-cols-2 md:grid-cols-4 gap-4">{[1,2,3,4].map(i => <StatSkeleton key={i} />)}</section>;
@@ -243,7 +243,7 @@ function UserManagementTable() {
     const channel = realtimeChannels.profiles('admin-users-ov')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => fetchUsers())
       .subscribe();
-    return () => channel.unsubscribe();
+    return () => { void channel.unsubscribe(); };
   }, [fetchUsers]);
 
   const handleViewProfile = (userId: string) => window.open(`/freelancer/${userId}`, '_blank');
@@ -363,7 +363,7 @@ function DisputeResolution() {
     const channel = supabase.channel(`admin-disp-ov-${Date.now()}`)
       .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'disputes' }, () => fetchDisputes())
       .subscribe();
-    return () => channel.unsubscribe();
+    return () => { channel.unsubscribe().catch(() => {}); };
   }, [fetchDisputes]);
 
   const handleAction = async (disputeId: string, action: 'resolved' | 'dismissed', resolution: string) => {
@@ -448,7 +448,7 @@ function AIRiskAnalysis() {
       const detected: RiskItem[] = [];
 
       // 1. Rapid account signups (bot detection)
-      const signupsRes = await adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true }, gte: { created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() } }).then(r => r.total);
+      const signupsRes = await adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true }, gte: { created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() } }).then(r => r.total ?? 0);
       const signups24h = signupsRes;
       if (signups24h && signups24h > 15) {
         detected.push({ id: 'rapid-signups', icon: Users, iconBg: 'bg-red-500/20', iconColor: 'text-red-500',
@@ -470,7 +470,7 @@ function AIRiskAnalysis() {
       }
 
       // 3. Dispute spike detection
-      const disputeRes = await adminQuery({ table: 'disputes', count: 'exact', head: true, in: { status: ['pending', 'under_review'] }, gte: { created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() } }).then(r => r.total);
+      const disputeRes = await adminQuery({ table: 'disputes', count: 'exact', head: true, in: { status: ['pending', 'under_review'] }, gte: { created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() } }).then(r => r.total ?? 0);
       const recentDisputes = disputeRes;
       if (recentDisputes && recentDisputes > 5) {
         detected.push({ id: 'dispute-spike', icon: Scale, iconBg: 'bg-red-500/20', iconColor: 'text-red-500',
@@ -483,7 +483,7 @@ function AIRiskAnalysis() {
       }
 
       // 4. Unverified / inactive users
-      const inactiveRes = await adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { onboarding_completed: 'false' }, isNull: { deleted_at: true }, lte: { created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() } }).then(r => r.total);
+      const inactiveRes = await adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { onboarding_completed: 'false' }, isNull: { deleted_at: true }, lte: { created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() } }).then(r => r.total ?? 0);
       const inactiveCount = inactiveRes;
       if (inactiveCount && inactiveCount > 10) {
         detected.push({ id: 'inactive-users', icon: Ban, iconBg: 'bg-blue-500/20', iconColor: 'text-blue-500',
@@ -541,7 +541,7 @@ function AIRiskAnalysis() {
       const lowRatingContracts = lowRatingRes.data as any[];
       if (lowRatingContracts && lowRatingContracts.length > 10) {
         // Check reviews for those contracts
-        const lowReviewsRes = await adminQuery({ table: 'reviews', count: 'exact', head: true, in: { contract_id: lowRatingContracts.map((c: any) => c.id) } }).then(r => r.total);
+        const lowReviewsRes = await adminQuery({ table: 'reviews', count: 'exact', head: true, in: { contract_id: lowRatingContracts.map((c: any) => c.id) } }).then(r => r.total ?? 0);
         const lowReviews = lowReviewsRes;
         if (lowReviews && lowReviews > 3) {
           detected.push({ id: 'quality-risk', icon: Award, iconBg: 'bg-amber-500/20', iconColor: 'text-amber-500',
@@ -693,7 +693,7 @@ function LiveActivityFeed() {
           setTimeout(() => setNewActivityIds(prev => { const s = new Set(prev); s.delete(item.id); return s; }), 3000);
         }
       })
-      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'disputes' }, (p) => {
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'disputes' }, (p: any) => {
         setConnectionStatus('connected');
         const n = p.new as any;
         const item = { id: `dispute-${n.id}-${Date.now()}`, type: 'dispute_filed' as const, description: `Dispute ${p.eventType === 'INSERT' ? 'filed' : 'updated'}: ${(n.reason || '').slice(0, 50)}`, created_at: n.created_at || new Date().toISOString() } as ActivityItem;
@@ -724,7 +724,7 @@ function LiveActivityFeed() {
       });
 
     return () => {
-      channel.unsubscribe();
+      void channel.unsubscribe();
     };
   }, []);
 

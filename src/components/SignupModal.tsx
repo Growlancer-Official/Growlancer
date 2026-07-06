@@ -133,8 +133,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     if (result.success) {
       onClose();
 
-      // Redirect to verify-email page (persists across refresh)
-      navigate(`/auth/verify-email?email=${encodeURIComponent(normalizedEmail)}`);
+      // Role-based redirect: freelancer → /dashboard, client → /client
+      navigate(role === 'client' ? '/client' : '/dashboard');
     } else {
       setError(result.error || 'Signup failed');
     }

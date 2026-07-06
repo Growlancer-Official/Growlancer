@@ -159,7 +159,7 @@ export function AdminInternshipsPage() {
 
       const { error: updateError } = await supabase
         .from('internship_applications')
-        .update({ [field]: publicUrl })
+        .update({ [field]: publicUrl } as any)
         .eq('id', appId);
       if (updateError) throw updateError;
       toast.success('Uploaded', `${label} PDF uploaded successfully.`);
@@ -404,7 +404,7 @@ export function AdminInternshipsPage() {
             body: { application_id: id, status: bulkStatus },
           });
           if (error) {
-            await supabase.from('internship_applications').update({ status: bulkStatus }).eq('id', id);
+            await supabase.from('internship_applications' as any).update({ status: bulkStatus }).eq('id', id);
             failCount++;
           } else {
             successCount++;
@@ -539,7 +539,7 @@ export function AdminInternshipsPage() {
               className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-emerald-400 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
               <Download className="w-3.5 h-3.5" /> CSV
             </button>
-            <button onClick={fetchApplications}
+            <button onClick={() => void fetchApplications()}
               className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
             </button>

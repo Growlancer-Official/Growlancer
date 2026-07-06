@@ -11,7 +11,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-4">
             <Link to="/" className="flex items-center gap-3">
-              <img src="/Growlancer Logo (2).png" alt="Growlancer" className="h-10 w-10 rounded-2xl" />
+              <img src="/UpdatedLogo.png" alt="Growlancer" className="h-10 w-10 rounded-2xl" />
               <div>
                 <div className="font-semibold tracking-tight text-slate-900 font-display">Growlancer</div>
                 <div className="text-sm text-slate-600">AI-powered freelancing marketplace</div>

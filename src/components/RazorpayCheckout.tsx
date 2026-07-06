@@ -65,7 +65,7 @@ export function RazorpayCheckout({
           contact: userInfo?.contact || '',
         },
         theme: { color: themeColor },
-        card: saveCard ? { save: true } : undefined,
+        ...(saveCard ? { card: { save: true } } : {}),
         handler: async (response: RazorpayPaymentData) => {
           // 3. Verify payment on backend
           setStatus('verifying');

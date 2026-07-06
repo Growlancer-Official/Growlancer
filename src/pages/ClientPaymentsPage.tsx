@@ -5,7 +5,7 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
 import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
-import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CreditCard, DollarSign, Download, FileText, Filter, Loader2, Plus, PlusCircle, Shield, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, DollarSign, Download, FileText, Filter, Loader2, Plus, PlusCircle, Shield, Trash2 } from 'lucide-react';
 
 interface Transaction {
   id: string;

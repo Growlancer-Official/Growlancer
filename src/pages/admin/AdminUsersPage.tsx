@@ -104,8 +104,7 @@ export function AdminUsersPage() {
         delete opts.isNull;
       }
 
-      const { data, error } = await adminQuery(opts);
-      if (error) throw error;
+      const data = (await adminQuery(opts)).data;
       setUsers((data || []) as AdminUser[]);
     } catch (err) {
       console.error('Failed to fetch users:', err);

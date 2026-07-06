@@ -78,9 +78,10 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
           .eq('feature_type', 'ai_chat')
           .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
 
-        const totalUsage = usage?.reduce((sum, log) => sum + (log.usage_count || 0), 0) || 0;
-        const limit = subscription?.subscription_plans?.ai_messages_limit || 10;
-        const isPro = subscription?.subscription_plans?.ai_priority || false;
+        const totalUsage = (usage as Array<{ usage_count: number | null }> | null)?.reduce((sum, log) => sum + (log.usage_count || 0), 0) || 0;
+        const plan = (subscription as Record<string, any>)?.subscription_plans as Record<string, any> | null;
+        const limit = plan?.ai_messages_limit || 10;
+        const isPro = plan?.ai_priority || false;
 
         setUsageLimit({ used: totalUsage, limit, isPro });
       } catch (error) {

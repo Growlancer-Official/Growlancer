@@ -55,8 +55,7 @@ export function AdminPaymentsPage() {
       };
       if (typeFilter !== 'all') opts.filters = { type: typeFilter };
 
-      const { data, error } = await adminQuery(opts);
-      if (error) throw error;
+      const data = (await adminQuery(opts)).data;
 
       const txs = (data || []) as Transaction[];
       const userIds = [...new Set(txs.map(t => t.user_id))];

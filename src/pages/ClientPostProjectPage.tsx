@@ -61,8 +61,8 @@ export function ClientPostProjectPage() {
             skills_required: skillNames,
             deadline: data.deadline ? data.deadline.slice(0, 10) : '',
             category: data.category || '',
-            experience_level: data.experience_level || 'intermediate',
-            visibility: data.visibility || 'public',
+            experience_level: (data.experience_level as 'entry' | 'intermediate' | 'expert') || 'intermediate',
+            visibility: (data.visibility as 'public' | 'private' | 'invited') || 'public',
           });
 
           // Resolve category and skill IDs from existing data

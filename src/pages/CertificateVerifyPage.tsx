@@ -88,7 +88,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <img src="/Growlancer Logo (2).png" alt="Growlancer" className="h-10 w-10 rounded-xl" />
+                  <img src="/UpdatedLogo.png" alt="Growlancer" className="h-10 w-10 rounded-xl" />
                   <div>
                     <h2 className="font-bold text-lg text-white leading-none">Growlancer</h2>
                     <p className="text-[10px] uppercase tracking-widest text-violet-400 font-bold">Letter of Recommendation</p>
@@ -251,7 +251,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <img
-                  src="/Growlancer Logo (2).png"
+                  src="/UpdatedLogo.png"
                   alt="Growlancer"
                   className="h-10 w-10 rounded-xl"
                 />
@@ -469,7 +469,7 @@ export function CertificateVerifyPage() {
       <header className="border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src="/Growlancer Logo (2).png" alt="" className="h-8 w-8 rounded-lg" />
+            <img src="/UpdatedLogo.png" alt="" className="h-8 w-8 rounded-lg" />
             <div className="hidden sm:block">
               <span className="text-sm font-bold text-white">Growlancer</span>
               <span className="text-[9px] ml-2 uppercase tracking-widest text-emerald-400 font-bold">Certificate Verification</span>

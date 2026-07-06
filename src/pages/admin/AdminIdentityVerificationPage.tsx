@@ -245,12 +245,12 @@ export function AdminIdentityVerificationPage() {
     try {
       const { data: allData, error } = await supabase
         .from('identity_verifications' as any)
-        .select('*')
+        .select()
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      const records = (allData || []) as IdentityVerification[];
+      const records = ((allData || []) as unknown) as IdentityVerification[];
 
       // Calculate stats
       setStats({
@@ -264,7 +264,7 @@ export function AdminIdentityVerificationPage() {
       const userIds = [...new Set(records.map((v) => v.user_id))];
       const { data: profiles } = await supabase
         .from('profiles' as any)
-        .select('id, name, email, avatar')
+        .select()
         .in('id', userIds);
 
       const profileMap = new Map((profiles || []).map((p: any) => [p.id, p]));
@@ -301,7 +301,7 @@ export function AdminIdentityVerificationPage() {
         table: 'identity_verifications',
       }, () => fetchVerifications())
       .subscribe();
-    return () => channel.unsubscribe();
+    return () => { channel.unsubscribe(); };
   }, [fetchVerifications]);
 
   // ─── Actions ───────────────────────────────────────────────────────────

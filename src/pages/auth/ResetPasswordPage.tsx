@@ -20,7 +20,7 @@ export function ResetPasswordPage() {
   useEffect(() => {
     async function checkSession() {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
+      if ((session as { user?: unknown } | null)?.user) {
         setValidSession(true);
       } else {
         // Try to detect recovery token from URL
@@ -30,7 +30,7 @@ export function ResetPasswordPage() {
           // Supabase will auto-process this
           await new Promise(resolve => setTimeout(resolve, 1500));
           const { data: retrySession } = await supabase.auth.getSession();
-          if (retrySession?.user) {
+          if ((retrySession as { user?: unknown } | null)?.user) {
             setValidSession(true);
           } else {
             setValidSession(false);
@@ -145,7 +145,7 @@ export function ResetPasswordPage() {
             {/* Logo */}
             <div className="flex justify-center mb-6">
               <img
-                src="/Growlancer Logo (2).png"
+                src="/UpdatedLogo.png"
                 alt="Growlancer"
                 className="h-12 w-12 rounded-xl"
               />

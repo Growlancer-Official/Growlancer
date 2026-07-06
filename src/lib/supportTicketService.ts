@@ -47,7 +47,7 @@ const ticketService = {
     relatedContractId?: string;
   }): Promise<{ success: boolean; ticket?: SupportTicket; error?: string }> {
     const { data, error } = await supabase
-      .from('support_tickets')
+      .from('support_tickets' as any)
       .insert({
         user_id: params.userId,
         user_role: params.userRole,
@@ -61,7 +61,7 @@ const ticketService = {
       .single();
 
     if (error) return { success: false, error: error.message };
-    return { success: true, ticket: data };
+    return { success: true, ticket: data as unknown as SupportTicket };
   },
 
   /**
@@ -69,7 +69,7 @@ const ticketService = {
    */
   async getUserTickets(userId: string): Promise<{ success: boolean; tickets: (SupportTicket & { message_count: number })[]; error?: string }> {
     const { data, error } = await supabase
-      .from('support_tickets')
+      .from('support_tickets' as any)
       .select('*, message_count:ticket_messages(count)')
       .eq('user_id', userId)
       .order('updated_at', { ascending: false });
@@ -89,21 +89,15 @@ const ticketService = {
    */
   async getTicket(ticketId: string): Promise<{ success: boolean; ticket?: SupportTicket; messages?: TicketMessage[]; error?: string }> {
     const [ticketResult, messagesResult] = await Promise.all([
-      supabase.from('support_tickets').select('*').eq('id', ticketId).single(),
+      supabase.from('support_tickets' as any).select('*').eq('id', ticketId).single(),
       supabase
-        .from('ticket_messages')
+        .from('ticket_messages' as any)
         .select('*')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true }),
     ]);
 
-    if (ticketResult.error) return { success: false, error: ticketResult.error.message };
-
-    return {
-      success: true,
-      ticket: ticketResult.data,
-      messages: messagesResult.data || [],
-    };
+    if (ticketResult.error) return { success: false, error: ticketResult.error.message };    return { success: true, ticket: ticketResult.data as unknown as SupportTicket, messages: (messagesResult.data || []) as unknown as TicketMessage[], };
   },
 
   /**
@@ -115,7 +109,7 @@ const ticketService = {
     message: string;
   }): Promise<{ success: boolean; message?: TicketMessage; error?: string }> {
     const { data, error } = await supabase
-      .from('ticket_messages')
+      .from('ticket_messages' as any)
       .insert({
         ticket_id: params.ticketId,
         user_id: params.userId,
@@ -129,11 +123,11 @@ const ticketService = {
 
     // Update the ticket's updated_at timestamp
     await supabase
-      .from('support_tickets')
+      .from('support_tickets' as any)
       .update({ updated_at: new Date().toISOString() })
       .eq('id', params.ticketId);
 
-    return { success: true, message: data };
+    return { success: true, message: data as unknown as TicketMessage };
   },
 
   /**
@@ -141,7 +135,7 @@ const ticketService = {
    */
   async closeTicket(ticketId: string, userId: string): Promise<{ success: boolean; error?: string }> {
     const { error } = await supabase
-      .from('support_tickets')
+      .from('support_tickets' as any)
       .update({
         status: 'closed',
         updated_at: new Date().toISOString(),
@@ -158,7 +152,7 @@ const ticketService = {
    */
   async reopenTicket(ticketId: string, userId: string): Promise<{ success: boolean; error?: string }> {
     const { error } = await supabase
-      .from('support_tickets')
+      .from('support_tickets' as any)
       .update({
         status: 'open',
         updated_at: new Date().toISOString(),

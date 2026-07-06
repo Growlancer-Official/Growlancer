@@ -49,10 +49,11 @@ export function AdminDashboardLayout() {
 
   useEffect(() => {
     const unsub = subscribeAdmin((admin) => {
-      setAdminName(admin?.label || 'Admin');
-      setAdminEmail(admin?.email || '');
+      const a = admin as { label?: string; email?: string } | null;
+      setAdminName(a?.label || 'Admin');
+      setAdminEmail(a?.email || '');
     });
-    return unsub;
+    return () => { const fn = unsub; if (typeof fn === 'function') fn(); };
   }, []);
 
   // Search functionality
@@ -119,7 +120,7 @@ export function AdminDashboardLayout() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 mb-10 px-2">
           <img 
-            src="/Growlancer Logo (2).png" 
+            src="/UpdatedLogo.png" 
             alt="Growlancer" 
             className="h-10 w-10 rounded-xl shadow-lg"
           />

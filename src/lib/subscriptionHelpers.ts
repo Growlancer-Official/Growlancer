@@ -1,6 +1,8 @@
 import type { Tables } from '../types/supabase';
 import { supabase } from './supabase';
 
+type AnyRecord = Record<string, unknown>;
+
 export type SubscriptionWithPlan = Tables<'subscriptions'> & {
   subscription_plans?: Tables<'subscription_plans'> | null;
 };
@@ -101,7 +103,7 @@ const subscriptionService = {
         .maybeSingle();
 
       if (error) throw error;
-      return { success: true, subscription: data as SubscriptionWithPlan | null };
+      return { success: true, subscription: (data as AnyRecord) as SubscriptionWithPlan | null };
     } catch (error) {
       console.error('Error fetching current subscription:', error);
       return { success: false, error: 'Failed to fetch current subscription.' };
@@ -179,7 +181,7 @@ const subscriptionService = {
         .update({ is_pro: true })
         .eq('id', userId);
 
-      return { success: true, subscription: data as SubscriptionWithPlan };
+      return { success: true, subscription: data as unknown as SubscriptionWithPlan };
     } catch (error) {
       console.error('Error subscribing to plan:', error);
       return { success: false, error: 'Failed to subscribe to plan.' };

@@ -39,15 +39,15 @@ export function AdminReportsPage() {
         newUsers, lastMonthUsers,
         lastMonthContracts,
       ] = await Promise.all([
-        adminQuery({ table: 'profiles', count: 'exact', head: true }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'freelancer' } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'client' } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'open' } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'contracts', count: 'exact', head: true, in: { status: ['active', 'in_progress'] } }).then(r => ({ count: r.total })),
+        adminQuery({ table: 'profiles', count: 'exact', head: true }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'freelancer' } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'client' } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'open' } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'contracts', count: 'exact', head: true, in: { status: ['active', 'in_progress'] } }).then(r => r.total ?? 0),
         adminQuery({ table: 'contracts', select: 'amount, platform_fee, created_at' }).then(r => ({ data: r.data })),
-        adminQuery({ table: 'disputes', count: 'exact', head: true, in: { status: ['pending', 'under_review'] } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, gte: { created_at: monthAgo } }).then(r => ({ count: r.total })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, gte: { created_at: twoMonthsAgo } }).then(r => ({ count: r.total })),
+        adminQuery({ table: 'disputes', count: 'exact', head: true, in: { status: ['pending', 'under_review'] } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, gte: { created_at: monthAgo } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, gte: { created_at: twoMonthsAgo } }).then(r => r.total ?? 0),
         adminQuery({ table: 'contracts', select: 'amount', gte: { created_at: twoMonthsAgo } }).then(r => ({ data: r.data })),
       ]);
 

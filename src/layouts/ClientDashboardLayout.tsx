@@ -123,7 +123,6 @@ export function ClientDashboardLayout() {
   useEffect(() => {
     if (!user) {
       setUserProfile(null);
-      setProfileLoading(false);
       return;
     }
 
@@ -215,8 +214,6 @@ export function ClientDashboardLayout() {
             setUserProfile({
               name: String(payload.new.name),
               avatar: payload.new.avatar as string | null,
-              rating: Number(payload.new.rating) || 0,
-              total_reviews: Number(payload.new.total_reviews) || 0
             });
           }
         }
@@ -274,7 +271,7 @@ export function ClientDashboardLayout() {
         <div className="flex items-center justify-between mb-6">
           <Link to="/" className="flex items-center gap-3">
             <img
-              src="/Growlancer Logo (2).png"
+              src="/UpdatedLogo.png"
               alt="Growlancer"
               className="h-10 w-10 rounded-xl shadow-lg"
             />
@@ -407,7 +404,7 @@ export function ClientDashboardLayout() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 mb-6 px-2">
           <img 
-            src="/Growlancer Logo (2).png" 
+            src="/UpdatedLogo.png" 
             alt="Growlancer" 
             className="h-10 w-10 rounded-xl shadow-lg"
           />
