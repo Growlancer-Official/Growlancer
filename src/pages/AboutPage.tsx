@@ -256,15 +256,17 @@ export function AboutPage() {
                 </div>
 
                 {/* Signature Area */}
-                <div className="flex items-center gap-3 pt-1">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0">
-                    MM
+                <div className="flex flex-col sm:flex-row items-center gap-3 pt-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0">
+                      MM
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-bold text-white leading-tight">MOHAMMAD MIRAN KHAN</p>
+                      <p className="text-[10px] text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlancer</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-bold text-white leading-tight">MOHAMMAD MIRAN KHAN</p>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlancer</p>
-                  </div>
-                  <div className="flex items-center gap-2 ml-auto">
+                  <div className="flex items-center sm:ml-auto">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg border border-white/10">
                       <svg className="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
