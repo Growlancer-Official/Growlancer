@@ -516,6 +516,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         devWarn('[Auth] Signup error:', error.message);
         setIsLoading(false);
+        
+        // 🆕 Specific handling for email sending errors
+        if (error.message.includes('confirmation email') || error.message.includes('Error sending')) {
+          return { 
+            success: false, 
+            error: 'Account creation blocked because email confirmation is enabled but email service is not configured. Please go to Supabase Dashboard → Authentication → Providers → Email and turn OFF "Confirm email", then try again.'
+          };
+        }
+        
         return { success: false, error: error.message };
       }
 
