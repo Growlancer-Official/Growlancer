@@ -154,9 +154,9 @@ export function AboutPage() {
       </section>
 
       {/* Founder Section */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-28">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 sm:mt-28">
         {/* Section Label */}
-        <div className="text-center space-y-3 mb-14">
+        <div className="text-center space-y-3 mb-10 sm:mb-14">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 font-bold rounded-full border border-emerald-500/20 text-xs uppercase tracking-wider">
             <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
@@ -171,12 +171,12 @@ export function AboutPage() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2rem] p-[1.5px] shadow-xl shadow-slate-900/30">
-          <div className="bg-[#0B1120] rounded-[calc(2rem-1.5px)] p-6 sm:p-8 md:p-10 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[1.25rem] sm:rounded-[2rem] p-[1.5px] shadow-xl shadow-slate-900/30">
+          <div className="bg-[#0B1120] rounded-[calc(1.25rem-1.5px)] sm:rounded-[calc(2rem-1.5px)] p-5 sm:p-8 md:p-10 relative overflow-hidden">
             {/* Decorative background */}
-            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-full blur-3xl -mr-40 -mt-40"></div>
-            <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-emerald-600/5 to-teal-600/5 rounded-full blur-3xl -ml-32 -mb-32"></div>
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMEI5ODEiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40"></div>
+            <div className="absolute top-0 right-0 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-full blur-3xl -mr-40 -mt-40"></div>
+            <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-gradient-to-tr from-emerald-600/5 to-teal-600/5 rounded-full blur-3xl -ml-32 -mb-32"></div>
+            <div className="hidden sm:block absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMEI5ODEiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40"></div>
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center">
               {/* Founder Image — Left Side */}
