@@ -171,23 +171,22 @@ export function AboutPage() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2.5rem] p-[2px] shadow-2xl shadow-slate-900/40">
-          <div className="bg-[#0B1120] rounded-[calc(2.5rem-2px)] p-8 sm:p-10 md:p-14 relative overflow-hidden">
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[2rem] p-[1.5px] shadow-xl shadow-slate-900/30">
+          <div className="bg-[#0B1120] rounded-[calc(2rem-1.5px)] p-6 sm:p-8 md:p-10 relative overflow-hidden">
             {/* Decorative background */}
             <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-full blur-3xl -mr-40 -mt-40"></div>
             <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-emerald-600/5 to-teal-600/5 rounded-full blur-3xl -ml-32 -mb-32"></div>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMEI5ODEiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40"></div>
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-14 items-center">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center">
               {/* Founder Image — Left Side */}
               <div className="lg:col-span-2 flex justify-center lg:justify-end">
                 <div className="relative group">
                   {/* Animated gradient ring */}
-                  <div className="absolute -inset-1.5 bg-gradient-to-br from-emerald-400 via-teal-400 to-emerald-600 rounded-[2.5rem] opacity-60 group-hover:opacity-100 blur-sm transition-all duration-700 group-hover:duration-300" />
-                  <div className="absolute -inset-1 bg-gradient-to-br from-emerald-500/40 via-teal-500/40 to-emerald-700/40 rounded-[2.4rem] opacity-80" />
+                  <div className="absolute -inset-1 bg-gradient-to-br from-emerald-400/60 via-teal-400/60 to-emerald-600/60 rounded-[2rem] opacity-60 group-hover:opacity-100 blur-sm transition-all duration-500" />
                   
                   {/* Image Container */}
-                  <div className="relative w-64 h-80 sm:w-72 sm:h-96 md:w-80 md:h-[28rem] rounded-[2rem] overflow-hidden border-[3px] border-emerald-500/30 shadow-2xl shadow-emerald-900/40 bg-slate-900/50">
+                  <div className="relative w-48 h-60 sm:w-56 sm:h-72 md:w-64 md:h-80 rounded-[1.5rem] overflow-hidden border-2 border-emerald-500/30 shadow-xl shadow-emerald-900/30 bg-slate-900/50">
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 via-transparent to-transparent z-10" />
                     <img 
                       src="/Founder.png" 
@@ -198,40 +197,38 @@ export function AboutPage() {
                   </div>
 
                   {/* Verified Badge */}
-                  <div className="absolute -bottom-2 -right-2 bg-emerald-500 rounded-xl p-2.5 shadow-lg shadow-emerald-500/40 z-20 ring-2 ring-slate-900">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="absolute -bottom-1.5 -right-1.5 bg-emerald-500 rounded-lg p-2 shadow-lg shadow-emerald-500/30 z-20 ring-2 ring-slate-900">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
 
                   {/* Decorative corner accent */}
-                  <div className="absolute -top-1 -left-1 w-8 h-8 border-t-2 border-l-2 border-emerald-400/40 rounded-tl-[2rem] z-20" />
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 border-b-2 border-r-2 border-emerald-400/40 rounded-br-[2rem] z-20" />
+                  <div className="absolute -top-0.5 -left-0.5 w-6 h-6 border-t-2 border-l-2 border-emerald-400/30 rounded-tl-[1.5rem] z-20" />
+                  <div className="absolute -bottom-0.5 -right-0.5 w-6 h-6 border-b-2 border-r-2 border-emerald-400/30 rounded-br-[1.5rem] z-20" />
                 </div>
               </div>
 
               {/* Founder Info — Right Side */}
-              <div className="lg:col-span-3 space-y-6 text-center lg:text-left">
-                <div className="space-y-2">
-                  <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/15 text-emerald-300 font-bold rounded-full border border-emerald-500/25 text-[10px] uppercase tracking-[0.15em]">
+              <div className="lg:col-span-3 space-y-5 text-center lg:text-left">
+                <div className="space-y-1.5">
+                  <span className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-emerald-500/15 text-emerald-300 font-bold rounded-full border border-emerald-500/25 text-[10px] uppercase tracking-[0.15em]">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     Founder &amp; Chief Executive Officer
                   </span>
-                  <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-[1.05] text-white">
-                    MOHAMMAD 
-                    <br />
-                    MIRAN KHAN
+                  <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-black tracking-tight leading-[1.1] text-white">
+                    MOHAMMAD MIRAN KHAN
                   </h2>
-                  <p className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
+                  <p className="text-base sm:text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">
                     Founder &amp; CEO Of Growlancer
                   </p>
                 </div>
 
                 {/* Divider */}
-                <div className="w-16 h-0.5 bg-gradient-to-r from-emerald-500/60 to-transparent mx-auto lg:mx-0" />
+                <div className="w-12 h-0.5 bg-gradient-to-r from-emerald-500/60 to-transparent mx-auto lg:mx-0" />
 
                 {/* Bio */}
-                <div className="space-y-4 max-w-xl">
+                <div className="space-y-3 max-w-xl">
                   <p className="text-slate-300 text-sm leading-relaxed">
                     A visionary entrepreneur with a deep passion for reshaping the future of professional work. 
                     Mohammad identified the critical gaps in traditional freelancing platforms — fragmented communication, 
@@ -247,11 +244,11 @@ export function AboutPage() {
                 </div>
 
                 {/* Founder Quote */}
-                <div className="relative pl-6 border-l-2 border-emerald-500/40 py-1 max-w-lg mx-auto lg:mx-0">
-                  <svg className="absolute -top-2 -left-2 w-5 h-5 text-emerald-500/30" fill="currentColor" viewBox="0 0 24 24">
+                <div className="relative pl-5 border-l-2 border-emerald-500/40 py-1 max-w-lg mx-auto lg:mx-0">
+                  <svg className="absolute -top-2 -left-1.5 w-4 h-4 text-emerald-500/30" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z" />
                   </svg>
-                  <p className="text-sm text-slate-400 italic leading-relaxed">
+                  <p className="text-xs text-slate-400 italic leading-relaxed">
                     "We're not just building a marketplace — we're engineering the infrastructure for the future of work. 
                     Every feature at Growlancer is designed with one question in mind: does this make collaboration 
                     simpler, safer, and more human?"
@@ -259,30 +256,20 @@ export function AboutPage() {
                 </div>
 
                 {/* Signature Area */}
-                <div className="flex flex-col sm:flex-row items-center lg:items-start gap-4 pt-2">
-                  <div className="flex flex-col items-center lg:items-start">
-                    <div className="flex items-center gap-3 mb-1">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-emerald-500/20">
-                        MM
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-white leading-tight">MOHAMMAD MIRAN KHAN</p>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlancer</p>
-                      </div>
-                    </div>
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-white font-bold text-xs shadow-lg shadow-emerald-500/20 shrink-0">
+                    MM
                   </div>
-                  <div className="flex items-center gap-2 sm:ml-auto">
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
-                      <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                      </svg>
-                      <span className="text-[11px] font-semibold text-slate-300">Verified Profile</span>
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-lg border border-white/10">
-                      <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div>
+                    <p className="text-sm font-bold text-white leading-tight">MOHAMMAD MIRAN KHAN</p>
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlancer</p>
+                  </div>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg border border-white/10">
+                      <svg className="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      <span className="text-[11px] font-semibold text-slate-300">Vision-Driven</span>
+                      <span className="text-[10px] font-semibold text-slate-300">Vision-Driven</span>
                     </div>
                   </div>
                 </div>
