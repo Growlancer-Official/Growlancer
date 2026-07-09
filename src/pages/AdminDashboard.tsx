@@ -146,13 +146,13 @@ function PlatformStats() {
         adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'flagged' } }).then(r => r.total ?? 0),
       ]);
 
-      const cData = (contractsData || []) as Array<{ amount: number; platform_fee: number; status: string }>;
+      const cData = (contractsData?.data || []) as Array<{ amount: number; platform_fee: number; status: string }>;
       const totalGmv = cData.reduce((s, c) => s + (Number(c.amount) || 0), 0);
       const totalFees = cData.reduce((s, c) => s + (Number(c.platform_fee) || 0), 0);
 
       const newUsers = thisMonthUsers || 0;
       const userGrowth = (lastMonthUsers && lastMonthUsers > 0) ? ((newUsers - lastMonthUsers!) / lastMonthUsers!) * 100 : 12;
-      const lastGmv = ((lastMonthContracts || []) as Array<{ amount: number }>).reduce((s, c) => s + (c.amount || 0), 0);
+      const lastGmv = ((lastMonthContracts?.data || []) as Array<{ amount: number }>).reduce((s, c) => s + (c.amount || 0), 0);
       const gmvGrowth = lastGmv > 0 ? ((totalGmv - lastGmv) / lastGmv) * 100 : 8.4;
       const completed = cData.filter(c => c.status === 'completed').length;
 
