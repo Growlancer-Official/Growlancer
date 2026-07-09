@@ -4,9 +4,9 @@
 
 BEGIN;
 
--- Step 1: Delete ALL duplicate profiles for mirankhan1542@gmail.com
+-- Step 1: Delete ALL duplicate profiles for admin-email@example.com
 DELETE FROM public.profiles
-WHERE email = 'mirankhan1542@gmail.com'
+WHERE email = 'admin-email@example.com'
   AND id != '22b783ec-f852-4a94-88a3-b2115955bdc4';
 
 -- Step 2: Set onboarding_completed = true for the correct profile

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Lock, Eye, EyeOff, Shield, Loader2, AlertCircle, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Lock, Eye, EyeOff, Shield, Loader2, AlertCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
 /**
@@ -21,14 +21,26 @@ export function AdminLoginPage() {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        // Check if admin
-        const { data: profile } = await supabase
+        // Check if admin — first by ID, then fallback to email
+        let { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', session.user.id)
-          .single();
+          .maybeSingle();
         
-        if ((profile as any)?.is_admin === true) {
+        let isAdmin = (profile as any)?.is_admin === true;
+        
+        // Fallback: check by email
+        if (!isAdmin && session.user.email) {
+          const { data: profileByEmail } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('email', session.user.email)
+            .maybeSingle();
+          isAdmin = (profileByEmail as any)?.is_admin === true;
+        }
+        
+        if (isAdmin) {
           navigate('/admin', { replace: true });
         }
       }
@@ -68,14 +80,26 @@ export function AdminLoginPage() {
         return;
       }
 
-      // Check admin status — onAuthStateChange in AdminAuthGuard will handle real-time redirect
-      const { data: profile } = await supabase
+      // Check admin status — first by ID, then fallback to email (handles ID mismatch)
+      let { data: profile } = await supabase
         .from('profiles')
         .select('is_admin')
         .eq('id', data.user.id)
-        .single();
+        .maybeSingle();
 
-      if ((profile as any)?.is_admin !== true) {
+      let isAdmin = (profile as any)?.is_admin === true;
+
+      // Fallback: check by email if not found by ID
+      if (!isAdmin && data.user.email) {
+        const { data: profileByEmail } = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('email', data.user.email)
+          .maybeSingle();
+        isAdmin = (profileByEmail as any)?.is_admin === true;
+      }
+
+      if (!isAdmin) {
         // Not an admin — sign out and show error
         await supabase.auth.signOut();
         setError('Access denied. This account does not have admin privileges.');
@@ -186,16 +210,6 @@ export function AdminLoginPage() {
             )}
           </button>
 
-          {/* Link to Setup */}
-          <div className="mt-4 text-center">
-            <Link
-              to="/admin/setup"
-              className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors flex items-center justify-center gap-1"
-            >
-              <Sparkles className="w-3 h-3" />
-              First time? Set up admin account here
-            </Link>
-          </div>
         </form>
 
         {/* Footer */}

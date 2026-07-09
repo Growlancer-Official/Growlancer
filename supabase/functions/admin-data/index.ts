@@ -93,20 +93,35 @@ async function verifyAdminSession(
   }
 
   // Check is_admin flag using service_role client
-  const { data: profile } = await serviceClient
+  let { data: profile } = await serviceClient
     .from('profiles')
     .select('is_admin, email')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
-  if (!profile || profile.is_admin !== true) {
+  let isAdmin = profile?.is_admin === true
+
+  // Fallback: check by email if not found by ID (handles ID mismatch)
+  if (!isAdmin && user.email) {
+    const { data: profileByEmail } = await serviceClient
+      .from('profiles')
+      .select('is_admin, email')
+      .eq('email', user.email)
+      .maybeSingle()
+    if (profileByEmail?.is_admin === true) {
+      profile = profileByEmail
+      isAdmin = true
+    }
+  }
+
+  if (!isAdmin) {
     // Rate limit ONLY on failure
     const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown'
     await checkAuthRateLimit(serviceClient, clientIP)
     return null
   }
 
-  return { user_id: user.id, email: profile.email || user.email || '' }
+  return { user_id: user.id, email: profile?.email || user.email || '' }
 }
 
 Deno.serve(async (req) => {

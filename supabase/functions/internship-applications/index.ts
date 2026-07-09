@@ -36,7 +36,7 @@ function getCorsHeaders(origin: string | null) {
   const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name, x-admin-token',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   };
 }
@@ -694,7 +694,8 @@ function buildSelectedEmailHtml(
       Warm regards,<br/>
       <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
       <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
-    </p>`      return baseEmailHtml('Congratulations — You\'re Selected! 🎉', body)
+    </p>`
+      return baseEmailHtml('Congratulations — You\'re Selected! 🎉', body)
 }
 
 // TODO(review): The document URL links (offerLetterUrl, ndaUrl, internshipLetterUrl) in the selected email

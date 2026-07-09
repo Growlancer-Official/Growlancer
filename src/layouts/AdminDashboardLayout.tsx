@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
-import { subscribeAdmin, adminLogout } from '../components/AdminAuthGuard';
+import { adminLogout, getAdminSession } from '../components/AdminAuthGuard';
 
 const sidebarLinks = [
   { id: 'overview', path: '/admin', icon: LayoutDashboard, label: 'Overview' },
@@ -43,17 +43,16 @@ export function AdminDashboardLayout() {
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Get admin session info from global state (real-time via Supabase Auth)
+  // Get admin session info (set by AdminAuthGuard before rendering)
   const [adminName, setAdminName] = useState('Admin');
   const [adminEmail, setAdminEmail] = useState('');
 
   useEffect(() => {
-    const unsub = subscribeAdmin((admin) => {
-      const a = admin as { label?: string; email?: string } | null;
-      setAdminName(a?.label || 'Admin');
-      setAdminEmail(a?.email || '');
-    });
-    return () => { const fn = unsub; if (typeof fn === 'function') fn(); };
+    const session = getAdminSession();
+    if (session) {
+      setAdminName(session.label || 'Admin');
+      setAdminEmail(session.email || '');
+    }
   }, []);
 
   // Search functionality
