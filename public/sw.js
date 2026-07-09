@@ -1,6 +1,6 @@
 // Growlancer Service Worker
 // Cache-first for static assets, network-first for API requests
-const CACHE_NAME = 'growlancer-v1';
+const CACHE_NAME = 'growlancer-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
