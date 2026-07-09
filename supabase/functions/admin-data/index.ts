@@ -531,19 +531,26 @@ Deno.serve(async (req) => {
       const isLOR = certificate_type === 'lor';
 
       const pdfDocSection = certificate_url ? `
-      <div style="margin: 28px 0; padding: 28px; background: #f8fafc; border: 2px solid ${isLOR ? '#7c3aed' : '#059669'}; border-radius: 16px;">
-        <div style="text-align: center; margin-bottom: 12px;">
-          <div style="font-size: 36px; margin-bottom: 8px;">📄</div>
-          <h3 style="font-size: 18px; color: ${isLOR ? '#6d28d9' : '#059669'}; margin: 0;">Your ${isLOR ? 'Recommendation Letter' : 'Certificate'} Document</h3>
-          <p style="font-size: 14px; color: #475569; margin: 8px 0 0;">
-            Download the official PDF document below. This is your formal ${isLOR ? 'letter of recommendation' : 'completion certificate'}.
-          </p>
+      <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid ${isLOR ? '#7c3aed' : '#059669'}; border-radius: 16px; overflow: hidden;">
+        <div style="background: linear-gradient(135deg, ${isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#059669 0%, #047857 100%'}); padding: 20px 24px; text-align: center;">
+          <div style="font-size: 32px; margin-bottom: 4px;">📄</div>
+          <h3 style="font-size: 17px; color: white; margin: 0; font-weight: 700; word-break: break-word;">Your ${isLOR ? 'Recommendation Letter' : 'Certificate'} Document</h3>
+          <p style="font-size: 12px; color: ${isLOR ? '#c4b5fd' : '#a7f3d0'}; margin: 6px 0 0; word-break: break-word;">Official PDF — Download for your records</p>
         </div>
-        <div style="text-align: center; margin: 20px 0;">
-          <a href="${certificate_url}" target="_blank" rel="noopener noreferrer"
-             style="display: inline-block; padding: 16px 40px; background: ${isLOR ? '#7c3aed' : '#059669'}; color: white; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px rgba(0,0,0,0.1);">
-            📥 Download ${isLOR ? 'LOR' : 'Certificate'} PDF
-          </a>
+        <div style="padding: 20px 24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+            <tr>
+              <td style="background: ${isLOR ? '#7c3aed' : '#059669'}; border-radius: 12px; padding: 0;">
+                <a href="${certificate_url}" target="_blank" rel="noopener noreferrer"
+                   style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
+                  📥 Download ${isLOR ? 'LOR' : 'Certificate'} PDF
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="font-size: 11px; color: #94a3b8; margin: 12px 0 0; text-align: center; word-break: break-word;">
+            The PDF contains your official ${isLOR ? 'letter of recommendation with details of your performance' : 'completion certificate with your name, skill, and level'}.
+          </p>
         </div>
       </div>` : '';
 
@@ -556,98 +563,168 @@ Deno.serve(async (req) => {
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
-  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 32px; text-align: center;">
-      <h1 style="color: white; font-size: 22px; font-weight: 700; margin: 0;">Letter of Recommendation</h1>
-      <p style="color: #c4b5fd; font-size: 14px; margin: 8px 0 0;">Growlancer — AI-Powered Freelancing Marketplace</p>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 20px 8px; margin: 0;">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
+  <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 28px 24px; text-align: center;">
+      <div style="font-size: 40px; margin-bottom: 8px;">🌟</div>
+      <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0 0 6px; word-break: break-word;">Letter of Recommendation</h1>
+      <p style="color: #c4b5fd; font-size: 13px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
     </div>
-    <div style="padding: 32px;">
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${recipient_name},</p>
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-        On behalf of the entire team at <strong>Growlancer</strong>, I am pleased to provide you with this
-        <strong style="color: #7c3aed;">Letter of Recommendation</strong> for your outstanding performance during your<strong>${role_name || 'Internship'}</strong> with us.</p>
-      <p style="font-size: 14px; color: #475569; line-height: 1.7;">
+    <div style="padding: 28px 24px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Dear ${recipient_name},</p>
+
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 16px;">
+        On behalf of the entire team at <strong>Growlancer</strong>, it is my privilege to provide you with this
+        <strong style="color: #7c3aed;">Letter of Recommendation</strong> for your outstanding performance during your
+        <strong>${role_name || 'Internship'}</strong> with us.
+      </p>
+
+      <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 20px;">
         Throughout your time with us, you demonstrated exceptional skill, dedication, and professionalism.
-        ${performance_summary ? `Your contributions included: ${performance_summary}` : 'Your contributions have made a meaningful impact on our team and projects.'}
+        ${performance_summary ? `Your contributions included <strong>${performance_summary}</strong>.` : 'Your contributions have made a meaningful and lasting impact on our team and projects.'}
       </p>
+
       ${pdfDocSection}
-      <div style="margin: 28px 0; padding: 24px; background: #f8fafc; border: 2px solid #7c3aed; border-radius: 16px; text-align: center;">
-        <h3 style="font-size: 16px; color: #6d28d9; margin: 0 0 16px;">View & Verify Online</h3>
-        <p style="font-size: 14px; color: #475569; margin: 0 0 16px;">
-          You can also view and verify your letter online at any time.
-        </p>
-        <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
-           style="display: inline-block; padding: 14px 36px; background: #7c3aed; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px;">
-          View Online
-        </a>
-        <p style="font-size: 11px; color: #94a3b8; margin: 12px 0 0;">
-          Verification Code: <strong>${verification_code || ''}</strong>
-        </p>
+
+      <!-- Verification Card -->
+      <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #7c3aed; border-radius: 16px; overflow: hidden;">
+        <div style="background: #f3e8ff; padding: 20px 24px; text-align: center;">
+          <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
+          <h3 style="font-size: 16px; color: #6d21a8; margin: 0 0 6px; font-weight: 700; word-break: break-word;">View &amp; Verify Online</h3>
+          <p style="font-size: 13px; color: #7c3aed; margin: 0 0 16px; word-break: break-word;">Share this link with employers to verify your recommendation letter</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+            <tr>
+              <td style="background: #7c3aed; border-radius: 12px; padding: 0;">
+                <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
+                   style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
+                  🔍 View &amp; Verify Online
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="font-size: 11px; color: #7c3aed; margin: 12px 0 0; word-break: break-word;">
+            Verification Code: <strong style="font-size: 14px; font-family: monospace;">${verification_code || ''}</strong>
+          </p>
+        </div>
       </div>
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-        This letter confirms your association with Growlancer and your commendable performance.
+
+      <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 20px;">
+        We have no doubt that you will continue to excel in all your future endeavors. Your time at Growlancer has been truly valued, and we are confident you will achieve great things ahead.
       </p>
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">We wish you continued success in your career!</p>
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-        Warm regards,<br/>
-        <strong style="font-size: 15px; color: #7c3aed;">Mohammad Miran Khan</strong><br/>
-        <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 24px;">
+        We wish you continued success and growth in your career! 🚀
       </p>
+
+      <!-- Signature -->
+      <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 2px;">With warm regards,</p>
+        <p style="font-size: 16px; color: #7c3aed; margin: 0 0 2px; font-weight: 700; word-break: break-word;">Mohammad Miran Khan</p>
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; word-break: break-word;">Founder &amp; CEO, Growlancer</p>
+        <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding: 8px 16px; background: #f3e8ff; border-radius: 8px;">
+              <p style="font-size: 11px; color: #6d28d9; margin: 0; word-break: break-word;">
+                🌐 ${APP_URL} &nbsp;|&nbsp; 📧 growlancer.own@gmail.com
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-    <div style="padding: 24px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Growlancer — AI-Powered Freelancing Marketplace</p>
+    <div style="padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+      <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
     </div>
   </div>
+  <!--[if mso]></td></tr></table><![endif]-->
 </body>
 </html>`
         : `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
-  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
-      <h1 style="color: white; font-size: 22px; font-weight: 700; margin: 0;">Internship Completion Certificate</h1>
-      <p style="color: #a7f3d0; font-size: 14px; margin: 8px 0 0;">Growlancer — AI-Powered Freelancing Marketplace</p>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 20px 8px; margin: 0;">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
+  <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 28px 24px; text-align: center;">
+      <div style="font-size: 40px; margin-bottom: 8px;">🎉</div>
+      <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0 0 6px; word-break: break-word;">Internship Completion Certificate</h1>
+      <p style="color: #a7f3d0; font-size: 13px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
     </div>
-    <div style="padding: 32px;">
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${recipient_name},</p>
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-        Congratulations on successfully completing your <strong>${role_name || 'Internship'}</strong> at
-        <strong>Growlancer</strong>! We are proud of the work you have done.
-      </p>
-      <p style="font-size: 14px; color: #475569; line-height: 1.7;">
-        Your dedication and contributions during your time with us have been outstanding.
-      </p>
-      ${pdfDocSection}
-      <div style="margin: 28px 0; padding: 24px; background: #f0fdf4; border: 2px solid #059669; border-radius: 16px; text-align: center;">
-        <h3 style="font-size: 16px; color: #065f46; margin: 0 0 16px;">View & Verify Online</h3>
-        <p style="font-size: 14px; color: #475569; margin: 0 0 16px;">
-          View your certificate online and share the verification link with employers.
-        </p>
-        <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
-           style="display: inline-block; padding: 14px 36px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 15px;">
-          View Online
-        </a>
-        <p style="font-size: 11px; color: #94a3b8; margin: 12px 0 0;">
-          Verification Code: <strong>${verification_code || ''}</strong>
+    <div style="padding: 28px 24px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+      <!-- Congratulations Banner -->
+      <div style="margin: 0 0 24px; padding: 20px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 16px; text-align: center;">
+        <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+        <h2 style="font-size: 20px; color: #065f46; margin: 0 0 6px; font-weight: 800; word-break: break-word;">Congratulations, ${recipient_name}! 🎊</h2>
+        <p style="font-size: 14px; color: #047857; margin: 0; line-height: 1.5; word-break: break-word;">
+          You have successfully completed your <strong>${role_name || 'Internship'}</strong> at <strong>Growlancer</strong>. We are so proud of everything you've achieved!
         </p>
       </div>
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-        This certificate is digitally verified and can be checked by entering the verification code on our website.
+
+      <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 20px;">
+        Your dedication, hard work, and contributions during your time with us have been truly outstanding. You have grown both personally and professionally, and we are honored to have been part of your journey.
       </p>
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">We wish you the very best in all your future endeavors!</p>
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-        Warm regards,<br/>
-        <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-        <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+
+      <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 24px;">
+        This <strong>Internship Completion Certificate</strong> officially recognizes your successful completion of the program and the valuable skills you have developed along the way.
       </p>
+
+      ${pdfDocSection}
+
+      <!-- Verification Card -->
+      <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
+        <div style="background: #f0fdf4; padding: 20px 24px; text-align: center;">
+          <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
+          <h3 style="font-size: 16px; color: #065f46; margin: 0 0 6px; font-weight: 700; word-break: break-word;">View &amp; Verify Online</h3>
+          <p style="font-size: 13px; color: #047857; margin: 0 0 16px; word-break: break-word;">Share this link with employers to verify your certificate</p>
+          <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+            <tr>
+              <td style="background: #059669; border-radius: 12px; padding: 0;">
+                <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
+                   style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
+                  🔍 View &amp; Verify Online
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="font-size: 11px; color: #059669; margin: 12px 0 0; word-break: break-word;">
+            Verification Code: <strong style="font-size: 14px; font-family: monospace;">${verification_code || ''}</strong>
+          </p>
+        </div>
+      </div>
+
+      <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 20px;">
+        You can now add this certificate to your LinkedIn profile, resume, and portfolio. Employers can verify its authenticity by entering the verification code on our website.
+      </p>
+
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 24px;">
+        We wish you the very best in all your future endeavors! Keep growing, keep learning, and keep achieving. 🚀
+      </p>
+
+      <!-- Signature -->
+      <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 2px;">With warm regards,</p>
+        <p style="font-size: 16px; color: #059669; margin: 0 0 2px; font-weight: 700; word-break: break-word;">Mohammad Miran Khan</p>
+        <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; word-break: break-word;">Founder &amp; CEO, Growlancer</p>
+        <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">
+              <p style="font-size: 11px; color: #166534; margin: 0; word-break: break-word;">
+                🌐 ${APP_URL} &nbsp;|&nbsp; 📧 growlancer.own@gmail.com
+              </p>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
-    <div style="padding: 24px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-      <p style="color: #94a3b8; font-size: 12px; margin: 0;">Growlancer — AI-Powered Freelancing Marketplace</p>
+    <div style="padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+      <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
     </div>
   </div>
+  <!--[if mso]></td></tr></table><![endif]-->
 </body>
 </html>`;
 
