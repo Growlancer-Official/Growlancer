@@ -120,7 +120,7 @@ export function AdminSupportTicketsPage() {
       case 'urgent': return 'text-red-400 bg-red-500/10 border-red-500/20';
       case 'high': return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
       case 'normal': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
-      default: return 'text-slate-400 bg-white/5 border-white/10';
+      default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
     }
   };
 
@@ -135,16 +135,16 @@ export function AdminSupportTicketsPage() {
   };
 
   return (
-    <div className="space-y-8 pb-20 lg:pb-0">
+    <div className="space-y-6 pb-20 lg:pb-0 flex flex-col h-full">
       <div>
         <h1 className="text-2xl font-bold text-white">Support Tickets</h1>
         <p className="text-slate-400 text-sm mt-1">Manage user support requests and escalations</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
         {/* Tickets List */}
-        <div className="lg:col-span-1 rounded-[2rem] overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
-          <div className="p-4 border-b border-white/5">
+        <div className="lg:col-span-1 rounded-[2rem] flex flex-col overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="p-4 border-b border-white/5 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
@@ -170,7 +170,7 @@ export function AdminSupportTicketsPage() {
             </div>
           </div>
 
-          <div className="divide-y divide-white/5 max-h-[600px] overflow-y-auto">
+          <div className="divide-y divide-white/5 flex-1 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-slate-500 mx-auto" /></div>
             ) : filteredTickets.length === 0 ? (
@@ -190,7 +190,7 @@ export function AdminSupportTicketsPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-white truncate">{ticket.subject}</p>
-                      <p className="text-[10px] text-slate-500 mt-0.5">{ticket.category} • {ticket.user_role}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">{ticket.category} &bull; {ticket.user_role}</p>
                     </div>
                     <span className={`px-2 py-0.5 text-[9px] font-bold uppercase rounded-full ${getStatusBadge(ticket.status)}`}>
                       {ticket.status}
@@ -211,21 +211,21 @@ export function AdminSupportTicketsPage() {
         </div>
 
         {/* Ticket Detail */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 flex flex-col min-h-0">
           {selectedTicket ? (
-            <div className="rounded-[2rem] overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="rounded-[2rem] overflow-hidden flex flex-col flex-1" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
               {/* Header */}
-              <div className="p-6 border-b border-white/5">
+              <div className="p-6 border-b border-white/5 shrink-0">
                 <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h2 className="text-lg font-bold text-white">{selectedTicket.subject}</h2>
-                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                  <div className="flex-1 min-w-0">
+                    <h2 className="text-lg font-bold text-white break-words">{selectedTicket.subject}</h2>
+                    <div className="flex items-center gap-3 mt-2 text-xs text-slate-400 flex-wrap">
                       <span className="flex items-center gap-1"><User className="w-3.5 h-3.5 text-slate-500" /> {selectedTicket.user_id.slice(0, 8)}</span>
                       <span className="flex items-center gap-1"><MessageSquare className="w-3.5 h-3.5 text-slate-500" /> {selectedTicket.user_role}</span>
                       <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-slate-500" /> {new Date(selectedTicket.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
                     {selectedTicket.status === 'open' && (
                       <button
                         onClick={() => handleStatusChange(selectedTicket.id, 'pending')}
@@ -268,38 +268,41 @@ export function AdminSupportTicketsPage() {
                 </div>
               </div>
 
-              {/* Description */}
-              <div className="p-6 border-b border-white/5">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Description</h3>
-                <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{selectedTicket.description}</p>
-              </div>
+              {/* Scrollable Body */}
+              <div className="flex-1 overflow-y-auto">
+                {/* Description */}
+                <div className="p-6 border-b border-white/5">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Description</h3>
+                  <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed break-words">{selectedTicket.description}</p>
+                </div>
 
-              {/* Messages */}
-              <div className="p-6">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Conversation</h3>
-                {loadingMessages ? (
-                  <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-slate-500" /></div>
-                ) : ticketMessages.length === 0 ? (
-                  <p className="text-sm text-slate-500 text-center py-6">No messages yet on this ticket</p>
-                ) : (
-                  <div className="space-y-4">
-                    {ticketMessages.map(msg => (
-                      <div key={msg.id} className="p-4 rounded-xl" style={{ background: msg.is_internal ? 'rgba(245,158,11,0.05)' : 'rgba(255,255,255,0.03)', border: msg.is_internal ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[10px] font-bold text-slate-500">
-                            {msg.is_internal ? '🔒 Internal Note' : `User #${msg.user_id.slice(0, 8)}`}
-                          </span>
-                          <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleString()}</span>
+                {/* Messages */}
+                <div className="p-6">
+                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Conversation</h3>
+                  {loadingMessages ? (
+                    <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-slate-500" /></div>
+                  ) : ticketMessages.length === 0 ? (
+                    <p className="text-sm text-slate-500 text-center py-6">No messages yet on this ticket</p>
+                  ) : (
+                    <div className="space-y-4">
+                      {ticketMessages.map(msg => (
+                        <div key={msg.id} className="p-4 rounded-xl" style={{ background: msg.is_internal ? 'rgba(245,158,11,0.05)' : 'rgba(255,255,255,0.03)', border: msg.is_internal ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
+                          <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+                            <span className="text-[10px] font-bold text-slate-500">
+                              {msg.is_internal ? '🔒 Internal Note' : `User #${msg.user_id.slice(0, 8)}`}
+                            </span>
+                            <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleString()}</span>
+                          </div>
+                          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{msg.message}</p>
                         </div>
-                        <p className="text-sm text-slate-300 whitespace-pre-wrap">{msg.message}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
-            <div className="rounded-[2rem] flex items-center justify-center h-[400px]" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className="rounded-[2rem] flex items-center justify-center flex-1 min-h-[300px]" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div className="text-center">
                 <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(255,255,255,0.05)' }}>
                   <MessageSquare className="w-8 h-8 text-slate-600" />
