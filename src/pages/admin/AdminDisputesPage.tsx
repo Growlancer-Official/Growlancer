@@ -137,8 +137,9 @@ export function AdminDisputesPage() {
 
   useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
   useEffect(() => {
-    const channel = supabase.channel('admin-disputes-realtime-' + Date.now())
-      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'disputes' }, () => fetchDisputes())
+    const channel = supabase
+      .channel('admin-disputes-realtime-' + Date.now())
+      .on('postgres_changes' as any, { event: '*', schema: 'public', table: 'disputes' } as any, () => fetchDisputes())
       .subscribe();
     channelRef.current = channel;
     return () => { channel.unsubscribe(); };
