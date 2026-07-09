@@ -141,13 +141,16 @@ async function cacheFirst(request) {
 
 /**
  * Network-first strategy: try network, fall back to cache
+ * Skips caching for HEAD requests and 206 responses (unsupported by Cache API).
  */
 async function networkFirst(request) {
   try {
     const response = await fetch(request);
-    if (response.ok) {
+    if (response.ok && request.method !== 'HEAD' && response.status !== 206) {
       const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
+      cache.put(request, response.clone()).catch(() => {
+        // Silently ignore cache errors (HEAD/206 responses are not cacheable)
+      });
     }
     return response;
   } catch (error) {
@@ -159,6 +162,7 @@ async function networkFirst(request) {
 
 /**
  * Network-first with timeout for API calls
+ * Skips caching for HEAD requests and 206 responses (unsupported by Cache API).
  */
 async function networkFirstWithTimeout(request, timeoutMs) {
   const timeoutPromise = new Promise((_, reject) =>
@@ -170,6 +174,11 @@ async function networkFirstWithTimeout(request, timeoutMs) {
       fetch(request.clone()),
       timeoutPromise,
     ]);
+    // Skip caching for HEAD requests and partial responses (not supported by Cache API)
+    if (response.ok && request.method !== 'HEAD' && response.status !== 206) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone()).catch(() => {});
+    }
     return response;
   } catch (error) {
     const cached = await caches.match(request);

@@ -1,11 +1,7 @@
-// Admin Data Proxy Edge Function
-// Generic endpoint for admin dashboard data fetching
-// Uses service_role key to bypass RLS, BUT authenticates admins via session tokens
-// Public actions: verify_admin, verify_certificate, verify_certificate_code
-// Protected actions: all others require a valid admin session token
+// Admin Data Proxy Edge Function — uses real Supabase Auth for admin verification
+// Public actions: verify_certificate, verify_certificate_code, send_welcome_email
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { compare } from 'https://deno.land/x/bcrypt@v0.4.1/mod.ts'
 
 // ─── Configuration ──────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -15,9 +11,10 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
 ]
 
-// Rate limiting for verify_admin: max 5 attempts per email per 15 minutes
-const MAX_LOGIN_ATTEMPTS = 5
-const LOGIN_WINDOW_MS = 15 * 60 * 1000 // 15 minutes
+// Rate limiting for failed admin auth: max 10 failed attempts per IP per 15 minutes
+const MAX_FAILED_ATTEMPTS = 10
+const RATE_WINDOW_MS = 15 * 60 * 1000
+const ROUTE = 'admin-data-auth'
 
 // ─── Helpers ────────────────────────────────────────────────────────
 
@@ -25,102 +22,91 @@ function getCorsHeaders(origin: string | null) {
   const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name, x-admin-token',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   }
 }
 
-/** Hash a plain token for comparison with stored hashes */
-async function hashToken(token: string): Promise<string> {
-  const encoder = new TextEncoder()
-  const data = encoder.encode(token)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
-/** Generate a cryptographically random session token */
-function generateSessionToken(): string {
-  const bytes = new Uint8Array(32)
-  crypto.getRandomValues(bytes)
-  return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('')
-}
-
-/** Verify admin session token from the request headers. Returns the admin email or null. */
-async function verifyAdminSession(
+/** Rate limit failed admin auth attempts per IP (prevents brute-force of admin endpoints) */
+async function checkAuthRateLimit(
   supabaseClient: any,
-  req: Request,
-): Promise<{ email: string } | null> {
-  // Check Authorization header first, then X-Admin-Token header
-  const authHeader = req.headers.get('authorization') || ''
-  const adminTokenHeader = req.headers.get('x-admin-token') || ''
+  identifier: string,
+): Promise<boolean> {
+  const now = new Date()
+  const windowStart = new Date(now.getTime() - RATE_WINDOW_MS)
 
+  try { await supabaseClient.rpc('cleanup_expired_rate_limits') } catch { /* ignore */ }
+
+  const { count, error } = await supabaseClient
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('identifier', identifier)
+    .eq('route', ROUTE)
+    .gte('window_start', windowStart.toISOString())
+
+  if (error) return true // Allow if table doesn't exist yet
+  if (count !== null && count >= MAX_FAILED_ATTEMPTS) return false
+
+  await supabaseClient.from('rate_limits').insert({
+    identifier,
+    route: ROUTE,
+    count: 1,
+    window_start: now.toISOString(),
+  })
+
+  return true
+}
+
+/**
+ * Verify the caller is an authenticated admin using the standard Supabase Auth session.
+ * Reads the Authorization: Bearer <token> header (sent automatically by supabase.functions.invoke),
+ * verifies the JWT via auth.getUser(), then checks profiles.is_admin = true.
+ * Rate-limits ONLY failed attempts (not valid admin requests) to prevent brute-force.
+ */
+async function verifyAdminSession(
+  serviceClient: any,
+  req: Request,
+): Promise<{ user_id: string; email: string } | null> {
+  const authHeader = req.headers.get('authorization') || ''
   let token = ''
   if (authHeader.startsWith('Bearer ')) {
     token = authHeader.slice(7).trim()
-  } else if (authHeader.startsWith('Admin ')) {
-    token = authHeader.slice(6).trim()
-  } else if (adminTokenHeader) {
-    token = adminTokenHeader.trim()
   }
 
   if (!token) return null
 
-  const tokenHash = await hashToken(token)
+  // Create an anon-key client to verify the caller's JWT
+  const anonClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    },
+  )
 
-  // Look up session
-  const { data: session, error } = await supabaseClient
-    .from('admin_sessions')
-    .select('admin_email, expires_at')
-    .eq('token_hash', tokenHash)
-    .single()
-
-  if (error || !session) return null
-
-  // Check expiry
-  const now = new Date()
-  const expiresAt = new Date(session.expires_at)
-  if (expiresAt <= now) {
-    // Clean up expired session
-    await supabaseClient.from('admin_sessions').delete().eq('token_hash', tokenHash)
+  const { data: { user }, error } = await anonClient.auth.getUser()
+  if (error || !user) {
+    // Rate limit ONLY on failure — prevents brute-force without blocking legitimate admins
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown'
+    await checkAuthRateLimit(serviceClient, clientIP)
     return null
   }
 
-  // Refresh last_used_at
-  await supabaseClient
-    .from('admin_sessions')
-    .update({ last_used_at: now.toISOString() })
-    .eq('token_hash', tokenHash)
+  // Check is_admin flag using service_role client
+  const { data: profile } = await serviceClient
+    .from('profiles')
+    .select('is_admin, email')
+    .eq('id', user.id)
+    .single()
 
-  return { email: session.admin_email }
-}
+  if (!profile || profile.is_admin !== true) {
+    // Rate limit ONLY on failure
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown'
+    await checkAuthRateLimit(serviceClient, clientIP)
+    return null
+  }
 
-/** Check rate limit for login attempts (brute force protection) */
-async function checkLoginRateLimit(
-  supabaseClient: any,
-  email: string,
-  ipAddress: string,
-): Promise<boolean> {
-  const windowStart = new Date(Date.now() - LOGIN_WINDOW_MS).toISOString()
-
-  const { count, error } = await supabaseClient
-    .from('admin_login_attempts')
-    .select('*', { count: 'exact', head: true })
-    .eq('email', email.toLowerCase())
-    .gte('attempted_at', windowStart)
-
-  if (error) return true // Allow if table doesn't exist / other error
-
-  const attemptCount = count || 0
-  if (attemptCount >= MAX_LOGIN_ATTEMPTS) return false
-
-  // Record this attempt
-  await supabaseClient.from('admin_login_attempts').insert({
-    email: email.toLowerCase(),
-    ip_address: ipAddress,
-  })
-
-  return true
+  return { user_id: user.id, email: profile.email || user.email || '' }
 }
 
 Deno.serve(async (req) => {
@@ -142,105 +128,12 @@ Deno.serve(async (req) => {
     try { body = await req.json() } catch { /* empty body */ }
     const action = body?.action || 'query'
 
-    // ─── POST: verify_admin (PUBLIC — no session required) ─────────
-    if (req.method === 'POST' && action === 'verify_admin') {
-      const { email, password } = body
-
-      if (!email || !password) {
-        return new Response(JSON.stringify({ success: false, error: 'Email and password are required' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-
-      // Rate limiting: max 5 attempts per email per 15 minutes
-      const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown'
-      const rateAllowed = await checkLoginRateLimit(supabaseClient, email, clientIP)
-      if (!rateAllowed) {
-        return new Response(JSON.stringify({
-          success: false,
-          error: 'Too many login attempts. Please try again later.',
-        }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-
-      // Fetch admin credential from database
-      const { data: creds, error: credError } = await supabaseClient
-        .from('admin_credentials')
-        .select('email, password_hash, label, is_active')
-        .eq('email', email.toLowerCase())
-        .eq('is_active', true)
-        .single()
-
-      if (credError || !creds) {
-        return new Response(JSON.stringify({ success: false, error: 'Invalid credentials' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-
-      // Verify password using bcrypt (supports both bcrypt and legacy SHA-256 for migration)
-      let passwordValid = false
-      try {
-        passwordValid = await compare(password, creds.password_hash)
-      } catch {
-        // Fallback: check if it's a legacy SHA-256 hash
-        const encoder = new TextEncoder()
-        const passwordBuffer = encoder.encode(password)
-        const hashBuffer = await crypto.subtle.digest('SHA-256', passwordBuffer)
-        const hashArray = Array.from(new Uint8Array(hashBuffer))
-        const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
-        passwordValid = passwordHash === creds.password_hash
-      }
-
-      if (!passwordValid) {
-        return new Response(JSON.stringify({ success: false, error: 'Invalid credentials' }), {
-          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-
-      // Generate a cryptographically random session token
-      const plainToken = generateSessionToken()
-      const tokenHash = await hashToken(plainToken)
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-
-      // Store session in database (only store hash, never the plain token)
-      const { error: sessionError } = await supabaseClient
-        .from('admin_sessions')
-        .insert({
-          admin_email: creds.email,
-          token_hash: tokenHash,
-          expires_at: expiresAt,
-        })
-
-      if (sessionError) {
-        return new Response(JSON.stringify({ success: false, error: 'Failed to create session' }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
-      }
-
-      // Update last_login_at
-      await supabaseClient
-        .from('admin_credentials')
-        .update({ last_login_at: new Date().toISOString() })
-        .eq('email', email.toLowerCase())
-
-      return new Response(JSON.stringify({
-        success: true,
-        email: creds.email,
-        label: creds.label,
-        token: plainToken, // Return plain token to client (never stored server-side)
-        expires_at: expiresAt,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
-    }
-
-    // ─── Require admin session for all remaining actions ────────────
-    // Exception: verify_certificate (public verification endpoint)
+    // ─── Require admin session for all protected actions ────────────
+    // Exception: public endpoints that anyone can call
     if (action !== 'verify_certificate' && action !== 'verify_certificate_code' && action !== 'send_welcome_email') {
       const session = await verifyAdminSession(supabaseClient, req)
       if (!session) {
-        return new Response(JSON.stringify({ error: 'Unauthorized: Valid admin session required' }), {
+        return new Response(JSON.stringify({ error: 'Unauthorized: Admin session required' }), {
           status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
