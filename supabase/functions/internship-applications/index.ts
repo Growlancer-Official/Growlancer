@@ -389,7 +389,7 @@ function buildShortlistedEmailHtml(name: string, roleName: string): string {
   return baseEmailHtml('Congratulations — You\'re Shortlisted!', body)
 }
 
-/** Professional Interview Invitation — ALWAYS shows Google Meet link & time if available */
+/** Professional Interview Invitation — ALWAYS shows Google Meet link & time with prominent sign & return */
 function buildInterviewEmailHtml(
   name: string,
   roleName: string,
@@ -398,6 +398,9 @@ function buildInterviewEmailHtml(
 ): string {
   const escapedName = escapeHtml(name);
   const escapedRole = escapeHtml(roleName);
+  const rawName = name;  // for URL/calendar encoding (NOT HTML-escaped)
+  const rawRole = roleName;
+
   const formattedTime = interviewTime
     ? new Date(interviewTime).toLocaleDateString('en-US', {
         weekday: 'long',
@@ -410,108 +413,165 @@ function buildInterviewEmailHtml(
       })
     : null
 
+  const isoTime = interviewTime
+    ? new Date(interviewTime).toISOString().replace(/\.\d{3}Z$/, 'Z')
+    : ''
+
+  const icsDtStart = isoTime ? isoTime.replace(/[-:]/g, '').replace(/\.\d{3}Z/, 'Z') : ''
+
   const meetSection = googleMeetLink ? `
-    <!-- Google Meet Section with Link & Time -->
-    <div style="margin: 28px 0; padding: 28px; background: #f8fafc; border: 2px solid #7c3aed; border-radius: 16px; text-align: center;">
-      <div style="font-size: 36px; margin-bottom: 12px;">🎥</div>
-      <h3 style="font-size: 18px; color: #6b21a8; margin: 0 0 8px;">Your Interview is Scheduled</h3>
-      ${formattedTime ? `
-      <div style="margin: 16px 0; padding: 12px 20px; background: #f3e8ff; border-radius: 10px; display: inline-block;">
-        <p style="font-size: 12px; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin: 0 0 4px;">📅 Scheduled Time</p>
-        <p style="font-size: 18px; color: #5b21b6; font-weight: 700; margin: 0;">
-          ${formattedTime}
+    <!-- GOOGLE MEET SECTION - PROMINENT -->
+    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #7c3aed; border-radius: 16px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 24px 28px; text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 8px;">🎥</div>
+        <h2 style="font-size: 22px; color: white; margin: 0; font-weight: 700;">Interview Invitation</h2>
+        <p style="font-size: 14px; color: #d8b4fe; margin: 6px 0 0;">You have been invited for a video interview with the Growlancer team</p>
+      </div>
+      <div style="padding: 28px;">
+        ${formattedTime ? `
+        <div style="margin-bottom: 24px; padding: 18px 20px; background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 12px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 6px 12px; width: 100px; color: #6b21a8; font-size: 13px; font-weight: 600; white-space: nowrap;">📅 Date</td>
+              <td style="padding: 6px 0; color: #4c1d95; font-size: 15px; font-weight: 600;">${new Date(interviewTime!).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 12px; width: 100px; color: #6b21a8; font-size: 13px; font-weight: 600; white-space: nowrap;">⏰ Time</td>
+              <td style="padding: 6px 0; color: #4c1d95; font-size: 15px; font-weight: 600;">${new Date(interviewTime!).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}</td>
+            </tr>
+            <tr>
+              <td style="padding: 6px 12px; width: 100px; color: #6b21a8; font-size: 13px; font-weight: 600; white-space: nowrap;">📍 Duration</td>
+              <td style="padding: 6px 0; color: #4c1d95; font-size: 15px; font-weight: 600;">30–45 minutes</td>
+            </tr>
+          </table>
+          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #c4b5fd;">
+            <p style="font-size: 12px; color: #7c3aed; margin: 0;">
+              💡 <strong>Tip:</strong> Click "Add to Calendar" below to save this event to your calendar.
+            </p>
+          </div>
+        </div>` : ''}
+
+        <div style="text-align: center; margin: 24px 0;">
+          <a href="${googleMeetLink}"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="display: inline-block; padding: 18px 48px; background: #059669; color: white; text-decoration: none; border-radius: 14px; font-weight: 700; font-size: 18px; box-shadow: 0 6px 20px rgba(5, 150, 105, 0.3);">
+            🔗 Join Google Meet Now
+          </a>
+        </div>
+
+        <div style="text-align: center; margin: 16px 0;">
+          <a href="${googleMeetLink}"
+             target="_blank"
+             rel="noopener noreferrer"
+             style="color: #7c3aed; font-size: 13px; text-decoration: underline;">
+            ${googleMeetLink}
+          </a>
+        </div>          ${formattedTime ? `
+        <div style="margin-top: 20px; text-align: center;">
+          <a href="data:text/calendar;charset=utf-8,BEGIN:VCALENDAR%0D%0AVERSION:2.0%0D%0ABEGIN:VEVENT%0D%0ASUMMARY:Interview%20-%20${encodeURIComponent(rawRole)}%20%40%20Growlancer%0D%0ADESCRIPTION:Video%20interview%20for%20${encodeURIComponent(rawRole)}%20position%20at%20Growlancer%0D%0ADTSTART:${icsDtStart}%0D%0ADURATION:PT1H%0D%0ALOCATION:${encodeURIComponent(googleMeetLink!)}%0D%0AEND:VEVENT%0D%0AEND:VCALENDAR"
+             style="display: inline-block; padding: 12px 28px; background: #7c3aed; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">
+            📅 Add to Calendar
+          </a>
+        </div>` : ''}
+
+        <p style="font-size: 13px; color: #94a3b8; margin: 20px 0 0; text-align: center;">
+          Please ensure you have a stable internet connection, working camera & microphone, and a quiet environment.
         </p>
       </div>
-      ` : ''}
-      <div style="margin-top: 20px;">
-        <a href="${googleMeetLink}"
-           target="_blank"
-           rel="noopener noreferrer"
-           style="display: inline-block; padding: 16px 40px; background: #7c3aed; color: white; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 14px rgba(124, 58, 237, 0.3);">
-          🔗 Join Google Meet
-        </a>
-      </div>
-      <p style="font-size: 13px; color: #94a3b8; margin: 16px 0 0;">
-        The interview will be a 30–45 minute video call. Please ensure you have a stable internet connection and a quiet environment.
-      </p>
     </div>`
     : `
     <!-- Interview Scheduled (no link yet - show professional placeholder) -->
-    <div style="margin: 28px 0; padding: 24px; background: linear-gradient(135deg, #f3e8ff 0%, #ede9fe 100%); border: 1px solid #c4b5fd; border-radius: 16px; text-align: center;">
-      <div style="font-size: 36px; margin-bottom: 12px;">🎤</div>
-      <h3 style="font-size: 16px; color: #6b21a8; margin: 0 0 8px;">Interview Stage</h3>
-      ${formattedTime ? `
-      <p style="font-size: 15px; color: #5b21b6; margin: 8px 0;">
-        Your interview is scheduled for <strong>${formattedTime}</strong>.
-      </p>
-      <p style="font-size: 14px; color: #7c3aed; margin: 12px 0 0;">
-        📧 The Google Meet link will be shared with you at this email address shortly before the interview.
-      </p>`
-      : `
-      <p style="font-size: 15px; color: #5b21b6; margin: 8px 0;">
-        You have been shortlisted for an interview! The interview details including link and timing will be shared with you soon via email.
-      </p>`}
-      <p style="font-size: 13px; color: #8b5cf6; margin: 16px 0 0; font-style: italic;">
-        If you have any questions, please reach out to us at <a href="mailto:${ADMIN_EMAIL}" style="color: #7c3aed; font-weight: 600;">${ADMIN_EMAIL}</a>
-      </p>
+    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #7c3aed; border-radius: 16px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); padding: 24px 28px; text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 8px;">🎤</div>
+        <h2 style="font-size: 22px; color: white; margin: 0; font-weight: 700;">Interview Stage</h2>
+        <p style="font-size: 14px; color: #d8b4fe; margin: 6px 0 0;">You have advanced to the interview stage!</p>
+      </div>
+      <div style="padding: 28px; text-align: center;">
+        ${formattedTime ? `
+        <div style="margin-bottom: 20px; padding: 18px; background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 12px; display: inline-block;">
+          <p style="font-size: 12px; color: #7c3aed; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; margin: 0 0 6px;">📅 Scheduled For</p>
+          <p style="font-size: 20px; color: #4c1d95; font-weight: 700; margin: 0;">${formattedTime}</p>
+        </div>
+        <div style="margin-top: 16px; padding: 16px; background: #fff7ed; border: 1px solid #fbbf24; border-radius: 12px;">
+          <p style="font-size: 14px; color: #92400e; margin: 0;">
+            <strong>⏳ Google Meet link coming soon!</strong><br/>
+            The meeting link will be emailed to you at <strong>${escapeHtml(name)}</strong> shortly before the interview.
+          </p>
+        </div>`
+        : `
+        <div style="padding: 24px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px;">
+          <p style="font-size: 15px; color: #92400e; margin: 0 0 8px;"><strong>🎯 Interview Details Pending</strong></p>
+          <p style="font-size: 14px; color: #92400e; margin: 0; line-height: 1.5;">
+            You have been shortlisted for an interview! The specific date, time, and Google Meet link will be shared with you soon.
+          </p>
+        </div>`}
+        <p style="font-size: 13px; color: #8b5cf6; margin: 20px 0 0; font-style: italic;">
+          Questions? Email us at <a href="mailto:${ADMIN_EMAIL}" style="color: #7c3aed; font-weight: 600;">${ADMIN_EMAIL}</a>
+        </p>
+      </div>
     </div>`
 
   const body = `
-    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
+    <p style="font-size: 16px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      Congratulations! You have been invited for an interview for the <strong>${escapedRole}</strong> position at <strong>Growlancer</strong>.
+      <strong>Congratulations!</strong> You have been invited for an interview for the <strong>${escapedRole}</strong> position at <strong>Growlancer</strong>.
     </p>
 
-    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      We were impressed by your application and would love to get to know you better.
-      This will be a great opportunity for you to learn more about the role, our team, and what we're building.
+    <p style="font-size: 14px; color: #475569; line-height: 1.7; margin-bottom: 24px;">
+      We were truly impressed by your application and would love the opportunity to get to know you better. This will be a conversational video call where we can discuss your experience, skills, and what you're passionate about.
     </p>
 
     ${meetSection}
 
     <!-- Preparation Tips -->
-    <div style="margin: 24px 0; padding: 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;">
-      <h3 style="font-size: 14px; color: #1e40af; margin: 0 0 12px;">⭐ How to Prepare</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1e3a5f;">
+    <div style="margin: 28px 0; padding: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;">
+      <h3 style="font-size: 16px; color: #0f172a; margin: 0 0 16px; font-weight: 700;">⭐ How to Prepare for Your Interview</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569;">
         <tr>
-          <td style="padding: 4px 8px; width: 24px;">✅</td>
-          <td style="padding: 4px 0;">Review the job description and prepare your questions</td>
+          <td style="padding: 8px 12px; width: 32px; vertical-align: top; font-size: 16px;">🔍</td>
+          <td style="padding: 8px 0 8px 4px;">Research Growlancer — explore <a href="${APP_URL}" style="color: #059669;">our platform</a> and understand what we're building</td>
         </tr>
         <tr>
-          <td style="padding: 4px 8px;">✅</td>
-          <td style="padding: 4px 0;">Test your camera, microphone, and internet connection beforehand</td>
+          <td style="padding: 8px 12px; width: 32px; vertical-align: top; font-size: 16px;">🎯</td>
+          <td style="padding: 8px 0 8px 4px;">Review the job description and prepare specific examples from your past work</td>
         </tr>
         <tr>
-          <td style="padding: 4px 8px;">✅</td>
-          <td style="padding: 4px 0;">Find a quiet, well-lit space for the call</td>
+          <td style="padding: 8px 12px; width: 32px; vertical-align: top; font-size: 16px;">💻</td>
+          <td style="padding: 8px 0 8px 4px;">Test your camera, microphone, and internet connection at least 15 minutes before</td>
         </tr>
         <tr>
-          <td style="padding: 4px 8px;">✅</td>
-          <td style="padding: 4px 0;">Have examples of your previous work or projects ready to share</td>
+          <td style="padding: 8px 12px; width: 32px; vertical-align: top; font-size: 16px;">🤫</td>
+          <td style="padding: 8px 0 8px 4px;">Find a quiet, well-lit space with minimal distractions</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 12px; width: 32px; vertical-align: top; font-size: 16px;">❓</td>
+          <td style="padding: 8px 0 8px 4px;">Prepare 2-3 thoughtful questions to ask us about the role, team, and company</td>
         </tr>
       </table>
     </div>
 
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-      If you have any questions before the interview or need to reschedule, please reach out to us at
-      <a href="mailto:${ADMIN_EMAIL}" style="color: #059669;">${ADMIN_EMAIL}</a>.
+      If you have any questions before the interview or need to reschedule, simply reply to this email or reach out to
+      <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 600;">${ADMIN_EMAIL}</a>.
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
       We look forward to speaking with you! 🚀
     </p>
 
-    <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-      Best regards,<br/>
-      <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-      <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
+    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
+      Warm regards,<br/>
+      <strong style="font-size: 16px; color: #059669;">Mohammad Miran Khan</strong><br/>
+      <span style="color: #94a3b8; font-size: 13px;">Founder & CEO, Growlancer</span>
     </p>`
 
   return baseEmailHtml('Interview Invitation — ' + roleName, body)
 }
 
-/** Professional Selected Email — ALL uploaded documents shown professionally */
+/** PREMIUM Selected Email — Document download + SIGN & RETURN with professional Gmail-friendly design */
 function buildSelectedEmailHtml(
   name: string,
   roleName: string,
@@ -521,181 +581,217 @@ function buildSelectedEmailHtml(
 ): string {
   const escapedName = escapeHtml(name);
   const escapedRole = escapeHtml(roleName);
+  const rawName = name;  // for URL/calendar encoding
+  const rawRole = roleName;
   const hasAnyDoc = offerLetterUrl || ndaUrl || internshipLetterUrl;
+  const allDocsReady = offerLetterUrl && ndaUrl && internshipLetterUrl;
+
   const docSection = hasAnyDoc ? `
-    <!-- Documents Section -->
-    <div style="margin: 28px 0; padding: 28px; background: #f8fafc; border: 2px solid #059669; border-radius: 16px;">
-      <div style="text-align: center; margin-bottom: 20px;">
-        <div style="font-size: 36px; margin-bottom: 8px;">📄</div>
-        <h3 style="font-size: 18px; color: #059669; margin: 0;">Your Internship Documents</h3>
-        <p style="font-size: 14px; color: #475569; margin: 8px 0 0;">
-          Please download each document below. After reviewing, <strong>sign all documents</strong> and email the signed copies back to us.
-        </p>
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!--  DOCUMENTS SECTION — Download Cards with Sign & Return CTA   -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 24px 28px; text-align: center;">
+        <div style="font-size: 36px; margin-bottom: 6px;">📄</div>
+        <h2 style="font-size: 20px; color: white; margin: 0; font-weight: 700;">Your Internship Documents</h2>
+        <p style="font-size: 13px; color: #a7f3d0; margin: 6px 0 0;">Please download, sign, and return all documents below</p>
       </div>
+      <div style="padding: 24px 28px;">
+        <!-- ⚠️ SIGN & RETURN BANNER - HIGHLY VISIBLE -->
+        <div style="margin-bottom: 24px; padding: 18px 20px; background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; text-align: center;">
+          <div style="font-size: 28px; margin-bottom: 8px;">✍️</div>
+          <h3 style="font-size: 17px; color: #92400e; margin: 0 0 6px; font-weight: 700;">⚠️ ACTION REQUIRED — SIGN & RETURN</h3>
+          <p style="font-size: 14px; color: #92400e; margin: 0 0 12px; line-height: 1.5;">
+            Please download each document, <strong>electronically sign or print & sign</strong> all pages, then email the signed copies back to us.
+          </p>
+          <table style="margin: 0 auto; border-collapse: collapse;" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="background: #059669; border-radius: 10px;">
+                <a href="mailto:${ADMIN_EMAIL}?subject=Signed%20Documents%20-%20${encodeURIComponent(rawName)}&body=Dear%20Growlancer%20Team%2C%0D%0A%0D%0APlease%20find%20attached%20my%20signed%20documents%20for%20the%20${encodeURIComponent(rawRole)}%20position.%0D%0A%0D%0AThanks%2C%0D%0A${encodeURIComponent(rawName)}"
+                   style="display: inline-block; padding: 14px 36px; color: white; text-decoration: none; font-size: 15px; font-weight: 700;">
+                  📧 EMAIL SIGNED COPIES →
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="font-size: 12px; color: #b45309; margin: 12px 0 0;">
+            Send to: <strong><a href="mailto:${ADMIN_EMAIL}" style="color: #059669; text-decoration: none;">${ADMIN_EMAIL}</a></strong>
+          </p>
+        </div>
 
-      <div style="margin: 0 0 20px; padding: 14px 18px; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; text-align: center;">
-        <p style="font-size: 14px; color: #92400e; margin: 0; font-weight: 600;">
-          ✍️ After signing, send all documents to: <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 700;">${ADMIN_EMAIL}</a>
-        </p>
+        <!-- Document Cards -->
+        ${[
+          { label: 'Offer Letter', icon: '📜', url: offerLetterUrl, desc: 'Formal offer of internship position' },
+          { label: 'Non-Disclosure Agreement (NDA)', icon: '🔒', url: ndaUrl, desc: 'Confidentiality agreement for proprietary information' },
+          { label: 'Internship Letter', icon: '🎓', url: internshipLetterUrl, desc: 'Official confirmation of internship terms' },
+        ].map((doc, i) => `
+        <div style="margin-bottom: ${i < 2 ? '16px' : '0'}; padding: 18px 20px; background: ${doc.url ? '#f0fdf4' : '#f8fafc'}; border: ${doc.url ? '1px solid #86efac' : '1px solid #e2e8f0'}; border-radius: 12px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+              <td style="width: 48px; vertical-align: middle; text-align: center; font-size: 28px;">${doc.icon}</td>
+              <td style="padding: 0 16px; vertical-align: middle;">
+                <p style="font-size: 15px; color: #0f172a; font-weight: 700; margin: 0 0 2px;">${doc.label}</p>
+                <p style="font-size: 12px; color: #64748b; margin: 0;">${doc.desc}</p>
+              </td>
+              <td style="vertical-align: middle; text-align: right; width: 140px;">
+                ${doc.url ? `
+                <a href="${doc.url}"
+                   style="display: inline-block; padding: 12px 24px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 14px; white-space: nowrap;">
+                  📥 Download PDF
+                </a>` : `
+                <span style="display: inline-block; padding: 12px 20px; background: #e2e8f0; color: #94a3b8; border-radius: 10px; font-size: 13px; font-weight: 600;">
+                  ⏳ Awaiting
+                </span>`}
+              </td>
+            </tr>
+          </table>
+        </div>`).join('')}
+
+        ${allDocsReady ? `
+        <div style="margin-top: 20px; padding: 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; text-align: center;">
+          <p style="font-size: 14px; color: #166534; margin: 0; font-weight: 600;">
+            ✅ All 3 documents ready! Download each, sign, and email back to complete your onboarding.
+          </p>
+        </div>` : `
+        <div style="margin-top: 20px; padding: 14px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 10px; text-align: center;">
+          <p style="font-size: 13px; color: #92400e; margin: 0;">
+            ⏳ Some documents are still pending. You will receive a separate notification when they are ready.
+          </p>
+        </div>`}
       </div>
-
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-        ${offerLetterUrl ? `
-        <tr style="background: white;">
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0;">
-            <span style="font-size: 18px;">📜</span>
-            <strong style="color: #0f172a; margin-left: 8px;">Offer Letter</strong>
-          </td>
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-            <a href="${offerLetterUrl}" style="display: inline-block; padding: 10px 24px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;">
-              📥 Download
-            </a>
-          </td>
-        </tr>` : `
-        <tr style="background: #f8fafc;">
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0;">
-            <span style="font-size: 18px;">⏳</span>
-            <span style="color: #94a3b8; margin-left: 8px; font-style: italic;">Offer Letter — Pending</span>
-          </td>
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-            <span style="color: #94a3b8; font-size: 12px;">Awaiting</span>
-          </td>
-        </tr>`}
-        ${ndaUrl ? `
-        <tr style="background: white;">
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0;">
-            <span style="font-size: 18px;">🔒</span>
-            <strong style="color: #0f172a; margin-left: 8px;">NDA (Non-Disclosure Agreement)</strong>
-          </td>
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-            <a href="${ndaUrl}" style="display: inline-block; padding: 10px 24px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;">
-              📥 Download
-            </a>
-          </td>
-        </tr>` : `
-        <tr style="background: #f8fafc;">
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0;">
-            <span style="font-size: 18px;">⏳</span>
-            <span style="color: #94a3b8; margin-left: 8px; font-style: italic;">NDA — Pending</span>
-          </td>
-          <td style="padding: 14px 18px; border-bottom: 1px solid #e2e8f0; text-align: right;">
-            <span style="color: #94a3b8; font-size: 12px;">Awaiting</span>
-          </td>
-        </tr>`}
-        ${internshipLetterUrl ? `
-        <tr style="background: white;">
-          <td style="padding: 14px 18px;">
-            <span style="font-size: 18px;">🎓</span>
-            <strong style="color: #0f172a; margin-left: 8px;">Internship Letter</strong>
-          </td>
-          <td style="padding: 14px 18px; text-align: right;">
-            <a href="${internshipLetterUrl}" style="display: inline-block; padding: 10px 24px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;">
-              📥 Download
-            </a>
-          </td>
-        </tr>` : `
-        <tr style="background: #f8fafc;">
-          <td style="padding: 14px 18px;">
-            <span style="font-size: 18px;">⏳</span>
-            <span style="color: #94a3b8; margin-left: 8px; font-style: italic;">Internship Letter — Pending</span>
-          </td>
-          <td style="padding: 14px 18px; text-align: right;">
-            <span style="color: #94a3b8; font-size: 12px;">Awaiting</span>
-          </td>
-        </tr>`}
-      </table>
-
-      ${(offerLetterUrl && ndaUrl && internshipLetterUrl) ? `
-      <div style="margin-top: 16px; padding: 14px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; text-align: center;">
-        <p style="font-size: 13px; color: #166534; margin: 0;">✅ <strong>All documents ready!</strong> Download, sign, and email them back to complete your onboarding.</p>
-      </div>` : `
-      <p style="font-size: 13px; color: #94a3b8; margin: 16px 0 0; text-align: center; font-style: italic;">
-        ⏳ Remaining documents will be uploaded shortly. You will receive a notification when they are ready.
-      </p>`}
     </div>`
     : ''
 
+  const docFallback = !hasAnyDoc ? `
+    <!-- DOCUMENTS PENDING BANNER -->
+    <div style="margin: 28px 0; padding: 24px; background: #fffbeb; border: 2px solid #fbbf24; border-radius: 16px; text-align: center;">
+      <div style="font-size: 36px; margin-bottom: 8px;">⏳</div>
+      <h3 style="font-size: 18px; color: #92400e; margin: 0 0 8px; font-weight: 700;">Documents Coming Soon</h3>
+      <p style="font-size: 14px; color: #92400e; margin: 0; line-height: 1.5;">
+        Your offer letter, NDA, and internship letter are being prepared. You will receive them via email shortly.
+      </p>
+    </div>` : ''
+
   const body = `
-    <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
+    <p style="font-size: 16px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      On behalf of the entire team at <strong>Growlancer</strong>, I am delighted to inform you that
+      On behalf of the entire team at <strong>Growlancer</strong>, I am absolutely delighted to inform you that
       you have been <strong style="color: #059669;">selected</strong> for the
       <strong>${escapedRole}</strong> internship position.
     </p>
 
-    <div style="margin: 28px 0; padding: 24px; background: linear-gradient(135deg, #059669 0%, #047857 100%); border-radius: 16px; text-align: center;">
-      <h2 style="font-size: 22px; color: white; margin: 0 0 8px;">🎉 Congratulations!</h2>
-      <p style="font-size: 15px; color: #d1fae5; margin: 0; line-height: 1.5;">
-        We were impressed by your skills, enthusiasm, and potential.
-        We believe you will be a valuable addition to our team!
-      </p>
+    <!-- CONGRATULATIONS BANNER -->
+    <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
+        <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
+        <h2 style="font-size: 26px; color: white; margin: 0 0 10px; font-weight: 800;">Congratulations!</h2>
+        <p style="font-size: 15px; color: #a7f3d0; margin: 0; line-height: 1.6; max-width: 400px; margin-left: auto; margin-right: auto;">
+          We were truly impressed by your skills, enthusiasm, and potential. We believe you will be a valuable addition to our team!
+        </p>
+      </div>
+      <div style="padding: 24px 28px;">
+        <table style="width: 100%; border-collapse: collapse;" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding: 10px 12px; width: 110px; font-size: 13px; color: #64748b; font-weight: 600;">Position</td>
+            <td style="padding: 10px 0; font-size: 15px; color: #0f172a; font-weight: 700;">${escapedRole}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 12px; width: 110px; font-size: 13px; color: #64748b; font-weight: 600; border-top: 1px solid #e2e8f0;">Start Date</td>
+            <td style="padding: 10px 0; font-size: 15px; color: #0f172a; font-weight: 600; border-top: 1px solid #e2e8f0;">To be confirmed during onboarding</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px 12px; width: 110px; font-size: 13px; color: #64748b; font-weight: 600; border-top: 1px solid #e2e8f0;">Type</td>
+            <td style="padding: 10px 0; font-size: 15px; color: #0f172a; font-weight: 600; border-top: 1px solid #e2e8f0;">Remote Internship</td>
+          </tr>
+        </table>
+      </div>
     </div>
 
-    ${docSection}
+    ${docSection || docFallback}
 
-    <!-- Next Steps -->
-    <div style="margin: 28px 0; padding: 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;">
-      <h3 style="font-size: 15px; color: #1e40af; margin: 0 0 12px;">📋 Next Steps</h3>
-      <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #1e3a5f;">
+    <!-- 📋 NEXT STEPS -->
+    <div style="margin: 28px 0; padding: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;">
+      <h3 style="font-size: 16px; color: #0f172a; margin: 0 0 18px; font-weight: 700;">📋 Your Onboarding Checklist</h3>
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #475569;">
         <tr>
-          <td style="padding: 6px 12px; width: 30px; font-weight: 700;">1.</td>
-          <td style="padding: 6px 0;">Download and review all documents above carefully</td>
+          <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
+            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">1</span>
+          </td>
+          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Download & Review</strong> — Read all documents carefully to understand the terms</td>
         </tr>
         <tr>
-          <td style="padding: 6px 12px; width: 30px; font-weight: 700;">2.</td>
-          <td style="padding: 6px 0;">Sign the Offer Letter, NDA, and Internship Letter</td>
+          <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
+            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">2</span>
+          </td>
+          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Sign All Documents</strong> — Electronically sign or print, sign & scan each document</td>
         </tr>
         <tr>
-          <td style="padding: 6px 12px; width: 30px; font-weight: 700;">3.</td>
-          <td style="padding: 6px 0;">Email the signed copies back to <a href="mailto:${ADMIN_EMAIL}" style="color: #2563eb;">${ADMIN_EMAIL}</a></td>
+          <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
+            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">3</span>
+          </td>
+          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Email Signed Copies</strong> — Attach all signed PDFs and reply to this email or send to <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 600;">${ADMIN_EMAIL}</a></td>
         </tr>
         <tr>
-          <td style="padding: 6px 12px; width: 30px; font-weight: 700;">4.</td>
-          <td style="padding: 6px 0;">Our team will reach out with onboarding details within 3 business days</td>
+          <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
+            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">4</span>
+          </td>
+          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Onboarding Call</strong> — Our team will reach out within 3 business days to schedule your kickoff</td>
         </tr>
         <tr>
-          <td style="padding: 6px 12px; width: 30px; font-weight: 700;">5.</td>
-          <td style="padding: 6px 0;">Begin your internship journey with a kickoff call!</td>
+          <td style="padding: 8px 14px; width: 36px; vertical-align: top;">
+            <span style="display: inline-block; width: 28px; height: 28px; background: #059669; color: white; border-radius: 50%; text-align: center; line-height: 28px; font-size: 14px; font-weight: 700;">5</span>
+          </td>
+          <td style="padding: 8px 0;"><strong style="color: #0f172a;">Welcome to Growlancer!</strong> 🚀 Begin your internship journey and contribute to our mission</td>
         </tr>
       </table>
     </div>
 
-    <!-- Quick Links -->
-    <div style="margin: 24px 0; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
-      <h3 style="font-size: 14px; color: #0f172a; margin: 0 0 12px;">🔗 Quick Links</h3>
-      <table style="font-size: 13px; width: 100%;">
+    <!-- QUICK LINKS -->
+    <div style="margin: 24px 0; padding: 20px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;">
+      <h3 style="font-size: 14px; color: #0f172a; margin: 0 0 14px; font-weight: 700;">🔗 Useful Links</h3>
+      <table style="font-size: 13px; width: 100%; border-collapse: collapse;">
         <tr>
-          <td style="padding: 4px 0;">🌐 Growlancer Platform</td>
-          <td style="padding: 4px 0;"><a href="${APP_URL}" style="color: #059669; text-decoration: none;">${APP_URL} →</a></td>
+          <td style="padding: 6px 0; width: 50%;">🌐 <a href="${APP_URL}" style="color: #059669; text-decoration: none;">Growlancer Platform</a></td>
+          <td style="padding: 6px 0; width: 50%;">💻 <a href="${GITHUB_URL}" style="color: #059669; text-decoration: none;">GitHub Organization</a></td>
         </tr>
         <tr>
-          <td style="padding: 4px 0;">💻 GitHub Organization</td>
-          <td style="padding: 4px 0;"><a href="${GITHUB_URL}" style="color: #059669; text-decoration: none;">GitHub →</a></td>
-        </tr>
-        <tr>
-          <td style="padding: 4px 0;">📧 Contact HR</td>
-          <td style="padding: 4px 0;"><a href="mailto:${ADMIN_EMAIL}" style="color: #059669; text-decoration: none;">${ADMIN_EMAIL} →</a></td>
+          <td style="padding: 6px 0;">📧 <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; text-decoration: none;">Contact HR</a></td>
+          <td style="padding: 6px 0;">📖 <a href="${APP_URL}/internships" style="color: #059669; text-decoration: none;">Internship Program</a></td>
         </tr>
       </table>
     </div>
 
     <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-      If you have any questions regarding the documents or onboarding process,
-      please do not hesitate to reach out to us at
-      <a href="mailto:${ADMIN_EMAIL}" style="color: #059669;">${ADMIN_EMAIL}</a>.
+      If you have any questions about the documents, the signing process, or what to expect next, please don't hesitate to reach out to us at <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 600;">${ADMIN_EMAIL}</a>. We're here to help!
     </p>
 
     <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
-      Welcome to the team! We look forward to achieving great things together. 🚀
+      Welcome to the team! We are thrilled to have you on board and can't wait to achieve great things together. 🚀
     </p>
 
-    <p style="font-size: 14px; color: #64748b; line-height: 1.7;">
-      Warm regards,<br/>
-      <strong style="font-size: 15px; color: #059669;">Mohammad Miran Khan</strong><br/>
-      <span style="color: #94a3b8;">Founder & CEO, Growlancer</span>
-    </p>`
-      return baseEmailHtml('Congratulations — You\'re Selected! 🎉', body)
+    <!-- SIGNATURE BLOCK -->
+    <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 4px;">
+        With warm regards,
+      </p>
+      <p style="font-size: 16px; color: #059669; margin: 0 0 2px; font-weight: 700;">
+        Mohammad Miran Khan
+      </p>
+      <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">
+        Founder & CEO, Growlancer
+      </p>
+      <table style="border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">
+            <p style="font-size: 11px; color: #166534; margin: 0;">
+              🌐 ${APP_URL} &nbsp;|&nbsp; 📧 ${ADMIN_EMAIL}
+            </p>
+          </td>
+        </tr>
+      </table>
+    </div>`
+  return baseEmailHtml('Congratulations — You\'re Selected! 🎉', body)
 }
 
 // TODO(review): The document URL links (offerLetterUrl, ndaUrl, internshipLetterUrl) in the selected email
@@ -1046,7 +1142,7 @@ Deno.serve(async (req) => {
     // ─── PATCH: Update application status OR send email ───────────────────
     if (method === 'PATCH') {
       const body = await req.json()
-      const { application_id, status: newStatus, notes, google_meet_link, interview_time, send_email_only } = body
+      const { application_id, status: newStatus, notes, google_meet_link, interview_time, send_email_only, offer_letter_url, nda_url, internship_letter_url } = body
 
       if (!application_id) {
         return new Response(JSON.stringify({ error: 'application_id is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -1082,6 +1178,10 @@ Deno.serve(async (req) => {
         const effectiveMeetLink = google_meet_link !== undefined ? google_meet_link : currentApp.google_meet_link
         const effectiveTime = interview_time !== undefined ? interview_time : currentApp.interview_time
 
+        const effectiveOfferUrl = offer_letter_url !== undefined ? offer_letter_url : currentApp.offer_letter_url;
+        const effectiveNdaUrl = nda_url !== undefined ? nda_url : currentApp.nda_url;
+        const effectiveInternshipUrl = internship_letter_url !== undefined ? internship_letter_url : currentApp.internship_letter_url;
+
         let statusEmailSent = false
 
         if (['shortlisted', 'interview_scheduled', 'selected', 'rejected'].includes(statusToSend)) {
@@ -1090,9 +1190,9 @@ Deno.serve(async (req) => {
             currentApp.email,
             currentApp.role_name,
             statusToSend,
-            currentApp.offer_letter_url || null,
-            currentApp.nda_url || null,
-            currentApp.internship_letter_url || null,
+            effectiveOfferUrl || null,
+            effectiveNdaUrl || null,
+            effectiveInternshipUrl || null,
             effectiveMeetLink || null,
             effectiveTime || null,
           )

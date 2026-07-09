@@ -258,6 +258,11 @@ export function AdminInternshipsPage() {
       const googleMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
       const interviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
 
+      // Pass document URLs for 'selected' status to ensure email has the latest docs
+      const offerLetterUrl = app.offer_letter_url || undefined;
+      const ndaUrl = app.nda_url || undefined;
+      const internshipLetterUrl = app.internship_letter_url || undefined;
+
       const { data, error } = await supabase.functions.invoke('internship-applications', {
         method: 'PATCH',
         body: {
@@ -266,6 +271,9 @@ export function AdminInternshipsPage() {
           send_email_only: true,
           google_meet_link: googleMeetLink,
           interview_time: interviewTime || undefined,
+          offer_letter_url: offerLetterUrl,
+          nda_url: ndaUrl,
+          internship_letter_url: internshipLetterUrl,
         },
       });
 
