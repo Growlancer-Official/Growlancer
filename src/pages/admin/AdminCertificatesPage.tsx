@@ -371,7 +371,7 @@ function IssueCertificateModal({ onClose, onIssued, preselectedUser, preselected
                 className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20" />
             </div>
           </div>
-        )        {/* Auto Email Checkbox */}
+        )}        {/* Auto Email Checkbox */}
         <label className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer select-none transition-colors hover:bg-white/[0.02]" 
           style={{ background: autoEmail ? 'rgba(5, 150, 105, 0.05)' : 'rgba(255,255,255,0.02)', border: autoEmail ? '1px solid rgba(5, 150, 105, 0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
           <input type="checkbox" checked={autoEmail} onChange={e => setAutoEmail(e.target.checked)}

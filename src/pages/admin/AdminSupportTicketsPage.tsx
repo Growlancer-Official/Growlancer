@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
-import { adminUpdate } from '../../lib/adminDataProxy';
+import { adminUpdate, adminInsert } from '../../lib/adminDataProxy';
 import {
   Search, Loader2, RefreshCw, MessageSquare, User, Clock,
-  Headphones,
+  Headphones, Send, X,
 } from 'lucide-react';
 
 interface SupportTicket {
@@ -37,6 +37,9 @@ export function AdminSupportTicketsPage() {
   const [ticketMessages, setTicketMessages] = useState<TicketMessage[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -87,6 +90,44 @@ export function AdminSupportTicketsPage() {
   const handleSelectTicket = async (ticket: SupportTicket) => {
     setSelectedTicket(ticket);
     await fetchTicketMessages(ticket.id);
+  };
+
+  const handleSendReply = async () => {
+    if (!replyText.trim() || !selectedTicket) return;
+    setSendingReply(true);
+    try {
+      // Get admin's actual user ID so replies show as "Admin" not "User"
+      const { data: { user } } = await supabase.auth.getUser();
+      const adminUserId = user?.id || selectedTicket.user_id;
+
+      const result = await adminInsert('ticket_messages', {
+        ticket_id: selectedTicket.id,
+        user_id: adminUserId,
+        message: replyText.trim(),
+        is_internal: false,
+      });
+
+      if ((result as { error?: string }).error) throw new Error((result as { error?: string }).error!);
+
+      setReplyText('');
+      await fetchTicketMessages(selectedTicket.id);
+
+      // Auto-scroll to bottom after new message
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } catch (err) {
+      console.error('Error sending reply:', err);
+    } finally {
+      setSendingReply(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      handleSendReply();
+    }
   };
 
   const handleStatusChange = async (ticketId: string, newStatus: string) => {
@@ -277,7 +318,7 @@ export function AdminSupportTicketsPage() {
                 </div>
 
                 {/* Messages */}
-                <div className="p-6">
+                <div className="p-6 pb-2">
                   <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Conversation</h3>
                   {loadingMessages ? (
                     <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-slate-500" /></div>
@@ -285,19 +326,56 @@ export function AdminSupportTicketsPage() {
                     <p className="text-sm text-slate-500 text-center py-6">No messages yet on this ticket</p>
                   ) : (
                     <div className="space-y-4">
-                      {ticketMessages.map(msg => (
-                        <div key={msg.id} className="p-4 rounded-xl" style={{ background: msg.is_internal ? 'rgba(245,158,11,0.05)' : 'rgba(255,255,255,0.03)', border: msg.is_internal ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
-                          <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
-                            <span className="text-[10px] font-bold text-slate-500">
-                              {msg.is_internal ? '🔒 Internal Note' : `User #${msg.user_id.slice(0, 8)}`}
-                            </span>
-                            <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleString()}</span>
+                      {ticketMessages.map(msg => {
+                        return (
+                          <div key={msg.id} className="p-4 rounded-xl" style={{ background: msg.is_internal ? 'rgba(245,158,11,0.05)' : 'rgba(255,255,255,0.03)', border: msg.is_internal ? '1px solid rgba(245,158,11,0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
+                            <div className="flex items-center justify-between mb-2 flex-wrap gap-1">
+                              <span className="text-[10px] font-bold flex items-center gap-1" style={{ color: msg.is_internal ? '#f59e0b' : '#94a3b8' }}>
+                                {msg.is_internal ? (
+                                  <><X className="w-3 h-3" /> Internal Note</>
+                                ) : msg.user_id === selectedTicket?.user_id ? (
+                                  <><User className="w-3 h-3" /> User</>
+                                ) : (
+                                  <><Headphones className="w-3 h-3" /> Admin</>
+                                )}
+                              </span>
+                              <span className="text-[10px] text-slate-500">{new Date(msg.created_at).toLocaleString()}</span>
+                            </div>
+                            <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{msg.message}</p>
                           </div>
-                          <p className="text-sm text-slate-300 whitespace-pre-wrap break-words">{msg.message}</p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
+                  {/* Always render scroll anchor outside the conditional */}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Reply Input */}
+                <div className="px-6 pb-6 pt-2 shrink-0">
+                  <div className="flex items-end gap-3 p-3 rounded-xl" style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <textarea
+                      value={replyText}
+                      onChange={e => setReplyText(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      placeholder="Type your reply... (Ctrl+Enter to send)"
+                      rows={3}
+                      className="flex-1 bg-transparent text-sm text-white placeholder-slate-600 resize-none focus:outline-none min-h-[44px] max-h-[120px]"
+                      style={{ scrollbarWidth: 'thin' }}
+                    />
+                    <button
+                      onClick={handleSendReply}
+                      disabled={sendingReply || !replyText.trim()}
+                      className="flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-all shrink-0"
+                    >
+                      {sendingReply ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Send className="w-3.5 h-3.5" />
+                      )}
+                      Send
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

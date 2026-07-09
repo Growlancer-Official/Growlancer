@@ -27,6 +27,16 @@ function getCorsHeaders(origin: string | null) {
   }
 }
 
+// ─── HTML Escape Helper ─────────────────────────────────────────────────
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 /** Rate limit failed admin auth attempts per IP (prevents brute-force of admin endpoints) */
 async function checkAuthRateLimit(
   supabaseClient: any,
@@ -56,6 +66,8 @@ async function checkAuthRateLimit(
 
   return true
 }
+
+const _eh = escapeHtml; // shorthand
 
 /**
  * Verify the caller is an authenticated admin using the standard Supabase Auth session.
@@ -291,18 +303,21 @@ Deno.serve(async (req) => {
 
     // ─── POST: send_welcome_email (PUBLIC — used after signup) ────
     if (req.method === 'POST' && action === 'send_welcome_email') {
-      const { recipient_email, recipient_name } = body;
+      const { recipient_email, recipient_name: rawRecipientName } = body;
 
-      if (!recipient_email || !recipient_name) {
+      if (!recipient_email || !rawRecipientName) {
         return new Response(JSON.stringify({ success: false, error: 'recipient_email and recipient_name are required' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
+      const recipient_name = _eh(rawRecipientName);
+
       const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
       const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
-      const subject = `Welcome to Growlancer, ${recipient_name}! Your AI-powered journey begins now 🚀`;
+      const rawName = rawRecipientName; // for subject line (plain text)
+      const subject = `Welcome to Growlancer, ${rawName}! Your AI-powered journey begins now 🚀`;
 
       const bodyHtml = `
 <!DOCTYPE html>
@@ -517,7 +532,11 @@ Deno.serve(async (req) => {
 
     // ─── POST: send_certificate_email ──────────────────────────────
     if (req.method === 'POST' && action === 'send_certificate_email') {
-      const { certificate_id, recipient_email, recipient_name, certificate_type, role_name, level, verification_code, performance_summary, skills_demonstrated, certificate_url } = body;
+      const { certificate_id, recipient_email, recipient_name: rawRecipientName, certificate_type, role_name: rawRoleName, level, verification_code, performance_summary: rawPerformanceSummary, skills_demonstrated: rawSkills, certificate_url } = body;
+      const recipient_name = _eh(rawRecipientName || '');
+      const role_name = _eh(rawRoleName || '');
+      const performance_summary = _eh(rawPerformanceSummary || '');
+      const skills_demonstrated = rawSkills; // JSON array — safe
 
       if (!certificate_id || !recipient_email || !recipient_name) {
         return new Response(JSON.stringify({ success: false, error: 'certificate_id, recipient_email, and recipient_name are required' }), {
