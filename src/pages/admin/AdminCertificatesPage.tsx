@@ -115,6 +115,7 @@ function IssueCertificateModal({ onClose, onIssued, preselectedUser, preselected
   const [issuing, setIssuing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [autoEmail, setAutoEmail] = useState(true);  // Auto-send email after issue
 
   const searchUsers = useCallback(async (q: string) => {
     if (q.length < 2) { setUsers([]); return; }
@@ -187,8 +188,35 @@ function IssueCertificateModal({ onClose, onIssued, preselectedUser, preselected
         },
       });
       if (result.success) {
-        setSuccess(`${certType === 'lor' ? 'LOR' : 'Certificate'} issued to ${selectedUser.name}! Code: ${result.certificate?.verification_code}`);
-        setTimeout(() => { onIssued(); onClose(); }, 2000);
+        const issuedCert = result.certificate;
+        setSuccess(`${certType === 'lor' ? 'LOR' : 'Certificate'} issued to ${selectedUser.name}! Code: ${issuedCert?.verification_code}`);
+
+        // Auto-send email if checkbox is checked
+        if (autoEmail && issuedCert) {
+          try {
+            const emailResult = await sendCertificateEmail({
+              certificateId: issuedCert.id,
+              recipientEmail: selectedUser.email,
+              recipientName: selectedUser.name,
+              certificateType: certType,
+              roleName: skill.trim(),
+              level,
+              verificationCode: issuedCert.verification_code || '',
+              certificateUrl: uploadedUrl,
+              performanceSummary: performanceSummary || '',
+              skillsDemonstrated: skillsDemonstrated ? skillsDemonstrated.split(',').map(s => s.trim()) : [],
+            });
+            if (emailResult.success) {
+              setSuccess(prev => `${prev} ✅ Email sent to ${selectedUser.name}!`);
+            } else {
+              setSuccess(prev => `${prev} ⚠️ Email failed: ${emailResult.error}`);
+            }
+          } catch {
+            setSuccess(prev => `${prev} ⚠️ Email send failed`);
+          }
+        }
+
+        setTimeout(() => { onIssued(); onClose(); }, 2500);
       } else {
         setError(result.error || 'Failed to issue certificate');
       }
@@ -343,11 +371,21 @@ function IssueCertificateModal({ onClose, onIssued, preselectedUser, preselected
                 className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20" />
             </div>
           </div>
-        )}
+        )        {/* Auto Email Checkbox */}
+        <label className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer select-none transition-colors hover:bg-white/[0.02]" 
+          style={{ background: autoEmail ? 'rgba(5, 150, 105, 0.05)' : 'rgba(255,255,255,0.02)', border: autoEmail ? '1px solid rgba(5, 150, 105, 0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
+          <input type="checkbox" checked={autoEmail} onChange={e => setAutoEmail(e.target.checked)}
+            className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/20 cursor-pointer" />
+          <div className="flex-1">
+            <p className="text-xs font-bold text-slate-300">Send Email Automatically</p>
+            <p className="text-[10px] text-slate-500">Email the {certType === 'lor' ? 'LOR' : 'certificate'} to {selectedUser?.name || 'recipient'} immediately after issuing</p>
+          </div>
+          <Send className={`w-4 h-4 ${autoEmail ? 'text-emerald-400' : 'text-slate-600'}`} />
+        </label>
 
         <button onClick={handleIssue} disabled={issuing || !selectedUser || !skill.trim()}
           className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
-          {issuing ? <><Loader2 className="w-4 h-4 animate-spin" /> Issuing...</> : <><Award className="w-4 h-4" /> Issue {certType === 'lor' ? 'LOR' : 'Certificate'}</>}
+          {issuing ? <><Loader2 className="w-4 h-4 animate-spin" /> {autoEmail ? 'Issuing & Sending Email...' : 'Issuing...'}</> : <><Award className="w-4 h-4" /> Issue {certType === 'lor' ? 'LOR' : 'Certificate'}{autoEmail ? ' & Send Email' : ''}</>}
         </button>
       </div>
     </div>
