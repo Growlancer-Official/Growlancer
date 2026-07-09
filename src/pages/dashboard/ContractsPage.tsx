@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronRight, Clock, DollarSign, FileText, Handshake, Loader2, Shield, ThumbsUp, User, Wallet,  } from 'lucide-react';
-import { Pagination } from '../../components/Pagination';
+import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, DollarSign, FileText, Handshake, Loader2, Shield, ThumbsUp, User, Wallet,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, realtimeChannels } from '../../lib/supabase';
@@ -90,10 +89,12 @@ export function ContractsPage() {
   const { user } = useAuth();
   const [contracts, setContracts] = useState<ContractWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
   const [selectedContract, setSelectedContract] = useState<ContractWithDetails | null>(null);
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 20;
+  const pageRef = useRef(0);
 
   // Escrow balances keyed by contract ID
   const [escrowBalances, setEscrowBalances] = useState<Record<string, EscrowState>>({});
@@ -103,30 +104,41 @@ export function ContractsPage() {
   const [disputeReason, setDisputeReason] = useState<string>('');
   const [disputeModal, setDisputeModal] = useState<{ contractId: string; idx: number } | null>(null);
 
-  useEffect(() => {
+  const fetchContracts = useCallback(async (loadMore = false) => {
     if (!user) return;
 
-    const fetchContracts = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('contracts')
-          .select(`
-            *,
-            projects!inner(*),
-            profiles!contracts_client_id_fkey(*)
-          `)
-          .eq('freelancer_id', user.id)
-          .order('created_at', { ascending: false });
+    try {
+      const currentPage = pageRef.current;
+      const from = loadMore ? (currentPage + 1) * pageSize : 0;
+      const to = from + pageSize - 1;
 
-        if (error) throw error;
+      const { data, error } = await supabase
+        .from('contracts')
+        .select(`
+          *,
+          projects!inner(*),
+          profiles!contracts_client_id_fkey(*)
+        `)
+        .eq('freelancer_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-        if (data) {
-          setContracts(data as unknown as ContractWithDetails[]);
+      if (error) throw error;
 
-          // Load escrow balances for each contract
+      if (data) {
+        const newContracts = data as unknown as ContractWithDetails[];
+
+        if (loadMore) {
+          setContracts(prev => [...prev, ...newContracts]);
+          pageRef.current = currentPage + 1;
+        } else {
+          setContracts(newContracts);
+          pageRef.current = 0;
+
+          // Load escrow balances only on initial load
           const balanceMap: Record<string, EscrowState> = {};
           await Promise.all(
-            (data as unknown as ContractWithDetails[]).map(async (contract) => {
+            newContracts.map(async (contract) => {
               const result = await milestoneService.getEscrowBalance(contract.id);
               if (result.success && result.balance) {
                 balanceMap[contract.id] = { loaded: true, balance: result.balance };
@@ -138,12 +150,36 @@ export function ContractsPage() {
           setEscrowBalances(balanceMap);
         }
 
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching contracts:', error);
-        setLoading(false);
+        // Load escrow balances for new items if loading more
+        if (loadMore) {
+          const balanceMap: Record<string, EscrowState> = {};
+          await Promise.all(
+            newContracts.map(async (contract) => {
+              const result = await milestoneService.getEscrowBalance(contract.id);
+              if (result.success && result.balance) {
+                balanceMap[contract.id] = { loaded: true, balance: result.balance };
+              } else {
+                balanceMap[contract.id] = { loaded: true, error: result.error };
+              }
+            })
+          );
+          setEscrowBalances(prev => ({ ...prev, ...balanceMap }));
+        }
+
+        setHasMore(newContracts.length === pageSize);
       }
-    };
+
+      setLoading(false);
+      setLoadingMore(false);
+    } catch (error) {
+      console.error('Error fetching contracts:', error);
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [user, pageSize]);
+
+  useEffect(() => {
+    if (!user) return;
 
     // Add timeout to prevent infinite loading - reduced to 3 seconds for faster UX
     const timeoutId = setTimeout(() => {
@@ -171,7 +207,6 @@ export function ContractsPage() {
                 c.id === payload.new.id ? { ...c, ...payload.new } : c
               )
             );
-            // Also refresh escrow balance
             milestoneService.getEscrowBalance(payload.new.id).then((result) => {
               if (result.success && result.balance) {
                 setEscrowBalances(prev => ({
@@ -181,7 +216,6 @@ export function ContractsPage() {
               }
             });
           } else if (payload.eventType === 'INSERT') {
-            // Fetch complete contract data
             supabase
               .from('contracts')
               .select(`
@@ -194,7 +228,6 @@ export function ContractsPage() {
               .then(({ data }) => {
                 if (data) {
                   setContracts(prev => [data as unknown as ContractWithDetails, ...prev]);
-                  // Load escrow balance for new contract
                   milestoneService.getEscrowBalance(payload.new.id).then((result) => {
                     if (result.success && result.balance) {
                       setEscrowBalances(prev => ({
@@ -214,7 +247,7 @@ export function ContractsPage() {
       clearTimeout(timeoutId);
       channel.unsubscribe();
     };
-  }, [user, loading]);
+  }, [user, fetchContracts]);
 
   const filteredContracts = contracts.filter((c) => {
     if (activeTab === 'all') return true;
@@ -369,7 +402,7 @@ export function ContractsPage() {
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200">
         <button
-          onClick={() => { setActiveTab('active'); setPage(1); }}
+          onClick={() => setActiveTab('active')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'active'
               ? 'text-emerald-600'
@@ -387,7 +420,7 @@ export function ContractsPage() {
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('completed'); setPage(1); }}
+          onClick={() => setActiveTab('completed')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'completed'
               ? 'text-emerald-600'
@@ -405,7 +438,7 @@ export function ContractsPage() {
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('all'); setPage(1); }}
+          onClick={() => setActiveTab('all')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'all'
               ? 'text-emerald-600'
@@ -423,9 +456,7 @@ export function ContractsPage() {
       {filteredContracts.length > 0 ? (
         <>
           <div className="space-y-4">
-            {filteredContracts
-              .slice((page - 1) * pageSize, page * pageSize)
-              .map((contract) => {
+            {filteredContracts.map((contract) => {
             const contractMilestones = milestones(contract.milestones);
             const progress = getMilestoneProgress(contract.milestones);
             const escrowState = escrowBalances[contract.id];
@@ -678,14 +709,23 @@ export function ContractsPage() {
                 </div>
               </div>
             );
-          })}
+          }            )}
           </div>
-          <Pagination
-            currentPage={page}
-            totalItems={filteredContracts.length}
-            pageSize={pageSize}
-            onPageChange={setPage}
-          />
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={() => { setLoadingMore(true); fetchContracts(true); }}
+                disabled={loadingMore}
+                className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
+                ) : (
+                  <><ChevronDown className="w-4 h-4" /> Load More Contracts</>
+                )}
+              </button>
+            </div>
+          )}
         </>
       ) : (
         <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">

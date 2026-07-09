@@ -1,39 +1,33 @@
 -- Admin Auth Rebuild
 -- Uses real Supabase Auth instead of custom prelogin table
 -- 1. Adds is_admin column to profiles
--- 2. Creates admin signup RPC with secret code validation
+-- 2. Creates grant_admin_role RPC (no secret code — code validation happens in edge function)
 -- 3. Creates admin_users table for audit
+--
+-- 🔴 SECURITY: The admin_signup secret code is NOT stored in this migration.
+--    It's set as an Edge Function environment variable: ADMIN_SIGNUP_SECRET
+--    in the Supabase project dashboard. The admin-signup edge function
+--    reads it via Deno.env.get() and calls grant_admin_role() after verification.
 
 -- Add is_admin column to profiles
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false;
 
--- Create admin signup RPC
--- Validates a secret admin code, then marks the user as admin
-CREATE OR REPLACE FUNCTION public.admin_signup(
-  p_user_id UUID,
-  p_secret_code TEXT
-)
+-- ============================================================
+-- grant_admin_role: Called ONLY by the admin-signup edge function
+-- (using service_role key). No secret code check here — that
+-- happens in the edge function via Deno.env.get('ADMIN_SIGNUP_SECRET').
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.grant_admin_role(p_user_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_secret_hash TEXT;
   v_result JSONB;
 BEGIN
-  -- 🔴 Set your secret code in Supabase Dashboard via SQL Editor
-  -- Never commit the real code to a public repo.
-  IF p_secret_code <> 'YOUR_SECRET_CODE_HERE' THEN
-    RETURN jsonb_build_object(
-      'success', false,
-      'error', 'Invalid admin secret code'
-    );
-  END IF;
-
   -- Auto-create profile if it doesn't exist yet (handles trigger race condition)
-  -- ON CONFLICT DO NOTHING prevents crash if the trigger fires after our INSERT
   INSERT INTO public.profiles (id, email, name, role, is_admin)
   SELECT p_user_id, '', 'Admin', 'admin', false
   WHERE NOT EXISTS (SELECT 1 FROM public.profiles WHERE id = p_user_id)
@@ -68,8 +62,12 @@ BEGIN
 END;
 $$;
 
--- Grant execute to authenticated users (they need to call this after signup)
-GRANT EXECUTE ON FUNCTION public.admin_signup TO authenticated;
+-- Only service_role (edge function) should call grant_admin_role
+GRANT EXECUTE ON FUNCTION public.grant_admin_role TO service_role;
+REVOKE EXECUTE ON FUNCTION public.grant_admin_role FROM authenticated, anon;
+
+-- Drop the old admin_signup RPC (had hardcoded secret code — vulnerable)
+DROP FUNCTION IF EXISTS public.admin_signup(UUID, TEXT);
 
 -- Create admin_users audit table
 CREATE TABLE IF NOT EXISTS public.admin_users (

@@ -76,18 +76,22 @@ export function AdminSignupPage() {
       // Wait a moment for the profile trigger to create the profile
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // 2. Call the admin_signup RPC with the secret code
-      const { data: rpcResult, error: rpcError } = await supabase.rpc('admin_signup', {
-        p_user_id: authData.user.id,
-        p_secret_code: adminCode.trim(),
+      // 2. Call the admin-signup edge function (verifies code against server env var)
+      const { data: fnResult, error: fnError } = await supabase.functions.invoke('admin-signup', {
+        method: 'POST',
+        body: {
+          action: 'verify_admin_signup',
+          user_id: authData.user.id,
+          secret_code: adminCode.trim(),
+        },
       });
 
-      const result = rpcResult as { success?: boolean; error?: string };
+      const result = fnResult as { success?: boolean; error?: string };
 
-      if (rpcError) {
-        // RPC failed — sign out and show error
+      if (fnError) {
+        // Edge function failed — sign out and show error
         await supabase.auth.signOut();
-        setError(rpcError.message);
+        setError(fnError.message);
         return;
       }
 

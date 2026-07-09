@@ -1,7 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, CheckCircle2, Clock, FileText, Loader2, MessageSquare, User, XCircle,  } from 'lucide-react';
-import { Pagination } from '../../components/Pagination';
+import { ArrowRight, Calendar, CheckCircle2, ChevronDown, Clock, FileText, Loader2, MessageSquare, User, XCircle,  } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
@@ -19,48 +18,67 @@ export function ProposalsPage() {
   const { user } = useAuth();
   const [proposals, setProposals] = useState<ProposalWithProject[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'rejected'>('pending');
   const [withdrawingProposal, setWithdrawingProposal] = useState<string | null>(null);
   const [withdrawConfirm, setWithdrawConfirm] = useState<string | null>(null);
-  const [page, setPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 20;
+  const pageRef = useRef(0);
   const toast = useToast();
   const loadingRef = useRef(loading);
   loadingRef.current = loading;
 
-  useEffect(() => {
+  const fetchProposals = useCallback(async (loadMore = false) => {
     if (!user) return;
 
-    const fetchProposals = async () => {
-      try {
-        const { data, error } = await tables.proposals()
-          .select(`
+    try {
+      const currentPage = pageRef.current;
+      const from = loadMore ? (currentPage + 1) * pageSize : 0;
+      const to = from + pageSize - 1;
+
+      const { data, error } = await tables.proposals()
+        .select(`
+          *,
+          project:projects(
             *,
-            project:projects(
-              *,
-              client:profiles!projects_client_id_fkey(id, name, email, avatar, deleted_at)
-            )
-          `)
-          .eq('freelancer_id', user.id)
-          .order('created_at', { ascending: false });
+            client:profiles!projects_client_id_fkey(id, name, email, avatar, deleted_at)
+          )
+        `)
+        .eq('freelancer_id', user.id)
+        .order('created_at', { ascending: false })
+        .range(from, to);
 
-        if (error) throw error;
+      if (error) throw error;
 
-        if (data) {
-          // Filter out proposals for projects belonging to deleted clients
-          const filtered = (data as unknown as ProposalWithProject[]).filter(p => {
-            const client = p.project?.client as { deleted_at?: string | null } | null;
-            return client && !client.deleted_at;
-          });
+      if (data) {
+        // Filter out proposals for projects belonging to deleted clients
+        const filtered = (data as unknown as ProposalWithProject[]).filter(p => {
+          const client = p.project?.client as { deleted_at?: string | null } | null;
+          return client && !client.deleted_at;
+        });
+
+        if (loadMore) {
+          setProposals(prev => [...prev, ...filtered]);
+          pageRef.current = currentPage + 1;
+        } else {
           setProposals(filtered);
+          pageRef.current = 0;
         }
-
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching proposals:', error);
-        setLoading(false);
+        setHasMore(filtered.length === pageSize);
       }
-    };
+
+      setLoading(false);
+      setLoadingMore(false);
+    } catch (error) {
+      console.error('Error fetching proposals:', error);
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  }, [user, pageSize]);
+
+  useEffect(() => {
+    if (!user) return;
 
     // Add timeout to prevent infinite loading - reduced to 3 seconds for faster UX
     const timeoutId = setTimeout(() => {
@@ -90,7 +108,7 @@ export function ProposalsPage() {
       clearTimeout(timeoutId);
       void channel.unsubscribe();
     };
-  }, [user]);
+  }, [user, fetchProposals]);
 
   const handleWithdraw = async (proposalId: string) => {
     setWithdrawingProposal(proposalId);
@@ -221,7 +239,7 @@ export function ProposalsPage() {
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200">
         <button
-          onClick={() => { setActiveTab('pending'); setPage(1); }}
+          onClick={() => setActiveTab('pending')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'pending'
               ? 'text-emerald-600'
@@ -239,7 +257,7 @@ export function ProposalsPage() {
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('accepted'); setPage(1); }}
+          onClick={() => setActiveTab('accepted')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'accepted'
               ? 'text-emerald-600'
@@ -257,7 +275,7 @@ export function ProposalsPage() {
           )}
         </button>
         <button
-          onClick={() => { setActiveTab('rejected'); setPage(1); }}
+          onClick={() => setActiveTab('rejected')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'rejected'
               ? 'text-emerald-600'
@@ -280,9 +298,7 @@ export function ProposalsPage() {
       {filteredProposals.length > 0 ? (
         <>
           <div className="space-y-4">
-            {filteredProposals
-              .slice((page - 1) * pageSize, page * pageSize)
-              .map((proposal) => {
+            {filteredProposals.map((proposal) => {
             const daysSince = getDaysSinceSubmitted(proposal.created_at);
             
             return (
@@ -408,12 +424,21 @@ export function ProposalsPage() {
             );
           })}
           </div>
-          <Pagination
-            currentPage={page}
-            totalItems={filteredProposals.length}
-            pageSize={pageSize}
-            onPageChange={setPage}
-          />
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <button
+                onClick={() => { setLoadingMore(true); fetchProposals(true); }}
+                disabled={loadingMore}
+                className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
+                ) : (
+                  <><ChevronDown className="w-4 h-4" /> Load More Proposals</>
+                )}
+              </button>
+            </div>
+          )}
         </>
       ) : (
         <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">
