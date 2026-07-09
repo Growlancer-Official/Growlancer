@@ -1063,9 +1063,25 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Application not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // ─── EMAIL-ONLY MODE: send email without changing anything ──────────
+      // ─── EMAIL-ONLY MODE: send email with optional link/time save ──────
       if (send_email_only === true) {
         const statusToSend = newStatus || currentApp.status
+
+        // Save meet link/time to DB if provided (admin might not have saved them yet)
+        const emailSaveData: Record<string, unknown> = {}
+        if (google_meet_link !== undefined) emailSaveData.google_meet_link = google_meet_link
+        if (interview_time !== undefined) emailSaveData.interview_time = interview_time
+        if (Object.keys(emailSaveData).length > 0) {
+          await supabaseClient
+            .from('internship_applications')
+            .update(emailSaveData)
+            .eq('id', application_id)
+        }
+
+        // Use provided values if given, otherwise fall back to DB (which may have been just updated)
+        const effectiveMeetLink = google_meet_link !== undefined ? google_meet_link : currentApp.google_meet_link
+        const effectiveTime = interview_time !== undefined ? interview_time : currentApp.interview_time
+
         let statusEmailSent = false
 
         if (['shortlisted', 'interview_scheduled', 'selected', 'rejected'].includes(statusToSend)) {
@@ -1077,8 +1093,8 @@ Deno.serve(async (req) => {
             currentApp.offer_letter_url || null,
             currentApp.nda_url || null,
             currentApp.internship_letter_url || null,
-            currentApp.google_meet_link || null,
-            currentApp.interview_time || null,
+            effectiveMeetLink || null,
+            effectiveTime || null,
           )
           console.log(`Email-only mode: ${statusToSend} email sent: ${statusEmailSent}`)
         }

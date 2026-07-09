@@ -254,12 +254,18 @@ export function AdminInternshipsPage() {
 
     setActionLoading(`email-${id}`);
     try {
+      // Always save pending meet link & time to DB before sending email
+      const googleMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
+      const interviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
+
       const { data, error } = await supabase.functions.invoke('internship-applications', {
         method: 'PATCH',
         body: {
           application_id: id,
           status: app.status,
           send_email_only: true,
+          google_meet_link: googleMeetLink,
+          interview_time: interviewTime || undefined,
         },
       });
 
@@ -268,6 +274,19 @@ export function AdminInternshipsPage() {
         toast.error('Email Failed', `Could not send "${statusLabel}" email. Check Brevo settings.`);
       } else {
         toast.success('Email Sent', `"${statusLabel}" email delivered to ${app.full_name}.`);
+      }
+
+      // Update local state so meet link/time persist in UI
+      if (googleMeetLink || interviewTime) {
+        setApplications(prev => prev.map(a =>
+          a.id === id ? {
+            ...a,
+            google_meet_link: googleMeetLink ?? a.google_meet_link,
+            interview_time: interviewTime || a.interview_time,
+          } : a
+        ));
+        setMeetLinkInput(prev => { const n = { ...prev }; delete n[id]; return n; });
+        setInterviewTimeInput(prev => { const n = { ...prev }; delete n[id]; return n; });
       }
 
       setEmailLogs(prev => ({
@@ -315,18 +334,22 @@ export function AdminInternshipsPage() {
           .eq('id', id);
         toast.error('Status Update Failed', 'Status was not updated. Please try again.');
       } else {
-        // If status changed successfully AND email requested, send email now
-        if (sendEmail && isRealStatusChange && app) {
-          try {
-            const emailResult = await supabase.functions.invoke('internship-applications', {
-              method: 'PATCH',
-              body: {
-                application_id: id,
-                status,
-                send_email_only: true,
-              },
-            });
-            emailSent = emailResult.data?.status_email_sent === true;
+        // If status changed successfully AND email requested, send email now          if (sendEmail && isRealStatusChange && app) {
+            // Also pass meet link/time to ensure email has them
+            const emailMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
+            const emailInterviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
+            try {
+              const emailResult = await supabase.functions.invoke('internship-applications', {
+                method: 'PATCH',
+                body: {
+                  application_id: id,
+                  status,
+                  send_email_only: true,
+                  google_meet_link: emailMeetLink,
+                  interview_time: emailInterviewTime || undefined,
+                },
+              });
+              emailSent = emailResult.data?.status_email_sent === true;
             if (emailSent) {
               setEmailLogs(prev => ({
                 ...prev,
