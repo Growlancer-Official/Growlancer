@@ -69,6 +69,34 @@ async function checkAuthRateLimit(
 
 const _eh = escapeHtml; // shorthand
 
+// ─── Shared Email Template Wrapper ───────────────────────────────────────
+function baseEmailHtml(title: string, bodyHtml: string): string {
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 20px 8px; margin: 0;">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
+  <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 28px 24px; text-align: center;">
+      <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0; word-break: break-word; word-wrap: break-word;">${title}</h1>
+    </div>
+    <!-- Body -->
+    <div style="padding: 28px 24px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+      ${bodyHtml}
+    </div>
+    <!-- Footer -->
+    <div style="padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+      <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
+      <p style="color: #cbd5e1; font-size: 10px; margin: 6px 0 0; word-break: break-word;">© 2026 Growlancer. All rights reserved.</p>
+    </div>
+  </div>
+  <!--[if mso]></td></tr></table><![endif]-->
+</body>
+</html>`
+}
+
 /**
  * Verify the caller is an authenticated admin using the standard Supabase Auth session.
  * Reads the Authorization: Bearer <token> header (sent automatically by supabase.functions.invoke),
@@ -319,140 +347,75 @@ Deno.serve(async (req) => {
       const rawName = rawRecipientName; // for subject line (plain text)
       const subject = `Welcome to Growlancer, ${rawName}! Your AI-powered journey begins now 🚀`;
 
-      const bodyHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-<body style="font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0fdf4; padding: 40px 20px; margin: 0;">
-  <!-- Main Container -->
-  <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.08);">
-    
-    <!-- Hero Section -->
-    <tr>
-      <td style="background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); padding: 48px 40px 40px; text-align: center;">
-        <img src="${APP_URL}/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 56px; width: auto; margin-bottom: 24px; border-radius: 14px;" />
-        <div style="width: 64px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; margin: 0 auto 24px;"></div>
-        <h1 style="color: #ffffff; font-size: 28px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.5px;">
-          Welcome to Growlancer! 🎉
-        </h1>
-        <p style="color: #a7f3d0; font-size: 16px; margin: 0; line-height: 1.5;">
-          Your email has been verified — your journey starts now
-        </p>
-      </td>
-    </tr>
+      const bodyContent = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          <img src="${APP_URL}/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 48px; width: auto; border-radius: 12px;" />
+          <div style="width: 48px; height: 3px; background: #059669; border-radius: 2px; margin: 16px auto 0;"></div>
+        </div>
 
-    <!-- Content Section -->
-    <tr>
-      <td style="padding: 40px;">
-        <p style="font-size: 16px; color: #0f172a; line-height: 1.8; margin: 0 0 8px;">
+        <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 8px;">
           Hey <strong style="color: #059669;">${recipient_name}</strong> 👋
         </p>
-        <p style="font-size: 15px; color: #475569; line-height: 1.8; margin: 0 0 24px;">
-          Thank you for joining <strong style="color: #0f172a;">Growlancer</strong> — India's first AI-powered freelancing marketplace.
+        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 24px;">
+          Thank you for joining <strong>Growlancer</strong> — India's first AI-powered freelancing marketplace.
           We're thrilled to have you on board!
         </p>
 
         <!-- Three Feature Cards -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
-          <tr>
-            <td style="padding: 20px; background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0;" valign="top">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td width="44" valign="top" style="padding-right: 16px;">
-                    <div style="width: 44px; height: 44px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 44px; font-size: 20px;">🔍</div>
-                  </td>
-                  <td valign="top">
-                    <h3 style="font-size: 15px; color: #065f46; font-weight: 700; margin: 0 0 4px;">Explore Projects</h3>
-                    <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">Discover freelance opportunities that match your unique skills and expertise.</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr><td style="height: 12px;"></td></tr>
-          <tr>
-            <td style="padding: 20px; background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0;" valign="top">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td width="44" valign="top" style="padding-right: 16px;">
-                    <div style="width: 44px; height: 44px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 44px; font-size: 20px;">🤖</div>
-                  </td>
-                  <td valign="top">
-                    <h3 style="font-size: 15px; color: #065f46; font-weight: 700; margin: 0 0 4px;">AI Matchmaking</h3>
-                    <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">Our AI connects you with the perfect projects — no more endless scrolling.</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-          <tr><td style="height: 12px;"></td></tr>
-          <tr>
-            <td style="padding: 20px; background: #f0fdf4; border-radius: 16px; border: 1px solid #bbf7d0;" valign="top">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td width="44" valign="top" style="padding-right: 16px;">
-                    <div style="width: 44px; height: 44px; background: #059669; border-radius: 12px; display: flex; align-items: center; justify-content: center; text-align: center; line-height: 44px; font-size: 20px;">⚡</div>
-                  </td>
-                  <td valign="top">
-                    <h3 style="font-size: 15px; color: #065f46; font-weight: 700; margin: 0 0 4px;">Secure Payments</h3>
-                    <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">Built-in escrow and milestone tracking — get paid reliably and on time.</p>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+        <div style="margin-bottom: 24px;">
+          ${[
+            { icon: '🔍', title: 'Explore Projects', desc: 'Discover freelance opportunities that match your unique skills and expertise.' },
+            { icon: '🤖', title: 'AI Matchmaking', desc: 'Our AI connects you with the perfect projects — no more endless scrolling.' },
+            { icon: '⚡', title: 'Secure Payments', desc: 'Built-in escrow and milestone tracking — get paid reliably and on time.' },
+          ].map((f, i) => `
+          <div style="margin-bottom: ${i < 2 ? '12px' : '0'}; padding: 16px 18px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px;">
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="width: 44px; vertical-align: top; font-size: 24px; text-align: center;">${f.icon}</td>
+                <td style="padding-left: 14px; vertical-align: top;">
+                  <h3 style="font-size: 14px; color: #065f46; font-weight: 700; margin: 0 0 3px;">${f.title}</h3>
+                  <p style="font-size: 13px; color: #475569; margin: 0; line-height: 1.5;">${f.desc}</p>
+                </td>
+              </tr>
+            </table>
+          </div>`).join('')}
+        </div>
 
         <!-- CTA Button -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
-          <tr>
-            <td align="center">
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background: #059669; border-radius: 14px; text-align: center; box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);">
-                    <a href="${APP_URL}/login" target="_blank" rel="noopener noreferrer"
-                       style="display: inline-block; padding: 16px 48px; font-size: 16px; font-weight: 700; color: #ffffff; text-decoration: none; line-height: 1;">
-                      Go to Dashboard 🚀
-                    </a>
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+        <div style="text-align: center; margin-bottom: 24px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+            <tr>
+              <td style="background: #059669; border-radius: 12px; padding: 0;">
+                <a href="${APP_URL}/login" target="_blank" rel="noopener noreferrer"
+                   style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
+                  Go to Dashboard 🚀
+                </a>
+              </td>
+            </tr>
+          </table>
+        </div>
 
         <!-- Pro Tip Box -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 28px;">
-          <tr>
-            <td style="padding: 20px; background: #fffbeb; border-radius: 16px; border: 1px solid #fde68a;">
-              <p style="font-size: 13px; color: #92400e; margin: 0; text-align: center; line-height: 1.6;">
-                💡 <strong>Pro Tip:</strong> Complete your profile and add your skills to unlock AI-powered project matches!
-              </p>
-            </td>
-          </tr>
-        </table>
+        <div style="margin-bottom: 24px; padding: 18px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 14px; text-align: center;">
+          <p style="font-size: 13px; color: #92400e; margin: 0; line-height: 1.6;">
+            💡 <strong>Pro Tip:</strong> Complete your profile and add your skills to unlock AI-powered project matches!
+          </p>
+        </div>
 
         <!-- Divider -->
-        <div style="width: 100%; height: 1px; background: #e2e8f0; margin-bottom: 24px;"></div>
+        <div style="width: 100%; height: 1px; background: #e2e8f0; margin-bottom: 20px;"></div>
 
         <!-- Quick Links -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
-          <tr>
-            <td align="center" style="padding: 0 8px;">
-              <a href="${APP_URL}/how-it-works" target="_blank" rel="noopener noreferrer"
-                 style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 12px;">How it Works</a>
-              <span style="color: #d1d5db; font-size: 13px;">|</span>
-              <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer"
-                 style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 12px;">Help Center</a>
-              <span style="color: #d1d5db; font-size: 13px;">|</span>
-              <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer"
-                 style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 12px;">Contact Us</a>
-            </td>
-          </tr>
-        </table>
+        <div style="text-align: center; margin-bottom: 20px;">
+          <a href="${APP_URL}/how-it-works" target="_blank" rel="noopener noreferrer"
+             style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 10px;">How it Works</a>
+          <span style="color: #d1d5db;">|</span>
+          <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer"
+             style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 10px;">Help Center</a>
+          <span style="color: #d1d5db;">|</span>
+          <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer"
+             style="font-size: 13px; color: #059669; text-decoration: none; font-weight: 600; padding: 0 10px;">Contact Us</a>
+        </div>
 
         <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 16px;">
           If you have any questions, simply reply to this email or visit our Help Center. We're here for you!
@@ -463,37 +426,22 @@ Deno.serve(async (req) => {
         </p>
 
         <!-- Signature -->
-        <div style="padding-top: 24px; border-top: 1px solid #e2e8f0;">
-          <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-            Warm regards,<br/>
-            <strong style="font-size: 16px; color: #059669;">Mohammad Miran Khan</strong><br/>
-            <span style="color: #94a3b8; font-size: 13px;">Founder & CEO, Growlancer</span>
-          </p>
-          <div style="margin-top: 16px;">
-            <p style="font-size: 12px; color: #94a3b8; margin: 0;">
-              📍 India · 🌐 AI-Powered Freelancing Marketplace
-            </p>
-          </div>
-        </div>
-      </td>
-    </tr>
+        <div style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
+          <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 2px;">Warm regards,</p>
+          <p style="font-size: 15px; color: #059669; margin: 0 0 2px; font-weight: 700; word-break: break-word;">Mohammad Miran Khan</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 10px; word-break: break-word;">Founder &amp; CEO, Growlancer</p>
+          <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">
+                <p style="font-size: 11px; color: #166534; margin: 0; word-break: break-word;">
+                  🌐 ${APP_URL} &nbsp;|&nbsp; 📧 growlancer.own@gmail.com
+                </p>
+              </td>
+            </tr>
+          </table>
+        </div>`;
 
-    <!-- Footer -->
-    <tr>
-      <td style="padding: 24px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-        <p style="color: #94a3b8; font-size: 12px; margin: 0 0 8px; line-height: 1.6;">
-          Growlancer — India's First AI-Powered Freelancing Marketplace<br/>
-          © 2026 Growlancer. All rights reserved.
-        </p>
-        <p style="color: #cbd5e1; font-size: 11px; margin: 0; line-height: 1.5;">
-          You received this email because you created an account on Growlancer.<br/>
-          If you didn't create this account, please ignore this email.
-        </p>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
+      const bodyHtml = baseEmailHtml('Welcome to Growlancer! 🎉', bodyContent);
 
       try {
         const res = await fetch('https://api.brevo.com/v3/smtp/email', {
