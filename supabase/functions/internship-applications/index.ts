@@ -160,19 +160,19 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 30px 10px; margin: 0;">
-  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="padding: 30px 10px;" align="center"><![endif]-->
-  <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 20px 8px; margin: 0;">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
+  <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 28px 24px; text-align: center;">
-      <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0; word-break: break-word;">${title}</h1>
+    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 24px 20px; text-align: center;">
+      <h1 style="color: white; font-size: 18px; font-weight: 700; margin: 0; word-break: break-word; word-wrap: break-word;">${title}</h1>
     </div>
     <!-- Body -->
-    <div style="padding: 28px 24px; word-wrap: break-word; overflow-wrap: break-word;">
+    <div style="padding: 24px 20px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
       ${bodyHtml}
     </div>
     <!-- Footer -->
-    <div style="padding: 20px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+    <div style="padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
       <p style="color: #94a3b8; font-size: 11px; margin: 0 0 4px; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
       <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">
         <a href="${APP_URL}" style="color: #059669; text-decoration: none;">${APP_URL}</a>
@@ -657,11 +657,11 @@ function buildSelectedEmailHtml(
           <p style="font-size: 14px; color: #92400e; margin: 0 0 12px; line-height: 1.5;">
             Please download each document, <strong>electronically sign or print & sign</strong> all pages, then email the signed copies back to us.
           </p>
-          <table style="margin: 0 auto; border-collapse: collapse;" cellpadding="0" cellspacing="0">
+          <table style="margin: 0 auto; border-collapse: collapse;" cellpadding="0" cellspacing="0" width="100%">
             <tr>
-              <td style="background: #059669; border-radius: 10px;">
+              <td style="background: #059669; border-radius: 10px; padding: 0;">
                 <a href="mailto:${ADMIN_EMAIL}?subject=Signed%20Documents%20-%20${encodeURIComponent(rawName)}&body=Dear%20Growlancer%20Team%2C%0D%0A%0D%0APlease%20find%20attached%20my%20signed%20documents%20for%20the%20${encodeURIComponent(rawRole)}%20position.%0D%0A%0D%0AThanks%2C%0D%0A${encodeURIComponent(rawName)}"
-                   style="display: inline-block; padding: 14px 36px; color: white; text-decoration: none; font-size: 15px; font-weight: 700;">
+                   style="display: block; padding: 12px 20px; color: white; text-decoration: none; font-size: 14px; font-weight: 700; word-break: break-word;">
                   📧 EMAIL SIGNED COPIES →
                 </a>
               </td>
@@ -686,13 +686,13 @@ function buildSelectedEmailHtml(
                 <p style="font-size: 15px; color: #0f172a; font-weight: 700; margin: 0 0 2px;">${doc.label}</p>
                 <p style="font-size: 12px; color: #64748b; margin: 0;">${doc.desc}</p>
               </td>
-              <td style="vertical-align: middle; text-align: right; width: 140px;">
+              <td style="vertical-align: middle; text-align: right; width: auto; min-width: 90px;">
                 ${doc.url ? `
                 <a href="${doc.url}"
-                   style="display: inline-block; padding: 12px 24px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 14px; white-space: nowrap;">
+                   style="display: block; padding: 10px 14px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 13px; word-break: break-word; text-align: center;">
                   📥 Download PDF
                 </a>` : `
-                <span style="display: inline-block; padding: 12px 20px; background: #e2e8f0; color: #94a3b8; border-radius: 10px; font-size: 13px; font-weight: 600;">
+                <span style="display: block; padding: 10px 14px; background: #e2e8f0; color: #94a3b8; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center;">
                   ⏳ Awaiting
                 </span>`}
               </td>
