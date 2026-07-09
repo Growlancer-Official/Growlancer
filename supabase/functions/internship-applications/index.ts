@@ -41,6 +41,11 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
+interface Attachment {
+  name: string;
+  content: string;  // base64-encoded
+}
+
 interface ApplicationData {
   full_name: string
   email: string
@@ -63,17 +68,68 @@ interface ApplicationData {
   weekly_availability?: number
 }
 
+// ─── PDF Attachment Helper ──────────────────────────────────────────────
+/** Fetch a PDF from storage URL, base64-encode it, and return as Brevo attachment */
+async function fetchPdfAsAttachment(url: string, filename: string): Promise<Attachment | null> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error(`Failed to fetch PDF from ${url}: ${response.status}`);
+      return null;
+    }
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    // Convert to base64 manually (Deno doesn't have btoa for binary)
+    let binary = '';
+    for (let i = 0; i < uint8Array.length; i++) {
+      binary += String.fromCharCode(uint8Array[i]);
+    }
+    const base64 = btoa(binary);
+    return { name: filename, content: base64 };
+  } catch (err) {
+    console.error(`Error fetching PDF attachment ${filename}:`, err);
+    return null;
+  }
+}
+
+/** Extract filename from a storage URL or fall back to a default */
+function getFileNameFromUrl(url: string | null | undefined, fallback: string): string {
+  if (!url) return fallback;
+  try {
+    const segments = url.split('/');
+    const last = segments[segments.length - 1];
+    if (last && last.includes('.')) return decodeURIComponent(last);
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 // ─── Brevo Email Sender ─────────────────────────────────────────────────────
 async function sendBrevoEmail(
   to: string,
   toName: string,
   subject: string,
-  htmlContent: string
+  htmlContent: string,
+  attachments?: Attachment[]
 ): Promise<boolean> {
   try {
     const key = Deno.env.get('BREVO_API_KEY') ?? ''
     console.log('BREVO_API_KEY length:', key.length, 'prefix:', key.substring(0, 15))
     
+    const bodyObj: Record<string, unknown> = {
+      sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
+      to: [{ email: to, name: toName }],
+      subject,
+      htmlContent,
+    }
+
+    // Only add attachments if we have some (Brevo supports up to 10MB total)
+    if (attachments && attachments.length > 0) {
+      bodyObj.attachment = attachments;
+      console.log(`Attaching ${attachments.length} file(s): ${attachments.map(a => a.name).join(', ')}`)
+    }
+
     const res = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
@@ -81,12 +137,7 @@ async function sendBrevoEmail(
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-        to: [{ email: to, name: toName }],
-        subject,
-        htmlContent,
-      }),
+      body: JSON.stringify(bodyObj),
     })
 
     const text = await res.text()
@@ -109,24 +160,26 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
-  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 30px 10px; margin: 0;">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td style="padding: 30px 10px;" align="center"><![endif]-->
+  <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
-      <h1 style="color: white; font-size: 22px; font-weight: 700; margin: 0;">${title}</h1>
+    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 28px 24px; text-align: center;">
+      <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0; word-break: break-word;">${title}</h1>
     </div>
     <!-- Body -->
-    <div style="padding: 32px;">
+    <div style="padding: 28px 24px; word-wrap: break-word; overflow-wrap: break-word;">
       ${bodyHtml}
     </div>
     <!-- Footer -->
-    <div style="padding: 24px 32px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-      <p style="color: #94a3b8; font-size: 12px; margin: 0 0 4px;">Growlancer — AI-Powered Freelancing Marketplace</p>
-      <p style="color: #94a3b8; font-size: 12px; margin: 0;">
+    <div style="padding: 20px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+      <p style="color: #94a3b8; font-size: 11px; margin: 0 0 4px; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
+      <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">
         <a href="${APP_URL}" style="color: #059669; text-decoration: none;">${APP_URL}</a>
       </p>
     </div>
   </div>
+  <!--[if mso]></td></tr></table><![endif]-->
 </body>
 </html>`
 }
@@ -874,16 +927,17 @@ function sendStatusEmail(
   internshipLetterUrl?: string | null,
   googleMeetLink?: string | null,
   interviewTime?: string | null,
+  attachments?: Attachment[]
 ): Promise<boolean> {
   switch (newStatus) {
     case 'shortlisted':
-      return sendBrevoEmail(email, name, `Shortlisted — ${roleName}`, buildShortlistedEmailHtml(name, roleName))
+      return sendBrevoEmail(email, name, `Shortlisted — ${roleName}`, buildShortlistedEmailHtml(name, roleName), attachments)
     case 'interview_scheduled':
-      return sendBrevoEmail(email, name, `Interview Invitation — ${roleName} 🎤`, buildInterviewEmailHtml(name, roleName, googleMeetLink, interviewTime))
+      return sendBrevoEmail(email, name, `Interview Invitation — ${roleName} 🎤`, buildInterviewEmailHtml(name, roleName, googleMeetLink, interviewTime), attachments)
     case 'selected':
-      return sendBrevoEmail(email, name, `Congratulations — You're Selected for ${roleName}! 🎉`, buildSelectedEmailHtml(name, roleName, offerLetterUrl, ndaUrl, internshipLetterUrl))
+      return sendBrevoEmail(email, name, `Congratulations — You're Selected for ${roleName}! 🎉`, buildSelectedEmailHtml(name, roleName, offerLetterUrl, ndaUrl, internshipLetterUrl), attachments)
     case 'rejected':
-      return sendBrevoEmail(email, name, `Application Update — ${roleName}`, buildRejectedEmailHtml(name, roleName))
+      return sendBrevoEmail(email, name, `Application Update — ${roleName}`, buildRejectedEmailHtml(name, roleName), attachments)
     default:
       console.warn(`No email template for status: ${newStatus}`);
       return true
@@ -1182,6 +1236,30 @@ Deno.serve(async (req) => {
         const effectiveNdaUrl = nda_url !== undefined ? nda_url : currentApp.nda_url;
         const effectiveInternshipUrl = internship_letter_url !== undefined ? internship_letter_url : currentApp.internship_letter_url;
 
+        // Fetch PDF attachments for 'selected' status (offer letter, NDA, internship letter)
+        let attachments: Attachment[] | undefined;
+        if (statusToSend === 'selected') {
+          const attachPromises: Promise<Attachment | null>[] = [];
+          if (effectiveOfferUrl) {
+            attachPromises.push(fetchPdfAsAttachment(effectiveOfferUrl, getFileNameFromUrl(effectiveOfferUrl, 'Offer_Letter.pdf')));
+          }
+          if (effectiveNdaUrl) {
+            attachPromises.push(fetchPdfAsAttachment(effectiveNdaUrl, getFileNameFromUrl(effectiveNdaUrl, 'NDA.pdf')));
+          }
+          if (effectiveInternshipUrl) {
+            attachPromises.push(fetchPdfAsAttachment(effectiveInternshipUrl, getFileNameFromUrl(effectiveInternshipUrl, 'Internship_Letter.pdf')));
+          }
+
+          if (attachPromises.length > 0) {
+            const results = await Promise.all(attachPromises);
+            const validAttachments = results.filter((a): a is Attachment => a !== null);
+            if (validAttachments.length > 0) {
+              attachments = validAttachments;
+              console.log(`Fetched ${validAttachments.length} PDF attachment(s) for selected email`);
+            }
+          }
+        }
+
         let statusEmailSent = false
 
         if (['shortlisted', 'interview_scheduled', 'selected', 'rejected'].includes(statusToSend)) {
@@ -1195,6 +1273,7 @@ Deno.serve(async (req) => {
             effectiveInternshipUrl || null,
             effectiveMeetLink || null,
             effectiveTime || null,
+            attachments,
           )
           console.log(`Email-only mode: ${statusToSend} email sent: ${statusEmailSent}`)
         }
