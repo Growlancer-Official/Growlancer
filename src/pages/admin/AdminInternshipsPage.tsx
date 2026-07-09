@@ -334,7 +334,8 @@ export function AdminInternshipsPage() {
           .eq('id', id);
         toast.error('Status Update Failed', 'Status was not updated. Please try again.');
       } else {
-        // If status changed successfully AND email requested, send email now          if (sendEmail && isRealStatusChange && app) {
+        // If status changed successfully AND email requested, send email now
+        if (sendEmail && isRealStatusChange && app) {
             // Also pass meet link/time to ensure email has them
             const emailMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
             const emailInterviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
@@ -350,7 +351,7 @@ export function AdminInternshipsPage() {
                 },
               });
               emailSent = emailResult.data?.status_email_sent === true;
-            if (emailSent) {
+              if (emailSent) {
               setEmailLogs(prev => ({
                 ...prev,
                 [id]: [...(prev[id] || []), { status, sent: true, time: new Date().toISOString() }],
