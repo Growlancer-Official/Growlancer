@@ -182,9 +182,24 @@ export function AdminSupportTicketsPage() {
         <p className="text-slate-400 text-sm mt-1">Manage user support requests and escalations</p>
       </div>
 
+      {/* Mobile: Back button + hide list when ticket selected */}
+      {selectedTicket && (
+        <div className="lg:hidden mb-3">
+          <button
+            onClick={() => { setSelectedTicket(null); setTicketMessages([]); }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all"
+          >
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+            Back to Tickets
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
-        {/* Tickets List */}
-        <div className="lg:col-span-1 rounded-[2rem] flex flex-col overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+        {/* Tickets List - hidden on mobile when ticket selected */}
+        <div className={`lg:col-span-1 rounded-[2rem] flex flex-col overflow-hidden ${selectedTicket ? 'hidden lg:flex' : 'flex'}`} style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="p-4 border-b border-white/5 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />

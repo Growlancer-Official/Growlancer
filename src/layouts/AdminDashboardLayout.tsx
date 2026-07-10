@@ -249,25 +249,59 @@ export function AdminDashboardLayout() {
         </div>
       </main>
 
-      {/* Mobile Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-white/5 h-16 lg:hidden flex items-center justify-around px-4 z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.5)]">
-        <Link to="/admin" className={`flex flex-col items-center gap-1 ${isActive('/admin') && !isActive('/admin/users') ? 'text-emerald-500' : 'text-slate-400'}`}>
-          <LayoutDashboard className="w-5 h-5" />
-          <span className="text-[9px] font-bold uppercase">Dash</span>
-        </Link>
-        <Link to="/admin/users" className={`flex flex-col items-center gap-1 ${isActive('/admin/users') ? 'text-emerald-500' : 'text-slate-400'}`}>
-          <Users className="w-5 h-5" />
-          <span className="text-[9px] font-bold uppercase">Users</span>
-        </Link>
-        <Link to="/admin/disputes" className={`flex flex-col items-center gap-1 ${isActive('/admin/disputes') ? 'text-emerald-500' : 'text-slate-400'}`}>
-          <AlertOctagon className="w-5 h-5" />
-          <span className="text-[9px] font-bold uppercase">Disputes</span>
-        </Link>
-        <Link to="/admin/subscriptions" className={`flex flex-col items-center gap-1 ${isActive('/admin/subscriptions') ? 'text-emerald-500' : 'text-slate-400'}`}>
-          <Zap className="w-5 h-5" />
-          <span className="text-[9px] font-bold uppercase">Config</span>
-        </Link>
-      </nav>
+      {/* Mobile Navigation Bar - Scrollable with all links */}
+      <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-white/5 lg:hidden z-50 shadow-[0_-4px_12px_rgba(0,0,0,0.5)]">
+        <nav className="flex items-center overflow-x-auto px-3 py-1 gap-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <Link to="/admin" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin') && !isActive('/admin/users') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <LayoutDashboard className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Dash</span>
+          </Link>
+          <Link to="/admin/users" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/users') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <Users className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Users</span>
+          </Link>
+          <Link to="/admin/projects" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/projects') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <FolderKanban className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Projects</span>
+          </Link>
+          <Link to="/admin/contracts" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/contracts') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <Handshake className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Contracts</span>
+          </Link>
+          <Link to="/admin/payments" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/payments') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <Banknote className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Payments</span>
+          </Link>
+          <Link to="/admin/disputes" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/disputes') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <AlertOctagon className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Disputes</span>
+          </Link>
+          <Link to="/admin/subscriptions" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/subscriptions') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <Zap className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Config</span>
+          </Link>
+          <Link to="/admin/reports" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/reports') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <BarChart3 className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Reports</span>
+          </Link>
+          <Link to="/admin/internships" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/internships') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <Users className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Internships</span>
+          </Link>
+          <Link to="/admin/certificates" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/certificates') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <Award className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Certificates</span>
+          </Link>
+          <Link to="/admin/identity-verification" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/identity-verification') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <ShieldCheck className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Verification</span>
+          </Link>
+          <Link to="/admin/support-tickets" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/support-tickets') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <AlertOctagon className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Tickets</span>
+          </Link>
+        </nav>
+      </div>
     </div>
   );
 }
