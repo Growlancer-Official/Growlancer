@@ -415,9 +415,27 @@ Deno.serve(async (req) => {
         });
       }
 
+      // Fetch intern's application details if user_id points to an internship_applications record
+      let internProfile: Record<string, unknown> | null = null;
+      if (data.user_id) {
+        try {
+          const { data: appData } = await supabaseClient
+            .from('internship_applications')
+            .select('*')
+            .eq('id', data.user_id)
+            .maybeSingle();
+          if (appData) {
+            internProfile = appData as Record<string, unknown>;
+          }
+        } catch (profileErr) {
+          console.error('Failed to fetch intern profile:', profileErr);
+        }
+      }
+
       return new Response(JSON.stringify({
         valid: data.status === 'active',
         certificate: data,
+        internProfile: internProfile,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

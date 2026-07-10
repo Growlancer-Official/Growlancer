@@ -101,12 +101,32 @@ export async function revokeCertificate(
   }
 }
 
+/** Intern's application profile returned with certificate verification */
+export interface InternProfile {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  country: string | null;
+  university: string | null;
+  degree: string | null;
+  role_name: string;
+  linkedin_url: string | null;
+  github_url: string | null;
+  portfolio_url: string | null;
+  cover_letter: string;
+  why_growlancer: string | null;
+  resume_url: string | null;
+  created_at: string;
+  status: string;
+}
+
 /**
  * Verify a certificate by its verification code (public).
  */
 export async function verifyCertificateByCode(
   code: string
-): Promise<{ valid: boolean; certificate?: Certificate; error?: string }> {
+): Promise<{ valid: boolean; certificate?: Certificate; internProfile?: InternProfile | null; error?: string }> {
   try {
     // Normalize code
     const normalizedCode = code.trim().toUpperCase();

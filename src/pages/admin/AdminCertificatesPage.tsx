@@ -4,8 +4,8 @@ import {
   CheckCircle2, ExternalLink, FileText, Calendar,
   Ban, Copy, CheckCheck, Trash2,
   Send, QrCode, Star, Link2, GraduationCap, Briefcase, Users,
-  FileUp, ChevronDown, ChevronUp, History,
-  Phone, Building, MapPin, Code2, X,
+  FileUp, ChevronDown, ChevronUp,
+  Phone, Building, MapPin, Code2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
@@ -113,68 +113,45 @@ export function AdminCertificatesPage() {
   const [loadingInterns, setLoadingInterns] = useState(false);
   const [internSearch, setInternSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [emailLogs, setEmailLogs] = useState<Record<string, { status: string; sent: boolean; time: string }[]>>({});
   const toast = useToast();
-  const [uploadingDoc, setUploadingDoc] = useState<Record<string, { loading: boolean }>>({});
-  const [showAddInternModal, setShowAddInternModal] = useState(false);
-  const [addInternForm, setAddInternForm] = useState({
-    full_name: '',
-    email: '',
-    role_name: '',
-    university: '',
-    degree: '',
-    phone: '',
-    country: '',
-    linkedin_url: '',
-    github_url: '',
-    portfolio_url: '',
-  });
-  const [addingIntern, setAddingIntern] = useState(false);
+  // Track generated verification codes per intern
+  const [generatedCodes, setGeneratedCodes] = useState<Record<string, { code: string; url: string; type: string; loading: boolean }>>({});
 
-  const handleAddIntern = async () => {
-    if (!addInternForm.full_name.trim() || !addInternForm.email.trim() || !addInternForm.role_name.trim()) {
-      toast.warning('Required Fields', 'Full Name, Email, and Role are required.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addInternForm.email)) {
-      toast.warning('Invalid Email', 'Please enter a valid email address.');
-      return;
-    }
-    setAddingIntern(true);
+  const handleGenerateCode = async (app: InternshipAppUser, type: 'internship' | 'lor') => {
+    const isLOR = type === 'lor';
+    const key = `${app.id}-${type}`;
+    setGeneratedCodes(prev => ({ ...prev, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: true } }));
     try {
-      const { data, error } = await supabase.functions.invoke('admin-data', {
-        method: 'POST',
-        body: {
-          action: 'insert',
-          table: 'internship_applications',
-          data: {
-            full_name: addInternForm.full_name.trim(),
-            email: addInternForm.email.trim().toLowerCase(),
-            role_name: addInternForm.role_name.trim(),
-            role_id: 'manual-add',
-            status: 'selected',
-            university: addInternForm.university.trim() || null,
-            degree: addInternForm.degree.trim() || null,
-            phone: addInternForm.phone.trim() || null,
-            country: addInternForm.country.trim() || null,
-            linkedin_url: addInternForm.linkedin_url.trim() || null,
-            github_url: addInternForm.github_url.trim() || null,
-            portfolio_url: addInternForm.portfolio_url.trim() || null,
-            cover_letter: 'Added manually by admin for certificate issuance.',
-          },
+      const uniqueCode = 'GRW-' + (isLOR ? 'LOR-' : 'CERT-') + Array.from({length: 8}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+      
+      // Create certificate record in DB
+      const result = await issueCertificate({
+        userId: app.id,
+        skill: app.role_name || 'Internship',
+        level: isLOR ? 'advanced' : 'intermediate',
+        recipientName: app.full_name,
+        recipientEmail: app.email,
+        type,
+        certificateUrl: undefined,
+        metadata: {
+          performance_summary: isLOR ? `Top performer during ${app.role_name} internship.` : undefined,
+          skills_demonstrated: [],
+          application_id: app.id,
         },
       });
 
-      if (error || data?.error) throw new Error(error?.message || data?.error || 'Failed to add intern');
-
-      toast.success('Intern Added', `${addInternForm.full_name} added successfully!`);
-      setShowAddInternModal(false);
-      setAddInternForm({ full_name: '', email: '', role_name: '', university: '', degree: '', phone: '', country: '', linkedin_url: '', github_url: '', portfolio_url: '' });
-      fetchInternApplicants();
+      if (result.success && result.certificate) {
+        const actualCode = result.certificate.verification_code;
+        const verifyUrl = `${window.location.origin}/certificate/${actualCode}`;
+        setGeneratedCodes(prev => ({ ...prev, [key]: { code: actualCode, url: verifyUrl, type: isLOR ? 'LOR' : 'Certificate', loading: false } }));
+        toast.success('Code Generated!', `${isLOR ? 'LOR' : 'Certificate'} verification code created for ${app.full_name}`);
+        fetchCerts();
+      } else {
+        throw new Error(result.error || 'Failed to generate code');
+      }
     } catch (err) {
-      toast.error('Failed', err instanceof Error ? err.message : 'Could not add intern');
-    } finally {
-      setAddingIntern(false);
+      setGeneratedCodes(prev => ({ ...prev, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: false } }));
+      toast.error('Failed', err instanceof Error ? err.message : 'Could not generate code');
     }
   };
 
@@ -318,244 +295,6 @@ export function AdminCertificatesPage() {
     }
   };
 
-  // Track which send action is selected for reactive forms
-  const [selectedAction, setSelectedAction] = useState<Record<string, 'certificate' | 'lor' | 'both' | null>>({});
-  const handleDocUpload = async (appId: string, field: 'offer_letter_url' | 'internship_letter_url', file: File) => {
-    if (!file) return;
-    const key = `${appId}-${field}`;
-    const label = field === 'offer_letter_url' ? 'Certificate PDF' : 'LOR PDF';
-    setUploadingDoc(prev => ({ ...prev, [key]: { loading: true } }));
-    try {
-      const fileBase64 = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          resolve(result.split(',')[1]);
-        };
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
-
-      const filePath = `cert-docs/${appId}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-      const { data: uploadResult, error: fnError } = await supabase.functions.invoke('admin-data', {
-        method: 'POST',
-        body: {
-          action: 'storage_upload',
-          bucket: 'certificate_documents',
-          file_path: filePath,
-          file_base64: fileBase64,
-          content_type: file.type || 'application/pdf',
-        },
-      });
-
-      if (fnError || uploadResult?.error) throw new Error(uploadResult?.error || fnError?.message || 'Upload failed');
-      const publicUrl = uploadResult.publicUrl;
-      if (!publicUrl) throw new Error('No public URL returned');
-
-      // Save URL to the applicant record for persistence
-      try {
-        await supabase.functions.invoke('admin-data', {
-          method: 'PATCH',
-          body: {
-            table: 'internship_applications',
-            id: appId,
-            data: { [field]: publicUrl },
-          },
-        });
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch {} // Non-fatal - upload still works
-
-      toast.success('Uploaded', `${label} uploaded. Link saved to applicant.`);
-      // Update local state directly instead of full re-fetch to avoid auto-refresh
-      setInternApplicants(prev => 
-        prev.map(a => a.id === appId ? { ...a, [field]: publicUrl } : a)
-      );
-    } catch (err) {
-      console.error('Document upload error:', err);
-      toast.error('Upload Failed', `Failed to upload ${label}. Please try again.`);
-    } finally {
-      setUploadingDoc(prev => ({ ...prev, [key]: { loading: false } }));
-    }
-  };
-
-  // Combined issue + email for intern applicants
-  const handleIssueAndSend = async (app: InternshipAppUser, type: Certificate['certificate_type']) => {
-    const isLOR = type === 'lor';
-    const pdfField = isLOR ? 'internship_letter_url' as const : 'offer_letter_url' as const;
-    const pdfUrl = app[pdfField];
-    const label = isLOR ? 'LOR' : 'Certificate';
-
-    if (!pdfUrl) {
-      toast.warning('PDF Required', `Please upload a ${label} PDF first before sending.`);
-      return;
-    }
-
-    if (!confirm(`Send ${label} email to ${app.full_name} (${app.email})?`)) return;
-
-    const loadingKey = `send-${app.id}-${type}`;
-    setActionLoading(loadingKey);
-    try {
-      // STEP 1: Send email FIRST — like internship flow, no DB dependency
-      const tempId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-      const tempCode = 'GRW-' + (isLOR ? 'LOR-' : 'CERT-') + Array.from({length: 6}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
-      
-      const emailResult = await sendCertificateEmail({
-        certificateId: tempId,
-        recipientEmail: app.email,
-        recipientName: app.full_name,
-        certificateType: type,
-        roleName: app.role_name || 'Internship',
-        level: isLOR ? 'advanced' : 'intermediate',
-        verificationCode: tempCode,
-        certificateUrl: pdfUrl,
-        performanceSummary: isLOR ? `Top performer during ${app.role_name} internship.` : '',
-        skillsDemonstrated: [],
-      });
-
-      if (emailResult.success) {
-        toast.success('Sent!', `${label} email sent to ${app.full_name}!`);
-        setEmailLogs(prev => ({
-          ...prev,
-          [app.id]: [...(prev[app.id] || []), { status: label, sent: true, time: new Date().toISOString() }],
-        }));
-        
-        // STEP 2: Try to save to DB as best-effort (email already sent!)
-        try {
-          await issueCertificate({
-            userId: app.id,
-            skill: app.role_name || 'Internship',
-            level: isLOR ? 'advanced' : 'intermediate',
-            recipientName: app.full_name,
-            recipientEmail: app.email,
-            type,
-            certificateUrl: pdfUrl,
-            metadata: {
-              performance_summary: isLOR ? `Top performer during ${app.role_name} internship.` : undefined,
-              skills_demonstrated: [],
-            },
-          });
-        } catch (dbErr) {
-          console.error(`${label} DB save failed (non-critical):`, dbErr);
-        }
-      } else {
-        toast.error('Email Failed', `${label} email failed: ${emailResult.error || 'Unknown error'}`);
-      }
-
-      fetchCerts();
-    } catch (err) {
-      console.error(`${label} error:`, err);
-      toast.error('Error', `Failed to send ${label}.`);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  // Issue + send both Certificate & LOR together
-  const handleIssueAndSendBoth = async (app: InternshipAppUser) => {
-    if (!app.offer_letter_url && !app.internship_letter_url) {
-      toast.warning('PDFs Required', 'Please upload both Certificate PDF and LOR PDF first.');
-      return;
-    }
-    if (!confirm(`Send both Certificate & LOR to ${app.full_name} (${app.email})?`)) return;
-
-    setActionLoading(`send-${app.id}-both`);
-    try {
-      let certEmailSent = false;
-      let lorEmailSent = false;
-
-      // Certificate — send email FIRST, no DB dependency
-      if (app.offer_letter_url) {
-        const certTempId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-        const certTempCode = 'GRW-CERT-' + Array.from({length: 6}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
-        
-        const certEmailResult = await sendCertificateEmail({
-          certificateId: certTempId,
-          recipientEmail: app.email,
-          recipientName: app.full_name,
-          certificateType: 'internship',
-          roleName: app.role_name || 'Internship',
-          level: 'intermediate',
-          verificationCode: certTempCode,
-          certificateUrl: app.offer_letter_url,
-        });
-        
-        if (certEmailResult.success) {
-          certEmailSent = true;
-          // Best-effort DB save
-          try {
-            await issueCertificate({
-              userId: app.id, skill: app.role_name || 'Internship', level: 'intermediate',
-              recipientName: app.full_name, recipientEmail: app.email, type: 'internship',
-              certificateUrl: app.offer_letter_url,
-            });
-          } catch { /* non-critical */ }
-        } else {
-          console.error('Cert email FAILED:', certEmailResult.error);
-        }
-      }
-
-      // LOR — send email FIRST, no DB dependency
-      if (app.internship_letter_url) {
-        const lorTempId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-        const lorTempCode = 'GRW-LOR-' + Array.from({length: 6}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
-        
-        const lorEmailResult = await sendCertificateEmail({
-          certificateId: lorTempId,
-          recipientEmail: app.email,
-          recipientName: app.full_name,
-          certificateType: 'lor',
-          roleName: app.role_name || 'Internship',
-          level: 'advanced',
-          verificationCode: lorTempCode,
-          certificateUrl: app.internship_letter_url,
-          performanceSummary: `Top performer during ${app.role_name} internship.`,
-        });
-        
-        if (lorEmailResult.success) {
-          lorEmailSent = true;
-          // Best-effort DB save
-          try {
-            await issueCertificate({
-              userId: app.id, skill: app.role_name || 'Internship', level: 'advanced',
-              recipientName: app.full_name, recipientEmail: app.email, type: 'lor',
-              certificateUrl: app.internship_letter_url,
-              metadata: { performance_summary: `Top performer during ${app.role_name} internship.` },
-            });
-          } catch { /* non-critical */ }
-        } else {
-          console.error('LOR email FAILED:', lorEmailResult.error);
-        }
-      }
-
-      if (certEmailSent || lorEmailSent) {
-        const parts = [];
-        if (certEmailSent) parts.push('Certificate');
-        if (lorEmailSent) parts.push('LOR');
-        const failedParts = [];
-        if (app.offer_letter_url && !certEmailSent) failedParts.push('Certificate');
-        if (app.internship_letter_url && !lorEmailSent) failedParts.push('LOR');
-        const msg = failedParts.length > 0
-          ? `${parts.join(' + ')} sent! But ${failedParts.join(' + ')} email delivery failed. Check console.`
-          : `${parts.join(' + ')} emailed to ${app.full_name}!`;
-        toast.success('Sent!', msg);
-        setEmailLogs(prev => ({
-          ...prev,
-          [app.id]: [...(prev[app.id] || []), { status: parts.join('+'), sent: true, time: new Date().toISOString() }],
-        }));
-      } else {
-        toast.error('Failed', 'Could not deliver either Certificate or LOR email. Check console for details.');
-      }
-      fetchCerts();
-    } catch (err) {
-      console.error('Both issue error:', err);
-      toast.error('Error', 'Failed to send Certificate & LOR.');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-
-
   const filtered = certificates.filter(c => {
     const q = searchQuery.toLowerCase();
     return (
@@ -597,16 +336,9 @@ export function AdminCertificatesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Certificates & LOR</h1>
-          <p className="text-slate-400 text-sm mt-1">Issue completion certificates and LOR to interns</p>
+          <h1 className="text-2xl font-bold text-white">Certificate System</h1>
+          <p className="text-slate-400 text-sm mt-1">Generate verification codes & send certificates/LORs to interns</p>
         </div>
-        <button
-          onClick={() => setShowAddInternModal(true)}
-          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold rounded-xl text-xs transition-all shadow-lg"
-        >
-          <Users className="w-4 h-4" />
-          Add Intern
-        </button>
       </div>
 
       {/* Tab Switcher */}
@@ -719,249 +451,65 @@ export function AdminCertificatesPage() {
                       
 
 
-                      {/* Certificate & LOR Send Panel — Reactive */}
-                      <div className="space-y-4">
-                        {/* Action Selector Buttons */}
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <button
-                            onClick={() => {
-                              setSelectedAction(prev => ({
-                                ...prev,
-                                [app.id]: prev[app.id] === 'certificate' ? null : 'certificate'
-                              }));
-                            }}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                              selectedAction[app.id] === 'certificate'
-                                ? 'bg-amber-600 text-white shadow-lg'
-                                : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20'
-                            }`}
-                          >
-                            <GraduationCap className="w-4 h-4" />
-                            Send Certificate
+                      {/* ─── Generate Verification Code ─────────────────────────────── */}
+                      <div className="p-4 rounded-xl" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <QrCode className="w-4 h-4 text-blue-400" />
+                          <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Verification Code</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mb-3">Generate a unique verification URL for this intern. They can visit it to view their details in real-time.</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button onClick={() => handleGenerateCode(app, 'internship')}
+                            disabled={generatedCodes[`${app.id}-internship`]?.loading}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-bold hover:bg-amber-500/20 disabled:opacity-30 transition-all">
+                            {generatedCodes[`${app.id}-internship`]?.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <GraduationCap className="w-3.5 h-3.5" />}
+                            Generate Certificate Code
                           </button>
-                          <button
-                            onClick={() => {
-                              setSelectedAction(prev => ({
-                                ...prev,
-                                [app.id]: prev[app.id] === 'lor' ? null : 'lor'
-                              }));
-                            }}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                              selectedAction[app.id] === 'lor'
-                                ? 'bg-violet-600 text-white shadow-lg'
-                                : 'bg-violet-500/10 text-violet-400 hover:bg-violet-500/20'
-                            }`}
-                          >
-                            <Star className="w-4 h-4" />
-                            Send LOR (Top Performer)
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedAction(prev => ({
-                                ...prev,
-                                [app.id]: prev[app.id] === 'both' ? null : 'both'
-                              }));
-                            }}
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
-                              selectedAction[app.id] === 'both'
-                                ? 'bg-emerald-600 text-white shadow-lg'
-                                : 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                            }`}
-                          >
-                            <Award className="w-4 h-4" />
-                            Send Both (Certificate + LOR)
+                          <button onClick={() => handleGenerateCode(app, 'lor')}
+                            disabled={generatedCodes[`${app.id}-lor`]?.loading}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 text-xs font-bold hover:bg-violet-500/20 disabled:opacity-30 transition-all">
+                            {generatedCodes[`${app.id}-lor`]?.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5" />}
+                            Generate LOR Code
                           </button>
                         </div>
 
-                        {/* Reactive Panel: Send Certificate */}
-                        {selectedAction[app.id] === 'certificate' && (
-                          <div className="p-5 rounded-xl animate-fade-in" style={{ background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
-                            <div className="flex items-center gap-2 mb-4">
-                              <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                                <GraduationCap className="w-4 h-4 text-amber-400" />
+                        {/* Show Generated Code */}
+                        {generatedCodes[`${app.id}-internship`]?.url && (
+                          <div className="mt-3 p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                <span className="text-xs font-bold text-emerald-400">Certificate URL Ready:</span>
                               </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-white">Send Certificate</h4>
-                                <p className="text-[10px] text-slate-500">Upload certificate PDF and send immediately</p>
-                              </div>
+                              <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-internship`]!.url); setCopiedId(`code-${app.id}-internship`); setTimeout(() => setCopiedId(null), 2000); }}
+                                className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0">
+                                {copiedId === `code-${app.id}-internship` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                {copiedId === `code-${app.id}-internship` ? 'Copied!' : 'Copy URL'}
+                              </button>
                             </div>
-
-                            {/* Certificate PDF Upload */}
-                            <div className="mb-4 p-4 rounded-xl" style={{ background: 'rgba(5, 150, 105, 0.03)', border: app.offer_letter_url ? '1px solid rgba(5, 150, 105, 0.25)' : '1px solid rgba(59, 130, 246, 0.12)' }}>
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <GraduationCap className={`w-4 h-4 ${app.offer_letter_url ? 'text-emerald-400' : 'text-amber-400'}`} />
-                                  <span className={`text-xs font-bold uppercase tracking-widest ${app.offer_letter_url ? 'text-emerald-400' : 'text-amber-400'}`}>Certificate PDF</span>
-                                </div>
-                                {app.offer_letter_url && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded</span>}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
-                                  {uploadingDoc[`${app.id}-offer_letter_url`]?.loading ? (
-                                    <><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</>
-                                  ) : (
-                                    <><FileUp className="w-3 h-3" /> {app.offer_letter_url ? 'Replace PDF' : 'Upload PDF'}</>
-                                  )}
-                                  <input type="file" accept=".pdf,application/pdf" className="hidden"
-                                    disabled={uploadingDoc[`${app.id}-offer_letter_url`]?.loading}
-                                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(app.id, 'offer_letter_url', f); e.target.value = ''; }} />
-                                </label>
-                                {app.offer_letter_url && (
-                                  <a href={app.offer_letter_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-colors">
-                                    <ExternalLink className="w-3 h-3" /> View
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Send Button */}
-                            <button
-                              onClick={() => { handleIssueAndSend(app, 'internship'); setSelectedAction(prev => ({ ...prev, [app.id]: null })); }}
-                              disabled={!app.offer_letter_url || actionLoading === `send-${app.id}-internship`}
-                              className="w-full py-3 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
-                            >
-                              {actionLoading === `send-${app.id}-internship` ? (
-                                <><Loader2 className="w-4 h-4 animate-spin" /> Issuing & Sending Certificate...</>
-                              ) : (
-                                <><GraduationCap className="w-4 h-4" /> Send Certificate Now</>
-                              )}
-                            </button>
+                            <a href={generatedCodes[`${app.id}-internship`]!.url} target="_blank" rel="noopener noreferrer"
+                              className="mt-1 block text-xs font-mono text-emerald-400/70 hover:text-emerald-300 truncate">
+                              {generatedCodes[`${app.id}-internship`]!.url}
+                            </a>
                           </div>
                         )}
-
-                        {/* Reactive Panel: Send LOR */}
-                        {selectedAction[app.id] === 'lor' && (
-                          <div className="p-5 rounded-xl animate-fade-in" style={{ background: 'rgba(124, 58, 237, 0.05)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
-                            <div className="flex items-center gap-2 mb-4">
-                              <div className="h-8 w-8 rounded-lg bg-violet-500/10 flex items-center justify-center">
-                                <Star className="w-4 h-4 text-violet-400" />
+                        {generatedCodes[`${app.id}-lor`]?.url && (
+                          <div className="mt-3 p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <CheckCircle2 className="w-4 h-4 text-violet-400 shrink-0" />
+                                <span className="text-xs font-bold text-violet-400">LOR URL Ready:</span>
                               </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-white">Send LOR (Top Performer)</h4>
-                                <p className="text-[10px] text-slate-500">Upload recommendation letter PDF and send immediately</p>
-                              </div>
+                              <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-lor`]!.url); setCopiedId(`code-${app.id}-lor`); setTimeout(() => setCopiedId(null), 2000); }}
+                                className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 shrink-0">
+                                {copiedId === `code-${app.id}-lor` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                {copiedId === `code-${app.id}-lor` ? 'Copied!' : 'Copy URL'}
+                              </button>
                             </div>
-
-                            {/* LOR PDF Upload */}
-                            <div className="mb-4 p-4 rounded-xl" style={{ background: 'rgba(124, 58, 237, 0.03)', border: app.internship_letter_url ? '1px solid rgba(124, 58, 237, 0.25)' : '1px solid rgba(124, 58, 237, 0.12)' }}>
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Star className={`w-4 h-4 ${app.internship_letter_url ? 'text-emerald-400' : 'text-violet-400'}`} />
-                                  <span className={`text-xs font-bold uppercase tracking-widest ${app.internship_letter_url ? 'text-emerald-400' : 'text-violet-400'}`}>LOR PDF</span>
-                                </div>
-                                {app.internship_letter_url && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded</span>}
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
-                                  {uploadingDoc[`${app.id}-internship_letter_url`]?.loading ? (
-                                    <><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</>
-                                  ) : (
-                                    <><FileUp className="w-3 h-3" /> {app.internship_letter_url ? 'Replace PDF' : 'Upload PDF'}</>
-                                  )}
-                                  <input type="file" accept=".pdf,application/pdf" className="hidden"
-                                    disabled={uploadingDoc[`${app.id}-internship_letter_url`]?.loading}
-                                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(app.id, 'internship_letter_url', f); e.target.value = ''; }} />
-                                </label>
-                                {app.internship_letter_url && (
-                                  <a href={app.internship_letter_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-colors">
-                                    <ExternalLink className="w-3 h-3" /> View
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Send Button */}
-                            <button
-                              onClick={() => { handleIssueAndSend(app, 'lor'); setSelectedAction(prev => ({ ...prev, [app.id]: null })); }}
-                              disabled={!app.internship_letter_url || actionLoading === `send-${app.id}-lor`}
-                              className="w-full py-3 bg-gradient-to-r from-violet-600 to-violet-700 hover:from-violet-500 hover:to-violet-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
-                            >
-                              {actionLoading === `send-${app.id}-lor` ? (
-                                <><Loader2 className="w-4 h-4 animate-spin" /> Issuing & Sending LOR...</>
-                              ) : (
-                                <><Star className="w-4 h-4" /> Send LOR Now</>
-                              )}
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Reactive Panel: Send Both */}
-                        {selectedAction[app.id] === 'both' && (
-                          <div className="p-5 rounded-xl animate-fade-in" style={{ background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
-                            <div className="flex items-center gap-2 mb-4">
-                              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                                <Award className="w-4 h-4 text-emerald-400" />
-                              </div>
-                              <div>
-                                <h4 className="text-sm font-bold text-white">Send Both (Certificate + LOR)</h4>
-                                <p className="text-[10px] text-slate-500">Upload both PDFs and send Certificate & LOR together</p>
-                              </div>
-                            </div>
-
-                            {/* Two PDF Uploads side by side */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                              <div className="p-4 rounded-xl" style={{ background: 'rgba(5, 150, 105, 0.03)', border: app.offer_letter_url ? '1px solid rgba(5, 150, 105, 0.25)' : '1px solid rgba(59, 130, 246, 0.12)' }}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <GraduationCap className={`w-4 h-4 ${app.offer_letter_url ? 'text-emerald-400' : 'text-amber-400'}`} />
-                                    <span className={`text-xs font-bold uppercase tracking-widest ${app.offer_letter_url ? 'text-emerald-400' : 'text-amber-400'}`}>Certificate PDF</span>
-                                  </div>
-                                  {app.offer_letter_url && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded</span>}
-                                </div>
-                                <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
-                                  {uploadingDoc[`${app.id}-offer_letter_url`]?.loading ? (
-                                    <><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</>
-                                  ) : (
-                                    <><FileUp className="w-3 h-3" /> {app.offer_letter_url ? 'Replace' : 'Upload'}</>
-                                  )}
-                                  <input type="file" accept=".pdf,application/pdf" className="hidden"
-                                    disabled={uploadingDoc[`${app.id}-offer_letter_url`]?.loading}
-                                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(app.id, 'offer_letter_url', f); e.target.value = ''; }} />
-                                </label>
-                                {app.offer_letter_url && (
-                                  <a href={app.offer_letter_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-colors">
-                                    <ExternalLink className="w-3 h-3" /> View
-                                  </a>
-                                )}
-                              </div>
-                              <div className="p-4 rounded-xl" style={{ background: 'rgba(124, 58, 237, 0.03)', border: app.internship_letter_url ? '1px solid rgba(124, 58, 237, 0.25)' : '1px solid rgba(124, 58, 237, 0.12)' }}>
-                                <div className="flex items-center justify-between mb-2">
-                                  <div className="flex items-center gap-2">
-                                    <Star className={`w-4 h-4 ${app.internship_letter_url ? 'text-emerald-400' : 'text-violet-400'}`} />
-                                    <span className={`text-xs font-bold uppercase tracking-widest ${app.internship_letter_url ? 'text-emerald-400' : 'text-violet-400'}`}>LOR PDF</span>
-                                  </div>
-                                  {app.internship_letter_url && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded</span>}
-                                </div>
-                                <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
-                                  {uploadingDoc[`${app.id}-internship_letter_url`]?.loading ? (
-                                    <><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</>
-                                  ) : (
-                                    <><FileUp className="w-3 h-3" /> {app.internship_letter_url ? 'Replace' : 'Upload'}</>
-                                  )}
-                                  <input type="file" accept=".pdf,application/pdf" className="hidden"
-                                    disabled={uploadingDoc[`${app.id}-internship_letter_url`]?.loading}
-                                    onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(app.id, 'internship_letter_url', f); e.target.value = ''; }} />
-                                </label>
-                                {app.internship_letter_url && (
-                                  <a href={app.internship_letter_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-colors">
-                                    <ExternalLink className="w-3 h-3" /> View
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Send Both Button */}
-                            <button
-                              onClick={() => { handleIssueAndSendBoth(app); setSelectedAction(prev => ({ ...prev, [app.id]: null })); }}
-                              disabled={(!app.offer_letter_url || !app.internship_letter_url) || actionLoading === `send-${app.id}-both`}
-                              className="w-full py-3 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-2 shadow-lg"
-                            >
-                              {actionLoading === `send-${app.id}-both` ? (
-                                <><Loader2 className="w-4 h-4 animate-spin" /> Issuing & Sending Both...</>
-                              ) : (
-                                <><Award className="w-4 h-4" /> Send Both Now</>
-                              )}
-                            </button>
+                            <a href={generatedCodes[`${app.id}-lor`]!.url} target="_blank" rel="noopener noreferrer"
+                              className="mt-1 block text-xs font-mono text-violet-400/70 hover:text-violet-300 truncate">
+                              {generatedCodes[`${app.id}-lor`]!.url}
+                            </a>
                           </div>
                         )}
                       </div>
@@ -978,29 +526,6 @@ export function AdminCertificatesPage() {
                                 <Award className="w-3 h-3" />
                                 {getCertificateTitle(c)}
                               </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Email Log */}
-                      {emailLogs[app.id] && emailLogs[app.id].length > 0 && (
-                        <div>
-                          <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
-                            <History className="w-3.5 h-3.5" /> Email Log
-                          </h4>
-                          <div className="space-y-1.5">
-                            {emailLogs[app.id].map((log, i) => (
-                              <div key={i} className="flex items-center gap-2 px-4 py-2 rounded-lg text-xs" style={{ background: 'rgba(15, 23, 42, 0.5)' }}>
-                                <Mail className={`w-3 h-3 ${log.sent ? 'text-emerald-400' : 'text-red-400'}`} />
-                                <span className="text-slate-300 font-medium uppercase text-[10px]">{log.status.replace('_', ' ')}</span>
-                                <span className="text-slate-500">•</span>
-                                <span className={`text-[10px] ${log.sent ? 'text-emerald-400' : 'text-red-400'}`}>
-                                  {log.sent ? 'Email Sent' : 'Failed'}
-                                </span>
-                                <span className="text-slate-500">•</span>
-                                <span className="text-slate-500 text-[10px]">{formatRelativeTime(log.time)}</span>
-                              </div>
                             ))}
                           </div>
                         </div>
@@ -1361,111 +886,7 @@ export function AdminCertificatesPage() {
         </>
       )}
 
-      {/* ─── Add Intern Modal ──────────────────────────────── */}
-      {showAddInternModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
-          <div className="w-full max-w-lg rounded-[2rem] overflow-hidden animate-in fade-in zoom-in-95 duration-200" style={{ background: '#0F172A', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-white/5">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
-                  <Users className="w-5 h-5 text-emerald-400" />
-                </div>
-                <div>
-                  <h2 className="text-lg font-bold text-white">Add Intern</h2>
-                  <p className="text-xs text-slate-500">Add an intern for certificate/LOR issuance</p>
-                </div>
-              </div>
-              <button onClick={() => setShowAddInternModal(false)} className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
-                <X className="w-4 h-4" />
-              </button>
-            </div>
 
-            {/* Form */}
-            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
-              {/* Full Name */}
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Full Name *</label>
-                <input type="text" value={addInternForm.full_name} onChange={e => setAddInternForm(prev => ({ ...prev, full_name: e.target.value }))}
-                  placeholder="Intern's full name" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-              </div>
-              {/* Email */}
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Email Address *</label>
-                <input type="email" value={addInternForm.email} onChange={e => setAddInternForm(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="intern@example.com" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-              </div>
-              {/* Role */}
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Role / Position *</label>
-                <input type="text" value={addInternForm.role_name} onChange={e => setAddInternForm(prev => ({ ...prev, role_name: e.target.value }))}
-                  placeholder="e.g. Frontend Developer Intern" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-              </div>
-              {/* University + Degree row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">University</label>
-                  <input type="text" value={addInternForm.university} onChange={e => setAddInternForm(prev => ({ ...prev, university: e.target.value }))}
-                    placeholder="University name" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Degree</label>
-                  <input type="text" value={addInternForm.degree} onChange={e => setAddInternForm(prev => ({ ...prev, degree: e.target.value }))}
-                    placeholder="e.g. B.Tech CSE" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-                </div>
-              </div>
-              {/* Phone + Country row */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Phone</label>
-                  <input type="text" value={addInternForm.phone} onChange={e => setAddInternForm(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="+91 98765 43210" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Country</label>
-                  <input type="text" value={addInternForm.country} onChange={e => setAddInternForm(prev => ({ ...prev, country: e.target.value }))}
-                    placeholder="India" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-                </div>
-              </div>
-              {/* Links */}
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">LinkedIn URL</label>
-                <input type="url" value={addInternForm.linkedin_url} onChange={e => setAddInternForm(prev => ({ ...prev, linkedin_url: e.target.value }))}
-                  placeholder="https://linkedin.com/in/username" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">GitHub URL</label>
-                  <input type="url" value={addInternForm.github_url} onChange={e => setAddInternForm(prev => ({ ...prev, github_url: e.target.value }))}
-                    placeholder="https://github.com/username" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Portfolio URL</label>
-                  <input type="url" value={addInternForm.portfolio_url} onChange={e => setAddInternForm(prev => ({ ...prev, portfolio_url: e.target.value }))}
-                    placeholder="https://portfolio.dev" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-white/5">
-              <button onClick={() => setShowAddInternModal(false)}
-                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
-                Cancel
-              </button>
-              <button onClick={handleAddIntern}
-                disabled={addingIntern}
-                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all shadow-lg">
-                {addingIntern ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Adding Intern...</>
-                ) : (
-                  <><Users className="w-4 h-4" /> Add Intern</>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
     </div>
   );

@@ -4,8 +4,9 @@ import {
   Award, Shield, XCircle, Loader2, Search,
   User, Calendar, Clock, Copy, CheckCheck, AlertTriangle,
   Share2, Printer, Sparkles,  BookOpen, Zap, BadgeCheck, ArrowLeft, Star,
+  ExternalLink,
 } from 'lucide-react';
-import { verifyCertificateByCode, CERT_LEVEL_STYLES, getCertificateTitle, type Certificate } from '../lib/certificateService';
+import { verifyCertificateByCode, CERT_LEVEL_STYLES, getCertificateTitle, type Certificate, type InternProfile } from '../lib/certificateService';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 function formatDate(dateStr: string): string {
@@ -400,6 +401,7 @@ export function CertificateVerifyPage() {
   const [searchCode, setSearchCode] = useState(urlCode || '');
   const [verifying, setVerifying] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
+  const [internProfile, setInternProfile] = useState<InternProfile | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(!!urlCode);
 
@@ -426,7 +428,10 @@ export function CertificateVerifyPage() {
       const result = await verifyCertificateByCode(codeToVerify);
       if (result.valid && result.certificate) {
         setCertificate(result.certificate);
+        setInternProfile(result.internProfile || null);
       } else {
+        setCertificate(null);
+        setInternProfile(null);
         setError(result.error || 'Certificate not found. Please check the code and try again.');
       }
     } catch {
@@ -545,6 +550,104 @@ export function CertificateVerifyPage() {
         {certificate && !verifying && (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <CertificateCard cert={certificate} />
+          </div>
+        )}
+
+        {/* Intern Profile Display - When intern's application data is available */}
+        {certificate && internProfile && !verifying && (
+          <div className="max-w-2xl mx-auto mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <div className="rounded-[2rem] p-[2px]" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8)' }}>
+              <div className="relative bg-[#0F172A] rounded-[calc(2rem-2px)] p-6 md:p-8">
+                <div className="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
+                  <User className="w-48 h-48 text-blue-500" />
+                </div>
+                <div className="relative z-10">
+                  <div className="flex items-center gap-2 mb-6">
+                    <User className="w-4 h-4 text-blue-400" />
+                    <span className="text-[10px] uppercase tracking-widest text-blue-400 font-bold">Intern Profile Details</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Full Name</p>
+                      <p className="text-sm font-semibold text-white">{internProfile.full_name}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Email</p>
+                      <p className="text-sm text-slate-300">{internProfile.email}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Role / Position</p>
+                      <p className="text-sm font-semibold text-emerald-400">{internProfile.role_name}</p>
+                    </div>
+                    <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Application Status</p>
+                      <p className="text-sm font-semibold text-amber-400 capitalize">{internProfile.status?.replace('_', ' ') || 'N/A'}</p>
+                    </div>
+                    {internProfile.university && (
+                      <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">University</p>
+                        <p className="text-sm text-slate-300">{internProfile.university}</p>
+                      </div>
+                    )}
+                    {internProfile.degree && (
+                      <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Degree</p>
+                        <p className="text-sm text-slate-300">{internProfile.degree}</p>
+                      </div>
+                    )}
+                    {internProfile.country && (
+                      <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Country</p>
+                        <p className="text-sm text-slate-300">{internProfile.country}</p>
+                      </div>
+                    )}
+                    {internProfile.phone && (
+                      <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                        <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Phone</p>
+                        <p className="text-sm text-slate-300">{internProfile.phone}</p>
+                      </div>
+                    )}
+                </div>
+
+                  {/* Links Section */}
+                  {(internProfile.linkedin_url || internProfile.github_url || internProfile.portfolio_url) && (
+                    <div className="mt-4 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-3">Links</p>
+                      <div className="flex flex-wrap gap-3">
+                        {internProfile.linkedin_url && (
+                          <a href={internProfile.linkedin_url} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                            <ExternalLink className="w-3 h-3" /> LinkedIn
+                          </a>
+                        )}
+                        {internProfile.github_url && (
+                          <a href={internProfile.github_url} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+                            <ExternalLink className="w-3 h-3" /> GitHub
+                          </a>
+                        )}
+                        {internProfile.portfolio_url && (
+                          <a href={internProfile.portfolio_url} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+                            <ExternalLink className="w-3 h-3" /> Portfolio
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Application Date */}
+                  {internProfile.created_at && (
+                    <div className="mt-4 text-center">
+                      <p className="text-[10px] text-slate-600">
+                        Internship Application Submitted: {formatDate(internProfile.created_at)}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
