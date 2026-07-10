@@ -89,23 +89,40 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <span className="text-slate-300">|</span>
               {/* Razorpay */}
               <svg
-                className="h-5 w-[83px] shrink-0"
-                viewBox="0 0 100 24"
+                className="h-6 w-auto shrink-0"
+                viewBox="0 0 80 24"
                 xmlns="http://www.w3.org/2000/svg"
                 role="img"
                 aria-label="Razorpay"
               >
-                <path
-                  fill="#3395FF"
-                  d="M22.5 0L19.5 3.5L16.5 0L10.5 9L13.5 12.5L6 24H10L16.5 13.5L19.5 17L22.5 13.5L29 24H33L25.5 12.5L28.5 9L22.5 0Z"
-                />
+                <defs>
+                  <linearGradient id="rzp-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#3395FF" />
+                    <stop offset="100%" stopColor="#1A5CFF" />
+                  </linearGradient>
+                </defs>
+                {/* Razorpay Icon — blue rounded square with white R */}
+                <rect x="0" y="0" width="24" height="24" rx="5" fill="url(#rzp-grad)" />
                 <text
-                  x="38"
+                  x="12"
+                  y="17.5"
+                  textAnchor="middle"
+                  fill="#ffffff"
+                  fontFamily="Arial, -apple-system, sans-serif"
+                  fontWeight="800"
+                  fontSize="15"
+                >
+                  R
+                </text>
+                {/* Razorpay wordmark */}
+                <text
+                  x="30"
                   y="16"
-                  fontFamily="Arial, sans-serif"
-                  fontWeight="bold"
-                  fontSize="12"
-                  fill="#1a1a1a"
+                  fontFamily="Arial, -apple-system, sans-serif"
+                  fontWeight="700"
+                  fontSize="13"
+                  fill="#1E293B"
+                  letterSpacing="0.3"
                 >
                   Razorpay
                 </text>
