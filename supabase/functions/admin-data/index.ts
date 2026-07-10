@@ -4,12 +4,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // ─── Configuration ──────────────────────────────────────────────────
-const ALLOWED_ORIGINS = [
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-]
 
 // Rate limiting for failed admin auth: max 10 failed attempts per IP per 15 minutes
 const MAX_FAILED_ATTEMPTS = 10
@@ -19,9 +13,11 @@ const ROUTE = 'admin-data-auth'
 // ─── Helpers ────────────────────────────────────────────────────────
 
 function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
+  // Mirror the request origin directly since this function is behind --no-verify-jwt
+  // and the admin page has its own auth (AdminAuthGuard).
+  // Whitelist approach breaks when Vercel assigns preview URLs with random hashes.
   return {
-    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Origin': origin || '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
     'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
   }
