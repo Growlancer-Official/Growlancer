@@ -69,8 +69,81 @@ async function checkAuthRateLimit(
 
 const _eh = escapeHtml; // shorthand
 
+// ─── Simple email validation ─────────────────────────────────────────────
+function isValidEmail(email: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ─── Brevo email sender with retry + timeout ────────────────────────────
+async function sendBrevoEmail(
+  subject: string,
+  htmlContent: string,
+  to: { email: string; name: string },
+): Promise<{ success: boolean; status: number; text: string }> {
+  const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
+  
+  // Validate email
+  if (!isValidEmail(to.email)) {
+    console.error('Invalid recipient email:', to.email);
+    return { success: false, status: 400, text: 'Invalid email format' };
+  }
+
+  const payload = {
+    sender: { name: 'Growlancer Team', email: Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com' },
+    to: [to],
+    subject,
+    htmlContent,
+  };
+
+  // Try up to 2 times (initial + 1 retry)
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
+
+      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'api-key': BREVO_API_KEY,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      const text = await res.text();
+
+      if (res.ok) {
+        console.log('Brevo email sent:', subject, '→', to.email, 'status:', res.status);
+        return { success: true, status: res.status, text };
+      }
+
+      console.error(`Brevo error (attempt ${attempt}/2):`, res.status, text);
+      
+      // Don't retry on 4xx (client errors)
+      if (res.status >= 400 && res.status < 500) {
+        return { success: false, status: res.status, text };
+      }
+      
+      // Wait 1s before retry
+      if (attempt === 1) await new Promise(r => setTimeout(r, 1000));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`Brevo exception (attempt ${attempt}/2):`, msg);
+      
+      if (attempt === 1) await new Promise(r => setTimeout(r, 1000));
+      else return { success: false, status: 0, text: msg };
+    }
+  }
+
+  return { success: false, status: 0, text: 'Max retries exceeded' };
+}
+
 // ─── Shared Email Template Wrapper ───────────────────────────────────────
-function baseEmailHtml(title: string, bodyHtml: string): string {
+function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string): string {
+  const bg = headerGradient || '#059669 0%, #047857 100%';
   return `
 <!DOCTYPE html>
 <html>
@@ -79,7 +152,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
   <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
   <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 28px 24px; text-align: center;">
+    <div style="background: linear-gradient(135deg, ${bg}); padding: 28px 24px; text-align: center;">
       <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0; word-break: break-word; word-wrap: break-word;">${title}</h1>
     </div>
     <!-- Body -->
@@ -341,7 +414,6 @@ Deno.serve(async (req) => {
 
       const recipient_name = _eh(rawRecipientName);
 
-      const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
       const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
       const rawName = rawRecipientName; // for subject line (plain text)
@@ -443,39 +515,17 @@ Deno.serve(async (req) => {
 
       const bodyHtml = baseEmailHtml('Welcome to Growlancer! 🎉', bodyContent);
 
-      try {
-        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'api-key': BREVO_API_KEY,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            sender: { name: 'Growlancer Team', email: Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com' },
-            to: [{ email: recipient_email, name: recipient_name }],
-            subject,
-            htmlContent: bodyHtml,
-          }),
-        });
+      const brevoResult = await sendBrevoEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name });
 
-        const text = await res.text();
-        console.error('Welcome email Brevo response:', res.status, text);
-
-        if (!res.ok) {
-          return new Response(JSON.stringify({ success: false, error: 'Failed to send welcome email', details: text }), {
-            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-
-        return new Response(JSON.stringify({ success: true, message: 'Welcome email sent!' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        return new Response(JSON.stringify({ success: false, error: err instanceof Error ? err.message : 'Failed to send welcome email' }), {
+      if (!brevoResult.success) {
+        return new Response(JSON.stringify({ success: false, error: 'Failed to send welcome email', details: brevoResult.text }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+
+      return new Response(JSON.stringify({ success: true, message: 'Welcome email sent!' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // ─── POST: send_certificate_email ──────────────────────────────
@@ -492,7 +542,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
       const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
       const verifyUrl = `${APP_URL}/verify-certificate/${verification_code || ''}`;
       const isLOR = certificate_type === 'lor';
@@ -525,209 +574,152 @@ Deno.serve(async (req) => {
         ? `Letter of Recommendation — ${role_name || 'Internship'} at Growlancer`
         : `Internship Completion Certificate — ${role_name || 'Internship'} at Growlancer`;
 
-      const bodyHtml = isLOR
-        ? `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 20px 8px; margin: 0;">
-  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
-  <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <!-- Header -->
-    <div style="background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); padding: 28px 24px; text-align: center;">
-      <div style="font-size: 40px; margin-bottom: 8px;">🌟</div>
-      <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0 0 6px; word-break: break-word;">Letter of Recommendation</h1>
-      <p style="color: #c4b5fd; font-size: 13px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
-    </div>
-    <div style="padding: 28px 24px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Dear ${recipient_name},</p>
+      const bodyContent = isLOR ? `
+        <div style="font-size: 40px; text-align: center; margin-bottom: 16px;">🌟</div>
 
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 16px;">
-        On behalf of the entire team at <strong>Growlancer</strong>, it is my privilege to provide you with this
-        <strong style="color: #7c3aed;">Letter of Recommendation</strong> for your outstanding performance during your
-        <strong>${role_name || 'Internship'}</strong> with us.
-      </p>
+        <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Dear ${recipient_name},</p>
 
-      <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 20px;">
-        Throughout your time with us, you demonstrated exceptional skill, dedication, and professionalism.
-        ${performance_summary ? `Your contributions included <strong>${performance_summary}</strong>.` : 'Your contributions have made a meaningful and lasting impact on our team and projects.'}
-      </p>
-
-      ${pdfDocSection}
-
-      <!-- Verification Card -->
-      <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #7c3aed; border-radius: 16px; overflow: hidden;">
-        <div style="background: #f3e8ff; padding: 20px 24px; text-align: center;">
-          <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
-          <h3 style="font-size: 16px; color: #6d21a8; margin: 0 0 6px; font-weight: 700; word-break: break-word;">View &amp; Verify Online</h3>
-          <p style="font-size: 13px; color: #7c3aed; margin: 0 0 16px; word-break: break-word;">Share this link with employers to verify your recommendation letter</p>
-          <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
-            <tr>
-              <td style="background: #7c3aed; border-radius: 12px; padding: 0;">
-                <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
-                   style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
-                  🔍 View &amp; Verify Online
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="font-size: 11px; color: #7c3aed; margin: 12px 0 0; word-break: break-word;">
-            Verification Code: <strong style="font-size: 14px; font-family: monospace;">${verification_code || ''}</strong>
-          </p>
-        </div>
-      </div>
-
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 20px;">
-        We have no doubt that you will continue to excel in all your future endeavors. Your time at Growlancer has been truly valued, and we are confident you will achieve great things ahead.
-      </p>
-
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 24px;">
-        We wish you continued success and growth in your career! 🚀
-      </p>
-
-      <!-- Signature -->
-      <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
-        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 2px;">With warm regards,</p>
-        <p style="font-size: 16px; color: #7c3aed; margin: 0 0 2px; font-weight: 700; word-break: break-word;">Mohammad Miran Khan</p>
-        <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; word-break: break-word;">Founder &amp; CEO, Growlancer</p>
-        <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
-          <tr>
-            <td style="padding: 8px 16px; background: #f3e8ff; border-radius: 8px;">
-              <p style="font-size: 11px; color: #6d28d9; margin: 0; word-break: break-word;">
-                🌐 ${APP_URL} &nbsp;|&nbsp; 📧 growlancer.own@gmail.com
-              </p>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <div style="padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-      <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
-    </div>
-  </div>
-  <!--[if mso]></td></tr></table><![endif]-->
-</body>
-</html>`
-        : `
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 20px 8px; margin: 0;">
-  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
-  <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 28px 24px; text-align: center;">
-      <div style="font-size: 40px; margin-bottom: 8px;">🎉</div>
-      <h1 style="color: white; font-size: 20px; font-weight: 700; margin: 0 0 6px; word-break: break-word;">Internship Completion Certificate</h1>
-      <p style="color: #a7f3d0; font-size: 13px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
-    </div>
-    <div style="padding: 28px 24px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
-      <!-- Congratulations Banner -->
-      <div style="margin: 0 0 24px; padding: 20px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 16px; text-align: center;">
-        <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
-        <h2 style="font-size: 20px; color: #065f46; margin: 0 0 6px; font-weight: 800; word-break: break-word;">Congratulations, ${recipient_name}! 🎊</h2>
-        <p style="font-size: 14px; color: #047857; margin: 0; line-height: 1.5; word-break: break-word;">
-          You have successfully completed your <strong>${role_name || 'Internship'}</strong> at <strong>Growlancer</strong>. We are so proud of everything you've achieved!
+        <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 16px;">
+          On behalf of the entire team at <strong>Growlancer</strong>, it is my privilege to provide you with this
+          <strong style="color: #7c3aed;">Letter of Recommendation</strong> for your outstanding performance during your
+          <strong>${role_name || 'Internship'}</strong> with us.
         </p>
-      </div>
 
-      <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 20px;">
-        Your dedication, hard work, and contributions during your time with us have been truly outstanding. You have grown both personally and professionally, and we are honored to have been part of your journey.
-      </p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 20px;">
+          Throughout your time with us, you demonstrated exceptional skill, dedication, and professionalism.
+          ${performance_summary ? `Your contributions included <strong>${performance_summary}</strong>.` : 'Your contributions have made a meaningful and lasting impact on our team and projects.'}
+        </p>
 
-      <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 24px;">
-        This <strong>Internship Completion Certificate</strong> officially recognizes your successful completion of the program and the valuable skills you have developed along the way.
-      </p>
+        ${pdfDocSection}
 
-      ${pdfDocSection}
+        <!-- Verification Card -->
+        <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #7c3aed; border-radius: 16px; overflow: hidden;">
+          <div style="background: #f3e8ff; padding: 20px 24px; text-align: center;">
+            <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
+            <h3 style="font-size: 16px; color: #6d21a8; margin: 0 0 6px; font-weight: 700; word-break: break-word;">View &amp; Verify Online</h3>
+            <p style="font-size: 13px; color: #7c3aed; margin: 0 0 16px; word-break: break-word;">Share this link with employers to verify your recommendation letter</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="background: #7c3aed; border-radius: 12px; padding: 0;">
+                  <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
+                     style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
+                    🔍 View &amp; Verify Online
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p style="font-size: 11px; color: #7c3aed; margin: 12px 0 0; word-break: break-word;">
+              Verification Code: <strong style="font-size: 14px; font-family: monospace;">${verification_code || ''}</strong>
+            </p>
+          </div>
+        </div>
 
-      <!-- Verification Card -->
-      <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
-        <div style="background: #f0fdf4; padding: 20px 24px; text-align: center;">
-          <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
-          <h3 style="font-size: 16px; color: #065f46; margin: 0 0 6px; font-weight: 700; word-break: break-word;">View &amp; Verify Online</h3>
-          <p style="font-size: 13px; color: #047857; margin: 0 0 16px; word-break: break-word;">Share this link with employers to verify your certificate</p>
-          <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 20px;">
+          We have no doubt that you will continue to excel in all your future endeavors. Your time at Growlancer has been truly valued, and we are confident you will achieve great things ahead.
+        </p>
+
+        <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 24px;">
+          We wish you continued success and growth in your career! 🚀
+        </p>
+
+        <!-- Signature -->
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+          <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 2px;">With warm regards,</p>
+          <p style="font-size: 16px; color: #7c3aed; margin: 0 0 2px; font-weight: 700; word-break: break-word;">Mohammad Miran Khan</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; word-break: break-word;">Founder &amp; CEO, Growlancer</p>
+          <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="background: #059669; border-radius: 12px; padding: 0;">
-                <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
-                   style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
-                  🔍 View &amp; Verify Online
-                </a>
+              <td style="padding: 8px 16px; background: #f3e8ff; border-radius: 8px;">
+                <p style="font-size: 11px; color: #6d28d9; margin: 0; word-break: break-word;">
+                  🌐 ${APP_URL} &nbsp;|&nbsp; 📧 growlancer.own@gmail.com
+                </p>
               </td>
             </tr>
           </table>
-          <p style="font-size: 11px; color: #059669; margin: 12px 0 0; word-break: break-word;">
-            Verification Code: <strong style="font-size: 14px; font-family: monospace;">${verification_code || ''}</strong>
+        </div>`
+        : `
+        <div style="font-size: 36px; text-align: center; margin-bottom: 16px;">🎉</div>
+
+        <!-- Congratulations Banner -->
+        <div style="margin: 0 0 24px; padding: 20px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #86efac; border-radius: 16px; text-align: center;">
+          <div style="font-size: 36px; margin-bottom: 8px;">🎉</div>
+          <h2 style="font-size: 20px; color: #065f46; margin: 0 0 6px; font-weight: 800; word-break: break-word;">Congratulations, ${recipient_name}! 🎊</h2>
+          <p style="font-size: 14px; color: #047857; margin: 0; line-height: 1.5; word-break: break-word;">
+            You have successfully completed your <strong>${role_name || 'Internship'}</strong> at <strong>Growlancer</strong>. We are so proud of everything you've achieved!
           </p>
         </div>
-      </div>
 
-      <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 20px;">
-        You can now add this certificate to your LinkedIn profile, resume, and portfolio. Employers can verify its authenticity by entering the verification code on our website.
-      </p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 20px;">
+          Your dedication, hard work, and contributions during your time with us have been truly outstanding. You have grown both personally and professionally, and we are honored to have been part of your journey.
+        </p>
 
-      <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 24px;">
-        We wish you the very best in all your future endeavors! Keep growing, keep learning, and keep achieving. 🚀
-      </p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 24px;">
+          This <strong>Internship Completion Certificate</strong> officially recognizes your successful completion of the program and the valuable skills you have developed along the way.
+        </p>
 
-      <!-- Signature -->
-      <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
-        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 2px;">With warm regards,</p>
-        <p style="font-size: 16px; color: #059669; margin: 0 0 2px; font-weight: 700; word-break: break-word;">Mohammad Miran Khan</p>
-        <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; word-break: break-word;">Founder &amp; CEO, Growlancer</p>
-        <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
-          <tr>
-            <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">
-              <p style="font-size: 11px; color: #166534; margin: 0; word-break: break-word;">
-                🌐 ${APP_URL} &nbsp;|&nbsp; 📧 growlancer.own@gmail.com
-              </p>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
-    <div style="padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-      <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
-    </div>
-  </div>
-  <!--[if mso]></td></tr></table><![endif]-->
-</body>
-</html>`;
+        ${pdfDocSection}
 
-      try {
-        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'api-key': BREVO_API_KEY,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            sender: { name: 'Growlancer Team', email: Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com' },
-            to: [{ email: recipient_email, name: recipient_name }],
-            subject,
-            htmlContent: bodyHtml,
-          }),
-        });
+        <!-- Verification Card -->
+        <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
+          <div style="background: #f0fdf4; padding: 20px 24px; text-align: center;">
+            <div style="font-size: 28px; margin-bottom: 8px;">🔗</div>
+            <h3 style="font-size: 16px; color: #065f46; margin: 0 0 6px; font-weight: 700; word-break: break-word;">View &amp; Verify Online</h3>
+            <p style="font-size: 13px; color: #047857; margin: 0 0 16px; word-break: break-word;">Share this link with employers to verify your certificate</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="width: 100%;">
+              <tr>
+                <td style="background: #059669; border-radius: 12px; padding: 0;">
+                  <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer"
+                     style="display: block; padding: 14px 20px; color: white; text-decoration: none; font-size: 15px; font-weight: 700; text-align: center; word-break: break-word;">
+                    🔍 View &amp; Verify Online
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p style="font-size: 11px; color: #059669; margin: 12px 0 0; word-break: break-word;">
+              Verification Code: <strong style="font-size: 14px; font-family: monospace;">${verification_code || ''}</strong>
+            </p>
+          </div>
+        </div>
 
-        const text = await res.text();
-        console.error('Certificate email Brevo response:', res.status, text);
+        <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 20px;">
+          You can now add this certificate to your LinkedIn profile, resume, and portfolio. Employers can verify its authenticity by entering the verification code on our website.
+        </p>
 
-        if (!res.ok) {
-          return new Response(JSON.stringify({ success: false, error: 'Failed to send email', details: text }), {
-            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
+        <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 24px;">
+          We wish you the very best in all your future endeavors! Keep growing, keep learning, and keep achieving. 🚀
+        </p>
 
-        return new Response(JSON.stringify({ success: true, message: 'Email sent successfully' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        return new Response(JSON.stringify({ success: false, error: err instanceof Error ? err.message : 'Failed to send email' }), {
+        <!-- Signature -->
+        <div style="margin-top: 32px; padding-top: 24px; border-top: 2px solid #e2e8f0;">
+          <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 2px;">With warm regards,</p>
+          <p style="font-size: 16px; color: #059669; margin: 0 0 2px; font-weight: 700; word-break: break-word;">Mohammad Miran Khan</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px; word-break: break-word;">Founder &amp; CEO, Growlancer</p>
+          <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">
+                <p style="font-size: 11px; color: #166534; margin: 0; word-break: break-word;">
+                  🌐 ${APP_URL} &nbsp;|&nbsp; 📧 growlancer.own@gmail.com
+                </p>
+              </td>
+            </tr>
+          </table>
+        </div>`;
+
+      const headerTitle = isLOR ? 'Letter of Recommendation' : 'Internship Completion Certificate';
+      const headerGradient = isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#059669 0%, #047857 100%';
+      const bodyHtml = baseEmailHtml(headerTitle, bodyContent, headerGradient);
+
+      const brevoResult = await sendBrevoEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name });
+
+      if (!brevoResult.success) {
+        return new Response(JSON.stringify({ success: false, error: 'Failed to send email', details: brevoResult.text }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+
+      return new Response(JSON.stringify({ success: true, message: 'Email sent successfully' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // ─── POST: counts ──────────────────────────────────────────────
