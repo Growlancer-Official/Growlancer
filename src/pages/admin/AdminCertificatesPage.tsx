@@ -400,6 +400,9 @@ export function AdminCertificatesPage() {
 
     setActionLoading(`send-${app.id}-both`);
     try {
+      let certSuccess = false;
+      let lorSuccess = false;
+
       // Certificate
       if (app.offer_letter_url) {
         const certResult = await issueCertificate({
@@ -412,7 +415,8 @@ export function AdminCertificatesPage() {
           certificateUrl: app.offer_letter_url,
         });
         if (certResult.success && certResult.certificate) {
-          await sendCertificateEmail({
+          certSuccess = true;
+          const emailResult = await sendCertificateEmail({
             certificateId: certResult.certificate.id,
             recipientEmail: app.email,
             recipientName: app.full_name,
@@ -422,6 +426,9 @@ export function AdminCertificatesPage() {
             verificationCode: certResult.certificate.verification_code || '',
             certificateUrl: app.offer_letter_url,
           });
+          if (!emailResult.success) console.error('Cert email failed:', emailResult.error);
+        } else {
+          console.error('Cert issue failed:', certResult.error);
         }
       }
 
@@ -440,7 +447,8 @@ export function AdminCertificatesPage() {
           },
         });
         if (lorResult.success && lorResult.certificate) {
-          await sendCertificateEmail({
+          lorSuccess = true;
+          const emailResult = await sendCertificateEmail({
             certificateId: lorResult.certificate.id,
             recipientEmail: app.email,
             recipientName: app.full_name,
@@ -451,14 +459,24 @@ export function AdminCertificatesPage() {
             certificateUrl: app.internship_letter_url,
             performanceSummary: `Top performer during ${app.role_name} internship.`,
           });
+          if (!emailResult.success) console.error('LOR email failed:', emailResult.error);
+        } else {
+          console.error('LOR issue failed:', lorResult.error);
         }
       }
 
-      toast.success('Both Sent!', `Certificate & LOR issued & emailed to ${app.full_name}!`);
-      setEmailLogs(prev => ({
-        ...prev,
-        [app.id]: [...(prev[app.id] || []), { status: 'Certificate+LOR', sent: true, time: new Date().toISOString() }],
-      }));
+      if (certSuccess || lorSuccess) {
+        const parts = [];
+        if (certSuccess) parts.push('Certificate');
+        if (lorSuccess) parts.push('LOR');
+        toast.success('Sent!', `${parts.join(' + ')} issued & emailed to ${app.full_name}!`);
+        setEmailLogs(prev => ({
+          ...prev,
+          [app.id]: [...(prev[app.id] || []), { status: parts.join('+'), sent: true, time: new Date().toISOString() }],
+        }));
+      } else {
+        toast.error('Failed', 'Could not issue either Certificate or LOR. Check console for details.');
+      }
       fetchCerts();
     } catch (err) {
       console.error('Both issue error:', err);

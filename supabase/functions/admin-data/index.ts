@@ -342,36 +342,51 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Generate verification code
-      const { data: codeData } = await supabaseClient.rpc('generate_certificate_code');
-      const verificationCode = codeData || ('GRW-CERT-' + Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join(''));
+      // Generate verification code — fallback if RPC doesn't exist
+      let verificationCode: string;
+      try {
+        const { data: codeData } = await supabaseClient.rpc('generate_certificate_code');
+        verificationCode = codeData || ('GRW-CERT-' + Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join(''));
+      } catch (rpcErr) {
+        console.error('RPC generate_certificate_code failed, using fallback:', rpcErr);
+        verificationCode = 'GRW-CERT-' + Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+      }
+
+      // Only insert columns that exist in the table — avoid missing column errors
+      const insertData: Record<string, any> = {
+        user_id,
+        skill,
+        level,
+        recipient_name,
+        recipient_email,
+        certificate_type: certificate_type || 'internship',
+        verification_code: verificationCode,
+        issued_at: new Date().toISOString(),
+        status: 'active',
+        metadata: metadata || {},
+      };
+
+      // Include certificate URL if provided
+      if (certificate_url) {
+        insertData.certificate_url = certificate_url;
+      }
+
+      console.log('Inserting certificate:', JSON.stringify({ ...insertData, verification_code: verificationCode }));
 
       const { data, error } = await supabaseClient
         .from('skill_certifications')
-        .insert({
-          user_id,
-          skill,
-          level,
-          recipient_name,
-          recipient_email,
-          certificate_type: certificate_type || 'platform',
-          verification_code: verificationCode,
-          issued_at: new Date().toISOString(),
-          status: 'active',
-          metadata: metadata || {},
-          passed_at: new Date().toISOString(),
-          score: 100,
-          max_score: 100,
-          certificate_url: certificate_url || null,
-        })
+        .insert(insertData)
         .select()
         .single();
 
       if (error) {
+        console.error('Certificate insert error:', error);
         return new Response(JSON.stringify({ success: false, error: error.message }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+
+      console.log('Certificate issued successfully:', data.id);
 
       return new Response(JSON.stringify({ success: true, certificate: data }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
