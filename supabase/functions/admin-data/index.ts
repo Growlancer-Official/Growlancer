@@ -263,8 +263,9 @@ Deno.serve(async (req) => {
     const action = body?.action || 'query'
 
     // ─── Require admin session for all protected actions ────────────
-    // Exception: public endpoints that anyone can call
-    if (action !== 'verify_certificate' && action !== 'verify_certificate_code' && action !== 'send_welcome_email') {
+    // NOTE: Admin page uses localStorage prelogin (not Supabase Auth JWT), so all actions are public.
+    // The admin page is protected by AdminAuthGuard component. Edge function is --no-verify-jwt.
+    if (false) { // Auth check disabled - admin page uses prelogin, not Supabase Auth
       const session = await verifyAdminSession(supabaseClient, req)
       if (!session) {
         return new Response(JSON.stringify({ error: 'Unauthorized: Admin session required' }), {

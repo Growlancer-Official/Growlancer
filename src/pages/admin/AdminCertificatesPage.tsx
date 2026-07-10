@@ -114,8 +114,8 @@ export function AdminCertificatesPage() {
   const [internSearch, setInternSearch] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const toast = useToast();
-  // Track generated verification codes per intern
-  const [generatedCodes, setGeneratedCodes] = useState<Record<string, { code: string; url: string; type: string; loading: boolean }>>({});
+  // Track generated verification codes per intern — with certId for PDF upload + email
+  const [generatedCodes, setGeneratedCodes] = useState<Record<string, any>>({});
 
   const handleGenerateCode = async (app: InternshipAppUser, type: 'internship' | 'lor') => {
     const isLOR = type === 'lor';
@@ -141,7 +141,7 @@ export function AdminCertificatesPage() {
       if (result.success && result.certificate) {
         const actualCode = result.certificate.verification_code;
         const verifyUrl = `${window.location.origin}/certificate/${actualCode}`;
-        setGeneratedCodes(prev => ({ ...prev, [key]: { code: actualCode, url: verifyUrl, type: isLOR ? 'LOR' : 'Certificate', loading: false } }));
+        setGeneratedCodes(prev => ({ ...prev, [key]: { code: actualCode, url: verifyUrl, type: isLOR ? 'LOR' : 'Certificate', loading: false, certId: result.certificate!.id, pdfUrl: result.certificate!.certificate_url || undefined } }));
         toast.success('Code Generated!', `${isLOR ? 'LOR' : 'Certificate'} verification code created for ${app.full_name}`);
         fetchCerts();
       } else {
@@ -431,6 +431,32 @@ export function AdminCertificatesPage() {
                             <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{app.email}</span>
                             <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Applied: {formatRelativeTime(app.created_at)}</span>
                           </div>
+                          {/* QR Code URL — visible for interns with existing certs */}
+                          {(() => {
+                            const internCerts = certificates.filter(c => c.user_id === app.id && c.status === 'active');
+                            if (internCerts.length === 0) return null;
+                            const latestCert = internCerts[0];
+                            const url = `${window.location.origin}/certificate/${latestCert.verification_code}`;
+                            const isLOR = latestCert.certificate_type === 'lor';
+                            return (
+                              <div className="mt-2 flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${encodeURIComponent(url)}`}
+                                  alt="QR" className="w-8 h-8 rounded shrink-0 bg-white p-0.5" />
+                                <div className="min-w-0 flex-1">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`text-[10px] font-bold ${isLOR ? 'text-violet-400' : 'text-emerald-400'}`}>
+                                      {isLOR ? 'LOR' : 'Certificate'} URL
+                                    </span>
+                                    <button onClick={() => { navigator.clipboard.writeText(url); setCopiedId(`hdr-${app.id}`); setTimeout(() => setCopiedId(null), 2000); }}
+                                      className="flex items-center gap-0.5 text-[9px] text-slate-500 hover:text-emerald-400 transition-colors">
+                                      {copiedId === `hdr-${app.id}` ? <CheckCheck className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                                    </button>
+                                  </div>
+                                  <p className="text-[9px] font-mono text-slate-600 truncate">{url}</p>
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
@@ -472,61 +498,202 @@ export function AdminCertificatesPage() {
                         </div>
 
                         {/* Show Generated Code - Certificate */}
-                        {generatedCodes[`${app.id}-internship`]?.url && (
-                          <div className="mt-3 p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
-                            <div className="flex items-start gap-3">
-                              {/* QR Code */}
-                              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(generatedCodes[`${app.id}-internship`]!.url)}`}
-                                alt="QR Code" className="w-16 h-16 rounded-lg shrink-0 bg-white p-1" />
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                                    <span className="text-xs font-bold text-emerald-400">Certificate URL Ready:</span>
+                        {generatedCodes[`${app.id}-internship`]?.url && (() => {
+                          const key = `${app.id}-internship`;
+                          const gen = generatedCodes[key]!;
+                          const certId = gen.certId;
+                          const uploading = generatedCodes[`${key}-uploading`]?.uploading || false;
+                          const sending = generatedCodes[`${key}-sending`]?.sending || false;
+                          const pdfUrl = gen.pdfUrl;
+                          return (
+                            <div className="mt-3 space-y-3">
+                              {/* QR + URL */}
+                              <div className="p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
+                                <div className="flex items-start gap-3">
+                                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(gen.url)}`} alt="QR" className="w-16 h-16 rounded-lg shrink-0 bg-white p-1" />
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                        <span className="text-xs font-bold text-emerald-400">Certificate URL Ready:</span>
+                                      </div>
+                                      <button onClick={() => { navigator.clipboard.writeText(gen.url); setCopiedId(`code-${key}`); setTimeout(() => setCopiedId(null), 2000); }}
+                                        className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0">
+                                        {copiedId === `code-${key}` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                        {copiedId === `code-${key}` ? 'Copied!' : 'Copy URL'}
+                                      </button>
+                                    </div>
+                                    <a href={gen.url} target="_blank" rel="noopener noreferrer"
+                                      className="block text-xs font-mono text-emerald-400/70 hover:text-emerald-300 truncate">{gen.url}</a>
                                   </div>
-                                  <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-internship`]!.url); setCopiedId(`code-${app.id}-internship`); setTimeout(() => setCopiedId(null), 2000); }}
-                                    className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0">
-                                    {copiedId === `code-${app.id}-internship` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                    {copiedId === `code-${app.id}-internship` ? 'Copied!' : 'Copy URL'}
+                                </div>
+                              </div>
+                              {/* PDF Upload */}
+                              {certId && (
+                                <div className="p-3 rounded-lg" style={{ background: pdfUrl ? 'rgba(5, 150, 105, 0.05)' : 'rgba(59, 130, 246, 0.05)', border: pdfUrl ? '1px solid rgba(5, 150, 105, 0.2)' : '1px solid rgba(59, 130, 246, 0.15)' }}>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <FileText className={pdfUrl ? 'w-3.5 h-3.5 text-emerald-400' : 'w-3.5 h-3.5 text-blue-400'} />
+                                      <span className={pdfUrl ? 'text-[10px] font-bold uppercase tracking-widest text-emerald-400' : 'text-[10px] font-bold uppercase tracking-widest text-blue-400'}>
+                                        Certificate PDF Document
+                                      </span>
+                                      {pdfUrl && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded ✓</span>}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
+                                      {uploading ? <><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</> : <><FileUp className="w-3 h-3" /> {pdfUrl ? 'Replace PDF' : 'Upload PDF'}</>}
+                                      <input type="file" accept=".pdf,application/pdf" className="hidden" disabled={uploading}
+                                        onChange={async (e) => {
+                                          const f = e.target.files?.[0]; if (!f || !certId) return;
+                                          setGeneratedCodes(p => ({ ...p, [`${key}-uploading`]: { uploading: true } }));
+                                          try {
+                                            const b64 = await new Promise<string>((rs, rj) => { const r = new FileReader(); r.onload = () => rs((r.result as string).split(',')[1]); r.onerror = rj; r.readAsDataURL(f); });
+                                            const fp = `cert-docs/${certId}/${Date.now()}-${f.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+                                            const { data: upRes, error: upErr } = await supabase.functions.invoke('admin-data', { method: 'POST', body: { action: 'storage_upload', bucket: 'certificate_documents', file_path: fp, file_base64: b64, content_type: f.type || 'application/pdf' } });
+                                            if (upErr || upRes?.error) throw new Error(upRes?.error || upErr?.message);
+                                            const pubUrl = upRes.publicUrl; if (!pubUrl) throw new Error('No URL');
+                                            await supabase.functions.invoke('admin-data', { method: 'PATCH', body: { table: 'skill_certifications', id: certId, data: { certificate_url: pubUrl } } });
+                                            setGeneratedCodes(p => ({ ...p, [key]: { ...p[key], pdfUrl: pubUrl }, [`${key}-uploading`]: { uploading: false } }));
+                                            toast.success('Uploaded', 'PDF uploaded!'); fetchCerts();
+                                          } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Upload failed'); setGeneratedCodes(p => ({ ...p, [`${key}-uploading`]: { uploading: false } })); }
+                                          e.target.value = '';
+                                        }} />
+                                    </label>
+                                    {pdfUrl && <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-all"><ExternalLink className="w-3 h-3" /> View</a>}
+                                  </div>
+                                </div>
+                              )}
+                              {/* Send Email */}
+                              {pdfUrl && certId && (
+                                <div className="p-3 rounded-lg flex items-center justify-between" style={{ background: 'rgba(5, 150, 105, 0.06)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
+                                  <div className="flex items-center gap-2">
+                                    <Send className="w-3.5 h-3.5 text-emerald-400" />
+                                    <span className="text-[10px] font-bold text-emerald-400">Send Certificate Email</span>
+                                  </div>
+                                  <button onClick={async () => {
+                                    if (!gen.certId || !gen.code) return;
+                                    if (!confirm(`Send Certificate email to ${app.full_name} (${app.email})?`)) return;
+                                    setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: true } }));
+                                    try {
+                                      const r = await sendCertificateEmail({
+                                        certificateId: gen.certId, recipientEmail: app.email, recipientName: app.full_name,
+                                        certificateType: 'internship', roleName: app.role_name, level: 'intermediate',
+                                        verificationCode: gen.code, certificateUrl: gen.pdfUrl,
+                                        performanceSummary: '', skillsDemonstrated: [],
+                                      });
+                                      if (r.success) { toast.success('Email Sent!', `Certificate sent to ${app.full_name}`); setCertEmailLogs(p => ({ ...p, [gen.certId!]: [...(p[gen.certId!] || []), { type: 'Certificate', sent: true, time: new Date().toISOString() }] })); }
+                                      else toast.error('Failed', r.error || 'Email failed');
+                                    } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Error'); }
+                                    finally { setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: false } })); }
+                                  }} disabled={sending}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg disabled:opacity-30 text-white text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 transition-all">
+                                    {sending ? <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</> : <><Send className="w-3 h-3" /> Send Now</>}
                                   </button>
                                 </div>
-                                <p className="text-[10px] text-emerald-400/60 mb-1">Scan QR or copy URL to send to intern</p>
-                                <a href={generatedCodes[`${app.id}-internship`]!.url} target="_blank" rel="noopener noreferrer"
-                                  className="block text-xs font-mono text-emerald-400/70 hover:text-emerald-300 truncate">
-                                  {generatedCodes[`${app.id}-internship`]!.url}
-                                </a>
-                              </div>
+                              )}
                             </div>
-                          </div>
-                        )}
+                          );
+                        })()}
                         {/* Show Generated Code - LOR */}
-                        {generatedCodes[`${app.id}-lor`]?.url && (
-                          <div className="mt-3 p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
-                            <div className="flex items-start gap-3">
-                              {/* QR Code */}
-                              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(generatedCodes[`${app.id}-lor`]!.url)}`}
-                                alt="QR Code" className="w-16 h-16 rounded-lg shrink-0 bg-white p-1" />
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-center justify-between gap-2 mb-1">
-                                  <div className="flex items-center gap-2 min-w-0">
-                                    <CheckCircle2 className="w-4 h-4 text-violet-400 shrink-0" />
-                                    <span className="text-xs font-bold text-violet-400">LOR URL Ready:</span>
+                        {generatedCodes[`${app.id}-lor`]?.url && (() => {
+                          const key = `${app.id}-lor`;
+                          const gen = generatedCodes[key]!;
+                          const certId = gen.certId;
+                          const uploading = generatedCodes[`${key}-uploading`]?.uploading || false;
+                          const sending = generatedCodes[`${key}-sending`]?.sending || false;
+                          const pdfUrl = gen.pdfUrl;
+                          return (
+                            <div className="mt-3 space-y-3">
+                              {/* QR + URL */}
+                              <div className="p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+                                <div className="flex items-start gap-3">
+                                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(gen.url)}`} alt="QR" className="w-16 h-16 rounded-lg shrink-0 bg-white p-1" />
+                                  <div className="min-w-0 flex-1">
+                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <CheckCircle2 className="w-4 h-4 text-violet-400 shrink-0" />
+                                        <span className="text-xs font-bold text-violet-400">LOR URL Ready:</span>
+                                      </div>
+                                      <button onClick={() => { navigator.clipboard.writeText(gen.url); setCopiedId(`code-${key}`); setTimeout(() => setCopiedId(null), 2000); }}
+                                        className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 shrink-0">
+                                        {copiedId === `code-${key}` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                        {copiedId === `code-${key}` ? 'Copied!' : 'Copy URL'}
+                                      </button>
+                                    </div>
+                                    <a href={gen.url} target="_blank" rel="noopener noreferrer"
+                                      className="block text-xs font-mono text-violet-400/70 hover:text-violet-300 truncate">{gen.url}</a>
                                   </div>
-                                  <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-lor`]!.url); setCopiedId(`code-${app.id}-lor`); setTimeout(() => setCopiedId(null), 2000); }}
-                                    className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 shrink-0">
-                                    {copiedId === `code-${app.id}-lor` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                    {copiedId === `code-${app.id}-lor` ? 'Copied!' : 'Copy URL'}
+                                </div>
+                              </div>
+                              {/* PDF Upload */}
+                              {certId && (
+                                <div className="p-3 rounded-lg" style={{ background: pdfUrl ? 'rgba(5, 150, 105, 0.05)' : 'rgba(59, 130, 246, 0.05)', border: pdfUrl ? '1px solid rgba(5, 150, 105, 0.2)' : '1px solid rgba(59, 130, 246, 0.15)' }}>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <FileText className={pdfUrl ? 'w-3.5 h-3.5 text-emerald-400' : 'w-3.5 h-3.5 text-blue-400'} />
+                                      <span className={pdfUrl ? 'text-[10px] font-bold uppercase tracking-widest text-emerald-400' : 'text-[10px] font-bold uppercase tracking-widest text-blue-400'}>
+                                        LOR PDF Document
+                                      </span>
+                                      {pdfUrl && <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded ✓</span>}
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
+                                      {uploading ? <><Loader2 className="w-3 h-3 animate-spin" /> Uploading...</> : <><FileUp className="w-3 h-3" /> {pdfUrl ? 'Replace PDF' : 'Upload PDF'}</>}
+                                      <input type="file" accept=".pdf,application/pdf" className="hidden" disabled={uploading}
+                                        onChange={async (e) => {
+                                          const f = e.target.files?.[0]; if (!f || !certId) return;
+                                          setGeneratedCodes(p => ({ ...p, [`${key}-uploading`]: { uploading: true } }));
+                                          try {
+                                            const b64 = await new Promise<string>((rs, rj) => { const r = new FileReader(); r.onload = () => rs((r.result as string).split(',')[1]); r.onerror = rj; r.readAsDataURL(f); });
+                                            const fp = `cert-docs/${certId}/${Date.now()}-${f.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+                                            const { data: upRes, error: upErr } = await supabase.functions.invoke('admin-data', { method: 'POST', body: { action: 'storage_upload', bucket: 'certificate_documents', file_path: fp, file_base64: b64, content_type: f.type || 'application/pdf' } });
+                                            if (upErr || upRes?.error) throw new Error(upRes?.error || upErr?.message);
+                                            const pubUrl = upRes.publicUrl; if (!pubUrl) throw new Error('No URL');
+                                            await supabase.functions.invoke('admin-data', { method: 'PATCH', body: { table: 'skill_certifications', id: certId, data: { certificate_url: pubUrl } } });
+                                            setGeneratedCodes(p => ({ ...p, [key]: { ...p[key], pdfUrl: pubUrl }, [`${key}-uploading`]: { uploading: false } }));
+                                            toast.success('Uploaded', 'LOR PDF uploaded!'); fetchCerts();
+                                          } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Upload failed'); setGeneratedCodes(p => ({ ...p, [`${key}-uploading`]: { uploading: false } })); }
+                                          e.target.value = '';
+                                        }} />
+                                    </label>
+                                    {pdfUrl && <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-all"><ExternalLink className="w-3 h-3" /> View</a>}
+                                  </div>
+                                </div>
+                              )}
+                              {/* Send Email */}
+                              {pdfUrl && certId && (
+                                <div className="p-3 rounded-lg flex items-center justify-between" style={{ background: 'rgba(124, 58, 237, 0.06)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+                                  <div className="flex items-center gap-2">
+                                    <Send className="w-3.5 h-3.5 text-violet-400" />
+                                    <span className="text-[10px] font-bold text-violet-400">Send LOR Email</span>
+                                  </div>
+                                  <button onClick={async () => {
+                                    if (!gen.certId || !gen.code) return;
+                                    if (!confirm(`Send LOR email to ${app.full_name} (${app.email})?`)) return;
+                                    setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: true } }));
+                                    try {
+                                      const r = await sendCertificateEmail({
+                                        certificateId: gen.certId, recipientEmail: app.email, recipientName: app.full_name,
+                                        certificateType: 'lor', roleName: app.role_name, level: 'advanced',
+                                        verificationCode: gen.code, certificateUrl: gen.pdfUrl,
+                                        performanceSummary: `Top performer during ${app.role_name} internship.`,
+                                        skillsDemonstrated: [],
+                                      });
+                                      if (r.success) { toast.success('LOR Sent!', `LOR sent to ${app.full_name}`); setCertEmailLogs(p => ({ ...p, [gen.certId!]: [...(p[gen.certId!] || []), { type: 'LOR', sent: true, time: new Date().toISOString() }] })); }
+                                      else toast.error('Failed', r.error || 'Email failed');
+                                    } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Error'); }
+                                    finally { setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: false } })); }
+                                  }} disabled={sending}
+                                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg disabled:opacity-30 text-white text-[10px] font-bold bg-violet-600 hover:bg-violet-700 transition-all">
+                                    {sending ? <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</> : <><Send className="w-3 h-3" /> Send Now</>}
                                   </button>
                                 </div>
-                                <p className="text-[10px] text-violet-400/60 mb-1">Scan QR or copy URL to send to intern</p>
-                                <a href={generatedCodes[`${app.id}-lor`]!.url} target="_blank" rel="noopener noreferrer"
-                                  className="block text-xs font-mono text-violet-400/70 hover:text-violet-300 truncate">
-                                  {generatedCodes[`${app.id}-lor`]!.url}
-                                </a>
-                              </div>
+                              )}
                             </div>
-                          </div>
-                        )}
+                          );
+                        })()}
                       </div>
 
                       {/* Already issued? Show existing certs for this user */}

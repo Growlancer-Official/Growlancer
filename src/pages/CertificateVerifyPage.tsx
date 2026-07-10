@@ -192,6 +192,11 @@ function CertificateCard({ cert }: { cert: Certificate }) {
 
 // ─── Intern Profile Card ────────────────────────────────────────────
 function InternProfileCard({ profile }: { profile: InternProfile }) {
+  const hasLinks = profile.linkedin_url || profile.github_url || profile.portfolio_url;
+  const durationStr = profile.available_from && profile.available_to
+    ? `${formatDate(profile.available_from)} — ${formatDate(profile.available_to)}`
+    : null;
+
   return (
     <div className="max-w-2xl mx-auto mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="rounded-[2rem] p-[2px]" style={{ background: 'linear-gradient(135deg, #3b82f6, #2563eb, #1d4ed8)' }}>
@@ -200,22 +205,23 @@ function InternProfileCard({ profile }: { profile: InternProfile }) {
             <User className="w-48 h-48 text-blue-500" />
           </div>
           <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-6">
+            {/* Section: Personal */}
+            <div className="flex items-center gap-2 mb-4">
               <User className="w-4 h-4 text-blue-400" />
-              <span className="text-[10px] uppercase tracking-widest text-blue-400 font-bold">Intern Profile Details</span>
+              <span className="text-[10px] uppercase tracking-widest text-blue-400 font-bold">Personal Information</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
               {[
                 { label: 'Full Name', value: profile.full_name },
                 { label: 'Email', value: profile.email },
                 { label: 'Role / Position', value: profile.role_name, accent: true },
-                { label: 'Status', value: profile.status?.replace('_', ' ') || 'N/A', accent2: true },
+                { label: 'Status', value: profile.status?.replace(/_/g, ' ') || 'N/A', accent2: true },
+                ...(profile.phone ? [{ label: 'Phone', value: profile.phone }] : []),
+                ...(profile.country ? [{ label: 'Country', value: profile.country }] : []),
                 ...(profile.university ? [{ label: 'University', value: profile.university }] : []),
                 ...(profile.degree ? [{ label: 'Degree', value: profile.degree }] : []),
-                ...(profile.country ? [{ label: 'Country', value: profile.country }] : []),
-                ...(profile.phone ? [{ label: 'Phone', value: profile.phone }] : []),
               ].map((item, i) => (
-                <div key={i} className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <div key={i} className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                   <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">{item.label}</p>
                   <p className={`text-sm font-semibold ${item.accent ? 'text-emerald-400' : item.accent2 ? 'text-amber-400 capitalize' : 'text-white'}`}>
                     {item.value}
@@ -223,9 +229,53 @@ function InternProfileCard({ profile }: { profile: InternProfile }) {
                 </div>
               ))}
             </div>
-            {(profile.linkedin_url || profile.github_url || profile.portfolio_url) && (
-              <div className="mt-4 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-3">Links</p>
+
+            {/* Section: Internship Duration */}
+            <div className="mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar className="w-4 h-4 text-blue-400" />
+                <span className="text-[10px] uppercase tracking-widest text-blue-400 font-bold">Internship Details</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {profile.available_from && profile.available_to ? (
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] md:col-span-2">
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Duration</p>
+                    <p className="text-sm font-semibold text-emerald-400">{durationStr}</p>
+                  </div>
+                ) : null}
+                {profile.weekly_availability ? (
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Weekly Availability</p>
+                    <p className="text-sm font-semibold text-white">{profile.weekly_availability} hrs/week</p>
+                  </div>
+                ) : null}
+                {profile.created_at ? (
+                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                    <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-1">Applied On</p>
+                    <p className="text-sm font-semibold text-white">{formatDate(profile.created_at)}</p>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            {/* Section: Cover Letter / Why Growlancer */}
+            {profile.cover_letter && profile.cover_letter !== 'Added manually by admin for certificate issuance.' && (
+              <div className="mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2">Cover Letter</p>
+                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{profile.cover_letter}</p>
+              </div>
+            )}
+            {profile.why_growlancer && (
+              <div className="mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2">Why Growlancer</p>
+                <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{profile.why_growlancer}</p>
+              </div>
+            )}
+
+            {/* Section: Links */}
+            {hasLinks && (
+              <div className="mb-6 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-3">Links &amp; Portfolio</p>
                 <div className="flex flex-wrap gap-3">
                   {profile.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer"
                     className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors">
@@ -239,11 +289,21 @@ function InternProfileCard({ profile }: { profile: InternProfile }) {
                 </div>
               </div>
             )}
-            {profile.created_at &&
-              <div className="mt-4 text-center">
-                <p className="text-[10px] text-slate-600">Applied: {formatDate(profile.created_at)}</p>
+
+            {/* Section: Notes */}
+            {profile.notes && (
+              <div className="mb-4 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-2">Notes</p>
+                <p className="text-sm text-slate-300 whitespace-pre-wrap">{profile.notes}</p>
               </div>
-            }
+            )}
+
+            {/* Profile Updated Date */}
+            <div className="text-center mt-4">
+              <p className="text-[9px] text-slate-600">
+                Profile last updated: {formatDate(profile.created_at)}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -362,6 +422,23 @@ export function CertificateVerifyPage() {
               <div className="flex items-center gap-2">
                 <Award className="w-4 h-4 text-emerald-400" />
                 <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tamper-Proof</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Legal Disclaimer */}
+          <div className="mt-6 max-w-2xl mx-auto p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+              <div>
+                <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-1">Important Notice</p>
+                <p className="text-[10px] text-slate-500 leading-relaxed">
+                  This certificate verification page is hosted on the Growlancer platform at the current domain. 
+                  In the event of a domain change, platform migration, or service discontinuation, this verification 
+                  page and its associated records may be removed or relocated. We recommend keeping a PDF copy of 
+                  your certificate for your records. Growlancer reserves the right to modify or discontinue this 
+                  verification service at any time without prior notice.
+                </p>
               </div>
             </div>
           </div>
@@ -485,6 +562,23 @@ export function CertificateVerifyPage() {
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-emerald-400" />
               <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Public Access</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Legal Disclaimer */}
+        <div className="mt-6 max-w-2xl mx-auto p-4 rounded-xl bg-amber-500/5 border border-amber-500/10">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 shrink-0" />
+            <div>
+              <p className="text-[10px] font-bold text-amber-400 uppercase tracking-widest mb-1">Important Notice</p>
+              <p className="text-[10px] text-slate-500 leading-relaxed">
+                This certificate verification page is hosted on the Growlancer platform at the current domain. 
+                In the event of a domain change, platform migration, or service discontinuation, this verification 
+                page and its associated records may be removed or relocated. We recommend keeping a PDF copy of 
+                your certificate for your records. Growlancer reserves the right to modify or discontinue this 
+                verification service at any time without prior notice.
+              </p>
             </div>
           </div>
         </div>

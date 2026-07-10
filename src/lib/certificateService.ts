@@ -111,6 +111,7 @@ export interface InternProfile {
   university: string | null;
   degree: string | null;
   role_name: string;
+  role_id: string;
   linkedin_url: string | null;
   github_url: string | null;
   portfolio_url: string | null;
@@ -119,6 +120,13 @@ export interface InternProfile {
   resume_url: string | null;
   created_at: string;
   status: string;
+  /** Additional internship fields */
+  weekly_availability: number | null;
+  available_from: string | null;
+  available_to: string | null;
+  notes: string | null;
+  google_meet_link: string | null;
+  interview_time: string | null;
 }
 
 /**
