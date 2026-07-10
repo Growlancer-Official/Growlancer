@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   Award, Shield, XCircle, Loader2, Search,
   User, Calendar, Clock, Copy, CheckCheck, AlertTriangle,
   Share2, Printer, Sparkles,  BookOpen, Zap, BadgeCheck, ArrowLeft, Star,
-  ExternalLink,
+  ExternalLink, GraduationCap, QrCode, Users, Briefcase, Globe,
 } from 'lucide-react';
 import { verifyCertificateByCode, CERT_LEVEL_STYLES, getCertificateTitle, type Certificate, type InternProfile } from '../lib/certificateService';
 
@@ -486,24 +486,109 @@ export function CertificateVerifyPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-12 md:py-20">
-        {/* Hero Section */}
+      <main className="max-w-4xl mx-auto px-4 py-12 md:py-16">
+        {/* Landing Hero - shown when no search has happened */}
         {!searched || (!certificate && !error) ? (
-          <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4">
-            <div className="mx-auto w-20 h-20 rounded-2xl bg-emerald-500/10 flex items-center justify-center mb-6">
-              <BadgeCheck className="w-10 h-10 text-emerald-400" />
+          <>
+            <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4">
+              <div className="mx-auto w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/5">
+                <Shield className="w-10 h-10 text-emerald-400" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+                Certificate <span className="text-emerald-400">Hub</span>
+              </h1>
+              <p className="text-slate-400 max-w-lg mx-auto text-base leading-relaxed">
+                Verify Growlancer certificates, internship completion records, and letters of recommendation — all in one place.
+              </p>
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
-              Certificate Verification
-            </h1>
-            <p className="text-slate-400 max-w-md mx-auto">
-              Verify the authenticity of a Growlancer certificate by entering its verification code below.
-            </p>
-          </div>
+
+            {/* Feature Cards Row */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {[
+                { icon: <BadgeCheck className="w-5 h-5" />, title: 'Verify Certificates', desc: 'Enter a verification code to instantly verify any certificate or LOR issued by Growlancer.', color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' },
+                { icon: <User className="w-5 h-5" />, title: 'View Intern Details', desc: 'See the recipient\'s full internship profile — including role, education, and links — in real-time.', color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' },
+                { icon: <Shield className="w-5 h-5" />, title: 'Trusted & Tamper-Proof', desc: 'Every certificate is digitally signed, tamper-proof, and verifiable anytime from anywhere.', color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/20' },
+              ].map((feature, i) => (
+                <div key={i} className={`p-5 rounded-2xl ${feature.bg} ${feature.border} animate-in fade-in slide-in-from-bottom-4`}
+                  style={{ animationDelay: `${i * 150}ms`, animationFillMode: 'both' }}>
+                  <div className={`h-10 w-10 rounded-xl ${feature.bg} flex items-center justify-center mb-3 ${feature.color}`}>
+                    {feature.icon}
+                  </div>
+                  <h3 className={`text-sm font-bold text-white mb-1.5`}>{feature.title}</h3>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">{feature.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Two-Column Info Section */}
+            <div className="max-w-3xl mx-auto mb-10 grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              {/* Certificate Types */}
+              <div className="p-5 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Award className="w-4 h-4 text-emerald-400" /> Certificate Types
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { icon: '🎓', label: 'Internship Completion', code: 'GRW-CERT-XXXXX', color: 'text-emerald-400' },
+                    { icon: '🌟', label: 'Letter of Recommendation', code: 'GRW-LOR-XXXXX', color: 'text-violet-400' },
+                    { icon: '🏅', label: 'Skill Certification', code: 'GRW-SKILL-XXXXX', color: 'text-blue-400' },
+                    { icon: '⭐', label: 'Achievement Badge', code: 'GRW-ACHV-XXXXX', color: 'text-amber-400' },
+                  ].map((type, i) => (
+                    <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                      <span className="text-lg shrink-0">{type.icon}</span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-white">{type.label}</p>
+                        <p className={`text-[10px] font-mono ${type.color}`}>{type.code}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* How It Works */}
+              <div className="p-5 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <Zap className="w-4 h-4 text-amber-400" /> How Verification Works
+                </h3>
+                <div className="space-y-4">
+                  {[
+                    { step: '1', icon: <QrCode className="w-4 h-4" />, title: 'Get Your Code', desc: 'Interns receive a unique verification code via email or QR from their program manager.' },
+                    { step: '2', icon: <Search className="w-4 h-4" />, title: 'Enter Code Below', desc: 'Type or paste the code in the search field above and click Verify.' },
+                    { step: '3', icon: <BadgeCheck className="w-4 h-4" />, title: 'Instant Verification', desc: 'Your full certificate and internship details appear instantly — share with employers!' },
+                  ].map((step, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="h-7 w-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-[10px] font-bold text-emerald-400 shrink-0">
+                        {step.step}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-emerald-400">{step.icon}</span>
+                          <h4 className="text-xs font-bold text-white">{step.title}</h4>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">{step.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Internship CTA */}
+                <div className="mt-4 p-4 rounded-xl bg-gradient-to-r from-emerald-600/10 to-emerald-700/5 border border-emerald-500/15 text-center">
+                  <p className="text-[11px] text-slate-400 mb-2">
+                    Haven\'t completed an internship yet? Apply now!
+                  </p>
+                  <a href="/internships"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition-all">
+                    <Briefcase className="w-3 h-3" />
+                    Apply for Internships
+                  </a>
+                </div>
+              </div>
+            </div>
+          </>
         ) : null}
 
-        {/* Search Input */}
-        <div className={`max-w-lg mx-auto ${searched && (certificate || error) ? 'mb-8' : 'mb-12'}`}>
+        {/* Search Input - Always visible but smaller when certificate is shown */}
+        <div className={`mx-auto ${searched && (certificate || error) ? 'max-w-lg mb-8' : 'max-w-xl mb-6'}`}>
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
