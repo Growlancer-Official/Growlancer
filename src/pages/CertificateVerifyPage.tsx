@@ -1,56 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   Award, Shield, XCircle, Loader2, Search,
   User, Calendar, Clock, Copy, CheckCheck, AlertTriangle,
   Share2, Printer, Sparkles, BookOpen, Zap, BadgeCheck, ArrowLeft, Star,
-  ExternalLink, QrCode, Briefcase, Users, Mail, GraduationCap,
-  ChevronDown, ChevronUp, Phone, Building, MapPin, Code2, CheckCircle2,
-  RefreshCw,
+  ExternalLink, Mail, Globe,
 } from 'lucide-react';
-import { verifyCertificateByCode, issueCertificate, revokeCertificate, getAllCertificates, sendCertificateEmail,
-  CERT_LEVEL_STYLES, getCertificateTitle, type Certificate, type CertificateType, type InternProfile } from '../lib/certificateService';
-import { supabase } from '../lib/supabase';
-import { adminDelete } from '../lib/adminDataProxy';
-
-// ─── Types ──────────────────────────────────────────────────────────
-type ApplicationStatus = 'applied' | 'shortlisted' | 'interview_scheduled' | 'selected' | 'rejected';
-
-interface InternshipAppUser {
-  id: string;
-  full_name: string;
-  email: string;
-  phone: string | null;
-  country: string | null;
-  university: string | null;
-  degree: string | null;
-  role_id: string;
-  role_name: string;
-  status: ApplicationStatus;
-  linkedin_url: string | null;
-  github_url: string | null;
-  portfolio_url: string | null;
-  resume_url: string | null;
-  cover_letter: string;
-  why_growlancer: string | null;
-  google_meet_link: string | null;
-  interview_time: string | null;
-  weekly_availability: number | null;
-  available_from: string | null;
-  available_to: string | null;
-  notes: string | null;
-  offer_letter_url: string | null;
-  nda_url: string | null;
-  internship_letter_url: string | null;
-  created_at: string;
-}
+import { verifyCertificateByCode,
+  CERT_LEVEL_STYLES, getCertificateTitle, type Certificate, type InternProfile } from '../lib/certificateService';
 
 // ─── Helpers ────────────────────────────────────────────────────────
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-}
-function fmtShort(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -60,27 +21,22 @@ function formatRelativeTime(dateStr: string): string {
   if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(hours / 24);
   if (days < 30) return `${days}d ago`;
-  return fmtShort(dateStr);
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  applied: 'bg-blue-500/10 text-blue-400',
-  shortlisted: 'bg-amber-500/10 text-amber-400',
-  interview_scheduled: 'bg-purple-500/10 text-purple-400',
-  selected: 'bg-emerald-500/10 text-emerald-400',
-  rejected: 'bg-red-500/10 text-red-400',
-};
-const STATUS_LABELS: Record<string, string> = {
-  applied: 'Applied', shortlisted: 'Shortlisted', interview_scheduled: 'Interview', selected: 'Selected', rejected: 'Rejected',
-};
-
 const typeIcons: Record<string, React.ReactNode> = {
-  platform: <Award className="w-5 h-5" />, skill_test: <BookOpen className="w-5 h-5" />,
-  internship: <Zap className="w-5 h-5" />, achievement: <Sparkles className="w-5 h-5" />, lor: <Star className="w-5 h-5" />,
+  platform: <Award className="w-5 h-5" />,
+  skill_test: <BookOpen className="w-5 h-5" />,
+  internship: <Zap className="w-5 h-5" />,
+  achievement: <Sparkles className="w-5 h-5" />,
+  lor: <Star className="w-5 h-5" />,
 };
 const typeLabels: Record<string, string> = {
-  platform: 'Platform Certificate', skill_test: 'Skill Certification',
-  internship: 'Internship Completion', achievement: 'Achievement Badge', lor: 'Letter of Recommendation',
+  platform: 'Platform Certificate',
+  skill_test: 'Skill Certification',
+  internship: 'Internship Completion',
+  achievement: 'Achievement Badge',
+  lor: 'Letter of Recommendation',
 };
 
 // ─── Certificate Card ───────────────────────────────────────────────
@@ -105,7 +61,7 @@ function CertificateCard({ cert }: { cert: Certificate }) {
           </span>
         </div>
       </div>
-      {/* Card */}
+      {/* Main Card */}
       <div className="relative overflow-hidden rounded-[2rem] p-[2px] animate-in fade-in slide-in-from-bottom-4 duration-500"
         style={{ background: isLOR ? 'linear-gradient(135deg, #7c3aed, #6d28d9, #5b21b6)' : 'linear-gradient(135deg, #10B981, #059669, #047857)' }}>
         <div className="relative bg-[#0F172A] rounded-[calc(2rem-2px)] p-8 md:p-12">
@@ -134,7 +90,8 @@ function CertificateCard({ cert }: { cert: Certificate }) {
             <p className="text-slate-400 text-sm text-center">
               {isLOR ? 'This letter is issued in recognition of exceptional performance' : 'has successfully completed their program'}
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-full mx-auto" style={{ background: levelStyle.bg, border: `1px solid ${levelStyle.border || 'transparent'}70` }}>
+            <div className="mt-4 inline-flex items-center gap-2 px-6 py-2.5 rounded-full mx-auto"
+              style={{ background: levelStyle.bg, border: `1px solid ${levelStyle.border || 'transparent'}70` }}>
               <span className="text-lg">{levelStyle.icon}</span>
               <span className={`font-bold text-sm ${levelStyle.color}`}>{getCertificateTitle(cert)}</span>
             </div>
@@ -151,21 +108,36 @@ function CertificateCard({ cert }: { cert: Certificate }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
               <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                 <User className={`w-4 h-4 mt-0.5 shrink-0 ${isLOR ? 'text-violet-400' : 'text-emerald-400'}`} />
-                <div><p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Recipient</p><p className="text-sm font-semibold text-white">{cert.recipient_name}</p><p className="text-xs text-slate-400">{cert.recipient_email}</p></div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Recipient</p>
+                  <p className="text-sm font-semibold text-white">{cert.recipient_name}</p>
+                  <p className="text-xs text-slate-400">{cert.recipient_email}</p>
+                </div>
               </div>
               <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                 <Calendar className={`w-4 h-4 mt-0.5 shrink-0 ${isLOR ? 'text-violet-400' : 'text-emerald-400'}`} />
-                <div><p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Issued On</p><p className="text-sm font-semibold text-white">{issuedDate}</p><p className="text-xs text-slate-400">{issueRelative}</p></div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Issued On</p>
+                  <p className="text-sm font-semibold text-white">{issuedDate}</p>
+                  <p className="text-xs text-slate-400">{issueRelative}</p>
+                </div>
               </div>
               {!isLOR && (
                 <>
                   <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                     <Award className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-                    <div><p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Level</p><p className={`text-sm font-semibold ${levelStyle.color}`}>{levelStyle.label}</p></div>
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Level</p>
+                      <p className={`text-sm font-semibold ${levelStyle.color}`}>{levelStyle.label}</p>
+                    </div>
                   </div>
                   <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.03] border border-white/[0.05]">
-                    {cert.certificate_type && typeIcons[cert.certificate_type] && <span className="text-emerald-400 mt-0.5 shrink-0">{typeIcons[cert.certificate_type]}</span>}
-                    <div><p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Type</p><p className="text-sm font-semibold text-white">{typeLabels[cert.certificate_type] || cert.certificate_type}</p></div>
+                    {cert.certificate_type && typeIcons[cert.certificate_type] &&
+                      <span className="text-emerald-400 mt-0.5 shrink-0">{typeIcons[cert.certificate_type]}</span>}
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Type</p>
+                      <p className="text-sm font-semibold text-white">{typeLabels[cert.certificate_type] || cert.certificate_type}</p>
+                    </div>
                   </div>
                 </>
               )}
@@ -177,11 +149,14 @@ function CertificateCard({ cert }: { cert: Certificate }) {
                   <Shield className={`w-4 h-4 ${isLOR ? 'text-violet-400' : 'text-emerald-400'}`} />
                   <span className="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Verification Code</span>
                 </div>
-                <button onClick={handleCopyLink} className="flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-400 transition-colors">
+                <button onClick={handleCopyLink}
+                  className="flex items-center gap-1 text-xs text-slate-400 hover:text-emerald-400 transition-colors">
                   {copied ? <><CheckCheck className="w-3 h-3 text-emerald-400" /> Copied!</> : <><Copy className="w-3 h-3" /> Copy Link</>}
                 </button>
               </div>
-              <p className={`mt-2 text-lg font-mono font-bold tracking-wider select-all ${isLOR ? 'text-violet-400' : 'text-emerald-400'}`}>{cert.verification_code}</p>
+              <p className={`mt-2 text-lg font-mono font-bold tracking-wider select-all ${isLOR ? 'text-violet-400' : 'text-emerald-400'}`}>
+                {cert.verification_code}
+              </p>
               <p className="mt-1 text-[10px] text-slate-600">Share this code to verify the authenticity of this {isLOR ? 'letter' : 'certificate'}</p>
             </div>
 
@@ -199,11 +174,14 @@ function CertificateCard({ cert }: { cert: Certificate }) {
           </div>
         </div>
       </div>
+      {/* Actions */}
       <div className="flex items-center justify-center gap-3 mt-6">
-        <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-xs font-bold text-slate-300 transition-all">
+        <button onClick={handlePrint}
+          className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-xs font-bold text-slate-300 transition-all">
           <Printer className="w-4 h-4" /> Print
         </button>
-        <button onClick={handleCopyLink} className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-xs font-bold text-slate-300 transition-all">
+        <button onClick={handleCopyLink}
+          className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 border border-white/5 rounded-xl text-xs font-bold text-slate-300 transition-all">
           {copied ? <CheckCheck className="w-4 h-4 text-emerald-400" /> : <Share2 className="w-4 h-4" />}
           {copied ? 'Copied!' : 'Share'}
         </button>
@@ -249,13 +227,23 @@ function InternProfileCard({ profile }: { profile: InternProfile }) {
               <div className="mt-4 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
                 <p className="text-[10px] uppercase tracking-wider text-slate-500 font-bold mb-3">Links</p>
                 <div className="flex flex-wrap gap-3">
-                  {profile.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors"><ExternalLink className="w-3 h-3" /> LinkedIn</a>}
-                  {profile.github_url && <a href={profile.github_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"><ExternalLink className="w-3 h-3" /> GitHub</a>}
-                  {profile.portfolio_url && <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"><ExternalLink className="w-3 h-3" /> Portfolio</a>}
+                  {profile.linkedin_url && <a href={profile.linkedin_url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                    <ExternalLink className="w-3 h-3" /> LinkedIn</a>}
+                  {profile.github_url && <a href={profile.github_url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+                    <ExternalLink className="w-3 h-3" /> GitHub</a>}
+                  {profile.portfolio_url && <a href={profile.portfolio_url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors">
+                    <ExternalLink className="w-3 h-3" /> Portfolio</a>}
                 </div>
               </div>
             )}
-            {profile.created_at && <div className="mt-4 text-center"><p className="text-[10px] text-slate-600">Applied: {formatDate(profile.created_at)}</p></div>}
+            {profile.created_at &&
+              <div className="mt-4 text-center">
+                <p className="text-[10px] text-slate-600">Applied: {formatDate(profile.created_at)}</p>
+              </div>
+            }
           </div>
         </div>
       </div>
@@ -267,9 +255,7 @@ function InternProfileCard({ profile }: { profile: InternProfile }) {
 export function CertificateVerifyPage() {
   const { code: urlCode } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const toast = { success: (t: string, m: string) => {}, error: (t: string, m: string) => {}, warning: (t: string, m: string) => {} };
 
-  // Verification state
   const [searchCode, setSearchCode] = useState(urlCode || '');
   const [verifying, setVerifying] = useState(false);
   const [certificate, setCertificate] = useState<Certificate | null>(null);
@@ -277,24 +263,7 @@ export function CertificateVerifyPage() {
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(!!urlCode);
 
-  // Management state (for /certificate without code)
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [adminPass, setAdminPass] = useState('');
-  const [authenticated, setAuthenticated] = useState(false);
-  const [interns, setInterns] = useState<InternshipAppUser[]>([]);
-  const [loadingInterns, setLoadingInterns] = useState(false);
-  const [internSearch, setInternSearch] = useState('');
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [generatedCodes, setGeneratedCodes] = useState<Record<string, { code: string; url: string; type: string; loading: boolean }>>({});
-  const [certs, setCerts] = useState<Certificate[]>([]);
-  const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [sendingEmail, setSendingEmail] = useState<string | null>(null);
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-
-  // Auto-verify if code in URL
-  useEffect(() => { if (urlCode) handleVerify(urlCode); }, [urlCode]);
-
-  const handleVerify = async (code?: string) => {
+  const handleVerify = useCallback(async (code?: string) => {
     const codeToVerify = (code || searchCode).trim();
     if (!codeToVerify) { setError('Please enter a verification code'); return; }
     setVerifying(true); setError(null); setCertificate(null); setSearched(true);
@@ -309,63 +278,14 @@ export function CertificateVerifyPage() {
       }
     } catch { setError('Verification failed.'); }
     finally { setVerifying(false); }
-  };
+  }, [searchCode]);
 
-  // Admin auth
-  const handleAdminLogin = () => {
-    if (adminPass === 'growlancer2024') {
-      setAuthenticated(true);
-      fetchInterns();
-      fetchCertsList();
-    } else {
-      alert('Incorrect password');
-    }
-  };
-
-  const fetchInterns = useCallback(async () => {
-    setLoadingInterns(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('internship-applications', { method: 'GET' });
-      if (error) throw error;
-      setInterns((data?.applications || []) as InternshipAppUser[]);
-    } catch { setInterns([]); }
-    finally { setLoadingInterns(false); }
-  }, []);
-
-  const fetchCertsList = useCallback(async () => {
-    const c = await getAllCertificates();
-    setCerts(c);
-  }, []);
-
-  const handleGenerateCode = async (app: InternshipAppUser, type: CertificateType) => {
-    const isLOR = type === 'lor';
-    const key = `${app.id}-${type}`;
-    setGeneratedCodes(p => ({ ...p, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: true } }));
-    try {
-      const result = await issueCertificate({
-        userId: app.id, skill: app.role_name || 'Internship',
-        level: isLOR ? 'advanced' : 'intermediate',
-        recipientName: app.full_name, recipientEmail: app.email, type,
-        certificateUrl: undefined,
-        metadata: { performance_summary: isLOR ? `Top performer during ${app.role_name} internship.` : undefined, skills_demonstrated: [], application_id: app.id },
-      });
-      if (result.success && result.certificate) {
-        const verifyUrl = `${window.location.origin}/certificate/${result.certificate.verification_code}`;
-        setGeneratedCodes(p => ({ ...p, [key]: { code: result.certificate!.verification_code, url: verifyUrl, type: isLOR ? 'LOR' : 'Certificate', loading: false } }));
-        fetchCertsList();
-      } else throw new Error(result.error || 'Failed');
-    } catch (err) {
-      setGeneratedCodes(p => ({ ...p, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: false } }));
-    }
-  };
-
-  const filteredInterns = interns.filter(a => {
-    const q = internSearch.toLowerCase();
-    return a.full_name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q) || a.role_name.toLowerCase().includes(q);
-  });
+  // Auto-verify if code in URL
+  useEffect(() => { if (urlCode) handleVerify(urlCode); }, [urlCode, handleVerify]);
 
   // --- VERIFICATION MODE (code in URL or searched) ---
   if (searched) {
+    // Revoked / Expired state
     if (certificate && certificate.status !== 'active') {
       return (
         <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
@@ -373,9 +293,16 @@ export function CertificateVerifyPage() {
             <div className="mx-auto w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center">
               <XCircle className="w-10 h-10 text-red-500" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Certificate {certificate.status === 'revoked' ? 'Revoked' : 'Expired'}</h1>
-            <p className="text-slate-400 text-sm">{certificate.status === 'revoked' ? `This certificate was revoked${certificate.revoked_reason ? ` for: "${certificate.revoked_reason}"` : ''}.` : 'This certificate has expired.'}</p>
-            <button onClick={() => navigate('/certificate')} className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
+            <h1 className="text-2xl font-bold text-white">
+              Certificate {certificate.status === 'revoked' ? 'Revoked' : 'Expired'}
+            </h1>
+            <p className="text-slate-400 text-sm">
+              {certificate.status === 'revoked'
+                ? `This certificate was revoked${certificate.revoked_reason ? ` for: "${certificate.revoked_reason}"` : ''}.`
+                : 'This certificate has expired.'}
+            </p>
+            <button onClick={() => navigate('/certificate')}
+              className="inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
               <ArrowLeft className="w-4 h-4" /> Back to Certificate Hub
             </button>
           </div>
@@ -383,6 +310,7 @@ export function CertificateVerifyPage() {
       );
     }
 
+    // Verification result
     return (
       <div className="min-h-screen bg-[#0F172A]">
         <header className="border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
@@ -405,14 +333,36 @@ export function CertificateVerifyPage() {
               <CertificateCard cert={certificate} />
               {internProfile && <InternProfileCard profile={internProfile} />}
             </>
+          ) : error ? (
+            <div className="text-center py-16">
+              <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
+                <AlertTriangle className="w-8 h-8 text-red-500" />
+              </div>
+              <h2 className="text-lg font-bold text-white mb-2">Certificate Not Found</h2>
+              <p className="text-slate-400 text-sm">{error}</p>
+              <button onClick={() => navigate('/certificate')}
+                className="mt-4 inline-flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 font-bold transition-colors">
+                <ArrowLeft className="w-4 h-4" /> Try Another Code
+              </button>
+            </div>
           ) : null}
+          {/* Trust Badge */}
           <div className="mt-16 text-center">
             <div className="inline-flex items-center gap-6 px-8 py-4 rounded-2xl bg-slate-800/30 border border-white/5">
-              <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Digitally Verified</span></div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-emerald-400" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Digitally Verified</span>
+              </div>
               <div className="w-px h-6 bg-white/5" />
-              <div className="flex items-center gap-2"><Lock className="w-4 h-4 text-emerald-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tamper-Proof</span></div>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-400" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Real-Time</span>
+              </div>
               <div className="w-px h-6 bg-white/5" />
-              <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Real-Time</span></div>
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-emerald-400" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tamper-Proof</span>
+              </div>
             </div>
           </div>
         </main>
@@ -420,11 +370,11 @@ export function CertificateVerifyPage() {
     );
   }
 
-  // --- MANAGEMENT MODE (no code - show hub + interns) ---
+  // --- LANDING MODE (no code — show clean hub with search) ---
   return (
     <div className="min-h-screen bg-[#0F172A]">
       <header className="border-b border-white/5 bg-slate-900/50 backdrop-blur-md">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/UpdatedLogo.png" alt="" className="h-8 w-8 rounded-lg" />
             <span className="text-sm font-bold text-white">Growlancer</span>
@@ -434,33 +384,33 @@ export function CertificateVerifyPage() {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+      <main className="max-w-4xl mx-auto px-4 py-12 md:py-20">
         {/* Hero */}
-        <div className="text-center mb-8">
+        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center mb-4">
             <Shield className="w-8 h-8 text-emerald-400" />
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-            Certificate <span className="text-emerald-400">Hub</span>
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
+            Certificate <span className="text-emerald-400">Verification</span>
           </h1>
-          <p className="text-slate-400 max-w-xl mx-auto text-sm">
-            Verify certificates, manage interns, and generate QR codes — all in one place.
+          <p className="text-slate-400 max-w-md mx-auto text-sm">
+            Enter your verification code below to view and verify your certificate in real-time.
           </p>
         </div>
 
-        {/* Search bar for verification */}
-        <div className="max-w-xl mx-auto mb-8">
+        {/* Search */}
+        <div className="max-w-xl mx-auto mb-10">
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
               <input type="text" value={searchCode} onChange={e => setSearchCode(e.target.value.toUpperCase())}
                 onKeyDown={e => { if (e.key === 'Enter') handleVerify(); }}
-                placeholder="Enter code to verify (e.g., GRW-CERT-XXXXX)"
+                placeholder="Enter code (e.g., GRW-CERT-XXXXX)"
                 className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-white/10 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 font-mono tracking-wider uppercase" />
             </div>
             <button onClick={() => handleVerify()} disabled={verifying || !searchCode.trim()}
               className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold rounded-xl text-sm transition-all">
-              {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Shield className="w-4 h-4" />}
+              {verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}
             </button>
           </div>
           {error && (
@@ -474,220 +424,71 @@ export function CertificateVerifyPage() {
           )}
         </div>
 
-        {/* Admin Login Toggle */}
-        <div className="text-center mb-8">
-          {!authenticated ? (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-xl border border-white/5">
-              <input type="password" value={adminPass} onChange={e => setAdminPass(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleAdminLogin()}
-                placeholder="Admin password" className="bg-transparent border-none text-xs text-white placeholder:text-slate-600 focus:outline-none w-32" />
-              <button onClick={handleAdminLogin} className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold transition-all">
-                Unlock Management
-              </button>
+        {/* Info Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+          <div className="p-5 rounded-2xl bg-slate-800/30 border border-white/5 text-center">
+            <div className="mx-auto w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center mb-3">
+              <BadgeCheck className="w-5 h-5 text-emerald-400" />
             </div>
-          ) : (
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-bold text-emerald-400">Management Mode Active</span>
-              <button onClick={() => { setAuthenticated(false); setInterns([]); }} className="ml-2 text-[10px] text-slate-500 hover:text-white">Lock</button>
+            <h3 className="text-sm font-bold text-white mb-1">Real-Time Verify</h3>
+            <p className="text-[11px] text-slate-400">Instant certificate verification with live data from our secure database.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-slate-800/30 border border-white/5 text-center">
+            <div className="mx-auto w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center mb-3">
+              <Star className="w-5 h-5 text-violet-400" />
             </div>
-          )}
+            <h3 className="text-sm font-bold text-white mb-1">Certificates & LOR</h3>
+            <p className="text-[11px] text-slate-400">Verify internship certificates and letters of recommendation issued by Growlancer.</p>
+          </div>
+          <div className="p-5 rounded-2xl bg-slate-800/30 border border-white/5 text-center">
+            <div className="mx-auto w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center mb-3">
+              <User className="w-5 h-5 text-blue-400" />
+            </div>
+            <h3 className="text-sm font-bold text-white mb-1">Intern Details</h3>
+            <p className="text-[11px] text-slate-400">View full intern profile including role, education, and skills alongside your certificate.</p>
+          </div>
         </div>
 
-        {/* Management Section — Interns */}
-        {authenticated && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                <Users className="w-5 h-5 text-emerald-400" />
-                Interns ({interns.length})
-              </h2>
-              <button onClick={() => { fetchInterns(); fetchCertsList(); }} className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all">
-                <RefreshCw className="w-3 h-3" /> Refresh
-              </button>
-            </div>
-
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-              <input type="text" value={internSearch} onChange={e => setInternSearch(e.target.value)}
-                placeholder="Search interns by name, email, or role..."
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-            </div>
-
-            {/* Interns List */}
-            <div className="space-y-3">
-              {loadingInterns ? (
-                <div className="flex items-center justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-slate-500" /></div>
-              ) : filteredInterns.length === 0 ? (
-                <div className="text-center py-16 text-slate-500 bg-slate-800/30 rounded-2xl border border-white/5">
-                  <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm">No interns found</p>
+        {/* How it works */}
+        <div className="max-w-2xl mx-auto mt-12 p-6 rounded-2xl bg-slate-800/20 border border-white/5 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+          <h3 className="text-sm font-bold text-white text-center mb-4">How Verification Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { step: '1', title: 'Get Your Code', desc: 'Your employer will send you a unique verification code via email.', icon: <Mail className="w-4 h-4 text-emerald-400" /> },
+              { step: '2', title: 'Enter Code', desc: 'Type or paste the code in the search bar above and click Verify.', icon: <Search className="w-4 h-4 text-emerald-400" /> },
+              { step: '3', title: 'View Certificate', desc: 'Your certificate and intern profile will appear in real-time, ready to share.', icon: <BadgeCheck className="w-4 h-4 text-emerald-400" /> },
+            ].map((item, i) => (
+              <div key={i} className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05] text-center">
+                <div className="mx-auto w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center mb-2">
+                  {item.icon}
                 </div>
-              ) : (
-                filteredInterns.map(app => (
-                  <div key={app.id} className="rounded-2xl overflow-hidden transition-all" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    {/* Header */}
-                    <div className="p-4 cursor-pointer" onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                          <div className="h-10 w-10 rounded-xl bg-slate-700 flex items-center justify-center text-sm font-bold text-white shrink-0">
-                            {app.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                              <h3 className="font-bold text-white text-sm">{app.full_name}</h3>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${STATUS_COLORS[app.status]}`}>{STATUS_LABELS[app.status]}</span>
-                            </div>
-                            <div className="flex items-center gap-3 text-xs text-slate-400 flex-wrap">
-                              <span className="flex items-center gap-1"><Briefcase className="w-3 h-3" />{app.role_name}</span>
-                              <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{app.email}</span>
-                            </div>
-                          </div>
-                        </div>
-                        {expandedId === app.id ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-                      </div>
-                    </div>
-
-                    {/* Expanded */}
-                    {expandedId === app.id && (
-                      <div className="border-t border-white/5 px-4 py-4 space-y-4 animate-fade-in">
-                        {/* Generate Codes */}
-                        <div className="p-4 rounded-xl" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                          <div className="flex items-center gap-2 mb-3">
-                            <QrCode className="w-4 h-4 text-blue-400" />
-                            <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Generate QR Code URL</span>
-                          </div>
-                          <div className="flex items-center gap-2 flex-wrap mb-3">
-                            <button onClick={() => handleGenerateCode(app, 'internship')}
-                              disabled={generatedCodes[`${app.id}-internship`]?.loading}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-400 text-[10px] font-bold hover:bg-amber-500/20 disabled:opacity-30 transition-all">
-                              {generatedCodes[`${app.id}-internship`]?.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <GraduationCap className="w-3 h-3" />}
-                              Certificate Code
-                            </button>
-                            <button onClick={() => handleGenerateCode(app, 'lor')}
-                              disabled={generatedCodes[`${app.id}-lor`]?.loading}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-violet-500/10 text-violet-400 text-[10px] font-bold hover:bg-violet-500/20 disabled:opacity-30 transition-all">
-                              {generatedCodes[`${app.id}-lor`]?.loading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Star className="w-3 h-3" />}
-                              LOR Code
-                            </button>
-                          </div>
-
-                          {/* Generated URL - Certificate */}
-                          {generatedCodes[`${app.id}-internship`]?.url && (
-                            <div className="p-3 rounded-lg" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
-                              <div className="flex items-start gap-3">
-                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(generatedCodes[`${app.id}-internship`]!.url)}`}
-                                  alt="QR" className="w-14 h-14 rounded-lg shrink-0 bg-white p-1" />
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center justify-between gap-2 mb-0.5">
-                                    <span className="text-xs font-bold text-emerald-400">Certificate URL</span>
-                                    <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-internship`]!.url); setCopiedId(`cert-${app.id}`); setTimeout(() => setCopiedId(null), 2000); }}
-                                      className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0">
-                                      {copiedId === `cert-${app.id}` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                      {copiedId === `cert-${app.id}` ? 'Copied!' : 'Copy'}
-                                    </button>
-                                  </div>
-                                  <a href={generatedCodes[`${app.id}-internship`]!.url} target="_blank" rel="noopener noreferrer"
-                                    className="block text-[10px] font-mono text-emerald-400/70 hover:text-emerald-300 truncate">{generatedCodes[`${app.id}-internship`]!.url}</a>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Generated URL - LOR */}
-                          {generatedCodes[`${app.id}-lor`]?.url && (
-                            <div className="mt-2 p-3 rounded-lg" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
-                              <div className="flex items-start gap-3">
-                                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(generatedCodes[`${app.id}-lor`]!.url)}`}
-                                  alt="QR" className="w-14 h-14 rounded-lg shrink-0 bg-white p-1" />
-                                <div className="min-w-0 flex-1">
-                                  <div className="flex items-center justify-between gap-2 mb-0.5">
-                                    <span className="text-xs font-bold text-violet-400">LOR URL</span>
-                                    <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-lor`]!.url); setCopiedId(`lor-${app.id}`); setTimeout(() => setCopiedId(null), 2000); }}
-                                      className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 shrink-0">
-                                      {copiedId === `lor-${app.id}` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                      {copiedId === `lor-${app.id}` ? 'Copied!' : 'Copy'}
-                                    </button>
-                                  </div>
-                                  <a href={generatedCodes[`${app.id}-lor`]!.url} target="_blank" rel="noopener noreferrer"
-                                    className="block text-[10px] font-mono text-violet-400/70 hover:text-violet-300 truncate">{generatedCodes[`${app.id}-lor`]!.url}</a>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Existing Certs */}
-                        {certs.filter(c => c.user_id === app.id && c.status === 'active').length > 0 && (
-                          <div className="p-3 rounded-xl" style={{ background: 'rgba(5, 150, 105, 0.05)', border: '1px solid rgba(5, 150, 105, 0.1)' }}>
-                            <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-2">Issued Certificates</p>
-                            <div className="flex flex-wrap gap-2">
-                              {certs.filter(c => c.user_id === app.id && c.status === 'active').map(c => (
-                                <span key={c.id} className="flex items-center gap-1 text-[10px] px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400">
-                                  <Award className="w-3 h-3" /> {getCertificateTitle(c)}
-                                </span>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Contact + Education */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                          <div className="p-3 rounded-xl" style={{ background: 'rgba(15, 23, 42, 0.5)' }}>
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Contact</h4>
-                            <div className="space-y-1.5 text-xs">
-                              <p className="flex items-center gap-2 text-slate-300"><Mail className="w-3 h-3 text-slate-500" />{app.email}</p>
-                              {app.phone && <p className="flex items-center gap-2 text-slate-300"><Phone className="w-3 h-3 text-slate-500" />{app.phone}</p>}
-                              {app.country && <p className="flex items-center gap-2 text-slate-300"><MapPin className="w-3 h-3 text-slate-500" />{app.country}</p>}
-                            </div>
-                          </div>
-                          <div className="p-3 rounded-xl" style={{ background: 'rgba(15, 23, 42, 0.5)' }}>
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Links</h4>
-                            <div className="space-y-1.5 text-xs">
-                              {app.linkedin_url && <p className="flex items-center gap-2"><ExternalLink className="w-3 h-3 text-blue-400" /><a href={app.linkedin_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-emerald-400 truncate">LinkedIn</a></p>}
-                              {app.github_url && <p className="flex items-center gap-2"><Code2 className="w-3 h-3 text-slate-400" /><a href={app.github_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-emerald-400 truncate">GitHub</a></p>}
-                              {app.portfolio_url && <p className="flex items-center gap-2"><ExternalLink className="w-3 h-3 text-slate-400" /><a href={app.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-emerald-400 truncate">Portfolio</a></p>}
-                              {!app.linkedin_url && !app.github_url && !app.portfolio_url && <p className="text-slate-600">No links</p>}
-                            </div>
-                          </div>
-                        </div>
-                        {(app.university || app.degree) && (
-                          <div className="p-3 rounded-xl" style={{ background: 'rgba(15, 23, 42, 0.5)' }}>
-                            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Education</h4>
-                            <div className="space-y-1.5 text-xs">
-                              {app.university && <p className="flex items-center gap-2 text-slate-300"><Building className="w-3 h-3 text-slate-500" />{app.university}</p>}
-                              {app.degree && <p className="flex items-center gap-2 text-slate-300"><GraduationCap className="w-3 h-3 text-slate-500" />{app.degree}</p>}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
+                <h4 className="text-xs font-bold text-white mb-1">{item.title}</h4>
+                <p className="text-[10px] text-slate-400">{item.desc}</p>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
 
         {/* Trust Badge */}
         <div className="mt-12 text-center">
           <div className="inline-flex items-center gap-6 px-8 py-4 rounded-2xl bg-slate-800/30 border border-white/5">
-            <div className="flex items-center gap-2"><Shield className="w-4 h-4 text-emerald-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Digitally Verified</span></div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-emerald-400" />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Digitally Verified</span>
+            </div>
             <div className="w-px h-6 bg-white/5" />
-            <div className="flex items-center gap-2"><Lock className="w-4 h-4 text-emerald-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tamper-Proof</span></div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-emerald-400" />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Real-Time</span>
+            </div>
             <div className="w-px h-6 bg-white/5" />
-            <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-emerald-400" /><span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Real-Time</span></div>
+            <div className="flex items-center gap-2">
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Public Access</span>
+            </div>
           </div>
         </div>
       </main>
     </div>
   );
-}
-
-// Lock icon
-function Lock(props: React.SVGProps<SVGSVGElement>) {
-  return (<svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
-  </svg>);
 }
