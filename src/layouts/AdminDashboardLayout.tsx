@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect, useRef } from 'react';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -14,12 +14,22 @@ import {
   ExternalLink,
   Search,
   Award,
+  GraduationCap,
+  Star,
 } from 'lucide-react';
 import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { adminLogout, getAdminSession } from '../components/AdminAuthGuard';
 
-const sidebarLinks = [
+interface SidebarItem {
+  id: string;
+  path?: string;
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  children?: { path: string; label: string; icon: React.ComponentType<{ className?: string }> }[];
+}
+
+const sidebarSections: SidebarItem[] = [
   { id: 'overview', path: '/admin', icon: LayoutDashboard, label: 'Overview' },
   { id: 'users', path: '/admin/users', icon: Users, label: 'Users' },
   { id: 'projects', path: '/admin/projects', icon: FolderKanban, label: 'Projects' },
@@ -29,7 +39,15 @@ const sidebarLinks = [
   { id: 'subscriptions', path: '/admin/subscriptions', icon: Zap, label: 'Subscriptions' },
   { id: 'reports', path: '/admin/reports', icon: BarChart3, label: 'Reports' },
   { id: 'internships', path: '/admin/internships', icon: Users, label: 'Internships' },
-  { id: 'certificates', path: '/admin/certificates', icon: Award, label: 'Certificates' },
+  { 
+    id: 'certificates', 
+    icon: Award, 
+    label: 'Certificates',
+    children: [
+      { path: '/admin/certificates', label: 'Internship Applicants', icon: GraduationCap },
+      { path: '/admin/certificates?tab=certs', label: 'All Certificates', icon: Star },
+    ],
+  },
   { id: 'identity-verification', path: '/admin/identity-verification', icon: ShieldCheck, label: 'Verification' },
   { id: 'support-tickets', path: '/admin/support-tickets', icon: AlertOctagon, label: 'Support Tickets' },
 ];
@@ -43,6 +61,40 @@ export function AdminDashboardLayout() {
   const searchRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
+  // Track expanded sections for slide-down submenus
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+
+  const toggleSection = useCallback((id: string) => {
+    setExpandedSections(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  // Auto-expand section if a sub-item is active
+  useEffect(() => {
+    sidebarSections.forEach(section => {
+      if (section.children) {
+        const isChildActive = section.children.some(child => {
+          const childPath = child.path.split('?')[0];
+          return currentPath.startsWith(childPath);
+        });
+        if (isChildActive) {
+          setExpandedSections(prev => {
+            if (!prev.has(section.id)) {
+              const next = new Set(prev);
+              next.add(section.id);
+              return next;
+            }
+            return prev;
+          });
+        }
+      }
+    });
+  }, [currentPath]);
+
   // Get admin session info (set by AdminAuthGuard before rendering)
   const [adminName, setAdminName] = useState('Admin');
   const [adminEmail, setAdminEmail] = useState('');
@@ -55,7 +107,7 @@ export function AdminDashboardLayout() {
     }
   }, []);
 
-  // Search functionality
+  // Search functionality — search both parent items and sub-items
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     if (!query.trim()) {
@@ -64,13 +116,25 @@ export function AdminDashboardLayout() {
       return;
     }
     const q = query.toLowerCase();
-    const results = sidebarLinks.filter(link =>
-      link.label.toLowerCase().includes(q) || link.id.toLowerCase().includes(q)
-    ).map(link => ({
-      label: link.label,
-      path: link.path,
-      icon: <link.icon className="w-4 h-4" />,
-    }));
+    const results: { label: string; path: string; icon: React.ReactNode }[] = [];
+    
+    sidebarSections.forEach(item => {
+      const Icon = item.icon;
+      // Check parent
+      if (item.path && (item.label.toLowerCase().includes(q) || item.id.toLowerCase().includes(q))) {
+        results.push({ label: item.label, path: item.path, icon: <Icon className="w-4 h-4" /> });
+      }
+      // Check children
+      if (item.children) {
+        item.children.forEach(child => {
+          if (child.label.toLowerCase().includes(q)) {
+            const ChildIcon = child.icon;
+            results.push({ label: `${item.label} → ${child.label}`, path: child.path, icon: <ChildIcon className="w-4 h-4" /> });
+          }
+        });
+      }
+    });
+    
     setSearchResults(results);
     setShowSearchResults(results.length > 0);
   };
@@ -130,24 +194,93 @@ export function AdminDashboardLayout() {
         </Link>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1">
-          {sidebarLinks.map((link) => (
-            <Link
-              key={link.id}
-              to={link.path}
-              className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
-                isActive(link.path)
-                  ? 'bg-emerald-500/10 text-emerald-500'
-                  : 'text-slate-400 hover:text-white hover:bg-white/5'
-              }`}
-              style={isActive(link.path) ? { borderLeft: '3px solid #10B981' } : {}}
-            >
-              <div className="flex items-center gap-3">
-                <link.icon className="w-5 h-5" />
-                <span className="font-medium text-sm">{link.label}</span>
-              </div>
-            </Link>
-          ))}
+        <nav className="flex-1 space-y-0.5 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
+          {sidebarSections.map((item) => {
+            const hasChildren = item.children && item.children.length > 0;
+            const isExpanded = expandedSections.has(item.id);
+            
+            // Check if any child is active
+            const isChildActive = hasChildren && item.children!.some(child => {
+              const childPath = child.path.split('?')[0];
+              return currentPath.startsWith(childPath);
+            });
+            
+            // For items with children, check if the parent path matches or any child is active
+            const isSectionActive = item.path ? isActive(item.path) : isChildActive;
+
+            if (hasChildren) {
+              return (
+                <div key={item.id}>
+                  {/* Parent Button — toggles expand */}
+                  <button
+                    onClick={() => toggleSection(item.id)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+                      isChildActive || isExpanded
+                        ? 'bg-emerald-500/10 text-emerald-500'
+                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                    }`}
+                    style={isChildActive || isExpanded ? { borderLeft: '3px solid #10B981' } : {}}
+                  >
+                    <div className="flex items-center gap-3">
+                      <item.icon className="w-5 h-5" />
+                      <span className="font-medium text-sm">{item.label}</span>
+                    </div>
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform duration-300 ${
+                        isExpanded ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
+                  
+                  {/* Sub-items with slide-down animation */}
+                  <div
+                    className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                      isExpanded ? 'max-h-96 opacity-100 mt-1' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="ml-4 space-y-0.5 border-l border-white/5 pl-3">
+                      {item.children!.map((child) => {
+                        const isChildRouteActive = currentPath.startsWith(child.path.split('?')[0]);
+                        return (
+                          <Link
+                            key={child.path}
+                            to={child.path}
+                            className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all text-sm ${
+                              isChildRouteActive
+                                ? 'bg-emerald-500/10 text-emerald-500 font-bold'
+                                : 'text-slate-400 hover:text-white hover:bg-white/5'
+                            }`}
+                          >
+                            <child.icon className="w-4 h-4" />
+                            <span>{child.label}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Flat link item
+            return (
+              <Link
+                key={item.id}
+                to={item.path!}
+                className={`flex items-center justify-between px-4 py-3 rounded-lg transition-all ${
+                  isSectionActive
+                    ? 'bg-emerald-500/10 text-emerald-500'
+                    : 'text-slate-400 hover:text-white hover:bg-white/5'
+                }`}
+                style={isSectionActive ? { borderLeft: '3px solid #10B981' } : {}}
+              >
+                <div className="flex items-center gap-3">
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium text-sm">{item.label}</span>
+                </div>
+              </Link>
+            );
+          })}
         </nav>
 
         {/* System Status Card */}

@@ -176,7 +176,7 @@ export function AdminSupportTicketsPage() {
   };
 
   return (
-    <div className="space-y-6 pb-20 lg:pb-0 flex flex-col h-full">
+    <div className="space-y-6 pb-20 lg:pb-0 flex flex-col h-full" style={{ background: '#0F172A' }}>
       <div>
         <h1 className="text-2xl font-bold text-white">Support Tickets</h1>
         <p className="text-slate-400 text-sm mt-1">Manage user support requests and escalations</p>
