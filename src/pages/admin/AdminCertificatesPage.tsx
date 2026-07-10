@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   Award, Search, Loader2, RefreshCw, User, Mail, AlertTriangle,
   CheckCircle2, ExternalLink, FileText, Calendar,
-  Plus, X, Ban, Copy, CheckCheck, Trash2,
+  Ban, Copy, CheckCheck, Trash2,
   Send, QrCode, Star, Link2, GraduationCap, Briefcase, Users,
   FileUp, ChevronDown, ChevronUp, History,
   Phone, Building, MapPin, Code2,
@@ -95,303 +95,6 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
   rejected: 'Rejected',
 };
 
-// ─── Issue Certificate Modal ────────────────────────────────────────
-function IssueCertificateModal({ onClose, onIssued, preselectedUser, preselectedType }: { 
-  onClose: () => void; 
-  onIssued: () => void;
-  preselectedUser?: { id: string; name: string; email: string } | null;
-  preselectedType?: Certificate['certificate_type'];
-}) {
-  const [searchQuery, setSearchQuery] = useState(preselectedUser?.name || '');
-  const [users, setUsers] = useState<{ id: string; name: string; email: string }[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<{ id: string; name: string; email: string } | null>(preselectedUser || null);
-  const [skill, setSkill] = useState('');
-  const [level, setLevel] = useState<Certificate['level']>('intermediate');
-  const [certType, setCertType] = useState<Certificate['certificate_type']>(preselectedType || 'internship');
-  const [performanceSummary, setPerformanceSummary] = useState('');
-  const [skillsDemonstrated, setSkillsDemonstrated] = useState('');
-  const [pdfFile, setPdfFile] = useState<File | null>(null);
-  const [issuing, setIssuing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
-  const [autoEmail, setAutoEmail] = useState(true);  // Auto-send email after issue
-
-  const searchUsers = useCallback(async (q: string) => {
-    if (q.length < 2) { setUsers([]); return; }
-    setSearching(true);
-    try {
-      const { data } = await adminQuery({
-        table: 'profiles',
-        select: 'id, name, email',
-        isNull: { deleted_at: true },
-        limit: 20,
-      });
-      const allUsers = (data || []) as { id: string; name: string; email: string }[];
-      const filtered = allUsers.filter(u =>
-        u.name?.toLowerCase().includes(q.toLowerCase()) ||
-        u.email?.toLowerCase().includes(q.toLowerCase())
-      );
-      setUsers(filtered.slice(0, 10));
-    } catch { setUsers([]); }
-    finally { setSearching(false); }
-  }, []);
-
-  const handleIssue = async () => {
-    if (!selectedUser || !skill.trim()) {
-      setError('Please select a user and enter a skill name');
-      return;
-    }
-    setIssuing(true);
-    setError(null);
-    try {
-      let uploadedUrl: string | undefined;
-
-      if (pdfFile) {
-        const fileBase64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            const result = reader.result as string;
-            resolve(result.split(',')[1]);
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(pdfFile);
-        });
-
-        const filePath = `cert-docs/${selectedUser.id}/${Date.now()}-${pdfFile.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-        const { data: uploadResult, error: fnError } = await supabase.functions.invoke('admin-data', {
-          method: 'POST',
-          body: {
-            action: 'storage_upload',
-            bucket: 'certificate_documents',
-            file_path: filePath,
-            file_base64: fileBase64,
-            content_type: pdfFile.type || 'application/pdf',
-          },
-        });
-
-        if (fnError || uploadResult?.error) throw new Error(uploadResult?.error || fnError?.message || 'Upload failed');
-        uploadedUrl = uploadResult.publicUrl;
-      }
-
-      const result = await issueCertificate({
-        userId: selectedUser.id,
-        skill: skill.trim(),
-        level,
-        recipientName: selectedUser.name,
-        recipientEmail: selectedUser.email,
-        type: certType,
-        certificateUrl: uploadedUrl,
-        metadata: {
-          performance_summary: performanceSummary || undefined,
-          skills_demonstrated: skillsDemonstrated ? skillsDemonstrated.split(',').map(s => s.trim()) : undefined,
-        },
-      });
-      if (result.success) {
-        const issuedCert = result.certificate;
-        setSuccess(`${certType === 'lor' ? 'LOR' : 'Certificate'} issued to ${selectedUser.name}! Code: ${issuedCert?.verification_code}`);
-
-        // Auto-send email if checkbox is checked
-        if (autoEmail && issuedCert) {
-          try {
-            const emailResult = await sendCertificateEmail({
-              certificateId: issuedCert.id,
-              recipientEmail: selectedUser.email,
-              recipientName: selectedUser.name,
-              certificateType: certType,
-              roleName: skill.trim(),
-              level,
-              verificationCode: issuedCert.verification_code || '',
-              certificateUrl: uploadedUrl,
-              performanceSummary: performanceSummary || '',
-              skillsDemonstrated: skillsDemonstrated ? skillsDemonstrated.split(',').map(s => s.trim()) : [],
-            });
-            if (emailResult.success) {
-              setSuccess(prev => `${prev} ✅ Email sent to ${selectedUser.name}!`);
-            } else {
-              setSuccess(prev => `${prev} ⚠️ Email failed: ${emailResult.error}`);
-            }
-          } catch {
-            setSuccess(prev => `${prev} ⚠️ Email send failed`);
-          }
-        }
-
-        setTimeout(() => { onIssued(); onClose(); }, 2500);
-      } else {
-        setError(result.error || 'Failed to issue certificate');
-      }
-    } catch {
-      setError('Failed to issue certificate');
-    } finally { setIssuing(false); }
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-[2rem] p-6 space-y-5" 
-        style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}
-        onClick={e => e.stopPropagation()}>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
-              <Award className="w-5 h-5 text-purple-400" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Issue {certType === 'lor' ? 'LOR' : 'Certificate'}</h2>
-              <p className="text-xs text-slate-500">{preselectedUser ? `Issuing to preselected intern` : 'Grant to a user'}</p>
-            </div>
-          </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {error && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-red-400">{error}</p>
-          </div>
-        )}
-
-        {success && (
-          <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-            <p className="text-xs text-emerald-400">{success}</p>
-          </div>
-        )}
-
-        {!preselectedUser ? (
-          <div className="relative">
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Select User</label>
-            <Search className="absolute left-3 top-[38px] w-4 h-4 text-slate-500" />
-            <input type="text" value={searchQuery} onChange={e => { setSearchQuery(e.target.value); searchUsers(e.target.value); }}
-              placeholder="Search by name or email..." className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-            {searching && <Loader2 className="absolute right-3 top-[38px] w-4 h-4 animate-spin text-slate-500" />}
-            {users.length > 0 && !selectedUser && (
-              <div className="mt-1 bg-slate-800 border border-white/10 rounded-xl overflow-hidden">
-                {users.map(u => (
-                  <button key={u.id} onClick={() => { setSelectedUser(u); setSearchQuery(u.name); setUsers([]); }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-slate-300 hover:bg-white/5 transition-colors">
-                    <div className="h-8 w-8 rounded-lg bg-slate-700 flex items-center justify-center text-xs font-bold text-white">{u.name.charAt(0)}</div>
-                    <div className="text-left"><p className="font-medium">{u.name}</p><p className="text-[10px] text-slate-500">{u.email}</p></div>
-                  </button>
-                ))}
-              </div>
-            )}
-            {selectedUser && (
-              <div className="mt-1 flex items-center gap-2 px-3 py-2 bg-emerald-500/10 rounded-lg">
-                <span className="text-xs text-emerald-400">{selectedUser.name} ({selectedUser.email})</span>
-                <button onClick={() => setSelectedUser(null)} className="ml-auto text-slate-400 hover:text-white"><X className="w-3 h-3" /></button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="p-3 rounded-xl" style={{ background: 'rgba(124, 58, 237, 0.05)', border: '1px solid rgba(124, 58, 237, 0.15)' }}>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Selected Intern</label>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-sm font-bold text-purple-400">
-                {selectedUser!.name.charAt(0)}
-              </div>
-              <div>
-                <p className="text-sm font-bold text-white">{selectedUser!.name}</p>
-                <p className="text-xs text-slate-400">{selectedUser!.email}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <div>
-          <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Skill / Title</label>
-          <input type="text" value={skill} onChange={e => setSkill(e.target.value)}
-            placeholder={certType === 'lor' ? "e.g., Frontend Development Internship" : "e.g., React Development, UI Design"}
-            className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Level</label>
-            <select value={level} onChange={e => setLevel(e.target.value as any)}
-              className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-              <option value="beginner">🌱 Beginner</option>
-              <option value="intermediate">📈 Intermediate</option>
-              <option value="advanced">🚀 Advanced</option>
-              <option value="expert">👑 Expert</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Type</label>
-            <select value={certType} onChange={e => setCertType(e.target.value as any)}
-              className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
-              <option value="internship">🎓 Internship Completion</option>
-              <option value="lor">📜 Letter of Recommendation</option>
-              <option value="platform">🏆 Platform Certificate</option>
-              <option value="skill_test">📝 Skill Certification</option>
-              <option value="achievement">⭐ Achievement Badge</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-xl" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.15)' }}>
-          <div className="flex items-center gap-2 mb-3">
-            <FileText className="w-4 h-4 text-blue-400" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-blue-400">Certificate Document (PDF)</span>
-          </div>
-          <p className="text-[10px] text-slate-500 mb-2">Upload a formal PDF document for this {certType === 'lor' ? 'LOR' : 'certificate'}.</p>
-          <label className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
-            {pdfFile ? (
-              <><FileText className="w-4 h-4" /> {pdfFile.name}</>
-            ) : (
-              <><FileUp className="w-4 h-4" /> Select PDF Document</>
-            )}
-            <input type="file" accept=".pdf,application/pdf" className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) setPdfFile(f);
-                e.target.value = '';
-              }} />
-          </label>
-        </div>
-
-        {certType === 'lor' && (
-          <div className="space-y-4 p-4 rounded-xl" style={{ background: 'rgba(124, 58, 237, 0.05)', border: '1px solid rgba(124, 58, 237, 0.15)' }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Star className="w-4 h-4 text-violet-400" />
-              <span className="text-[10px] font-bold uppercase tracking-widest text-violet-400">LOR Details (For Top Performers)</span>
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Performance Summary</label>
-              <textarea value={performanceSummary} onChange={e => setPerformanceSummary(e.target.value)}
-                placeholder="Describe the intern's performance, contributions, and what made them a top performer..."
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20 min-h-[80px]" />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">Skills Demonstrated (comma separated)</label>
-              <input type="text" value={skillsDemonstrated} onChange={e => setSkillsDemonstrated(e.target.value)}
-                placeholder="e.g., React, TypeScript, Team Leadership, Problem Solving"
-                className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-violet-500/20" />
-            </div>
-          </div>
-        )}        {/* Auto Email Checkbox */}
-        <label className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl cursor-pointer select-none transition-colors hover:bg-white/[0.02]" 
-          style={{ background: autoEmail ? 'rgba(5, 150, 105, 0.05)' : 'rgba(255,255,255,0.02)', border: autoEmail ? '1px solid rgba(5, 150, 105, 0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
-          <input type="checkbox" checked={autoEmail} onChange={e => setAutoEmail(e.target.checked)}
-            className="w-4 h-4 rounded border-slate-600 bg-slate-700 text-emerald-500 focus:ring-emerald-500/20 cursor-pointer" />
-          <div className="flex-1">
-            <p className="text-xs font-bold text-slate-300">Send Email Automatically</p>
-            <p className="text-[10px] text-slate-500">Email the {certType === 'lor' ? 'LOR' : 'certificate'} to {selectedUser?.name || 'recipient'} immediately after issuing</p>
-          </div>
-          <Send className={`w-4 h-4 ${autoEmail ? 'text-emerald-400' : 'text-slate-600'}`} />
-        </label>
-
-        <button onClick={handleIssue} disabled={issuing || !selectedUser || !skill.trim()}
-          className="w-full py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm transition-all flex items-center justify-center gap-2">
-          {issuing ? <><Loader2 className="w-4 h-4 animate-spin" /> {autoEmail ? 'Issuing & Sending Email...' : 'Issuing...'}</> : <><Award className="w-4 h-4" /> Issue {certType === 'lor' ? 'LOR' : 'Certificate'}{autoEmail ? ' & Send Email' : ''}</>}
-        </button>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Admin Certificates Page ───────────────────────────────────
 export function AdminCertificatesPage() {
   const [activeTab, setActiveTab] = useState<'interns' | 'certs'>('interns');
@@ -399,11 +102,8 @@ export function AdminCertificatesPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [showIssueModal, setShowIssueModal] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [preselectedUser, setPreselectedUser] = useState<{ id: string; name: string; email: string } | null>(null);
-  const [preselectedType, setPreselectedType] = useState<Certificate['certificate_type']>('internship');
   const [expandedCertId, setExpandedCertId] = useState<string | null>(null);
   const [certEmailLogs, setCertEmailLogs] = useState<Record<string, { type: string; sent: boolean; time: string }[]>>({});
   const [certUploadingPdf, setCertUploadingPdf] = useState<Record<string, { loading: boolean }>>({});
@@ -589,9 +289,11 @@ export function AdminCertificatesPage() {
     }
   };
 
-  const handleDocUpload = async (appId: string, file: File) => {
+  const handleDocUpload = async (appId: string, field: 'offer_letter_url' | 'internship_letter_url', file: File) => {
     if (!file) return;
-    setUploadingDoc(prev => ({ ...prev, [`${appId}-pdf`]: { loading: true } }));
+    const key = `${appId}-${field}`;
+    const label = field === 'offer_letter_url' ? 'Certificate PDF' : 'LOR PDF';
+    setUploadingDoc(prev => ({ ...prev, [key]: { loading: true } }));
     try {
       const fileBase64 = await new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -626,30 +328,177 @@ export function AdminCertificatesPage() {
           body: {
             table: 'internship_applications',
             id: appId,
-            data: { offer_letter_url: publicUrl },
+            data: { [field]: publicUrl },
           },
         });
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch {} // Non-fatal - upload still works
 
-      toast.success('Uploaded', 'Certificate/LOR PDF uploaded. Link saved to applicant.');
+      toast.success('Uploaded', `${label} uploaded. Link saved to applicant.`);
       // Update local state directly instead of full re-fetch to avoid auto-refresh
       setInternApplicants(prev => 
-        prev.map(a => a.id === appId ? { ...a, offer_letter_url: publicUrl } : a)
+        prev.map(a => a.id === appId ? { ...a, [field]: publicUrl } : a)
       );
     } catch (err) {
       console.error('Document upload error:', err);
-      toast.error('Upload Failed', 'Failed to upload document. Please try again.');
+      toast.error('Upload Failed', `Failed to upload ${label}. Please try again.`);
     } finally {
-      setUploadingDoc(prev => ({ ...prev, [`${appId}-pdf`]: { loading: false } }));
+      setUploadingDoc(prev => ({ ...prev, [key]: { loading: false } }));
     }
   };
 
-  const openIssueModal = (user?: { id: string; name: string; email: string }, type?: Certificate['certificate_type']) => {
-    setPreselectedUser(user || null);
-    setPreselectedType(type || 'internship');
-    setShowIssueModal(true);
+  // Combined issue + email for intern applicants
+  const handleIssueAndSend = async (app: InternshipAppUser, type: Certificate['certificate_type']) => {
+    const isLOR = type === 'lor';
+    const pdfField = isLOR ? 'internship_letter_url' as const : 'offer_letter_url' as const;
+    const pdfUrl = app[pdfField];
+    const label = isLOR ? 'LOR' : 'Certificate';
+
+    if (!pdfUrl) {
+      toast.warning('PDF Required', `Please upload a ${label} PDF first before sending.`);
+      return;
+    }
+
+    if (!confirm(`Issue and send ${label} email to ${app.full_name} (${app.email})?`)) return;
+
+    const loadingKey = `send-${app.id}-${type}`;
+    setActionLoading(loadingKey);
+    try {
+      // Step 1: Issue the certificate/LOR
+      const issueResult = await issueCertificate({
+        userId: app.id,
+        skill: app.role_name || 'Internship',
+        level: 'intermediate',
+        recipientName: app.full_name,
+        recipientEmail: app.email,
+        type,
+        certificateUrl: pdfUrl,
+        metadata: {
+          performance_summary: isLOR ? `Top performer during ${app.role_name} internship.` : undefined,
+          skills_demonstrated: [],
+        },
+      });
+
+      if (!issueResult.success || !issueResult.certificate) {
+        toast.error('Failed', `Could not issue ${label}. ${issueResult.error || ''}`);
+        return;
+      }
+
+      const issuedCert = issueResult.certificate;
+
+      // Step 2: Send email with PDF attachment
+      const emailResult = await sendCertificateEmail({
+        certificateId: issuedCert.id,
+        recipientEmail: app.email,
+        recipientName: app.full_name,
+        certificateType: type,
+        roleName: app.role_name || 'Internship',
+        level: 'intermediate',
+        verificationCode: issuedCert.verification_code || '',
+        certificateUrl: pdfUrl,
+        performanceSummary: isLOR ? `Top performer during ${app.role_name} internship.` : '',
+        skillsDemonstrated: [],
+      });
+
+      if (emailResult.success) {
+        toast.success('Sent!', `${label} issued & emailed to ${app.full_name}!`);
+        setEmailLogs(prev => ({
+          ...prev,
+          [app.id]: [...(prev[app.id] || []), { status: label, sent: true, time: new Date().toISOString() }],
+        }));
+      } else {
+        toast.warning('Issued But Email Failed', `${label} issued but email failed: ${emailResult.error}`);
+      }
+
+      // Refresh
+      fetchCerts();
+    } catch (err) {
+      console.error(`${label} issue error:`, err);
+      toast.error('Error', `Failed to issue ${label}.`);
+    } finally {
+      setActionLoading(null);
+    }
   };
+
+  // Issue + send both Certificate & LOR together
+  const handleIssueAndSendBoth = async (app: InternshipAppUser) => {
+    if (!app.offer_letter_url && !app.internship_letter_url) {
+      toast.warning('PDFs Required', 'Please upload both Certificate PDF and LOR PDF first.');
+      return;
+    }
+    if (!confirm(`Issue and send both Certificate & LOR to ${app.full_name} (${app.email})?`)) return;
+
+    setActionLoading(`send-${app.id}-both`);
+    try {
+      // Certificate
+      if (app.offer_letter_url) {
+        const certResult = await issueCertificate({
+          userId: app.id,
+          skill: app.role_name || 'Internship',
+          level: 'intermediate',
+          recipientName: app.full_name,
+          recipientEmail: app.email,
+          type: 'internship',
+          certificateUrl: app.offer_letter_url,
+        });
+        if (certResult.success && certResult.certificate) {
+          await sendCertificateEmail({
+            certificateId: certResult.certificate.id,
+            recipientEmail: app.email,
+            recipientName: app.full_name,
+            certificateType: 'internship',
+            roleName: app.role_name || 'Internship',
+            level: 'intermediate',
+            verificationCode: certResult.certificate.verification_code || '',
+            certificateUrl: app.offer_letter_url,
+          });
+        }
+      }
+
+      // LOR
+      if (app.internship_letter_url) {
+        const lorResult = await issueCertificate({
+          userId: app.id,
+          skill: app.role_name || 'Internship',
+          level: 'advanced',
+          recipientName: app.full_name,
+          recipientEmail: app.email,
+          type: 'lor',
+          certificateUrl: app.internship_letter_url,
+          metadata: {
+            performance_summary: `Top performer during ${app.role_name} internship.`,
+          },
+        });
+        if (lorResult.success && lorResult.certificate) {
+          await sendCertificateEmail({
+            certificateId: lorResult.certificate.id,
+            recipientEmail: app.email,
+            recipientName: app.full_name,
+            certificateType: 'lor',
+            roleName: app.role_name || 'Internship',
+            level: 'advanced',
+            verificationCode: lorResult.certificate.verification_code || '',
+            certificateUrl: app.internship_letter_url,
+            performanceSummary: `Top performer during ${app.role_name} internship.`,
+          });
+        }
+      }
+
+      toast.success('Both Sent!', `Certificate & LOR issued & emailed to ${app.full_name}!`);
+      setEmailLogs(prev => ({
+        ...prev,
+        [app.id]: [...(prev[app.id] || []), { status: 'Certificate+LOR', sent: true, time: new Date().toISOString() }],
+      }));
+      fetchCerts();
+    } catch (err) {
+      console.error('Both issue error:', err);
+      toast.error('Error', 'Failed to issue Certificate & LOR.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+
 
   const filtered = certificates.filter(c => {
     const q = searchQuery.toLowerCase();
@@ -695,10 +544,7 @@ export function AdminCertificatesPage() {
           <h1 className="text-2xl font-bold text-white">Certificates & LOR</h1>
           <p className="text-slate-400 text-sm mt-1">Issue completion certificates and LOR to interns</p>
         </div>
-        <button onClick={() => openIssueModal()}
-          className="flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl text-xs transition-all">
-          <Plus className="w-4 h-4" /> Issue Certificate
-        </button>
+
       </div>
 
       {/* Tab Switcher */}
@@ -809,22 +655,7 @@ export function AdminCertificatesPage() {
                   {expandedId === app.id && (
                     <div className="border-t border-white/5 px-5 py-5 space-y-5 animate-fade-in">
                       
-                      {/* Action Buttons - Issue Certificate / LOR */}
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => openIssueModal({ id: app.id, name: app.full_name, email: app.email }, 'internship')}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-bold hover:bg-amber-500/20 transition-all"
-                        >
-                          <GraduationCap className="w-4 h-4" /> Issue Certificate
-                        </button>
-                        <button
-                          onClick={() => openIssueModal({ id: app.id, name: app.full_name, email: app.email }, 'lor')}
-                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 text-xs font-bold hover:bg-violet-500/20 transition-all"
-                        >
-                          <Star className="w-4 h-4" /> Issue LOR (Top Performer)
-                        </button>
-                        <span className="text-[10px] text-slate-600 ml-auto">Issue certificate or LOR after selection</span>
-                      </div>
+
 
                       {/* Status-Specific Send Email Section */}
                       {app.status === 'shortlisted' && (
@@ -903,44 +734,110 @@ export function AdminCertificatesPage() {
                         </div>
                       )}
 
-                      {/* Certificate Document Upload Section */}
-                      <div className="p-4 rounded-xl" style={{ background: 'rgba(59, 130, 246, 0.03)', border: app.offer_letter_url ? '1px solid rgba(5, 150, 105, 0.2)' : '1px solid rgba(59, 130, 246, 0.1)' }}>
-                        <div className="flex items-center gap-2 mb-3">
-                          <FileText className={`w-4 h-4 ${app.offer_letter_url ? 'text-emerald-400' : 'text-blue-400'}`} />
-                          <span className={`text-xs font-bold uppercase tracking-widest ${app.offer_letter_url ? 'text-emerald-400' : 'text-blue-400'}`}>
-                            Certificate/LOR PDF Document
-                          </span>
-                          {app.offer_letter_url && (
-                            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 ml-auto">
-                              Uploaded
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-[11px] text-slate-500 mb-3">Upload a formal PDF certificate or LOR document for this intern.</p>
-                        <div className="flex items-center gap-2">
-                          <label className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-blue-500/10 text-blue-400 text-xs font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
-                            {uploadingDoc[`${app.id}-pdf`]?.loading ? (
-                              <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Uploading...</>
-                            ) : (
-                              <><FileUp className="w-3.5 h-3.5" /> {app.offer_letter_url ? 'Replace PDF' : 'Upload PDF'}</>
+                      {/* Two PDF Uploads + Send Buttons */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Certificate PDF Upload */}
+                        <div className="p-4 rounded-xl" style={{ background: 'rgba(5, 150, 105, 0.03)', border: app.offer_letter_url ? '1px solid rgba(5, 150, 105, 0.25)' : '1px solid rgba(59, 130, 246, 0.12)' }}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <GraduationCap className={`w-4 h-4 ${app.offer_letter_url ? 'text-emerald-400' : 'text-amber-400'}`} />
+                              <span className={`text-xs font-bold uppercase tracking-widest ${app.offer_letter_url ? 'text-emerald-400' : 'text-amber-400'}`}>Certificate PDF</span>
+                            </div>
+                            {app.offer_letter_url && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded</span>}
+                          </div>
+                          <p className="text-[10px] text-slate-500 mb-2">Upload formal certificate PDF</p>
+                          <div className="flex items-center gap-2">
+                            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
+                              {uploadingDoc[`${app.id}-offer_letter_url`]?.loading ? (
+                                <><Loader2 className="w-3 h-3 animate-spin" /></>
+                              ) : (
+                                <><FileUp className="w-3 h-3" /> {app.offer_letter_url ? 'Replace' : 'Upload'}</>
+                              )}
+                              <input type="file" accept=".pdf,application/pdf" className="hidden"
+                                disabled={uploadingDoc[`${app.id}-offer_letter_url`]?.loading}
+                                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(app.id, 'offer_letter_url', f); e.target.value = ''; }} />
+                            </label>
+                            {app.offer_letter_url && (
+                              <a href={app.offer_letter_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-colors">
+                                <ExternalLink className="w-3 h-3" /> View
+                              </a>
                             )}
-                            <input type="file" accept=".pdf,application/pdf" className="hidden"
-                              disabled={uploadingDoc[`${app.id}-pdf`]?.loading}
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                if (f) handleDocUpload(app.id, f);
-                                e.target.value = '';
-                              }} />
-                          </label>
-                          {app.offer_letter_url && (
-                            <a href={app.offer_letter_url} target="_blank" rel="noopener noreferrer"
-                              className="flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-slate-700/50 text-slate-400 text-xs font-bold hover:text-emerald-400 transition-colors"
-                              title="View PDF">
-                              <ExternalLink className="w-3.5 h-3.5" /> View
-                            </a>
-                          )}
-                          <span className="text-[10px] text-slate-600">PDF format only (max 10MB)</span>
+                          </div>
                         </div>
+
+                        {/* LOR PDF Upload */}
+                        <div className="p-4 rounded-xl" style={{ background: 'rgba(124, 58, 237, 0.03)', border: app.internship_letter_url ? '1px solid rgba(124, 58, 237, 0.25)' : '1px solid rgba(124, 58, 237, 0.12)' }}>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <Star className={`w-4 h-4 ${app.internship_letter_url ? 'text-emerald-400' : 'text-violet-400'}`} />
+                              <span className={`text-xs font-bold uppercase tracking-widest ${app.internship_letter_url ? 'text-emerald-400' : 'text-violet-400'}`}>LOR PDF</span>
+                            </div>
+                            {app.internship_letter_url && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">Uploaded</span>}
+                          </div>
+                          <p className="text-[10px] text-slate-500 mb-2">Upload formal recommendation letter PDF</p>
+                          <div className="flex items-center gap-2">
+                            <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-500/20 transition-colors">
+                              {uploadingDoc[`${app.id}-internship_letter_url`]?.loading ? (
+                                <><Loader2 className="w-3 h-3 animate-spin" /></>
+                              ) : (
+                                <><FileUp className="w-3 h-3" /> {app.internship_letter_url ? 'Replace' : 'Upload'}</>
+                              )}
+                              <input type="file" accept=".pdf,application/pdf" className="hidden"
+                                disabled={uploadingDoc[`${app.id}-internship_letter_url`]?.loading}
+                                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleDocUpload(app.id, 'internship_letter_url', f); e.target.value = ''; }} />
+                            </label>
+                            {app.internship_letter_url && (
+                              <a href={app.internship_letter_url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1 px-2 py-1.5 rounded-lg bg-slate-700/50 text-slate-400 text-[10px] font-bold hover:text-emerald-400 transition-colors">
+                                <ExternalLink className="w-3 h-3" /> View
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Send Action Buttons */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <button
+                          onClick={() => handleIssueAndSend(app, 'internship')}
+                          disabled={!app.offer_letter_url || actionLoading === `send-${app.id}-internship` || actionLoading === `send-${app.id}-both`}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-bold hover:bg-amber-500/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          title={!app.offer_letter_url ? 'Upload Certificate PDF first' : 'Issue & send Certificate email with PDF'}
+                        >
+                          {actionLoading === `send-${app.id}-internship` || actionLoading === `send-${app.id}-both` ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <GraduationCap className="w-4 h-4" />
+                          )}
+                          Send Certificate
+                        </button>
+                        <button
+                          onClick={() => handleIssueAndSend(app, 'lor')}
+                          disabled={!app.internship_letter_url || actionLoading === `send-${app.id}-lor` || actionLoading === `send-${app.id}-both`}
+                          className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 text-xs font-bold hover:bg-violet-500/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          title={!app.internship_letter_url ? 'Upload LOR PDF first' : 'Issue & send LOR email with PDF'}
+                        >
+                          {actionLoading === `send-${app.id}-lor` || actionLoading === `send-${app.id}-both` ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Star className="w-4 h-4" />
+                          )}
+                          Send LOR (Top Performer)
+                        </button>
+                        {app.offer_letter_url && app.internship_letter_url && (
+                          <button
+                            onClick={() => handleIssueAndSendBoth(app)}
+                            disabled={actionLoading === `send-${app.id}-both`}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold hover:bg-emerald-500/20 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          >
+                            {actionLoading === `send-${app.id}-both` ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Award className="w-4 h-4" />
+                            )}
+                            Send Both (Certificate + LOR)
+                          </button>
+                        )}
+                        <span className="text-[10px] text-slate-600 ml-auto">Upload PDF first, then click Send</span>
                       </div>
 
                       {/* Already issued? Show existing certs for this user */}
@@ -1118,9 +1015,7 @@ export function AdminCertificatesPage() {
               <div className="text-center py-16 text-slate-500" style={{ background: '#1E293B', borderRadius: '2rem', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <Award className="w-12 h-12 mx-auto mb-3 opacity-30" />
                 <p className="text-sm">No certificates found</p>
-                <button onClick={() => setShowIssueModal(true)} className="mt-4 text-xs font-bold text-purple-400 hover:text-purple-300 transition-colors">
-                  Issue your first certificate →
-                </button>
+
               </div>
             ) : (
               filtered.map(cert => {
@@ -1340,15 +1235,6 @@ export function AdminCertificatesPage() {
         </>
       )}
 
-      {/* Issue Modal */}
-      {showIssueModal && (
-        <IssueCertificateModal 
-          onClose={() => setShowIssueModal(false)} 
-          onIssued={() => { fetchCerts(); fetchInternApplicants(); }}
-          preselectedUser={preselectedUser}
-          preselectedType={preselectedType}
-        />
-      )}
     </div>
   );
 }
