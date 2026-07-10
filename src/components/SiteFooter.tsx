@@ -87,10 +87,10 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                 />
               </svg>
               <span className="text-slate-300">|</span>
-              {/* Razorpay */}
+              {/* Razorpay — official logo path from Simple Icons */}
               <svg
-                className="h-6 w-auto shrink-0"
-                viewBox="0 0 80 24"
+                className="h-6 w-6 shrink-0"
+                viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
                 role="img"
                 aria-label="Razorpay"
@@ -101,31 +101,11 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                     <stop offset="100%" stopColor="#1A5CFF" />
                   </linearGradient>
                 </defs>
-                {/* Razorpay Icon — blue rounded square with white R */}
-                <rect x="0" y="0" width="24" height="24" rx="5" fill="url(#rzp-grad)" />
-                <text
-                  x="12"
-                  y="17.5"
-                  textAnchor="middle"
-                  fill="#ffffff"
-                  fontFamily="Arial, -apple-system, sans-serif"
-                  fontWeight="800"
-                  fontSize="15"
-                >
-                  R
-                </text>
-                {/* Razorpay wordmark */}
-                <text
-                  x="30"
-                  y="16"
-                  fontFamily="Arial, -apple-system, sans-serif"
-                  fontWeight="700"
-                  fontSize="13"
-                  fill="#1E293B"
-                  letterSpacing="0.3"
-                >
-                  Razorpay
-                </text>
+                <path
+                  fill="url(#rzp-grad)"
+                  fill-rule="evenodd"
+                  d="M22.436 0l-11.91 7.773-1.174 4.276 6.625-4.297L11.65 24h4.391l6.395-24zM14.26 10.098L3.389 17.166 1.564 24h9.008l3.688-13.902Z"
+                />
               </svg>
             </div>
             <span className="text-[10px] text-slate-400 italic">PayPal &amp; Razorpay</span>
