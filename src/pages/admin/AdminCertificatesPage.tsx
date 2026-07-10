@@ -329,62 +329,61 @@ export function AdminCertificatesPage() {
       return;
     }
 
-    if (!confirm(`Issue and send ${label} email to ${app.full_name} (${app.email})?`)) return;
+    if (!confirm(`Send ${label} email to ${app.full_name} (${app.email})?`)) return;
 
     const loadingKey = `send-${app.id}-${type}`;
     setActionLoading(loadingKey);
     try {
-      // Step 1: Issue the certificate/LOR
-      const issueResult = await issueCertificate({
-        userId: app.id,
-        skill: app.role_name || 'Internship',
-        level: 'intermediate',
-        recipientName: app.full_name,
-        recipientEmail: app.email,
-        type,
-        certificateUrl: pdfUrl,
-        metadata: {
-          performance_summary: isLOR ? `Top performer during ${app.role_name} internship.` : undefined,
-          skills_demonstrated: [],
-        },
-      });
-
-      if (!issueResult.success || !issueResult.certificate) {
-        toast.error('Failed', `Could not issue ${label}. ${issueResult.error || ''}`);
-        return;
-      }
-
-      const issuedCert = issueResult.certificate;
-
-      // Step 2: Send email with PDF attachment
+      // STEP 1: Send email FIRST — like internship flow, no DB dependency
+      const tempId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+      const tempCode = 'GRW-' + (isLOR ? 'LOR-' : 'CERT-') + Array.from({length: 6}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+      
       const emailResult = await sendCertificateEmail({
-        certificateId: issuedCert.id,
+        certificateId: tempId,
         recipientEmail: app.email,
         recipientName: app.full_name,
         certificateType: type,
         roleName: app.role_name || 'Internship',
-        level: 'intermediate',
-        verificationCode: issuedCert.verification_code || '',
+        level: isLOR ? 'advanced' : 'intermediate',
+        verificationCode: tempCode,
         certificateUrl: pdfUrl,
         performanceSummary: isLOR ? `Top performer during ${app.role_name} internship.` : '',
         skillsDemonstrated: [],
       });
 
       if (emailResult.success) {
-        toast.success('Sent!', `${label} issued & emailed to ${app.full_name}!`);
+        toast.success('Sent!', `${label} email sent to ${app.full_name}!`);
         setEmailLogs(prev => ({
           ...prev,
           [app.id]: [...(prev[app.id] || []), { status: label, sent: true, time: new Date().toISOString() }],
         }));
+        
+        // STEP 2: Try to save to DB as best-effort (email already sent!)
+        try {
+          await issueCertificate({
+            userId: app.id,
+            skill: app.role_name || 'Internship',
+            level: isLOR ? 'advanced' : 'intermediate',
+            recipientName: app.full_name,
+            recipientEmail: app.email,
+            type,
+            certificateUrl: pdfUrl,
+            metadata: {
+              performance_summary: isLOR ? `Top performer during ${app.role_name} internship.` : undefined,
+              skills_demonstrated: [],
+            },
+          });
+        } catch (dbErr) {
+          console.error(`${label} DB save failed (non-critical):`, dbErr);
+        }
       } else {
-        toast.warning('Issued But Email Failed', `${label} issued but email failed: ${emailResult.error}`);
+        toast.error('Email Failed', `${label} email failed: ${emailResult.error || 'Unknown error'}`);
       }
 
-      // Refresh
       fetchCerts();
     } catch (err) {
-      console.error(`${label} issue error:`, err);
-      toast.error('Error', `Failed to issue ${label}.`);
+      console.error(`${label} error:`, err);
+      toast.error('Error', `Failed to send ${label}.`);
     } finally {
       setActionLoading(null);
     }
@@ -396,91 +395,99 @@ export function AdminCertificatesPage() {
       toast.warning('PDFs Required', 'Please upload both Certificate PDF and LOR PDF first.');
       return;
     }
-    if (!confirm(`Issue and send both Certificate & LOR to ${app.full_name} (${app.email})?`)) return;
+    if (!confirm(`Send both Certificate & LOR to ${app.full_name} (${app.email})?`)) return;
 
     setActionLoading(`send-${app.id}-both`);
     try {
-      let certSuccess = false;
-      let lorSuccess = false;
+      let certEmailSent = false;
+      let lorEmailSent = false;
 
-      // Certificate
+      // Certificate — send email FIRST, no DB dependency
       if (app.offer_letter_url) {
-        const certResult = await issueCertificate({
-          userId: app.id,
-          skill: app.role_name || 'Internship',
-          level: 'intermediate',
-          recipientName: app.full_name,
+        const certTempId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const certTempCode = 'GRW-CERT-' + Array.from({length: 6}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+        
+        const certEmailResult = await sendCertificateEmail({
+          certificateId: certTempId,
           recipientEmail: app.email,
-          type: 'internship',
+          recipientName: app.full_name,
+          certificateType: 'internship',
+          roleName: app.role_name || 'Internship',
+          level: 'intermediate',
+          verificationCode: certTempCode,
           certificateUrl: app.offer_letter_url,
         });
-        if (certResult.success && certResult.certificate) {
-          certSuccess = true;
-          const emailResult = await sendCertificateEmail({
-            certificateId: certResult.certificate.id,
-            recipientEmail: app.email,
-            recipientName: app.full_name,
-            certificateType: 'internship',
-            roleName: app.role_name || 'Internship',
-            level: 'intermediate',
-            verificationCode: certResult.certificate.verification_code || '',
-            certificateUrl: app.offer_letter_url,
-          });
-          if (!emailResult.success) console.error('Cert email failed:', emailResult.error);
+        
+        if (certEmailResult.success) {
+          certEmailSent = true;
+          // Best-effort DB save
+          try {
+            await issueCertificate({
+              userId: app.id, skill: app.role_name || 'Internship', level: 'intermediate',
+              recipientName: app.full_name, recipientEmail: app.email, type: 'internship',
+              certificateUrl: app.offer_letter_url,
+            });
+          } catch { /* non-critical */ }
         } else {
-          console.error('Cert issue failed:', certResult.error);
+          console.error('Cert email FAILED:', certEmailResult.error);
         }
       }
 
-      // LOR
+      // LOR — send email FIRST, no DB dependency
       if (app.internship_letter_url) {
-        const lorResult = await issueCertificate({
-          userId: app.id,
-          skill: app.role_name || 'Internship',
-          level: 'advanced',
-          recipientName: app.full_name,
+        const lorTempId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        const lorTempCode = 'GRW-LOR-' + Array.from({length: 6}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+        
+        const lorEmailResult = await sendCertificateEmail({
+          certificateId: lorTempId,
           recipientEmail: app.email,
-          type: 'lor',
+          recipientName: app.full_name,
+          certificateType: 'lor',
+          roleName: app.role_name || 'Internship',
+          level: 'advanced',
+          verificationCode: lorTempCode,
           certificateUrl: app.internship_letter_url,
-          metadata: {
-            performance_summary: `Top performer during ${app.role_name} internship.`,
-          },
+          performanceSummary: `Top performer during ${app.role_name} internship.`,
         });
-        if (lorResult.success && lorResult.certificate) {
-          lorSuccess = true;
-          const emailResult = await sendCertificateEmail({
-            certificateId: lorResult.certificate.id,
-            recipientEmail: app.email,
-            recipientName: app.full_name,
-            certificateType: 'lor',
-            roleName: app.role_name || 'Internship',
-            level: 'advanced',
-            verificationCode: lorResult.certificate.verification_code || '',
-            certificateUrl: app.internship_letter_url,
-            performanceSummary: `Top performer during ${app.role_name} internship.`,
-          });
-          if (!emailResult.success) console.error('LOR email failed:', emailResult.error);
+        
+        if (lorEmailResult.success) {
+          lorEmailSent = true;
+          // Best-effort DB save
+          try {
+            await issueCertificate({
+              userId: app.id, skill: app.role_name || 'Internship', level: 'advanced',
+              recipientName: app.full_name, recipientEmail: app.email, type: 'lor',
+              certificateUrl: app.internship_letter_url,
+              metadata: { performance_summary: `Top performer during ${app.role_name} internship.` },
+            });
+          } catch { /* non-critical */ }
         } else {
-          console.error('LOR issue failed:', lorResult.error);
+          console.error('LOR email FAILED:', lorEmailResult.error);
         }
       }
 
-      if (certSuccess || lorSuccess) {
+      if (certEmailSent || lorEmailSent) {
         const parts = [];
-        if (certSuccess) parts.push('Certificate');
-        if (lorSuccess) parts.push('LOR');
-        toast.success('Sent!', `${parts.join(' + ')} issued & emailed to ${app.full_name}!`);
+        if (certEmailSent) parts.push('Certificate');
+        if (lorEmailSent) parts.push('LOR');
+        const failedParts = [];
+        if (app.offer_letter_url && !certEmailSent) failedParts.push('Certificate');
+        if (app.internship_letter_url && !lorEmailSent) failedParts.push('LOR');
+        const msg = failedParts.length > 0
+          ? `${parts.join(' + ')} sent! But ${failedParts.join(' + ')} email delivery failed. Check console.`
+          : `${parts.join(' + ')} emailed to ${app.full_name}!`;
+        toast.success('Sent!', msg);
         setEmailLogs(prev => ({
           ...prev,
           [app.id]: [...(prev[app.id] || []), { status: parts.join('+'), sent: true, time: new Date().toISOString() }],
         }));
       } else {
-        toast.error('Failed', 'Could not issue either Certificate or LOR. Check console for details.');
+        toast.error('Failed', 'Could not deliver either Certificate or LOR email. Check console for details.');
       }
       fetchCerts();
     } catch (err) {
       console.error('Both issue error:', err);
-      toast.error('Error', 'Failed to issue Certificate & LOR.');
+      toast.error('Error', 'Failed to send Certificate & LOR.');
     } finally {
       setActionLoading(null);
     }
