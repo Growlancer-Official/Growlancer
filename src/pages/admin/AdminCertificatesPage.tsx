@@ -4,7 +4,7 @@ import {
   CheckCircle2, ExternalLink, FileText, Calendar,
   Ban, Copy, CheckCheck, Trash2,
   Send, QrCode, Star, Link2, GraduationCap, Briefcase, Users,
-  FileUp, ChevronDown, ChevronUp,
+  FileUp, ChevronDown, ChevronUp, History,
   Phone, Building, MapPin, Code2,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
@@ -122,8 +122,6 @@ export function AdminCertificatesPage() {
     const key = `${app.id}-${type}`;
     setGeneratedCodes(prev => ({ ...prev, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: true } }));
     try {
-      const uniqueCode = 'GRW-' + (isLOR ? 'LOR-' : 'CERT-') + Array.from({length: 8}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
-      
       // Create certificate record in DB
       const result = await issueCertificate({
         userId: app.id,
@@ -190,18 +188,18 @@ export function AdminCertificatesPage() {
   const isActiveRef = useRef(false);
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!isActiveRef.current && !actionLoading && !expandedId && !expandedCertId && Object.keys(uploadingDoc).length === 0 && Object.keys(certUploadingPdf).length === 0) {
+      if (!isActiveRef.current && !actionLoading && !expandedId && !expandedCertId && Object.keys(certUploadingPdf).length === 0) {
         fetchCerts(false);
         fetchInternApplicants(false);
       }
     }, 25000);
     return () => clearInterval(interval);
-  }, [fetchCerts, fetchInternApplicants, actionLoading, expandedId, expandedCertId, uploadingDoc, certUploadingPdf]);
+  }, [fetchCerts, fetchInternApplicants, actionLoading, expandedId, expandedCertId, certUploadingPdf]);
 
   // Track when user is actively interacting
   useEffect(() => {
-    isActiveRef.current = !!expandedId || !!expandedCertId || !!actionLoading || Object.keys(uploadingDoc).length > 0 || Object.keys(certUploadingPdf).length > 0;
-  }, [expandedId, expandedCertId, actionLoading, uploadingDoc, certUploadingPdf]);
+    isActiveRef.current = !!expandedId || !!expandedCertId || !!actionLoading || Object.keys(certUploadingPdf).length > 0;
+  }, [expandedId, expandedCertId, actionLoading, certUploadingPdf]);
 
   const handleDeleteCert = async (certId: string, skill: string, userName: string) => {
     if (!confirm(`PERMANENTLY DELETE "${skill}" certificate for ${userName}? This cannot be undone!`)) return;
@@ -473,43 +471,60 @@ export function AdminCertificatesPage() {
                           </button>
                         </div>
 
-                        {/* Show Generated Code */}
+                        {/* Show Generated Code - Certificate */}
                         {generatedCodes[`${app.id}-internship`]?.url && (
                           <div className="mt-3 p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(5, 150, 105, 0.08)', border: '1px solid rgba(5, 150, 105, 0.2)' }}>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                                <span className="text-xs font-bold text-emerald-400">Certificate URL Ready:</span>
+                            <div className="flex items-start gap-3">
+                              {/* QR Code */}
+                              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(generatedCodes[`${app.id}-internship`]!.url)}`}
+                                alt="QR Code" className="w-16 h-16 rounded-lg shrink-0 bg-white p-1" />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                    <span className="text-xs font-bold text-emerald-400">Certificate URL Ready:</span>
+                                  </div>
+                                  <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-internship`]!.url); setCopiedId(`code-${app.id}-internship`); setTimeout(() => setCopiedId(null), 2000); }}
+                                    className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0">
+                                    {copiedId === `code-${app.id}-internship` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                    {copiedId === `code-${app.id}-internship` ? 'Copied!' : 'Copy URL'}
+                                  </button>
+                                </div>
+                                <p className="text-[10px] text-emerald-400/60 mb-1">Scan QR or copy URL to send to intern</p>
+                                <a href={generatedCodes[`${app.id}-internship`]!.url} target="_blank" rel="noopener noreferrer"
+                                  className="block text-xs font-mono text-emerald-400/70 hover:text-emerald-300 truncate">
+                                  {generatedCodes[`${app.id}-internship`]!.url}
+                                </a>
                               </div>
-                              <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-internship`]!.url); setCopiedId(`code-${app.id}-internship`); setTimeout(() => setCopiedId(null), 2000); }}
-                                className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 shrink-0">
-                                {copiedId === `code-${app.id}-internship` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                {copiedId === `code-${app.id}-internship` ? 'Copied!' : 'Copy URL'}
-                              </button>
                             </div>
-                            <a href={generatedCodes[`${app.id}-internship`]!.url} target="_blank" rel="noopener noreferrer"
-                              className="mt-1 block text-xs font-mono text-emerald-400/70 hover:text-emerald-300 truncate">
-                              {generatedCodes[`${app.id}-internship`]!.url}
-                            </a>
                           </div>
                         )}
+                        {/* Show Generated Code - LOR */}
                         {generatedCodes[`${app.id}-lor`]?.url && (
                           <div className="mt-3 p-3 rounded-lg animate-fade-in" style={{ background: 'rgba(124, 58, 237, 0.08)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <CheckCircle2 className="w-4 h-4 text-violet-400 shrink-0" />
-                                <span className="text-xs font-bold text-violet-400">LOR URL Ready:</span>
+                            <div className="flex items-start gap-3">
+                              {/* QR Code */}
+                              <img src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(generatedCodes[`${app.id}-lor`]!.url)}`}
+                                alt="QR Code" className="w-16 h-16 rounded-lg shrink-0 bg-white p-1" />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-2 mb-1">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    <CheckCircle2 className="w-4 h-4 text-violet-400 shrink-0" />
+                                    <span className="text-xs font-bold text-violet-400">LOR URL Ready:</span>
+                                  </div>
+                                  <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-lor`]!.url); setCopiedId(`code-${app.id}-lor`); setTimeout(() => setCopiedId(null), 2000); }}
+                                    className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 shrink-0">
+                                    {copiedId === `code-${app.id}-lor` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                    {copiedId === `code-${app.id}-lor` ? 'Copied!' : 'Copy URL'}
+                                  </button>
+                                </div>
+                                <p className="text-[10px] text-violet-400/60 mb-1">Scan QR or copy URL to send to intern</p>
+                                <a href={generatedCodes[`${app.id}-lor`]!.url} target="_blank" rel="noopener noreferrer"
+                                  className="block text-xs font-mono text-violet-400/70 hover:text-violet-300 truncate">
+                                  {generatedCodes[`${app.id}-lor`]!.url}
+                                </a>
                               </div>
-                              <button onClick={() => { navigator.clipboard.writeText(generatedCodes[`${app.id}-lor`]!.url); setCopiedId(`code-${app.id}-lor`); setTimeout(() => setCopiedId(null), 2000); }}
-                                className="flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 shrink-0">
-                                {copiedId === `code-${app.id}-lor` ? <CheckCheck className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                                {copiedId === `code-${app.id}-lor` ? 'Copied!' : 'Copy URL'}
-                              </button>
                             </div>
-                            <a href={generatedCodes[`${app.id}-lor`]!.url} target="_blank" rel="noopener noreferrer"
-                              className="mt-1 block text-xs font-mono text-violet-400/70 hover:text-violet-300 truncate">
-                              {generatedCodes[`${app.id}-lor`]!.url}
-                            </a>
                           </div>
                         )}
                       </div>
