@@ -79,6 +79,7 @@ async function sendBrevoEmail(
   subject: string,
   htmlContent: string,
   to: { email: string; name: string },
+  attachments?: { url: string; name: string }[],
 ): Promise<{ success: boolean; status: number; text: string }> {
   const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
   
@@ -88,12 +89,17 @@ async function sendBrevoEmail(
     return { success: false, status: 400, text: 'Invalid email format' };
   }
 
-  const payload = {
+  const payload: Record<string, any> = {
     sender: { name: 'Growlancer Team', email: Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com' },
     to: [to],
     subject,
     htmlContent,
   };
+
+  // Attach PDF if provided (Brevo supports attachment via URL)
+  if (attachments && attachments.length > 0) {
+    payload.attachment = attachments;
+  }
 
   // Try up to 2 times (initial + 1 retry)
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -709,7 +715,12 @@ Deno.serve(async (req) => {
       const headerGradient = isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#059669 0%, #047857 100%';
       const bodyHtml = baseEmailHtml(headerTitle, bodyContent, headerGradient);
 
-      const brevoResult = await sendBrevoEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name });
+      // Attach the certificate/LOR PDF as email attachment (Brevo supports URL-based attachments)
+      const attachments = certificate_url
+        ? [{ url: certificate_url, name: isLOR ? 'Letter_of_Recommendation.pdf' : 'Completion_Certificate.pdf' }]
+        : undefined;
+
+      const brevoResult = await sendBrevoEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name }, attachments);
 
       if (!brevoResult.success) {
         return new Response(JSON.stringify({ success: false, error: 'Failed to send email', details: brevoResult.text }), {
