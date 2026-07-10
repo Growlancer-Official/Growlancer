@@ -358,6 +358,8 @@ Deno.serve(async (req) => {
         user_id,
         skill,
         level,
+        score: 100,
+        max_score: 100,
         recipient_name,
         recipient_email,
         certificate_type: certificate_type || 'internship',
