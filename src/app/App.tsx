@@ -355,7 +355,9 @@ function App() {
                 <Route path="contests/:contestId" element={<ContestDetailPage />} />
               </Route>
 
-              {/* Public Certificate Verification Route */}
+              {/* Public Certificate Verification Routes — /certificate and /verify-certificate both work */}
+              <Route path="certificate/:code" element={<CertificateVerifyPage />} />
+              <Route path="certificate" element={<CertificateVerifyPage />} />
               <Route path="verify-certificate/:code" element={<CertificateVerifyPage />} />
               <Route path="verify-certificate" element={<CertificateVerifyPage />} />
 

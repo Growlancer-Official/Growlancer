@@ -102,7 +102,9 @@ export const ROUTES = {
     IDENTITY_VERIFICATION: '/admin/identity-verification',
   },
   
-  // Certificate Verification
+  // Certificate Verification — Unified /certificate or /verify-certificate both work
+  CERTIFICATE: '/certificate',
+  CERTIFICATE_CODE: '/certificate/:code',
   VERIFY_CERTIFICATE: '/verify-certificate',
   VERIFY_CERTIFICATE_CODE: '/verify-certificate/:code',
   
