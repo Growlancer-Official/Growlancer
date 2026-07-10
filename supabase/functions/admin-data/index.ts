@@ -423,6 +423,71 @@ Deno.serve(async (req) => {
       });
     }
 
+    // ─── POST: test_brevo (requires admin) — Ping Brevo API to verify key + sender ──
+    if (req.method === 'POST' && action === 'test_brevo') {
+      const brevoKey = Deno.env.get('BREVO_API_KEY') || '';
+      const fromEmail = Deno.env.get('BREVO_FROM_EMAIL') || 'growlancer.own@gmail.com';
+      
+      if (!brevoKey) {
+        return new Response(JSON.stringify({ success: false, error: 'BREVO_API_KEY is not set in env' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // Test 1: Check Brevo account (GET /account)
+      try {
+        const acctRes = await fetch('https://api.brevo.com/v3/account', {
+          headers: { 'api-key': brevoKey, 'Accept': 'application/json' },
+        });
+        const acctText = await acctRes.text();
+        
+        if (!acctRes.ok) {
+          return new Response(JSON.stringify({ 
+            success: false, 
+            error: `Brevo account API returned ${acctRes.status}`,
+            details: acctText,
+            key_prefix: brevoKey.substring(0, 8) + '...',
+            from_email: fromEmail,
+          }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Test 2: Validate sender email (GET /senders)
+        const sendersRes = await fetch('https://api.brevo.com/v3/senders', {
+          headers: { 'api-key': brevoKey, 'Accept': 'application/json' },
+        });
+        const sendersText = await sendersRes.text();
+        let verified = false;
+        try {
+          const sendersJson = JSON.parse(sendersText);
+          if (sendersJson.senders) {
+            verified = sendersJson.senders.some((s: any) => s.email === fromEmail && s.verified);
+          }
+        } catch { /* ignore parse error */ }
+
+        return new Response(JSON.stringify({
+          success: true,
+          message: 'Brevo API is working',
+          account: JSON.parse(acctText),
+          from_email: fromEmail,
+          sender_verified: verified,
+          key_prefix: brevoKey.substring(0, 8) + '...',
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({ 
+          success: false, 
+          error: err instanceof Error ? err.message : 'Unknown Brevo test error',
+          key_prefix: brevoKey ? brevoKey.substring(0, 8) + '...' : 'NOT SET',
+          from_email: fromEmail,
+        }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
     // ─── POST: send_welcome_email (PUBLIC — used after signup) ────
     if (req.method === 'POST' && action === 'send_welcome_email') {
       const { recipient_email, recipient_name: rawRecipientName } = body;
