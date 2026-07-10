@@ -339,6 +339,25 @@ Deno.serve(async (req) => {
         });
       }
 
+      // ─── Resolve actual user_id ──────────────────────────────────────
+      // `skill_certifications.user_id` has FK → profiles.id, but `user_id` param is
+      // the internship_applications.id. Look up the actual profile by email.
+      let actualUserId = user_id;
+      if (recipient_email) {
+        try {
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('id')
+            .eq('email', recipient_email)
+            .maybeSingle();
+          if (profile?.id) {
+            actualUserId = profile.id;
+          }
+        } catch (profileErr) {
+          console.error('Profile lookup by email failed:', profileErr);
+        }
+      }
+
       // Generate verification code — fallback if RPC doesn't exist
       let verificationCode: string;
       try {
@@ -346,12 +365,18 @@ Deno.serve(async (req) => {
         verificationCode = codeData || ('GRW-CERT-' + Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join(''));
       } catch (rpcErr) {
         console.error('RPC generate_certificate_code failed, using fallback:', rpcErr);
-        verificationCode = 'GRW-CERT-' + Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+        verificationCode = 'GRW-CERT-' + Array.from({ length: 5 }, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join(''));
       }
+
+      // Store the original application ID in metadata for verification page lookup
+      const mergedMetadata = {
+        ...(metadata || {}),
+        application_id: user_id, // store the internship_applications.id here
+      };
 
       // Only insert columns that exist in the table — avoid missing column errors
       const insertData: Record<string, any> = {
-        user_id,
+        user_id: actualUserId,
         skill,
         level,
         score: 100,
@@ -362,7 +387,7 @@ Deno.serve(async (req) => {
         verification_code: verificationCode,
         issued_at: new Date().toISOString(),
         status: 'active',
-        metadata: metadata || {},
+        metadata: mergedMetadata,
       };
 
       // Include certificate URL if provided
@@ -414,14 +439,15 @@ Deno.serve(async (req) => {
         });
       }
 
-      // Fetch intern's application details if user_id points to an internship_applications record
+      // Fetch intern's application details using metadata.application_id
       let internProfile: Record<string, unknown> | null = null;
-      if (data.user_id) {
+      const appId = (data.metadata as any)?.application_id || data.user_id;
+      if (appId) {
         try {
           const { data: appData } = await supabaseClient
             .from('internship_applications')
             .select('*')
-            .eq('id', data.user_id)
+            .eq('id', appId)
             .maybeSingle();
           if (appData) {
             internProfile = appData as Record<string, unknown>;
