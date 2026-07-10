@@ -5,7 +5,7 @@ import {
   Ban, Copy, CheckCheck, Trash2,
   Send, QrCode, Star, Link2, GraduationCap, Briefcase, Users,
   FileUp, ChevronDown, ChevronUp, History,
-  Phone, Building, MapPin, Code2,
+  Phone, Building, MapPin, Code2, X,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
@@ -116,6 +116,67 @@ export function AdminCertificatesPage() {
   const [emailLogs, setEmailLogs] = useState<Record<string, { status: string; sent: boolean; time: string }[]>>({});
   const toast = useToast();
   const [uploadingDoc, setUploadingDoc] = useState<Record<string, { loading: boolean }>>({});
+  const [showAddInternModal, setShowAddInternModal] = useState(false);
+  const [addInternForm, setAddInternForm] = useState({
+    full_name: '',
+    email: '',
+    role_name: '',
+    university: '',
+    degree: '',
+    phone: '',
+    country: '',
+    linkedin_url: '',
+    github_url: '',
+    portfolio_url: '',
+  });
+  const [addingIntern, setAddingIntern] = useState(false);
+
+  const handleAddIntern = async () => {
+    if (!addInternForm.full_name.trim() || !addInternForm.email.trim() || !addInternForm.role_name.trim()) {
+      toast.warning('Required Fields', 'Full Name, Email, and Role are required.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addInternForm.email)) {
+      toast.warning('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+    setAddingIntern(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('admin-data', {
+        method: 'POST',
+        body: {
+          action: 'insert',
+          table: 'internship_applications',
+          data: {
+            full_name: addInternForm.full_name.trim(),
+            email: addInternForm.email.trim().toLowerCase(),
+            role_name: addInternForm.role_name.trim(),
+            role_id: 'manual-add',
+            status: 'selected',
+            university: addInternForm.university.trim() || null,
+            degree: addInternForm.degree.trim() || null,
+            phone: addInternForm.phone.trim() || null,
+            country: addInternForm.country.trim() || null,
+            linkedin_url: addInternForm.linkedin_url.trim() || null,
+            github_url: addInternForm.github_url.trim() || null,
+            portfolio_url: addInternForm.portfolio_url.trim() || null,
+            cover_letter: 'Added manually by admin for certificate issuance.',
+          },
+        },
+      });
+
+      if (error || data?.error) throw new Error(error?.message || data?.error || 'Failed to add intern');
+
+      toast.success('Intern Added', `${addInternForm.full_name} added successfully!`);
+      setShowAddInternModal(false);
+      setAddInternForm({ full_name: '', email: '', role_name: '', university: '', degree: '', phone: '', country: '', linkedin_url: '', github_url: '', portfolio_url: '' });
+      fetchInternApplicants();
+    } catch (err) {
+      toast.error('Failed', err instanceof Error ? err.message : 'Could not add intern');
+    } finally {
+      setAddingIntern(false);
+    }
+  };
 
   const fetchCerts = useCallback(async (showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -539,7 +600,13 @@ export function AdminCertificatesPage() {
           <h1 className="text-2xl font-bold text-white">Certificates & LOR</h1>
           <p className="text-slate-400 text-sm mt-1">Issue completion certificates and LOR to interns</p>
         </div>
-
+        <button
+          onClick={() => setShowAddInternModal(true)}
+          className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold rounded-xl text-xs transition-all shadow-lg"
+        >
+          <Users className="w-4 h-4" />
+          Add Intern
+        </button>
       </div>
 
       {/* Tab Switcher */}
@@ -1292,6 +1359,112 @@ export function AdminCertificatesPage() {
             )}
           </div>
         </>
+      )}
+
+      {/* ─── Add Intern Modal ──────────────────────────────── */}
+      {showAddInternModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)' }}>
+          <div className="w-full max-w-lg rounded-[2rem] overflow-hidden animate-in fade-in zoom-in-95 duration-200" style={{ background: '#0F172A', border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-white/5">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-emerald-500/10 flex items-center justify-center">
+                  <Users className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white">Add Intern</h2>
+                  <p className="text-xs text-slate-500">Add an intern for certificate/LOR issuance</p>
+                </div>
+              </div>
+              <button onClick={() => setShowAddInternModal(false)} className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+              {/* Full Name */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Full Name *</label>
+                <input type="text" value={addInternForm.full_name} onChange={e => setAddInternForm(prev => ({ ...prev, full_name: e.target.value }))}
+                  placeholder="Intern's full name" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+              </div>
+              {/* Email */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Email Address *</label>
+                <input type="email" value={addInternForm.email} onChange={e => setAddInternForm(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="intern@example.com" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+              </div>
+              {/* Role */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Role / Position *</label>
+                <input type="text" value={addInternForm.role_name} onChange={e => setAddInternForm(prev => ({ ...prev, role_name: e.target.value }))}
+                  placeholder="e.g. Frontend Developer Intern" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+              </div>
+              {/* University + Degree row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">University</label>
+                  <input type="text" value={addInternForm.university} onChange={e => setAddInternForm(prev => ({ ...prev, university: e.target.value }))}
+                    placeholder="University name" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Degree</label>
+                  <input type="text" value={addInternForm.degree} onChange={e => setAddInternForm(prev => ({ ...prev, degree: e.target.value }))}
+                    placeholder="e.g. B.Tech CSE" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+                </div>
+              </div>
+              {/* Phone + Country row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Phone</label>
+                  <input type="text" value={addInternForm.phone} onChange={e => setAddInternForm(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+91 98765 43210" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Country</label>
+                  <input type="text" value={addInternForm.country} onChange={e => setAddInternForm(prev => ({ ...prev, country: e.target.value }))}
+                    placeholder="India" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+                </div>
+              </div>
+              {/* Links */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">LinkedIn URL</label>
+                <input type="url" value={addInternForm.linkedin_url} onChange={e => setAddInternForm(prev => ({ ...prev, linkedin_url: e.target.value }))}
+                  placeholder="https://linkedin.com/in/username" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">GitHub URL</label>
+                  <input type="url" value={addInternForm.github_url} onChange={e => setAddInternForm(prev => ({ ...prev, github_url: e.target.value }))}
+                    placeholder="https://github.com/username" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">Portfolio URL</label>
+                  <input type="url" value={addInternForm.portfolio_url} onChange={e => setAddInternForm(prev => ({ ...prev, portfolio_url: e.target.value }))}
+                    placeholder="https://portfolio.dev" className="w-full px-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600" />
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-white/5">
+              <button onClick={() => setShowAddInternModal(false)}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all">
+                Cancel
+              </button>
+              <button onClick={handleAddIntern}
+                disabled={addingIntern}
+                className="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 disabled:opacity-30 disabled:cursor-not-allowed text-white font-bold rounded-xl text-xs transition-all shadow-lg">
+                {addingIntern ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Adding Intern...</>
+                ) : (
+                  <><Users className="w-4 h-4" /> Add Intern</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
