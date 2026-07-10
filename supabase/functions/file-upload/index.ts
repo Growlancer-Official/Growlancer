@@ -110,6 +110,7 @@ Deno.serve(async (req) => {
     } = await supabaseClient.auth.getUser()
 
     if (userError || !user) {
+      console.error('File-upload: Auth failed', userError?.message || 'No user');
       return new Response(
         JSON.stringify({ error: 'Unauthorized' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

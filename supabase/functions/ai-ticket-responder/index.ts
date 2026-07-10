@@ -1,8 +1,5 @@
-import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 if (!GEMINI_API_KEY) {
   console.error('GEMINI_API_KEY environment variable is not set');
@@ -126,32 +123,30 @@ ${categoryGuidance}`;
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
-  const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Verify request is authorized (service role key)
-    const authHeader = req.headers.get('authorization');
-    if (authHeader !== `Bearer ${supabaseServiceKey}`) {
-      // Also allow authenticated user requests with their JWT
-      const token = authHeader?.replace('Bearer ', '');
-      if (token) {
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (error || !user) {
-          return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-            status: 401,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      } else {
-        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-          status: 401,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+    // Standard JWT auth — use anon key + user's Authorization header
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization') ?? '' },
+        },
       }
+    );
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      console.error('AI Ticket: Auth failed', userError?.message || 'No user');
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     let body: TicketData;
