@@ -1,14 +1,8 @@
 {
   "version": 2,
-  "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "functions": {
-    "api/ssr.js": {
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
     {
       "source": "/assets/(.*)",
@@ -16,7 +10,7 @@
     },
     {
       "source": "/(.*)",
-      "destination": "/api/ssr"
+      "destination": "/index.html"
     }
   ]
 }
