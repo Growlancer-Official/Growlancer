@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   CheckCircle,
   Eye,
@@ -47,7 +46,6 @@ function formatRelativeTime(dateStr: string): string {
 }
 
 export function AdminUsersPage() {
-  const navigate = useNavigate();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

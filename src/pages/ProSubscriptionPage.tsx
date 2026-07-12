@@ -19,12 +19,11 @@ export function ProSubscriptionPage() {
   const { user } = useAuth();
   const [subscription, setSubscription] = useState<SubscriptionWithPlan | null>(null);
   const [plans, setPlans] = useState<AIPlan[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showPayPal, setShowPayPal] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [billingInterval, setBillingInterval] = useState<'month' | 'year'>('month');
-  const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [upgrading, _setUpgrading] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const toast = useToast();
@@ -75,21 +74,6 @@ export function ProSubscriptionPage() {
     setShowPayPal(true);
   };
 
-  const handleSubscribe = async (planId: string) => {
-    if (!user) return;
-    setUpgrading(planId);
-
-    const result = await subscriptionService.subscribeToPlan(user.id, planId);
-    if (result.success && result.subscription) {
-      setSubscription(result.subscription);
-      toast.success('Subscription activated!');
-    } else {
-      toast.error(result.error || 'Failed to subscribe. Please try again.');
-    }
-
-    setUpgrading(null);
-  };
-
   const handleCancel = async () => {
     if (!subscription?.id || !user) return;
     setCancelling(true);
@@ -113,7 +97,7 @@ export function ProSubscriptionPage() {
     const result = await subscriptionService.getCurrentSubscription(user.id);
     if (result.success) setSubscription(result.subscription ?? null);
     setShowPayPal(false);
-    setIsLoading(false);
+    setLoading(false);
   };
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);

@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Eye, Loader2, RefreshCw, Search, CheckCircle, XCircle,
   ArrowRight, Trash2
@@ -36,7 +35,6 @@ const statusColors: Record<string, string> = {
 };
 
 export function AdminProjectsPage() {
-  const navigate = useNavigate();
   const [projects, setProjects] = useState<AdminProject[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');

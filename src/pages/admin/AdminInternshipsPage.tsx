@@ -336,7 +336,7 @@ export function AdminInternshipsPage() {
       const interviewDurationVal = interviewDuration[id] ?? app?.interview_duration ?? 30;
       
       // First update the status
-      const { data, error } = await supabase.functions.invoke('internship-applications', {
+      const { error } = await supabase.functions.invoke('internship-applications', {
         method: 'PATCH',
         body: {
           application_id: id,

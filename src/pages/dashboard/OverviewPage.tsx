@@ -33,23 +33,6 @@ interface QuickStat {
   changeType?: 'positive' | 'negative' | 'neutral';
 }
 
-/** Calculate profile completion percentage from freelancer_profiles data */
-function calculateProfileCompletion(profile: Record<string, unknown> | null): number {
-  if (!profile) return 0;
-  const fields = [
-    'name', 'title', 'bio', 'hourly_rate', 'experience',
-    'skills', 'languages', 'location', 'availability', 'avatar'
-  ];
-  const filled = fields.filter(f => {
-    const val = profile[f];
-    if (val === null || val === undefined) return false;
-    if (typeof val === 'string' && val.trim() === '') return false;
-    if (Array.isArray(val) && val.length === 0) return false;
-    return true;
-  }).length;
-  return Math.round((filled / fields.length) * 100);
-}
-
 export function OverviewPage() {
   const { user, role } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
@@ -63,10 +46,7 @@ export function OverviewPage() {
     unreadNotifications: 0,
   });
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
-  const [recentContracts, setRecentContracts] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
-  const [hasProfile, setHasProfile] = useState<boolean>(true);
-  const [profileStrength, setProfileStrength] = useState<number>(50);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -107,11 +87,7 @@ export function OverviewPage() {
           analyticsService.getFreelancerAnalytics(user.id),
         ]);
 
-        setHasProfile(!!profileCheck?.data);
-
-        // Calculate profile strength from actual data
         const profileData = profileCheck?.data as Record<string, unknown> | null;
-        setProfileStrength(calculateProfileCompletion(profileData));
 
         // Calculate stats
         const activeContracts = Array.isArray(contractsData)
@@ -194,9 +170,6 @@ export function OverviewPage() {
           notificationService.getByUser(user.id),
         ]);
 
-        const activeProjects = Array.isArray(projectsData)
-          ? projectsData.filter(p => p.status === 'open').length
-          : 0;
         const activeContracts = Array.isArray(contractsData)
           ? contractsData.filter(c => c.status === 'active' || c.status === 'pending').length
           : 0;
@@ -204,9 +177,6 @@ export function OverviewPage() {
           ? contractsData
               .filter(c => c.status === 'completed')
               .reduce((sum: number, c: any) => sum + Number(c.amount), 0)
-          : 0;
-        const freelancersHired = Array.isArray(contractsData)
-          ? new Set(contractsData.map((c: any) => c.freelancer_id)).size
           : 0;
         const unreadNotifications = Array.isArray(notificationResult?.notifications)
           ? notificationResult.notifications.filter((n: any) => !n.read).length
@@ -225,9 +195,6 @@ export function OverviewPage() {
         });
 
         setRecentProjects(Array.isArray(projectsData) ? projectsData.slice(0, 5) : []);
-        setRecentContracts(Array.isArray(contractsData) ? contractsData.slice(0, 5) : []);
-        setHasProfile(true);
-        setProfileStrength(100);
 
         // Build client activity feed
         const recentActivities = [
@@ -314,7 +281,6 @@ export function OverviewPage() {
   }
 
   const isFreelancer = role === 'freelancer';
-  const isClient = role === 'client';
 
   // Build stats based on role
   const quickStats: QuickStat[] = isFreelancer

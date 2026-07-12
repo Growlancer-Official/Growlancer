@@ -114,7 +114,7 @@ export function ProfessionalProfilePage() {
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [activeSessions, setActiveSessions] = useState(1);
+  const [activeSessions] = useState(1);
 
   // ── Notification preferences state ──
   const [notifications, setNotifications] = useState({

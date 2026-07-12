@@ -79,7 +79,6 @@ export function WorkspacePage() {
   // Co-Working Canvas States
   const [taskInput, setTaskInput] = useState('');
   const [notesText, setNotesText] = useState('');
-  const [isTypingNotes, setIsTypingNotes] = useState(false);
   const [notesSaveStatus, setNotesSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const [sharedTasks, setSharedTasks] = useState<SharedTask[]>([]);
 
@@ -502,6 +501,7 @@ export function WorkspacePage() {
   };
 
   // Collaborative Scratchpad Handlers
+  const [_isTypingNotes, setIsTypingNotes] = useState(false);
   const notesUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleNoteChange = (text: string) => {

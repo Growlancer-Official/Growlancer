@@ -9,8 +9,9 @@ import {
   CheckSquare, Square,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { useToast } from '../../components/Toast';
-import { adminQuery, adminDelete } from '../../lib/adminDataProxy';
+import { useToast } from '../../components/Toast';import {
+  adminDelete
+} from '../../lib/adminDataProxy';
 import {
   issueCertificate, revokeCertificate, getAllCertificates, sendCertificateEmail,
   type Certificate, CERT_LEVEL_STYLES, getCertificateTitle,
@@ -161,7 +162,7 @@ export function AdminCertificatesPage() {
         toast.warning('Bulk Partial', `${successCount} generated, ${failCount} failed.`);
       }
       setBulkSelectedIds(new Set());
-    } catch (err) {
+    } catch {
       toast.error('Bulk Error', 'An unexpected error occurred during bulk generation.');
     } finally {
       setActionLoading(null);
@@ -248,9 +249,9 @@ export function AdminCertificatesPage() {
       } else {
         throw new Error(result.error || 'Failed to generate code');
       }
-    } catch (err) {
+    } catch {
       setGeneratedCodes(prev => ({ ...prev, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: false } }));
-      toast.error('Failed', err instanceof Error ? err.message : 'Could not generate code');
+      toast.error('Failed', 'Could not generate code');
       return { success: false };
     }
   };
@@ -275,8 +276,8 @@ export function AdminCertificatesPage() {
       
       if (error) throw error;
       setInternApplicants((fnData?.applications || []) as InternshipAppUser[]);
-    } catch (err) {
-      console.error('Failed to fetch internship applicants:', err);
+    } catch {
+      console.error('Failed to fetch internship applicants:');
       setInternApplicants([]);
     } finally { if (showLoading) setLoadingInterns(false); }
   }, []);

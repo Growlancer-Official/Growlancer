@@ -90,7 +90,7 @@ export function ClientPaymentsPage() {
       } else {
         setPaymentMethodsError(result.error || 'Failed to load payment methods');
       }
-    } catch (err) {
+    } catch {
       setPaymentMethodsError('Failed to load payment methods');
     } finally {
       setPaymentMethodsLoading(false);
@@ -202,7 +202,7 @@ export function ClientPaymentsPage() {
         isDefault: false,
       });
       void fetchPaymentMethods();
-    } catch (err) {
+    } catch {
       setPaymentMethodsError('Failed to add payment method');
     } finally {
       setAddingPaymentMethod(false);
@@ -220,7 +220,7 @@ export function ClientPaymentsPage() {
         return;
       }
       void fetchPaymentMethods();
-    } catch (err) {
+    } catch {
       setPaymentMethodsError('Failed to delete payment method');
     } finally {
       setDeletingPaymentMethodId(null);
@@ -237,7 +237,7 @@ export function ClientPaymentsPage() {
         return;
       }
       void fetchPaymentMethods();
-    } catch (err) {
+    } catch {
       setPaymentMethodsError('Failed to set default payment method');
     }
   };

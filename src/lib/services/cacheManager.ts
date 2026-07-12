@@ -5,7 +5,6 @@ interface CacheEntry<T> {
 }
 
 const CACHE_TTL_MS = 6000; // 6 seconds TTL (increased from 3s for production stability)
-const CACHE_TTL_LONG_MS = 30000; // 30 seconds for infrequently-changing data (increased from 15s)
 
 /** Maximum entries in the cache before eviction kicks in */
 const CACHE_MAX_SIZE = 200;

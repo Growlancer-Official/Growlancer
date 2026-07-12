@@ -387,7 +387,7 @@ export function ContestDetailPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {submissions.map((submission, index) => (
+                {submissions.map((submission) => (
                   <div key={submission.id} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">

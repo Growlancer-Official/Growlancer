@@ -26,11 +26,9 @@ interface Invite {
 
 /* ── Dropdown menu for each invite card ── */
 function InviteMenu({
-  inviteId,
   onCancel,
   onResend,
 }: {
-  inviteId: string;
   onCancel: () => void;
   onResend: () => void;
 }) {
@@ -259,7 +257,7 @@ export function ClientInvitesPage() {
                     >
                       {expired ? 'Expired' : invite.status}
                     </span>
-                    <InviteMenu inviteId={invite.id} onCancel={() => handleCancel(invite.id)} onResend={() => handleResend(invite.id)} />
+                    <InviteMenu onCancel={() => handleCancel(invite.id)} onResend={() => handleResend(invite.id)} />
                   </div>
                 </div>
 

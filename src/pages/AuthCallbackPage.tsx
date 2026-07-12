@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { fetchUserProfile } from '../lib/services/authService';
-import { CheckCircle2, Loader2, XCircle, Mail, KeyRound, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
 
 type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate';
 type AuthAction = 'signup' | 'recovery' | 'magiclink' | 'email_change' | 'invite' | 'reauthentication' | 'unknown';
@@ -258,16 +258,6 @@ export function AuthCallbackPage() {
       );
       setCountryGateLoading(false);
     }
-  };
-
-  const actionIcons: Record<AuthAction, React.ReactNode> = {
-    signup: <Mail className="w-8 h-8 text-emerald-600" />,
-    recovery: <KeyRound className="w-8 h-8 text-emerald-600" />,
-    magiclink: <ShieldCheck className="w-8 h-8 text-emerald-600" />,
-    email_change: <Mail className="w-8 h-8 text-emerald-600" />,
-    invite: <ShieldCheck className="w-8 h-8 text-emerald-600" />,
-    reauthentication: <ShieldCheck className="w-8 h-8 text-emerald-600" />,
-    unknown: <Loader2 className="w-8 h-8 text-emerald-600 animate-spin" />,
   };
 
   const actionTitles: Record<AuthAction, string> = {

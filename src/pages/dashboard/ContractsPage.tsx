@@ -458,7 +458,6 @@ export function ContractsPage() {
           <div className="space-y-4">
             {filteredContracts.map((contract) => {
             const contractMilestones = milestones(contract.milestones);
-            const progress = getMilestoneProgress(contract.milestones);
             const escrowState = escrowBalances[contract.id];
             const balance = escrowState?.balance;
 

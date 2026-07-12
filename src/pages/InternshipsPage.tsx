@@ -275,7 +275,6 @@ function ApplicationForm({
   const [portfolioUrl, setPortfolioUrl] = useState('');
   const [resumeUrl, setResumeUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [resumeUploading, setResumeUploading] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
   const [whyGrowlancer, setWhyGrowlancer] = useState('');
   const [weeklyAvailability, setWeeklyAvailability] = useState(20);
@@ -297,9 +296,7 @@ function ApplicationForm({
     let resumeFilePath: string | undefined;
     let resumeFileName: string | undefined;
     if (resumeFile) {
-      setResumeUploading(true);
       const uploadResult = await internshipService.uploadResume(resumeFile);
-      setResumeUploading(false);
       if (uploadResult.success && uploadResult.filePath) {
         resumeFilePath = uploadResult.filePath;
         resumeFileName = resumeFile.name;

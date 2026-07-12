@@ -230,8 +230,8 @@ export async function requestAccountDeletion(
       requestId: result.request_id,
       scheduledDeletion: result.scheduled_deletion_at,
     };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
+  } catch {
+    const message = 'Unknown error';
     captureError('Exception requesting account deletion', {
       source: 'auth',
       userId,
@@ -267,8 +267,8 @@ export async function cancelAccountDeletionRequest(
     }
 
     return { success: true };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
+  } catch {
+    const message = 'Unknown error';
     captureError('Exception cancelling deletion request', {
       source: 'auth',
       userId,
@@ -342,8 +342,8 @@ export async function deleteAuthAccount(userId: string): Promise<{ success: bool
       return { success: false, error: error.message };
     }
     return { success: true };
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Unknown error';
+  } catch {
+    const message = 'Unknown error';
     captureError('Exception deleting auth account', {
       source: 'auth',
       userId,
@@ -435,7 +435,7 @@ export async function getMFAStatus(): Promise<MFAStatus> {
       factors: (mfaFactors?.all as unknown as Array<{ id: string; type: string; status: string }>) || [],
       totpFactors: (mfaFactors?.totp as unknown as Array<{ id: string; type: string; status: string }>) || [],
     };
-  } catch (err) {
+  } catch {
     captureError('Exception getting MFA status', { source: 'auth' });
     return { mfaEnabled: false, recoveryCodesRemaining: 0 };
   }

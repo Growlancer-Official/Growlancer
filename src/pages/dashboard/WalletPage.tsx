@@ -57,11 +57,7 @@ const formatCurrency = (amount: number) =>
     maximumFractionDigits: 2,
   }).format(amount);
 
-const formatCompactCurrency = (amount: number) => {
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(1)}K`;
-  return formatCurrency(amount);
-};
+
 
 const maskEmail = (email: string | null) => {
   if (!email) return '';
@@ -121,7 +117,6 @@ export function WalletPage() {
 
   // ── Withdrawal history state ──
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
-  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
 
   // ── Transaction history state ──
   const [transactions, setTransactions] = useState<TransactionRow[]>([]);
@@ -136,7 +131,6 @@ export function WalletPage() {
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [selectedMethodId, setSelectedMethodId] = useState<string>('');
   const [payoutMethods, setPayoutMethods] = useState<PayoutMethod[]>([]);
-  const [payoutMethodsLoading, setPayoutMethodsLoading] = useState(false);
   const [withdrawProcessing, setWithdrawProcessing] = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
   const [withdrawSuccess, setWithdrawSuccess] = useState<Withdrawal | null>(null);

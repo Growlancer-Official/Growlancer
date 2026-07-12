@@ -99,8 +99,8 @@ export function DisputeResolutionPage() {
 
   /* detail view */
   const [selectedDispute, setSelectedDispute] = useState<DisputeCase | null>(null);
+  const [_loadingDetail, setLoadingDetail] = useState(true);
   const [contractDetail, setContractDetail] = useState<Record<string, any> | null>(null);
-  const [loadingDetail, setLoadingDetail] = useState(false);
 
   /* messages */
   const [messages, setMessages] = useState<DisputeMessage[]>([]);
@@ -145,8 +145,8 @@ export function DisputeResolutionPage() {
       if (result.contract) {
         setContractDetail(result.contract as Record<string, any>);
       }
-    } finally {
-      setLoadingDetail(false);
+    } catch {
+      // ignore
     }
   }, []);
 
@@ -224,7 +224,6 @@ export function DisputeResolutionPage() {
   /* ================================================================ */
 
   if (selectedDispute) {
-    const cfg = STATUS_CONFIG[selectedDispute.status] || STATUS_CONFIG.pending;
     return (
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Back button */}
@@ -469,7 +468,6 @@ export function DisputeResolutionPage() {
           ) : (
             <div className="space-y-3">
               {filteredDisputes.map((dispute) => {
-                const cfg = STATUS_CONFIG[dispute.status] || STATUS_CONFIG.pending;
                 return (
                   <button
                     key={dispute.id}

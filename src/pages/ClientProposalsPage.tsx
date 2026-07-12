@@ -39,13 +39,11 @@ interface Proposal {
 
 /* ── Dropdown menu for each proposal card ── */
 function ProposalMenu({
-  proposalId,
   freelancerId,
   status,
   onAccept,
   onReject,
 }: {
-  proposalId: string;
   freelancerId: string;
   status: string;
   onAccept: () => void;
@@ -375,7 +373,6 @@ export function ClientProposalsPage() {
                     {proposal.status}
                   </span>
                   <ProposalMenu
-                    proposalId={proposal.id}
                     freelancerId={proposal.freelancer_id}
                     status={proposal.status}
                     onAccept={() => handleAccept(proposal)}

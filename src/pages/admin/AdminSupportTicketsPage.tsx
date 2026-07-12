@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { adminUpdate, adminInsert } from '../../lib/adminDataProxy';
 import {
-  Search, Loader2, RefreshCw, MessageSquare, User, Clock,
+  Search, Loader2, MessageSquare, User, Clock,
   Headphones, Send, X,
 } from 'lucide-react';
 

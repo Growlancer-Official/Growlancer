@@ -124,7 +124,6 @@ export const portfolioImageUpload = {
       if (!imageUrl) return { success: true };
 
       // Extract file path from URL
-      const bucketUrl = `${supabase.storage.from(BUCKET_NAME).getPublicUrl('').data.publicUrl}`;
       // The URL format is: {supabaseUrl}/storage/v1/object/public/portfolio-images/{path}
       const urlObj = new URL(imageUrl);
       const pathParts = urlObj.pathname.split('/');

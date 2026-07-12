@@ -26,7 +26,6 @@ export function IdentityVerificationPage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,8 +46,8 @@ export function IdentityVerificationPage() {
       const result = await identityVerificationService.getStatus(user.id);
       setVerification(result.verification);
       setVerificationStatus(result.status);
-    } catch (err) {
-      console.error('Failed to fetch verification status:', err);
+    } catch {
+      console.error('Failed to fetch verification status');
       setError('Failed to load verification status. Please refresh the page.');
     } finally {
       setPageStatus('idle');
@@ -155,7 +154,7 @@ export function IdentityVerificationPage() {
       } else {
         setError(result.error || 'Failed to submit verification');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred. Please try again.');
     } finally {
       setSubmitting(false);
