@@ -20,6 +20,12 @@ export default {
   // ─── React Strict Mode (was in main.tsx) ─────────────────
   reactStrictMode: true,
 
+  // ─── Prerender (SSG): generate static HTML at build time ─
+  // Vike crawls the URLs listed in +onBeforePrerenderStart.ts
+  // and pre-renders each one to HTML. This gives instant FCP
+  // for public pages without needing a running SSR server.
+  prerender: true,
+
   // ─── i18n ─────────────────────────────────────────────────
   lang: 'en',
 

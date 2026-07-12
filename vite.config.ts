@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import preact from '@preact/preset-vite';
+import react from '@vitejs/plugin-react';
 import vike from 'vike/plugin';
 import path from 'path';
 import { execSync } from 'node:child_process';
@@ -38,7 +38,7 @@ export default defineConfig({
   },
   plugins: [
     vike(),
-    preact(),
+    react(),
     // Bundle visualizer — run `npx vite build` and open stats.html
     ...(process.env.ANALYZE
       ? [
@@ -75,11 +75,12 @@ export default defineConfig({
       '@types': path.resolve(__dirname, './src/types'),
       '@layouts': path.resolve(__dirname, './src/layouts'),
       '@pages': path.resolve(__dirname, './src/pages'),
-      // ⚡ Preact aliases: preact/compat replaces React (saves ~50KB gzipped)
-      react: 'preact/compat',
-      'react-dom': 'preact/compat',
-      'react-dom/test-utils': 'preact/test-utils',
-      'react-dom/server': 'preact/server',
+      // Preact aliases temporarily removed — causing SSR prerender hook errors
+      // Will re-enable after fixing SSR compatibility
+      // react: 'preact/compat',
+      // 'react-dom': 'preact/compat',
+      // 'react-dom/test-utils': 'preact/test-utils',
+      // 'react-dom/server': 'preact/server',
     },
   },
   build: {
