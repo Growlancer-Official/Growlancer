@@ -79,6 +79,10 @@ export default defineConfig({
     logOverride: { 'this-is-undefined-in-esm': 'silent' },
   },
   build: {
+    // Target modern browsers for smaller bundles (es2020 supports >95% of users)
+    target: 'es2020',
+    // Enable CSS minification for smaller stylesheets
+    cssMinify: true,
     // Enable source maps for production debugging (but not for end users)
     sourcemap: false,
     // Chunk size warnings at 500KB (down from default 1MB)

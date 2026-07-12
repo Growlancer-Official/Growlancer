@@ -2,12 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/UpdatedLogo.png?v=2" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/UpdatedLogo.png?v=2" />
+    <!-- ⚡ Tiny inline SVG favicon — avoids multi-kilobyte PNG downloads on every page -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2310b981'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-size='18' font-weight='bold' fill='white'%3EG%3C/text%3E%3C/svg%3E" />
     <link rel="apple-touch-icon" sizes="180x180" href="/UpdatedLogo.png?v=2" />
-    <link rel="icon" type="image/png" sizes="192x192" href="/UpdatedLogo.png?v=2" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/UpdatedLogo.png?v=2" />
     <link rel="shortcut icon" href="/UpdatedLogo.png?v=2" />
+
     <!-- Theme Color -->
     <meta name="theme-color" content="#10b981" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -16,6 +15,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="application-name" content="Growlancer" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
     <!-- Primary Meta Tags -->
     <meta name="title" content="Growlancer — AI-Powered Freelancing Marketplace" />
     <meta name="description" content="Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly." />
@@ -40,12 +40,49 @@
     <link rel="canonical" href="https://growlancer.com/" />
 
     <link rel="manifest" href="/manifest.json" />
+
+    <!-- ⚡ Resource Hints: preconnect to critical third-party origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://o4511722119495680.ingest.us.sentry.io" />
+    <link rel="preconnect" href="https://zttwsjehcgaicziqyxpq.supabase.co" />
+    <link rel="dns-prefetch" href="https://zttwsjehcgaicziqyxpq.supabase.co" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
+    <!-- ⚡ Google Fonts: Inter (body text) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+
+    <!-- ⚡ Fontshare: Satoshi + Cabinet Grotesk (brand fonts) -->
+    <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap" />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+      <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" />
+    </noscript>
+
+    <!-- ⚡ Inline minimal critical CSS: above-fold styles applied instantly (no network round-trip) -->
+    <style>
+      /* Font-display swap fallback: text is visible immediately in system fonts, swaps to custom fonts once loaded */
+      html { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      body { margin: 0; background: #FFF8EE; color: #0F172A; }
+      #root { min-height: 100vh; }
+      /* Prevent layout shift for fonts once loaded */
+      .wf-active, .wf-satoshi-active { font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif; }
+      .wf-cabinet-grotesk-active { font-family: 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif; }
+    </style>
+
     <title>Growlancer</title>
   </head>
   <body>

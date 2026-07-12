@@ -1,4 +1,4 @@
-@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap');
+/* Fonts are loaded from <link> tags in index.html for async non-blocking loading */
 
 @tailwind base;
 @tailwind components;
