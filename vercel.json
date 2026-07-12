@@ -2,6 +2,7 @@
   "version": 2,
   "framework": "vite",
   "outputDirectory": "dist",
+  "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     {
       "source": "/assets/(.*)",
