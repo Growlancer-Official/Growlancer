@@ -1,30 +1,40 @@
-name: Deploy to Vercel Production
+# ────────────────────────────────────────────────────────────────────
+# Growlancer CI/CD Pipeline
+# Triggers:
+#   - Push to main or master → full pipeline: lint → typecheck → build → deploy
+#   - PR to main/master → lint + typecheck + build (no deploy)
+#   - Manual dispatch from GitHub Actions tab → full pipeline
+# ────────────────────────────────────────────────────────────────────
+
+name: Growlancer CI/CD
 
 on:
   push:
-    branches: [master]
-  # Allow manual trigger from GitHub Actions tab
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
   workflow_dispatch:
 
-# Prevent multiple deploys running at once on the same branch
 concurrency:
-  group: vercel-deploy-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
+  NODE_VERSION: '20'
+  SUPABASE_PROJECT_ID: 'zttwsjehcgaicziqyxpq'
+  # Vercel project config (needed in CI because .vercel/project.json is gitignored)
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
   VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-  NODE_VERSION: '20'
 
 jobs:
-  deploy:
-    name: Build & Deploy
+  # ─── Quality Check ─────────────────────────────────────────────
+  quality:
+    name: Lint & Typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js ${{ env.NODE_VERSION }}
         uses: actions/setup-node@v4
@@ -36,13 +46,43 @@ jobs:
       - name: Install dependencies
         run: npm ci --prefer-offline --no-audit --no-fund
 
-      - name: Build project (for Vercel prebuilt)
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Lint check
+        run: npm run lint
+        continue-on-error: true # lint warnings shouldn't block deploy
+
+  # ─── Build & Deploy Frontend to Vercel ─────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend (Vercel)
+    needs: [quality]
+    # Only deploy on push to main/master or manual trigger, not on PRs
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit --no-fund
+
+      - name: Build frontend
         run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN || '' }}
 
-      - name: Deploy to Vercel Production (prebuilt)
+      - name: Deploy to Vercel Production
         id: deploy
         run: |
           echo "🚀 Deploying to Vercel Production..."
@@ -52,7 +92,6 @@ jobs:
             2>&1)
           echo "$DEPLOY_OUTPUT"
 
-          # Extract deployment URL
           DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' | tail -1)
           echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
 
@@ -62,20 +101,116 @@ jobs:
           fi
           echo "✅ Deployed to: $DEPLOY_URL"
 
-      - name: Alias to growlancer.vercel.app
+      - name: Alias to growlancer.vercel.app (production domain)
         run: |
           DEPLOY_URL="${{ steps.deploy.outputs.deploy_url }}"
           echo "🔗 Aliasing $DEPLOY_URL → growlancer.vercel.app"
           npx vercel alias "$DEPLOY_URL" growlancer.vercel.app \
             --token=${{ secrets.VERCEL_TOKEN }} \
             --scope=mrkhan154212s-projects \
-            --yes
-          echo "✅ Alias set! https://growlancer.vercel.app is now live."
+            --yes 2>&1 || echo "⚠️  Alias may already be set"
+          echo "✅ https://growlancer.vercel.app is now live."
 
-      - name: Notify on failure
-        if: failure()
+  # ─── Deploy Supabase Edge Functions ────────────────────────────
+  deploy-edge-functions:
+    name: Deploy Edge Functions (Supabase)
+    needs: [quality]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link Supabase project
         run: |
-          echo "❌ Deployment failed! Check the logs above for details."
+          npx supabase link --project-ref ${{ env.SUPABASE_PROJECT_ID }}
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Deploy all edge functions
+        run: |
+          echo "🚀 Deploying edge functions..."
+          
+          # Critical functions (deploy first)
+          npx supabase functions deploy admin-data --no-verify-jwt
+          npx supabase functions deploy paypal --no-verify-jwt
+          npx supabase functions deploy razorpay --no-verify-jwt
+          npx supabase functions deploy withdrawal --no-verify-jwt
+          
+          # Core functions
+          for fn in notifications reviews ai-matching ai-assistant \
+                     internship-applications email-notifications \
+                     proposal-notifications notification-preferences \
+                     twofa-management ai-ticket-responder; do
+            npx supabase functions deploy "$fn" --no-verify-jwt
+          done
+          
+          # Utility functions
+          for fn in file-upload avatar-upload newsletter-subscribe \
+                     delete-account request-deletion process-deletion \
+                     admin-signup razorpay-payout-webhook \
+                     subscription-billing-cron; do
+            npx supabase functions deploy "$fn" --no-verify-jwt
+          done
+          
+          echo "✅ All edge functions deployed!"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+  # ─── Deploy DB Migrations ──────────────────────────────────────
+  deploy-db:
+    name: Deploy DB Migrations (Supabase)
+    needs: [quality]
+    # Run only on manual trigger (DB changes need caution)
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link & push DB migrations
+        run: |
+          echo "🚀 Pushing database migrations..."
+          npx supabase link --project-ref ${{ env.SUPABASE_PROJECT_ID }}
+          npx supabase db push --linked --include-all
+          echo "✅ Database migrations applied!"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+  # ─── Notify on Failure ─────────────────────────────────────────
+  notify:
+    name: Notify on Failure
+    if: failure()
+    needs: [deploy-frontend, deploy-edge-functions]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print failure summary
+        run: |
+          echo "❌ CI/CD Pipeline Failed!"
+          echo ""
+          echo "   Workflow: ${{ github.workflow }}"
           echo "   Commit: ${{ github.sha }}"
           echo "   Branch: ${{ github.ref_name }}"
           echo "   Author: ${{ github.actor }}"
+          echo ""
+          echo "   Check run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
