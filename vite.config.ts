@@ -1,5 +1,5 @@
 import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
+import preact from '@preact/preset-vite';
 import vike from 'vike/plugin';
 import path from 'path';
 import { execSync } from 'node:child_process';
@@ -38,7 +38,7 @@ export default defineConfig({
   },
   plugins: [
     vike(),
-    react(),
+    preact(),
     // Bundle visualizer — run `npx vite build` and open stats.html
     ...(process.env.ANALYZE
       ? [
@@ -75,10 +75,12 @@ export default defineConfig({
       '@types': path.resolve(__dirname, './src/types'),
       '@layouts': path.resolve(__dirname, './src/layouts'),
       '@pages': path.resolve(__dirname, './src/pages'),
+      // ⚡ Preact aliases: preact/compat replaces React (saves ~50KB gzipped)
+      react: 'preact/compat',
+      'react-dom': 'preact/compat',
+      'react-dom/test-utils': 'preact/test-utils',
+      'react-dom/server': 'preact/server',
     },
-  },
-  esbuild: {
-    logOverride: { 'this-is-undefined-in-esm': 'silent' },
   },
   build: {
     // Target modern browsers for smaller bundles (es2020 supports >95% of users)
@@ -90,14 +92,10 @@ export default defineConfig({
     // Chunk size warnings at 500KB (down from default 1MB)
     chunkSizeWarningLimit: 500,
     rollupOptions: {
-      onwarn(warning, warn) {
-        if (warning.code === 'this-is-undefined-in-esm') return;
-        warn(warning);
-      },
       output: {
         manualChunks(id) {
-          // React core
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/') || id.includes('node_modules/react-router') || id.includes('node_modules/scheduler/')) {
+          // React/Preact core
+          if (id.includes('node_modules/preact/') || id.includes('node_modules/react-router')) {
             return 'vendor-react';
           }
           // Supabase
