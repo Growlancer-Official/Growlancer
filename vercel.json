@@ -1,8 +1,9 @@
 {
   "version": 2,
+  "framework": "vite",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "installCommand": "npm install",
+  "installCommand": "npm install --ignore-scripts",
   "rewrites": [
     {
       "source": "/assets/(.*)",
