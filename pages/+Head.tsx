@@ -1,0 +1,121 @@
+import React from 'react';
+
+export default function Head() {
+  return (
+    <>
+      {/* ── Original favicon — WebP for performance ── */}
+      <link rel="icon" type="image/webp" sizes="32x32" href="/UpdatedLogo.webp?v=3" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/UpdatedLogo.png?v=2" />
+      <link rel="shortcut icon" href="/UpdatedLogo.png?v=2" />
+      <link rel="preload" as="image" href="/UpdatedLogo.webp?v=3" fetchpriority="high" />
+
+      {/* ── Theme ── */}
+      <meta name="theme-color" content="#10b981" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      <meta name="apple-mobile-web-app-title" content="Growlancer" />
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="application-name" content="Growlancer" />
+
+      {/* ── Open Graph / Facebook ── */}
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content="https://growlancer.com/" />
+      <meta property="og:title" content="Growlancer — AI-Powered Freelancing Marketplace" />
+      <meta
+        property="og:description"
+        content="Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly."
+      />
+      <meta property="og:image" content="https://growlancer.com/og-image.png" />
+      <meta property="og:image:width" content="1200" />
+      <meta property="og:image:height" content="630" />
+
+      {/* ── Twitter ── */}
+      <meta property="twitter:card" content="summary_large_image" />
+      <meta property="twitter:url" content="https://growlancer.com/" />
+      <meta property="twitter:title" content="Growlancer — AI-Powered Freelancing Marketplace" />
+      <meta
+        property="twitter:description"
+        content="Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients."
+      />
+      <meta property="twitter:image" content="https://growlancer.com/og-image.png" />
+
+      {/* ── Canonical ── */}
+      <link rel="canonical" href="https://growlancer.com/" />
+      <link rel="manifest" href="/manifest.json" />
+
+      {/* ── Resource hints ── */}
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link rel="preconnect" href="https://api.fontshare.com" />
+      <link rel="preconnect" href="https://o4511722119495680.ingest.us.sentry.io" />
+      <link rel="preconnect" href="https://zttwsjehcgaicziqyxpq.supabase.co" />
+      <link rel="dns-prefetch" href="https://zttwsjehcgaicziqyxpq.supabase.co" />
+      <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+
+      {/* ── Google Fonts: Inter ── */}
+      <link
+        rel="preload"
+        as="style"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet"
+        media="print"
+        onLoad="this.media='all'"
+      />
+
+      {/* ── Fontshare: Satoshi + Cabinet Grotesk ── */}
+      <link
+        rel="preload"
+        as="style"
+        href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap"
+      />
+      <link
+        href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap"
+        rel="stylesheet"
+        media="print"
+        onLoad="this.media='all'"
+      />
+      <noscript>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap"
+          rel="stylesheet"
+        />
+      </noscript>
+
+      {/* ── Inline critical CSS ── */}
+      <style>{`
+        html { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        body { margin: 0; background: #FFF8EE; color: #0F172A; overflow-x: hidden; }
+        #root { min-height: 100vh; }
+        .wf-satoshi-active { font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif; }
+        .wf-cabinet-grotesk-active { font-family: 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif; }
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .max-w-7xl { max-width: 80rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        @media (min-width: 640px) { .sm\\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; } }
+        @media (min-width: 1024px) { .lg\\:px-8 { padding-left: 2rem; padding-right: 2rem; } }
+        .relative { position: relative; }
+        .grid { display: grid; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .flex-col { flex-direction: column; }
+        .gap-10 { gap: 2.5rem; }
+        .gap-12 { gap: 3rem; }
+        .pt-10 { padding-top: 2.5rem; }
+        .pb-10 { padding-bottom: 2.5rem; }
+        @media (min-width: 640px) { .sm\\:pt-14 { padding-top: 3.5rem; } .sm\\:pb-14 { padding-bottom: 3.5rem; } .sm\\:text-5xl { font-size: 3rem; line-height: 1; } .sm\\:text-lg { font-size: 1.125rem; line-height: 1.75rem; } }
+        @media (min-width: 1024px) { .lg\\:col-span-6 { grid-column: span 6 / span 6; } .lg\\:text-6xl { font-size: 3.75rem; line-height: 1; } .lg\\:pt-16 { padding-top: 4rem; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-up { animation: fadeUp 700ms ease-out forwards; }
+        .opacity-0 { opacity: 0; }
+      `}</style>
+    </>
+  );
+}

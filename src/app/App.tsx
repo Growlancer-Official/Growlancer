@@ -9,8 +9,10 @@ import { ToastProvider } from '../components/Toast';
 import { RouteFallback } from '../components/LoadingSkeleton';
 import { CookieConsent } from '../components/CookieConsent';
 
-// Layouts
-const MainLayout = lazy(() => import('@layouts/MainLayout').then(m => ({ default: m.MainLayout })));
+// ═══ Eager imports (SSR-critical) ════════════════════════
+// These must be eagerly imported so Vike SSR can render actual content
+// instead of a loading skeleton. Lazy imports don't resolve during SSR.
+import { MainLayout } from '@layouts/MainLayout';
 const DashboardLayout = lazy(() =>
   import('@layouts/DashboardLayout').then(m => ({ default: m.DashboardLayout }))
 );
@@ -26,8 +28,8 @@ const AdminAuthGuard = lazy(() =>
   import('@components/AdminAuthGuard').then(m => ({ default: m.AdminAuthGuard }))
 );
 
-// Public Pages
-const HomePage = lazy(() => import('@pages/HomePage').then(m => ({ default: m.HomePage })));
+// ═══ Public Pages: eager import for SSR-critical landing page ═══
+import { HomePage } from '@pages/HomePage';
 const FreelancersSearchPage = lazy(() =>
   import('@pages/FreelancersSearchPage').then(m => ({ default: m.FreelancersSearchPage }))
 );

@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
+import vike from 'vike/plugin';
 import path from 'path';
 import { execSync } from 'node:child_process';
 
@@ -36,6 +37,7 @@ export default defineConfig({
     __LEGAL_LAST_UPDATED_ISO__: JSON.stringify(legalLastUpdatedIso),
   },
   plugins: [
+    vike(),
     react(),
     // Bundle visualizer — run `npx vite build` and open stats.html
     ...(process.env.ANALYZE
