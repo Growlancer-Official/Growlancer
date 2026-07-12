@@ -200,11 +200,6 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-4">
             The limitations in this section do not apply to liability that cannot be excluded or limited by applicable law, such as liability for gross negligence, fraud, or death or personal injury caused by negligence.
           </p>
-          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-[10px] text-red-700 font-medium">
-              ⚠️ A lawyer should review this Limitation of Liability clause before launch to ensure it complies with applicable local laws and is appropriately tailored to the platform's operations.
-            </p>
-          </div>
         </>
       ),
     },
@@ -226,11 +221,6 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-4">
             No advice or information, whether oral or written, obtained by you from Growlancer or through the Platform shall create any warranty not expressly stated in these Terms.
           </p>
-          <div className="p-4 bg-red-50 border border-red-200 rounded-2xl">
-            <p className="text-[10px] text-red-700 font-medium">
-              ⚠️ A lawyer should review this Disclaimer of Warranties clause before launch to ensure it complies with applicable local laws, particularly regarding consumer protection rights that may not allow certain disclaimers.
-            </p>
-          </div>
         </>
       ),
     },
@@ -240,7 +230,6 @@ const termsSections: Section[] = [
       icon: HelpCircle,
       content: (
         <>
-          {/* TODO: Replace with actual incorporation jurisdiction once the company is registered, e.g. "the laws of India" */}
           <p className="text-slate-600 leading-relaxed mb-4">
             These Terms of Service shall be governed by and construed in accordance with the laws of the jurisdiction of the Platform's incorporation, without regard to conflict of law principles.
           </p>

@@ -7,6 +7,7 @@ import { ErrorBoundary } from '../components/ErrorBoundary';
 import { I18nProvider } from '../lib/i18n';
 import { ToastProvider } from '../components/Toast';
 import { RouteFallback } from '../components/LoadingSkeleton';
+import { CookieConsent } from '../components/CookieConsent';
 
 // Layouts
 const MainLayout = lazy(() => import('@layouts/MainLayout').then(m => ({ default: m.MainLayout })));
@@ -494,6 +495,7 @@ function App() {
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </Suspense>
+          <CookieConsent />
           </ToastProvider>
           </I18nProvider>
         </AuthProvider>
