@@ -6,7 +6,6 @@
   "installCommand": "npm install",
   "functions": {
     "api/ssr.js": {
-      "runtime": "@vercel/node@3",
       "maxDuration": 30
     }
   },
