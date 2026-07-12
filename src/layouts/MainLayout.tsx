@@ -72,7 +72,7 @@ export function MainLayout() {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
               <img 
-                src="/UpdatedLogo.png" 
+                src="/UpdatedLogo.webp" 
                 alt="Growlancer" 
                 className="h-9 w-9 rounded-xl"
               />

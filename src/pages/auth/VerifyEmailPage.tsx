@@ -205,7 +205,7 @@ export function VerifyEmailPage() {
           {/* Logo */}
           <div className="flex justify-center mb-8">
             <img
-              src="/UpdatedLogo.png"
+              src="/UpdatedLogo.webp"
               alt="Growlancer"
               className="h-12 w-12 rounded-xl"
             />

@@ -13,7 +13,7 @@ export function CategoriesPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <img
-              src="/UpdatedLogo.png"
+              src="/UpdatedLogo.webp"
               alt="Growlancer"
               className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105"
             />

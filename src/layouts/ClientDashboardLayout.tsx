@@ -240,7 +240,7 @@ export function ClientDashboardLayout() {
         <div className="flex items-center justify-between mb-6">
           <Link to="/" className="flex items-center gap-3">
             <img
-              src="/UpdatedLogo.png"
+              src="/UpdatedLogo.webp"
               alt="Growlancer"
               className="h-10 w-10 rounded-xl shadow-lg"
             />
@@ -373,7 +373,7 @@ export function ClientDashboardLayout() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 mb-6 px-2">
           <img 
-            src="/UpdatedLogo.png" 
+            src="/UpdatedLogo.webp" 
             alt="Growlancer" 
             className="h-10 w-10 rounded-xl shadow-lg"
           />

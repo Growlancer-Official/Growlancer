@@ -147,7 +147,7 @@ export function AdminSignupPage() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
             <img 
-              src="/UpdatedLogo.png" 
+              src="/UpdatedLogo.webp" 
               alt="Growlancer" 
               className="h-12 w-12 rounded-xl shadow-lg"
             />

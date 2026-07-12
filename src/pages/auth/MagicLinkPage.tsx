@@ -55,7 +55,7 @@ export function MagicLinkPage() {
             {/* Logo */}
             <div className="flex justify-center mb-6">
               <img
-                src="/UpdatedLogo.png"
+                src="/UpdatedLogo.webp"
                 alt="Growlancer"
                 className="h-12 w-12 rounded-xl"
               />

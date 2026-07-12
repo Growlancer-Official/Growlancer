@@ -181,7 +181,7 @@ export function AdminDashboardLayout() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 mb-10 px-2">
           <img 
-            src="/UpdatedLogo.png" 
+            src="/UpdatedLogo.webp" 
             alt="Growlancer" 
             className="h-10 w-10 rounded-xl shadow-lg"
           />
