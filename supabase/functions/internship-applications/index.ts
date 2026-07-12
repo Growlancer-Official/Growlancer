@@ -447,7 +447,8 @@ function buildInterviewEmailHtml(
   name: string,
   roleName: string,
   googleMeetLink?: string | null,
-  interviewTime?: string | null
+  interviewTime?: string | null,
+  interviewDuration?: number
 ): string {
   const escapedName = escapeHtml(name);
   const escapedRole = escapeHtml(roleName);
@@ -472,6 +473,19 @@ function buildInterviewEmailHtml(
 
   const icsDtStart = isoTime ? isoTime.replace(/[-:]/g, '').replace(/\.\d{3}Z/, 'Z') : ''
 
+  // Calculate end time for Google Calendar (start + duration minutes)
+  const icsDtEnd = isoTime && interviewDuration
+    ? new Date(new Date(isoTime).getTime() + interviewDuration * 60000).toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z/, 'Z')
+    : ''
+
+  const durationDisplay = interviewDuration 
+    ? interviewDuration < 60 
+      ? `${interviewDuration} minutes` 
+      : interviewDuration === 60 
+        ? '1 hour' 
+        : `${Math.floor(interviewDuration / 60)} hour ${interviewDuration % 60} min`
+    : '30–45 minutes';
+
   const meetSection = googleMeetLink ? `
     <!-- GOOGLE MEET SECTION - PROMINENT -->
     <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #7c3aed; border-radius: 16px; overflow: hidden;">
@@ -482,26 +496,43 @@ function buildInterviewEmailHtml(
       </div>
       <div style="padding: 28px;">
         ${formattedTime ? `
-        <div style="margin-bottom: 24px; padding: 18px 20px; background: #f3e8ff; border: 1px solid #c4b5fd; border-radius: 12px;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="padding: 6px 12px; width: 100px; color: #6b21a8; font-size: 13px; font-weight: 600; white-space: nowrap;">📅 Date</td>
-              <td style="padding: 6px 0; color: #4c1d95; font-size: 15px; font-weight: 600;">${new Date(interviewTime!).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 12px; width: 100px; color: #6b21a8; font-size: 13px; font-weight: 600; white-space: nowrap;">⏰ Time</td>
-              <td style="padding: 6px 0; color: #4c1d95; font-size: 15px; font-weight: 600;">${new Date(interviewTime!).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}</td>
-            </tr>
-            <tr>
-              <td style="padding: 6px 12px; width: 100px; color: #6b21a8; font-size: 13px; font-weight: 600; white-space: nowrap;">📍 Duration</td>
-              <td style="padding: 6px 0; color: #4c1d95; font-size: 15px; font-weight: 600;">30–45 minutes</td>
-            </tr>
-          </table>
-          <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #c4b5fd;">
-            <p style="font-size: 12px; color: #7c3aed; margin: 0;">
-              💡 <strong>Tip:</strong> Click "Add to Calendar" below to save this event to your calendar.
-            </p>
-          </div>
+        <!-- Date / Time / Duration - Horizontal Cards -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 24px;">
+          <tr>
+            <td width="33%" align="center" style="padding: 6px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: #f3e8ff; border-radius: 12px;">
+                <tr><td style="padding: 14px 8px 10px; text-align: center;">
+                  <div style="font-size: 22px; line-height: 1;">📅</div>
+                  <div style="font-size: 9px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-top: 6px;">Date</div>
+                  <div style="font-size: 12px; color: #4c1d95; font-weight: 700; margin-top: 3px;">${new Date(interviewTime!).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</div>
+                </td></tr>
+              </table>
+            </td>
+            <td width="33%" align="center" style="padding: 6px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: #f3e8ff; border-radius: 12px;">
+                <tr><td style="padding: 14px 8px 10px; text-align: center;">
+                  <div style="font-size: 22px; line-height: 1;">⏰</div>
+                  <div style="font-size: 9px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-top: 6px;">Time</div>
+                  <div style="font-size: 12px; color: #4c1d95; font-weight: 700; margin-top: 3px;">${new Date(interviewTime!).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZoneName: 'short' })}</div>
+                </td></tr>
+              </table>
+            </td>
+            <td width="33%" align="center" style="padding: 6px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="background: #f3e8ff; border-radius: 12px;">
+                <tr><td style="padding: 14px 8px 10px; text-align: center;">
+                  <div style="font-size: 22px; line-height: 1;">⏱️</div>
+                  <div style="font-size: 9px; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 700; margin-top: 6px;">Duration</div>
+                  <div style="font-size: 12px; color: #4c1d95; font-weight: 700; margin-top: 3px;">${durationDisplay}</div>
+                </td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+        
+        <div style="text-align: center; margin-bottom: 4px;">
+          <p style="font-size: 11px; color: #7c3aed; margin: 0;">
+            💡 <strong>Tip:</strong> Click the buttons below to join or save this event.
+          </p>
         </div>` : ''}
 
         <div style="text-align: center; margin: 24px 0;">
@@ -521,12 +552,19 @@ function buildInterviewEmailHtml(
             ${googleMeetLink}
           </a>
         </div>          ${formattedTime ? `
-        <div style="margin-top: 20px; text-align: center;">
-          <a href="data:text/calendar;charset=utf-8,BEGIN:VCALENDAR%0D%0AVERSION:2.0%0D%0ABEGIN:VEVENT%0D%0ASUMMARY:Interview%20-%20${encodeURIComponent(rawRole)}%20%40%20Growlancer%0D%0ADESCRIPTION:Video%20interview%20for%20${encodeURIComponent(rawRole)}%20position%20at%20Growlancer%0D%0ADTSTART:${icsDtStart}%0D%0ADURATION:PT1H%0D%0ALOCATION:${encodeURIComponent(googleMeetLink!)}%0D%0AEND:VEVENT%0D%0AEND:VCALENDAR"
-             style="display: inline-block; padding: 12px 28px; background: #7c3aed; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">
-            📅 Add to Calendar
-          </a>
-        </div>` : ''}
+        <!-- Google Calendar + ICS Download Buttons -->
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td align="center" style="padding: 4px;">
+              <a href="https://www.google.com/calendar/render?action=TEMPLATE&text=Interview+${encodeURIComponent(rawRole)}+at+Growlancer&dates=${icsDtStart}/${icsDtEnd}&details=Video+interview+for+${encodeURIComponent(rawRole)}+position+at+Growlancer%0D%0A%0D%0AMeet+Link:+${encodeURIComponent(googleMeetLink!)}&location=${encodeURIComponent(googleMeetLink!)}"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 style="display: inline-block; padding: 12px 24px; background: #7c3aed; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 13px;">
+                📅 Add to Google Calendar
+              </a>
+            </td>
+          </tr>
+        </table>` : ''}
 
         <p style="font-size: 13px; color: #94a3b8; margin: 20px 0 0; text-align: center;">
           Please ensure you have a stable internet connection, working camera & microphone, and a quiet environment.
@@ -927,13 +965,14 @@ function sendStatusEmail(
   internshipLetterUrl?: string | null,
   googleMeetLink?: string | null,
   interviewTime?: string | null,
-  attachments?: Attachment[]
+  attachments?: Attachment[],
+  interviewDuration?: number
 ): Promise<boolean> {
   switch (newStatus) {
     case 'shortlisted':
       return sendBrevoEmail(email, name, `Shortlisted — ${roleName}`, buildShortlistedEmailHtml(name, roleName), attachments)
     case 'interview_scheduled':
-      return sendBrevoEmail(email, name, `Interview Invitation — ${roleName} 🎤`, buildInterviewEmailHtml(name, roleName, googleMeetLink, interviewTime), attachments)
+      return sendBrevoEmail(email, name, `Interview Invitation — ${roleName} 🎤`, buildInterviewEmailHtml(name, roleName, googleMeetLink, interviewTime, interviewDuration), attachments)
     case 'selected':
       return sendBrevoEmail(email, name, `Congratulations — You're Selected for ${roleName}! 🎉`, buildSelectedEmailHtml(name, roleName, offerLetterUrl, ndaUrl, internshipLetterUrl), attachments)
     case 'rejected':
@@ -1196,7 +1235,7 @@ Deno.serve(async (req) => {
     // ─── PATCH: Update application status OR send email ───────────────────
     if (method === 'PATCH') {
       const body = await req.json()
-      const { application_id, status: newStatus, notes, google_meet_link, interview_time, send_email_only, offer_letter_url, nda_url, internship_letter_url } = body
+      const { application_id, status: newStatus, notes, google_meet_link, interview_time, interview_duration, send_email_only, offer_letter_url, nda_url, internship_letter_url } = body
 
       if (!application_id) {
         return new Response(JSON.stringify({ error: 'application_id is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -1221,6 +1260,7 @@ Deno.serve(async (req) => {
         const emailSaveData: Record<string, unknown> = {}
         if (google_meet_link !== undefined) emailSaveData.google_meet_link = google_meet_link
         if (interview_time !== undefined) emailSaveData.interview_time = interview_time
+        if (interview_duration !== undefined) emailSaveData.interview_duration = interview_duration
         if (Object.keys(emailSaveData).length > 0) {
           await supabaseClient
             .from('internship_applications')
@@ -1231,6 +1271,7 @@ Deno.serve(async (req) => {
         // Use provided values if given, otherwise fall back to DB (which may have been just updated)
         const effectiveMeetLink = google_meet_link !== undefined ? google_meet_link : currentApp.google_meet_link
         const effectiveTime = interview_time !== undefined ? interview_time : currentApp.interview_time
+        const effectiveDuration = interview_duration !== undefined ? interview_duration : currentApp.interview_duration
 
         const effectiveOfferUrl = offer_letter_url !== undefined ? offer_letter_url : currentApp.offer_letter_url;
         const effectiveNdaUrl = nda_url !== undefined ? nda_url : currentApp.nda_url;
@@ -1274,6 +1315,7 @@ Deno.serve(async (req) => {
             effectiveMeetLink || null,
             effectiveTime || null,
             attachments,
+            effectiveDuration || undefined,
           )
           console.log(`Email-only mode: ${statusToSend} email sent: ${statusEmailSent}`)
         }
@@ -1290,6 +1332,7 @@ Deno.serve(async (req) => {
       if (notes !== undefined) updateData.notes = notes
       if (google_meet_link !== undefined) updateData.google_meet_link = google_meet_link
       if (interview_time !== undefined) updateData.interview_time = interview_time
+      if (interview_duration !== undefined) updateData.interview_duration = interview_duration
 
       const { data: application, error } = await supabaseClient
         .from('internship_applications')

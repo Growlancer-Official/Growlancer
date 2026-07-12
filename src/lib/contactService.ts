@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { sendAdminNotification } from './emailNotificationService';
 
 export async function submitContactInquiry(input: {
   name: string;
@@ -14,5 +15,19 @@ export async function submitContactInquiry(input: {
   if (error) {
     return { success: false, error: error.message };
   }
+
+  // Fire-and-forget admin notification email
+  sendAdminNotification({
+    subject: 'New Contact Inquiry',
+    message: input.message,
+    requester_name: input.name,
+    requester_email: input.email,
+    details: {
+      name: input.name,
+      email: input.email,
+      submitted_at: new Date().toISOString(),
+    },
+  });
+
   return { success: true };
 }

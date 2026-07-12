@@ -199,9 +199,6 @@ export async function getAllCertificates(options?: {
 }
 
 /**
- * Get certificates for a specific user.
- */
-/**
  * Send a certificate/LOR email to the recipient via edge function.
  */
 export async function sendCertificateEmail(params: {

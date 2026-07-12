@@ -60,6 +60,7 @@ interface InternshipApplication {
   why_growlancer: string | null;
   google_meet_link: string | null;
   interview_time: string | null;
+  interview_duration: number | null;
   weekly_availability: number | null;
   available_from: string | null;
   available_to: string | null;
@@ -244,6 +245,8 @@ export function AdminInternshipsPage() {
 
   const [meetLinkInput, setMeetLinkInput] = useState<Record<string, string>>({});
   const [interviewTimeInput, setInterviewTimeInput] = useState<Record<string, string>>({});
+  const [interviewDateInput, setInterviewDateInput] = useState<Record<string, string>>({});
+  const [interviewDuration, setInterviewDuration] = useState<Record<string, number>>({});
   const [sendEmailOnStatus, setSendEmailOnStatus] = useState<Record<string, boolean>>({});
 
   const handleSendEmail = async (id: string) => {
@@ -256,7 +259,10 @@ export function AdminInternshipsPage() {
     try {
       // Always save pending meet link & time to DB before sending email
       const googleMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
-      const interviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
+      const interviewDate = interviewDateInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 10) : '');
+      const interviewTimeRaw = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(11, 16) : '');
+      const interviewTime = interviewDate && interviewTimeRaw ? `${interviewDate}T${interviewTimeRaw}:00` : (app?.interview_time || undefined);
+      const interviewDurationVal = interviewDuration[id] ?? app?.interview_duration ?? 30;
 
       // Pass document URLs for 'selected' status to ensure email has the latest docs
       const offerLetterUrl = app.offer_letter_url || undefined;
@@ -271,6 +277,7 @@ export function AdminInternshipsPage() {
           send_email_only: true,
           google_meet_link: googleMeetLink,
           interview_time: interviewTime || undefined,
+          interview_duration: interviewDurationVal,
           offer_letter_url: offerLetterUrl,
           nda_url: ndaUrl,
           internship_letter_url: internshipLetterUrl,
@@ -291,10 +298,13 @@ export function AdminInternshipsPage() {
             ...a,
             google_meet_link: googleMeetLink ?? a.google_meet_link,
             interview_time: interviewTime || a.interview_time,
+            interview_duration: interviewDurationVal,
           } : a
         ));
         setMeetLinkInput(prev => { const n = { ...prev }; delete n[id]; return n; });
         setInterviewTimeInput(prev => { const n = { ...prev }; delete n[id]; return n; });
+        setInterviewDateInput(prev => { const n = { ...prev }; delete n[id]; return n; });
+        setInterviewDuration(prev => { const n = { ...prev }; delete n[id]; return n; });
       }
 
       setEmailLogs(prev => ({
@@ -320,7 +330,10 @@ export function AdminInternshipsPage() {
       const notes = notesInput[id] || undefined;
       // Use typed input OR existing DB value as fallback to always persist meet link/time
       const googleMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
-      const interviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
+      const interviewDate = interviewDateInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 10) : '');
+      const interviewTimeRaw = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(11, 16) : '');
+      const interviewTime = interviewDate && interviewTimeRaw ? `${interviewDate}T${interviewTimeRaw}:00` : (app?.interview_time || undefined);
+      const interviewDurationVal = interviewDuration[id] ?? app?.interview_duration ?? 30;
       
       // First update the status
       const { data, error } = await supabase.functions.invoke('internship-applications', {
@@ -331,6 +344,7 @@ export function AdminInternshipsPage() {
           notes,
           google_meet_link: googleMeetLink,
           interview_time: interviewTime || undefined,
+          interview_duration: interviewDurationVal,
         },
       });
 
@@ -346,7 +360,10 @@ export function AdminInternshipsPage() {
         if (sendEmail && isRealStatusChange && app) {
             // Also pass meet link/time to ensure email has them
             const emailMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
-            const emailInterviewTime = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 16) : undefined);
+            const emailInterviewDate = interviewDateInput[id] ?? (app?.interview_time ? app.interview_time.slice(0, 10) : '');
+            const emailInterviewTimeRaw = interviewTimeInput[id] ?? (app?.interview_time ? app.interview_time.slice(11, 16) : '');
+            const emailInterviewTime = emailInterviewDate && emailInterviewTimeRaw ? `${emailInterviewDate}T${emailInterviewTimeRaw}:00` : (app?.interview_time || undefined);
+            const emailDuration = interviewDuration[id] ?? 30;
             try {
               const emailResult = await supabase.functions.invoke('internship-applications', {
                 method: 'PATCH',
@@ -356,6 +373,7 @@ export function AdminInternshipsPage() {
                   send_email_only: true,
                   google_meet_link: emailMeetLink,
                   interview_time: emailInterviewTime || undefined,
+                  interview_duration: emailDuration,
                 },
               });
               emailSent = emailResult.data?.status_email_sent === true;
@@ -389,10 +407,14 @@ export function AdminInternshipsPage() {
           notes: notes || a.notes,
           google_meet_link: googleMeetLink ?? a.google_meet_link,
           interview_time: interviewTime || a.interview_time,
+          interview_duration: interviewDurationVal,
         } : a
       ));
       setNotesInput(prev => ({ ...prev, [id]: '' }));
       setSendEmailOnStatus(prev => ({ ...prev, [id]: false })); // Reset checkbox
+      setInterviewDateInput(prev => { const n = { ...prev }; delete n[id]; return n; });
+      setInterviewTimeInput(prev => { const n = { ...prev }; delete n[id]; return n; });
+      setInterviewDuration(prev => { const n = { ...prev }; delete n[id]; return n; });
     } catch (err) {
       console.error('Status update error:', err);
       toast.error('Update Failed', 'An unexpected error occurred.');
@@ -456,6 +478,46 @@ export function AdminInternshipsPage() {
     } catch (err) {
       console.error('Bulk update error:', err);
       toast.error('Bulk Update Error', 'An unexpected error occurred during bulk update.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`PERMANENTLY DELETE ${selectedIds.size} selected ${selectedIds.size === 1 ? 'application' : 'applications'}? This CANNOT be undone!`)) return;
+    setActionLoading('bulk-delete');
+    let successCount = 0;
+    let failCount = 0;
+    try {
+      const ids = Array.from(selectedIds);
+      for (const id of ids) {
+        try {
+          await supabase.functions.invoke('internship-applications', {
+            method: 'DELETE',
+            body: { application_id: id },
+          }).catch(async () => {
+            await supabase.functions.invoke('admin-data', {
+              method: 'DELETE',
+              body: { table: 'internship_applications', id },
+            });
+          });
+          successCount++;
+        } catch {
+          failCount++;
+        }
+      }
+      setSelectedIds(new Set());
+      await fetchApplications();
+
+      if (failCount === 0) {
+        toast.success('Bulk Delete Complete', `${successCount} ${successCount === 1 ? 'application' : 'applications'} permanently deleted.`);
+      } else {
+        toast.warning('Bulk Delete Partial', `${successCount} deleted, ${failCount} failed.`);
+      }
+    } catch (err) {
+      console.error('Bulk delete error:', err);
+      toast.error('Bulk Delete Error', 'An unexpected error occurred during bulk deletion.');
     } finally {
       setActionLoading(null);
     }
@@ -610,6 +672,12 @@ export function AdminInternshipsPage() {
               className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
               {actionLoading === 'bulk' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCheck className="w-3.5 h-3.5" />}
               Apply
+            </button>
+            <div className="w-px h-6 bg-white/10" />
+            <button onClick={handleBulkDelete} disabled={actionLoading === 'bulk-delete'}
+              className="flex items-center gap-1.5 px-4 py-2 bg-red-600/80 text-white text-xs font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors">
+              {actionLoading === 'bulk-delete' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+              Delete All
             </button>
           </div>
           <button onClick={() => setSelectedIds(new Set())}
@@ -816,63 +884,131 @@ export function AdminInternshipsPage() {
                     </div>
                   )}
 
-                  {/* Interview Scheduling - Google Meet + Time */}
+                  {/* Interview Scheduling - Google Meet + Date + Time + Duration */}
                   {(app.status === 'shortlisted' || app.status === 'interview_scheduled') && (
-                    <div className="p-4 rounded-xl" style={{ background: 'rgba(15, 23, 42, 0.5)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
-                        <Video className="w-3.5 h-3.5 text-purple-400" />
-                        Interview Scheduling
+                    <div className="p-5 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.06), rgba(139,92,246,0.02))', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center gap-2">
+                          <Video className="w-4 h-4" />
+                          Interview Scheduling
+                        </h4>
                         {app.status === 'interview_scheduled' && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 ml-1">
-                            Scheduled
+                          <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400">
+                            ✅ Scheduled
                           </span>
                         )}
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-[11px] font-medium text-slate-400 mb-1.5">Google Meet Link</label>
+                      </div>
+
+                      {/* Google Meet Link - Full Width */}
+                      <div className="mb-4">
+                        <label className="block text-[11px] font-semibold text-slate-400 mb-1.5 flex items-center gap-1.5">
+                          <Video className="w-3 h-3" />
+                          Google Meet Link
+                        </label>
+                        <input
+                          type="url"
+                          value={meetLinkInput[app.id] ?? app.google_meet_link ?? ''}
+                          onChange={(e) => setMeetLinkInput(prev => ({ ...prev, [app.id]: e.target.value }))}
+                          placeholder="https://meet.google.com/..."
+                          className="w-full px-4 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 placeholder-slate-600 transition-all"
+                        />
+                        {app.google_meet_link && !meetLinkInput[app.id] && (
+                          <p className="text-[10px] text-slate-500 mt-1.5 truncate">📎 {app.google_meet_link}</p>
+                        )}
+                      </div>
+
+                      {/* Date, Time, Duration - Stacked Responsive Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        {/* Date */}
+                        <div className="min-w-0">
+                          <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center gap-1.5">
+                            <Calendar className="w-3 h-3" />
+                            Interview Date
+                          </label>
                           <div className="relative">
-                            <Video className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
                             <input
-                              type="url"
-                              value={meetLinkInput[app.id] ?? app.google_meet_link ?? ''}
-                              onChange={(e) => setMeetLinkInput(prev => ({ ...prev, [app.id]: e.target.value }))}
-                              placeholder="https://meet.google.com/..."
-                              className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 placeholder-slate-600"
+                              type="date"
+                              value={interviewDateInput[app.id] ?? (app.interview_time ? app.interview_time.slice(0, 10) : '')}
+                              onChange={(e) => setInterviewDateInput(prev => ({ ...prev, [app.id]: e.target.value }))}
+                              className="w-full pl-8 pr-2 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 [color-scheme:dark] transition-all"
                             />
                           </div>
-                          {app.google_meet_link && !meetLinkInput[app.id] && (
-                            <p className="text-[10px] text-slate-500 mt-1">Current: {app.google_meet_link}</p>
-                          )}
                         </div>
-                        <div>
-                          <label className="block text-[11px] font-medium text-slate-400 mb-1.5">Interview Date & Time</label>
+
+                        {/* Time */}
+                        <div className="min-w-0">
+                          <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
+                            Interview Time
+                          </label>
                           <div className="relative">
-                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                            <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
                             <input
-                              type="datetime-local"
-                              value={interviewTimeInput[app.id] ?? (app.interview_time ? app.interview_time.slice(0, 16) : '')}
+                              type="time"
+                              step="900"
+                              value={interviewTimeInput[app.id] ?? (app.interview_time ? app.interview_time.slice(11, 16) : '')}
                               onChange={(e) => setInterviewTimeInput(prev => ({ ...prev, [app.id]: e.target.value }))}
-                              className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 [color-scheme:dark]"
+                              className="w-full pl-8 pr-2 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 [color-scheme:dark] transition-all"
                             />
                           </div>
-                          {app.interview_time && !interviewTimeInput[app.id] && (
-                            <p className="text-[10px] text-slate-500 mt-1">Current: {new Date(app.interview_time).toLocaleString()}</p>
-                          )}
+                        </div>
+
+                        {/* Duration */}
+                        <div className="min-w-0">
+                          <label className="block text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center gap-1.5">
+                            <Clock className="w-3 h-3" />
+                            Duration
+                          </label>
+                          <div className="relative">
+                            <Clock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+                            <select
+                              value={interviewDuration[app.id] ?? app.interview_duration ?? 30}
+                              onChange={(e) => setInterviewDuration(prev => ({ ...prev, [app.id]: parseInt(e.target.value) }))}
+                              className="w-full pl-8 pr-7 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 appearance-none cursor-pointer transition-all truncate"
+                            >
+                              <option value={15}>15 min</option>
+                              <option value={30}>30 min</option>
+                              <option value={45}>45 min</option>
+                              <option value={60}>1 hr</option>
+                              <option value={75}>1 hr 15</option>
+                              <option value={90}>1 hr 30</option>
+                              <option value={105}>1 hr 45</option>
+                              <option value={120}>2 hr</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-2 flex items-center pointer-events-none">
+                              <ChevronDown className="w-3 h-3 text-slate-500" />
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      {app.status === 'interview_scheduled' && (
-                        <div className="mt-3 flex justify-end">
-                          <button
-                            onClick={() => handleStatusChange(app.id, 'interview_scheduled')}
-                            disabled={actionLoading === `status-${app.id}`}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:opacity-30 text-white text-xs font-bold transition-all"
-                          >
-                            {actionLoading === `status-${app.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Video className="w-3 h-3" />}
-                            Save Interview Details
-                          </button>
+
+                      {/* Current schedule display */}
+                      {app.interview_time && !interviewDateInput[app.id] && !interviewTimeInput[app.id] && !interviewDuration[app.id] && (
+                        <div className="mt-3 p-3 rounded-lg" style={{ background: 'rgba(124, 58, 237, 0.06)', border: '1px solid rgba(124, 58, 237, 0.15)' }}>
+                          <p className="text-[10px] text-slate-500 flex items-center gap-1.5">
+                            <Calendar className="w-3 h-3" />
+                            Current: {new Date(app.interview_time).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                            <Clock className="w-3 h-3 ml-2" />
+                            {new Date(app.interview_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
                         </div>
                       )}
+
+                      {/* Save Button */}
+                      <div className="mt-4 flex justify-end">
+                        <button
+                          onClick={() => handleStatusChange(app.id, app.status === 'interview_scheduled' ? 'interview_scheduled' : 'interview_scheduled')}
+                          disabled={actionLoading === `status-${app.id}`}
+                          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 disabled:opacity-30 text-white text-xs font-bold transition-all shadow-lg shadow-purple-500/20 active:scale-[0.98]"
+                        >
+                          {actionLoading === `status-${app.id}` ? (
+                            <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</>
+                          ) : (
+                            <><Video className="w-3.5 h-3.5" /> Save Interview Details</>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
 

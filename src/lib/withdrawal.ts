@@ -3,6 +3,7 @@
 // PayPal-only withdrawal method
 
 import { supabase, dbFunctions } from './supabase';
+import { emailNotificationService } from './emailNotificationService';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zttwsjehcgaicziqyxpq.supabase.co';
 
@@ -138,6 +139,15 @@ export const withdrawalService = {
         }
         return { success: false, error: error.message };
       }
+
+      // Fire-and-forget: notify user via email that withdrawal is pending
+      emailNotificationService.withdrawalCompleted({
+        recipientEmail: session.user.email || '',
+        recipientName: session.user.user_metadata?.name || 'User',
+        amount: request.amount,
+        netAmount: request.amount,
+        method: request.method,
+      });
 
       return { success: true, withdrawal: data as Withdrawal };
     } catch (error) {

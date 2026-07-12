@@ -58,6 +58,7 @@ export interface InternshipRole {
   tools: string[];
   outcomes: string[];
   learningOpportunities: string[];
+  isOpen: boolean;
 }
 
 export const INTERNSHIP_ROLES: InternshipRole[] = [
@@ -112,6 +113,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Startup product development cycle',
       'Code review and collaborative development workflows',
     ],
+    isOpen: false,
   },
   {
     id: 'backend-supabase',
@@ -168,6 +170,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Payment system integration (PayPal)',
       'Real-time data synchronization',
     ],
+    isOpen: false,
   },
   {
     id: 'qa-testing',
@@ -224,6 +227,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Bug tracking and QA best practices',
       'Startup launch preparation processes',
     ],
+    isOpen: false,
   },
   {
     id: 'ui-ux-design',
@@ -279,6 +283,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
       'Pre-launch product design processes',
       'AI-powered product UX patterns',
     ],
+    isOpen: false,
   },
 ];
 

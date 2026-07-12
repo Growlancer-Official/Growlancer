@@ -37,6 +37,8 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
       const [url, options = {}] = args;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      const urlStr = typeof url === 'string' ? url : url instanceof Request ? url.url : '';
+      const isEdgeFunction = urlStr.includes('/functions/v1/');
 
       return fetch(url, {
         ...options,
@@ -45,7 +47,9 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
         .then(async response => {
           // Handle HTTP errors, but allow 406 (PGRST116 - no rows found for .single())
           // This is expected behavior when using .single() on empty results
-          if (!response.ok && response.status !== 406) {
+          // For Edge Function calls, let supabase-js handle non-2xx responses natively
+          // so that FunctionsHttpError is thrown with the actual error body
+          if (!response.ok && response.status !== 406 && !isEdgeFunction) {
             const errorText = await response.text();
             throw new Error(`HTTP ${response.status}: ${errorText}`);
           }

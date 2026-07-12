@@ -128,39 +128,9 @@ BEGIN
 END $$;
 
 -- ====================================================================
--- 6. ENSURE SKILL_CERTIFICATIONS TABLE EXISTS
--- ====================================================================
-
-CREATE TABLE IF NOT EXISTS skill_certifications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
-  skill TEXT NOT NULL,
-  level TEXT NOT NULL CHECK (level IN ('beginner', 'intermediate', 'advanced', 'expert')),
-  score INTEGER NOT NULL DEFAULT 0,
-  max_score INTEGER NOT NULL DEFAULT 0,
-  passed_at TIMESTAMPTZ,
-  expires_at TIMESTAMPTZ,
-  certificate_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id, skill)
-);
-
--- Ensure RLS is enabled and policies exist
-ALTER TABLE skill_certifications ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "Users can view own certifications" ON skill_certifications;
-CREATE POLICY "Users can view own certifications" ON skill_certifications
-  FOR SELECT USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can insert own certifications" ON skill_certifications;
-CREATE POLICY "Users can insert own certifications" ON skill_certifications
-  FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can update own certifications" ON skill_certifications;
-CREATE POLICY "Users can update own certifications" ON skill_certifications
-  FOR UPDATE USING (auth.uid() = user_id);
-
--- Public can view all certifications (for profile display)
-DROP POLICY IF EXISTS "Public can view certifications" ON skill_certifications;
-CREATE POLICY "Public can view certifications" ON skill_certifications
-  FOR SELECT USING (true);
+-- NOTE: skill_certifications table is defined in:
+--   20260628000000_marketplace_features.sql
+--   20260722000000_create_storage_buckets.sql (REMOVED — duplicate)
+--   20260802000000_certificate_system.sql (adds columns)
+--   20260803000000_add_lor_certificate_type.sql (adds LOR type)
+-- Single source of truth: 20260628000000_marketplace_features.sql

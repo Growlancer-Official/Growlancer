@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { sendAdminNotification } from './emailNotificationService';
 
 export type TicketCategory = 'general' | 'billing' | 'account' | 'technical' | 'dispute' | 'feature_request' | 'other';
 export type TicketPriority = 'low' | 'normal' | 'high' | 'urgent';
@@ -61,6 +62,31 @@ const ticketService = {
       .single();
 
     if (error) return { success: false, error: error.message };
+
+    // Look up user name/email for admin notification
+    let requesterName = params.userId;
+    let requesterEmail = '';
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) requesterEmail = user.email;
+      if (user?.user_metadata?.name) requesterName = user.user_metadata.name as string;
+      else if (user?.email) requesterName = user.email;
+    } catch { /* ignore */ }
+
+    // Fire-and-forget admin notification on ticket creation
+    sendAdminNotification({
+      subject: `New Support Ticket: ${params.subject.substring(0, 80)}`,
+      message: `A new support ticket has been created by ${params.userRole}: ${params.description.substring(0, 200)}`,
+      requester_name: requesterName,
+      requester_email: requesterEmail,
+      details: {
+        category: params.category || 'general',
+        priority: params.priority || 'normal',
+        created_at: new Date().toISOString(),
+        user_role: params.userRole,
+      },
+    });
+
     return { success: true, ticket: data as unknown as SupportTicket };
   },
 
@@ -126,6 +152,19 @@ const ticketService = {
       .from('support_tickets' as any)
       .update({ updated_at: new Date().toISOString() })
       .eq('id', params.ticketId);
+
+    // Fire-and-forget: notify admin of new ticket message
+    sendAdminNotification({
+      subject: `New Reply on Support Ticket #${params.ticketId.substring(0, 8)}`,
+      message: `A new message was added to a support ticket.\n\n${params.message.substring(0, 300)}`,
+      requester_name: params.userId,
+      requester_email: '',
+      details: {
+        ticket_id: params.ticketId,
+        message_length: params.message.length,
+        replied_at: new Date().toISOString(),
+      },
+    });
 
     return { success: true, message: data as unknown as TicketMessage };
   },

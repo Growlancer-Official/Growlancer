@@ -6,6 +6,7 @@ import {
   Send, QrCode, Star, Link2, GraduationCap, Briefcase, Users,
   FileUp, ChevronDown, ChevronUp, History,
   Phone, Building, MapPin, Code2,
+  CheckSquare, Square,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
@@ -117,7 +118,106 @@ export function AdminCertificatesPage() {
   // Track generated verification codes per intern — with certId for PDF upload + email
   const [generatedCodes, setGeneratedCodes] = useState<Record<string, any>>({});
 
-  const handleGenerateCode = async (app: InternshipAppUser, type: 'internship' | 'lor') => {
+  // ─── Bulk Operations State ───────────────────────────────────
+  const [bulkSelectedIds, setBulkSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkCertType, setBulkCertType] = useState<'internship' | 'lor'>('internship');
+
+  const toggleSelectAll = () => {
+    if (bulkSelectedIds.size === filteredInterns.length) {
+      setBulkSelectedIds(new Set());
+    } else {
+      setBulkSelectedIds(new Set(filteredInterns.map(a => a.id)));
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setBulkSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleBulkGenerateCodes = async () => {
+    if (bulkSelectedIds.size === 0) return;
+    const typeLabel = bulkCertType === 'lor' ? 'LOR' : 'Certificate';
+    if (!confirm(`Generate ${typeLabel} codes for ${bulkSelectedIds.size} selected ${bulkSelectedIds.size === 1 ? 'intern' : 'interns'}?`)) return;
+    setActionLoading('bulk-generate');
+    let successCount = 0;
+    let failCount = 0;
+    try {
+      const ids = Array.from(bulkSelectedIds);
+      for (const id of ids) {
+        const app = internApplicants.find(a => a.id === id);
+        if (!app) { failCount++; continue; }
+        const result = await handleGenerateCode(app, bulkCertType);
+        if (result.success) successCount++;
+        else failCount++;
+      }
+      if (failCount === 0) {
+        toast.success('Bulk Complete', `${successCount} ${typeLabel} codes generated.`);
+      } else {
+        toast.warning('Bulk Partial', `${successCount} generated, ${failCount} failed.`);
+      }
+      setBulkSelectedIds(new Set());
+    } catch (err) {
+      toast.error('Bulk Error', 'An unexpected error occurred during bulk generation.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleBulkSendEmail = async () => {
+    if (bulkSelectedIds.size === 0) return;
+    if (!confirm(`Send certificate/LOR emails to ${bulkSelectedIds.size} selected ${bulkSelectedIds.size === 1 ? 'intern' : 'interns'}?`)) return;
+    setActionLoading('bulk-email');
+    let successCount = 0;
+    let failCount = 0;
+    try {
+      const ids = Array.from(bulkSelectedIds);
+      for (const id of ids) {
+        // Check for internship cert first, then LOR
+        const certKey = `${id}-internship`;
+        const lorKey = `${id}-lor`;
+        const gen = generatedCodes[certKey] || generatedCodes[lorKey];
+        if (!gen || !gen.certId || !gen.code || !gen.pdfUrl) {
+          failCount++;
+          continue;
+        }
+        try {
+          const isLOR = generatedCodes[lorKey]?.certId === gen.certId;
+          const app = internApplicants.find(a => a.id === id);
+          const r = await sendCertificateEmail({
+            certificateId: gen.certId,
+            recipientEmail: app?.email || '',
+            recipientName: internApplicants.find(a => a.id === id)?.full_name || '',
+            certificateType: isLOR ? 'lor' : 'internship',
+            roleName: internApplicants.find(a => a.id === id)?.role_name || 'Internship',
+            level: isLOR ? 'advanced' : 'intermediate',
+            verificationCode: gen.code,
+            certificateUrl: gen.pdfUrl,
+            performanceSummary: isLOR ? `Top performer during internship.` : '',
+            skillsDemonstrated: [],
+          });
+          if (r.success) successCount++;
+          else failCount++;
+        } catch { failCount++; }
+      }
+      if (failCount === 0) {
+        toast.success('Bulk Complete', `${successCount} emails sent.`);
+      } else {
+        toast.warning('Bulk Partial', `${successCount} sent, ${failCount} failed (some may lack PDF).`);
+      }
+      setBulkSelectedIds(new Set());
+    } catch (err) {
+      toast.error('Bulk Error', 'An unexpected error occurred during bulk email.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleGenerateCode = async (app: InternshipAppUser, type: 'internship' | 'lor'): Promise<{success: boolean}> => {
     const isLOR = type === 'lor';
     const key = `${app.id}-${type}`;
     setGeneratedCodes(prev => ({ ...prev, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: true } }));
@@ -144,12 +244,14 @@ export function AdminCertificatesPage() {
         setGeneratedCodes(prev => ({ ...prev, [key]: { code: actualCode, url: verifyUrl, type: isLOR ? 'LOR' : 'Certificate', loading: false, certId: result.certificate!.id, pdfUrl: result.certificate!.certificate_url || undefined } }));
         toast.success('Code Generated!', `${isLOR ? 'LOR' : 'Certificate'} verification code created for ${app.full_name}`);
         fetchCerts();
+        return { success: true };
       } else {
         throw new Error(result.error || 'Failed to generate code');
       }
     } catch (err) {
       setGeneratedCodes(prev => ({ ...prev, [key]: { code: '', url: '', type: isLOR ? 'LOR' : 'Certificate', loading: false } }));
       toast.error('Failed', err instanceof Error ? err.message : 'Could not generate code');
+      return { success: false };
     }
   };
 
@@ -200,6 +302,56 @@ export function AdminCertificatesPage() {
   useEffect(() => {
     isActiveRef.current = !!expandedId || !!expandedCertId || !!actionLoading || Object.keys(certUploadingPdf).length > 0;
   }, [expandedId, expandedCertId, actionLoading, certUploadingPdf]);
+
+  // ─── Realtime subscription for admin tables ─────────────────
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-certificates-realtime')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'skill_certifications' },
+        () => { fetchCerts(false); }
+      )
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'internship_applications' },
+        () => { fetchInternApplicants(false); }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchCerts, fetchInternApplicants]);
+
+  // ─── Persist generatedCodes across refresh/re-login ──────────────
+  // Read existing certificates from the DB and populate generatedCodes
+  // so QR codes + upload/send sections show up even after page refresh.
+  useEffect(() => {
+    if (certificates.length === 0 || internApplicants.length === 0) return;
+
+    setGeneratedCodes(prev => {
+      const next = { ...prev };
+      let changed = false;
+      for (const cert of certificates) {
+        if (cert.status !== 'active') continue;
+        const intern = internApplicants.find(a => a.id === cert.user_id);
+        if (!intern) continue;
+        const type = cert.certificate_type === 'lor' ? 'lor' : 'internship';
+        const key = `${cert.user_id}-${type}`;
+        // Only set if not already in state (preserves any fresh/loading codes)
+        if (!next[key] || next[key].loading === true) {
+          const verifyUrl = `${window.location.origin}/certificate/${cert.verification_code}`;
+          next[key] = {
+            code: cert.verification_code,
+            url: verifyUrl,
+            type: type === 'lor' ? 'LOR' : 'Certificate',
+            loading: false,
+            certId: cert.id,
+            pdfUrl: cert.certificate_url || undefined,
+          };
+          changed = true;
+        }
+      }
+      return changed ? next : prev; // avoid unnecessary re-render
+    });
+  }, [certificates, internApplicants]);
 
   const handleDeleteCert = async (certId: string, skill: string, userName: string) => {
     if (!confirm(`PERMANENTLY DELETE "${skill}" certificate for ${userName}? This cannot be undone!`)) return;
@@ -394,6 +546,35 @@ export function AdminCertificatesPage() {
               style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }} />
           </div>
 
+          {/* Bulk Action Bar */}
+          {bulkSelectedIds.size > 0 && (
+            <div className="sticky top-4 z-50 flex items-center justify-between px-5 py-3 rounded-2xl animate-fade-in"
+              style={{ background: '#0F172A', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }}>
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-bold text-white">{bulkSelectedIds.size} selected</span>
+                <select value={bulkCertType} onChange={e => setBulkCertType(e.target.value as 'internship' | 'lor')}
+                  className="bg-slate-800 border border-white/10 text-[10px] font-bold uppercase rounded-lg px-3 py-2 text-slate-300 cursor-pointer">
+                  <option value="internship">→ Certificate</option>
+                  <option value="lor">→ LOR</option>
+                </select>
+                <button onClick={handleBulkGenerateCodes} disabled={actionLoading === 'bulk-generate'}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors">
+                  {actionLoading === 'bulk-generate' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <QrCode className="w-3.5 h-3.5" />}
+                  Generate Codes
+                </button>
+                <button onClick={handleBulkSendEmail} disabled={actionLoading === 'bulk-email'}
+                  className="flex items-center gap-1.5 px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors">
+                  {actionLoading === 'bulk-email' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                  Send Emails
+                </button>
+              </div>
+              <button onClick={() => setBulkSelectedIds(new Set())}
+                className="text-xs font-bold text-slate-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                Clear Selection
+              </button>
+            </div>
+          )}
+
           {/* Applicants List */}
           <div className="space-y-3">
             {loadingInterns ? (
@@ -407,15 +588,37 @@ export function AdminCertificatesPage() {
                 <p className="text-xs text-slate-600 mt-1">Applicants will appear here once they apply for internships</p>
               </div>
             ) : (
-              filteredInterns.map(app => (
+              <>
+                <div className="flex items-center gap-3 px-1 py-1" style={{ color: '#64748B' }}>
+                  <button
+                    onClick={toggleSelectAll}
+                    className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider hover:text-emerald-400 transition-colors"
+                  >
+                    {bulkSelectedIds.size === filteredInterns.length ? (
+                      <CheckSquare className="w-4 h-4 text-emerald-400" />
+                    ) : (
+                      <Square className="w-4 h-4" />
+                    )}
+                    {bulkSelectedIds.size === filteredInterns.length ? 'Deselect All' : 'Select All'} ({filteredInterns.length})
+                  </button>
+                </div>
+              {filteredInterns.map(app => (
                 <div key={app.id} className="rounded-2xl overflow-hidden transition-all duration-200"
-                  style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  
-                  {/* Card Header - Always visible */}
+                  style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>                    {/* Card Header - Always visible */}
                   <div className="p-5 cursor-pointer"
                     onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-start gap-4 flex-1 min-w-0">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
+                          className="mt-2 shrink-0 hover:text-emerald-400 transition-colors"
+                        >
+                          {bulkSelectedIds.has(app.id) ? (
+                            <CheckSquare className="w-5 h-5 text-emerald-400" />
+                          ) : (
+                            <Square className="w-5 h-5 text-slate-500" />
+                          )}
+                        </button>
                         <div className="h-12 w-12 rounded-xl bg-slate-700 flex items-center justify-center text-sm font-bold text-white shrink-0">
                           {app.full_name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
                         </div>
@@ -475,25 +678,19 @@ export function AdminCertificatesPage() {
                       
 
 
-                      {/* ─── Generate Verification Code ─────────────────────────────── */}
-                      <div className="p-4 rounded-xl" style={{ background: 'rgba(59, 130, 246, 0.05)', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                      {/* ─── Internship Certificate ─────────────────────────────── */}
+                      <div className="p-4 rounded-xl" style={{ background: 'rgba(251, 191, 36, 0.05)', border: '1px solid rgba(251, 191, 36, 0.2)' }}>
                         <div className="flex items-center gap-2 mb-3">
-                          <QrCode className="w-4 h-4 text-blue-400" />
-                          <span className="text-xs font-bold text-blue-400 uppercase tracking-widest">Verification Code</span>
+                          <GraduationCap className="w-4 h-4 text-amber-400" />
+                          <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Internship Certificate</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mb-3">Generate a unique verification URL for this intern. They can visit it to view their details in real-time.</p>
+                        <p className="text-[11px] text-slate-500 mb-3">Generate a unique certificate verification code for this intern.</p>
                         <div className="flex items-center gap-2 flex-wrap">
                           <button onClick={() => handleGenerateCode(app, 'internship')}
                             disabled={generatedCodes[`${app.id}-internship`]?.loading}
                             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-bold hover:bg-amber-500/20 disabled:opacity-30 transition-all">
                             {generatedCodes[`${app.id}-internship`]?.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <GraduationCap className="w-3.5 h-3.5" />}
                             Generate Certificate Code
-                          </button>
-                          <button onClick={() => handleGenerateCode(app, 'lor')}
-                            disabled={generatedCodes[`${app.id}-lor`]?.loading}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 text-xs font-bold hover:bg-violet-500/20 disabled:opacity-30 transition-all">
-                            {generatedCodes[`${app.id}-lor`]?.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5" />}
-                            Generate LOR Code
                           </button>
                         </div>
 
@@ -595,7 +792,25 @@ export function AdminCertificatesPage() {
                             </div>
                           );
                         })()}
-                        {/* Show Generated Code - LOR */}
+                      </div>
+
+                      {/* ─── Letter of Recommendation (LOR) ────────────────────── */}
+                      <div className="p-4 rounded-xl" style={{ background: 'rgba(124, 58, 237, 0.05)', border: '1px solid rgba(124, 58, 237, 0.2)' }}>
+                        <div className="flex items-center gap-2 mb-3">
+                          <Star className="w-4 h-4 text-violet-400" />
+                          <span className="text-xs font-bold text-violet-400 uppercase tracking-widest">Letter of Recommendation (LOR)</span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 mb-3">Generate a unique LOR verification code for this intern.</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button onClick={() => handleGenerateCode(app, 'lor')}
+                            disabled={generatedCodes[`${app.id}-lor`]?.loading}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-violet-500/10 text-violet-400 text-xs font-bold hover:bg-violet-500/20 disabled:opacity-30 transition-all">
+                            {generatedCodes[`${app.id}-lor`]?.loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5" />}
+                            Generate LOR Code
+                          </button>
+                        </div>
+
+                        {/* Show Generated LOR Code */}
                         {generatedCodes[`${app.id}-lor`]?.url && (() => {
                           const key = `${app.id}-lor`;
                           const gen = generatedCodes[key]!;
@@ -790,7 +1005,8 @@ export function AdminCertificatesPage() {
                     </div>
                   )}
                 </div>
-              ))
+              ))}
+              </>
             )}
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Award, BookOpen, Briefcase, Calendar, CheckCircle, CheckCircle2, ChevronDown, ChevronUp, Clock, Code, Database, FileText, Globe, GraduationCap, HelpCircle, Lightbulb, Link2, Loader2, MessageSquare, Palette, Send, Sparkles, Target, Upload, User, Users, X,  } from 'lucide-react';
+import { ArrowLeft, Award, BookOpen, Briefcase, Calendar, CheckCircle, CheckCircle2, ChevronDown, ChevronUp, Clock, Code, Database, FileText, Globe, GraduationCap, HelpCircle, Lightbulb, Link2, Loader2, Lock, MessageSquare, Palette, Send, Sparkles, Target, Upload, User, Users, X,  } from 'lucide-react';
 import { internshipService, INTERNSHIP_ROLES, type InternshipRole } from '../lib/internshipService';
 
 // ─── Icon resolver ───────────────────────────────────────────────────────────
@@ -117,13 +117,20 @@ function RoleCard({
 
         {/* Action Buttons */}
         <div className="mt-5 flex flex-wrap gap-3">
-          <button
-            onClick={() => onApply(role)}
-            className={`inline-flex items-center justify-center h-11 px-6 rounded-xl text-white font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-95 text-sm ${c.bg} hover:brightness-110`}
-          >
-            Apply Now
-            <Send className="ml-2 w-4 h-4" />
-          </button>
+          {role.isOpen ? (
+            <button
+              onClick={() => onApply(role)}
+              className={`inline-flex items-center justify-center h-11 px-6 rounded-xl text-white font-bold shadow-lg shadow-emerald-600/20 transition-all active:scale-95 text-sm ${c.bg} hover:brightness-110`}
+            >
+              Apply Now
+              <Send className="ml-2 w-4 h-4" />
+            </button>
+          ) : (
+            <div className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-slate-200 text-slate-500 font-bold text-sm cursor-not-allowed">
+              <Lock className="w-4 h-4" />
+              Applications Closed
+            </div>
+          )}
           <button
             onClick={onToggle}
             className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white text-slate-700 font-bold border border-slate-200 hover:bg-slate-50 transition-all text-sm"

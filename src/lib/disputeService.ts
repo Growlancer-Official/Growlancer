@@ -2,6 +2,7 @@
 // Pure data-access layer for disputes table
 import { supabase } from './supabase';
 import type { Tables } from '../types/supabase';
+import { emailNotificationService } from './emailNotificationService';
 
 export type DisputeCase = Tables<'disputes'>;
 
@@ -48,6 +49,26 @@ export const disputeService = {
         .single();
 
       if (error) throw error;
+
+      // Fire-and-forget: email notification to the other party
+      const isClient = input.raised_by === contract.client_id;
+      const otherPartyId = isClient ? contract.freelancer_id : contract.client_id;
+      const { data: otherParty } = await supabase
+        .from('profiles')
+        .select('name, email')
+        .eq('id', otherPartyId)
+        .single();
+
+      if (otherParty) {
+        emailNotificationService.disputeOpened({
+          recipientEmail: (otherParty as any).email,
+          recipientName: (otherParty as any).name || 'User',
+          disputeId: (data as any).id,
+          reason: input.reason,
+          role: isClient ? 'freelancer' : 'client',
+        });
+      }
+
       return { success: true, dispute: data as unknown as DisputeCase };
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Failed to raise dispute';
@@ -122,6 +143,35 @@ export const disputeService = {
         .eq('id', disputeId);
 
       if (error) throw error;
+
+      // Notify both parties when dispute is resolved
+      if (status === 'resolved' || status === 'dismissed') {
+        const { data: dispute } = await supabase
+          .from('disputes')
+          .select('client_id, freelancer_id')
+          .eq('id', disputeId)
+          .single();
+
+        if (dispute) {
+          const { data: parties } = await supabase
+            .from('profiles')
+            .select('id, name, email')
+            .in('id', [dispute.client_id, dispute.freelancer_id]);
+
+          if (parties) {
+            for (const party of parties) {
+              emailNotificationService.disputeResolved({
+                recipientEmail: (party as any).email,
+                recipientName: (party as any).name || 'User',
+                disputeId,
+                resolution: resolution || 'Dispute has been resolved.',
+                outcome: status,
+              });
+            }
+          }
+        }
+      }
+
       return { success: true };
     } catch (error) {
       const msg = error instanceof Error ? error.message : 'Failed to update dispute';

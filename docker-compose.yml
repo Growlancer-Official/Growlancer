@@ -1,6 +1,9 @@
 version: '3.8'
 
 services:
+  # ============================================================
+  # PRODUCTION — serves built static assets via Node.js SPA server
+  # ============================================================
   web:
     build: .
     ports:
@@ -10,21 +13,10 @@ services:
       - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
       - VITE_SUPABASE_ANON_KEY=${VITE_SUPABASE_ANON_KEY}
     restart: unless-stopped
-    volumes:
-      - ./node_modules:/app/node_modules
-      - .:/app
-
-  # Optional: Add Supabase for local development
-  # supabase:
-  #   image: supabase/supabase:latest
-  #   container_name: supabase
-  #   restart: unless-stopped
-  #   environment:
-  #     - POSTGRES_PASSWORD=postgres
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - supabase-data:/var/lib/postgresql/data
+    # No volumes in production: the Dockerfile multi-stage build includes all assets
+    # volumes:
+    #   - ./node_modules:/app/node_modules
+    #   - .:/app
 
 volumes:
   supabase-data:
