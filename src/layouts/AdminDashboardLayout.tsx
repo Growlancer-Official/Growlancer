@@ -97,13 +97,11 @@ export function AdminDashboardLayout() {
 
   // Get admin session info (set by AdminAuthGuard before rendering)
   const [adminName, setAdminName] = useState('Admin');
-  const [adminEmail, setAdminEmail] = useState('');
 
   useEffect(() => {
     const session = getAdminSession();
     if (session) {
       setAdminName(session.label || 'Admin');
-      setAdminEmail(session.email || '');
     }
   }, []);
 

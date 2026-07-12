@@ -301,22 +301,9 @@ export const milestoneService = {
     description: string
   ): Promise<{ success: boolean; error?: string; disputeId?: string }> {
     try {
-      // Fetch contract details for dispute creation
-      const { data: contract, error: contractError } = await supabase
-        .from('contracts')
-        .select('client_id, freelancer_id, amount')
-        .eq('id', contractId)
-        .single();
-
-      if (contractError) throw contractError;
-
       // Update milestone status to disputed
       const updateResult = await milestoneService.updateMilestone(contractId, milestoneIndex, { status: 'disputed' });
       if (!updateResult.success) return updateResult;
-
-      // Get the milestone amount for the dispute
-      const { milestones } = await milestoneService.getMilestones(contractId);
-      const milestoneAmount = milestones[milestoneIndex]?.amount || 0;
 
       // Create dispute record using the raise_contract_dispute RPC
       const { data: disputeId, error: disputeError } = await supabase

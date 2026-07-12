@@ -11,8 +11,6 @@ export interface VerificationUpload {
   expiry_date?: string;
 }
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zttwsjehcgaicziqyxpq.supabase.co';
-
 export const identityVerificationService = {
   /**
    * Get a fresh signed URL for an existing verification document.
@@ -56,7 +54,7 @@ export const identityVerificationService = {
       const filePath = `verification-docs/${fileName}`;
 
       // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase
+      const { error: uploadError } = await supabase
         .storage
         .from('verification-documents')
         .upload(filePath, file, {

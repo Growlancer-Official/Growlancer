@@ -49,6 +49,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem('growlancer-locale');
       if (saved === 'en' || saved === 'hi') return saved;
+      // eslint-disable-next-line no-empty
     } catch {}
     return I18N_CONFIG.defaultLocale;
   });
@@ -71,7 +72,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
           setMessages(messageBundles[I18N_CONFIG.fallbackLocale]);
         }
         loadedLocales.current.add(locale);
-      } catch (error) {
+      } catch {
         console.warn(`[i18n] Failed to load locale "${locale}", falling back to "${I18N_CONFIG.fallbackLocale}"`);
         setMessages(messageBundles[I18N_CONFIG.fallbackLocale]);
       } finally {
@@ -86,6 +87,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(newLocale);
     try {
       localStorage.setItem('growlancer-locale', newLocale);
+      // eslint-disable-next-line no-empty
     } catch {}
     // Update <html lang> attribute
     document.documentElement.lang = newLocale;

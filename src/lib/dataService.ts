@@ -665,7 +665,7 @@ export const invitesService = {
       });
 
       return !error;
-    } catch (err) {
+    } catch {
       return false;
     }
   },

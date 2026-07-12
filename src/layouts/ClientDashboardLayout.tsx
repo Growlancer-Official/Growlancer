@@ -95,7 +95,6 @@ export function ClientDashboardLayout() {
   const location = useLocation();
   const { logout, user } = useAuth();
   const currentPath = location.pathname;
-  const [userProfile, setUserProfile] = useState<{ name: string; avatar: string | null } | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({
@@ -122,34 +121,8 @@ export function ClientDashboardLayout() {
 
   useEffect(() => {
     if (!user) {
-      setUserProfile(null);
       return;
     }
-
-    // Reset profile state when user changes
-    setUserProfile(null);
-    
-    // Fetch user profile
-    const fetchUserProfile = async () => {
-      try {
-        const { data } = await supabase
-          .from('profiles')
-          .select('name, avatar')
-          .eq('id', user.id)
-          .single();
-        
-        if (data) {
-          setUserProfile({
-            name: data.name,
-            avatar: data.avatar,
-          });
-        }
-      } catch {
-        // Profile fetch failed silently
-      } finally {
-        // Profile loading complete
-      }
-    };
 
     // Fetch unread message count
     const fetchUnreadCount = async () => {
@@ -187,7 +160,6 @@ export function ClientDashboardLayout() {
       }
     };
 
-    fetchUserProfile();
     fetchUnreadCount();
     fetchBadgeCounts();
 
@@ -211,10 +183,7 @@ export function ClientDashboardLayout() {
               payload.new.name !== payload.old.name ||
               payload.new.rating !== payload.old.rating ||
               payload.new.total_reviews !== payload.old.total_reviews) {
-            setUserProfile({
-              name: String(payload.new.name),
-              avatar: payload.new.avatar as string | null,
-            });
+            // Profile changed — could update UI here if needed
           }
         }
       )

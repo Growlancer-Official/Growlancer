@@ -106,7 +106,6 @@ export function DashboardLayout() {
     contracts: 0,
   });
   const [userProfile, setUserProfile] = useState<{ name: string; avatar: string | null; rating: number; total_reviews: number } | null>(null);
-  const [profileLoading, setProfileLoading] = useState(true);
   const [newMatchCount, setNewMatchCount] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
@@ -138,13 +137,11 @@ export function DashboardLayout() {
   useEffect(() => {
     if (!user) {
       setUserProfile(null);
-      setProfileLoading(false);
       return;
     }
 
     // Reset profile state when user changes
     setUserProfile(null);
-    setProfileLoading(true);
 
     // Fetch user profile
     const fetchUserProfile = async () => {
@@ -165,8 +162,6 @@ export function DashboardLayout() {
         }
       } catch {
         // Profile fetch failed silently
-      } finally {
-        setProfileLoading(false);
       }
     };
 

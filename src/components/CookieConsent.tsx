@@ -8,8 +8,6 @@ import {
   Megaphone,
   Check,
   X,
-  ChevronDown,
-  ChevronUp,
   ExternalLink,
 } from 'lucide-react';
 

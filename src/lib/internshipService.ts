@@ -8,7 +8,6 @@ import { supabase } from './supabase';
 import type { Database } from '../types/supabase';
 
 type InternshipRow = Database['public']['Tables']['internship_applications']['Row'];
-type InternshipInsert = Database['public']['Tables']['internship_applications']['Insert'];
 
 export interface InternshipApplicationInput {
   full_name: string;

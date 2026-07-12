@@ -180,6 +180,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       let fullContent = '';
       let buffer = '';
 
+      // eslint-disable-next-line no-constant-condition
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;

@@ -336,7 +336,7 @@ export const notificationService = {
                 callback(notification);
               }
             }
-          } catch (error) {
+          } catch {
             // Silently ignore subscription errors to prevent console spam
           }
         }

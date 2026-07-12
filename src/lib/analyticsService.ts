@@ -75,7 +75,6 @@ export const analyticsService = {
     try {
       const now = new Date();
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
 
       // Compute date range from timeframe
       const timeframeDays = timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : timeframe === '90d' ? 90 : 365;
