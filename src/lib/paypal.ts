@@ -178,6 +178,68 @@ class PayPalService {
 
     return data || [];
   }
+
+  /**
+   * Refund a PayPal order (full or partial)
+   * @param paypalOrderId The PayPal order ID to refund
+   * @param amount Optional partial refund amount
+   * @returns Refund result from edge function
+   */
+  async refundPayment(paypalOrderId: string, amount?: number): Promise<any> {
+    return await this.callEdgeFunction('refund_order', {
+      paypal_order_id: paypalOrderId,
+      amount,
+    });
+  }
+
+  /**
+   * Cancel a PayPal subscription/billing agreement
+   * @param subscriptionId The PayPal billing agreement/subscription ID to cancel
+   * @returns Cancellation result from edge function
+   */
+  async cancelSubscription(subscriptionId: string): Promise<any> {
+    return await this.callEdgeFunction('cancel_subscription', {
+      subscription_id: subscriptionId,
+    });
+  }
+
+  /**
+   * Find PayPal orders linked to a contract — admin helper
+   * @param contractId The contract ID to look up
+   * @returns Matching PayPal orders
+   */
+  async getOrdersByContract(contractId: string): Promise<PayPalOrder[]> {
+    const { data, error } = await supabase
+      .from('paypal_orders')
+      .select('*')
+      .eq('contract_id', contractId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch orders: ${error.message}`);
+    }
+
+    return (data || []) as PayPalOrder[];
+  }
+
+  /**
+   * Find PayPal orders linked to a subscription — admin helper
+   * @param subscriptionId The subscription ID to look up
+   * @returns Matching PayPal orders
+   */
+  async getOrdersBySubscription(subscriptionId: string): Promise<PayPalOrder[]> {
+    const { data, error } = await supabase
+      .from('paypal_orders')
+      .select('*')
+      .eq('subscription_id', subscriptionId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch orders: ${error.message}`);
+    }
+
+    return (data || []) as PayPalOrder[];
+  }
 }
 
 // Export singleton instance
@@ -192,5 +254,9 @@ export function usePayPal() {
     subscribeToOrderUpdates: (orderId: string, callback: (order: PayPalOrder) => void) =>
       paypalService.subscribeToOrderUpdates(orderId, callback),
     getUserOrders: () => paypalService.getUserOrders(),
+    refundPayment: (paypalOrderId: string, amount?: number) => paypalService.refundPayment(paypalOrderId, amount),
+    cancelSubscription: (subscriptionId: string) => paypalService.cancelSubscription(subscriptionId),
+    getOrdersByContract: (contractId: string) => paypalService.getOrdersByContract(contractId),
+    getOrdersBySubscription: (subscriptionId: string) => paypalService.getOrdersBySubscription(subscriptionId),
   };
 }

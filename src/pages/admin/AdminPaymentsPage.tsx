@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Loader2, RefreshCw, Search, CheckCircle, XCircle, RotateCcw, Trash2 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminInsert, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { paypalService } from '../../lib/paypal';
+import { razorpayService } from '../../lib/razorpay';
 
 interface Transaction {
   id: string; user_id: string; contract_id: string | null; type: string;
@@ -210,19 +212,67 @@ export function AdminPaymentsPage() {
                           {actionLoading === `delete-${tx.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                         </button>
                         {tx.status === 'completed' && tx.type === 'payment' && (
-                          // TODO(review): This creates a DB refund record but does NOT call the
-                          // Razorpay/PayPal refund API. A real refund requires provider API integration.
                           <button onClick={async () => {
-                            if (!confirm(`Create a refund transaction for ${formatCurrency(tx.amount)}?`)) return;
+                            if (!confirm(`Issue refund for ${formatCurrency(tx.amount)}? This will attempt to refund via the payment provider.`)) return;
                             setActionLoading(`${tx.id}-refund`);
                             try {
+                              // Attempt to refund via payment provider (Razorpay or PayPal)
+                              let providerRefunded = false;
+
+                              // Check Razorpay orders linked to this contract
+                              if (tx.contract_id) {
+                                const rzpResult = await adminQuery({
+                                  table: 'razorpay_orders',
+                                  select: 'razorpay_payment_id',
+                                  filters: { contract_id: tx.contract_id },
+                                  limit: 10,
+                                });
+                                const rzpOrders = rzpResult.data || [];
+
+                                if (rzpOrders.length > 0) {
+                                  for (const order of rzpOrders) {
+                                    const paymentId = (order as any).razorpay_payment_id;
+                                    if (paymentId) {
+                                      try {
+                                        await razorpayService.refundPayment(paymentId);
+                                        providerRefunded = true;
+                                      } catch (e) {
+                                        console.warn('Razorpay refund failed for', paymentId, e);
+                                      }
+                                    }
+                                  }
+                                }
+
+                                // Check PayPal orders linked to this contract
+                                if (!providerRefunded) {
+                                  try {
+                                    const ppOrders = await paypalService.getOrdersByContract(tx.contract_id);
+                                    for (const order of ppOrders) {
+                                      if (order.paypal_order_id) {
+                                        try {
+                                          await paypalService.refundPayment(order.paypal_order_id);
+                                          providerRefunded = true;
+                                        } catch (e) {
+                                          console.warn('PayPal refund failed for', order.paypal_order_id, e);
+                                        }
+                                      }
+                                    }
+                                  } catch (e) {
+                                    console.warn('PayPal orders lookup failed:', e);
+                                  }
+                                }
+                              }
+
+                              // Always create a DB refund record
                               await adminInsert('transactions', {
                                 user_id: tx.user_id,
                                 contract_id: tx.contract_id,
                                 type: 'refund' as any,
                                 amount: tx.amount,
-                                status: 'completed',
-                                description: `Auto-refund for transaction ${tx.id.slice(0, 8)}`
+                                status: providerRefunded ? 'completed' : 'pending',
+                                description: providerRefunded
+                                  ? `Refund processed via provider for transaction ${tx.id.slice(0, 8)}`
+                                  : `Refund pending — no provider payment found for transaction ${tx.id.slice(0, 8)}`
                               });
                               await fetchTransactions();
                             } catch (err) { console.error(err); }

@@ -4,6 +4,7 @@ import {
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { paypalService } from '../../lib/paypal';
 
 interface SubscriptionPlan {
   id: string; name: string; description: string | null; price: number;
@@ -13,6 +14,8 @@ interface SubscriptionPlan {
 interface UserSubscription {
   id: string; user_id: string; plan_id: string; status: string;
   start_date: string | null; end_date: string | null; created_at: string;
+  payment_provider: string | null;
+  payment_subscription_id: string | null;
   profile?: { name: string; email: string } | null;
   plan?: { name: string; price: number } | null;
 }
@@ -42,7 +45,13 @@ export function AdminSubscriptionsPage() {
     try {
       const [plansRes, subsRes] = await Promise.all([
         adminQuery({ table: 'subscription_plans', select: '*', order: 'price', orderDir: 'asc' }),
-        adminQuery({ table: 'subscriptions', select: '*', order: 'created_at', orderDir: 'desc', limit: 100 }),
+        adminQuery({
+          table: 'subscriptions',
+          select: 'id, user_id, plan_id, status, start_date, end_date, created_at, payment_provider, payment_subscription_id',
+          order: 'created_at',
+          orderDir: 'desc',
+          limit: 100,
+        }),
       ]);
 
       const plansData = (plansRes.data || []) as SubscriptionPlan[];
@@ -74,13 +83,19 @@ export function AdminSubscriptionsPage() {
   }, [fetchData]);
 
   // ─── ACTIONS ─────────────────────────────────────────────────────
-  // TODO(review): This only updates the DB status. Actual PayPal subscription
-  // cancellation API call is not implemented. The user's PayPal billing agreement
-  // will remain active unless cancelled separately via the PayPal API.
-  const handleCancelSubscription = async (subId: string, userName: string) => {
+  const handleCancelSubscription = async (subId: string, userName: string, sub?: UserSubscription) => {
     if (!confirm(`🚫 Cancel subscription for "${userName}"? They will lose Pro access immediately.`)) return;
     setActionLoading(`cancel-${subId}`);
     try {
+      // Cancel via payment provider API if a PayPal subscription ID exists
+      if (sub?.payment_provider === 'paypal' && sub?.payment_subscription_id) {
+        try {
+          await paypalService.cancelSubscription(sub.payment_subscription_id);
+        } catch (e) {
+          console.warn('PayPal cancel failed, continuing with DB update:', e);
+        }
+      }
+
       await adminUpdate('subscriptions', subId, {
         status: 'cancelled',
         end_date: new Date().toISOString(),
@@ -233,7 +248,7 @@ export function AdminSubscriptionsPage() {
                         )}
                         {/* Cancel Subscription */}
                         {sub.status === 'active' && (
-                          <button onClick={() => handleCancelSubscription(sub.id, sub.profile?.name || 'User')}
+                          <button onClick={() => handleCancelSubscription(sub.id, sub.profile?.name || 'User', sub)}
                             disabled={actionLoading === `cancel-${sub.id}`}
                             className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Cancel Subscription">
                             {actionLoading === `cancel-${sub.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}

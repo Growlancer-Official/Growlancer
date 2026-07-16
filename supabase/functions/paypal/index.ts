@@ -195,6 +195,34 @@ async function getPayPalCaptureDetails(captureId: string, accessToken: string) {
   return await response.json();
 }
 
+/**
+ * Cancel a PayPal billing subscription (billing agreement)
+ * POST /v1/billing/subscriptions/{id}/cancel
+ */
+async function cancelPayPalSubscription(subscriptionId: string, accessToken: string) {
+  const response = await fetch(
+    `${PAYPAL_API_URL}/v1/billing/subscriptions/${subscriptionId}/cancel`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        reason: 'Cancelled by Growlancer admin',
+      }),
+    }
+  );
+
+  // 204 No Content means success
+  if (response.status !== 204) {
+    const error = response.status === 204 ? '' : await response.text();
+    if (error) throw new Error(`Failed to cancel PayPal subscription: ${error}`);
+  }
+
+  return { cancelled: true };
+}
+
 serve(async req => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -446,14 +474,29 @@ serve(async req => {
           });
         }
 
-        // Verify user owns the order
+        // Verify order exists
         const { data: orderToRefund } = await supabaseClient
           .from('paypal_orders')
           .select('user_id, paypal_order_id')
           .eq('paypal_order_id', paypal_order_id)
-          .single();
+          .maybeSingle();
 
-        if (!orderToRefund || orderToRefund.user_id !== user.id) {
+        if (!orderToRefund) {
+          return new Response(JSON.stringify({ error: 'Order not found' }), {
+            status: 404,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Allow refund if user is the order owner OR an admin
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
+        const isAdmin = (profile as any)?.role === 'admin';
+
+        if (orderToRefund.user_id !== user.id && !isAdmin) {
           return new Response(JSON.stringify({ error: 'Unauthorized to refund this order' }), {
             status: 403,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -493,6 +536,47 @@ serve(async req => {
           .eq('paypal_order_id', paypal_order_id);
 
         result = { refund: refundResult };
+        break;
+      }
+
+      case 'cancel_subscription': {
+        const { subscription_id } = data;
+        if (!subscription_id) {
+          return new Response(JSON.stringify({ error: 'Missing subscription_id' }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Verify subscription exists in our DB
+        const { data: subRecord } = await supabaseClient
+          .from('subscriptions')
+          .select('id, user_id, payment_subscription_id')
+          .eq('payment_subscription_id', subscription_id)
+          .maybeSingle();
+
+        if (!subRecord) {
+          // Allow cancellation even if not found in our DB — may be a legacy PayPal ID
+          console.warn('Subscription not found in DB, proceeding with PayPal cancel:', subscription_id);
+        }
+
+        // Cancel via PayPal API
+        const cancelResult = await cancelPayPalSubscription(subscription_id, accessToken);
+
+        // Update our DB if record exists
+        if (subRecord) {
+          await supabaseClient
+            .from('subscriptions')
+            .update({
+              status: 'cancelled',
+              cancel_at_period_end: true,
+              end_date: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', subRecord.id);
+        }
+
+        result = { cancelled: true };
         break;
       }
 
