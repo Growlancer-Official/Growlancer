@@ -1,13 +1,9 @@
 {
   "version": 2,
   "framework": "vite",
-  "outputDirectory": "dist",
+  "outputDirectory": "dist/client",
   "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
-    {
-      "source": "/assets/(.*)",
-      "destination": "/client/assets/$1"
-    },
     {
       "source": "/(.*)",
       "destination": "/index.html"
