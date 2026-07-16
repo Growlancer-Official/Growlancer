@@ -524,16 +524,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         devWarn('[Auth] Signup error:', error.message);
-        setIsLoading(false);
         
-        // 🆕 Specific handling for email sending errors
+        // 🆕 If email sending fails (SMTP not configured), try auto-login anyway
+        // Supabase still creates the user in auth.users even when email fails.
         if (error.message.includes('confirmation email') || error.message.includes('Error sending')) {
+          devLog('[Auth] Email sending failed but user may be created — attempting auto-login');
+          
+          // Try to auto-login immediately
+          const { data: loginData } = await supabase.auth.signInWithPassword({ email, password });
+          
+          if (loginData?.user) {
+            devLog('[Auth] Auto-login succeeded after email failure');
+            setSession(loginData.session);
+            setSupabaseUser(loginData.user);
+            
+            // Create profile (use the already-generated referralCode)
+            let created = await createUserProfile(loginData.user.id, email, name, role, referralCode);
+            if (!created) {
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              created = await createUserProfile(loginData.user.id, email, name, role, referralCode);
+            }
+            
+            if (created) {
+              setUser(created);
+              setIsLoading(false);
+              return { 
+                success: true, 
+                message: 'Account created successfully! Welcome to Growlancer.' 
+              };
+            }
+          }
+          
+          // If auto-login also failed, tell user about email settings
+          setIsLoading(false);
           return { 
             success: false, 
-            error: 'Account creation blocked because email confirmation is enabled but email service is not configured. Please go to Supabase Dashboard → Authentication → Providers → Email and turn OFF "Confirm email", then try again.'
+            error: 'Account created but email confirmation failed. Please go to Supabase Dashboard → Authentication → Providers → Email and turn OFF "Confirm email", then try again. Or try logging in with your email and password.'
           };
         }
         
+        setIsLoading(false);
         return { success: false, error: error.message };
       }
 
