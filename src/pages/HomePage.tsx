@@ -447,7 +447,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
 // Client Section
 function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
   return (
-    <section id="client" className="py-10 sm:py-16">
+    <section id="client" className="py-8 sm:py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
           <div className="lg:col-span-5 rounded-3xl bg-white ring-1 ring-slate-200 shadow-sm p-6 sm:p-8">

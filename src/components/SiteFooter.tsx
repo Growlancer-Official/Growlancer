@@ -14,9 +14,11 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-4">
             <Link to="/" className="inline-flex items-center gap-3 group">
-              <div className="h-12 w-12 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:shadow-emerald-200/50 transition-all duration-300">
-                <span className="text-white text-lg font-bold">G</span>
-              </div>
+              <img 
+                src="/UpdatedLogo.webp" 
+                alt="Growlancer" 
+                className="h-11 w-11 rounded-xl group-hover:scale-105 transition-transform duration-300"
+              />
               <div>
                 <div className="font-semibold tracking-tight text-slate-900 font-display text-lg">Growlancer</div>
                 <div className="text-xs text-slate-500">AI-Powered Freelancing Marketplace</div>
@@ -63,22 +65,25 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
             </ul>
           </div>
 
-          {/* Support & Legal Links */}
+          {/* Support Links */}
           <div className="lg:col-span-2">
             <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Support</div>
             <ul className="space-y-3">
               <li><Link to="/safety" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Safety & Trust</Link></li>
               <li><Link to="/guidelines" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Guidelines</Link></li>
               <li><Link to="/status" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Platform Status</Link></li>
-              <li className="pt-2">
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Legal</div>
-                <ul className="space-y-3">
-                  <li><Link to="/terms" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Terms of Service</Link></li>
-                  <li><Link to="/privacy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Privacy Policy</Link></li>
-                  <li><Link to="/escrow-policy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Escrow Policy</Link></li>
-                  <li><Link to="/cookies" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Cookie Policy</Link></li>
-                </ul>
-              </li>
+              <li><Link to="/help-center" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Help Center</Link></li>
+            </ul>
+          </div>
+
+          {/* Legal Links */}
+          <div className="lg:col-span-2">
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Legal</div>
+            <ul className="space-y-3">
+              <li><Link to="/terms" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Terms of Service</Link></li>
+              <li><Link to="/privacy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Privacy Policy</Link></li>
+              <li><Link to="/escrow-policy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Escrow Policy</Link></li>
+              <li><Link to="/cookies" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Cookie Policy</Link></li>
             </ul>
           </div>
         </div>
