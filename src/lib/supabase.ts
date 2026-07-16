@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '../types/supabase';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -11,221 +11,63 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 // ═══════════════════════════════════════════════════════════════════
-// Lazy Supabase Client Proxy
+// Static Supabase Client
 // ═══════════════════════════════════════════════════════════════════
-// Instead of statically importing @supabase/supabase-js (198 KB in
-// the critical bundle), we load it via dynamic import(). The first
-// property access on `supabase` triggers the import, which is cached
-// by the module system for subsequent calls.
-//
-// This removes ~198 KB from the initial JS bundle while keeping all
-// existing code unchanged. The `tables`, `realtimeChannels`, and
-// `dbFunctions` helpers work transparently through the same proxy.
+// The client is created synchronously at module load time.
+// This is more reliable than the lazy proxy pattern — no race
+// conditions between dynamic import() and React's async lifecycle.
 // ═══════════════════════════════════════════════════════════════════
 
-let _client: SupabaseClient<Database> | null = null;
-let _clientPromise: Promise<SupabaseClient<Database>> | null = null;
-
-/** Initialize the Supabase client (idempotent, cached after first call) */
-export async function getClient(): Promise<SupabaseClient<Database>> {
-  if (_client) return _client;
-  if (!_clientPromise) {
-    _clientPromise = import('@supabase/supabase-js').then(({ createClient }) => {
-      _client = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-        auth: {
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true,
-          flowType: 'pkce',
-          debug: import.meta.env.DEV,
-        },
-        realtime: {
-          params: { eventsPerSecond: 100 },
-        },
-        global: {
-          headers: {
-            'X-Client-Info': 'growlancer-web',
-            'X-App-Version': import.meta.env.VITE_APP_VERSION || 'dev',
-          },
-          fetch: (...args) => {
-            const [url, options = {}] = args;
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
-            const urlStr = typeof url === 'string' ? url : url instanceof Request ? url.url : '';
-            const isEdgeFunction = urlStr.includes('/functions/v1/');
-
-            return fetch(url, {
-              ...options,
-              signal: controller.signal,
-            })
-              .then(async response => {
-                if (!response.ok && response.status !== 406 && !isEdgeFunction) {
-                  const errorText = await response.text();
-                  throw new Error(`HTTP ${response.status}: ${errorText}`);
-                }
-                return response;
-              })
-              .finally(() => clearTimeout(timeoutId));
-          },
-        },
-      });
-      return _client;
-    });
-  }
-  return _clientPromise;
-}
-
-/**
- * Create a chainable Proxy that lazily resolves Supabase method chains.
- *
- * Works with all Supabase patterns:
- *   - Property access:     supabase.auth.getSession()
- *   - Direct method:       supabase.from('table').select('*').then(...)
- *   - RPC calls:           supabase.rpc('fn', {})
- *   - Channel subscribe:   supabase.channel('name').subscribe()
- *   - Storage:             supabase.storage.from('bucket')
- */
-function createSupabaseProxy(): SupabaseClient<Database> {
-  // We track resolved operations so that once the client is ready,
-  // subsequent accesses skip the proxy entirely.
-  let realClient: SupabaseClient<Database> | null = null;
-  let initPromise: Promise<void> | null = null;
-
-  function ensureClient() {
-    if (!initPromise) {
-      initPromise = getClient().then(c => {
-        realClient = c;
-      });
-    }
-    return initPromise;
-  }
-
-  /**
-   * Build a recursive Proxy that queues method calls and resolves them
-   * once the Supabase client is ready. The chain terminates when a
-   * thenable method (`.then`, `.single`, `.maybeSingle`, `.subscribe`,
-   * `.execute`) is called.
-   */
-  function createChainProxy(path: string): any {
-    const ops: Array<{ method: string; args: any[] }> = [];
-
-    function buildChainProxy() {
-      const handler: ProxyHandler<any> = {
-        get(_target, prop: string | symbol) {
-          const propStr = String(prop);
-
-          // ── Thenable / termination methods ──────────────
-          if (propStr === 'then') {
-            return (resolve: (v: any) => void, reject: (e: any) => void) =>
-              ensureClient()
-                .then(() => {
-                  let current: any = realClient;
-                  for (const op of ops) {
-                    current = current[op.method](...op.args);
-                  }
-                  return current;
-                })
-                .then(resolve, reject);
-          }
-
-          if (propStr === 'catch') {
-            return (reject: (e: any) => void) =>
-              ensureClient()
-                .then(() => {
-                  let current: any = realClient;
-                  for (const op of ops) {
-                    current = current[op.method](...op.args);
-                  }
-                  return current;
-                })
-                .catch(reject);
-          }
-
-          if (propStr === 'finally') {
-            return (cb: () => void) =>
-              ensureClient()
-                .then(() => {
-                  let current: any = realClient;
-                  for (const op of ops) {
-                    current = current[op.method](...op.args);
-                  }
-                  return current;
-                })
-                .finally(cb);
-          }
-
-          // ── All other method calls extend the chain ─────
-          return (...args: any[]) => {
-            const newOps = [...ops, { method: propStr, args }];
-
-            // If client is already available, execute immediately
-            if (realClient) {
-              let current: any = realClient;
-              for (const op of newOps) {
-                current = current[op.method](...op.args);
-              }
-              return current;
-            }
-
-            // Otherwise return a new chain proxy
-            const chain = createChainProxy(propStr);
-            (chain as any).__ops = newOps;
-            return chain;
-          };
-        },
-
-        apply(_target, _thisArg, args: any[]) {
-          // The path itself is a method call
-          return buildChainProxy().get({}, 'apply');
-        },
-      };
-
-      return new Proxy(
-        () => {
-          /* noop */
-        },
-        handler,
-      );
-    }
-
-    // Initialise with the first operation
-    const proxy = buildChainProxy();
-    (proxy as any).__ops = [{ method: path, args: [] }];
-    return proxy;
-  }
-
-  // ── Top-level Proxy ─────────────────────────────────────
-  // Intercepts EVERY property access on `supabase`
-  const topHandler: ProxyHandler<any> = {
-    get(_target, prop: string | symbol) {
-      const propStr = String(prop);
-
-      // If client is already loaded, bypass proxy
-      if (realClient) {
-        const val = (realClient as any)[propStr];
-        return typeof val === 'function' ? val.bind(realClient) : val;
-      }
-
-      // Start loading if not already started
-      ensureClient();
-
-      // Return a lazy chain proxy for this property
-      const chain = createChainProxy(propStr);
-      return chain;
+const supabaseClient: SupabaseClient<Database> = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    debug: import.meta.env.DEV,
+  },
+  realtime: {
+    params: { eventsPerSecond: 100 },
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'growlancer-web',
+      'X-App-Version': import.meta.env.VITE_APP_VERSION || 'dev',
     },
-  };
+    fetch: (...args) => {
+      const [url, options = {}] = args;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+      const urlStr = typeof url === 'string' ? url : url instanceof Request ? url.url : '';
+      const isEdgeFunction = urlStr.includes('/functions/v1/');
 
-  return new Proxy({} as any, topHandler);
+      return fetch(url, {
+        ...options,
+        signal: controller.signal,
+      })
+        .then(async response => {
+          if (!response.ok && response.status !== 406 && !isEdgeFunction) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+          }
+          return response;
+        })
+        .finally(() => clearTimeout(timeoutId));
+    },
+  },
+});
+
+/** For backward compatibility — immediately returns the already-created client */
+export async function getClient(): Promise<SupabaseClient<Database>> {
+  return supabaseClient;
 }
 
-// ═══ Export the proxy as `supabase` ═══════════════════════
+// ═══ Export the client ════════════════════════════════════════════
 // All existing code that does `import { supabase } from '../lib/supabase'`
-// continues to work unchanged. The SDK loads on first access.
-export const supabase = createSupabaseProxy() as SupabaseClient<Database>;
+// continues to work unchanged.
+export const supabase = supabaseClient;
 
-// ═══ Typed table helpers ═══════════════════════════════════
-// These are simple arrow functions that call supabase.from().
-// The proxy handles the lazy loading transparently.
+// ═══ Typed table helpers ══════════════════════════════════════════
 export const tables = {
   profiles: () => supabase.from('profiles'),
   freelancerProfiles: () => supabase.from('freelancer_profiles'),
@@ -272,7 +114,7 @@ export const tables = {
   razorpayTransactions: () => supabase.from('razorpay_transactions' as any),
 };
 
-// ═══ Realtime channels manager ═════════════════════════════
+// ═══ Realtime channels manager ════════════════════════════════════
 function nextChannelName(base: string, scope?: string) {
   channelCounter += 1;
   return `${base}:${scope || 'global'}:${channelCounter}`;
@@ -305,7 +147,7 @@ export const realtimeChannels = {
     supabase.channel(nextChannelName('workspace_notes', scope)),
 };
 
-// ═══ Database function callers ══════════════════════════════
+// ═══ Database function callers ════════════════════════════════════
 export const dbFunctions = {
   calculateMatchScore: (projectId: string, freelancerId: string) =>
     supabase.rpc('calculate_match_score', {

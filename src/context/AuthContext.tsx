@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase, getClient } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 import type { AuthUser, UserRole } from '../types/auth';
 import {
   fetchUserProfile,
@@ -193,14 +193,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         devLog('[Auth] Initializing...');
 
-        // 🆕 Pre-load the Supabase client (force dynamic import to complete)
-        // This prevents race conditions where the lazy proxy hasn't resolved yet
-        await getClient();
-        devLog('[Auth] Supabase client loaded');
-
-        // 🆕 Now that realClient is set, set up onAuthStateChange listener
-        // This MUST happen inside getClient's then() to ensure the proxy
-        // passes through to the real client, not a chain proxy.
+        // Set up auth state listener
         try {
           const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
             if (!mounted) return;
