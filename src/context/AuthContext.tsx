@@ -186,6 +186,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let mounted = true;
+    let authTimeout: ReturnType<typeof setTimeout> | null = null;
+    let subscription: { unsubscribe: () => void } | null = null;
 
     async function initializeAuth() {
       try {
@@ -239,7 +241,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSupabaseUser(null);
         }
       } catch (error) {
-        devError('[Auth] Initialization error:', error);
+        // Gracefully handle first-load timing issues with dynamic import
+        devWarn('[Auth] Initialization error (will retry if mounted):', 
+          error instanceof Error ? error.message : String(error));
         captureError('Auth initialization failed', {
           source: 'auth',
           error: error instanceof Error ? error.message : String(error),
@@ -254,7 +258,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initializeAuth();
 
     // Add timeout to prevent infinite loading during auth initialization
-    const authTimeout = setTimeout(() => {
+    authTimeout = setTimeout(() => {
       if (!mounted) return;
       devWarn('[Auth] Initialization timeout - forcing loading to false');
       captureInfo('Auth initialization timeout', {
@@ -264,49 +268,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     }, AUTH_TIMEOUT_MS);
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, newSession) => {
-      if (!mounted) return;
+    // Set up auth state listener with error handling for first-load timing
+    try {
+      const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+        if (!mounted) return;
 
-      try {
-        devLog('[Auth] Auth state change event:', event);
+        try {
+          devLog('[Auth] Auth state change event:', event);
 
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
-          setSession(newSession);
-          setSupabaseUser(newSession?.user || null);
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+            setSession(newSession);
+            setSupabaseUser(newSession?.user || null);
 
-          if (newSession?.user) {
-            syncAuthUser(newSession.user).catch(err => {
-              devWarn('[Auth] Background sync failed:', err);
+            if (newSession?.user) {
+              syncAuthUser(newSession.user).catch(err => {
+                devWarn('[Auth] Background sync failed:', err);
+              });
+            } else {
+              setUser(null);
+            }
+            captureInfo('Auth state synchronized', {
+              source: 'auth',
+              event,
             });
-          } else {
+          } else if (event === 'SIGNED_OUT') {
+            setSession(null);
+            setSupabaseUser(null);
             setUser(null);
           }
-          captureInfo('Auth state synchronized', {
+        } catch (error) {
+          captureError('Auth state change handler failed', {
             source: 'auth',
             event,
+            error: error instanceof Error ? error.message : String(error),
           });
-        } else if (event === 'SIGNED_OUT') {
-          setSession(null);
-          setSupabaseUser(null);
-          setUser(null);
         }
-      } catch (error) {
-        captureError('Auth state change handler failed', {
-          source: 'auth',
-          event,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
-    });
+      });
+      subscription = sub;
+    } catch (error) {
+      // Gracefully handle supabase client not ready yet (first-load dynamic import)
+      devWarn('[Auth] onAuthStateChange setup failed (will retry on next page load):',
+        error instanceof Error ? error.message : String(error));
+      captureError('Auth state listener setup failed', {
+        source: 'auth',
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
 
     return () => {
       mounted = false;
-      clearTimeout(authTimeout);
-      subscription.unsubscribe();
+      if (authTimeout) clearTimeout(authTimeout);
+      if (subscription) subscription.unsubscribe();
     };
-  }, [syncAuthUser, isLoading]);
+  }, [syncAuthUser]);
 
   useEffect(() => {
     if (!user?.id) return;
