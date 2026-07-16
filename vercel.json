@@ -2,7 +2,7 @@
   "version": 2,
   "framework": null,
   "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "outputDirectory": "dist/client",
   "installCommand": "npm install --legacy-peer-deps",
   "rewrites": [
     {
