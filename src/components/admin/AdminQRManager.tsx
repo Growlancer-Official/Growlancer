@@ -21,7 +21,8 @@ import {
 } from 'lucide-react';
 import {
   generateQRToken, regenerateQRToken, replaceQRToken,
-  revokeQRToken, getActiveToken, getCredentialTokens,
+  revokeQRToken, deleteQRToken, deleteAllOldTokens,
+  getActiveToken, getCredentialTokens,
   getCredentialHistory, getCredentialAuditLogs,
   getQRCodeDataUrl, getVerificationUrl,
   type VerificationToken, type VersionHistoryEntry, type AuditLogEntry,
@@ -131,6 +132,75 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
       }
     } catch {
       toast.error('Error', 'An unexpected error occurred');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteActive = async () => {
+    if (!activeToken || !user?.id || !user?.email) return;
+    if (!confirm(`⚠️ PERMANENTLY DELETE active QR token for ${recipientName}?
+
+This will remove the QR code permanently with NO WAY TO RECOVER!
+The credential will have NO ACTIVE QR CODE until you generate a new one.
+
+Are you absolutely sure?`)) return;
+    const reason = prompt('Reason for deleting QR (required):');
+    if (!reason) { toast.info('Cancelled', 'Deletion cancelled - reason is required'); return; }
+    setActionLoading('delete-active');
+    try {
+      const res = await deleteQRToken(activeToken.id, credentialId, user.id, user.email, reason);
+      if (res.success) {
+        toast.success('QR Deleted', 'Active QR token permanently deleted');
+        fetchData();
+      } else {
+        toast.error('Failed', res.error || 'Deletion failed');
+      }
+    } catch {
+      toast.error('Error', 'Failed to delete QR token');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDeleteOldToken = async (tokenId: string) => {
+    if (!user?.id || !user?.email) return;
+    if (!confirm('Permanently delete this old QR token?')) return;
+    setActionLoading(`delete-${tokenId}`);
+    try {
+      const res = await deleteQRToken(tokenId, credentialId, user.id, user.email, 'Old token cleaned up');
+      if (res.success) {
+        toast.success('Deleted', 'Old QR token removed');
+        fetchData();
+      } else {
+        toast.error('Failed', res.error || 'Deletion failed');
+      }
+    } catch {
+      toast.error('Error', 'Failed to delete');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleCleanupAllOld = async () => {
+    if (!user?.id || !user?.email) return;
+    const oldCount = allTokens.filter(t => t.status !== 'active').length;
+    if (oldCount === 0) {
+      toast.info('No Old Tokens', 'No old/revoked tokens to clean up');
+      return;
+    }
+    if (!confirm(`Delete ALL ${oldCount} old/revoked QR tokens? This cannot be undone!`)) return;
+    setActionLoading('cleanup-all');
+    try {
+      const res = await deleteAllOldTokens(credentialId, user.id, user.email);
+      if (res.success) {
+        toast.success('Cleaned Up', `${res.count || oldCount} old QR tokens deleted`);
+        fetchData();
+      } else {
+        toast.error('Failed', res.error || 'Cleanup failed');
+      }
+    } catch {
+      toast.error('Error', 'Failed to clean up');
     } finally {
       setActionLoading(null);
     }
@@ -311,6 +381,11 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
                   {actionLoading === 'revoke' ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
                   Revoke QR
                 </button>
+                <button onClick={handleDeleteActive} disabled={!!actionLoading}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-800 text-white text-sm font-bold hover:bg-red-900 disabled:opacity-50 transition-all">
+                  {actionLoading === 'delete-active' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  Delete Active QR
+                </button>
               </div>
             )}
 
@@ -323,6 +398,33 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
                   <p className="flex justify-between"><span className="text-slate-500">Status:</span><span className="text-emerald-400 font-bold">{activeToken.status}</span></p>
                   <p className="flex justify-between"><span className="text-slate-500">Created:</span><span className="text-slate-300">{formatDate(activeToken.created_at)}</span></p>
                   <p className="flex justify-between"><span className="text-slate-500">Token:</span><span className="text-slate-300 font-mono text-[9px] truncate max-w-[200px]">{activeToken.token}</span></p>
+                </div>
+              </div>
+            )}
+
+            {/* Old Tokens Display */}
+            {allTokens.filter(t => t.status !== 'active').length > 0 && (
+              <div className="p-4 rounded-xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Old QR Tokens</p>
+                  <button onClick={handleCleanupAllOld} disabled={!!actionLoading}
+                    className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-500/10 text-red-400 text-[9px] font-bold hover:bg-red-500/20 transition-colors">
+                    <Trash2 className="w-3 h-3" /> Delete All
+                  </button>
+                </div>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {allTokens.filter(t => t.status !== 'active').map(t => (
+                    <div key={t.id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-800/50">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-slate-400">v{t.token_version} — <span className={`${t.status === 'revoked' ? 'text-red-400' : 'text-amber-400'}`}>{t.status}</span></p>
+                        <p className="text-[9px] font-mono text-slate-600 truncate">{t.token}</p>
+                      </div>
+                      <button onClick={() => handleDeleteOldToken(t.id)} disabled={!!actionLoading}
+                        className="shrink-0 p-1.5 rounded-lg hover:bg-red-500/10 text-slate-500 hover:text-red-400 transition-colors">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

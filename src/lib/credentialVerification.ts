@@ -301,6 +301,87 @@ export async function revokeQRToken(
   }
 }
 
+/**
+ * Hard-delete a QR token permanently from the database.
+ * Used to clean up old/revoked tokens.
+ */
+export async function deleteQRToken(
+  tokenId: string,
+  credentialId: string,
+  adminId: string,
+  adminEmail: string,
+  reason?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { error } = await supabase
+      .from('credential_verification_tokens' as any)
+      .delete()
+      .eq('id', tokenId);
+
+    if (error) throw error;
+
+    // Log audit
+    await supabase.rpc('insert_credential_audit_log', {
+      p_credential_id: credentialId,
+      p_action: 'qr_deleted',
+      p_admin_id: adminId,
+      p_admin_email: adminEmail,
+      p_details: { reason, token_id: tokenId },
+      p_old_values: {},
+      p_new_values: {},
+    });
+
+    return { success: true };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to delete QR token',
+    };
+  }
+}
+
+/**
+ * Delete ALL revoked/replaced tokens for a credential (cleanup).
+ */
+export async function deleteAllOldTokens(
+  credentialId: string,
+  adminId: string,
+  adminEmail: string
+): Promise<{ success: boolean; count?: number; error?: string }> {
+  try {
+    const { data, error } = await supabase
+      .from('credential_verification_tokens' as any)
+      .delete()
+      .eq('credential_id', credentialId)
+      .neq('status', 'active')
+      .select();
+
+    if (error) throw error;
+
+    const deletedCount = (data as any[])?.length || 0;
+
+    // Log audit
+    if (deletedCount > 0) {
+      await supabase.rpc('insert_credential_audit_log', {
+        p_credential_id: credentialId,
+        p_action: 'old_qr_tokens_cleaned',
+        p_admin_id: adminId,
+        p_admin_email: adminEmail,
+        p_details: { deleted_count: deletedCount },
+        p_old_values: {},
+        p_new_values: {},
+      });
+    }
+
+    return { success: true, count: deletedCount };
+  } catch (err) {
+    return {
+      success: false,
+      error: err instanceof Error ? err.message : 'Failed to clean up old tokens',
+    };
+  }
+}
+
 // ─── Public Verification ────────────────────────────────────────────
 
 /**
