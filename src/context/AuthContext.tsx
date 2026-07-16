@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Session, User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, getClient } from '../lib/supabase';
 import type { AuthUser, UserRole } from '../types/auth';
 import {
   fetchUserProfile,
@@ -192,6 +192,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function initializeAuth() {
       try {
         devLog('[Auth] Initializing...');
+
+        // 🆕 Pre-load the Supabase client (force dynamic import to complete)
+        // This prevents race conditions where the lazy proxy hasn't resolved yet
+        await getClient();
+        devLog('[Auth] Supabase client loaded');
 
         // Retry loop: attempt session fetch up to MAX_INIT_RETRIES + 1 times
         let currentSession: Session | null = null;

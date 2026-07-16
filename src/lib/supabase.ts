@@ -27,7 +27,7 @@ let _client: SupabaseClient<Database> | null = null;
 let _clientPromise: Promise<SupabaseClient<Database>> | null = null;
 
 /** Initialize the Supabase client (idempotent, cached after first call) */
-async function getClient(): Promise<SupabaseClient<Database>> {
+export async function getClient(): Promise<SupabaseClient<Database>> {
   if (_client) return _client;
   if (!_clientPromise) {
     _clientPromise = import('@supabase/supabase-js').then(({ createClient }) => {
