@@ -398,7 +398,6 @@ Deno.serve(async (req) => {
 
       // ─── POST: verify_certificate (existing) ──────────────────────────
       const { verification_code } = body;
-      const { verification_code } = body;
 
       if (!verification_code) {
         return new Response(JSON.stringify({ valid: false, error: 'Verification code is required' }), {
