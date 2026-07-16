@@ -3,15 +3,5 @@
   "framework": "vite",
   "outputDirectory": "dist",
   "installCommand": "npm install --legacy-peer-deps",
-  "buildCommand": "npm run build",
-  "rewrites": [
-    {
-      "source": "/assets/(.*)",
-      "destination": "/client/assets/$1"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "buildCommand": "npm run build"
 }
