@@ -1,5 +1,6 @@
 {
   "version": 2,
   "framework": "vite",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "installCommand": "npm install --legacy-peer-deps"
 }
