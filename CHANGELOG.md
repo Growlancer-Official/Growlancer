@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Growlancer will be documented here.
+All notable changes to Growlancer will be documented here. ok
 
 ## v1.0.0
 
