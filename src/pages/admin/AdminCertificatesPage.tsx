@@ -6,7 +6,7 @@ import {
   Send, QrCode, Star, Link2, GraduationCap, Briefcase, Users,
   FileUp, ChevronDown, ChevronUp, History,
   Phone, Building, MapPin, Code2,
-  CheckSquare, Square,
+  CheckSquare, Square, ArrowLeft,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';import {
@@ -16,6 +16,7 @@ import {
   issueCertificate, revokeCertificate, getAllCertificates, sendCertificateEmail,
   type Certificate, CERT_LEVEL_STYLES, getCertificateTitle,
 } from '../../lib/certificateService';
+import { AdminQRManager } from '../../components/admin/AdminQRManager';
 
 // ─── Types ──────────────────────────────────────────────────────────
 type ApplicationStatus = 'applied' | 'shortlisted' | 'interview_scheduled' | 'selected' | 'rejected';
@@ -99,7 +100,8 @@ const STATUS_LABELS: Record<ApplicationStatus, string> = {
 
 // ─── Main Admin Certificates Page ───────────────────────────────────
 export function AdminCertificatesPage() {
-  const [activeTab, setActiveTab] = useState<'interns' | 'certs'>('interns');
+  const [activeTab, setActiveTab] = useState<'interns' | 'certs' | 'qr'>('interns');
+  const [qrSelectedCert, setQrSelectedCert] = useState<Certificate | null>(null);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -515,6 +517,17 @@ export function AdminCertificatesPage() {
         >
           <Award className="w-4 h-4" />
           All Certificates ({stats.total})
+        </button>
+        <button
+          onClick={() => setActiveTab('qr')}
+          className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+            activeTab === 'qr'
+              ? 'bg-purple-600 text-white shadow-lg'
+              : 'text-slate-400 hover:text-white hover:bg-white/5'
+          }`}
+        >
+          <QrCode className="w-4 h-4" />
+          QR Management
         </button>
       </div>
 
@@ -1010,6 +1023,71 @@ export function AdminCertificatesPage() {
               </>
             )}
           </div>
+        </div>
+      )}
+
+      {/* Tab: QR Management */}
+      {activeTab === 'qr' && (
+        <div className="space-y-4">
+          {qrSelectedCert ? (
+            <AdminQRManager
+              credentialId={qrSelectedCert.id}
+              verificationCode={qrSelectedCert.verification_code}
+              recipientName={qrSelectedCert.recipient_name}
+              onBack={() => setQrSelectedCert(null)}
+            />
+          ) : (
+            <>
+              <div className="p-4 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+                <h3 className="text-sm font-bold text-white mb-3">Select a Certificate for QR Management</h3>
+                <p className="text-xs text-slate-400 mb-4">Choose a certificate below to manage its QR code, view version history, and audit logs.</p>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search certificates..."
+                    className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/20" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                {certificates
+                  .filter(c => {
+                    const q = searchQuery.toLowerCase();
+                    return c.recipient_name?.toLowerCase().includes(q) ||
+                      c.recipient_email?.toLowerCase().includes(q) ||
+                      c.verification_code?.toLowerCase().includes(q);
+                  })
+                  .map(cert => (
+                    <button
+                      key={cert.id}
+                      onClick={() => setQrSelectedCert(cert)}
+                      className="w-full text-left p-4 rounded-xl transition-all hover:bg-slate-700/50"
+                      style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                          cert.certificate_type === 'lor' ? 'bg-violet-500/10' : 'bg-emerald-500/10'
+                        }`}>
+                          <QrCode className={`w-5 h-5 ${cert.certificate_type === 'lor' ? 'text-violet-400' : 'text-emerald-400'}`} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-bold text-white truncate">{cert.recipient_name}</p>
+                          <p className="text-xs text-slate-400 truncate">{cert.skill} — {cert.verification_code}</p>
+                        </div>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${
+                          cert.status === 'active' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'
+                        }`}>{cert.status}</span>
+                      </div>
+                    </button>
+                  ))}
+                {certificates.length === 0 && (
+                  <div className="text-center py-10 text-slate-500">
+                    <QrCode className="w-10 h-10 mx-auto mb-2 opacity-30" />
+                    <p className="text-sm">No certificates found</p>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
         </div>
       )}
 

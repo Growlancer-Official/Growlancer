@@ -15,6 +15,8 @@ const ALLOWED_TABLES = [
   'paypal_orders', 'paypal_transactions', 'razorpay_orders', 'razorpay_transactions',
   'categories', 'subcategories', 'skills',
   'skill_certifications', 'internship_applications',
+  'credential_verification_tokens', 'credential_version_history', 'credential_audit_logs',
+  'verification_rate_limits',
   'identity_verifications', 'support_tickets',
   'usage_logs', 'rate_limits',
   'user_deletion_requests', 'user_mfa_settings', 'recovery_codes',
@@ -315,7 +317,87 @@ Deno.serve(async (req) => {
     // ────────────────────────────────────────────────────────────────────
 
     // ─── POST: verify_certificate (PUBLIC) ──────────────────────────
-    if (req.method === 'POST' && action === 'verify_certificate') {
+    // Rate limit: max 10 requests per IP per 15 minutes
+    if (req.method === 'POST' && (action === 'verify_certificate' || action === 'verify_credential_qr')) {
+      // Rate limiting
+      const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
+      
+      if (action === 'verify_credential_qr') {
+        const { qr_token } = body;
+        if (!qr_token) {
+          return new Response(JSON.stringify({ valid: false, error: 'QR token is required' }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Try RPC first
+        try {
+          const { data: rpcData, error: rpcError } = await supabaseClient.rpc('verify_credential_by_token', {
+            p_token: qr_token.trim(),
+          });
+          if (!rpcError && rpcData) {
+            return new Response(JSON.stringify(rpcData), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          if (rpcError) console.error('QR verify RPC error:', rpcError);
+        } catch (rpcErr) {
+          console.error('QR verify RPC exception:', rpcErr);
+        }
+
+        // Fallback: lookup token manually
+        const { data: tokenData, error: tokenError } = await supabaseClient
+          .from('credential_verification_tokens')
+          .select('*')
+          .eq('token', qr_token.trim())
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (tokenError || !tokenData) {
+          return new Response(JSON.stringify({ valid: false, error: 'Invalid or expired QR code' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Lookup certificate
+        const { data: certData, error: certError } = await supabaseClient
+          .from('skill_certifications')
+          .select('*')
+          .eq('id', tokenData.credential_id)
+          .maybeSingle();
+
+        if (certError || !certData) {
+          return new Response(JSON.stringify({ valid: false, error: 'Associated credential not found' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+
+        // Fetch intern profile
+        let internProfile: Record<string, unknown> | null = null;
+        const appId = (certData.metadata as any)?.application_id || certData.user_id;
+        if (appId) {
+          try {
+            const { data: appData } = await supabaseClient
+              .from('internship_applications')
+              .select('*')
+              .eq('id', appId)
+              .maybeSingle();
+            if (appData) internProfile = appData as Record<string, unknown>;
+          } catch {}
+        }
+
+        return new Response(JSON.stringify({
+          valid: certData.status === 'active',
+          certificate: certData,
+          token: tokenData,
+          internProfile,
+        }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // ─── POST: verify_certificate (existing) ──────────────────────────
+      const { verification_code } = body;
       const { verification_code } = body;
 
       if (!verification_code) {
@@ -509,6 +591,63 @@ Deno.serve(async (req) => {
       } catch (err) {
         console.error('Storage upload exception:', err);
         return new Response(JSON.stringify({ error: err instanceof Error ? err.message : 'Upload failed' }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    // ─── POST: generate_qr_token ─────────────────────────────────
+    if (req.method === 'POST' && action === 'generate_qr_token') {
+      const { credential_id, admin_id } = body;
+
+      if (!credential_id) {
+        return new Response(JSON.stringify({ success: false, error: 'credential_id is required' }), {
+          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      try {
+        // Revoke existing active token (if any)
+        const { data: existingToken } = await supabaseClient
+          .from('credential_verification_tokens')
+          .select('id, token_version')
+          .eq('credential_id', credential_id)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        if (existingToken) {
+          await supabaseClient
+            .from('credential_verification_tokens')
+            .update({ status: 'revoked', revoked_at: new Date().toISOString() })
+            .eq('id', existingToken.id);
+        }
+
+        const newVersion = (existingToken?.token_version || 0) + 1;
+        const newToken = 'grw-' + Array.from({ length: 48 }, () =>
+          'abcdef0123456789'[Math.floor(Math.random() * 16)]
+        ).join('');
+
+        const { data, error } = await supabaseClient
+          .from('credential_verification_tokens')
+          .insert({
+            credential_id,
+            token: newToken,
+            token_version: newVersion,
+            generated_by: admin_id || null,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        return new Response(JSON.stringify({ success: true, token: data }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      } catch (err) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: err instanceof Error ? err.message : 'Failed to generate QR token',
+        }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
