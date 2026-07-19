@@ -601,7 +601,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
               Browse All Categories
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed mx-auto lg:mx-0">
+            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
               {loading 
                 ? 'Loading categories...' 
                 : `${categories.length} categories — from Development & IT to Sustainability.`
