@@ -196,7 +196,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Set up auth state listener
         try {
           const authListener = supabase.auth.onAuthStateChange(async (event, newSession) => {
-            const sub = authListener.data?.subscription ?? null;
             if (!mounted) return;
 
             try {
@@ -230,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               });
             }
           });
-          subscription = sub;
+          subscription = authListener.data?.subscription ?? null;
           devLog('[Auth] onAuthStateChange listener registered');
         } catch (error) {
           devWarn('[Auth] onAuthStateChange setup failed:',
