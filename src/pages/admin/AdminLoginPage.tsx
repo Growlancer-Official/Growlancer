@@ -19,7 +19,8 @@ export function AdminLoginPage() {
   // Auto-redirect if already logged in (real-time via auth state)
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const result = await supabase.auth.getSession();
+      const session = result.data?.session ?? null;
       if (session?.user) {
         // Check if admin — first by ID, then fallback to email
         let { data: profile } = await supabase

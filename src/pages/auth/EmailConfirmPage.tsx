@@ -26,7 +26,8 @@ export function EmailConfirmPage() {
         // Wait for session to be established (Supabase auto-processes the token)
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        const { data: { session } } = await supabase.auth.getSession();
+        const result = await supabase.auth.getSession();
+        const session = result.data?.session ?? null;
 
         if (cancelled) return;
 
@@ -41,7 +42,8 @@ export function EmailConfirmPage() {
         } else {
           // Try a bit longer
           await new Promise(resolve => setTimeout(resolve, 3000));
-          const { data: retrySession } = await supabase.auth.getSession();
+          const retryResult = await supabase.auth.getSession();
+          const retrySession = retryResult.data?.session ?? null;
 
           if (cancelled) return;
 

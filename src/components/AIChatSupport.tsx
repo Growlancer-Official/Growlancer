@@ -121,7 +121,8 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     history.push({ role: 'user', content: userMessage });
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const authResult = await supabase.auth.getSession();
+      const session = authResult.data?.session ?? null;
       if (!session) throw new Error('Not authenticated');
 
       abortControllerRef.current = new AbortController();

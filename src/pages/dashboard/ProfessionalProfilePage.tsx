@@ -648,7 +648,8 @@ export function ProfessionalProfilePage() {
     if (!acceptedTerms) return;
     setDeletionStep('processing');
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const authResult = await supabase.auth.getSession();
+      const session = authResult.data?.session ?? null;
       if (!session) throw new Error('Not authenticated');
 
       const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;

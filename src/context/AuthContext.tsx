@@ -195,7 +195,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Set up auth state listener
         try {
-          const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(async (event, newSession) => {
+          const authListener = supabase.auth.onAuthStateChange(async (event, newSession) => {
+            const sub = authListener.data?.subscription ?? null;
             if (!mounted) return;
 
             try {
@@ -250,10 +251,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             await new Promise(resolve => setTimeout(resolve, INIT_RETRY_DELAY_MS));
           }
 
-          const {
-            data: { session },
-            error,
-          } = await supabase.auth.getSession();
+          const result = await supabase.auth.getSession();
+          const session = result.data?.session ?? null;
+          const error = result.error;
 
           if (error) {
             lastError = error;
@@ -631,7 +631,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Re-fetch session and sync
         const { data: freshSession } = await supabase.auth.getSession();
-        if (freshSession.session?.user) {
+        if (freshSession?.session?.user) {
           setSession(freshSession.session);
           setSupabaseUser(freshSession.session.user);
           await syncAuthUser(freshSession.session.user, role);

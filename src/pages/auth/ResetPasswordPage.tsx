@@ -18,8 +18,8 @@ export function ResetPasswordPage() {
 
   // Check if we have a valid recovery session
   useEffect(() => {
-    async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession();
+    async function checkSession() {        const result = await supabase.auth.getSession();
+      const session = result.data?.session ?? null;
       if ((session as { user?: unknown } | null)?.user) {
         setValidSession(true);
       } else {
@@ -29,7 +29,8 @@ export function ResetPasswordPage() {
         if (type === 'recovery') {
           // Supabase will auto-process this
           await new Promise(resolve => setTimeout(resolve, 1500));
-          const { data: retrySession } = await supabase.auth.getSession();
+          const retryResult = await supabase.auth.getSession();
+          const retrySession = retryResult.data?.session ?? null;
           if ((retrySession as { user?: unknown } | null)?.user) {
             setValidSession(true);
           } else {

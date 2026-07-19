@@ -25,7 +25,8 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
     const checkAdminStatus = async (userId?: string) => {
       try {
         if (!userId) {
-          const { data: { session } } = await supabase.auth.getSession();
+          const authResult = await supabase.auth.getSession();
+          const session = authResult.data?.session ?? null;
           if (!session?.user) {
             if (!cancelled) { setAuthorized(false); setChecking(false); _currentAdmin = null; }
             return;
