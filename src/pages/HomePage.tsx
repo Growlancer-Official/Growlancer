@@ -218,17 +218,17 @@ function HowItWorksSection() {
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-10 lg:mb-12">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-4 mb-10 lg:mb-12">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">How it works</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
               A simple 3-step system
             </h2>
-            <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
+            <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
               Post work (or a profile), get matched instantly, and collaborate with escrow from day one.
             </p>
           </div>
-          <div className="rounded-full bg-white ring-1 ring-slate-200 px-4 py-2 text-xs text-slate-500 shadow-sm w-fit">
+          <div className="rounded-full bg-white ring-1 ring-slate-200 px-4 py-2 text-xs text-slate-500 shadow-sm w-fit lg:ml-auto">
             Built for speed, built for clarity
           </div>
         </div>
@@ -595,13 +595,13 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
           </div>
         )}
 
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8 lg:mb-10">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-4 mb-8 lg:mb-10">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Categories</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
               Browse All Categories
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
+            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed mx-auto lg:mx-0">
               {loading 
                 ? 'Loading categories...' 
                 : `${categories.length} categories — from Development & IT to Sustainability.`
