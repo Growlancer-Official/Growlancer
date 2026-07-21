@@ -57,8 +57,7 @@ jobs:
   deploy-frontend:
     name: Deploy Frontend (Vercel)
     needs: [quality]
-    # Only deploy on push to main/master or manual trigger, not on PRs
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -83,34 +82,21 @@ jobs:
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN || secrets.VITE_SENTRY_DSN || '' }}
 
       - name: Deploy to Vercel Production
-        id: deploy
-        run: |
-          echo "🚀 Deploying to Vercel Production..."
-          DEPLOY_OUTPUT=$(npx vercel deploy --prod --prebuilt --yes \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --scope=${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }} \
-            --project=${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }} \
-            2>&1)
-          echo "$DEPLOY_OUTPUT"
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
 
-          DEPLOY_URL=$(echo "$DEPLOY_OUTPUT" | grep -oE 'https://[a-zA-Z0-9.-]+\.vercel\.app' | tail -1)
-          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
-
-          if [ -z "$DEPLOY_URL" ]; then
-            echo "❌ Could not extract deployment URL"
-            exit 1
-          fi
-          echo "✅ Deployed to: $DEPLOY_URL"
-
-      - name: Alias to growlancer.vercel.app (production domain)
-        run: |
-          DEPLOY_URL="${{ steps.deploy.outputs.deploy_url }}"
-          echo "🔗 Aliasing $DEPLOY_URL → growlancer.vercel.app"
-          npx vercel alias "$DEPLOY_URL" growlancer.vercel.app \
-            --token=${{ secrets.VERCEL_TOKEN }} \
-            --scope=${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }} \
-            --yes 2>&1 || echo "⚠️  Alias may already be set"
-          echo "✅ https://growlancer.vercel.app is now live."
+      - name: Deploy to Vercel Preview
+        if: github.event_name == 'pull_request'
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
 
   # ─── Deploy Supabase Edge Functions ────────────────────────────
   deploy-edge-functions:
