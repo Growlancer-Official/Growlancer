@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/banner.png" alt="Growlancer Banner" width="100%">
+  <img src="assets/updated banner.png" alt="Growlancer Banner" width="100%">
 </p>
 
 <h1 align="center">Growlancer</h1>
