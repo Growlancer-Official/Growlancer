@@ -1,13 +1,14 @@
 {
   "version": 2,
   "framework": "vite",
-  "outputDirectory": "dist",
-  "installCommand": "npm install --legacy-peer-deps",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/client",
+  "installCommand": "npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/((?!api/|_next/|assets/|.*\..*).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
     }
   ]
