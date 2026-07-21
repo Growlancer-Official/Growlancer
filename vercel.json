@@ -1,12 +1,68 @@
 {
   "version": 2,
-  "framework": "vite",
+  "framework": null,
   "buildCommand": "npm run build",
   "outputDirectory": "dist/client",
   "installCommand": "npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
+    {
+      "source": "/admin(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/dashboard(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/client(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/onboarding(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/auth(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/payment(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/certificate(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/verify-certificate(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/waitlist",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/freelancer/:freelancerId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/services/:serviceId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/projects/:projectId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/contests(/.*)?",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/categories/:path*",
+      "destination": "/index.html"
+    },
     {
       "source": "/(.*)",
       "destination": "/index.html"

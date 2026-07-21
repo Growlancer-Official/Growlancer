@@ -11,6 +11,7 @@ describe('Vercel routing fallback', () => {
     const vercelConfigPath = resolve(__dirname, '../../vercel.json');
     const vercelConfig = JSON.parse(readFileSync(vercelConfigPath, 'utf8'));
 
+    // Must have a catch-all rewrite for SPA fallback
     expect(vercelConfig.rewrites).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -19,5 +20,44 @@ describe('Vercel routing fallback', () => {
         }),
       ])
     );
+
+    // Admin routes must have their own explicit rewrite BEFORE the catch-all
+    expect(vercelConfig.rewrites).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: '/admin(/.*)?',
+          destination: '/index.html',
+        }),
+      ])
+    );
+
+    // Dashboard routes must have explicit rewrites
+    expect(vercelConfig.rewrites).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: '/dashboard(/.*)?',
+          destination: '/index.html',
+        }),
+      ])
+    );
+
+    // Client routes must have explicit rewrites
+    expect(vercelConfig.rewrites).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          source: '/client(/.*)?',
+          destination: '/index.html',
+        }),
+      ])
+    );
+  });
+
+  it('framework is set to null for manual Vite routing control', () => {
+    const vercelConfigPath = resolve(__dirname, '../../vercel.json');
+    const vercelConfig = JSON.parse(readFileSync(vercelConfigPath, 'utf8'));
+    
+    // Setting framework to null prevents Vercel's Vite framework preset
+    // from overriding custom rewrite rules
+    expect(vercelConfig.framework).toBeNull();
   });
 });
