@@ -97,7 +97,6 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
 
   # ─── Deploy Supabase Edge Functions ────────────────────────────
   deploy-edge-functions:
