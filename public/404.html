@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Growlancer — Redirecting...</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0F172A;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .container { text-align: center; padding: 2rem; }
+    .logo { width: 64px; height: 64px; border-radius: 16px; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; }
+    p { color: #94a3b8; font-size: 0.875rem; margin-bottom: 1.5rem; }
+    .spinner {
+      width: 32px; height: 32px;
+      border: 3px solid rgba(16, 185, 129, 0.2);
+      border-top-color: #10B981;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    a { color: #10B981; text-decoration: underline; }
+    .redirect-msg { font-size: 0.75rem; color: #64748b; margin-top: 1rem; }
+  </style>
+  <script>
+    // Immediately redirect to the SPA entry point via the current path
+    (function() {
+      var currentPath = window.location.pathname + window.location.search + window.location.hash;
+      // Replace this 404 page with the SPA by redirecting to index.html with a redirect param
+      // The app's React Router will handle the actual route on hydration
+      if (currentPath !== '/') {
+        sessionStorage.setItem('redirectAfterLoad', currentPath);
+      }
+      window.location.replace('/');
+    })();
+  </script>
+</head>
+<body>
+  <div class="container">
+    <img src="/UpdatedLogo.webp" alt="Growlancer" class="logo" />
+    <h1>Redirecting to Growlancer</h1>
+    <p>Please wait while we take you to the right page...</p>
+    <div class="spinner"></div>
+    <p class="redirect-msg">
+      If you are not redirected automatically, <a href="/">click here</a>.
+    </p>
+  </div>
+</body>
+</html>
