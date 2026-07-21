@@ -88,7 +88,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+          vercel-args: '--prod --prebuilt'
 
       - name: Deploy to Vercel Preview
         if: github.event_name == 'pull_request'
@@ -97,6 +97,7 @@ jobs:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prebuilt'
 
   # ─── Deploy Supabase Edge Functions ────────────────────────────
   deploy-edge-functions:
