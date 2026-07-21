@@ -195,7 +195,7 @@ export function ClientInvitesPage() {
           <p className="text-slate-500 max-w-sm mx-auto mb-6">
             {filter === 'all'
               ? 'Browse AI-matched freelancers and send them personalized project invitations.'
-              : `You don\'t have any ${filter} invites at the moment.`}
+              : `You don't have any ${filter} invites at the moment.`}
           </p>
           {filter === 'all' ? (
             <Link

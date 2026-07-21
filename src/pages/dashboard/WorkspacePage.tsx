@@ -345,7 +345,6 @@ export function WorkspacePage() {
       void channel.unsubscribe();
       void contractSub.unsubscribe();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedContract, refreshContract, messagesPage]);
 
   // Fetch contract files

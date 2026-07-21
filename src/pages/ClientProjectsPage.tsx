@@ -336,7 +336,7 @@ export function ClientProjectsPage() {
           <p className="text-slate-500 max-w-sm mx-auto mb-6">
             {filter === 'all'
               ? 'Post your first project and start receiving proposals from talented freelancers.'
-              : `You don\'t have any ${filter} projects at the moment.`}
+              : `You don't have any ${filter} projects at the moment.`}
           </p>
           {filter === 'all' ? (
             <Link

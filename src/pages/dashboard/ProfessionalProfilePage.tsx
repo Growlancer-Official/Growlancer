@@ -201,7 +201,6 @@ export function ProfessionalProfilePage() {
       }
 
       if (!freelancerResp.error && freelancerResp.data) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const f = freelancerResp.data as any;
         setFreelancerProfile(f as FreelancerProfile);
         const existingSkills: string[] = f.skills || [];

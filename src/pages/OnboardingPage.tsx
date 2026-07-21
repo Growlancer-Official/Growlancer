@@ -350,6 +350,15 @@ export function OnboardingPage() {
   const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
   const [skillNames, setSkillNames] = useState<string[]>([]);
 
+  // Sync selectedSkillIds to skillNames for form submission
+  useEffect(() => {
+    const names = selectedSkillIds
+      .map(id => allSkills.find(s => s.id === id))
+      .filter((s): s is NonNullable<typeof s> => !!s)
+      .map(s => s.name);
+    setSkillNames(names);
+  }, [selectedSkillIds, allSkills]);
+
   // OAuth users get a simpler 1-step form
   if (isOAuthMode) {
     return (
@@ -364,15 +373,6 @@ export function OnboardingPage() {
 
   const isFreelancer = user?.role === 'freelancer';
   const isClient = user?.role === 'client';
-
-  // Sync selectedSkillIds to skillNames for form submission
-  useEffect(() => {
-    const names = selectedSkillIds
-      .map(id => allSkills.find(s => s.id === id))
-      .filter((s): s is NonNullable<typeof s> => !!s)
-      .map(s => s.name);
-    setSkillNames(names);
-  }, [selectedSkillIds, allSkills]);
 
   const handleNext = () => {
     setAnimationDir('next');

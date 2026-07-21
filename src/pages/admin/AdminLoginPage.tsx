@@ -23,7 +23,7 @@ export function AdminLoginPage() {
       const session = result.data?.session ?? null;
       if (session?.user) {
         // Check if admin — first by ID, then fallback to email
-        let { data: profile } = await supabase
+        const { data: profile } = await supabase
           .from('profiles')
           .select('is_admin')
           .eq('id', session.user.id)
@@ -82,7 +82,7 @@ export function AdminLoginPage() {
       }
 
       // Check admin status — first by ID, then fallback to email (handles ID mismatch)
-      let { data: profile } = await supabase
+      const { data: profile } = await supabase
         .from('profiles')
         .select('is_admin, role')
         .eq('id', data.user.id)

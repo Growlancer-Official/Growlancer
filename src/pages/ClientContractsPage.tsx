@@ -183,7 +183,7 @@ export function ClientContractsPage() {
           <p className="text-slate-500 max-w-sm mx-auto mb-6">
             {filter === 'all'
               ? 'Contracts are created when you accept a proposal or a freelancer accepts your invite. Then you can manage milestones, escrow, and payments here.'
-              : `You don\'t have any ${filter} contracts at the moment.`}
+              : `You don't have any ${filter} contracts at the moment.`}
           </p>
           {filter === 'all' ? (
             <div className="flex gap-3 justify-center">

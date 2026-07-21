@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Shield, XCircle, Loader2, Search, User, Calendar, Clock, Copy,
-  CheckCheck, AlertTriangle, Share2, Printer, Sparkles, Zap,
-  BadgeCheck, ArrowLeft, Star, ExternalLink, QrCode, Camera,
+  CheckCheck, AlertTriangle, Share2, Printer, Zap,
+  BadgeCheck, Star, QrCode,
   Award, Hash, Info, RefreshCw, FileText, Sun, Moon,
   ChevronRight, CheckCircle2, Lock, Globe, Scan,
 } from 'lucide-react';

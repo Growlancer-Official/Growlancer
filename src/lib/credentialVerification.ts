@@ -12,7 +12,6 @@
  */
 
 import { supabase } from './supabase';
-import { adminQuery, adminUpdate, adminDelete } from './adminDataProxy';
 import type { InternProfile } from './certificateService';
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -81,7 +80,7 @@ export async function checkVerificationRateLimit(
     // Clean expired entries first
     try {
       await (supabase.rpc as any)('cleanup_verification_rate_limits');
-    } catch {}
+    } catch { /* non-critical */ }
 
     const windowStart = new Date(Date.now() - VERIFY_RATE_WINDOW_MS).toISOString();
 
@@ -104,7 +103,7 @@ export async function checkVerificationRateLimit(
           request_count: 1,
           window_start: new Date().toISOString(),
         });
-      } catch {}
+      } catch { /* rate-limit insert failed, proceed anyway */ }
     }
 
     return {
@@ -248,8 +247,7 @@ export async function replaceQRToken(
           performed_by: adminId,
           notes: reason || 'QR code replaced',
           new_qr_token: result.token?.token,
-        });
-    } catch {}
+        });        } catch { /* non-critical */ }
   }
   return result;
 }

@@ -6,7 +6,7 @@ import {
   Send, QrCode, Star, Link2, GraduationCap, Briefcase, Users,
   FileUp, ChevronDown, ChevronUp, History,
   Phone, Building, MapPin, Code2,
-  CheckSquare, Square, ArrowLeft,
+  CheckSquare, Square,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';import {
@@ -213,7 +213,7 @@ export function AdminCertificatesPage() {
         toast.warning('Bulk Partial', `${successCount} sent, ${failCount} failed (some may lack PDF).`);
       }
       setBulkSelectedIds(new Set());
-    } catch (err) {
+    } catch {
       toast.error('Bulk Error', 'An unexpected error occurred during bulk email.');
     } finally {
       setActionLoading(null);

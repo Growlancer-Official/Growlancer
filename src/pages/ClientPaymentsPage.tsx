@@ -821,7 +821,7 @@ export function ClientPaymentsPage() {
           <p className="text-slate-500 max-w-sm mx-auto mb-6">
             {filter === 'all'
               ? 'When you fund escrow for a contract or make payments, your transaction history will appear here.'
-              : `You don\'t have any ${filter} transactions at the moment.`}
+              : `You don't have any ${filter} transactions at the moment.`}
           </p>
           {filter === 'all' && (
             <Link

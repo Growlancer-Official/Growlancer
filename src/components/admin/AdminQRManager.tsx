@@ -15,9 +15,8 @@
 import { useState, useEffect } from 'react';
 import {
   QrCode, Loader2, RefreshCw, Trash2, Download, Eye,
-  History, FileText, AlertTriangle, CheckCircle2,
-  Clock, User, Copy, CheckCheck, XCircle,
-  ArrowLeft, ChevronRight,
+  History, FileText, Copy, CheckCheck, XCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import {
   generateQRToken, regenerateQRToken, replaceQRToken,

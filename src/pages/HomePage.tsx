@@ -5,9 +5,9 @@ import {
   Activity, AlertCircle, ArrowRight, BadgeCheck, BarChart3, 
   BriefcaseBusiness, CalendarCheck, CheckCircle2, CheckSquare, 
   ClipboardCheck, ClipboardList, Clock3, Cpu, Eye, Flag, 
-  FolderKanban, GitCompare, Handshake, Layers, LayoutDashboard, 
-  Loader2, Lock, LockKeyhole, MessageSquareText, MessagesSquare, 
-  Receipt, ScanText, ShieldCheck, Sparkles, Target, Timer, 
+  FolderKanban, GitCompare, Handshake, Layers,
+  Loader2, Lock, LockKeyhole, MessageSquareText, MessagesSquare,
+  Receipt, ScanText, ShieldCheck, Sparkles, Target, Timer,
   Users, Wallet, Wand2, X, Zap,
 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
@@ -20,7 +20,6 @@ import { supabase } from '../lib/supabase';
 const SECTION_PADDING = 'py-12 sm:py-16 lg:py-20';
 const SECTION_PADDING_SM = 'py-10 sm:py-14 lg:py-16';
 const CONTAINER = 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8';
-const GRID_GAP = 'gap-6 lg:gap-8';
 const CARD_CLASS = 'rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm';
 
 // ═══════════════════════════════════════════════════════════════

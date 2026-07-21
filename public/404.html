@@ -32,17 +32,12 @@
     .redirect-msg { font-size: 0.75rem; color: #64748b; margin-top: 1rem; }
   </style>
   <script>
-    // Immediately redirect to the SPA entry point via the current path
-    (function() {
-      var currentPath = window.location.pathname + window.location.search + window.location.hash;
-      // Replace this 404 page with the SPA by redirecting to index.html with a redirect param
-      // The app's React Router will handle the actual route on hydration
-      if (currentPath !== '/') {
-        sessionStorage.setItem('redirectAfterLoad', currentPath);
-      }
-      window.location.replace('/');
-    })();
+    // Redirect to SPA — React Router handles all routes on hydration with rewrites
+    window.location.replace('/');
   </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0;url=/" />
+  </noscript>
 </head>
 <body>
   <div class="container">
