@@ -501,7 +501,7 @@ export function WorkspacePage() {
 
   // Collaborative Scratchpad Handlers
   const [_isTypingNotes, setIsTypingNotes] = useState(false);
-  const notesUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const notesUpdateTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleNoteChange = (text: string) => {
     setNotesText(text);
