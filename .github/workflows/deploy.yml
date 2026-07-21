@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 # ────────────────────────────────────────────────────────────────────
 # Growlancer CI/CD Pipeline
 # Triggers:
@@ -20,11 +21,11 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '20'
+  NODE_VERSION: '22'
   SUPABASE_PROJECT_ID: 'zttwsjehcgaicziqyxpq'
   # Vercel project config (needed in CI because .vercel/project.json is gitignored)
-  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }}
 
 jobs:
   # ─── Quality Check ─────────────────────────────────────────────
@@ -44,7 +45,7 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
 
       - name: TypeScript type check
         run: npx tsc --noEmit
@@ -73,14 +74,14 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci --prefer-offline --no-audit --no-fund
+        run: npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund
 
       - name: Build frontend
         run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_SENTRY_DSN: ${{ secrets.VITE_SENTRY_DSN || '' }}
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN || secrets.VITE_SENTRY_DSN || '' }}
 
       - name: Deploy to Vercel Production
         id: deploy
@@ -88,7 +89,8 @@ jobs:
           echo "🚀 Deploying to Vercel Production..."
           DEPLOY_OUTPUT=$(npx vercel deploy --prod --prebuilt --yes \
             --token=${{ secrets.VERCEL_TOKEN }} \
-            --scope=mrkhan154212s-projects \
+            --scope=${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }} \
+            --project=${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID }} \
             2>&1)
           echo "$DEPLOY_OUTPUT"
 
@@ -107,7 +109,7 @@ jobs:
           echo "🔗 Aliasing $DEPLOY_URL → growlancer.vercel.app"
           npx vercel alias "$DEPLOY_URL" growlancer.vercel.app \
             --token=${{ secrets.VERCEL_TOKEN }} \
-            --scope=mrkhan154212s-projects \
+            --scope=${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID }} \
             --yes 2>&1 || echo "⚠️  Alias may already be set"
           echo "✅ https://growlancer.vercel.app is now live."
 
@@ -136,8 +138,8 @@ jobs:
         run: |
           npx supabase link --project-ref ${{ env.SUPABASE_PROJECT_ID }}
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_ACCESS_TOKEN: ${{ vars.SUPABASE_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ vars.SUPABASE_DB_PASSWORD || secrets.SUPABASE_DB_PASSWORD }}
 
       - name: Deploy all edge functions
         run: |
@@ -167,8 +169,8 @@ jobs:
           
           echo "✅ All edge functions deployed!"
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_ACCESS_TOKEN: ${{ vars.SUPABASE_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ vars.SUPABASE_DB_PASSWORD || secrets.SUPABASE_DB_PASSWORD }}
 
   # ─── Deploy DB Migrations ──────────────────────────────────────
   deploy-db:
@@ -194,8 +196,8 @@ jobs:
           npx supabase db push --linked --include-all
           echo "✅ Database migrations applied!"
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_ACCESS_TOKEN: ${{ vars.SUPABASE_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ vars.SUPABASE_DB_PASSWORD || secrets.SUPABASE_DB_PASSWORD }}
 
   # ─── Notify on Failure ─────────────────────────────────────────
   notify:

@@ -84,20 +84,24 @@ export function AdminLoginPage() {
       // Check admin status — first by ID, then fallback to email (handles ID mismatch)
       let { data: profile } = await supabase
         .from('profiles')
-        .select('is_admin')
+        .select('is_admin, role')
         .eq('id', data.user.id)
         .maybeSingle();
 
-      let isAdmin = (profile as any)?.is_admin === true;
+      const isLegacyAdmin = (profile as any)?.is_admin === true;
+      const hasAdminRole = (profile as any)?.role === 'admin';
+      let isAdmin = isLegacyAdmin || hasAdminRole;
 
       // Fallback: check by email if not found by ID
       if (!isAdmin && data.user.email) {
         const { data: profileByEmail } = await supabase
           .from('profiles')
-          .select('is_admin')
+          .select('is_admin, role')
           .eq('email', data.user.email)
           .maybeSingle();
-        isAdmin = (profileByEmail as any)?.is_admin === true;
+        const emailIsLegacyAdmin = (profileByEmail as any)?.is_admin === true;
+        const emailHasAdminRole = (profileByEmail as any)?.role === 'admin';
+        isAdmin = emailIsLegacyAdmin || emailHasAdminRole;
       }
 
       if (!isAdmin) {

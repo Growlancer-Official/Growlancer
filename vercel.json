@@ -4,5 +4,11 @@
   "outputDirectory": "dist",
   "installCommand": "npm install --legacy-peer-deps",
   "cleanUrls": true,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "rewrites": [
+    {
+      "source": "/((?!api/|_next/|assets/|.*\..*).*)",
+      "destination": "/index.html"
+    }
+  ]
 }

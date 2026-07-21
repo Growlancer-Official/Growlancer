@@ -37,11 +37,13 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
         // Check admin status — first by ID, then fallback to email (handles ID mismatch)
         let { data: profile } = await supabase
           .from('profiles')
-          .select('id, email, name, is_admin')
+          .select('id, email, name, is_admin, role')
           .eq('id', userId)
           .maybeSingle();
 
-        let isAdmin = (profile as any)?.is_admin === true;
+        const isLegacyAdmin = (profile as any)?.is_admin === true;
+        const hasAdminRole = (profile as any)?.role === 'admin';
+        let isAdmin = isLegacyAdmin || hasAdminRole;
 
         // Fallback: check by email if not found by ID
         if (!isAdmin) {
@@ -50,10 +52,12 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
           if (userEmail) {
             const { data: profileByEmail } = await supabase
               .from('profiles')
-              .select('id, email, name, is_admin')
+              .select('id, email, name, is_admin, role')
               .eq('email', userEmail)
               .maybeSingle();
-            if ((profileByEmail as any)?.is_admin === true) {
+            const emailIsLegacyAdmin = (profileByEmail as any)?.is_admin === true;
+            const emailHasAdminRole = (profileByEmail as any)?.role === 'admin';
+            if (emailIsLegacyAdmin || emailHasAdminRole) {
               profile = profileByEmail;
               isAdmin = true;
             }

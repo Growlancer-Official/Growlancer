@@ -372,7 +372,7 @@ function VerifiedCard({
 }
 
 // ─── Revoked Card ───────────────────────────────────────────────────
-function RevokedCard({ cert }: { cert: Certificate }) {
+function RevokedCard({ cert, dark }: { cert: Certificate; dark: boolean }) {
   const meta = (cert.metadata || {}) as Record<string, any>;
   return (
     <div className="w-full max-w-lg mx-auto text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -417,7 +417,7 @@ function RevokedCard({ cert }: { cert: Certificate }) {
 }
 
 // ─── Replaced Card ──────────────────────────────────────────────────
-function ReplacedCard({ onViewLatest }: { onViewLatest: () => void }) {
+function ReplacedCard({ onViewLatest, dark }: { onViewLatest: () => void; dark: boolean }) {
   return (
     <div className="w-full max-w-lg mx-auto text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-500/10 ring-4 ring-amber-500/20">
@@ -544,9 +544,12 @@ export function CertificateVerifyPage() {
       if (res.valid && res.certificate) {
         const cert = res.certificate as unknown as Certificate;
         const meta = (cert.metadata || {}) as Record<string, any>;
-        if (cert.status === 'revoked') setResult({ mode: 'revoked', certificate: cert, internProfile: res.internProfile });
-        else if (meta.replaced) setResult({ mode: 'replaced', certificate: cert, internProfile: res.internProfile });
-        else setResult({ mode: 'verified', certificate: cert, internProfile: res.internProfile });
+        const internProfile = (res.internProfile && typeof res.internProfile === 'object' && 'id' in res.internProfile)
+          ? res.internProfile as InternProfile
+          : null;
+        if (cert.status === 'revoked') setResult({ mode: 'revoked', certificate: cert, internProfile });
+        else if (meta.replaced) setResult({ mode: 'replaced', certificate: cert, internProfile });
+        else setResult({ mode: 'verified', certificate: cert, internProfile });
       } else if (res.rateLimited) setResult({ mode: 'rate_limited', error: res.error });
       else setResult({ mode: 'invalid', error: res.error || 'Credential not found' });
     } catch { setResult({ mode: 'invalid', error: 'Verification failed. Please try again.' }); }
@@ -563,9 +566,12 @@ export function CertificateVerifyPage() {
       if (res.valid && res.certificate) {
         const cert = res.certificate as unknown as Certificate;
         const meta = (cert.metadata || {}) as Record<string, any>;
-        if (cert.status === 'revoked') setResult({ mode: 'revoked', certificate: cert, internProfile: res.internProfile, token: res.token });
-        else if (meta.replaced) setResult({ mode: 'replaced', certificate: cert, internProfile: res.internProfile, token: res.token });
-        else setResult({ mode: 'verified', certificate: cert, internProfile: res.internProfile, token: res.token });
+        const internProfile = (res.internProfile && typeof res.internProfile === 'object' && 'id' in res.internProfile)
+          ? res.internProfile as InternProfile
+          : null;
+        if (cert.status === 'revoked') setResult({ mode: 'revoked', certificate: cert, internProfile, token: res.token });
+        else if (meta.replaced) setResult({ mode: 'replaced', certificate: cert, internProfile, token: res.token });
+        else setResult({ mode: 'verified', certificate: cert, internProfile, token: res.token });
       } else if (res.rateLimited) setResult({ mode: 'rate_limited', error: res.error });
       else setResult({ mode: 'invalid', error: res.error || 'Invalid QR code' });
     } catch { setResult({ mode: 'invalid', error: 'QR verification failed. Please try again.' }); }
@@ -606,8 +612,8 @@ export function CertificateVerifyPage() {
         <HeaderBar dark={dark} onToggleTheme={toggleTheme} onHome={handleReset} showNewSearch />
         <main className="max-w-4xl mx-auto px-4 py-12 md:py-16">
           {result.mode === 'verified' && result.certificate && <VerifiedCard cert={result.certificate} internProfile={result.internProfile} dark={dark} />}
-          {result.mode === 'revoked' && result.certificate && <RevokedCard cert={result.certificate} />}
-          {result.mode === 'replaced' && <ReplacedCard onViewLatest={handleViewLatest} />}
+          {result.mode === 'revoked' && result.certificate && <RevokedCard cert={result.certificate} dark={dark} />}
+          {result.mode === 'replaced' && <ReplacedCard onViewLatest={handleViewLatest} dark={dark} />}
           {result.mode === 'invalid' && <InvalidCard error={result.error || 'Credential not found'} onRetry={handleReset} />}
           {result.mode === 'rate_limited' && <RateLimitedCard />}
         </main>

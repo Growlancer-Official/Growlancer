@@ -13,6 +13,7 @@
 
 import { supabase } from './supabase';
 import { adminQuery, adminUpdate, adminDelete } from './adminDataProxy';
+import type { InternProfile } from './certificateService';
 
 // ─── Types ──────────────────────────────────────────────────────────
 
@@ -59,8 +60,9 @@ export interface CredentialVerificationResult {
   valid: boolean;
   certificate?: Record<string, unknown>;
   token?: VerificationToken;
-  internProfile?: Record<string, unknown> | null;
+  internProfile?: InternProfile | Record<string, unknown> | null;
   error?: string;
+  rateLimited?: boolean;
 }
 
 // ─── Rate Limiting ───────────────────────────────────────────────────
@@ -77,7 +79,9 @@ export async function checkVerificationRateLimit(
 ): Promise<{ allowed: boolean; remaining: number }> {
   try {
     // Clean expired entries first
-    await supabase.rpc('cleanup_verification_rate_limits').catch(() => {});
+    try {
+      await (supabase.rpc as any)('cleanup_verification_rate_limits');
+    } catch {}
 
     const windowStart = new Date(Date.now() - VERIFY_RATE_WINDOW_MS).toISOString();
 
@@ -93,15 +97,14 @@ export async function checkVerificationRateLimit(
 
     // Increment the counter
     if (allowed) {
-      await supabase
-        .from('verification_rate_limits' as any)
-        .insert({
+      try {
+        await supabase.from('verification_rate_limits' as any).insert({
           identifier,
           route: 'verify-certificate-public',
           request_count: 1,
           window_start: new Date().toISOString(),
-        })
-        .catch(() => {});
+        });
+      } catch {}
     }
 
     return {
@@ -132,7 +135,7 @@ export async function generateQRToken(
 }> {
   try {
     // Try RPC first
-    const { data, error } = await supabase.rpc('generate_credential_token', {
+    const { data, error } = await (supabase.rpc as any)('generate_credential_token', {
       p_credential_id: credentialId,
       p_admin_id: adminId || null,
     });
@@ -187,7 +190,7 @@ export async function regenerateQRToken(
     }
 
     // Log version history
-    await supabase.rpc('insert_credential_version', {
+    await (supabase.rpc as any)('insert_credential_version', {
       p_credential_id: credentialId,
       p_action: 'qr_regenerated',
       p_performed_by: adminId,
@@ -198,7 +201,7 @@ export async function regenerateQRToken(
     });
 
     // Log audit
-    await supabase.rpc('insert_credential_audit_log', {
+    await (supabase.rpc as any)('insert_credential_audit_log', {
       p_credential_id: credentialId,
       p_action: 'qr_regenerated',
       p_admin_id: adminId,
@@ -273,7 +276,7 @@ export async function revokeQRToken(
     if (error) throw error;
 
     // Log version history
-    await supabase.rpc('insert_credential_version', {
+    await (supabase.rpc as any)('insert_credential_version', {
       p_credential_id: credentialId,
       p_action: 'qr_revoked',
       p_performed_by: adminId,
@@ -282,7 +285,7 @@ export async function revokeQRToken(
     });
 
     // Log audit
-    await supabase.rpc('insert_credential_audit_log', {
+    await (supabase.rpc as any)('insert_credential_audit_log', {
       p_credential_id: credentialId,
       p_action: 'qr_revoked',
       p_admin_id: adminId,
@@ -321,7 +324,7 @@ export async function deleteQRToken(
     if (error) throw error;
 
     // Log audit
-    await supabase.rpc('insert_credential_audit_log', {
+    await (supabase.rpc as any)('insert_credential_audit_log', {
       p_credential_id: credentialId,
       p_action: 'qr_deleted',
       p_admin_id: adminId,
@@ -362,7 +365,7 @@ export async function deleteAllOldTokens(
 
     // Log audit
     if (deletedCount > 0) {
-      await supabase.rpc('insert_credential_audit_log', {
+      await (supabase.rpc as any)('insert_credential_audit_log', {
         p_credential_id: credentialId,
         p_action: 'old_qr_tokens_cleaned',
         p_admin_id: adminId,
@@ -400,6 +403,7 @@ export async function verifyCredentialByCode(
         return {
           valid: false,
           error: 'Too many verification attempts. Please try again later.',
+          rateLimited: true,
         };
       }
     }
@@ -443,12 +447,13 @@ export async function verifyCredentialByQR(
         return {
           valid: false,
           error: 'Too many verification attempts. Please try again later.',
+          rateLimited: true,
         };
       }
     }
 
     // Try RPC first (fastest)
-    const { data, error } = await supabase.rpc('verify_credential_by_token', {
+    const { data, error } = await (supabase.rpc as any)('verify_credential_by_token', {
       p_token: qrToken,
     });
 
@@ -493,7 +498,7 @@ export async function getCredentialHistory(
       .eq('credential_id', credentialId)
       .order('version_number', { ascending: false });
 
-    return (data as VersionHistoryEntry[]) || [];
+    return ((data as unknown as VersionHistoryEntry[]) || []);
   } catch {
     return [];
   }
@@ -518,7 +523,7 @@ export async function getCredentialAuditLogs(options?: {
     }
 
     const { data } = await query;
-    return (data as AuditLogEntry[]) || [];
+    return ((data as unknown as AuditLogEntry[]) || []);
   } catch {
     return [];
   }
@@ -538,7 +543,7 @@ export async function getActiveToken(
       .eq('status', 'active')
       .maybeSingle();
 
-    return data as VerificationToken | null;
+    return (data as unknown as VerificationToken | null);
   } catch {
     return null;
   }
@@ -557,7 +562,7 @@ export async function getCredentialTokens(
       .eq('credential_id', credentialId)
       .order('token_version', { ascending: false });
 
-    return (data as VerificationToken[]) || [];
+    return ((data as unknown as VerificationToken[]) || []);
   } catch {
     return [];
   }

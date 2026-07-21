@@ -470,34 +470,56 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           profile = await ensureUserProfile(data.user, undefined, false);
         }
 
-        // 🆕 If still no profile, auto-create from user_metadata (handles missing profile case)
-        if (!profile && data.user?.user_metadata?.role) {
-          devLog('[Auth] No profile found during login — auto-creating from user_metadata');
-          profile = await ensureUserProfile(
-            data.user,
-            data.user.user_metadata.role as UserRole,
-            true
-          );
+        // If still no profile, auto-create from the authenticated user's metadata.
+        // This covers edge cases where the profile row was never created or was
+        // deleted/duplicated during a failed signup or prior auth recovery.
+        if (!profile) {
+          const meta = data.user?.user_metadata || {};
+          const roleHint = (meta.role === 'freelancer' || meta.role === 'client'
+            ? meta.role as UserRole
+            : undefined);
+
+          if (roleHint) {
+            devLog('[Auth] No profile found during login — auto-creating from user metadata');
+            profile = await ensureUserProfile(data.user, roleHint, true);
+          } else {
+            devLog('[Auth] No profile found during login — trying a direct recovery with fallback role');
+            profile = await ensureUserProfile(data.user, 'freelancer', true);
+          }
         }
 
         if (profile) {
           setUser(profile);
           setIsLoading(false);
           devLog('[Auth] Login successful:', profile.email, 'role:', profile.role);
-          return { 
-            success: true, 
+          return {
+            success: true,
             role: profile.role,
             onboardingNeeded: profile.onboardingCompleted === false,
           };
         }
 
-        devWarn('[Auth] Profile not found after retry, signing out user');
-        await supabase.auth.signOut();
+        devWarn('[Auth] Profile still missing after recovery attempt; retrying once with a fresh profile lookup');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        profile = await ensureUserProfile(data.user, 'freelancer', true);
+
+        if (profile) {
+          setUser(profile);
+          setIsLoading(false);
+          devLog('[Auth] Login recovered after final retry:', profile.email, 'role:', profile.role);
+          return {
+            success: true,
+            role: profile.role,
+            onboardingNeeded: profile.onboardingCompleted === false,
+          };
+        }
+
+        devWarn('[Auth] Profile not found after recovery attempts; keeping session intact for manual support');
         setUser(null);
         setSession(null);
         setSupabaseUser(null);
         setIsLoading(false);
-        return { success: false, error: 'Profile not found. Please contact support.' };
+        return { success: false, error: 'We could not restore your profile. Please try again in a moment or contact support.' };
       }
 
       setIsLoading(false);
