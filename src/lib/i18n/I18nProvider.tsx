@@ -127,6 +127,7 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
 }
 
 // ─── Hook ────────────────────────────────────────────────────────────────────
+// eslint-disable-next-line react-refresh/only-export-components
 export function useTranslation(): I18nContextValue {
   const ctx = useContext(I18nContext);
   if (!ctx) {

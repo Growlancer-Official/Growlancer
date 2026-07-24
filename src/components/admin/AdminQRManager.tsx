@@ -12,7 +12,7 @@
  * - Audit Logs tab
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   QrCode, Loader2, RefreshCw, Trash2, Download, Eye,
   History, FileText, Copy, CheckCheck, XCircle,
@@ -53,7 +53,7 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
   const verifyUrl = getVerificationUrl(verificationCode);
   const qrImageUrl = activeToken ? getQRCodeDataUrl(activeToken.token) : null;
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const [token, tokens, hist, audits] = await Promise.all([
@@ -71,9 +71,9 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
     } finally {
       setLoading(false);
     }
-  };
+  }, [credentialId]);
 
-  useEffect(() => { fetchData(); }, [credentialId]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const handleGenerate = async () => {
     if (!user?.id) return;

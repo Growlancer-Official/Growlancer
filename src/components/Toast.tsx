@@ -81,9 +81,10 @@ export function ToastProvider({ children, maxToasts = 5 }: { children: ReactNode
 
   // Cleanup all timers on unmount
   useEffect(() => {
+    const timers = timersRef.current;
     return () => {
-      timersRef.current.forEach((timer) => clearTimeout(timer));
-      timersRef.current.clear();
+      timers.forEach((timer) => clearTimeout(timer));
+      timers.clear();
     };
   }, []);
 
@@ -177,6 +178,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {

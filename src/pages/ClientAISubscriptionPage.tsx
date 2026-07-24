@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
   ArrowRight,
@@ -36,7 +36,7 @@ export function ClientAISubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!user) return;
     try {
       const [plansResult, subResult] = await Promise.all([
@@ -55,12 +55,12 @@ export function ClientAISubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
     void fetchData();
-  }, [user]);
+  }, [user, fetchData]);
 
   // Real-time subscription changes
   useEffect(() => {
@@ -69,7 +69,7 @@ export function ClientAISubscriptionPage() {
       void fetchData();
     });
     return unsubscribe;
-  }, [user]);
+  }, [user, fetchData]);
 
   const handleSubscribe = async (planId: string) => {
     if (!user) return;

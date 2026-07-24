@@ -111,7 +111,7 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
     } finally {
       setLoading(false);
     }
-  }, [userId]);
+  }, [userId, userRole]);
 
   useEffect(() => {
     void refresh();

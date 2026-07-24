@@ -446,7 +446,7 @@ export function WalletPage() {
     } finally {
       setNewMethodSaving(false);
     }
-  }, [user, newMethodType, newMethodEmail, newMethodAccountHolder, newMethodAccountNumber, newMethodRoutingNumber, newMethodBankName, fetchPayoutMethods]);
+  }, [user, newMethodType, newMethodEmail, newMethodAccountHolder, newMethodAccountNumber, newMethodRoutingNumber, newMethodBankName, newMethodIfscCode, newMethodUpiId, fetchPayoutMethods]);
 
   const handleSetDefault = useCallback(async (methodId: string) => {
     try {

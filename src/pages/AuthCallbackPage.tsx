@@ -222,10 +222,10 @@ export function AuthCallbackPage() {
 
       if (selectedCountry === 'IN') {
         // Save country as India — proceed normally
-        await supabase.rpc('update_user_country' as any, {
+        await supabase.rpc('update_user_country', {
           p_user_id: userId,
           p_country: 'IN',
-        } as any);
+        });
 
         // Now determine redirect based on profile
         const profile = await fetchUserProfile(userId);
@@ -243,12 +243,12 @@ export function AuthCallbackPage() {
       } else {
         // Non-India country — insert into waitlist, redirect to /waitlist
         const email = sessionData.session?.user?.email || '';
-        await supabase.rpc('join_waitlist' as any, {
+        await supabase.rpc('join_waitlist', {
           p_email: email,
           p_country: selectedCountry,
           p_signup_source: 'oauth',
           p_user_id: userId,
-        } as any);
+        });
 
         navigate('/waitlist', { replace: true });
       }

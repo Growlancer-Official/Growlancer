@@ -65,6 +65,20 @@ export function InboxPage() {
     }
   }, [user]);
 
+  // Fetch messages for selected contract
+  const fetchMessages = useCallback(async (contractId: string) => {
+    try {
+      const msgs = await messagesService.getByContract(contractId);
+      setMessages(msgs);
+      // Mark as read
+      if (user) {
+        await messagesService.markContractAsRead(contractId, user.id);
+      }
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
+    }
+  }, [user]);
+
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
@@ -79,21 +93,7 @@ export function InboxPage() {
       }
     });
     return () => { void sub.unsubscribe(); };
-  }, [user, selectedContractId, fetchConversations]);
-
-  // Fetch messages for selected contract
-  const fetchMessages = useCallback(async (contractId: string) => {
-    try {
-      const msgs = await messagesService.getByContract(contractId);
-      setMessages(msgs);
-      // Mark as read
-      if (user) {
-        await messagesService.markContractAsRead(contractId, user.id);
-      }
-    } catch (err) {
-      console.error('Failed to fetch messages:', err);
-    }
-  }, [user]);
+  }, [user, selectedContractId, fetchConversations, fetchMessages]);
 
   // Select a conversation
   const handleSelectConversation = async (contractId: string) => {

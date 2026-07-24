@@ -396,6 +396,7 @@ export function CookieConsent() {
  * Check if user has consented to a specific cookie category.
  * Returns `true` for "necessary" since it's always required.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function hasConsent(category: ConsentCategory): boolean {
   if (category === 'necessary') return true;
   try {

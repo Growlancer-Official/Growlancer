@@ -119,7 +119,7 @@ export function RazorpayCheckout({
       onError?.(err instanceof Error ? err : new Error(msg));
       setIsLoading(false);
     }
-  }, [orderData, onSuccess, onError, onCancel, userInfo, themeColor]);
+  }, [orderData, onSuccess, onError, onCancel, userInfo, themeColor, saveCard]);
 
   const handleCancel = useCallback(() => {
     setStatus('idle');

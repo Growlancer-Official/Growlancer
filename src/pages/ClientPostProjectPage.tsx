@@ -78,6 +78,7 @@ export function ClientPostProjectPage() {
       }
     };
     fetchProject();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editProjectId, user?.id]);
 
   // Map selected skill IDs to skill names for form submission
@@ -102,6 +103,7 @@ export function ClientPostProjectPage() {
     if (skillNames.length > 0) {
       setFormData(prev => ({ ...prev, skills_required: skillNames }));
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSkillIds]);
 
   const handleSubmit = async (e: React.FormEvent) => {

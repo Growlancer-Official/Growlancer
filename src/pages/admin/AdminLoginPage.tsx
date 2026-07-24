@@ -29,7 +29,8 @@ export function AdminLoginPage() {
           .eq('id', session.user.id)
           .maybeSingle();
         
-        let isAdmin = (profile as any)?.is_admin === true;
+        const profileData = profile as { is_admin: boolean } | null;
+        let isAdmin = profileData?.is_admin === true;
         
         // Fallback: check by email
         if (!isAdmin && session.user.email) {
@@ -38,7 +39,8 @@ export function AdminLoginPage() {
             .select('is_admin')
             .eq('email', session.user.email)
             .maybeSingle();
-          isAdmin = (profileByEmail as any)?.is_admin === true;
+          const byEmail = profileByEmail as { is_admin: boolean } | null;
+          isAdmin = byEmail?.is_admin === true;
         }
         
         if (isAdmin) {
@@ -88,8 +90,9 @@ export function AdminLoginPage() {
         .eq('id', data.user.id)
         .maybeSingle();
 
-      const isLegacyAdmin = (profile as any)?.is_admin === true;
-      const hasAdminRole = (profile as any)?.role === 'admin';
+      const profileData = profile as { is_admin: boolean; role: string } | null;
+      const isLegacyAdmin = profileData?.is_admin === true;
+      const hasAdminRole = profileData?.role === 'admin';
       let isAdmin = isLegacyAdmin || hasAdminRole;
 
       // Fallback: check by email if not found by ID
@@ -99,8 +102,9 @@ export function AdminLoginPage() {
           .select('is_admin, role')
           .eq('email', data.user.email)
           .maybeSingle();
-        const emailIsLegacyAdmin = (profileByEmail as any)?.is_admin === true;
-        const emailHasAdminRole = (profileByEmail as any)?.role === 'admin';
+        const byEmail = profileByEmail as { is_admin: boolean; role: string } | null;
+        const emailIsLegacyAdmin = byEmail?.is_admin === true;
+        const emailHasAdminRole = byEmail?.role === 'admin';
         isAdmin = emailIsLegacyAdmin || emailHasAdminRole;
       }
 

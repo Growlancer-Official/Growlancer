@@ -13,6 +13,16 @@ import type { AuthUser, UserRole } from '../../types/auth';
 import { captureError } from '../telemetry';
 
 // ---------------------------------------------------------------------------
+// Typed RPC helper — Supabase auto-generated types don't cover custom RPCs.
+// This centralises the type escape in ONE place instead of `as any` everywhere.
+// When types are regenerated, remove this helper and use supabase.rpc<T>() directly.
+// ---------------------------------------------------------------------------
+
+function authRpc(name: string, args: Record<string, unknown>) {
+  return (supabase.rpc as any)(name, args) as ReturnType<typeof supabase.rpc>;
+}
+
+// ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
@@ -121,7 +131,7 @@ export async function createUserProfile(
   const code = referralCode ?? createReferralCode(safeRole.substring(0, 2).toUpperCase());
 
   // Try RPC first (SECURITY DEFINER bypasses RLS for unverified users)
-  const { data: rpcData, error: rpcError } = await supabase.rpc('create_user_profile' as any, {
+  const { data: rpcData, error: rpcError } = await authRpc('create_user_profile', {
     p_id: userId,
     p_email: email,
     p_name: name,
@@ -207,7 +217,7 @@ export async function requestAccountDeletion(
   reason: string
 ): Promise<{ success: boolean; error?: string; requestId?: string; scheduledDeletion?: string }> {
   try {
-    const { data, error } = await supabase.rpc('request_account_deletion' as any, {
+    const { data, error } = await authRpc('request_account_deletion', {
       p_user_id: userId,
       p_reason: reason,
     });
@@ -220,7 +230,8 @@ export async function requestAccountDeletion(
       return { success: false, error: error.message };
     }
 
-    const result = data as { success: boolean; error?: string; request_id?: string; scheduled_deletion_at?: string } | null;
+    type DeleteResult = { success: boolean; error?: string; request_id?: string; scheduled_deletion_at?: string };
+    const result = data as unknown as DeleteResult | null;
     if (!result?.success) {
       return { success: false, error: result?.error || 'Failed to create deletion request' };
     }
@@ -249,7 +260,7 @@ export async function cancelAccountDeletionRequest(
   userId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const { data, error } = await supabase.rpc('cancel_account_deletion' as any, {
+    const { data, error } = await authRpc('cancel_account_deletion', {
       p_user_id: userId,
     });
 
@@ -261,7 +272,7 @@ export async function cancelAccountDeletionRequest(
       return { success: false, error: error.message };
     }
 
-    const result = data as { success: boolean; error?: string } | null;
+    const result = data as unknown as { success: boolean; error?: string } | null;
     if (!result?.success) {
       return { success: false, error: result?.error || 'Failed to cancel deletion request' };
     }
@@ -294,7 +305,7 @@ export async function checkDeletionStatus(
   cancelledAt?: string;
 } | null> {
   try {
-    const { data, error } = await supabase.rpc('check_deletion_status' as any, {
+    const { data, error } = await authRpc('check_deletion_status', {
       p_user_id: userId,
     });
 
@@ -306,7 +317,8 @@ export async function checkDeletionStatus(
       return null;
     }
 
-    const result = data as { has_request: boolean; status?: string; reason?: string; created_at?: string; scheduled_deletion_at?: string; confirmed_at?: string; cancelled_at?: string } | null;
+    type DeletionCheckResult = { has_request: boolean; status?: string; reason?: string; created_at?: string; scheduled_deletion_at?: string; confirmed_at?: string; cancelled_at?: string };
+    const result = data as unknown as DeletionCheckResult | null;
     if (!result?.has_request) {
       return { hasRequest: false };
     }
@@ -412,8 +424,7 @@ export async function getMFAStatus(): Promise<MFAStatus> {
       return { mfaEnabled: false, recoveryCodesRemaining: 0 };
     }
 
-    const { data: mfaSettings, error: settingsError } = await supabase
-      .rpc('get_mfa_status' as any, { p_user_id: user.user.id });
+    const { data: mfaSettings, error: settingsError } = await authRpc('get_mfa_status', { p_user_id: user.user.id });
 
     if (settingsError) {
       captureError('Failed to get MFA status', { source: 'auth' });
@@ -422,7 +433,8 @@ export async function getMFAStatus(): Promise<MFAStatus> {
 
     // Also get Supabase Auth MFA factors
     const { data: mfaFactors } = await supabase.auth.mfa.listFactors();
-    const settings = mfaSettings as { mfa_enabled?: boolean; mfa_method?: string; backup_email?: string; trusted_devices?: unknown[]; last_verified_at?: string; recovery_codes_remaining?: number; created_at?: string } | null;
+    type MfaSettings = { mfa_enabled?: boolean; mfa_method?: string; backup_email?: string; trusted_devices?: unknown[]; last_verified_at?: string; recovery_codes_remaining?: number; created_at?: string };
+    const settings = mfaSettings as unknown as MfaSettings | null;
 
     return {
       mfaEnabled: settings?.mfa_enabled ?? false,
@@ -463,8 +475,7 @@ export async function enrollMFA(): Promise<MFAEnrollResult> {
     }
 
     // Generate recovery codes
-    const { data: recoveryCodes, error: recoveryError } = await supabase
-      .rpc('generate_recovery_codes' as any, { p_user_id: user.user.id });
+    const { data: recoveryCodes, error: recoveryError } = await authRpc('generate_recovery_codes', { p_user_id: user.user.id });
 
     if (recoveryError) {
       console.error('Recovery code generation failed:', recoveryError);
@@ -525,14 +536,14 @@ export async function verifyMFA(factorId: string, code: string): Promise<MFAVeri
     }
 
     // Enable MFA in our local settings
-    await supabase.rpc('enable_user_mfa' as any, {
+    await authRpc('enable_user_mfa', {
       p_user_id: user.user.id,
       p_totp_secret: '',
     });
 
     return {
       success: true,
-      verified: (verifyData as any)?.verified || false,
+      verified: (verifyData as unknown as { verified?: boolean })?.verified || false,
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
@@ -566,7 +577,7 @@ export async function disableMFA(): Promise<{ success: boolean; error?: string }
     }
 
     // Disable in local settings
-    await supabase.rpc('disable_user_mfa' as any, { p_user_id: user.user.id });
+    await authRpc('disable_user_mfa', { p_user_id: user.user.id });
 
     return { success: true };
   } catch (err) {
@@ -587,8 +598,7 @@ export async function generateRecoveryCodes(): Promise<MFARecoveryCodesResult> {
       return { success: false, error: 'Not authenticated' };
     }
 
-    const { data: codes, error } = await supabase
-      .rpc('generate_recovery_codes' as any, { p_user_id: user.user.id });
+    const { data: codes, error } = await authRpc('generate_recovery_codes', { p_user_id: user.user.id });
 
     if (error) {
       captureError('Failed to generate recovery codes', { source: 'auth' });
@@ -623,15 +633,14 @@ export async function verifyRecoveryCode(code: string): Promise<MFARecoveryVerif
       return { success: false, error: 'Recovery code is required' };
     }
 
-    const { data: verifyData, error } = await supabase
-      .rpc('verify_recovery_code' as any, { p_user_id: user.user.id, p_code: code });
+    const { data: verifyData, error } = await authRpc('verify_recovery_code', { p_user_id: user.user.id, p_code: code });
 
     if (error) {
       captureError('Failed to verify recovery code', { source: 'auth' });
       return { success: false, error: error.message };
     }
 
-    const verifyResult = verifyData as { valid?: boolean } | null;
+    const verifyResult = verifyData as unknown as { valid?: boolean } | null;
     if (!verifyResult?.valid) {
       return { success: false, error: 'Invalid or already used recovery code' };
     }
@@ -661,11 +670,11 @@ export async function setBackupEmail(email: string): Promise<MFABackupEmailResul
     }
 
     const { error } = await supabase
-      .from('user_mfa_settings' as any)
+      .from('user_mfa_settings')
       .upsert({
         user_id: user.user.id,
         backup_email: email,
-      } as any, { onConflict: 'user_id' });
+      }, { onConflict: 'user_id' });
 
     if (error) {
       captureError('Failed to set backup email', { source: 'auth' });

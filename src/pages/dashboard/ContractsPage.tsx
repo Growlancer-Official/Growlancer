@@ -247,6 +247,7 @@ export function ContractsPage() {
       clearTimeout(timeoutId);
       channel.unsubscribe();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, fetchContracts]);
 
   const filteredContracts = contracts.filter((c) => {

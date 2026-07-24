@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
@@ -217,7 +217,7 @@ export function SkillTestPage() {
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          handleSubmit();
+          handleSubmitRef.current();
           return 0;
         }
         return prev - 1;
@@ -252,7 +252,9 @@ export function SkillTestPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmitRef = useRef<() => Promise<void>>(null!);
+
+const handleSubmit = async () => {
     setPhase('grading');
     // Calculate score
     let correct = 0;
@@ -279,6 +281,8 @@ export function SkillTestPage() {
       setRecording(false);
     }
   };
+
+  handleSubmitRef.current = handleSubmit;
 
   if (error && !test) {
     return (

@@ -2,17 +2,56 @@ import { useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import { AdminLoginPage } from '../pages/admin/AdminLoginPage';
 
-interface AdminUser {
+interface AdminSession {
   id: string;
   email: string;
   name: string;
 }
 
-// Simple reactive admin state — no global listeners, no complexity
-let _currentAdmin: AdminUser | null = null;
+// ── localStorage helpers ─────────────────────────────────────────────────────
+
+const ADMIN_SESSION_KEY = 'growlancer_admin_session';
+
+function saveAdminSession(admin: AdminSession): void {
+  try {
+    localStorage.setItem(ADMIN_SESSION_KEY, JSON.stringify(admin));
+  } catch {
+    // localStorage unavailable (private browsing, etc.)
+  }
+}
+
+function loadAdminSession(): AdminSession | null {
+  try {
+    const raw = localStorage.getItem(ADMIN_SESSION_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as AdminSession;
+    if (parsed && parsed.id && parsed.email) return parsed;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function clearAdminSession(): void {
+  try {
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+  } catch {
+    // noop
+  }
+}
+
+// ── Profile row type (subset used by admin checks) ────────────────────────────
+
+interface ProfileAdminRow {
+  id: string;
+  email: string | null;
+  name: string | null;
+  role: string | null;
+  is_admin: boolean | null;
+}
 
 /**
- * AdminAuthGuard — Auth via Supabase session + profiles.is_admin.
+ * AdminAuthGuard — Auth via Supabase session + profiles.role = 'admin'.
  * Shows login page if not authenticated, renders children if admin.
  */
 export function AdminAuthGuard({ children }: { children: ReactNode }) {
@@ -28,54 +67,66 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
           const authResult = await supabase.auth.getSession();
           const session = authResult.data?.session ?? null;
           if (!session?.user) {
-            if (!cancelled) { setAuthorized(false); setChecking(false); _currentAdmin = null; }
+            if (!cancelled) { setAuthorized(false); setChecking(false); clearAdminSession(); }
             return;
           }
           userId = session.user.id;
         }
 
         // Check admin status — first by ID, then fallback to email (handles ID mismatch)
-        let { data: profile } = await supabase
+        let profile: ProfileAdminRow | null = null;
+
+        const { data: profileById } = await supabase
           .from('profiles')
           .select('id, email, name, is_admin, role')
           .eq('id', userId)
           .maybeSingle();
 
-        const isLegacyAdmin = (profile as any)?.is_admin === true;
-        const hasAdminRole = (profile as any)?.role === 'admin';
+        if (profileById) {
+          profile = profileById as ProfileAdminRow;
+        }
+
+        const isLegacyAdmin = profile?.is_admin === true;
+        const hasAdminRole = profile?.role === 'admin';
         let isAdmin = isLegacyAdmin || hasAdminRole;
 
         // Fallback: check by email if not found by ID
         if (!isAdmin) {
           const { data: sessionData } = await supabase.auth.getSession();
-          const userEmail = (sessionData as any)?.session?.user?.email;
+          const userEmail = sessionData.session?.user?.email;
           if (userEmail) {
             const { data: profileByEmail } = await supabase
               .from('profiles')
               .select('id, email, name, is_admin, role')
               .eq('email', userEmail)
               .maybeSingle();
-            const emailIsLegacyAdmin = (profileByEmail as any)?.is_admin === true;
-            const emailHasAdminRole = (profileByEmail as any)?.role === 'admin';
-            if (emailIsLegacyAdmin || emailHasAdminRole) {
-              profile = profileByEmail;
-              isAdmin = true;
+
+            if (profileByEmail) {
+              const emailProfile = profileByEmail as ProfileAdminRow;
+              const emailIsLegacyAdmin = emailProfile.is_admin === true;
+              const emailHasAdminRole = emailProfile.role === 'admin';
+              if (emailIsLegacyAdmin || emailHasAdminRole) {
+                profile = emailProfile;
+                isAdmin = true;
+              }
             }
           }
         }
-        if (isAdmin) {
-          _currentAdmin = {
+
+        if (isAdmin && profile) {
+          const adminSession: AdminSession = {
             id: profile.id,
-            email: (profile as any).email || '',
+            email: profile.email || '',
             name: profile.name || 'Admin',
           };
+          saveAdminSession(adminSession);
           if (!cancelled) { setAuthorized(true); setChecking(false); }
         } else {
-          _currentAdmin = null;
+          clearAdminSession();
           if (!cancelled) { setAuthorized(false); setChecking(false); }
         }
       } catch {
-        if (!cancelled) { setAuthorized(false); setChecking(false); _currentAdmin = null; }
+        if (!cancelled) { setAuthorized(false); setChecking(false); clearAdminSession(); }
       }
     };
 
@@ -85,7 +136,7 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         if (session?.user) checkAdminStatus(session.user.id);
       } else if (event === 'SIGNED_OUT') {
-        if (!cancelled) { setAuthorized(false); setChecking(false); _currentAdmin = null; }
+        if (!cancelled) { setAuthorized(false); setChecking(false); clearAdminSession(); }
       }
     });
 
@@ -108,19 +159,23 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
 }
 
 /** Check if admin is logged in (sync). */
+// eslint-disable-next-line react-refresh/only-export-components
 export function isAdminLoggedIn(): boolean {
-  return _currentAdmin !== null;
+  return loadAdminSession() !== null;
 }
 
 /** Get current admin user info. */
+// eslint-disable-next-line react-refresh/only-export-components
 export function getAdminSession(): { email: string; label: string } | null {
-  if (!_currentAdmin) return null;
-  return { email: _currentAdmin.email, label: _currentAdmin.name };
+  const session = loadAdminSession();
+  if (!session) return null;
+  return { email: session.email, label: session.name };
 }
 
 /** Log out of admin session. */
+// eslint-disable-next-line react-refresh/only-export-components
 export async function adminLogout(): Promise<void> {
   await supabase.auth.signOut();
-  _currentAdmin = null;
+  clearAdminSession();
   window.location.href = '/admin';
 }

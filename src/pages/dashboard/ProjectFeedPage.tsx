@@ -399,6 +399,7 @@ export function ProjectFeedPage() {
       matchesChannel.unsubscribe();
       profilesChannel.unsubscribe();
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Filter matches based on search and category

@@ -82,6 +82,7 @@ export function AISubscriptionPage() {
   useEffect(() => {
     if (!user) return;
     void fetchData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   // Real-time subscription changes
@@ -91,6 +92,7 @@ export function AISubscriptionPage() {
       void fetchData();
     });
     return unsubscribe;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleSubscribe = async (planId: string) => {

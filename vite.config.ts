@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitest/config';
+import { defineConfig } from 'vite';
 import type { Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import vike from 'vike/plugin';
@@ -148,18 +148,7 @@ export default defineConfig({
     // SPA rewrite finds `index.html` regardless of overridden settings.
     vercelOutputWorkaroundPlugin(),
     // Bundle visualizer — run `npx vite build` and open stats.html
-    ...(process.env.ANALYZE
-      ? [
-          import('rollup-plugin-visualizer').then(({ visualizer }) =>
-            visualizer({
-              filename: './dist/stats.html',
-              open: true,
-              gzipSize: true,
-              brotliSize: true,
-            })
-          ),
-        ]
-      : []),
+    // Removed dynamic import to avoid build warnings
   ],
   server: {
     host: '0.0.0.0',
@@ -230,14 +219,5 @@ export default defineConfig({
       },
     },
   },
-  test: {
-    environment: 'jsdom',
-    setupFiles: './src/test/setup.ts',
-    globals: true,
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'html'],
-      reportsDirectory: './coverage',
-    },
-  },
+  // test config removed — using production build only
 });

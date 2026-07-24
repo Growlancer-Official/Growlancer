@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, DollarSign, Eye, Filter, Loader2, Plus, Trash2, Trophy, Users,  } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
@@ -20,19 +20,19 @@ export function ClientContestsPage() {
   const pageSize = 10;
   const toast = useToast();
 
-  useEffect(() => {
-    if (user) {
-      fetchContests();
-    }
-  }, [user]);
-
-  const fetchContests = async () => {
+  const fetchContests = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     const data = await contestService.getClientContests(user.id);
     setContests(data);
     setLoading(false);
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchContests();
+    }
+  }, [user, fetchContests]);
 
   const handleDelete = async (contestId: string) => {
     const success = await contestService.deleteContest(contestId);
@@ -79,7 +79,7 @@ export function ClientContestsPage() {
       )
       .subscribe();
     return () => { void channel.unsubscribe(); };
-  }, [user]);
+  }, [user, fetchContests]);
 
   return (
     <div className="max-w-7xl mx-auto">

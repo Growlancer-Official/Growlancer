@@ -460,15 +460,20 @@ export function ProfessionalProfilePage() {
       const skillNames = selectedSkillIds
         .map(id => allSkills.find(s => s.id === id))
         .filter((s): s is NonNullable<typeof s> => !!s)
-        .map(s => s.name)
-        .filter(name => !formData.skills.includes(name)); // avoid duplicates
+        .map(s => s.name);
       if (skillNames.length > 0) {
-        setFormData(prev => ({ ...prev, skills: [...prev.skills, ...skillNames] }));
+        setFormData(prev => {
+          const newSkills = skillNames.filter(name => !prev.skills.includes(name));
+          if (newSkills.length > 0) {
+            return { ...prev, skills: [...prev.skills, ...newSkills] };
+          }
+          return prev;
+        });
       }
     }
     // Note: when all skills are deselected in SkillsSelector, previously synced
     // skills remain in formData.skills. User can remove them via the free-text section.
-  }, [selectedSkillIds]);
+  }, [selectedSkillIds, allSkills]);
 
   // ── Skill/Language/Cert helpers ──
   // Map skill IDs to names when SkillsSelector changes

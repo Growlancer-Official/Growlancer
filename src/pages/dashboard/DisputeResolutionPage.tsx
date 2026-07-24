@@ -193,7 +193,7 @@ export function DisputeResolutionPage() {
     return () => {
       channel.unsubscribe();
     };
-  }, [selectedDispute?.id]);
+  }, [selectedDispute]);
 
   /* back to list */
   const handleBack = () => {

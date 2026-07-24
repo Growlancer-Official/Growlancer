@@ -202,7 +202,7 @@ export function AdminInternshipsPage() {
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [roleFilter, statusFilter, dateFrom, dateTo]);
+  }, [dateFrom, dateTo]);
 
   useEffect(() => { fetchApplications(); }, [fetchApplications]);
 

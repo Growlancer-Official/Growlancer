@@ -8,6 +8,12 @@ import {
   createReferralCode,
 } from '../lib/services/authService';
 import { captureError, captureInfo } from '../lib/telemetry';
+import {
+  recordLoginAttempt,
+  resetLoginAttempts,
+  getLoginDelay,
+  getRemainingAttempts,
+} from '../lib/rateLimiter';
 
 // Re-export for backward compatibility (used by ProtectedRoute)
 export type { UserRole };
@@ -138,20 +144,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 🆕 Process referral if this OAuth signup came from a referral link
         if (oauthRefCode && profile) {
           try {
-            await supabase.rpc('process_referral' as any, {
+            await supabase.rpc('process_referral', {
               p_referral_code: oauthRefCode,
               p_new_user_id: authUser.id,
               p_new_user_email: authUser.email || '',
-            } as any);
+            });
             devLog('[Auth] OAuth referral processed for code:', oauthRefCode);
             // 🆕 Grant referred OAuth user 5 free connects as welcome bonus
             try {
-              await supabase.from('connects_transactions' as any).insert({
+              await supabase.from('connects_transactions').insert({
                 user_id: authUser.id,
                 amount: 5,
                 type: 'bonus',
                 description: 'Welcome bonus - referred by friend',
-              } as any);
+              });
               devLog('[Auth] OAuth referred user granted 5 free connects');
             } catch (bonusErr) {
               devWarn('[Auth] OAuth referral bonus grant error:', bonusErr);
@@ -166,8 +172,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (roleHint) {
           devError('[Auth] Failed to sync user profile during login/signup');
         } else {
+          // Background refresh — retry once before concluding deletion
+          devLog('[Auth] Profile fetch returned null during session refresh — retrying once after delay');
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          profile = await ensureUserProfile(authUser, roleHint, !!roleHint);
+          if (profile) {
+            setUser(profile);
+            return profile;
+          }
           devError(
-            '[Auth] Profile fetch failed during session refresh — user likely deleted from backend. Signing out.'
+            '[Auth] Profile fetch failed during session refresh after retry — user likely deleted from backend. Signing out.'
           );
         }
         // Profile doesn't exist in the database — user was deleted from backend.
@@ -181,7 +195,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       setUser(profile);
     },
-    [ensureUserProfile, createUserProfile, createReferralCode]
+    [ensureUserProfile]
   );
 
   useEffect(() => {
@@ -337,21 +351,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
             setSession(null);
             setSupabaseUser(null);
-            window.location.href = '/';
             return;
           }
           // Otherwise (INSERT/UPDATE), re-fetch the profile
-          const updated = await fetchUserProfile(user.id);
+          // Retry once on transient failure
+          let updated = await fetchUserProfile(user.id);
+          if (!updated) {
+            devLog('[Auth] Profile re-fetch returned null after realtime event — retrying once');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            updated = await fetchUserProfile(user.id);
+          }
           if (updated) {
             setUser(updated);
           } else {
-            // Profile no longer exists — sign out
-            devLog('[Auth] Profile disappeared — signing out');
+            // Profile still not found after retry — sign out
+            devLog('[Auth] Profile disappeared after retry — signing out');
             await supabase.auth.signOut().catch(() => {});
             setUser(null);
             setSession(null);
             setSupabaseUser(null);
-            window.location.href = '/';
           }
         }
       )
@@ -364,11 +382,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Proactive user existence check: runs when the page becomes visible again
   // and on a periodic interval to detect backend-side user deletion.
+  //
+  // Uses a consecutive-failure counter to avoid signing out on transient
+  // network hiccups or Supabase RLS timing issues. Only after N consecutive
+  // null responses do we conclude the user profile was actually deleted.
+  const MAX_PROFILE_CHECK_FAILURES = 3;
   useEffect(() => {
     if (!user?.id) return;
 
     let isChecking = false;
     let intervalId: ReturnType<typeof setInterval> | null = null;
+    let consecutiveFailures = 0;
 
     const checkProfileExists = async () => {
       if (isChecking || !user?.id) return;
@@ -376,15 +400,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const profile = await fetchUserProfile(user.id);
         if (!profile) {
-          devLog('[Auth] Periodic check: Profile not found — user deleted from backend');
+          consecutiveFailures++;
+          if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
+            devLog('[Auth] Periodic check: Profile not found after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
+            await supabase.auth.signOut().catch(() => {});
+            setUser(null);
+            setSession(null);
+            setSupabaseUser(null);
+          } else {
+            devLog('[Auth] Periodic check: Profile fetch returned null (failure', consecutiveFailures, '/', MAX_PROFILE_CHECK_FAILURES, ') — retrying');
+          }
+        } else {
+          // Reset counter on success
+          consecutiveFailures = 0;
+        }
+      } catch {
+        consecutiveFailures++;
+        if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
+          devLog('[Auth] Periodic check: Profile fetch error after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
           await supabase.auth.signOut().catch(() => {});
           setUser(null);
           setSession(null);
           setSupabaseUser(null);
-          window.location.href = '/';
         }
-      } catch {
-        // Silently ignore — retry on next interval
       } finally {
         isChecking = false;
       }
@@ -449,13 +487,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       devLog('[Auth] Login attempt started');
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      // ── Rate limiting check ──
+      const normalizedEmail = email.trim().toLowerCase();
+      const delay = getLoginDelay(normalizedEmail);
+      if (delay > 0) {
+        devLog(`[Auth] Rate limit delay: ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+
+      const remaining = getRemainingAttempts(normalizedEmail);
+      if (remaining <= 0) {
+        setIsLoading(false);
+        return {
+          success: false,
+          error: 'Too many login attempts. Please try again in 15 minutes.',
+        };
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
 
       if (error) {
+        recordLoginAttempt(normalizedEmail);
         devWarn('[Auth] Login error:', error.message);
         setIsLoading(false);
         return { success: false, error: error.message };
       }
+
+      // Rate limit: reset on success
+      resetLoginAttempts(normalizedEmail);
 
       if (data.user) {
         setSession(data.session);
@@ -621,22 +680,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // Process referral if this signup came from a referral link
         if (referrerCode) {
           try {
-            const { error: refError } = await supabase.rpc('process_referral' as any, {
+            const { error: refError } = await supabase.rpc('process_referral', {
               p_referral_code: referrerCode,
               p_new_user_id: data.user.id,
               p_new_user_email: email,
-            } as any);
+            });
             if (refError) {
               devWarn('[Auth] Referral processing error:', refError.message);
             } else {
               devLog('[Auth] Referral processed successfully for code:', referrerCode);
               try {
-                await supabase.from('connects_transactions' as any).insert({
+                await supabase.from('connects_transactions').insert({
                   user_id: data.user.id,
                   amount: 5,
                   type: 'bonus',
                   description: 'Welcome bonus - referred by friend',
-                } as any);
+                });
                 devLog('[Auth] Referred user granted 5 free connects');
               } catch (bonusErr) {
                 devWarn('[Auth] Referral bonus grant error:', bonusErr);
