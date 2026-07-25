@@ -79,12 +79,9 @@ jobs:
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY || secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SENTRY_DSN: ${{ vars.VITE_SENTRY_DSN || secrets.VITE_SENTRY_DSN || '' }}
 
-      - name: Link Vercel project
-        run: npx vercel link --yes --project growlancer-app --token ${{ secrets.VERCEL_TOKEN }}
-
       - name: Deploy to Vercel Production
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        run: npx vercel deploy ./dist/client --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
+        run: npx vercel deploy ./dist/client --prod --yes --token ${{ secrets.VERCEL_TOKEN }} --debug 2>&1 | tail -30
 
       - name: Deploy to Vercel Preview
         if: github.event_name == 'pull_request'
