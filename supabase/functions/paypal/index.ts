@@ -17,6 +17,7 @@ const ALLOWED_ORIGINS = [
   'https://growlancer.vercel.app',
   'https://growlancer.com',
   'https://www.growlancer.com',
+  'http://localhost:5173',
 ];
 
 function getCorsHeaders(origin: string | null) {

@@ -56,7 +56,7 @@ jobs:
   # ─── Build & Deploy Frontend to Vercel ─────────────────────────
   deploy-frontend:
     name: Deploy Frontend (Vercel)
-    needs: [quality]
+    needs: [quality, deploy-db]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -130,26 +130,11 @@ jobs:
         run: |
           echo "🚀 Deploying edge functions..."
           
-          # Critical functions (deploy first)
-          npx supabase functions deploy admin-data --no-verify-jwt
-          npx supabase functions deploy paypal --no-verify-jwt
-          npx supabase functions deploy razorpay --no-verify-jwt
-          npx supabase functions deploy withdrawal --no-verify-jwt
-          
-          # Core functions
-          for fn in notifications reviews ai-matching ai-assistant \
-                     internship-applications email-notifications \
-                     proposal-notifications notification-preferences \
-                     twofa-management ai-ticket-responder; do
-            npx supabase functions deploy "$fn" --no-verify-jwt
-          done
-          
-          # Utility functions
-          for fn in file-upload avatar-upload newsletter-subscribe \
-                     delete-account request-deletion process-deletion \
-                     admin-signup razorpay-payout-webhook \
-                     subscription-billing-cron; do
-            npx supabase functions deploy "$fn" --no-verify-jwt
+          # Auto-discover all functions from the supabase/functions directory
+          for fn in supabase/functions/*/; do
+            fn_name="$(basename "$fn")"
+            echo "  → Deploying $fn_name..."
+            npx supabase functions deploy "$fn_name" --no-verify-jwt
           done
           
           echo "✅ All edge functions deployed!"
@@ -161,8 +146,9 @@ jobs:
   deploy-db:
     name: Deploy DB Migrations (Supabase)
     needs: [quality]
-    # Run only on manual trigger (DB changes need caution)
-    if: github.event_name == 'workflow_dispatch'
+    # Run on push to main/master AND manual trigger
+    # Auto-syncs DB schema with code changes for production readiness
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
