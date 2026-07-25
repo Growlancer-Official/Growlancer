@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, startTransition, ReactNode } from 'react';
 import { Session, User as SupabaseUser, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { AuthUser, UserRole } from '../types/auth';
@@ -390,7 +390,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       } finally {
         if (mounted) {
-          setIsLoading(false);
+          startTransition(() => {
+            setIsLoading(false);
+          });
         }
       }
     }
@@ -405,7 +407,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         source: 'auth',
         timeoutMs: AUTH_TIMEOUT_MS,
       });
-      setIsLoading(false);
+      startTransition(() => {
+        setIsLoading(false);
+      });
     }, AUTH_TIMEOUT_MS);
 
     return () => {
