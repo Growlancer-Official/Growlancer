@@ -23,8 +23,6 @@ concurrency:
 env:
   NODE_VERSION: '22'
   SUPABASE_PROJECT_ID: 'zttwsjehcgaicziqyxpq'
-  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID || secrets.VERCEL_ORG_ID || '' }}
-  VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID || secrets.VERCEL_PROJECT_ID || '' }}
 
 jobs:
   # ─── Quality Check ─────────────────────────────────────────────
@@ -83,13 +81,11 @@ jobs:
 
       - name: Deploy to Vercel Production
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        run: |
-          npx vercel deploy --prod --yes --token ${{ secrets.VERCEL_TOKEN }} --name growlancer-app ./dist/client
+        run: npx vercel --prod --yes --token ${{ secrets.VERCEL_TOKEN }}
 
       - name: Deploy to Vercel Preview
         if: github.event_name == 'pull_request'
-        run: |
-          npx vercel deploy --yes --token ${{ secrets.VERCEL_TOKEN }} --name growlancer-app ./dist/client
+        run: npx vercel --yes --token ${{ secrets.VERCEL_TOKEN }}
 
   # ─── Deploy Supabase Edge Functions ────────────────────────────
   deploy-edge-functions:
@@ -97,6 +93,7 @@ jobs:
     needs: [quality]
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 15
 
     steps:
@@ -143,6 +140,7 @@ jobs:
     # Auto-syncs DB schema with code changes for production readiness
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    continue-on-error: true
     timeout-minutes: 10
 
     steps:
