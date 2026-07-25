@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, startTransition } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { 
@@ -118,7 +118,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                     preload="auto"
                     className="w-full aspect-video object-cover"
                     poster="/UpdatedLogo.webp"
-                    onError={() => setVideoFailed(true)}
+                    onError={() => startTransition(() => setVideoFailed(true))}
                   >
                     <source src="/videos/hero-demo.mp4" type="video/mp4" />
                   </video>
