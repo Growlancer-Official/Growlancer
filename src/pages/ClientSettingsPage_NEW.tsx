@@ -1183,15 +1183,15 @@ export function ClientSettingsPage() {
                           {method.is_default ? (
                             <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg"><Star className="w-3 h-3 fill-amber-500" /> Default</span>
                           ) : (
-                            <button onClick={() => handleSetDefaultPayment(method.id)} className="p-2 text-slate-400 hover:text-amber-500 transition-colors" title="Set as default"><Star className="w-4 h-4" /></button>
+                            <button onClick={() => handleSetDefaultPayment(method.id)} className="p-2 text-slate-400 hover:text-amber-500 transition-colors" title="Set as default" aria-label="Set as default"><Star className="w-4 h-4" /></button>
                           )}
                           {deleteConfirmId === method.id ? (
                             <div className="flex items-center gap-1">
-                              <button onClick={() => handleDeletePayment(method.id)} className="p-2 text-red-500 hover:text-red-700 transition-colors" title="Confirm delete"><Check className="w-4 h-4" /></button>
-                              <button onClick={() => setDeleteConfirmId(null)} className="p-2 text-slate-400 hover:text-slate-600 transition-colors" title="Cancel"><X className="w-4 h-4" /></button>
+                              <button onClick={() => handleDeletePayment(method.id)} className="p-2 text-red-500 hover:text-red-700 transition-colors" title="Confirm delete" aria-label="Confirm delete"><Check className="w-4 h-4" /></button>
+                              <button onClick={() => setDeleteConfirmId(null)} className="p-2 text-slate-400 hover:text-slate-600 transition-colors" title="Cancel" aria-label="Cancel"><X className="w-4 h-4" /></button>
                             </div>
                           ) : (
-                            <button onClick={() => setDeleteConfirmId(method.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Remove"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => setDeleteConfirmId(method.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Remove" aria-label="Remove"><Trash2 className="w-4 h-4" /></button>
                           )}
                         </div>
                       </div>

@@ -602,7 +602,7 @@ export function DashboardLayout() {
             <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
 
             {/* User Menu */}
-            <button className="flex items-center gap-1 sm:gap-3 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
+            <button aria-label="User menu" className="flex items-center gap-1 sm:gap-3 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
               {user?.avatar ? (
                 <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
                   <img
