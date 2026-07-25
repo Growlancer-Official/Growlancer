@@ -117,8 +117,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                     playsInline
                     preload="auto"
                     className="w-full aspect-video object-cover"
-                    poster="/og-image.png"
-                    fetchpriority="high"
+                    poster="/UpdatedLogo.webp"
                     onError={() => setVideoFailed(true)}
                   >
                     <source src="/videos/hero-demo.mp4" type="video/mp4" />

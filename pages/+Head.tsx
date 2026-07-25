@@ -51,9 +51,6 @@ export default function Head() {
       <link rel="dns-prefetch" href="https://zttwsjehcgaicziqyxpq.supabase.co" />
       <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-      {/* ── Hero poster image (preload for LCP) ── */}
-      <link rel="preload" as="image" href="/og-image.png" fetchpriority="high" />
-
       {/* ── Google Fonts: Inter ── */}
       <link
         rel="preload"
