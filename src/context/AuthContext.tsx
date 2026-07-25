@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { Session, User as SupabaseUser } from '@supabase/supabase-js';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { Session, User as SupabaseUser, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
 import type { AuthUser, UserRole } from '../types/auth';
 import {
@@ -14,6 +14,41 @@ import {
   getLoginDelay,
   getRemainingAttempts,
 } from '../lib/rateLimiter';
+
+// ═══════════════════════════════════════════════════════════════════
+// BroadcastChannel — Cross-tab auth sync
+// ═══════════════════════════════════════════════════════════════════
+// When the user logs in, logs out, or their profile changes in one tab,
+// all other tabs are notified in real-time and sync their state.
+// This is more explicit than relying solely on localStorage events.
+// ═══════════════════════════════════════════════════════════════════
+const AUTH_BROADCAST_CHANNEL = 'growlancer_auth_sync';
+
+type AuthBroadcastMessage =
+  | { type: 'AUTH_SIGNED_IN'; userId: string }
+  | { type: 'AUTH_SIGNED_OUT' }
+  | { type: 'PROFILE_UPDATED'; userId: string }
+  | { type: 'SESSION_REFRESHED'; userId: string };
+
+function createAuthBroadcast(): BroadcastChannel | null {
+  if (typeof BroadcastChannel === 'undefined') return null;
+  try {
+    return new BroadcastChannel(AUTH_BROADCAST_CHANNEL);
+  } catch {
+    return null;
+  }
+}
+
+function broadcastAuthMessage(msg: AuthBroadcastMessage) {
+  const channel = createAuthBroadcast();
+  if (!channel) return;
+  try {
+    channel.postMessage(msg);
+    channel.close();
+  } catch {
+    // BroadcastChannel may fail if the message is too complex or in private browsing
+  }
+}
 
 // Re-export for backward compatibility (used by ProtectedRoute)
 export type { UserRole };
@@ -98,9 +133,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const MAX_INIT_RETRIES = 0;
-  const INIT_RETRY_DELAY_MS = 2000;
-  const AUTH_TIMEOUT_MS = 8000;
+  // ═══ Exponential backoff for session initialization ═══
+  // Starts with 1s delay, then 2s, then 4s = max ~7s total wait
+  const MAX_INIT_RETRIES = 3;
+  const INIT_RETRY_BASE_MS = 1000;
+  const AUTH_TIMEOUT_MS = 12000;
+
+  // ═══ Refs for cross-tab BroadcastChannel sync ═══
+  // Component-level ref updated synchronously when user changes.
+  // The BroadcastChannel useEffect reads from this ref to avoid
+  // stale closures and prevent unnecessary re-initialization.
+  const userIdRef = useRef<string | null>(null);
+
+  // Update ref whenever user.id changes — synchronous, no stale closure
+  useEffect(() => {
+    userIdRef.current = user?.id ?? null;
+  }, [user?.id]);
 
   const syncAuthUser = useCallback(
     async (authUser: SupabaseUser, roleHint?: UserRole) => {
@@ -266,14 +314,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
 
-        // Retry loop: attempt session fetch up to MAX_INIT_RETRIES + 1 times
+        // Retry loop with exponential backoff: 1s → 2s → 4s → 8s
         let currentSession: Session | null = null;
         let lastError: Awaited<ReturnType<typeof supabase.auth.getSession>>['error'] = null;
 
         for (let attempt = 0; attempt <= MAX_INIT_RETRIES; attempt++) {
           if (attempt > 0) {
-            devLog(`[Auth] Retry attempt ${attempt}/${MAX_INIT_RETRIES}...`);
-            await new Promise(resolve => setTimeout(resolve, INIT_RETRY_DELAY_MS));
+            const delay = INIT_RETRY_BASE_MS * Math.pow(2, attempt - 1);
+            devLog(`[Auth] Retry attempt ${attempt}/${MAX_INIT_RETRIES} (delay: ${delay}ms)...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
           }
 
           const result = await supabase.auth.getSession();
@@ -283,7 +332,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (error) {
             lastError = error;
             devWarn(`[Auth] Session fetch attempt ${attempt + 1} failed:`, error.message);
-            continue; // Retry
+            continue; // Retry with backoff
           }
 
           // Success — clear lastError and use this session
@@ -307,10 +356,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (currentSession?.user) {
           await syncAuthUser(currentSession.user);
+          // Broadcast that we have a session (for cross-tab sync)
+          broadcastAuthMessage({ type: 'SESSION_REFRESHED', userId: currentSession.user.id });
         } else {
           setUser(null);
           setSession(null);
           setSupabaseUser(null);
+        }
+        
+        // ✅ Attempt to recover a stale session if user is authenticated but
+        // supabase.auth.getSession() returned null (e.g., token expired while tab was closed)
+        if (!currentSession && !lastError) {
+          const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+          if (userData?.user && mounted) {
+            devLog('[Auth] Stale session detected — attempting silent refresh');
+            const { data: refreshed } = await supabase.auth.refreshSession().catch(() => ({ data: { session: null } }));
+            if (refreshed?.session) {
+              currentSession = refreshed.session;
+              setSession(currentSession);
+              setSupabaseUser(currentSession.user || null);
+              await syncAuthUser(currentSession.user);
+              broadcastAuthMessage({ type: 'SESSION_REFRESHED', userId: currentSession.user.id });
+            }
+          }
         }
       } catch (error) {
         // Gracefully handle any auth initialization errors
@@ -347,6 +415,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [syncAuthUser]);
 
+  // ═══ Cross-tab BroadcastChannel listener ═══
+  // Runs once on mount. Reads userIdRef.current (updated synchronously
+  // by a separate useEffect when user?.id changes) to avoid stale closures
+  // while keeping the listener registered once.
+  useEffect(() => {
+    const bc = createAuthBroadcast();
+    if (!bc) return;
+
+    bc.onmessage = (event: MessageEvent<AuthBroadcastMessage>) => {
+      const msg = event.data;
+      const currentUserId = userIdRef.current;
+      devLog('[Auth] Cross-tab message received:', msg.type);
+
+      switch (msg.type) {
+        case 'AUTH_SIGNED_IN':
+          // Another tab logged in — refresh session to stay in sync
+          if (msg.userId !== currentUserId) {
+            devLog('[Auth] Cross-tab login detected — refreshing session');
+            supabase.auth.getSession().then(({ data: { session: s } }) => {
+              if (s?.user) {
+                setSession(s);
+                setSupabaseUser(s.user);
+                syncAuthUser(s.user).catch(() => {});
+              }
+            }).catch(() => {});
+          }
+          break;
+        case 'AUTH_SIGNED_OUT':
+          // Another tab signed out — clear state in this tab too
+          devLog('[Auth] Cross-tab sign-out detected — signing out this tab');
+          setUser(null);
+          setSession(null);
+          setSupabaseUser(null);
+          break;
+        case 'PROFILE_UPDATED':
+          // Profile changed in another tab — re-fetch in this tab
+          if (msg.userId === currentUserId) {
+            devLog('[Auth] Cross-tab profile update detected — re-fetching profile');
+            fetchUserProfile(currentUserId!).then(updated => {
+              if (updated) setUser(updated);
+            }).catch(() => {});
+          }
+          break;
+        case 'SESSION_REFRESHED':
+          // Session was refreshed in another tab — check if we need to sync
+          if (msg.userId !== currentUserId && msg.userId && !currentUserId) {
+            devLog('[Auth] Cross-tab session refresh — checking session');
+            supabase.auth.getSession().then(({ data: { session: s } }) => {
+              if (s?.user) {
+                setSession(s);
+                setSupabaseUser(s.user);
+                syncAuthUser(s.user).catch(() => {});
+              }
+            }).catch(() => {});
+          }
+          break;
+      }
+    };
+
+    return () => {
+      bc.close();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (!user?.id) return;
 
@@ -357,10 +490,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const channel = supabase
       .channel(`profile_updates:${user.id}`)
+      .on('system', { event: '*' }, (status: string) => {
+        // Monitor channel health — log state transitions
+        if (status === 'error') {
+          devWarn('[Auth] Realtime channel error — will auto-reconnect');
+        } else if (status === 'joined') {
+          devLog('[Auth] Realtime channel connected for profile updates');
+        }
+      })
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
           // If the profile was deleted (event: DELETE), sign out immediately
           if (payload.eventType === 'DELETE') {
             devLog('[Auth] Profile deleted from backend — signing out');
@@ -382,6 +523,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
           if (updated) {
             setUser(updated);
+            // 📡 Broadcast profile update cross-tab
+            broadcastAuthMessage({ type: 'PROFILE_UPDATED', userId: user.id });
           } else {
             devLog('[Auth] Profile still not found after', realtimeRetries, 'retries — NOT signing out (suspected transient)');
             // ⚠️ Don't sign out on transient failure — just keep current user state.
@@ -389,7 +532,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
       )
-      .subscribe();
+      .subscribe((status: string) => {
+        if (status === 'SUBSCRIBED') {
+          devLog('[Auth] Realtime profile subscription active');
+        }
+      });
 
     return () => {
       channel.unsubscribe();
@@ -420,6 +567,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let consecutiveFailures = 0;
 
     const checkProfileExists = async () => {
+      // 🚫 Skip check if offline — prevents unnecessary failures when network is down
+      if (!navigator.onLine) {
+        devLog('[Auth] Skipping periodic check — browser is offline');
+        return;
+      }
       if (isChecking || !user?.id) return;
       isChecking = true;
       try {
@@ -429,6 +581,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
             devLog('[Auth] Periodic check: Profile not found after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
             await supabase.auth.signOut().catch(() => {});
+            broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
             setUser(null);
             setSession(null);
             setSupabaseUser(null);
@@ -444,6 +597,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
           devLog('[Auth] Periodic check: Profile fetch error after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
           await supabase.auth.signOut().catch(() => {});
+          broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
           setUser(null);
           setSession(null);
           setSupabaseUser(null);
@@ -453,7 +607,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Check every 60 seconds (was 30s — reduced frequency to prevent accidental signout)
+    // Check every 60 seconds
     intervalId = setInterval(checkProfileExists, PROFILE_CHECK_INTERVAL_MS);
 
     // Also check when page becomes visible again (user switches back to tab)
@@ -464,9 +618,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     document.addEventListener('visibilitychange', handleVisibility);
 
+    // ── Online/offline detection ──
+    // When coming back online, immediately revalidate the profile.
+    // When going offline, reset the consecutive failure counter to
+    // prevent accidental signout from network errors.
+    const handleOnline = () => {
+      devLog('[Auth] Browser is online — revalidating profile');
+      consecutiveFailures = 0; // Reset counter when coming back online
+      checkProfileExists();
+    };
+    const handleOffline = () => {
+      devLog('[Auth] Browser is offline — pausing periodic checks');
+      consecutiveFailures = 0; // Reset counter so offline time doesn't count as failures
+    };
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     return () => {
       if (intervalId) clearInterval(intervalId);
       document.removeEventListener('visibilitychange', handleVisibility);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
   }, [user?.id, user?.role]);
 
@@ -576,6 +748,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(profile);
           setIsLoading(false);
           devLog('[Auth] Login successful:', profile.email, 'role:', profile.role);
+          // 📡 Broadcast cross-tab auth sync
+          broadcastAuthMessage({ type: 'AUTH_SIGNED_IN', userId: data.user.id });
           return {
             success: true,
             role: profile.role,
@@ -591,6 +765,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(profile);
           setIsLoading(false);
           devLog('[Auth] Login recovered after final retry:', profile.email, 'role:', profile.role);
+          // 📡 Broadcast cross-tab auth sync
+          broadcastAuthMessage({ type: 'AUTH_SIGNED_IN', userId: data.user.id });
           return {
             success: true,
             role: profile.role,
@@ -740,6 +916,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSession(freshSession.session);
           setSupabaseUser(freshSession.session.user);
           await syncAuthUser(freshSession.session.user, role);
+          // 📡 Broadcast cross-tab auth sync
+          broadcastAuthMessage({ type: 'AUTH_SIGNED_IN', userId: freshSession.session.user.id });
         }
 
         setIsLoading(false);
@@ -769,6 +947,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
       }
 
+      // 📡 Broadcast cross-tab auth sync BEFORE clearing state
+      // Other tabs need to know BEFORE we navigate away
+      broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
+
       setUser(null);
       setSession(null);
       setSupabaseUser(null);
@@ -776,6 +958,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       window.location.href = '/';
     } catch (error) {
       devError('[Auth] Logout exception:', error);
+      broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
       setUser(null);
       setSession(null);
       setSupabaseUser(null);
