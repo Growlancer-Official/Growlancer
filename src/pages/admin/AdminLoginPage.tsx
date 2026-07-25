@@ -18,37 +18,46 @@ export function AdminLoginPage() {
 
   // Auto-redirect if already logged in (real-time via auth state)
   useEffect(() => {
+    let cancelled = false;
     const checkSession = async () => {
-      const result = await supabase.auth.getSession();
-      const session = result.data?.session ?? null;
-      if (session?.user) {
-        // Check if admin — first by ID, then fallback to email
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        
-        const profileData = profile as { is_admin: boolean } | null;
-        let isAdmin = profileData?.is_admin === true;
-        
-        // Fallback: check by email
-        if (!isAdmin && session.user.email) {
-          const { data: profileByEmail } = await supabase
+      try {
+        const result = await supabase.auth.getSession();
+        if (cancelled) return;
+        const session = result.data?.session ?? null;
+        if (session?.user) {
+          // Check if admin — first by ID, then fallback to email
+          const { data: profile } = await supabase
             .from('profiles')
             .select('is_admin')
-            .eq('email', session.user.email)
+            .eq('id', session.user.id)
             .maybeSingle();
-          const byEmail = profileByEmail as { is_admin: boolean } | null;
-          isAdmin = byEmail?.is_admin === true;
+          
+          if (cancelled) return;
+          const profileData = profile as { is_admin: boolean } | null;
+          let isAdmin = profileData?.is_admin === true;
+          
+          // Fallback: check by email
+          if (!isAdmin && session.user.email) {
+            const { data: profileByEmail } = await supabase
+              .from('profiles')
+              .select('is_admin')
+              .eq('email', session.user.email)
+              .maybeSingle();
+            if (cancelled) return;
+            const byEmail = profileByEmail as { is_admin: boolean } | null;
+            isAdmin = byEmail?.is_admin === true;
+          }
+          
+          if (isAdmin) {
+            navigate('/admin', { replace: true });
+          }
         }
-        
-        if (isAdmin) {
-          navigate('/admin', { replace: true });
-        }
+      } catch {
+        // Session check failed — silently ignore, user can try logging in
       }
     };
     checkSession();
+    return () => { cancelled = true; };
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {

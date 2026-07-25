@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -9,18 +9,23 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, children, title }: ModalProps) {
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
+  // Store onClose in a ref to keep the effect stable
+  // while always having access to the latest callback.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
+  // Stable callback that reads from ref
+  const handleEscape = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onCloseRef.current();
+    }
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       document.addEventListener('keydown', handleEscape);
       document.body.style.overflow = 'hidden';
     } else {
-      // Always reset body overflow when modal is closed
       document.body.style.overflow = '';
     }
 
@@ -28,7 +33,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, handleEscape]);
 
   if (!isOpen) return null;
 
@@ -37,7 +42,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fade-in"
-        onClick={onClose}
+        onClick={onCloseRef.current}
         aria-hidden="true"
       />
 
@@ -50,7 +55,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
 
         {/* Close Button - Fixed Position */}
         <button
-          onClick={onClose}
+          onClick={onCloseRef.current}
           className="absolute top-5 right-5 z-20 p-2.5 rounded-full bg-white/90 hover:bg-white shadow-lg hover:shadow-xl border border-slate-200/50 transition-all duration-200 hover:scale-105"
           aria-label="Close modal"
         >

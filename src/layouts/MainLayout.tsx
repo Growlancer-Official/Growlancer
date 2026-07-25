@@ -64,7 +64,7 @@ export function MainLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-cream">
+    <div className="min-h-screen flex flex-col bg-cream">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -193,7 +193,7 @@ export function MainLayout() {
         </div>
       )}
 
-      <main>
+      <main className="flex-1">
         <Outlet />
       </main>
 

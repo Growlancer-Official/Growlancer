@@ -87,7 +87,11 @@ export async function fetchUserProfile(userId: string): Promise<AuthUser | null>
       return null;
     }
 
-    const normalizedRole = normalizeRole(data.role);
+    // If the user is marked as admin (is_admin=true), treat as admin role
+    // even if the role column is null. This prevents the periodic profile
+    // check from failing for admin users and triggering cascading signout.
+    const effectiveRole = data.is_admin === true ? 'admin' : data.role;
+    const normalizedRole = normalizeRole(effectiveRole);
     if (!normalizedRole) {
       return null;
     }

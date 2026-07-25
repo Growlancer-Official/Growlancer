@@ -72,12 +72,8 @@ const DashboardLayout = lazy(() =>
 const ClientDashboardLayout = lazy(() =>
   import('@layouts/ClientDashboardLayout').then(m => ({ default: m.ClientDashboardLayout }))
 );
-const AdminDashboardLayout = lazy(() =>
-  import('@layouts/AdminDashboardLayout').then(m => ({ default: m.AdminDashboardLayout }))
-);
-const AdminAuthGuard = lazy(() =>
-  import('@components/AdminAuthGuard').then(m => ({ default: m.AdminAuthGuard }))
-);
+import { AdminAuthGuard } from '@components/AdminAuthGuard';
+import { AdminDashboardLayout } from '@layouts/AdminDashboardLayout';
 
 // Dashboard Pages - Freelancer
 const OverviewPage = lazy(() => import('@pages/dashboard/OverviewPage').then(m => ({ default: m.OverviewPage })));

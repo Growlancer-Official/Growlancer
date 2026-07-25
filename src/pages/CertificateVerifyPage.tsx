@@ -790,10 +790,11 @@ export function CertificateVerifyPage() {
 function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
   dark: boolean; onToggleTheme: () => void; onHome?: () => void; showNewSearch?: boolean;
 }) {
+  const navigate = useNavigate();
   return (
     <header className={`sticky top-0 z-40 border-b backdrop-blur-xl ${dark ? 'bg-slate-950/80 border-slate-800/50' : 'bg-white/80 border-slate-200'}`}>
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <button onClick={onHome || (() => window.history.pushState({}, '', '/verify-certificate'))}
+        <button onClick={onHome || (() => navigate('/verify-certificate', { replace: true }))}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
           <div className="relative">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-9 w-9 rounded-xl" />
@@ -824,6 +825,7 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
 
 // ─── Footer Bar ─────────────────────────────────────────────────────
 function FooterBar({ dark }: { dark: boolean }) {
+  const navigate = useNavigate();
   return (
     <footer className={`border-t py-8 px-4 ${dark ? 'border-slate-800/50 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
       <div className="max-w-4xl mx-auto text-center">
@@ -834,8 +836,8 @@ function FooterBar({ dark }: { dark: boolean }) {
         <p className="text-[10px] text-slate-400 dark:text-slate-500">© {new Date().getFullYear()} Growlancer. All rights reserved.</p>
         <div className="flex items-center justify-center gap-4 mt-2">
           {['Terms', 'Privacy', 'Contact'].map(item => (
-            <a key={item} href={`/${item.toLowerCase()}`}
-              className="text-[10px] text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{item}</a>
+            <button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}
+              className="text-[10px] text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{item}</button>
           ))}
         </div>
       </div>

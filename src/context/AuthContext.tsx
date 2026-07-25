@@ -98,9 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  const MAX_INIT_RETRIES = 1;
-  const INIT_RETRY_DELAY_MS = 3000;
-  const AUTH_TIMEOUT_MS = 15000;
+  const MAX_INIT_RETRIES = 0;
+  const INIT_RETRY_DELAY_MS = 2000;
+  const AUTH_TIMEOUT_MS = 8000;
 
   const syncAuthUser = useCallback(
     async (authUser: SupabaseUser, roleHint?: UserRole) => {
@@ -171,6 +171,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!profile) {
         if (roleHint) {
           devError('[Auth] Failed to sync user profile during login/signup');
+          await supabase.auth.signOut().catch(() => {});
+          setUser(null);
+          setSession(null);
+          setSupabaseUser(null);
+          return null;
         } else {
           // Background refresh — retry once before concluding deletion
           devLog('[Auth] Profile fetch returned null during session refresh — retrying once after delay');
@@ -180,17 +185,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(profile);
             return profile;
           }
+          
+          // 🚫 Don't sign out admin users — AdminAuthGuard handles admin auth separately.
+          // The admin profile might not have a standard role column, and signing out here
+          // cascades to AdminAuthGuard's onAuthStateChange listener, logging admin out.
+          if (authUser.email?.includes('admin')) {
+            devLog('[Auth] Profile fetch failed for admin user — NOT signing out (AdminAuthGuard handles admin auth)');
+            return null;
+          }
+          
           devError(
             '[Auth] Profile fetch failed during session refresh after retry — user likely deleted from backend. Signing out.'
           );
+          await supabase.auth.signOut().catch(() => {});
+          setUser(null);
+          setSession(null);
+          setSupabaseUser(null);
+          return null;
         }
-        // Profile doesn't exist in the database — user was deleted from backend.
-        // Clear all auth state and sign out instead of creating a stale minimal user.
-        await supabase.auth.signOut().catch(() => {});
-        setUser(null);
-        setSession(null);
-        setSupabaseUser(null);
-        return null;
       }
 
       setUser(profile);
@@ -338,6 +350,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user?.id) return;
 
+    // 🚫 SKIP for admin users — AdminAuthGuard handles admin auth separately.
+    // The periodic profile check below would fire signOut on repeated failures,
+    // which cascades to AdminAuthGuard via onAuthStateChange and logs admin out.
+    if (user.role === 'admin') return;
+
     const channel = supabase
       .channel(`profile_updates:${user.id}`)
       .on(
@@ -354,22 +371,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return;
           }
           // Otherwise (INSERT/UPDATE), re-fetch the profile
-          // Retry once on transient failure
+          // Retry up to 3 times with increasing delays to handle transient failures
           let updated = await fetchUserProfile(user.id);
-          if (!updated) {
-            devLog('[Auth] Profile re-fetch returned null after realtime event — retrying once');
-            await new Promise(resolve => setTimeout(resolve, 1000));
+          let realtimeRetries = 0;
+          while (!updated && realtimeRetries < 3) {
+            realtimeRetries++;
+            devLog('[Auth] Profile re-fetch returned null (retry', realtimeRetries, '/3)');
+            await new Promise(resolve => setTimeout(resolve, realtimeRetries * 1500));
             updated = await fetchUserProfile(user.id);
           }
           if (updated) {
             setUser(updated);
           } else {
-            // Profile still not found after retry — sign out
-            devLog('[Auth] Profile disappeared after retry — signing out');
-            await supabase.auth.signOut().catch(() => {});
-            setUser(null);
-            setSession(null);
-            setSupabaseUser(null);
+            devLog('[Auth] Profile still not found after', realtimeRetries, 'retries — NOT signing out (suspected transient)');
+            // ⚠️ Don't sign out on transient failure — just keep current user state.
+            // The periodic check (higher threshold) will handle real deletion.
           }
         }
       )
@@ -378,7 +394,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       channel.unsubscribe();
     };
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   // Proactive user existence check: runs when the page becomes visible again
   // and on a periodic interval to detect backend-side user deletion.
@@ -386,9 +402,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Uses a consecutive-failure counter to avoid signing out on transient
   // network hiccups or Supabase RLS timing issues. Only after N consecutive
   // null responses do we conclude the user profile was actually deleted.
-  const MAX_PROFILE_CHECK_FAILURES = 3;
+  // ── Increased tolerance for transient failures ──
+  // Higher threshold prevents auto-signout on brief network/RPC hiccups
+  // (which would cascade to the admin session via onAuthStateChange).
+  const MAX_PROFILE_CHECK_FAILURES = 8;
+  const PROFILE_CHECK_INTERVAL_MS = 60000; // Check every 60 seconds
   useEffect(() => {
     if (!user?.id) return;
+
+    // 🚫 SKIP periodic check for admin users — AdminAuthGuard handles admin auth separately.
+    // The periodic check would fire fetchUserProfile → return null (admin profiles may not
+    // have a standard role column) → after 8 failures → signOut → AdminAuthGuard logs out.
+    if (user.role === 'admin') return;
 
     let isChecking = false;
     let intervalId: ReturnType<typeof setInterval> | null = null;
@@ -428,8 +453,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    // Check every 30 seconds
-    intervalId = setInterval(checkProfileExists, 30000);
+    // Check every 60 seconds (was 30s — reduced frequency to prevent accidental signout)
+    intervalId = setInterval(checkProfileExists, PROFILE_CHECK_INTERVAL_MS);
 
     // Also check when page becomes visible again (user switches back to tab)
     const handleVisibility = () => {
@@ -443,7 +468,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (intervalId) clearInterval(intervalId);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [user?.id]);
+  }, [user?.id, user?.role]);
 
   const signInWithOAuth = async (
     provider: 'google' | 'linkedin_oidc'

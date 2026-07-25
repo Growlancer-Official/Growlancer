@@ -54,6 +54,13 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
   const [oauthProvider, setOauthProvider] = useState<'google' | 'linkedin' | null>(null);
   const [existingUser, setExistingUser] = useState(false);
 
+  // Sync role from initialRole when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setRole(initialRole);
+    }
+  }, [isOpen, initialRole]);
+
   // Check if there's already a session on this device
   useEffect(() => {
     async function checkSession() {
@@ -247,12 +254,12 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
             <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1">
               I want to...
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               <label
-                className={`cursor-pointer flex flex-col items-center justify-center p-3 border-2 rounded-xl transition-all ${
+                className={`cursor-pointer flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
                   role === 'freelancer'
-                    ? 'border-emerald-500 bg-emerald-50/50'
-                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                    ? 'border-emerald-500 bg-emerald-50/50 shadow-sm shadow-emerald-500/10'
+                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-100/50'
                 }`}
               >
                 <input
@@ -263,16 +270,23 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                   onChange={() => setRole('freelancer')}
                   className="sr-only"
                 />
-                <User
-                  className={`w-4 h-4 mb-1 ${role === 'freelancer' ? 'text-emerald-600' : 'text-slate-400'}`}
-                />
-                <span className="text-xs font-semibold">Freelance</span>
+                <div className={`shrink-0 flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg border ${
+                  role === 'freelancer'
+                    ? 'bg-emerald-100 border-emerald-200 text-emerald-600'
+                    : 'bg-white border-slate-200 text-slate-400'
+                } transition-all`}>
+                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">Freelance</span>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block truncate">Work & earn</span>
+                </div>
               </label>
               <label
-                className={`cursor-pointer flex flex-col items-center justify-center p-3 border-2 rounded-xl transition-all ${
+                className={`cursor-pointer flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
                   role === 'client'
-                    ? 'border-emerald-500 bg-emerald-50/50'
-                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50'
+                    ? 'border-emerald-500 bg-emerald-50/50 shadow-sm shadow-emerald-500/10'
+                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-100/50'
                 }`}
               >
                 <input
@@ -283,10 +297,17 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                   onChange={() => setRole('client')}
                   className="sr-only"
                 />
-                <Briefcase
-                  className={`w-4 h-4 mb-1 ${role === 'client' ? 'text-emerald-600' : 'text-slate-400'}`}
-                />
-                <span className="text-xs font-semibold">Hire Talent</span>
+                <div className={`shrink-0 flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg border ${
+                  role === 'client'
+                    ? 'bg-emerald-100 border-emerald-200 text-emerald-600'
+                    : 'bg-white border-slate-200 text-slate-400'
+                } transition-all`}>
+                  <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">Hire Talent</span>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block truncate">Find & hire</span>
+                </div>
               </label>
             </div>
           </div>

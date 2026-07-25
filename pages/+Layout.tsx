@@ -1,5 +1,6 @@
 import React from 'react';
-import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
+import { StaticRouter } from 'react-router-dom/server';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
@@ -12,22 +13,23 @@ import '../src/styles/globals.css';
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pageContext = usePageContext();
 
-  // On the server, use MemoryRouter with Vike-provided URL.
   // On the client, BrowserRouter handles navigation.
+  // On the server, StaticRouter renders with Vike-provided URL (correct SSR pattern).
   const router =
     typeof window !== 'undefined' ? (
       <BrowserRouter>{children}</BrowserRouter>
     ) : (
-      <MemoryRouter initialEntries={[pageContext.urlPathname]}>
+      <StaticRouter location={pageContext.urlPathname}>
         {children}
-      </MemoryRouter>
+      </StaticRouter>
     );
 
   return (
     <ErrorBoundary>
       {router}
-      <Analytics />
-      <SpeedInsights />
+      {/* Vercel Analytics/SpeedInsights — only in production to avoid 404 warnings in dev */}
+      {import.meta.env.PROD && <Analytics />}
+      {import.meta.env.PROD && <SpeedInsights />}
     </ErrorBoundary>
   );
 }

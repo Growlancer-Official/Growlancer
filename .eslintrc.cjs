@@ -17,15 +17,13 @@ module.exports = {
     'supabase/functions/**',
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['react-refresh', 'unused-imports'],
+  plugins: ['react-refresh'],
   rules: {
     'react-refresh/only-export-components': [
       'warn',
       { allowConstantExport: true },
     ],
-    '@typescript-eslint/no-unused-vars': 'off', // Replaced by unused-imports/no-unused-vars
-    'unused-imports/no-unused-imports': 'error',
-    'unused-imports/no-unused-vars': [
+    '@typescript-eslint/no-unused-vars': [
       'error',
       { vars: 'all', varsIgnorePattern: '^_', args: 'after-used', argsIgnorePattern: '^_' },
     ],

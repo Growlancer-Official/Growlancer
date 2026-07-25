@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, dbFunctions } from '../lib/supabase';
+import { FALLBACK_CATEGORIES } from '../lib/categories';
 
 // Ensures each hook instance gets a unique channel to avoid 'cannot add callbacks after subscribe()'
 let channelInstanceId = 0;
@@ -67,6 +68,17 @@ export function useCategories(): UseCategoriesReturn {
       // Gracefully handle missing RPC functions (pre-launch: migrations may not be applied yet)
       if (hierarchyResult.error) {
         console.warn('Category hierarchy RPC not available (migration pending):', hierarchyResult.error.message);
+        // Fall back to static FALLBACK_CATEGORIES so the homepage always shows categories
+        const fallback = FALLBACK_CATEGORIES.map((name, i) => ({
+          id: `fallback-${i}`,
+          name,
+          slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+          icon: 'Layers',
+          description: null,
+          display_order: i + 1,
+          subcategories: [],
+        }));
+        setCategories(fallback);
       } else if (hierarchyResult.data) {
         const raw = hierarchyResult.data as Category[];
         // Sort categories A-Z alphabetically for consistent display across all pages

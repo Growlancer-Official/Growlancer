@@ -33,52 +33,6 @@ function getLegalDocsLastUpdatedIso(): string {
 }
 
 /**
- * Custom Vite plugin: uses preact/compat for client bundles (saves ~50KB gzipped)
- * but keeps real React for SSR/prerender builds.
- *
- * The key: the `resolveId` hook receives an `options` object with an `ssr` boolean.
- * During SSR/prerender builds, `options.ssr` is `true`, so we skip the preact alias.
- * During client builds, `options.ssr` is `false`, so we redirect react → preact/compat.
- *
- * Preact/hooks fails during SSR because it expects a component tree context (`__H`)
- * that's only set up by preact's own render cycle — which doesn't run during Vike's
- * SSR prerender. Real React's hooks initialization is more robust.
- *
- * Uses `enforce: 'pre'` and is registered BEFORE react() in the plugins array
- * so our resolveId runs first and intercepts react imports before
- * @vitejs/plugin-react can resolve them in its own pre-phase.
- */
-function preactClientOnlyPlugin(): Plugin {
-  return {
-    name: 'preact-client-only',
-    enforce: 'pre',
-    async resolveId(id, importer, options) {
-      // SSR/prerender builds: keep real React (hooks work correctly)
-      if (options?.ssr) return null;
-
-      // Client builds: alias react → preact/compat
-      if (id === 'react' || id.startsWith('react/')) {
-        // react/jsx-runtime → preact/compat/jsx-runtime, etc.
-        return await this.resolve(id.replace(/^react/, 'preact/compat'), importer, options);
-      }
-      if (id === 'react-dom' || id.startsWith('react-dom/')) {
-        // react-dom/server → preact/server (special — preact has a separate server module)
-        if (id === 'react-dom/server') {
-          return await this.resolve('preact/server', importer, options);
-        }
-        // react-dom/test-utils → preact/test-utils
-        if (id === 'react-dom/test-utils') {
-          return await this.resolve('preact/test-utils', importer, options);
-        }
-        // react-dom, react-dom/client, react-dom/foo → preact/compat, preact/compat/client, etc.
-        return await this.resolve(id.replace(/^react-dom/, 'preact/compat'), importer, options);
-      }
-      return null;
-    },
-  };
-}
-
-/**
  * Vite plugin: copies `dist/client/` → `dist/` after build completes.
  *
  * Vike (SSR/prerender) outputs client files to `dist/client/`. Vercel's
@@ -133,14 +87,6 @@ export default defineConfig({
     vike(),
     react(),
 
-    // ─── Preact: client-only alias ─────────────────────────────
-    // During client builds (hydration bundle) we alias react → preact/compat
-    // to save ~50KB gzipped. During SSR/prerender builds we keep real React
-    // because preact/hooks doesn't properly initialize during Vike's SSR render.
-    //
-    // IMPORTANT: must be BEFORE react() plugin and use enforce:'pre' so our
-    // resolveId hook intercepts react imports before @vitejs/plugin-react does.
-    preactClientOnlyPlugin(),
     // ─── Vercel Vite Preset Workaround ────────────────────
     // Vike outputs to `dist/client/` but Vercel's Vite framework preset
     // expects `index.html` at `dist/`. This plugin copies the client
@@ -187,8 +133,8 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // React/Preact core
-          if (id.includes('node_modules/preact/') || id.includes('node_modules/react-router')) {
+          // React core & router
+          if (id.includes('node_modules/react-router')) {
             return 'vendor-react';
           }
           // Supabase
