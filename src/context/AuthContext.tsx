@@ -642,6 +642,107 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [user?.id, user?.role]);
 
+  // ═══════════════════════════════════════════════════════════════════
+  // Session Timeout — Auto-logout after 24 hours of inactivity
+  // ═══════════════════════════════════════════════════════════════════
+  // Tracks user activity (mouse, keyboard, touch, scroll) and resets
+  // a timer. If no activity is detected for 24 consecutive hours,
+  // the user is automatically signed out for security.
+  //
+  // The last-activity timestamp is persisted in localStorage so it
+  // survives page refreshes and tab switches.
+  // ═══════════════════════════════════════════════════════════════════
+  const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000; // 24 hours
+  const SESSION_CHECK_INTERVAL_MS = 60000; // Check every 60 seconds
+  const LAST_ACTIVITY_KEY = 'growlancer_last_activity';
+
+  useEffect(() => {
+    if (!user?.id) return;
+
+    // 🚫 Skip for admin users — AdminAuthGuard handles admin auth separately
+    if (user.role === 'admin') return;
+
+    // ── Initialize last activity timestamp ──
+    // On mount, load from localStorage (survives page refresh).
+    // If none exists, set it now (fresh session).
+    let stored = localStorage.getItem(LAST_ACTIVITY_KEY);
+    let lastActivity = stored ? parseInt(stored, 10) : Date.now();
+    if (!stored) {
+      localStorage.setItem(LAST_ACTIVITY_KEY, String(lastActivity));
+    }
+
+    // ── Update last activity timestamp ──
+    // In-memory `lastActivity` is updated on EVERY event (no throttle).
+    // localStorage writes are throttled to 30s to avoid excessive I/O.
+    // This prevents a false timeout where the user is active but within
+    // the throttle window.
+    const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'touchstart', 'scroll'];
+    let lastActivityUpdate = 0;
+    const ACTIVITY_THROTTLE_MS = 30000; // 30 seconds
+
+    const handleActivity = () => {
+      const now = Date.now();
+      lastActivity = now; // Always update in-memory (no throttle)
+      // Only write to localStorage if throttle period has passed
+      if (now - lastActivityUpdate >= ACTIVITY_THROTTLE_MS) {
+        lastActivityUpdate = now;
+        localStorage.setItem(LAST_ACTIVITY_KEY, String(now));
+      }
+    };
+
+    for (const event of ACTIVITY_EVENTS) {
+      window.addEventListener(event, handleActivity, { passive: true });
+    }
+
+    devLog('[Auth] Session timeout tracking started (24h inactivity)');
+
+    // ── Periodic timeout check ──
+    // Every 60 seconds, check if 24 hours have passed since last activity.
+    // If so, sign out the user automatically.
+    const checkSessionTimeout = () => {
+      const elapsed = Date.now() - lastActivity;
+      if (elapsed >= SESSION_TIMEOUT_MS) {
+        devLog('[Auth] Session expired after', Math.round(elapsed / 3600000), 'hours of inactivity — signing out');
+        captureInfo('Session timed out after inactivity', {
+          source: 'auth',
+          elapsedHours: Math.round(elapsed / 3600000),
+        });
+        localStorage.removeItem(LAST_ACTIVITY_KEY);
+        broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
+        supabase.auth.signOut().catch(() => {});
+        setUser(null);
+        setSession(null);
+        setSupabaseUser(null);
+      }
+    };
+
+    // ⚡ Check immediately on mount (user may have been away for 24+ hours)
+    checkSessionTimeout();
+
+    const intervalId = setInterval(checkSessionTimeout, SESSION_CHECK_INTERVAL_MS);
+
+    // Also check when page becomes visible (user returns after hours away)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        // Re-read from localStorage in case another tab updated it
+        const storedActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+        if (storedActivity) {
+          lastActivity = parseInt(storedActivity, 10);
+        }
+        checkSessionTimeout();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      for (const event of ACTIVITY_EVENTS) {
+        window.removeEventListener(event, handleActivity);
+      }
+    };
+  }, [user?.id, user?.role]);
+
   const signInWithOAuth = async (
     provider: 'google' | 'linkedin_oidc'
   ): Promise<{ success: boolean; error?: string }> => {
