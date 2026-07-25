@@ -7,7 +7,6 @@ export default function Head() {
       <link rel="icon" type="image/webp" sizes="32x32" href="/UpdatedLogo.webp?v=3" />
       <link rel="apple-touch-icon" sizes="180x180" href="/UpdatedLogo.png?v=2" />
       <link rel="shortcut icon" href="/UpdatedLogo.png?v=2" />
-      <link rel="preload" as="image" href="/UpdatedLogo.webp?v=3" fetchpriority="high" />
 
       {/* ── Theme ── */}
       <meta name="theme-color" content="#10b981" />
