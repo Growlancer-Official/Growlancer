@@ -135,9 +135,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // ═══ Exponential backoff for session initialization ═══
   // Starts with 1s delay, then 2s, then 4s = max ~7s total wait
+  // Timeout is 20s to accommodate retries + profile fetch + stale session recovery
+  // on slow connections without triggering the fallback timeout.
   const MAX_INIT_RETRIES = 3;
   const INIT_RETRY_BASE_MS = 1000;
-  const AUTH_TIMEOUT_MS = 12000;
+  const AUTH_TIMEOUT_MS = 20000;
 
   // ═══ Refs for cross-tab BroadcastChannel sync ═══
   // Component-level ref updated synchronously when user changes.
