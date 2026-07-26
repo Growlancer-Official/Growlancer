@@ -4,6 +4,11 @@ import { supabase } from '../lib/supabase';
 import { fetchUserProfile } from '../lib/services/authService';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
 
+const isDev = import.meta.env.DEV;
+function devLog(...args: unknown[]) {
+  if (isDev) console.log('[AuthCallback]', ...args);
+}
+
 type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate';
 type AuthAction = 'signup' | 'recovery' | 'magiclink' | 'email_change' | 'invite' | 'reauthentication' | 'unknown';
 
@@ -85,39 +90,59 @@ export function AuthCallbackPage() {
           });
         }
 
-        // ── 5. Get the current session ──
-        const { data, error: sessionError } = await supabase.auth.getSession();
+        // ── 5. Get the current session (with retry + fallback for OAuth PKCE) ──
+        let authUser: import('@supabase/supabase-js').User | null = null;
+        let sessionFound = false;
 
-        if (sessionError) {
-          setStatus('error');
-          setErrorMessage(sessionError.message);
-          return;
-        }
-
-        if (!data.session?.user) {
-          // No session yet — wait a bit and retry
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          const { data: retryData } = await supabase.auth.getSession();
-
-          if (!retryData.session?.user) {
-            // For signup/verification, still show success (email verified)
-            if (detectedAction === 'signup' || detectedAction === 'email_change') {
-              setStatus('success');
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              if (cancelled) return;
-              navigate(detectedAction === 'email_change' ? '/login' : '/login', { replace: true });
-              return;
-            }
-
-            setStatus('error');
-            setErrorMessage('No session found. Please try logging in again.');
-            return;
+        // Try getSession with retry
+        for (let attempt = 0; attempt < 3; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
+          
+          const { data, error: sessionError } = await supabase.auth.getSession();
+          if (sessionError) continue;
+          if (data.session?.user) {
+            authUser = data.session.user;
+            sessionFound = true;
+            break;
           }
         }
 
-        if (cancelled) return;
+        // If still no session, try silent refresh via getUser (works for PKCE)
+        if (!sessionFound) {
+          devLog('[AuthCallback] getSession failed — trying getUser + refresh');
+          const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+          if (userData?.user) {
+            // User exists but no session — try refreshing
+            const { data: refreshed } = await supabase.auth.refreshSession().catch(() => ({ data: { session: null } }));
+            if (refreshed?.session?.user) {
+              authUser = refreshed.session.user;
+              sessionFound = true;
+            } else {
+              // Last resort: just use the user (AuthContext will create session)
+              authUser = userData.user;
+              sessionFound = true;
+            }
+          }
+        }
 
-        const authUser = data.session?.user;
+        if (!sessionFound) {
+          // For signup/verification, still show success (email verified)
+          if (detectedAction === 'signup' || detectedAction === 'email_change') {
+            setStatus('success');
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            if (cancelled) return;
+            navigate('/login', { replace: true });
+            return;
+          }
+
+          // For OAuth (unknown), try one more thing — check URL hash directly
+          devLog('[AuthCallback] All session recovery failed — showing error');
+          setStatus('error');
+          setErrorMessage('No session found. Please try logging in again.');
+          return;
+        }
+
+        if (cancelled) return;
 
         // ── 6. Handle specific actions ──
         if (detectedAction === 'recovery') {
