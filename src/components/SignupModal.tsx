@@ -138,10 +138,13 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     const result = await signup(normalizedEmail, password, normalizedName, role, referralCode.trim() || undefined);
 
     if (result.success) {
-      // 🚫 Email confirmation required — show success message inside modal
-      setSuccessMessage(result.message || 'Account created! Please check your email to confirm your account.');
-      setError(null);
+      // ✅ Account created + auto-login — navigate to dashboard
+      onClose();
       setIsLoading(false);
+      const dashboardPath = role === 'client' ? '/client' : '/dashboard';
+      setTimeout(() => {
+        navigate(dashboardPath, { replace: true });
+      }, 100);
       return;
     } else {
       setError(result.error || 'Signup failed');

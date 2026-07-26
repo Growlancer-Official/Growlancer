@@ -1050,11 +1050,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // 🚫 Don't auto-login — user must confirm email first via Brevo SMTP
-        // Supabase Auth sends confirmation email via the configured SMTP.
-        devLog('[Auth] Signup successful — email confirmation sent via SMTP to:', email);
+        // ✅ Auto-login immediately — auto-confirm trigger confirms email on signup
+        // The trigger on_auth_user_created sets email_confirmed_at = NOW() right after
+        // the user is inserted into auth.users, so signInWithPassword should work.
+        devLog('[Auth] Trying auto-login after signup for:', email);
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
-        // 📧 Send professional welcome email via Brevo in real-time
+        if (loginData?.user && !loginError) {
+          setSession(loginData.session);
+          setSupabaseUser(loginData.user);
+          if (created) setUser(created);
+          devLog('[Auth] Auto-login succeeded after signup');
+        } else {
+          devLog('[Auth] Auto-login failed after signup (user can log in manually):', loginError?.message);
+        }
+
+        // 📧 Send professional welcome email via Brevo in real-time (fire-and-forget)
         if (created) {
           devLog('[Auth] Sending welcome email via Brevo...');
           supabase.functions.invoke('admin-data', {
@@ -1073,9 +1084,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         setIsLoading(false);
-        return { 
-          success: true, 
-          message: 'Account created! Please check your email inbox (and spam folder) to confirm your email address before logging in. A welcome email has also been sent to you.' 
+        return {
+          success: true,
+          message: loginData?.user
+            ? 'Account created successfully! Welcome to Growlancer.'
+            : 'Account created! You can now log in with your email and password.'
         };
       }
 
