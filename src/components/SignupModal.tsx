@@ -10,7 +10,6 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
-  CheckCircle2,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
@@ -47,7 +46,6 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -133,7 +131,6 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
 
     setIsLoading(true);
     setError(null);
-    setSuccessMessage(null);
 
     const result = await signup(normalizedEmail, password, normalizedName, role, referralCode.trim() || undefined);
 
@@ -262,14 +259,6 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <p className="text-xs text-red-600">{error}</p>
-          </div>
-        )}
-
-        {/* Success Display */}
-        {successMessage && (
-          <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-            <p className="text-xs text-emerald-600">{successMessage}</p>
           </div>
         )}
 
