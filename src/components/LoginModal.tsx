@@ -104,21 +104,43 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
       <div className="relative animate-fade-in-content">
         <p className="text-slate-500 mb-5 text-sm">Log in to your dashboard to manage your projects.</p>
 
-        {/* Account Already Exists Alert */}
-        {existingUser && (
-          <div className="mb-5 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-bold text-amber-800 mb-1">Account already exists on this device</p>
-                <p className="text-xs text-amber-700">
-                  You are already logged in. Please log out first if you want to use a different account.
-                </p>
-              </div>
+        {/* Account Already Exists Alert - Full Blocking View */}
+        {existingUser ? (
+          <div className="mb-5 p-6 bg-amber-50 border-2 border-amber-300 rounded-xl text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 mb-4">
+              <AlertCircle className="w-7 h-7 text-amber-600" />
+            </div>
+            <h3 className="text-base font-bold text-amber-900 mb-2">Already Logged In</h3>
+            <p className="text-sm text-amber-700 mb-5 leading-relaxed">
+              You are already logged in on this device. To use a different account, please log out first.
+            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  navigate('/dashboard');
+                }}
+                className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+              >
+                <ArrowRight className="w-4 h-4" />
+                Go to Dashboard
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  onClose();
+                  await supabase.auth.signOut();
+                  window.location.href = '/';
+                }}
+                className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-700 font-semibold hover:bg-red-100 transition-all"
+              >
+                Log Out &amp; Use Different Account
+              </button>
             </div>
           </div>
-        )}
-
+        ) : (
+        <>
         {/* Social Auth — Google & LinkedIn */}
         <div className="mb-5 space-y-3">
           <button
@@ -274,8 +296,11 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             )}
           </button>
         </form>
+        </>
+        )}
 
         {/* Signup Redirect */}
+        {!existingUser && (
         <div className="mt-5 text-center">
           <p className="text-slate-600 text-sm">
             Don't have an account?{' '}
@@ -287,6 +312,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             </button>
           </p>
         </div>
+        )}
       </div>
     </Modal>
   );
