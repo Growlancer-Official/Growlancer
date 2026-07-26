@@ -138,9 +138,10 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     const result = await signup(normalizedEmail, password, normalizedName, role, referralCode.trim() || undefined);
 
     if (result.success) {
-      // ✅ Email is auto-confirmed by DB trigger — navigate user to dashboard
-      onClose();
-      navigate(role === 'client' ? '/client' : '/dashboard');
+      // 🚫 Email confirmation required — show success message inside modal
+      setSuccessMessage(result.message || 'Account created! Please check your email to confirm your account.');
+      setError(null);
+      setIsLoading(false);
       return;
     } else {
       setError(result.error || 'Signup failed');

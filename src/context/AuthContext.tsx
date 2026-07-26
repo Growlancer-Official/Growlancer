@@ -1050,26 +1050,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // ✅ Auto-login — email is auto-confirmed by database trigger
-        // The on_auth_user_created trigger sets email_confirmed_at = NOW()
-        // so the user can sign in immediately without waiting for an email.
-        devLog('[Auth] Signup successful — auto-logging in (auto-confirm trigger active)');
-
-        // Try auto-login
-        const { data: loginData } = await supabase.auth.signInWithPassword({ email, password });
-        
-        if (loginData?.user) {
-          setSession(loginData.session);
-          setSupabaseUser(loginData.user);
-          
-          if (created) {
-            setUser(created);
-          }
-          
-          devLog('[Auth] Auto-login succeeded after signup');
-        } else {
-          devLog('[Auth] Auto-login failed after signup — user can log in manually');
-        }
+        // 🚫 Don't auto-login — user must confirm email first via Brevo SMTP
+        // Supabase Auth sends confirmation email via the configured SMTP.
+        devLog('[Auth] Signup successful — email confirmation sent via SMTP to:', email);
 
         // 📧 Send professional welcome email via Brevo in real-time
         if (created) {
@@ -1092,7 +1075,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
         return { 
           success: true, 
-          message: 'Account created successfully! Welcome to Growlancer.' 
+          message: 'Account created! Please check your email inbox (and spam folder) to confirm your email address before logging in. A welcome email has also been sent to you.' 
         };
       }
 
