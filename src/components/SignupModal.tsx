@@ -138,10 +138,10 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     const result = await signup(normalizedEmail, password, normalizedName, role, referralCode.trim() || undefined);
 
     if (result.success) {
-      onClose();
-
-      // Role-based redirect: freelancer → /dashboard, client → /client
-      navigate(role === 'client' ? '/client' : '/dashboard');
+      // 🚫 Don't close modal or navigate — user must confirm email first
+      // Show success message inside the modal instead
+      setSuccessMessage(result.message || 'Account created! Please check your email to confirm.');
+      setError(null);
     } else {
       setError(result.error || 'Signup failed');
     }

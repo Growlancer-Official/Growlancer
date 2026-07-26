@@ -865,9 +865,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
         }
 
-        devWarn('[Auth] Profile still missing after recovery attempt; retrying once with a fresh profile lookup');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        profile = await ensureUserProfile(data.user, 'freelancer', true);
+        devWarn('[Auth] Profile still missing after recovery attempt; trying direct insert as last resort');
+        // 🌟 Final fallback: try direct insert into profiles table
+        try {
+          const meta = data.user?.user_metadata || {};
+          const savedRole = (meta.role === 'freelancer' || meta.role === 'client') ? meta.role : 'freelancer';
+          const savedName = (typeof meta.name === 'string' && meta.name.trim()) || data.user.email?.split('@')[0] || 'User';
+          const refCode = createReferralCode('FR');
+          
+          const { error: insertError } = await supabase.from('profiles').upsert({
+            id: data.user.id,
+            email: normalizedEmail,
+            name: savedName,
+            role: savedRole,
+            referral_code: refCode,
+            is_pro: false,
+            onboarding_completed: false,
+            created_at: new Date().toISOString(),
+          }, { onConflict: 'id', ignoreDuplicates: false });
+          
+          if (!insertError) {
+            devLog('[Auth] Profile recovered via direct insert for:', normalizedEmail);
+            const freshProfile = await fetchUserProfile(data.user.id);
+            if (freshProfile) {
+              profile = freshProfile;
+            }
+          }
+        } catch (directErr) {
+          devWarn('[Auth] Direct profile insert failed:', directErr);
+        }
 
         if (profile) {
           setUser(profile);
@@ -882,7 +908,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
         }
 
-        devWarn('[Auth] Profile not found after recovery attempts; keeping session intact for manual support');
+        devWarn('[Auth] Profile not found after all recovery attempts; keeping session intact for manual support');
         setUser(null);
         setSession(null);
         setSupabaseUser(null);
@@ -1024,18 +1050,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // Auto sign-in — bypass email confirmation (temporary fix until email service is set up)
-        await supabase.auth.signInWithPassword({ email, password });
-
-        // Re-fetch session and sync
-        const { data: freshSession } = await supabase.auth.getSession();
-        if (freshSession?.session?.user) {
-          setSession(freshSession.session);
-          setSupabaseUser(freshSession.session.user);
-          await syncAuthUser(freshSession.session.user, role);
-          // 📡 Broadcast cross-tab auth sync
-          broadcastAuthMessage({ type: 'AUTH_SIGNED_IN', userId: freshSession.session.user.id });
-        }
+        // 🚫 Don't auto-login — user needs to confirm email first
+        // Supabase sends confirmation email via Brevo SMTP
+        devLog('[Auth] Signup successful — email confirmation sent to:', email);
 
         // 📧 Send professional welcome email via Brevo in real-time
         if (created) {
@@ -1058,7 +1075,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
         return { 
           success: true, 
-          message: 'Account created successfully! Check your inbox for a welcome email from us.' 
+          message: 'Account created! Please check your email inbox (and spam folder) to confirm your email address before logging in.' 
         };
       }
 
