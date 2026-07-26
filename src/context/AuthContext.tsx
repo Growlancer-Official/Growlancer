@@ -950,6 +950,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             
             if (created) {
               setUser(created);
+              // 📧 Send professional welcome email via Brevo
+              supabase.functions.invoke('admin-data', {
+                method: 'POST',
+                body: {
+                  action: 'send_welcome_email',
+                  recipient_email: email,
+                  recipient_name: name,
+                },
+              }).catch(() => {});
               setIsLoading(false);
               return { 
                 success: true, 
@@ -1028,10 +1037,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           broadcastAuthMessage({ type: 'AUTH_SIGNED_IN', userId: freshSession.session.user.id });
         }
 
+        // 📧 Send professional welcome email via Brevo in real-time
+        if (created) {
+          devLog('[Auth] Sending welcome email via Brevo...');
+          supabase.functions.invoke('admin-data', {
+            method: 'POST',
+            body: {
+              action: 'send_welcome_email',
+              recipient_email: email,
+              recipient_name: name,
+            },
+          }).then(({ error }) => {
+            if (error) devWarn('[Auth] Welcome email failed:', error);
+            else devLog('[Auth] Welcome email sent to:', email);
+          }).catch((err: unknown) => {
+            devWarn('[Auth] Welcome email send error:', err);
+          });
+        }
+
         setIsLoading(false);
         return { 
           success: true, 
-          message: 'Account created successfully! Welcome to Growlancer.' 
+          message: 'Account created successfully! Check your inbox for a welcome email from us.' 
         };
       }
 
