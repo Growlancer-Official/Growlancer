@@ -159,24 +159,40 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
   return `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"></head>
-<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 20px 8px; margin: 0;">
-  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 20px 12px;" align="center"><![endif]-->
-  <div style="max-width: 640px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 14px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: #f1f5f9; padding: 24px 12px; margin: 0; -webkit-font-smoothing: antialiased;">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 24px 16px;" align="center"><![endif]-->
+  <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);">
+    <!-- Logo Bar -->
+    <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
+      <img src="https://growlancer.vercel.app/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 40px; width: auto;" />
+    </div>
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 24px 20px; text-align: center;">
-      <h1 style="color: white; font-size: 18px; font-weight: 700; margin: 0; word-break: break-word; word-wrap: break-word;">${title}</h1>
+    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
+      <h1 style="color: #ffffff; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.3px;">${title}</h1>
     </div>
     <!-- Body -->
-    <div style="padding: 24px 20px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+    <div style="padding: 28px 24px; line-height: 1.6;">
       ${bodyHtml}
     </div>
     <!-- Footer -->
-    <div style="padding: 16px 20px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
-      <p style="color: #94a3b8; font-size: 11px; margin: 0 0 4px; word-break: break-word;">Growlancer — AI-Powered Freelancing Marketplace</p>
-      <p style="color: #94a3b8; font-size: 11px; margin: 0; word-break: break-word;">
-        <a href="${APP_URL}" style="color: #059669; text-decoration: none;">${APP_URL}</a>
-      </p>
+    <div style="padding: 20px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; text-align: center;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
+        <tr>
+          <td style="padding-bottom: 12px;">
+            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
+            <span style="color: #cbd5e1; font-size: 12px;">|</span>
+            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
+            <span style="color: #cbd5e1; font-size: 12px;">|</span>
+            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlancer — AI-Powered Freelancing Marketplace</p>
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
   <!--[if mso]></td></tr></table><![endif]-->

@@ -19,27 +19,28 @@ function escapeHtml(text: string): string {
 }
 
 function baseEmailHtml(body: string): string {
+  const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
   return `
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8fafc;margin:0;padding:24px">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-    <tr><td align="center">
-      <table role="presentation" style="max-width:560px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08)">
-        <tr><td style="padding:32px 32px 16px;text-align:center;background:linear-gradient(135deg,#059669,#047857)">
-          <img src="https://zttwsjehcgaicziqyxpq.supabase.co/storage/v1/object/public/avatars/growlancer-logo.png" alt="Growlancer" style="height:40px;margin-bottom:8px" />
-          <h1 style="color:#fff;font-size:20px;margin:0">Growlancer</h1>
-        </td></tr>
-        <tr><td style="padding:32px;color:#334155;font-size:14px;line-height:1.6">
-          ${body}
-        </td></tr>
-        <tr><td style="padding:24px 32px;background:#f1f5f9;text-align:center;font-size:12px;color:#94a3b8">
-          Growlancer &mdash; India's Freelance Marketplace<br>
-          Need help? Contact support@growlancer.com
-        </td></tr>
-      </table>
-    </td></tr>
-  </table>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f1f5f9;margin:0;padding:24px 12px;-webkit-font-smoothing:antialiased">
+  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 24px 16px;" align="center"><![endif]-->
+  <div style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.06)">
+    <div style="background:#ffffff;padding:20px 24px 0;text-align:center">
+      <img src="https://growlancer.vercel.app/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height:40px;width:auto" />
+    </div>
+    <div style="background:linear-gradient(135deg,#059669,#047857);margin:12px 12px 0;border-radius:12px;padding:28px 24px;text-align:center">
+      <h1 style="color:#ffffff;font-size:20px;font-weight:800;margin:0;letter-spacing:-0.3px">Subscription Update</h1>
+    </div>
+    <div style="padding:28px 24px;color:#334155;font-size:14px;line-height:1.6">
+      ${body}
+    </div>
+    <div style="padding:20px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">
+      <p style="color:#94a3b8;font-size:11px;margin:0 0 4px">Growlancer — AI-Powered Freelancing Marketplace</p>
+      <p style="margin:0"><a href="${APP_URL}" style="color:#059669;font-size:11px;text-decoration:none">${APP_URL}</a></p>
+    </div>
+  </div>
+  <!--[if mso]></td></tr></table><![endif]-->
 </body></html>`;
 }
 
