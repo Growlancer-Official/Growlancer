@@ -10,6 +10,7 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
+  CheckCircle2,
 } from 'lucide-react';
 
 import { supabase } from '../lib/supabase';
