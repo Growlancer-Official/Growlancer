@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, startTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { fetchUserProfile } from '../lib/services/authService';
@@ -7,6 +7,13 @@ import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react
 const isDev = import.meta.env.DEV;
 function devLog(...args: unknown[]) {
   if (isDev) console.log('[AuthCallback]', ...args);
+}
+
+/** Safe navigation wrapper — prevents React state-update-on-unmounted errors */
+function safeNavigate(navFn: () => void) {
+  startTransition(() => {
+    setTimeout(navFn, 50);
+  });
 }
 
 type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate';
@@ -131,7 +138,7 @@ export function AuthCallbackPage() {
             setStatus('success');
             await new Promise(resolve => setTimeout(resolve, 1500));
             if (cancelled) return;
-            navigate('/login', { replace: true });
+            safeNavigate(() => navigate('/login', { replace: true }));
             return;
           }
 
@@ -150,7 +157,7 @@ export function AuthCallbackPage() {
           setStatus('success');
           await new Promise(resolve => setTimeout(resolve, 1000));
           if (cancelled) return;
-          navigate('/auth/reset-password', { replace: true });
+          safeNavigate(() => navigate('/auth/reset-password', { replace: true }));
           return;
         }
 
@@ -158,7 +165,7 @@ export function AuthCallbackPage() {
           setStatus('success');
           await new Promise(resolve => setTimeout(resolve, 1000));
           if (cancelled) return;
-          navigate('/login', { replace: true });
+          safeNavigate(() => navigate('/login', { replace: true }));
           return;
         }
 
@@ -167,7 +174,7 @@ export function AuthCallbackPage() {
           setStatus('success');
           await new Promise(resolve => setTimeout(resolve, 1000));
           if (cancelled) return;
-          navigate('/onboarding', { replace: true });
+          safeNavigate(() => navigate('/onboarding', { replace: true }));
           return;
         }
 
@@ -196,7 +203,7 @@ export function AuthCallbackPage() {
         }
 
         if (profile && !profile.onboardingCompleted) {
-          navigate('/onboarding?mode=oauth', { replace: true });
+          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
         } else if (profile) {
           const dashboardRoute =
             profile.role === 'client'
@@ -204,9 +211,9 @@ export function AuthCallbackPage() {
               : profile.role === 'admin'
                 ? '/admin'
                 : '/dashboard';
-          navigate(dashboardRoute, { replace: true });
+          safeNavigate(() => navigate(dashboardRoute, { replace: true }));
         } else {
-          navigate('/onboarding?mode=oauth', { replace: true });
+          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
         }
       } catch (err) {
         if (!cancelled) {
@@ -255,15 +262,15 @@ export function AuthCallbackPage() {
         // Now determine redirect based on profile
         const profile = await fetchUserProfile(userId);
         if (profile && !profile.onboardingCompleted) {
-          navigate('/onboarding?mode=oauth', { replace: true });
+          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
         } else if (profile) {
           const dashboardRoute =
             profile.role === 'client' ? '/client' :
             profile.role === 'admin' ? '/admin' :
             '/dashboard';
-          navigate(dashboardRoute, { replace: true });
+          safeNavigate(() => navigate(dashboardRoute, { replace: true }));
         } else {
-          navigate('/onboarding?mode=oauth', { replace: true });
+          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
         }
       } else {
         // Non-India country — insert into waitlist, redirect to /waitlist
@@ -275,7 +282,7 @@ export function AuthCallbackPage() {
           p_user_id: userId,
         });
 
-        navigate('/waitlist', { replace: true });
+        safeNavigate(() => navigate('/waitlist', { replace: true }));
       }
     } catch (err) {
       setCountryGateError(
@@ -437,7 +444,7 @@ export function AuthCallbackPage() {
                 {errorMessage || 'Something went wrong. Please try again.'}
               </p>
               <button
-                onClick={() => navigate('/?modal=login', { replace: true })}
+                onClick={() => safeNavigate(() => navigate('/?modal=login', { replace: true }))}
                 className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
               >
                 Back to Login
