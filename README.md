@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./assets/updated-banner.png" alt="Growlancer Banner" width="100%"/>
+<img src="./assets/updated banner.png" alt="Growlancer Banner" width="100%"/>
 
 # 🚀 Growlancer
 
