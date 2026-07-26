@@ -131,7 +131,7 @@ https://growlancer.vercel.app
 
 # 👨‍💻 Founder
 
-**Miran Khan**
+**Mohammad Miran Khan**
 
 Founder & CEO — Growlancer
 
