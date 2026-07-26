@@ -672,96 +672,87 @@ function buildSelectedEmailHtml(
 ): string {
   const escapedName = escapeHtml(name);
   const escapedRole = escapeHtml(roleName);
-  const rawName = name;  // for URL/calendar encoding
+  const rawName = name;
   const rawRole = roleName;
   const hasAnyDoc = offerLetterUrl || ndaUrl || internshipLetterUrl;
-  const allDocsReady = offerLetterUrl && ndaUrl && internshipLetterUrl;
+
+  // Build document rows - each doc gets a full-width card with icon, label, desc, and action button
+  const docCards = [
+    { label: 'Offer Letter', icon: '📜', url: offerLetterUrl, desc: 'Formal offer of internship position' },
+    { label: 'Non-Disclosure Agreement (NDA)', icon: '🔒', url: ndaUrl, desc: 'Confidentiality agreement for proprietary information' },
+    { label: 'Internship Letter', icon: '🎓', url: internshipLetterUrl, desc: 'Official confirmation of internship terms' },
+  ].map((doc) => `
+    <tr>
+      <td style="padding: 16px 20px; background: ${doc.url ? '#f0fdf4' : '#f8fafc'}; border: 1px solid ${doc.url ? '#86efac' : '#e2e8f0'}; border-radius: 12px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="52" style="text-align: center; font-size: 32px; line-height: 1; vertical-align: middle;" valign="middle">${doc.icon}</td>
+            <td style="padding: 0 12px; vertical-align: middle;" valign="middle">
+              <p style="font-size: 15px; color: #0f172a; font-weight: 700; margin: 0 0 2px; line-height: 1.3;">${doc.label}</p>
+              <p style="font-size: 12px; color: #64748b; margin: 0; line-height: 1.4;">${doc.desc}</p>
+            </td>
+            <td width="140" style="text-align: right; vertical-align: middle;" valign="middle">
+              ${doc.url
+                ? `<a href="${doc.url}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 10px 16px; background: #059669; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700; white-space: nowrap;">📥 Download PDF</a>`
+                : `<span style="display: inline-block; padding: 10px 16px; background: #e2e8f0; color: #94a3b8; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap;">⏳ Awaiting</span>`
+              }
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr><td style="height: 10px; font-size: 0; line-height: 0;">&nbsp;</td></tr>`).join('')};
 
   const docSection = hasAnyDoc ? `
-    <!-- ═══════════════════════════════════════════════════════════════ -->
-    <!--  DOCUMENTS SECTION — Download Cards with Sign & Return CTA   -->
-    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- ─── DOCUMENTS SECTION ────────────────────────────────────────── -->
     <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 24px 28px; text-align: center;">
-        <div style="font-size: 36px; margin-bottom: 6px;">📄</div>
-        <h2 style="font-size: 20px; color: white; margin: 0; font-weight: 700;">Your Internship Documents</h2>
+      <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 20px; text-align: center;">
+        <h2 style="font-size: 18px; color: #ffffff; margin: 0; font-weight: 700;">📄 Your Internship Documents</h2>
         <p style="font-size: 13px; color: #a7f3d0; margin: 6px 0 0;">Please download, sign, and return all documents below</p>
       </div>
-      <div style="padding: 24px 28px;">
-        <!-- ⚠️ SIGN & RETURN BANNER - HIGHLY VISIBLE -->
-        <div style="margin-bottom: 24px; padding: 18px 20px; background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; text-align: center;">
-          <div style="font-size: 28px; margin-bottom: 8px;">✍️</div>
-          <h3 style="font-size: 17px; color: #92400e; margin: 0 0 6px; font-weight: 700;">⚠️ ACTION REQUIRED — SIGN & RETURN</h3>
-          <p style="font-size: 14px; color: #92400e; margin: 0 0 12px; line-height: 1.5;">
-            Please download each document, <strong>electronically sign or print & sign</strong> all pages, then email the signed copies back to us.
+      <div style="padding: 20px;">
+        <!-- ⚠️ ACTION REQUIRED BANNER -->
+        <div style="margin: 0 0 20px; padding: 16px 18px; background: #fffbeb; border: 2px solid #f59e0b; border-radius: 12px; text-align: center;">
+          <p style="font-size: 16px; color: #92400e; margin: 0 0 8px; font-weight: 700;">✍️ ACTION REQUIRED — SIGN &amp; RETURN</p>
+          <p style="font-size: 13px; color: #92400e; margin: 0 0 12px; line-height: 1.5;">
+            Download each document below, <strong>electronically sign or print &amp; sign</strong> all pages, then email the signed copies back to:
           </p>
-          <table style="margin: 0 auto; border-collapse: collapse;" cellpadding="0" cellspacing="0" width="100%">
+          <table style="margin: 0 auto;" cellpadding="0" cellspacing="0">
             <tr>
-              <td style="background: #059669; border-radius: 10px; padding: 0;">
+              <td style="background: #059669; border-radius: 8px; padding: 0;">
                 <a href="mailto:${ADMIN_EMAIL}?subject=Signed%20Documents%20-%20${encodeURIComponent(rawName)}&body=Dear%20Growlancer%20Team%2C%0D%0A%0D%0APlease%20find%20attached%20my%20signed%20documents%20for%20the%20${encodeURIComponent(rawRole)}%20position.%0D%0A%0D%0AThanks%2C%0D%0A${encodeURIComponent(rawName)}"
-                   style="display: block; padding: 12px 20px; color: white; text-decoration: none; font-size: 14px; font-weight: 700; word-break: break-word;">
-                  📧 EMAIL SIGNED COPIES →
-                </a>
+                   style="display: block; padding: 10px 20px; color: #ffffff; text-decoration: none; font-size: 13px; font-weight: 700;">📧 Email Signed Copies →</a>
               </td>
             </tr>
           </table>
-          <p style="font-size: 12px; color: #b45309; margin: 12px 0 0;">
-            Send to: <strong><a href="mailto:${ADMIN_EMAIL}" style="color: #059669; text-decoration: none;">${ADMIN_EMAIL}</a></strong>
-          </p>
+          <p style="font-size: 11px; color: #b45309; margin: 10px 0 0;">Send to: <strong>${ADMIN_EMAIL}</strong></p>
         </div>
 
-        <!-- Document Cards -->
-        ${[
-          { label: 'Offer Letter', icon: '📜', url: offerLetterUrl, desc: 'Formal offer of internship position' },
-          { label: 'Non-Disclosure Agreement (NDA)', icon: '🔒', url: ndaUrl, desc: 'Confidentiality agreement for proprietary information' },
-          { label: 'Internship Letter', icon: '🎓', url: internshipLetterUrl, desc: 'Official confirmation of internship terms' },
-        ].map((doc, i) => `
-        <div style="margin-bottom: ${i < 2 ? '16px' : '0'}; padding: 18px 20px; background: ${doc.url ? '#f0fdf4' : '#f8fafc'}; border: ${doc.url ? '1px solid #86efac' : '1px solid #e2e8f0'}; border-radius: 12px;">
-          <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-              <td style="width: 48px; vertical-align: middle; text-align: center; font-size: 28px;">${doc.icon}</td>
-              <td style="padding: 0 16px; vertical-align: middle;">
-                <p style="font-size: 15px; color: #0f172a; font-weight: 700; margin: 0 0 2px;">${doc.label}</p>
-                <p style="font-size: 12px; color: #64748b; margin: 0;">${doc.desc}</p>
-              </td>
-              <td style="vertical-align: middle; text-align: right; width: auto; min-width: 90px;">
-                ${doc.url ? `
-                <a href="${doc.url}"
-                   style="display: block; padding: 10px 14px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 13px; word-break: break-word; text-align: center;">
-                  📥 Download PDF
-                </a>` : `
-                <span style="display: block; padding: 10px 14px; background: #e2e8f0; color: #94a3b8; border-radius: 10px; font-size: 12px; font-weight: 600; text-align: center;">
-                  ⏳ Awaiting
-                </span>`}
-              </td>
-            </tr>
-          </table>
-        </div>`).join('')}
+        <!-- Document Cards as Table Rows -->
+        <table width="100%" cellpadding="0" cellspacing="0">
+          ${docCards}
+        </table>
 
-        ${allDocsReady ? `
-        <div style="margin-top: 20px; padding: 16px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 12px; text-align: center;">
-          <p style="font-size: 14px; color: #166534; margin: 0; font-weight: 600;">
-            ✅ All 3 documents ready! Download each, sign, and email back to complete your onboarding.
-          </p>
-        </div>` : `
-        <div style="margin-top: 20px; padding: 14px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 10px; text-align: center;">
-          <p style="font-size: 13px; color: #92400e; margin: 0;">
-            ⏳ Some documents are still pending. You will receive a separate notification when they are ready.
-          </p>
-        </div>`}
+        <!-- Status Summary -->
+        ${offerLetterUrl && ndaUrl && internshipLetterUrl
+          ? `<div style="padding: 14px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; text-align: center;">
+              <p style="font-size: 14px; color: #166534; margin: 0; font-weight: 600;">✅ All 3 documents ready! Download each, sign, and email back.</p>
+            </div>`
+          : `<div style="padding: 12px; background: #fffbeb; border: 1px solid #fbbf24; border-radius: 10px; text-align: center;">
+              <p style="font-size: 13px; color: #92400e; margin: 0;">⏳ Some documents pending. You will receive notification when ready.</p>
+            </div>`
+        }
       </div>
     </div>`
-    : ''
-
-  const docFallback = !hasAnyDoc ? `
-    <!-- DOCUMENTS PENDING BANNER -->
+    : `
+    <!-- ─── DOCUMENTS PENDING ────────────────────────────────────────── -->
     <div style="margin: 28px 0; padding: 24px; background: #fffbeb; border: 2px solid #fbbf24; border-radius: 16px; text-align: center;">
-      <div style="font-size: 36px; margin-bottom: 8px;">⏳</div>
+      <p style="font-size: 32px; margin: 0 0 8px;">⏳</p>
       <h3 style="font-size: 18px; color: #92400e; margin: 0 0 8px; font-weight: 700;">Documents Coming Soon</h3>
       <p style="font-size: 14px; color: #92400e; margin: 0; line-height: 1.5;">
         Your offer letter, NDA, and internship letter are being prepared. You will receive them via email shortly.
       </p>
-    </div>` : ''
+    </div>`
 
   const body = `
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7;">Dear ${escapedName},</p>
@@ -775,14 +766,14 @@ function buildSelectedEmailHtml(
     <!-- CONGRATULATIONS BANNER -->
     <div style="margin: 28px 0; padding: 0; background: #ffffff; border: 2px solid #059669; border-radius: 16px; overflow: hidden;">
       <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
-        <div style="font-size: 48px; margin-bottom: 12px;">🎉</div>
+        <p style="font-size: 48px; margin: 0 0 12px; line-height: 1;">🎉</p>
         <h2 style="font-size: 26px; color: white; margin: 0 0 10px; font-weight: 800;">Congratulations!</h2>
         <p style="font-size: 15px; color: #a7f3d0; margin: 0; line-height: 1.6; max-width: 400px; margin-left: auto; margin-right: auto;">
           We were truly impressed by your skills, enthusiasm, and potential. We believe you will be a valuable addition to our team!
         </p>
       </div>
       <div style="padding: 24px 28px;">
-        <table style="width: 100%; border-collapse: collapse;" cellpadding="0" cellspacing="0">
+        <table width="100%" cellpadding="0" cellspacing="0">
           <tr>
             <td style="padding: 10px 12px; width: 110px; font-size: 13px; color: #64748b; font-weight: 600;">Position</td>
             <td style="padding: 10px 0; font-size: 15px; color: #0f172a; font-weight: 700;">${escapedRole}</td>
@@ -799,7 +790,7 @@ function buildSelectedEmailHtml(
       </div>
     </div>
 
-    ${docSection || docFallback}
+    ${docSection}
 
     <!-- 📋 NEXT STEPS -->
     <div style="margin: 28px 0; padding: 24px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px;">
