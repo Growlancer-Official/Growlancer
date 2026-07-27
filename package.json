@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node -e \"require('fs').existsSync('dist/404.html')&&require('fs').unlinkSync('dist/404.html')\"",
+    "build": "vite build",
     "build:check": "tsc && vite build",
     "preview": "vite preview",
     "start": "node server.js",
