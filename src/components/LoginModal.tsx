@@ -8,6 +8,7 @@ import {
   ArrowRight,
   Loader2,
   AlertCircle,
+  X,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
@@ -32,6 +33,7 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
   const [existingUser, setExistingUser] = useState(false);
 
   // Check if there's already a session on this device
+  // NOTE: This no longer blocks the form — just shows a dismissible banner
   useEffect(() => {
     async function checkSession() {
       const { data } = await supabase.auth.getSession();
@@ -104,43 +106,61 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
       <div className="relative animate-fade-in-content">
         <p className="text-slate-500 mb-5 text-sm">Log in to your dashboard to manage your projects.</p>
 
-        {/* Account Already Exists Alert - Full Blocking View */}
-        {existingUser ? (
-          <div className="mb-5 p-6 bg-amber-50 border-2 border-amber-300 rounded-xl text-center">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-amber-100 mb-4">
-              <AlertCircle className="w-7 h-7 text-amber-600" />
+        {/* ⚠️ Existing Session Banner — Dismissible, NOT blocking */}
+        {existingUser && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-amber-800">Already logged in</p>
+                <p className="text-[11px] text-amber-600 leading-relaxed">
+                  You can still log in with a different account below.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => { onClose(); navigate('/dashboard'); }}
+                  className="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline px-2 py-1"
+                >
+                  Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    onClose();
+                    await supabase.auth.signOut();
+                    window.location.href = '/';
+                  }}
+                  className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline px-2 py-1"
+                >
+                  Logout
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setExistingUser(false)}
+                  className="p-1 rounded-lg hover:bg-amber-100 transition-colors"
+                  aria-label="Dismiss"
+                >
+                  <X className="w-3.5 h-3.5 text-amber-500" />
+                </button>
+              </div>
             </div>
-            <h3 className="text-base font-bold text-amber-900 mb-2">Already Logged In</h3>
-            <p className="text-sm text-amber-700 mb-5 leading-relaxed">
-              You are already logged in on this device. To use a different account, please log out first.
-            </p>
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  navigate('/dashboard');
-                }}
-                className="w-full h-11 flex items-center justify-center gap-2 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
-              >
-                <ArrowRight className="w-4 h-4" />
-                Go to Dashboard
-              </button>
+            <div className="mt-2 pt-2 border-t border-amber-200/50">
               <button
                 type="button"
                 onClick={async () => {
-                  onClose();
                   await supabase.auth.signOut();
-                  window.location.href = '/';
+                  setExistingUser(false);
                 }}
-                className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border-2 border-red-200 bg-red-50 text-red-700 font-semibold hover:bg-red-100 transition-all"
+                className="w-full py-2 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
               >
-                Log Out &amp; Use Different Account
+                ← Log out &amp; use a different account
               </button>
             </div>
           </div>
-        ) : (
-        <>
+        )}
+
         {/* Social Auth — Google & LinkedIn */}
         <div className="mb-5 space-y-3">
           <button
@@ -296,11 +316,8 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             )}
           </button>
         </form>
-        </>
-        )}
 
         {/* Signup Redirect */}
-        {!existingUser && (
         <div className="mt-5 text-center">
           <p className="text-slate-600 text-sm">
             Don't have an account?{' '}
@@ -312,7 +329,6 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             </button>
           </p>
         </div>
-        )}
       </div>
     </Modal>
   );
