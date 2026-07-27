@@ -57,14 +57,6 @@ function vercelOutputWorkaroundPlugin(): Plugin {
       }
       console.log('[vercel-output] Copying dist/client/ → dist/...');
       copyRecursiveSync(src, dest);
-      // Vercel treats a 404.html in the output directory as the SPA fallback,
-      // which OVERRIDES any catch-all rewrite to /index.html. Deleting it
-      // ensures unmatched routes fall through to the rewrite rules.
-      const fallback404 = path.join(dest, '404.html');
-      if (fs.existsSync(fallback404)) {
-        fs.unlinkSync(fallback404);
-        console.log('[vercel-output] Removed 404.html — prevents Vercel SPA fallback override');
-      }
       console.log('[vercel-output] Done — dist/ now mirrors dist/client/');
     },
   };
