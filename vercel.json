@@ -2,6 +2,7 @@
   "version": 2,
   "framework": "vite",
   "buildCommand": "npm run build",
+  "installCommand": "npm install",
   "outputDirectory": "dist",
   "rewrites": [
     {
