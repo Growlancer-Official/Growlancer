@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node scripts/build.mjs",
     "build:check": "tsc && vite build",
     "preview": "vite preview",
     "start": "node server.js",
