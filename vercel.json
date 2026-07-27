@@ -1,9 +1,9 @@
 {
   "version": 2,
+  "framework": "vite",
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/client",
+  "outputDirectory": "dist",
   "installCommand": "npm ci --legacy-peer-deps --prefer-offline --no-audit --no-fund",
-  "cleanUrls": true,
   "rewrites": [
     {
       "source": "/(.*)",
