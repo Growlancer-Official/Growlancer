@@ -67,51 +67,90 @@ export async function getClient(): Promise<SupabaseClient<Database>> {
 // continues to work unchanged.
 export const supabase = supabaseClient;
 
+// ═══ All known table names (in both Database type & extended) ════
+export type TableName =
+  // Typed in Database['public']['Tables']
+  | keyof Database['public']['Tables']
+  // Extended tables (not yet in Database type, added via migrations)
+  | 'payment_methods'
+  | 'review_replies'
+  | 'saved_searches'
+  | 'time_entries'
+  | 'verification_rate_limits'
+  | 'credential_verification_tokens'
+  | 'credential_version_history'
+  | 'credential_audit_logs'
+  | 'connects_transactions'
+  | 'support_tickets'
+  | 'ticket_messages'
+  | 'certifications'
+  | 'education_history'
+  | 'employment_history'
+  | 'languages'
+  | 'skill_certifications'
+  | 'newsletter_subscribers'
+  | 'contact_inquiries'
+  | 'internship_applications'
+  | 'contest_comments'
+  | 'workspace_activity_logs'
+  | 'opportunity_events'
+  | 'team_invitations'
+  | 'fraud_events';
+
+/**
+ * Safe typed table reference.
+ * Centralizes `as any` casts so only this one function needs the escape hatch.
+ * String must match a known table — TS catches typos at compile time.
+ */
+function t(name: TableName) {
+  return supabase.from(name as keyof Database['public']['Tables']);
+}
+
 // ═══ Typed table helpers ══════════════════════════════════════════
 export const tables = {
-  profiles: () => supabase.from('profiles'),
-  freelancerProfiles: () => supabase.from('freelancer_profiles'),
-  clientProfiles: () => supabase.from('client_profiles'),
-  projects: () => supabase.from('projects'),
-  projectMatches: () => supabase.from('project_matches'),
-  proposals: () => supabase.from('proposals'),
-  contracts: () => supabase.from('contracts'),
-  escrow: () => supabase.from('escrow'),
-  transactions: () => supabase.from('transactions'),
-  invites: () => supabase.from('invites'),
-  subscriptions: () => supabase.from('subscriptions'),
-  referrals: () => supabase.from('referrals'),
-  referralStats: () => supabase.from('referral_stats'),
-  services: () => supabase.from('services'),
-  messages: () => supabase.from('messages'),
-  reviews: () => supabase.from('reviews'),
-  notifications: () => supabase.from('notifications'),
-  withdrawals: () => supabase.from('withdrawals'),
-  paypalOrders: () => supabase.from('paypal_orders'),
-  paypalTransactions: () => supabase.from('paypal_transactions'),
-  contractFiles: () => supabase.from('contract_files'),
-  subscriptionPlans: () => supabase.from('subscription_plans'),
-  userDeletionRequests: () => supabase.from('user_deletion_requests'),
-  userMfaSettings: () => supabase.from('user_mfa_settings' as any),
-  recoveryCodes: () => supabase.from('recovery_codes' as any),
-  notificationPreferences: () => supabase.from('notification_preferences' as any),
-  pushTokens: () => supabase.from('push_tokens' as any),
-  payoutMethods: () => supabase.from('payout_methods' as any),
-  portfolioItems: () => supabase.from('portfolio_items' as any),
-  disputeCases: () => supabase.from('disputes' as any),
-  identityVerifications: () => supabase.from('identity_verifications' as any),
-  wallets: () => supabase.from('wallets'),
-  categories: () => supabase.from('categories' as any),
-  subcategories: () => supabase.from('subcategories' as any),
-  skills: () => supabase.from('skills' as any),
-  freelancerSkills: () => supabase.from('freelancer_skills' as any),
-  projectCategories: () => supabase.from('project_categories' as any),
-  projectSkills: () => supabase.from('project_skills' as any),
-  serviceCategories: () => supabase.from('service_categories' as any),
-  workspaceTasks: () => supabase.from('workspace_tasks' as any),
-  workspaceNotes: () => supabase.from('workspace_notes' as any),
-  razorpayOrders: () => supabase.from('razorpay_orders' as any),
-  razorpayTransactions: () => supabase.from('razorpay_transactions' as any),
+  profiles: () => t('profiles'),
+  freelancerProfiles: () => t('freelancer_profiles'),
+  clientProfiles: () => t('client_profiles'),
+  projects: () => t('projects'),
+  projectMatches: () => t('project_matches'),
+  proposals: () => t('proposals'),
+  contracts: () => t('contracts'),
+  escrow: () => t('escrow'),
+  transactions: () => t('transactions'),
+  invites: () => t('invites'),
+  subscriptions: () => t('subscriptions'),
+  referrals: () => t('referrals'),
+  referralStats: () => t('referral_stats'),
+  services: () => t('services'),
+  messages: () => t('messages'),
+  reviews: () => t('reviews'),
+  notifications: () => t('notifications'),
+  withdrawals: () => t('withdrawals'),
+  paypalOrders: () => t('paypal_orders'),
+  paypalTransactions: () => t('paypal_transactions'),
+  contractFiles: () => t('contract_files'),
+  subscriptionPlans: () => t('subscription_plans'),
+  userDeletionRequests: () => t('user_deletion_requests'),
+  userMfaSettings: () => t('user_mfa_settings'),
+  recoveryCodes: () => t('recovery_codes'),
+  notificationPreferences: () => t('notification_preferences'),
+  pushTokens: () => t('push_tokens'),
+  payoutMethods: () => t('payout_methods'),
+  portfolioItems: () => t('portfolio_items'),
+  disputeCases: () => t('disputes'),
+  identityVerifications: () => t('identity_verifications'),
+  wallets: () => t('wallets'),
+  categories: () => t('categories'),
+  subcategories: () => t('subcategories'),
+  skills: () => t('skills'),
+  freelancerSkills: () => t('freelancer_skills'),
+  projectCategories: () => t('project_categories'),
+  projectSkills: () => t('project_skills'),
+  serviceCategories: () => t('service_categories'),
+  workspaceTasks: () => t('workspace_tasks'),
+  workspaceNotes: () => t('workspace_notes'),
+  razorpayOrders: () => t('razorpay_orders'),
+  razorpayTransactions: () => t('razorpay_transactions'),
 };
 
 // ═══ Realtime channels manager ════════════════════════════════════
@@ -147,6 +186,63 @@ export const realtimeChannels = {
     supabase.channel(nextChannelName('workspace_notes', scope)),
 };
 
+// ═══ RPC function names (typed union for callRpc helper) ═════════
+export type RpcName =
+  // Typed in Database['public']['Functions']
+  | keyof Database['public']['Functions']
+  // Extended RPCs (not yet in Database type)
+  | 'request_account_deletion'
+  | 'cancel_account_deletion'
+  | 'check_deletion_status'
+  | 'process_account_deletion'
+  | 'get_mfa_status'
+  | 'generate_recovery_codes'
+  | 'verify_recovery_code'
+  | 'enable_user_mfa'
+  | 'disable_user_mfa'
+  | 'get_recovery_codes_count'
+  | 'get_notification_preferences'
+  | 'set_notification_preferences'
+  | 'archive_notification'
+  | 'restore_notification'
+  | 'archive_all_read_notifications'
+  | 'get_notifications_by_category'
+  | 'register_push_token'
+  | 'unregister_push_token'
+  | 'get_user_push_tokens'
+  | 'get_category_counts'
+  | 'get_category_hierarchy'
+  | 'get_category_counts_v2'
+  | 'get_active_freelancers_by_category'
+  | 'search_freelancers_by_category'
+  | 'get_projects_by_category'
+  | 'get_wallet_balance'
+  | 'update_wallet_balance'
+  | 'hold_wallet_funds'
+  | 'release_wallet_funds'
+  | 'process_withdrawal_complete'
+  | 'cancel_withdrawal'
+  | 'get_payout_methods'
+  | 'set_default_payout_method'
+  | 'delete_payout_method'
+  | 'cleanup_verification_rate_limits'
+  | 'generate_credential_token'
+  | 'insert_credential_version'
+  | 'insert_credential_audit_log'
+  | 'verify_credential_by_token'
+  | 'raise_contract_dispute'
+  | 'create_contract_with_escrow'
+  | 'process_referral'
+  | 'update_user_country';
+
+/**
+ * Safe typed RPC caller.
+ * Centralizes `supabase.rpc as any` so only this one function needs the escape hatch.
+ */
+function callRpc(name: RpcName, args?: Record<string, unknown>) {
+  return supabase.rpc(name as any, args);
+}
+
 // ═══ Database function callers ════════════════════════════════════
 export const dbFunctions = {
   calculateMatchScore: (projectId: string, freelancerId: string) =>
@@ -177,72 +273,72 @@ export const dbFunctions = {
     }),
   // Account Deletion
   requestAccountDeletion: (userId: string, reason?: string) =>
-    (supabase.rpc as any)('request_account_deletion', {
+    callRpc('request_account_deletion', {
       p_user_id: userId,
       p_reason: reason || null,
     }),
   cancelAccountDeletion: (userId: string) =>
-    (supabase.rpc as any)('cancel_account_deletion', {
+    callRpc('cancel_account_deletion', {
       p_user_id: userId,
     }),
   checkDeletionStatus: (userId: string) =>
-    (supabase.rpc as any)('check_deletion_status', {
+    callRpc('check_deletion_status', {
       p_user_id: userId,
     }),
   processAccountDeletion: (requestId: string) =>
-    (supabase.rpc as any)('process_account_deletion', {
+    callRpc('process_account_deletion', {
       p_request_id: requestId,
     }),
   // Two-Factor Authentication (2FA)
   getMFAStatus: (userId: string) =>
-    (supabase.rpc as any)('get_mfa_status', {
+    callRpc('get_mfa_status', {
       p_user_id: userId,
     }),
   generateRecoveryCodes: (userId: string) =>
-    (supabase.rpc as any)('generate_recovery_codes', {
+    callRpc('generate_recovery_codes', {
       p_user_id: userId,
     }),
   verifyRecoveryCode: (userId: string, code: string) =>
-    (supabase.rpc as any)('verify_recovery_code', {
+    callRpc('verify_recovery_code', {
       p_user_id: userId,
       p_code: code,
     }),
   enableUserMFA: (userId: string, totpSecret: string) =>
-    (supabase.rpc as any)('enable_user_mfa', {
+    callRpc('enable_user_mfa', {
       p_user_id: userId,
       p_totp_secret: totpSecret,
     }),
   disableUserMFA: (userId: string) =>
-    (supabase.rpc as any)('disable_user_mfa', {
+    callRpc('disable_user_mfa', {
       p_user_id: userId,
     }),
   getRecoveryCodesCount: (userId: string) =>
-    (supabase.rpc as any)('get_recovery_codes_count', {
+    callRpc('get_recovery_codes_count', {
       p_user_id: userId,
     }),
   // Notification Preferences
   getNotificationPreferences: (userId: string) =>
-    (supabase.rpc as any)('get_notification_preferences', {
+    callRpc('get_notification_preferences', {
       p_user_id: userId,
     }),
   setNotificationPreferences: (userId: string, preferences: Record<string, unknown>) =>
-    (supabase.rpc as any)('set_notification_preferences', {
+    callRpc('set_notification_preferences', {
       p_user_id: userId,
       p_preferences: preferences as unknown as Json,
     }),
   // Notification Enhancements (Phase 5)
   archiveNotification: (notificationId: string, userId: string) =>
-    (supabase.rpc as any)('archive_notification', {
+    callRpc('archive_notification', {
       p_notification_id: notificationId,
       p_user_id: userId,
     }),
   restoreNotification: (notificationId: string, userId: string) =>
-    (supabase.rpc as any)('restore_notification', {
+    callRpc('restore_notification', {
       p_notification_id: notificationId,
       p_user_id: userId,
     }),
   archiveAllReadNotifications: (userId: string) =>
-    (supabase.rpc as any)('archive_all_read_notifications', {
+    callRpc('archive_all_read_notifications', {
       p_user_id: userId,
     }),
   getNotificationsByCategory: (params: {
@@ -252,34 +348,34 @@ export const dbFunctions = {
     p_unread_only?: boolean;
     p_limit?: number;
     p_offset?: number;
-  }) => (supabase.rpc as any)('get_notifications_by_category', params),
+  }) => callRpc('get_notifications_by_category', params as Record<string, unknown>),
   registerPushToken: (
     userId: string,
     token: string,
     platform: string,
     deviceName?: string,
   ) =>
-    (supabase.rpc as any)('register_push_token', {
+    callRpc('register_push_token', {
       p_user_id: userId,
       p_token: token,
       p_platform: platform,
       p_device_name: deviceName || null,
     }),
   unregisterPushToken: (userId: string, token: string) =>
-    (supabase.rpc as any)('unregister_push_token', {
+    callRpc('unregister_push_token', {
       p_user_id: userId,
       p_token: token,
     }),
   getUserPushTokens: (userId: string) =>
-    (supabase.rpc as any)('get_user_push_tokens', {
+    callRpc('get_user_push_tokens', {
       p_user_id: userId,
     }),
   // === CATEGORY ECOSYSTEM RPCs ===
-  getCategoryCounts: () => (supabase.rpc as any)('get_category_counts'),
-  getCategoryHierarchy: () => (supabase.rpc as any)('get_category_hierarchy'),
-  getCategoryCountsV2: () => (supabase.rpc as any)('get_category_counts_v2'),
+  getCategoryCounts: () => callRpc('get_category_counts'),
+  getCategoryHierarchy: () => callRpc('get_category_hierarchy'),
+  getCategoryCountsV2: () => callRpc('get_category_counts_v2'),
   getActiveFreelancersByCategory: () =>
-    (supabase.rpc as any)('get_active_freelancers_by_category'),
+    callRpc('get_active_freelancers_by_category'),
   searchFreelancersByCategory: (params: {
     p_category_slug: string;
     p_search_query?: string;
@@ -288,50 +384,50 @@ export const dbFunctions = {
     p_sort_by?: string;
     p_limit?: number;
     p_offset?: number;
-  }) => (supabase.rpc as any)('search_freelancers_by_category', params),
+  }) => callRpc('search_freelancers_by_category', params as Record<string, unknown>),
   getProjectsByCategory: (params: {
     p_category_slug: string;
     p_search_query?: string;
     p_limit?: number;
     p_offset?: number;
-  }) => (supabase.rpc as any)('get_projects_by_category', params),
+  }) => callRpc('get_projects_by_category', params as Record<string, unknown>),
 
   // === WALLET RPCS ===
   getWalletBalance: (userId: string) =>
-    (supabase.rpc as any)('get_wallet_balance', { p_user_id: userId }).single(),
+    callRpc('get_wallet_balance', { p_user_id: userId }).single(),
   updateWalletBalance: (userId: string, amount: number) =>
-    (supabase.rpc as any)('update_wallet_balance', {
+    callRpc('update_wallet_balance', {
       p_user_id: userId,
       p_amount: amount,
     }).single(),
   holdWalletFunds: (userId: string, amount: number) =>
-    (supabase.rpc as any)('hold_wallet_funds', {
+    callRpc('hold_wallet_funds', {
       p_user_id: userId,
       p_amount: amount,
     }).single(),
   releaseWalletFunds: (userId: string, amount: number) =>
-    (supabase.rpc as any)('release_wallet_funds', {
+    callRpc('release_wallet_funds', {
       p_user_id: userId,
       p_amount: amount,
     }).single(),
   processWithdrawalComplete: (withdrawalId: string) =>
-    (supabase.rpc as any)('process_withdrawal_complete', {
+    callRpc('process_withdrawal_complete', {
       p_withdrawal_id: withdrawalId,
     }).single(),
   cancelWithdrawal: (withdrawalId: string, userId: string) =>
-    (supabase.rpc as any)('cancel_withdrawal', {
+    callRpc('cancel_withdrawal', {
       p_withdrawal_id: withdrawalId,
       p_user_id: userId,
     }).single(),
   getPayoutMethods: (userId: string) =>
-    (supabase.rpc as any)('get_payout_methods', { p_user_id: userId }),
+    callRpc('get_payout_methods', { p_user_id: userId }),
   setDefaultPayoutMethod: (methodId: string, userId: string) =>
-    (supabase.rpc as any)('set_default_payout_method', {
+    callRpc('set_default_payout_method', {
       p_method_id: methodId,
       p_user_id: userId,
     }).single(),
   deletePayoutMethod: (methodId: string, userId: string) =>
-    (supabase.rpc as any)('delete_payout_method', {
+    callRpc('delete_payout_method', {
       p_method_id: methodId,
       p_user_id: userId,
     }).single(),

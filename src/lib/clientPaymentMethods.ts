@@ -1,12 +1,23 @@
-import { supabase } from './supabase';
+import { supabase, type TableName } from './supabase';
 
-export type ClientPaymentMethod = Record<string, any> & {
+// ─── Payment method type ────────────────────────────────────────
+// ID is always a string from Supabase UUID. Optional fields match
+// the payment_methods table columns.
+export interface ClientPaymentMethod {
   id: string;
+  user_id: string;
   type: string;
   is_default?: boolean;
-  user_id?: string;
   created_at?: string;
-};
+  updated_at?: string;
+  paypal_email?: string | null;
+  card_last_four?: string | null;
+  card_brand?: string | null;
+  card_expiry?: string | null;
+  account_holder_name?: string | null;
+  account_number_last_four?: string | null;
+  bank_name?: string | null;
+}
 
 export interface AddPaymentMethodData {
   type: 'card' | 'paypal' | 'bank_transfer';
@@ -20,13 +31,16 @@ export interface AddPaymentMethodData {
   is_default?: boolean;
 }
 
+/** Reference to the payment_methods table (typed via TableName union) */
+const pm = () => supabase.from('payment_methods' as TableName);
+
 export const clientPaymentMethodsService = {
   /**
    * Fetch all saved payment methods for the current client.
    */
   async getPaymentMethods(): Promise<{
     success: boolean;
-    methods?: any[];
+    methods?: ClientPaymentMethod[];
     error?: string;
   }> {
     try {
@@ -35,8 +49,7 @@ export const clientPaymentMethodsService = {
         return { success: false, error: 'Authentication required' };
       }
 
-      const { data, error } = await supabase
-        .from('payment_methods' as any)
+      const { data, error } = await pm()
         .select('*')
         .eq('user_id', session.session.user.id)
         .order('is_default', { ascending: false })
@@ -44,10 +57,11 @@ export const clientPaymentMethodsService = {
 
       if (error) throw error;
 
-      return { success: true, methods: data || [] };
-    } catch (err: any) {
-      console.error('Error fetching payment methods:', err);
-      return { success: false, error: err.message || 'Failed to load payment methods' };
+      return { success: true, methods: (data || []) as ClientPaymentMethod[] };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to load payment methods';
+      console.error('Error fetching payment methods:', message);
+      return { success: false, error: message };
     }
   },
 
@@ -56,7 +70,7 @@ export const clientPaymentMethodsService = {
    */
   async addPaymentMethod(data: AddPaymentMethodData): Promise<{
     success: boolean;
-    method?: any;
+    method?: ClientPaymentMethod;
     error?: string;
   }> {
     try {
@@ -69,14 +83,13 @@ export const clientPaymentMethodsService = {
 
       // If this is the first method or marked default, unset any existing default
       if (data.is_default) {
-        await supabase
-          .from('payment_methods' as any)
+        await pm()
           .update({ is_default: false })
           .eq('user_id', userId)
           .eq('is_default', true);
       }
 
-      const insertData: Record<string, any> = {
+      const insertData: Record<string, unknown> = {
         user_id: userId,
         type: data.type,
         is_default: data.is_default || false,
@@ -94,18 +107,18 @@ export const clientPaymentMethodsService = {
         insertData.bank_name = data.bank_name;
       }
 
-      const { data: newMethod, error } = await supabase
-        .from('payment_methods' as any)
-        .insert(insertData as any)
+      const { data: newMethod, error } = await pm()
+        .insert(insertData)
         .select()
         .single();
 
       if (error) throw error;
 
-      return { success: true, method: newMethod };
-    } catch (err: any) {
-      console.error('Error adding payment method:', err);
-      return { success: false, error: err.message || 'Failed to add payment method' };
+      return { success: true, method: newMethod as ClientPaymentMethod };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to add payment method';
+      console.error('Error adding payment method:', message);
+      return { success: false, error: message };
     }
   },
 
@@ -125,15 +138,13 @@ export const clientPaymentMethodsService = {
       const userId = session.session.user.id;
 
       // Unset all defaults for this user
-      await supabase
-        .from('payment_methods' as any)
+      await pm()
         .update({ is_default: false })
         .eq('user_id', userId)
         .eq('is_default', true);
 
       // Set the new default
-      const { error } = await supabase
-        .from('payment_methods' as any)
+      const { error } = await pm()
         .update({ is_default: true })
         .eq('id', methodId)
         .eq('user_id', userId);
@@ -141,9 +152,10 @@ export const clientPaymentMethodsService = {
       if (error) throw error;
 
       return { success: true };
-    } catch (err: any) {
-      console.error('Error setting default payment method:', err);
-      return { success: false, error: err.message || 'Failed to set default payment method' };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to set default payment method';
+      console.error('Error setting default payment method:', message);
+      return { success: false, error: message };
     }
   },
 
@@ -160,8 +172,7 @@ export const clientPaymentMethodsService = {
         return { success: false, error: 'Authentication required' };
       }
 
-      const { error } = await supabase
-        .from('payment_methods' as any)
+      const { error } = await pm()
         .delete()
         .eq('id', methodId)
         .eq('user_id', session.session.user.id);
@@ -169,9 +180,10 @@ export const clientPaymentMethodsService = {
       if (error) throw error;
 
       return { success: true };
-    } catch (err: any) {
-      console.error('Error deleting payment method:', err);
-      return { success: false, error: err.message || 'Failed to delete payment method' };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to delete payment method';
+      console.error('Error deleting payment method:', message);
+      return { success: false, error: message };
     }
   },
 };

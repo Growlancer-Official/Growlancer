@@ -61,7 +61,7 @@ const CertificateVerifyPage = lazy(() => import('@pages/CertificateVerifyPage').
 
 // Public pages with SSR need
 import { NotFoundPage } from '@pages/NotFoundPage';
-const WaitlistPage = lazy(() => import('@pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
+import { WaitlistPage } from '@pages/WaitlistPage';
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY IMPORTS — auth-protected routes (no SSR needed)

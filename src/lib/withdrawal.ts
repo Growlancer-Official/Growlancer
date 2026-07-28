@@ -2,7 +2,7 @@
 // Handles withdrawal requests and wallet/payout method operations
 // PayPal-only withdrawal method
 
-import { supabase, dbFunctions } from './supabase';
+import { supabase, dbFunctions, type TableName } from './supabase';
 import { emailNotificationService } from './emailNotificationService';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zttwsjehcgaicziqyxpq.supabase.co';
@@ -115,8 +115,8 @@ export const withdrawalService = {
       }
 
       // 2. Create the withdrawal record with net_amount (amount minus fee; fee defaults to 0 for new records)
-      const { data, error } = await (supabase
-        .from('withdrawals') as any)
+      const { data, error } = await supabase
+        .from('withdrawals')
         .insert({
           user_id: session.user.id,
           amount: request.amount,
@@ -211,7 +211,7 @@ export const withdrawalService = {
 
   /** Subscribe to real-time withdrawal updates */
   subscribeToWithdrawals(userId: string, callback: (withdrawal: Withdrawal) => void) {
-    const channel = (supabase as any)
+    const channel = supabase
       .channel('withdrawals-updates')
       .on(
         'postgres_changes',
@@ -273,8 +273,8 @@ export const withdrawalService = {
         return { success: false, error: 'Not authenticated' };
       }
 
-      const { data: newMethod, error } = await (supabase
-        .from('payout_methods') as any)
+      const { data: newMethod, error } = await supabase
+        .from('payout_methods' as TableName)
         .insert({
           user_id: session.user.id,
           type: data.type,
@@ -361,11 +361,11 @@ export const withdrawalService = {
 
       // Fetch withdrawals and wallet balance in parallel
       const [withdrawalsResult, balanceResult] = await Promise.all([
-        (supabase
+        supabase
           .from('withdrawals')
           .select('*')
           .eq('user_id', session.user.id)
-          .order('created_at', { ascending: false }) as any)
+          .order('created_at', { ascending: false })
           .range(offset, offset + limit - 1),
         dbFunctions.getWalletBalance(session.user.id),
       ]);
