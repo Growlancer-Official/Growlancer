@@ -161,10 +161,10 @@ async function paypalFetch(path: string, options: RequestInit = {}): Promise<any
 }
 
 async function rollbackWithdrawal(supabaseClient: any, withdrawalId: string, userId: string, amount: number, errorReason: string): Promise<void> {
-  console.error(`[ROLLBACK] Withdrawal ${withdrawalId} failed: ${errorReason}`);
-  try { await supabaseClient.rpc('release_wallet_funds', { p_user_id: userId, p_amount: amount }); } catch (e) { console.error('[ROLLBACK] Release failed:', e); }
-  try { await supabaseClient.from('withdrawals').update({ status: 'failed', failure_reason: errorReason, updated_at: new Date().toISOString() }).eq('id', withdrawalId); } catch (e) { console.error('[ROLLBACK] Update failed:', e); }
-  try { await supabaseClient.from('transactions').update({ status: 'failed', description: `Withdrawal failed: ${errorReason}` }).eq('metadata->>withdrawal_id', withdrawalId); } catch { /* non-critical */ }
+  console.error(`[ROLLBACK] Withdrawal ${withdrawalId} failed: ${errorReason}`, { userId, amount });
+  try { await supabaseClient.rpc('release_wallet_funds', { p_user_id: userId, p_amount: amount }); } catch (e) { console.error(`[ROLLBACK] Release wallet funds failed for ${userId}, amount=${amount}:`, e); }
+  try { await supabaseClient.from('withdrawals').update({ status: 'failed', failure_reason: errorReason, updated_at: new Date().toISOString() }).eq('id', withdrawalId); } catch (e) { console.error(`[ROLLBACK] Withdrawal status update failed for ${withdrawalId}:`, e); }
+  try { await supabaseClient.from('transactions').update({ status: 'failed', description: `Withdrawal failed: ${errorReason}` }).eq('metadata->>withdrawal_id', withdrawalId); } catch { /* non-critical — transaction record is secondary */ }
 }
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────

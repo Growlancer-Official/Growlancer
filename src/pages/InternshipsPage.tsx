@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Award, BookOpen, Briefcase, Calendar, CheckCircle, CheckCircle2, ChevronDown, ChevronUp, Clock, Code, Database, FileText, Globe, GraduationCap, HelpCircle, Lightbulb, Link2, Loader2, Lock, MessageSquare, Palette, Send, Sparkles, Target, Upload, User, Users, X,  } from 'lucide-react';
 import { internshipService, INTERNSHIP_ROLES, type InternshipRole } from '../lib/internshipService';
+import { useToast } from '../components/Toast';
 
 // ─── Icon resolver ───────────────────────────────────────────────────────────
 function RoleIcon({ icon, className }: { icon: string; className?: string }) {
@@ -258,6 +259,7 @@ function ApplicationForm({
   onClose: () => void;
   onSubmitSuccess: () => void;
 }) {
+  const toast = useToast();
   const [step, setStep] = useState<'form' | 'submitting' | 'success'>('form');
   const [error, setError] = useState<string | null>(null);
 
@@ -595,7 +597,7 @@ function ApplicationForm({
                               if (file.type === 'application/pdf') {
                                 setResumeFile(file);
                               } else {
-                                alert('Only PDF files are accepted.');
+                                toast.error('Invalid File', 'Only PDF files are accepted.');
                               }
                             }
                           }}

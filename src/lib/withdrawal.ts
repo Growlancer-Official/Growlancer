@@ -158,11 +158,11 @@ export const withdrawalService = {
   },
 
   /** Get withdrawal history via the edge function */
-  async getWithdrawals(): Promise<Withdrawal[]> {
+  async getWithdrawals(): Promise<{ success: boolean; withdrawals?: Withdrawal[]; error?: string }> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        return [];
+        return { success: false, error: 'Not authenticated' };
       }
 
       const response = await fetch(
@@ -179,13 +179,13 @@ export const withdrawalService = {
 
       if (!response.ok) {
         console.error('Failed to fetch withdrawals:', data.error);
-        return [];
+        return { success: false, error: data.error || 'Failed to fetch withdrawals' };
       }
 
-      return data.withdrawals || [];
+      return { success: true, withdrawals: data.withdrawals || [] };
     } catch (error) {
       console.error('Fetch withdrawals error:', error);
-      return [];
+      return { success: false, error: 'Network error fetching withdrawals' };
     }
   },
 

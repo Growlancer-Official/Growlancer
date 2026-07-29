@@ -22,6 +22,7 @@ import { useSkills } from '../hooks/useSkills';
 import { SkillsSelector } from '../components/SkillsSelector';
 import { avatarUploadService } from '../lib/avatarUpload';
 import { fetchUserProfile, createUserProfile } from '../lib/services/authService';
+import { useToast } from '../components/Toast';
 
 interface FreelancerForm {
   title: string;
@@ -48,6 +49,7 @@ type Step = 'welcome' | 'profile' | 'skills' | 'review';
 function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
   const { user, updateUser } = useAuth();
   const { skills: allSkills } = useSkills();
+  const toast = useToast();
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<'info' | 'done'>('info');
 
@@ -79,14 +81,14 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert('File must be less than 5MB'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('File Too Large', 'File must be less than 5MB'); return; }
     setUploadingAvatar(true);
     try {
       const result = await avatarUploadService.uploadAvatar(file);
       if (result.success && result.avatar_url) {
         setAvatar(result.avatar_url);
       }
-    } catch { alert('Failed to upload avatar'); }
+    } catch { toast.error('Upload Failed', 'Failed to upload avatar'); }
     finally { setUploadingAvatar(false); }
   };
 
@@ -104,7 +106,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
           selectedRole
         );
         if (!created) {
-          alert('Failed to create your profile. Please try again or contact support.');
+          toast.error('Profile Error', 'Failed to create your profile. Please try again or contact support.');
           setSaving(false);
           return;
         }
@@ -113,7 +115,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
         const { error: roleErr } = await supabase.from('profiles').update({ role: selectedRole }).eq('id', user.id);
         if (roleErr) {
           console.error('OAuth onboarding role update error:', roleErr);
-          alert('Failed to save your role: ' + roleErr.message);
+          toast.error('Role Error', 'Failed to save your role: ' + roleErr.message);
           setSaving(false);
           return;
         }
@@ -131,7 +133,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
         }, { onConflict: 'user_id' });
         if (fpError) {
           console.error('OAuth onboarding freelancer_profiles error:', fpError);
-          alert('Failed to save: ' + fpError.message);
+          toast.error('Save Error', 'Failed to save: ' + fpError.message);
           setSaving(false);
           return;
         }
@@ -148,7 +150,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
         }, { onConflict: 'user_id' });
         if (cpError) {
           console.error('OAuth onboarding client_profiles error:', cpError);
-          alert('Failed to save: ' + cpError.message);
+          toast.error('Save Error', 'Failed to save: ' + cpError.message);
           setSaving(false);
           return;
         }
@@ -157,7 +159,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
       const { error: onboardingErr } = await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', user.id);
       if (onboardingErr) {
         console.error('OAuth onboarding completion error:', onboardingErr);
-        alert('Failed to complete: ' + onboardingErr.message);
+        toast.error('Completion Error', 'Failed to complete: ' + onboardingErr.message);
         setSaving(false);
         return;
       }
@@ -167,7 +169,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
       setTimeout(() => onComplete(), 1500);
     } catch (err) {
       console.error('OAuth onboarding save error:', err);
-      alert('Failed to save. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      toast.error('Save Error', 'Failed to save. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -445,16 +447,14 @@ export function OnboardingPage() {
   const handleSubmit = async () => {
     if (!user?.id) return;
     if (uploadingAvatar) {
-      alert('Please wait for your profile photo to finish uploading.');
+      toast.error('Upload In Progress', 'Please wait for your profile photo to finish uploading.');
       return;
     }
     setSaving(true);
 
     try {
-      // 🆕 UPSERT PATTERN: First check if profile exists, create if not, then update
       const existing = await fetchUserProfile(user.id);
       if (!existing) {
-        // 🆕 Profile doesn't exist yet — create it first
         const created = await createUserProfile(
           user.id,
           user.email || '',
@@ -462,14 +462,13 @@ export function OnboardingPage() {
           user.role === 'client' ? 'client' : 'freelancer'
         );
         if (!created) {
-          alert('Failed to create your profile. Please try again or contact support.');
+          toast.error('Profile Error', 'Failed to create your profile. Please try again or contact support.');
           setSaving(false);
           return;
         }
       }
 
       if (isFreelancer) {
-        // Save freelancer profile
         const { error: fpError } = await supabase
           .from('freelancer_profiles')
           .upsert({
@@ -486,12 +485,11 @@ export function OnboardingPage() {
           }, { onConflict: 'user_id' });
         if (fpError) {
           console.error('Onboarding freelancer_profiles error:', fpError);
-          alert('Failed to save your profile: ' + fpError.message);
+          toast.error('Save Error', 'Failed to save your profile: ' + fpError.message);
           setSaving(false);
           return;
         }
 
-        // Save avatar to profiles table (the correct table for avatar)
         if (freelancerForm.avatar_url) {
           const { error: avatarError } = await supabase
             .from('profiles')
@@ -499,11 +497,10 @@ export function OnboardingPage() {
             .eq('id', user.id);
           if (avatarError) {
             console.error('Onboarding avatar save error:', avatarError);
-            // Non-fatal — continue
+            // Non-fatal — continue (avatar failure shouldn't block onboarding)
           }
         }
       } else if (isClient) {
-        // Save client profile
         const { error: cpError } = await supabase
           .from('client_profiles')
           .upsert({
@@ -519,21 +516,19 @@ export function OnboardingPage() {
 
         if (cpError) {
           console.error('Onboarding client_profiles error:', cpError);
-          alert('Failed to save your company profile: ' + cpError.message);
+          toast.error('Save Error', 'Failed to save your company profile: ' + cpError.message);
           setSaving(false);
           return;
         }
       }
 
-      // 🆕 Re-fetch profile to check completion status before marking done
       const updatedProfile = await fetchUserProfile(user.id);
       if (!updatedProfile) {
-        alert('Session expired. Please log in again.');
+        toast.error('Session Expired', 'Please log in again.');
         setSaving(false);
         return;
       }
 
-      // Mark onboarding as completed
       const { error: onboardingError } = await supabase
         .from('profiles')
         .update({ onboarding_completed: true })
@@ -541,7 +536,7 @@ export function OnboardingPage() {
 
       if (onboardingError) {
         console.error('Onboarding completion error:', onboardingError);
-        alert('Failed to complete onboarding: ' + onboardingError.message);
+        toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingError.message);
         setSaving(false);
         return;
       }
@@ -549,7 +544,7 @@ export function OnboardingPage() {
       window.location.href = getDashboardRoute();
     } catch (err) {
       console.error('Onboarding save error:', err);
-      alert('Failed to save your profile. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      toast.error('Save Error', 'Failed to save your profile. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -736,7 +731,7 @@ export function OnboardingPage() {
                         const file = e.target.files?.[0];
                         if (!file) return;
                         if (file.size > 5 * 1024 * 1024) {
-                          alert('File must be less than 5MB');
+                          toast.error('File Too Large', 'File must be less than 5MB');
                           return;
                         }
                         setUploadingAvatar(true);
@@ -745,10 +740,10 @@ export function OnboardingPage() {
                           if (result.success && result.avatar_url) {
                             setFreelancerForm(prev => ({ ...prev, avatar_url: result.avatar_url }));
                           } else {
-                            alert(result.error || 'Failed to upload avatar');
+                            toast.error('Upload Failed', result.error || 'Failed to upload avatar');
                           }
                         } catch {
-                          alert('Failed to upload avatar');
+                          toast.error('Upload Failed', 'Failed to upload avatar');
                         } finally {
                           setUploadingAvatar(false);
                         }

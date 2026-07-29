@@ -20,6 +20,7 @@ import {
   X,
 } from 'lucide-react';
 import { ROUTES } from '../routes';
+import { useToast } from '../components/Toast';
 
 interface ProjectDetails {
   id: string;
@@ -57,6 +58,7 @@ export function ProjectDetailsPage() {
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const toast = useToast();
   const [showReopenModal, setShowReopenModal] = useState(false);
 
   const fetchProject = useCallback(async () => {
@@ -111,7 +113,7 @@ export function ProjectDetailsPage() {
       setShowCloseModal(false);
       void fetchProject();
     } else {
-      alert('Failed to close project. Please try again.');
+      toast.error('Error', 'Failed to close project. Please try again.');
     }
     setClosing(false);
   };
@@ -128,7 +130,7 @@ export function ProjectDetailsPage() {
       setShowCompleteModal(false);
       void fetchProject();
     } else {
-      alert('Failed to complete project. Please try again.');
+      toast.error('Error', 'Failed to complete project. Please try again.');
     }
     setCompleting(false);
   };
@@ -145,7 +147,7 @@ export function ProjectDetailsPage() {
       setShowReopenModal(false);
       void fetchProject();
     } else {
-      alert('Failed to reopen project. Please try again.');
+      toast.error('Error', 'Failed to reopen project. Please try again.');
     }
     setReopening(false);
   };
@@ -162,7 +164,7 @@ export function ProjectDetailsPage() {
       .in('status', ['active', 'in_progress', 'pending']);
 
     if (contracts && contracts.length > 0) {
-      alert('Cannot delete project with active contracts. Close them first.');
+      toast.error('Cannot Delete', 'This project has active contracts. Close them first.');
       setDeleting(false);
       setShowDeleteModal(false);
       return;
@@ -177,7 +179,7 @@ export function ProjectDetailsPage() {
     if (!error) {
       navigate('/client/projects');
     } else {
-      alert('Failed to delete project. Please try again.');
+      toast.error('Error', 'Failed to delete project. Please try again.');
     }
     setDeleting(false);
   };

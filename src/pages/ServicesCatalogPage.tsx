@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clock, Eye, Filter, Grid3X3, List, Loader2, Package, Search, ShoppingCart, Star,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
+import { useToast } from '../components/Toast';
 
 interface ServiceResult {
   id: string;
@@ -38,6 +39,7 @@ export function ServicesCatalogPage() {
   const [sortBy, setSortBy] = useState<'popular' | 'newest' | 'price_low' | 'price_high' | 'rating'>('popular');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
+  const toast = useToast();
   const { flatNames: categories } = useCategories();
 
   const fetchServices = useCallback(async () => {
@@ -95,7 +97,7 @@ export function ServicesCatalogPage() {
 
       setServices(results);
     } catch (err) {
-      console.error('Error fetching services:', err);
+      toast.error('Error', 'Failed to load services.');
     } finally {
       setLoading(false);
     }

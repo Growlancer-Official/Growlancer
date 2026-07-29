@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { notificationService, type NotificationWithMeta } from '../lib/notifications';
+import { useToast } from './Toast';
 
 type TabId = 'all' | 'unread' | 'archived';
 type FilterValue = string | null; // null = all types, otherwise a notification type string
@@ -36,6 +37,7 @@ export function NotificationsPanel() {
   const [notifications, setNotifications] = useState<NotificationWithMeta[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
   const [animateItem, setAnimateItem] = useState<string | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
 
@@ -65,6 +67,7 @@ export function NotificationsPanel() {
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);
+      toast.error('Error', 'Failed to load notifications.');
     } finally {
       setLoading(false);
     }
@@ -101,6 +104,7 @@ export function NotificationsPanel() {
       });
     } catch (error) {
       console.error('Error subscribing to notifications:', error);
+      // Non-critical background subscription failure — toast would be spammy on every load
     }
 
     return () => {
@@ -191,7 +195,7 @@ export function NotificationsPanel() {
 
   const handleRequestPushPermission = async () => {
     if (!('Notification' in window)) {
-      console.warn('Push notifications not supported');
+      // Non-critical: browser doesn't support push notifications, silently skip
       return;
     }
 

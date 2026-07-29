@@ -174,7 +174,8 @@ export function WalletPage() {
       }
 
       // Get total withdrawn (completed withdrawals)
-      const allWithdrawals = await withdrawalService.getWithdrawals();
+      const result = await withdrawalService.getWithdrawals();
+      const allWithdrawals = result.success ? (result.withdrawals || []) : [];
       setWithdrawals(allWithdrawals);
       const completedSum = allWithdrawals
         .filter((w) => w.status === 'completed')

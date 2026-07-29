@@ -37,9 +37,13 @@ async function sendEmail(type: EmailType, data: EmailData): Promise<void> {
       body: { type, data },
     });
     if (error) {
+      // Intentionally silent: email notifications are fire-and-forget.
+      // Failure here should never block the caller's success path.
       console.error(`[EmailNotification] ${type} failed:`, error.message);
     }
   } catch (err) {
+    // Intentionally silent: edge function invocation errors in fire-and-forget emails
+    // are non-critical and should not block the user-facing operation.
     console.error(`[EmailNotification] ${type} error:`, err);
   }
 }
@@ -68,9 +72,12 @@ export async function sendAdminNotification(params: {
       },
     });
     if (error) {
+      // Intentionally silent: admin notification is fire-and-forget.
+      // The main operation (contact inquiry, support ticket) has already completed.
       console.error('[AdminNotification] failed:', error.message);
     }
   } catch (err) {
+    // Intentionally silent: non-critical background notification.
     console.error('[AdminNotification] error:', err);
   }
 }

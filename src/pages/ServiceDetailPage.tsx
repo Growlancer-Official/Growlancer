@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Shield, ShoppingCart, Star, Tag,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { reviewService } from '../lib/reviews';
+import { useToast } from '../components/Toast';
 
 interface ServiceData {
   id: string;
@@ -37,6 +38,7 @@ export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
   const [service, setService] = useState<ServiceData | null>(null);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
   const [selectedPackage, setSelectedPackage] = useState<number>(0);
   const [addingToCart, setAddingToCart] = useState(false);
 
@@ -77,7 +79,7 @@ export function ServiceDetailPage() {
 
         setService(svc);
       } catch (err) {
-        console.error('Failed to load service:', err);
+        toast.error('Error', 'Failed to load service.');
       } finally {
         setLoading(false);
       }

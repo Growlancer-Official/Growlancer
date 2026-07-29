@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import type { Tables } from '../types/supabase';
+import { useToast } from '../components/Toast';
 
 export type ReferralLeader = {
   rank: number;
@@ -36,6 +37,7 @@ export function shareReferralLink(link: string, platform: 'linkedin' | 'twitter'
 }
 
 export function useReferralsData(userId?: string, referralCode?: string, userRole?: string) {
+  const toast = useToast();
   const [referralStats, setReferralStats] = useState<Tables<'referral_stats'> | null>(null);
   const [referrals, setReferrals] = useState<Tables<'referrals'>[]>([]);
   const [leaders, setLeaders] = useState<ReferralLeader[]>([]);
@@ -108,6 +110,7 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
       setLeaders(mapped.sort((a, b) => b.refs - a.refs).map((l, i) => ({ ...l, rank: i + 1 })));
     } catch (e) {
       console.error('[useReferralsData]', e);
+      toast.error('Error', 'Failed to load referral data. Please try again.');
     } finally {
       setLoading(false);
     }

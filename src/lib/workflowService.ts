@@ -106,6 +106,8 @@ async function sendProposalNotification(proposalId: string, action: 'accept' | '
       body: { proposal_id: proposalId, action },
     });
   } catch (err) {
+    // Intentionally silent: proposal notification is fire-and-forget (non-critical background email).
+    // The main proposal action (accept/reject) has already succeeded at this point.
     console.error(`Failed to send proposal ${action} notification:`, err);
   }
 }

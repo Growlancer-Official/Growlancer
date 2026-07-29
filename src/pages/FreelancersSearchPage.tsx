@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown, ChevronUp, Clock, Filter, Globe, Layers, Loade
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
+import { useToast } from '../components/Toast';
 
 interface FreelancerResult {
   id: string;
@@ -35,6 +36,7 @@ export function FreelancersSearchPage() {
   const [showCategories, setShowCategories] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const { flatNames: categories } = useCategories();
+  const toast = useToast();
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState('');
 
@@ -117,7 +119,7 @@ export function FreelancersSearchPage() {
 
       setFreelancers(results);
     } catch (err) {
-      console.error('Error fetching freelancers:', err);
+      toast.error('Error', 'Failed to load freelancers. Please try again.');
     } finally {
       setLoading(false);
     }

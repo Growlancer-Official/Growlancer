@@ -4,6 +4,7 @@ import { Award, Briefcase, Calendar, CheckCircle, ChevronRight, Clock, DollarSig
 import { supabase } from '../lib/supabase';
 import { portfolioService } from '../lib/portfolio';
 import { reviewService } from '../lib/reviews';
+import { useToast } from '../components/Toast';
 
 interface FreelancerProfile {
   id: string;
@@ -52,6 +53,7 @@ export function PublicFreelancerProfilePage() {
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<'portfolio' | 'reviews' | 'about'>('portfolio');
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export function PublicFreelancerProfilePage() {
         setAverageRating(reviewsResult.average_rating);
         setTotalReviews(reviewsResult.total_reviews);
       } catch (err) {
-        console.error('Failed to load freelancer profile:', err);
+        toast.error('Error', 'Failed to load freelancer profile.');
       } finally {
         setLoading(false);
       }

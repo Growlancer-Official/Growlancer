@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { ticketService } from '../lib/supportTicketService';
+import { useToast } from './Toast';
 import {
   Bot,
   Check,
@@ -47,6 +48,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [usageLimit, setUsageLimit] = useState({ used: 0, limit: 10, isPro: false });
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
+  const toast = useToast();
   const [escalating, setEscalating] = useState(false);
   const [escalated, setEscalated] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -86,6 +88,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         setUsageLimit({ used: totalUsage, limit, isPro });
       } catch (error) {
         console.error('Error fetching usage:', error);
+        toast.error('Error', 'Failed to load subscription data. If this persists, contact support.');
       }
     };
 
@@ -251,6 +254,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     } catch (error: any) {
       if (error.name === 'AbortError') return; // User cancelled
       console.error('Error getting AI response:', error);
+      toast.error('AI Error', 'Failed to get response. Please try again.');
       const errMsg = error.message || 'Something went wrong';
       setMessages((prev) => [
         ...prev,
@@ -331,6 +335,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       setEscalated(true);
     } catch (err) {
       console.error('Failed to escalate:', err);
+      toast.error('Escalation Failed', 'Could not create support ticket. Please try again or contact support directly.');
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
