@@ -3,9 +3,6 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
-  "engines": {
-    "node": "22.x"
-  },
   "scripts": {
     "dev": "vite",
     "build": "node scripts/build.mjs",
