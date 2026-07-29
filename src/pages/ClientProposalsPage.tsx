@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { hireFreelancerFromProposal, rejectProposal } from '../lib/workflowService';
-import { CheckCircle, Clock, DollarSign, ExternalLink, Eye, FileText, MoreVertical, Plus, Star, User, XCircle,  } from 'lucide-react';
+import { CheckCircle, Clock, DollarSign, ExternalLink, Eye, FileText, MoreVertical, Plus, Star, User, XCircle } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface Proposal {
   id: string;
@@ -173,12 +174,14 @@ export function ClientProposalsPage() {
         setHasMore(validProposals.length === pageSize);
       }
     } catch (error) {
-      console.error('Error fetching proposals:', error);
+      toast.error('Error', 'Failed to load proposals.');
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
   }, [user]);
+
+  const toast = useToast();
 
   useEffect(() => {
     if (!user) return;

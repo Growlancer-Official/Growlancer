@@ -97,6 +97,7 @@ export function AdminContractsPage() {
           await adminUpdate('contracts', contractId, { status, updated_at: new Date().toISOString() });
           await fetchContracts();
           toast.success(`Contract status updated to "${status}"`);
+          setConfirmDialog(null);
         } catch (err) { console.error(err); toast.error('Failed to update status', err instanceof Error ? err.message : 'Unknown error'); }
         finally { setActionLoading(null); }
       },
@@ -116,6 +117,7 @@ export function AdminContractsPage() {
           await adminDelete('contracts', contractId);
           await fetchContracts();
           toast.success('Contract deleted successfully');
+          setConfirmDialog(null);
         } catch (err) { console.error(err); toast.error('Failed to delete contract', err instanceof Error ? err.message : 'Unknown error'); }
         finally { setActionLoading(null); }
       },
@@ -135,6 +137,7 @@ export function AdminContractsPage() {
           await adminUpdate('contracts', contractId, { escrow_funded: !currentlyFunded, updated_at: new Date().toISOString() });
           await fetchContracts();
           toast.success(`Escrow ${currentlyFunded ? 'marked pending' : 'marked funded'}`);
+          setConfirmDialog(null);
         } catch (err) { console.error(err); toast.error('Failed to toggle escrow', err instanceof Error ? err.message : 'Unknown error'); }
         finally { setActionLoading(null); }
       },

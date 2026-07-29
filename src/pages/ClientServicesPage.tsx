@@ -2,7 +2,9 @@ import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { AlertCircle, ArrowRight, Check, Clock, Loader2, RefreshCw, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Tag, X,  } from 'lucide-react';
+import { AlertCircle, ArrowRight, Check, Clock, Loader2, RefreshCw, Search, ShieldCheck, ShoppingBag, Sparkles, Star, Tag, X } from 'lucide-react';
+import { useToast } from '../components/Toast';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { EscrowPayPalPayment } from '../components/EscrowPayPalPayment';
 import { PLATFORM_CONFIG } from '../lib/config';
 import { useCategories } from '../hooks/useCategories';
@@ -49,6 +51,15 @@ export function ClientServicesPage() {
   const [createdContractId, setCreatedContractId] = useState<string | null>(null);
   const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const toast = useToast();
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   // Available categories — dynamically fetched from DB
   const { flatNames: catNames } = useCategories();
@@ -77,7 +88,7 @@ export function ClientServicesPage() {
         setServices(mappedServices);
       }
     } catch (err) {
-      console.error('Error fetching marketplace services:', err);
+      toast.error('Error', 'Failed to load services.');
     } finally {
       setLoading(false);
     }
@@ -121,9 +132,17 @@ export function ClientServicesPage() {
   // Close Checkout Modal
   const handleCloseCheckout = () => {
     if (checkoutStep === 'paying') {
-      if (window.confirm('Your purchase transaction is initiated. Are you sure you want to close?')) {
-        setCheckoutService(null);
-      }
+      setConfirmDialog({
+        isOpen: true,
+        title: 'Close Checkout',
+        message: 'Your purchase transaction is initiated. Are you sure you want to close?',
+        variant: 'warning',
+        confirmLabel: 'Close',
+        onConfirm: async () => {
+          setCheckoutService(null);
+          setConfirmDialog(null);
+        },
+      });
     } else {
       setCheckoutService(null);
     }
@@ -203,7 +222,7 @@ export function ClientServicesPage() {
       setCreatedContractId(contract.id);
       setCheckoutStep('paying');
     } catch (err: any) {
-      console.error('Error initiating service purchase:', err);
+      toast.error('Purchase Error', err?.message || 'Failed to initialize the transaction.');
       setCheckoutError(err?.message || 'Failed to initialize the transaction. Please try again.');
     } finally {
       setIsProcessingCheckout(false);
@@ -531,6 +550,19 @@ export function ClientServicesPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Confirm Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
       )}
     </div>
   );

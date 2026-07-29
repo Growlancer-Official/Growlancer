@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Loader2, Mail, MessageSquare, User, Wallet, XCircle,  } from 'lucide-react';
+import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Loader2, Mail, MessageSquare, User, Wallet, XCircle } from 'lucide-react';
+import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -31,6 +32,7 @@ export function InvitesPage() {
   const [processingInvite, setProcessingInvite] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'declined'>('pending');
   const [newInviteAlert, setNewInviteAlert] = useState<string | null>(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (!user) return;
@@ -48,7 +50,7 @@ export function InvitesPage() {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.error('Supabase error:', error);
+          toast.error('Error', 'Failed to load invites.');
           throw error;
         }
 
@@ -61,10 +63,10 @@ export function InvitesPage() {
         }
 
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching invites:', error);
-        setLoading(false);
-      }
+    } catch (error) {
+      toast.error('Error', 'Failed to load invites.');
+      setLoading(false);
+    }
     };
 
     // Add timeout to prevent infinite loading - reduced to 3 seconds for faster UX
@@ -208,7 +210,7 @@ export function InvitesPage() {
           .update({ status: 'in_progress', updated_at: new Date().toISOString() })
           .eq('id', invite.projects.id);
       } else {
-        console.error('Failed to create contract from invite:', contractError);
+        toast.error('Contract Error', 'Failed to create contract from invite.');
         // Still mark invite as accepted — contract can be created manually
       }
 
@@ -221,8 +223,7 @@ export function InvitesPage() {
         )
       );
     } catch (error) {
-      console.error('Error accepting invite:', error);
-      alert('Failed to accept invite. Please try again.');
+      toast.error('Error', 'Failed to accept invite. Please try again.');
     } finally {
       setProcessingInvite(null);
     }
@@ -246,8 +247,7 @@ export function InvitesPage() {
         )
       );
     } catch (error) {
-      console.error('Error declining invite:', error);
-      alert('Failed to decline invite. Please try again.');
+      toast.error('Error', 'Failed to decline invite. Please try again.');
     } finally {
       setProcessingInvite(null);
     }

@@ -28,6 +28,7 @@ import {
 } from '../../lib/credentialVerification';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../Toast';
+import { ConfirmModal } from '../ConfirmModal';
 
 interface Props {
   credentialId: string;
@@ -49,6 +50,14 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
   const [activeSubTab, setActiveSubTab] = useState<'qr' | 'history' | 'audit'>('qr');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   const verifyUrl = getVerificationUrl(verificationCode);
   const qrImageUrl = activeToken ? getQRCodeDataUrl(activeToken.token) : null;
@@ -67,7 +76,7 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
       setHistory(hist);
       setAuditLogs(audits);
     } catch {
-      // silent
+      toast.error('Failed to Load', 'Could not load QR data. Please refresh.');
     } finally {
       setLoading(false);
     }
@@ -77,8 +86,14 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
 
   const handleGenerate = async () => {
     if (!user?.id) return;
-    if (!confirm(`Generate QR token for ${recipientName}?`)) return;
-    setActionLoading('generate');
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Generate QR Token',
+      message: `Generate QR token for ${recipientName}?`,
+      variant: 'info',
+      confirmLabel: 'Generate',
+      onConfirm: async () => {
+        setActionLoading('generate');
     try {
       const res = await generateQRToken(credentialId, user.id);
       if (res.success) {
@@ -91,15 +106,24 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
       toast.error('Error', 'An unexpected error occurred');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleRegenerate = async () => {
     if (!user?.id || !user?.email) return;
     const reason = prompt('Reason for regenerating QR:');
     if (!reason) return;
-    if (!confirm(`REGENERATE QR for ${recipientName}? This will INVALIDATE the current QR code!`)) return;
-    setActionLoading('regenerate');
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Regenerate QR',
+      message: `REGENERATE QR for ${recipientName}? This will INVALIDATE the current QR code!`,
+      variant: 'warning',
+      confirmLabel: 'Regenerate',
+      onConfirm: async () => {
+        setActionLoading('regenerate');
     try {
       const res = await regenerateQRToken(credentialId, user.id, user.email, reason);
       if (res.success) {
@@ -112,15 +136,24 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
       toast.error('Error', 'An unexpected error occurred');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleReplace = async () => {
     if (!user?.id || !user?.email) return;
     const reason = prompt('Reason for replacing QR:');
     if (!reason) return;
-    if (!confirm(`REPLACE QR for ${recipientName}? This will mark the current credential as replaced!`)) return;
-    setActionLoading('replace');
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Replace QR',
+      message: `REPLACE QR for ${recipientName}? This will mark the current credential as replaced!`,
+      variant: 'warning',
+      confirmLabel: 'Replace',
+      onConfirm: async () => {
+        setActionLoading('replace');
     try {
       const res = await replaceQRToken(credentialId, user.id, user.email, reason);
       if (res.success) {
@@ -133,20 +166,26 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
       toast.error('Error', 'An unexpected error occurred');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleDeleteActive = async () => {
     if (!activeToken || !user?.id || !user?.email) return;
-    if (!confirm(`⚠️ PERMANENTLY DELETE active QR token for ${recipientName}?
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Permanently Delete QR',
+      message: `⚠️ PERMANENTLY DELETE active QR token for ${recipientName}?
 
-This will remove the QR code permanently with NO WAY TO RECOVER!
-The credential will have NO ACTIVE QR CODE until you generate a new one.
-
-Are you absolutely sure?`)) return;
-    const reason = prompt('Reason for deleting QR (required):');
-    if (!reason) { toast.info('Cancelled', 'Deletion cancelled - reason is required'); return; }
-    setActionLoading('delete-active');
+This will remove the QR code permanently with NO WAY TO RECOVER! The credential will have NO ACTIVE QR CODE until you generate a new one. Are you absolutely sure?`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        const reason = prompt('Reason for deleting QR (required):');
+        if (!reason) { toast.info('Cancelled', 'Deletion cancelled - reason is required'); setConfirmDialog(null); return; }
+        setActionLoading('delete-active');
     try {
       const res = await deleteQRToken(activeToken.id, credentialId, user.id, user.email, reason);
       if (res.success) {
@@ -159,13 +198,22 @@ Are you absolutely sure?`)) return;
       toast.error('Error', 'Failed to delete QR token');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleDeleteOldToken = async (tokenId: string) => {
     if (!user?.id || !user?.email) return;
-    if (!confirm('Permanently delete this old QR token?')) return;
-    setActionLoading(`delete-${tokenId}`);
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Old Token',
+      message: 'Permanently delete this old QR token?' ,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(`delete-${tokenId}`);
     try {
       const res = await deleteQRToken(tokenId, credentialId, user.id, user.email, 'Old token cleaned up');
       if (res.success) {
@@ -178,7 +226,10 @@ Are you absolutely sure?`)) return;
       toast.error('Error', 'Failed to delete');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleCleanupAllOld = async () => {
@@ -188,8 +239,14 @@ Are you absolutely sure?`)) return;
       toast.info('No Old Tokens', 'No old/revoked tokens to clean up');
       return;
     }
-    if (!confirm(`Delete ALL ${oldCount} old/revoked QR tokens? This cannot be undone!`)) return;
-    setActionLoading('cleanup-all');
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Cleanup All Tokens',
+      message: `Delete ALL ${oldCount} old/revoked QR tokens? This cannot be undone!`,
+      variant: 'danger',
+      confirmLabel: 'Delete All',
+      onConfirm: async () => {
+        setActionLoading('cleanup-all');
     try {
       const res = await deleteAllOldTokens(credentialId, user.id, user.email);
       if (res.success) {
@@ -202,15 +259,24 @@ Are you absolutely sure?`)) return;
       toast.error('Error', 'Failed to clean up');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleRevoke = async () => {
     if (!activeToken || !user?.id || !user?.email) return;
     const reason = prompt('Reason for revoking QR:');
     if (!reason) return;
-    if (!confirm(`REVOKE QR for ${recipientName}? This will invalidate the QR code permanently!`)) return;
-    setActionLoading('revoke');
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Revoke QR',
+      message: `REVOKE QR for ${recipientName}? This will invalidate the QR code permanently!`,
+      variant: 'danger',
+      confirmLabel: 'Revoke',
+      onConfirm: async () => {
+        setActionLoading('revoke');
     try {
       const res = await revokeQRToken(activeToken.id, credentialId, user.id, user.email, reason);
       if (res.success) {
@@ -223,7 +289,10 @@ Are you absolutely sure?`)) return;
       toast.error('Error', 'An unexpected error occurred');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleDownload = async () => {
@@ -529,6 +598,19 @@ Are you absolutely sure?`)) return;
             </button>
           </div>
         </div>
+      )}
+
+      {/* Confirm Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
       )}
     </div>
   );

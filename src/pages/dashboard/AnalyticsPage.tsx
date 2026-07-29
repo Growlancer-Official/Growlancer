@@ -1,21 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Activity,
-  ArrowDown,
-  ArrowUp,
-  BarChart3,
-  Briefcase,
-  CheckCircle,
-  Clock,
-  DollarSign,
-  Eye,
-  FileText,
-  RefreshCw,
-  ShoppingBag,
-  Star,
-  TrendingUp,
-  Users,
-} from 'lucide-react';
+import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, DollarSign, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users } from 'lucide-react';
+import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { analyticsService, type AnalyticsData } from '../../lib/analyticsService';
@@ -26,6 +11,7 @@ export function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
+  const toast = useToast();
 
   const fetchAnalytics = useCallback(async () => {
     if (!user) return;
@@ -34,7 +20,7 @@ export function AnalyticsPage() {
       const result = await analyticsService.getFreelancerAnalytics(user.id, timeframe);
       setData(result);
     } catch (err) {
-      console.error('Failed to fetch analytics:', err);
+      toast.error('Error', 'Failed to load analytics.');
     } finally {
       setLoading(false);
     }

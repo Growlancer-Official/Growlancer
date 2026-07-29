@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Award, Bell, BellOff, Briefcase, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, Plus, Search, Star, Trash2,  } from 'lucide-react';
+import { Award, Bell, BellOff, Briefcase, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, Plus, Search, Star, Trash2 } from 'lucide-react';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
@@ -48,6 +49,7 @@ export function ClientFreelancerSearchPage() {
   const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([]);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveName, setSaveName] = useState('');
+  const toast = useToast();
 
   const fetchFreelancers = useCallback(async () => {
     setLoading(true);
@@ -90,7 +92,7 @@ export function ClientFreelancerSearchPage() {
 
       setFreelancers(results);
     } catch (err) {
-      console.error('Error fetching freelancers:', err);
+      toast.error('Error', 'Failed to load freelancers.');
     } finally {
       setLoading(false);
     }

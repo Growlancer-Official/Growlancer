@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { identityVerificationService, type IdentityVerification } from '../../lib/identityVerification';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 type TabFilter = 'all' | 'pending' | 'verified' | 'rejected';
@@ -233,7 +235,9 @@ export function AdminIdentityVerificationPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewItem, setPreviewItem] = useState<VerificationWithUser | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; variant: 'danger' | 'warning' | 'info'; confirmLabel?: string; onConfirm: () => void | Promise<void> } | null>(null);
   const [rejectionModal, setRejectionModal] = useState<VerificationWithUser | null>(null);
+  const toast = useToast();
   const [rejectionReason, setRejectionReason] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [stats, setStats] = useState<{ pending: number; verified: number; rejected: number; total: number }>({
@@ -282,6 +286,7 @@ export function AdminIdentityVerificationPage() {
       setVerifications(enriched);
     } catch (err) {
       console.error('Failed to fetch verifications:', err);
+      toast.error('Failed to fetch verifications', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -307,18 +312,28 @@ export function AdminIdentityVerificationPage() {
   // ─── Actions ───────────────────────────────────────────────────────────
 
   const handleApprove = async (verification: VerificationWithUser) => {
-    if (!confirm(`✅ Approve identity verification for "${verification.user_name}"?`)) return;
-    setActionLoading(`approve-${verification.id}`);
-    try {
-      const result = await identityVerificationService.adminUpdateStatus(verification.id, 'verified');
-      if (!result.success) throw new Error(result.error);
-      await fetchVerifications();
-    } catch (err) {
-      console.error('Approve error:', err);
-      alert('Failed to approve verification: ' + (err instanceof Error ? err.message : 'Unknown error'));
-    } finally {
-      setActionLoading(null);
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Approve Verification',
+      message: `✅ Approve identity verification for "${verification.user_name}"?`,
+      variant: 'info',
+      confirmLabel: 'Approve',
+      onConfirm: async () => {
+        setActionLoading(`approve-${verification.id}`);
+        try {
+          const result = await identityVerificationService.adminUpdateStatus(verification.id, 'verified');
+          if (!result.success) throw new Error(result.error);
+          await fetchVerifications();
+          toast.success(`Verification approved for ${verification.user_name}`);
+          setConfirmDialog(null);
+        } catch (err) {
+          console.error('Approve error:', err);
+          toast.error('Failed to approve verification', err instanceof Error ? err.message : 'Unknown error');
+        } finally {
+          setActionLoading(null);
+        }
+      },
+    });
   };
 
   const handleRejectSubmit = async () => {
@@ -336,7 +351,7 @@ export function AdminIdentityVerificationPage() {
       await fetchVerifications();
     } catch (err) {
       console.error('Reject error:', err);
-      alert('Failed to reject verification: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      toast.error('Failed to reject verification', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setActionLoading(null);
     }
@@ -621,6 +636,18 @@ export function AdminIdentityVerificationPage() {
       {previewItem && <DocumentPreviewModal verification={previewItem} onClose={() => setPreviewItem(null)} />}
 
       {/* Rejection Reason Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
+
       {rejectionModal && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"

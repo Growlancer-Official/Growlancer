@@ -2,19 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import {
-  ArrowRight,
-  Briefcase,
-  CheckCircle,
-  DollarSign,
-  Image,
-  Plus,
-  Shield,
-  Sparkles,
-  Tag,
-  X,
-  Zap,
-} from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle, DollarSign, Image, Plus, Shield, Sparkles, Tag, X, Zap } from 'lucide-react';
+import { useToast } from '../../components/Toast';
 import { useCategories } from '../../hooks/useCategories';
 import { ImageUpload } from '../../components/ImageUpload';
 
@@ -22,6 +11,7 @@ export function CreateServicePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -118,8 +108,7 @@ export function CreateServicePage() {
 
       navigate('/dashboard/services');
     } catch (error) {
-      console.error('Error creating service:', error);
-      alert('Failed to create service. Please try again.');
+      toast.error('Error', 'Failed to create service. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { invitesService } from '../lib/dataService';
-import { Calendar, Clock, MailCheck, MoreVertical, Plus, RefreshCw, Send, X,  } from 'lucide-react';
+import { Calendar, Clock, MailCheck, MoreVertical, Plus, RefreshCw, Send, X } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 interface Invite {
   id: string;
@@ -82,6 +83,7 @@ export function ClientInvitesPage() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'declined'>('all');
   const [loading, setLoading] = useState(true);
   const [actionId, setActionId] = useState<string | null>(null);
+  const toast = useToast();
 
   const fetchInvites = useCallback(async () => {
     if (!user?.id) return;
@@ -89,7 +91,7 @@ export function ClientInvitesPage() {
       const data = await invitesService.getByClient(user.id);
       setInvites(data as unknown as Invite[]);
     } catch (error) {
-      console.error('Error fetching invites:', error);
+      toast.error('Error', 'Failed to load invites.');
     } finally {
       setLoading(false);
     }

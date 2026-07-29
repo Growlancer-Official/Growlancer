@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Loader2, MessageSquare, Send, Star, User,  } from 'lucide-react';
+import { Loader2, MessageSquare, Send, Star, User } from 'lucide-react';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { reviewService } from '../lib/reviews';
@@ -30,6 +31,7 @@ export function ClientReviewsPage() {
   const [replyModal, setReplyModal] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
+  const toast = useToast();
 
   const fetchReviews = useCallback(async () => {
     if (!user) return;
@@ -40,7 +42,7 @@ export function ClientReviewsPage() {
       setAverageRating(result.average_rating);
       setTotalReviews(result.total_reviews);
     } catch (err) {
-      console.error('Failed to fetch reviews:', err);
+      toast.error('Error', 'Failed to fetch reviews.');
     } finally {
       setLoading(false);
     }
@@ -75,7 +77,7 @@ export function ClientReviewsPage() {
       setReplyText('');
       fetchReviews();
     } catch (err) {
-      console.error('Failed to submit reply:', err);
+      toast.error('Error', 'Failed to submit reply.');
     } finally {
       setSubmittingReply(false);
     }

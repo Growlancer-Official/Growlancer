@@ -1,21 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowRight,
-  CheckCircle,
-  DollarSign,
-  FileText,
-  Loader2,
-  Plus,
-  Tag,
-  X,
-} from 'lucide-react';
+import { ArrowRight, CheckCircle, DollarSign, FileText, Loader2, Plus, Tag, X } from 'lucide-react';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { contestService, CONTEST_CATEGORIES } from '../lib/contests';
 
 export function ClientContestCreatePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -89,7 +82,7 @@ export function ClientContestCreatePage() {
     if (result.success) {
       navigate('/client/contests');
     } else {
-      alert(result.error || 'Failed to create contest');
+      toast.error('Failed', result.error || 'Failed to create contest');
     }
   };
 

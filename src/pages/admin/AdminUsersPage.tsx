@@ -161,6 +161,7 @@ export function AdminUsersPage() {
           await adminUpdate('profiles', userId, { onboarding_completed: true });
           await fetchUsers();
           toast.success(`User "${userName}" verified successfully`);
+          setConfirmDialog(null);
         } catch (err) { 
           console.error(err);
           toast.error('Failed to verify user', err instanceof Error ? err.message : 'Unknown error');
@@ -183,6 +184,7 @@ export function AdminUsersPage() {
           await adminUpdate('profiles', userId, { is_pro: !currentPro });
           await fetchUsers();
           toast.success(`Pro status ${currentPro ? 'removed from' : 'granted to'} "${userName}"`);
+          setConfirmDialog(null);
         } catch (err) { 
           console.error(err);
           toast.error('Failed to update pro status', err instanceof Error ? err.message : 'Unknown error');
@@ -205,6 +207,7 @@ export function AdminUsersPage() {
           await adminUpdate('profiles', userId, { role: 'admin' });
           await fetchUsers();
           toast.success(`"${userName}" is now an admin`);
+          setConfirmDialog(null);
         } catch (err) { 
           console.error(err);
           toast.error('Failed to make admin', err instanceof Error ? err.message : 'Unknown error');
@@ -265,6 +268,7 @@ export function AdminUsersPage() {
           await adminUpdate('profiles', userId, { suspended_at: null, suspend_reason: null });
           await fetchUsers();
           toast.success(`"${userName}" reactivated successfully`);
+          setConfirmDialog(null);
         } catch (err) { 
           console.error(err);
           toast.error('Failed to reactivate user', err instanceof Error ? err.message : 'Unknown error');
@@ -292,6 +296,7 @@ export function AdminUsersPage() {
           await adminDelete('profiles', userId);
           await fetchUsers();
           toast.success(`User "${userName}" permanently deleted`);
+          setConfirmDialog(null);
         } catch (err) { 
           console.error(err);
           toast.error('Failed to delete user', err instanceof Error ? err.message : 'Unknown error');

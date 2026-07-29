@@ -1,24 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
-import {
-  ArrowRight,
-  Calendar,
-  Check,
-  Clock,
-  Crown,
-  Info,
-  Loader2,
-  RefreshCw,
-  Shield,
-  Sparkles,
-  X,
-  Zap,
-} from 'lucide-react';
-import {
-  subscriptionService,
-  type AIPlan,
-  type SubscriptionWithPlan,
-} from '../lib/subscriptionHelpers';
+import { ArrowRight, Calendar, Check, Clock, Crown, Info, Loader2, RefreshCw, Shield, Sparkles, X, Zap } from 'lucide-react';
+import { useToast } from '../components/Toast';
+import { ConfirmModal } from '../components/ConfirmModal';
+import { subscriptionService, type AIPlan, type SubscriptionWithPlan } from '../lib/subscriptionHelpers';
 
 const FEATURE_COMPARISON = [
   { feature: 'AI Messages / Month', free: '10 messages', pro: 'Unlimited', proHighlight: true },
@@ -35,6 +20,15 @@ export function ClientAISubscriptionPage() {
   const [currentSubscription, setCurrentSubscription] = useState<SubscriptionWithPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
+  const toast = useToast();
 
   const fetchData = useCallback(async () => {
     if (!user) return;
@@ -51,7 +45,7 @@ export function ClientAISubscriptionPage() {
         setCurrentSubscription(subResult.subscription ?? null);
       }
     } catch (error) {
-      console.error('Error fetching subscription data:', error);
+      toast.error('Error', 'Failed to load subscription data.');
     } finally {
       setLoading(false);
     }
@@ -78,24 +72,33 @@ export function ClientAISubscriptionPage() {
     const result = await subscriptionService.subscribeToPlan(user.id, planId);
     if (result.success && result.subscription) {
       setCurrentSubscription(result.subscription);
+      toast.success('Subscribed!', 'Subscription started successfully.');
     } else {
-      alert(result.error || 'Failed to start subscription. Please try again.');
+      toast.error('Failed', result.error || 'Failed to start subscription.');
     }
     setUpgrading(null);
   };
 
   const handleCancel = async () => {
     if (!currentSubscription?.id || !user) return;
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to Pro features at the end of your billing period.')) return;
-
-    const result = await subscriptionService.cancelSubscription(currentSubscription.id, user.id);
-    if (result.success) {
-      alert('Subscription will be cancelled at the end of your billing period.');
-      const subResult = await subscriptionService.getCurrentSubscription(user.id);
-      if (subResult.success) setCurrentSubscription(subResult.subscription ?? null);
-    } else {
-      alert(result.error || 'Failed to cancel subscription. Please try again.');
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Cancel Subscription',
+      message: 'Are you sure you want to cancel your subscription? You will lose access to Pro features at the end of your billing period.',
+      variant: 'warning',
+      confirmLabel: 'Cancel Subscription',
+      onConfirm: async () => {
+        const result = await subscriptionService.cancelSubscription(currentSubscription.id, user.id);
+        if (result.success) {
+          toast.success('Cancelled', 'Subscription will be cancelled at the end of your billing period.');
+          const subResult = await subscriptionService.getCurrentSubscription(user.id);
+          if (subResult.success) setCurrentSubscription(subResult.subscription ?? null);
+        } else {
+          toast.error('Failed', result.error || 'Failed to cancel subscription.');
+        }
+        setConfirmDialog(null);
+      },
+    });
   };
 
   if (loading) {
@@ -397,8 +400,19 @@ export function ClientAISubscriptionPage() {
         </div>
       </div>
 
+
+      {/* Confirm Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }
-
-

@@ -4,6 +4,8 @@ import {
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete, adminInsert } from '../../lib/adminDataProxy';
 import { supabase } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { paypalService } from '../../lib/paypal';
 import { razorpayService } from '../../lib/razorpay';
 
@@ -99,7 +101,9 @@ export function AdminDisputesPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; variant: 'danger' | 'warning' | 'info'; confirmLabel?: string; onConfirm: () => void | Promise<void> } | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const toast = useToast();
 
   const fetchDisputes = useCallback(async () => {
     setLoading(true);
@@ -133,7 +137,10 @@ export function AdminDisputesPage() {
         target: profileMap.get(d.raised_against) || null,
         contract: contractMap.get(d.contract_id) || null,
       })));
-    } catch (err) { console.error('Failed to fetch disputes:', err); }
+    } catch (err) { 
+      console.error('Failed to fetch disputes:', err);
+      toast.error('Failed to fetch disputes', err instanceof Error ? err.message : 'Unknown error');
+    }
     finally { setLoading(false); }
   }, [statusFilter]);
 
@@ -148,13 +155,23 @@ export function AdminDisputesPage() {
   }, [fetchDisputes]);
 
   const handleDeleteDispute = async (disputeId: string) => {
-    if (!confirm('\uD83D\uDDD1\uFE0F Delete this dispute case? This cannot be undone!')) return;
-    setActionLoading(disputeId);
-    try {
-      await adminDelete('disputes', disputeId);
-      await fetchDisputes();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Dispute',
+      message: '🗑️ Delete this dispute case? This cannot be undone!',
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(disputeId);
+        try {
+          await adminDelete('disputes', disputeId);
+          await fetchDisputes();
+          toast.success('Dispute deleted');
+          setConfirmDialog(null);
+        } catch (err) { console.error(err); toast.error('Failed to delete dispute', err instanceof Error ? err.message : 'Unknown error'); }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   /** Refund via payment provider when dismissing a dispute */
@@ -230,61 +247,68 @@ export function AdminDisputesPage() {
   const handleAction = async (disputeId: string, action: 'resolved' | 'dismissed', amount?: number) => {
     const actionLabel = action === 'resolved' ? 'Release funds to freelancer' : 'Refund to client';
     const amountStr = amount ? ' (' + formatCurrency(amount) + ')' : '';
-    if (!confirm('\u26A0\uFE0F ' + actionLabel + amountStr + '? This action cannot be undone.')) return;
-
-    setActionLoading(disputeId);
-    try {
-      // If dismissing (refunding client), try to refund via payment provider
-      if (action === 'dismissed') {
-        const thisDispute = disputes.find(d => d.id === disputeId);
-        if (thisDispute?.contract_id) {
-          await processRefundForDispute(disputeId, thisDispute.contract_id, thisDispute.raised_by, amount);
-        }
-      }
-
-      // Update dispute status
-      const resolution = action === 'resolved'
-        ? 'Funds released to freelancer per admin review on ' + new Date().toLocaleDateString()
-        : 'Funds refunded to client per admin review on ' + new Date().toLocaleDateString();
-      await adminUpdate('disputes', disputeId, { status: action, resolution, updated_at: new Date().toISOString() });
-      await fetchDisputes();
-
-      // Send email notifications to both parties (fire-and-forget)
-      const dispute = disputes.find(d => d.id === disputeId);
-      if (dispute) {
-        const outcome = action === 'resolved' ? 'resolved' : 'dismissed';
-        const parties = [
-          { id: dispute.raised_by, name: dispute.raiser?.name },
-          { id: dispute.raised_against, name: dispute.target?.name },
-        ];
-        for (const party of parties) {
-          if (!party.id || !party.name) continue;
-          const { data: profile } = await adminQuery({
-            table: 'profiles',
-            select: 'email',
-            filters: { id: party.id },
-            limit: 1,
-          }).catch(() => ({ data: null }));
-          const email = profile?.[0]?.email;
-          if (email) {
-            supabase.functions.invoke('email-notifications', {
-              method: 'POST',
-              body: {
-                type: 'dispute_resolved',
-                data: {
-                  recipient_email: email,
-                  recipient_name: party.name,
-                  dispute_id: disputeId,
-                  resolution,
-                  outcome,
-                },
-              },
-            }).then(() => {}).catch(() => {});
+    setConfirmDialog({
+      isOpen: true,
+      title: action === 'resolved' ? 'Release Funds' : 'Refund Client',
+      message: '⚠️ ' + actionLabel + amountStr + '? This action cannot be undone.',
+      variant: 'warning',
+      confirmLabel: action === 'resolved' ? 'Release Funds' : 'Refund Client',
+      onConfirm: async () => {
+        setActionLoading(disputeId);
+        try {
+          if (action === 'dismissed') {
+            const thisDispute = disputes.find(d => d.id === disputeId);
+            if (thisDispute?.contract_id) {
+              await processRefundForDispute(disputeId, thisDispute.contract_id, thisDispute.raised_by, amount);
+            }
           }
+          const resolution = action === 'resolved'
+            ? 'Funds released to freelancer per admin review on ' + new Date().toLocaleDateString()
+            : 'Funds refunded to client per admin review on ' + new Date().toLocaleDateString();
+          await adminUpdate('disputes', disputeId, { status: action, resolution, updated_at: new Date().toISOString() });
+          // Send email notifications to both parties (fire-and-forget, non-critical)
+          const dispute = disputes.find((d: AdminDispute) => d.id === disputeId);
+          if (dispute) {
+            const parties = [
+              { id: dispute.raised_by, name: dispute.raiser?.name },
+              { id: dispute.raised_against, name: dispute.target?.name },
+            ];
+            for (const party of parties) {
+              if (!party.id || !party.name) continue;
+              adminQuery({
+                table: 'profiles',
+                select: 'email',
+                filters: { id: party.id },
+                limit: 1,
+              }).then((profileRes: any) => {
+                const email = profileRes?.data?.[0]?.email;
+                if (email) {
+                  supabase.functions.invoke('email-notifications', {
+                    method: 'POST',
+                    body: {
+                      type: 'dispute_resolved',
+                      data: {
+                        recipient_email: email,
+                        recipient_name: party.name,
+                        dispute_id: disputeId,
+                        outcome: action,
+                      },
+                    },
+                  }).catch(() => {}); // Non-critical background notification
+                }
+              }).catch(() => {}); // Non-critical background notification
+            }
+          }
+          await fetchDisputes();
+          toast.success(action === 'resolved' ? 'Funds released to freelancer' : 'Client refunded');
+          setConfirmDialog(null);
+        } catch (err) { 
+          console.error('Failed to update dispute:', err);
+          toast.error('Failed to update dispute', err instanceof Error ? err.message : 'Unknown error');
         }
-      }
-    } catch (err) { console.error('Failed to update dispute:', err); }
-    finally { setActionLoading(null); }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const pendingCount = disputes.filter(d => d.status === 'pending' || d.status === 'under_review').length;

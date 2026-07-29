@@ -107,6 +107,7 @@ export function AdminProjectsPage() {
           await adminUpdate('projects', projectId, { status, updated_at: new Date().toISOString() });
           await fetchProjects();
           toast.success(`"${title}" marked as ${status.replace('_', ' ')}`);
+          setConfirmDialog(null);
         } catch (err) { console.error(err); toast.error('Failed to update status', err instanceof Error ? err.message : 'Unknown error'); }
         finally { setActionLoading(null); setOpenDropdown(null); }
       },
@@ -126,6 +127,7 @@ export function AdminProjectsPage() {
           await adminDelete('projects', projectId);
           await fetchProjects();
           toast.success(`Project "${title}" deleted`);
+          setConfirmDialog(null);
         } catch (err) { console.error(err); toast.error('Failed to delete project', err instanceof Error ? err.message : 'Unknown error'); }
         finally { setActionLoading(null); }
       },

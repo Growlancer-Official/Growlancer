@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
-import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Wallet, X, Zap,  } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Wallet, X, Zap } from 'lucide-react';
+import { useToast } from '../../components/Toast';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
@@ -202,6 +203,8 @@ export function ProjectFeedPage() {
   const [freelancerRate, setFreelancerRate] = useState<number | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean>(true);
   const [appliedProjects, setAppliedProjects] = useState<Set<string>>(new Set());
+  const toast = useToast();
+
   const [declinedProjects, setDeclinedProjects] = useState<Set<string>>(() => {
     try {
       const stored = localStorage.getItem('gw_declined_projects');
@@ -249,7 +252,7 @@ export function ProjectFeedPage() {
           .order('match_score', { ascending: false });
 
         if (error) {
-          console.error('[ProjectFeedPage] Database error:', error);
+          toast.error('Error', 'Failed to load matches.');
           throw error;
         }
 
@@ -277,7 +280,7 @@ export function ProjectFeedPage() {
 
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching matches:', error);
+        toast.error('Error', 'Failed to load matches.');
         setLoading(false);
       }
     };
@@ -467,8 +470,7 @@ export function ProjectFeedPage() {
       // Clear success message after 3 seconds
       setTimeout(() => setProposalSuccess(null), 3000);
     } catch (error) {
-      console.error('Error submitting proposal:', error);
-      alert('Failed to submit application. Please try again.');
+      toast.error('Error', 'Failed to submit application. Please try again.');
     } finally {
       setSubmittingProposal(false);
     }
@@ -491,7 +493,7 @@ export function ProjectFeedPage() {
       setMatches(prev => prev.filter((m) => m.id !== matchId));
       setFilteredMatches(prev => prev.filter((m) => m.id !== matchId));
     } catch (error) {
-      console.error('Error declining match:', error);
+      toast.error('Error', 'Failed to decline match.');
     }
   };
 

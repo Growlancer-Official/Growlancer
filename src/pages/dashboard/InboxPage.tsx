@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Briefcase, CheckCheck, FileText, Inbox, Loader2, Mail, MessageSquare, MoreVertical, Paperclip, Search, Send, XCircle,  } from 'lucide-react';
+import { ArrowLeft, Briefcase, CheckCheck, FileText, Inbox, Loader2, Mail, MessageSquare, MoreVertical, Paperclip, Search, Send, XCircle } from 'lucide-react';
+import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { messagesService, type Conversation, type MessageWithSender } from '../../lib/messages';
@@ -16,6 +17,7 @@ export function InboxPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [sending, setSending] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const toast = useToast();
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const pageSize = 20;
@@ -58,7 +60,7 @@ export function InboxPage() {
       }
       setHasMore(convs.length === pageSize);
     } catch (err) {
-      console.error('Failed to fetch conversations:', err);
+      toast.error('Error', 'Failed to load conversations.');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -75,7 +77,7 @@ export function InboxPage() {
         await messagesService.markContractAsRead(contractId, user.id);
       }
     } catch (err) {
-      console.error('Failed to fetch messages:', err);
+      toast.error('Error', 'Failed to load messages.');
     }
   }, [user]);
 
@@ -120,7 +122,7 @@ export function InboxPage() {
       await fetchMessages(selectedContractId);
       await fetchConversations();
     } catch (err) {
-      console.error('Failed to send message:', err);
+      toast.error('Error', 'Failed to send message.');
     } finally {
       setSending(false);
     }

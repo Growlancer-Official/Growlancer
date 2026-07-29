@@ -107,7 +107,7 @@ export function WorkspacePage() {
         }
       }
     } catch (err) {
-      console.error('Error refreshing contract:', err);
+      toast.error('Error', 'Failed to refresh contract.');
     }
   }, []);
 
@@ -148,9 +148,9 @@ export function WorkspacePage() {
         }
 
         setLoading(false);
-      } catch (error) {
-        console.error('Error fetching workspace data:', error);
-        setLoading(false);
+    } catch (error) {
+      toast.error('Error', 'Failed to load workspace data.');
+      setLoading(false);
       }
     };
 
@@ -177,7 +177,7 @@ export function WorkspacePage() {
         setSharedTasks(data as SharedTask[]);
       }
     } catch (error) {
-      console.error('Error fetching shared tasks:', error);
+      toast.error('Error', 'Failed to load shared tasks.');
     }
   }, [selectedContract]);
 
@@ -201,7 +201,7 @@ export function WorkspacePage() {
         setNotesText('');
       }
     } catch (error) {
-      console.error('Error fetching shared notes:', error);
+      toast.error('Error', 'Failed to load shared notes.');
       setNotesText('');
     }
   }, [selectedContract]);
@@ -287,7 +287,7 @@ export function WorkspacePage() {
           setHasMoreMessages(data.length === messagesPageSize);
         }
       } catch (error) {
-        console.error('Error fetching messages:', error);
+        toast.error('Error', 'Failed to load messages.');
       } finally {
         if (loadMore) setLoadingMessages(false);
       }
@@ -415,8 +415,7 @@ export function WorkspacePage() {
         toast.error(result.error || 'Failed to upload file');
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      toast.error('Failed to upload file. Please try again.');
+      toast.error('Upload Error', 'Failed to upload file. Please try again.');
     } finally {
       setUploadingFile(false);
     }
@@ -471,7 +470,7 @@ export function WorkspacePage() {
         void fetchSharedTasks();
       }
     } catch (err) {
-      console.error('Error adding task:', err);
+      toast.error('Error', 'Failed to add task.');
     }
   };
 
@@ -483,7 +482,7 @@ export function WorkspacePage() {
         .eq('id', taskId);
       if (!error) void fetchSharedTasks();
     } catch (err) {
-      console.error('Error updating task status:', err);
+      toast.error('Error', 'Failed to update task.');
     }
   };
 
@@ -495,7 +494,7 @@ export function WorkspacePage() {
         .eq('id', taskId);
       if (!error) void fetchSharedTasks();
     } catch (err) {
-      console.error('Error deleting task:', err);
+      toast.error('Error', 'Failed to delete task.');
     }
   };
 

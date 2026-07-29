@@ -35,6 +35,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 
 type ApplicationStatus = 'applied' | 'shortlisted' | 'interview_scheduled' | 'selected' | 'rejected';
 
@@ -119,6 +120,7 @@ export function AdminInternshipsPage() {
   const [emailLogs, setEmailLogs] = useState<Record<string, { status: string; sent: boolean; time: string }[]>>({});
   const selectAllRef = useRef<HTMLButtonElement>(null);
   const toast = useToast();
+  const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; variant: 'danger' | 'warning' | 'info'; confirmLabel?: string; onConfirm: () => void | Promise<void> } | null>(null);
   const [uploadingDoc, setUploadingDoc] = useState<Record<string, { type: string; loading: boolean }>>({});
 
   const handleDocumentUpload = async (appId: string, field: 'offer_letter_url' | 'nda_url' | 'internship_letter_url', file: File) => {
@@ -223,21 +225,34 @@ export function AdminInternshipsPage() {
   }, [expandedId, actionLoading, uploadingDoc]);
 
   const handleDeleteApplication = async (id: string, name: string) => {
-    if (!confirm(`Delete application from "${name}"? This cannot be undone!`)) return;
-    setActionLoading(`delete-${id}`);
-    try {
-      await supabase.functions.invoke('internship-applications', {
-        method: 'DELETE',
-        body: { application_id: id },
-      }).catch(async () => {
-        await supabase.functions.invoke('admin-data', {
-          method: 'DELETE',
-          body: { table: 'internship_applications', id },
-        });
-      });
-      await fetchApplications();
-    } catch (err) { console.error('Delete error:', err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Application',
+      message: `Delete application from "${name}"? This cannot be undone!`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(`delete-${id}`);
+        try {
+          await supabase.functions.invoke('internship-applications', {
+            method: 'DELETE',
+            body: { application_id: id },
+          }).catch(async () => {
+            await supabase.functions.invoke('admin-data', {
+              method: 'DELETE',
+              body: { table: 'internship_applications', id },
+            });
+          });
+          await fetchApplications();
+          toast.success(`Application deleted for ${name}`);
+          setConfirmDialog(null);
+        } catch (err) { 
+          console.error('Delete error:', err);
+          toast.error('Failed to delete', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const getCurrentAppStatus = (id: string): ApplicationStatus | undefined =>
@@ -253,9 +268,14 @@ export function AdminInternshipsPage() {
     const app = applications.find(a => a.id === id);
     if (!app) return;
     const statusLabel = STATUS_LABELS[app.status];
-    if (!confirm(`Send "${statusLabel}" email to ${app.full_name} (${app.email})?`)) return;
-
-    setActionLoading(`email-${id}`);
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Send Email',
+      message: `Send "${statusLabel}" email to ${app.full_name} (${app.email})?`,
+      variant: 'info',
+      confirmLabel: 'Send Email',
+      onConfirm: async () => {
+        setActionLoading(`email-${id}`);
     try {
       // Always save pending meet link & time to DB before sending email
       const googleMeetLink = meetLinkInput[id] ?? app?.google_meet_link ?? undefined;
@@ -316,7 +336,10 @@ export function AdminInternshipsPage() {
       toast.error('Email Failed', 'An unexpected error occurred.');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+    },
+    });
   };
 
   const handleStatusChange = async (id: string, status: ApplicationStatus, sendEmail = false) => {
@@ -1277,6 +1300,18 @@ export function AdminInternshipsPage() {
           </>
         )}
       </div>
+
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }

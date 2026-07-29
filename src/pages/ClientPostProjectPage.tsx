@@ -2,14 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import {
-  ArrowRight,
-  Briefcase,
-  CheckCircle,
-  DollarSign,
-  Sparkles,
-  CheckCircle2,
-} from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle, DollarSign, Sparkles, CheckCircle2 } from 'lucide-react';
+import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
 import { useSkills } from '../hooks/useSkills';
 import { SkillsSelector } from '../components/SkillsSelector';
@@ -21,6 +15,7 @@ export function ClientPostProjectPage() {
   const editProjectId = searchParams.get('edit');
   const { categories } = useCategories();
   const { skills: allSkills } = useSkills();
+  const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [fetchingEditData, setFetchingEditData] = useState(!!editProjectId);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
@@ -109,7 +104,7 @@ export function ClientPostProjectPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.budget_min || !formData.budget_max) {
-      alert('Please fill in all required fields');
+      toast.error('Validation Error', 'Please fill in all required fields');
       return;
     }
 
@@ -117,15 +112,15 @@ export function ClientPostProjectPage() {
     const minBudget = parseInt(formData.budget_min);
     const maxBudget = parseInt(formData.budget_max);
     if (isNaN(minBudget) || isNaN(maxBudget)) {
-      alert('Please enter valid budget amounts.');
+      toast.error('Validation Error', 'Please enter valid budget amounts.');
       return;
     }
     if (minBudget < 500) {
-      alert('Minimum budget must be at least $500.');
+      toast.error('Validation Error', 'Minimum budget must be at least $500.');
       return;
     }
     if (maxBudget < minBudget) {
-      alert('Minimum budget cannot be greater than maximum budget.');
+      toast.error('Validation Error', 'Minimum budget cannot be greater than maximum budget.');
       return;
     }
     setLoading(true);
@@ -191,8 +186,7 @@ export function ClientPostProjectPage() {
 
       navigate(`/client/matches?project_id=${projectDataResult.id}`);
     } catch (error) {
-      console.error('Error saving project:', error);
-      alert('Failed to save project. Please try again.');
+      toast.error('Error', 'Failed to save project. Please try again.');
     } finally {
       setLoading(false);
     }

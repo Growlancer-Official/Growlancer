@@ -17,6 +17,8 @@ import {
   Zap,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import {
   subscriptionService,
   type AIPlan,
@@ -45,6 +47,15 @@ export function AISubscriptionPage() {
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [usageStats, setUsageStats] = useState<AIUsageStats | null>(null);
   const [usageLoading, setUsageLoading] = useState(true);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
+  const toast = useToast();
 
   const fetchData = async () => {
     if (!user) return;
@@ -72,7 +83,7 @@ export function AISubscriptionPage() {
         }
       }
     } catch (error) {
-      console.error('Error fetching subscription data:', error);
+      toast.error('Error', 'Failed to load subscription data.');
     } finally {
       setLoading(false);
       setUsageLoading(false);
@@ -107,7 +118,7 @@ export function AISubscriptionPage() {
         setUsageStats(usageResult.stats);
       }
     } else {
-      alert(result.error || 'Failed to start subscription. Please try again.');
+      toast.error('Failed', result.error || 'Failed to start subscription.');
     }
 
     setUpgrading(null);
@@ -115,16 +126,24 @@ export function AISubscriptionPage() {
 
   const handleCancel = async () => {
     if (!currentSubscription?.id || !user) return;
-    if (!confirm('Are you sure you want to cancel your subscription? You will lose access to Pro features at the end of your billing period.')) return;
-
-    const result = await subscriptionService.cancelSubscription(currentSubscription.id, user.id);
-    if (result.success) {
-      alert('Subscription will be cancelled at the end of your billing period.');
-      const subResult = await subscriptionService.getCurrentSubscription(user.id);
-      if (subResult.success) setCurrentSubscription(subResult.subscription ?? null);
-    } else {
-      alert(result.error || 'Failed to cancel subscription. Please try again.');
-    }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Cancel Subscription',
+      message: 'Are you sure you want to cancel your subscription? You will lose access to Pro features at the end of your billing period.',
+      variant: 'warning',
+      confirmLabel: 'Cancel',
+      onConfirm: async () => {
+        const result = await subscriptionService.cancelSubscription(currentSubscription.id, user.id);
+        if (result.success) {
+          toast.success('Cancelled', 'Subscription will be cancelled at the end of your billing period.');
+          const subResult = await subscriptionService.getCurrentSubscription(user.id);
+          if (subResult.success) setCurrentSubscription(subResult.subscription ?? null);
+        } else {
+          toast.error('Failed', result.error || 'Failed to cancel subscription.');
+        }
+        setConfirmDialog(null);
+      },
+    });
   };
 
   if (loading) {
@@ -547,6 +566,32 @@ export function AISubscriptionPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirm Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
+
+      {/* Confirm Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }

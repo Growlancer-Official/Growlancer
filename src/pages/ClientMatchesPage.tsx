@@ -5,6 +5,7 @@ import { realtimeChannels, supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { inviteFreelancerToProject } from '../lib/workflowService';
 import { CheckCircle2, DollarSign, MapPin, RefreshCw, Send, Sparkles, Star, User, XCircle, Plus, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
+import { useToast } from '../components/Toast';
 
 export function ClientMatchesPage() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export function ClientMatchesPage() {
   const [inviteBusy, setInviteBusy] = useState<string | null>(null);
   const [invitedFreelancers, setInvitedFreelancers] = useState<Set<string>>(new Set());
   const [skipped, setSkipped] = useState<Set<string>>(new Set());
+  const toast = useToast();
   const [clientProjects, setClientProjects] = useState<{ id: string; title: string; skills_required: string[] }[]>([]);
   const [currentProject, setCurrentProject] = useState<{ id: string; title: string; skills_required: string[] } | null>(null);
   const initializedProjects = useRef<Set<string>>(new Set());
@@ -164,7 +166,7 @@ export function ClientMatchesPage() {
       freelancerId,
       'We would like you to review this project on Growlancer.'
     );
-    if (!result.success) alert(result.error || 'Invite failed');
+    if (!result.success) toast.error('Invite Failed', result.error || 'Invite failed');
     setInviteBusy(null);
   };
 

@@ -8,6 +8,8 @@ import {
 import { adminQuery, adminUpdate } from '../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { disputeService, type DisputeCase } from '../lib/disputeService';
+import { useToast } from '../components/Toast';
+import { ConfirmModal } from '../components/ConfirmModal';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface PlatformMetrics {
@@ -116,6 +118,7 @@ function TableRowSkeleton() {
 
 // ─── PlatformStats ───────────────────────────────────────────────────────────
 function PlatformStats() {
+  const toast = useToast();
   const [metrics, setMetrics] = useState<PlatformMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -164,7 +167,7 @@ function PlatformStats() {
         gmvGrowth: Math.round(gmvGrowth * 10) / 10, inactiveAccounts: 0,
         totalContractsComplete: completed, flaggedProjects: flaggedProjects || 0,
       });
-    } catch (err) { console.error('Failed to fetch metrics:', err); }
+    } catch (err) { console.error('Failed to fetch metrics:', err); toast.error('Metrics Error', 'Could not load platform metrics.'); }
     finally { setLoading(false); }
   }, []);
 
@@ -222,10 +225,19 @@ function PlatformStats() {
 
 // ─── User Management Table ──────────────────────────────────────────────────
 function UserManagementTable() {
+  const toast = useToast();
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [roleFilter, setRoleFilter] = useState<'all' | 'freelancer' | 'client'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -234,7 +246,7 @@ function UserManagementTable() {
       if (roleFilter !== 'all') opts.filters = { role: roleFilter };
       const { data } = await adminQuery(opts);
       setUsers((data || []) as AdminUser[]);
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); toast.error('Users Error', 'Could not load users.'); }
     finally { setLoading(false); }
   }, [roleFilter]);
 
@@ -250,17 +262,37 @@ function UserManagementTable() {
   const handleSendEmail = (email: string) => window.open(`mailto:${email}`, '_blank');
 
   const handleTogglePro = async (userId: string, current: boolean | null, name: string) => {
-    if (!confirm(`${current ? 'Remove' : 'Grant'} Pro status for "${name}"?`)) return;
-    setActionLoading(`pro-${userId}`);      await adminUpdate('profiles', userId, { is_pro: !current });
-    await fetchUsers();
-    setActionLoading(null);
+    setConfirmDialog({
+      isOpen: true,
+      title: `${current ? 'Remove' : 'Grant'} Pro Status`,
+      message: `${current ? 'Remove' : 'Grant'} Pro status for "${name}"?`,
+      variant: 'warning',
+      confirmLabel: current ? 'Remove Pro' : 'Grant Pro',
+      onConfirm: async () => {
+        setActionLoading(`pro-${userId}`);
+        await adminUpdate('profiles', userId, { is_pro: !current });
+        await fetchUsers();
+        setActionLoading(null);
+        setConfirmDialog(null);
+      },
+    });
   };
 
   const handleSuspend = async (userId: string, name: string) => {
-    if (!confirm(`🚫 Suspend "${name}"? They will lose platform access.`)) return;
-    setActionLoading(`suspend-${userId}`);      await adminUpdate('profiles', userId, { deleted_at: new Date().toISOString() });
-    await fetchUsers();
-    setActionLoading(null);
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Suspend User',
+      message: `🚫 Suspend "${name}"? They will lose platform access.`,
+      variant: 'danger',
+      confirmLabel: 'Suspend',
+      onConfirm: async () => {
+        setActionLoading(`suspend-${userId}`);
+        await adminUpdate('profiles', userId, { deleted_at: new Date().toISOString() });
+        await fetchUsers();
+        setActionLoading(null);
+        setConfirmDialog(null);
+      },
+    });
   };
 
   return (
@@ -338,23 +370,44 @@ function UserManagementTable() {
       <div className="p-3 border-t border-white/5 text-center">
         <a href="/admin/users" className="text-[9px] font-bold text-emerald-400 hover:underline uppercase">View All Users →</a>
       </div>
+
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </section>
   );
 }
 
 // ─── Dispute Resolution ─────────────────────────────────────────────────────
 function DisputeResolution() {
+  const toast = useToast();
   const [disputes, setDisputes] = useState<AdminDispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'pending' | 'under_review' | 'resolved'>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   const fetchDisputes = useCallback(async () => {
     setLoading(true);
     try {
       const all = await disputeService.getAllDisputes(filter === 'all' ? undefined : filter);
       setDisputes(all as AdminDispute[]);
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); toast.error('Disputes Error', 'Could not load disputes.'); }
     finally { setLoading(false); }
   }, [filter]);
 
@@ -367,10 +420,26 @@ function DisputeResolution() {
   }, [fetchDisputes]);
 
   const handleAction = async (disputeId: string, action: 'resolved' | 'dismissed', resolution: string) => {
-    if (!confirm(`⚠️ ${action === 'resolved' ? 'Release funds to freelancer' : 'Refund to client'}? This cannot be undone.`)) return;
-    setActionLoading(disputeId);
-    await disputeService.adminUpdateDispute(disputeId, action, resolution);
-    setActionLoading(null);
+    setConfirmDialog({
+      isOpen: true,
+      title: action === 'resolved' ? 'Release Funds' : 'Refund Client',
+      message: `⚠️ ${action === 'resolved' ? 'Release funds to freelancer' : 'Refund to client'}? This cannot be undone.`,
+      variant: 'danger',
+      confirmLabel: action === 'resolved' ? 'Release Funds' : 'Refund',
+      onConfirm: async () => {
+        setActionLoading(disputeId);
+        try {
+          await disputeService.adminUpdateDispute(disputeId, action, resolution);
+          toast.success('Dispute Updated', `Dispute ${action} successfully.`);
+        } catch (err) {
+          console.error(err);
+          toast.error('Action Failed', 'Could not update dispute.');
+        } finally {
+          setActionLoading(null);
+          setConfirmDialog(null);
+        }
+      },
+    });
   };
 
   return (
@@ -433,12 +502,25 @@ function DisputeResolution() {
           </div>
         ))}
       </div>
+
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </section>
   );
 }
 
 // ─── AI Risk Analysis ────────────────────────────────────────────────────────
 function AIRiskAnalysis() {
+  const toast = useToast();
   const [risks, setRisks] = useState<RiskItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -560,6 +642,7 @@ function AIRiskAnalysis() {
       setRisks(detected);
     } catch (err) {
       console.error('Risk analysis failed:', err);
+      toast.error('Risk Analysis Error', 'Could not complete risk analysis.');
       setRisks([{ id: 'error', icon: AlertTriangle, iconBg: 'bg-red-500/20', iconColor: 'text-red-500',
         title: 'Analysis Error', description: 'Unable to complete risk analysis. Check system logs.',
         severity: 'high', actions: [{ label: 'Retry', primary: true, color: 'bg-red-500/10 text-red-500' }] }]);
@@ -625,6 +708,7 @@ function AIRiskAnalysis() {
 
 // ─── Live Activity Feed ──────────────────────────────────────────────────────
 function LiveActivityFeed() {
+  const toast = useToast();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'disconnected'>('connecting');
@@ -664,7 +748,7 @@ function LiveActivityFeed() {
 
       items.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       setActivities(items.slice(0, 15));
-    } catch (err) { console.error(err); }
+    } catch (err) { console.error(err); toast.error('Activity Error', 'Could not load activity feed.'); }
     finally { setLoading(false); }
   }, []);
 

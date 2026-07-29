@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { adminQuery } from '../../lib/adminDataProxy';
 import { realtimeChannels } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
@@ -17,6 +18,7 @@ function formatCompactNumber(num: number): string {
 }
 
 export function AdminReportsPage() {
+  const toast = useToast();
   const [metrics, setMetrics] = useState<{
     totalUsers: number; freelancers: number; clients: number;
     projects: number; contracts: number; gmv: number; fees: number;
@@ -71,7 +73,10 @@ export function AdminReportsPage() {
         userGrowth: Math.round(userGrowth * 10) / 10,
         gmvGrowth: Math.round(gmvGrowth * 10) / 10,
       });
-    } catch (err) { console.error('Failed to fetch metrics:', err); }
+    } catch (err) { 
+      console.error('Failed to fetch metrics:', err);
+      toast.error('Failed to fetch metrics', err instanceof Error ? err.message : 'Unknown error');
+    }
     finally { setLoading(false); }
   }, []);
 

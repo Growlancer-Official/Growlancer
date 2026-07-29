@@ -54,7 +54,7 @@ export function PortfolioPage() {
       const result = await portfolioService.getByUser(user.id);
       setItems(result as unknown as PortfolioItem[]);
     } catch (err) {
-      console.error('Failed to fetch portfolio items:', err);
+      toast.error('Error', 'Failed to load portfolio items.');
     } finally {
       setLoading(false);
     }
@@ -125,7 +125,7 @@ export function PortfolioPage() {
       resetForm();
       await fetchItems();
     } catch (err) {
-      console.error('Failed to save portfolio item:', err);
+      toast.error('Error', 'Failed to save portfolio item.');
     } finally {
       setSaving(false);
     }

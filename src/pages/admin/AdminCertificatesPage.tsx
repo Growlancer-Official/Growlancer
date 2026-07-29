@@ -9,6 +9,7 @@ import {
   CheckSquare, Square,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { useToast } from '../../components/Toast';import {
   adminDelete
 } from '../../lib/adminDataProxy';
@@ -111,6 +112,14 @@ export function AdminCertificatesPage() {
   const [expandedCertId, setExpandedCertId] = useState<string | null>(null);
   const [certEmailLogs, setCertEmailLogs] = useState<Record<string, { type: string; sent: boolean; time: string }[]>>({});
   const [certUploadingPdf, setCertUploadingPdf] = useState<Record<string, { loading: boolean }>>({});
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => Promise<void>;
+  } | null>(null);
 
   // Internship Applicants State
   const [internApplicants, setInternApplicants] = useState<InternshipAppUser[]>([]);
@@ -145,8 +154,14 @@ export function AdminCertificatesPage() {
   const handleBulkGenerateCodes = async () => {
     if (bulkSelectedIds.size === 0) return;
     const typeLabel = bulkCertType === 'lor' ? 'LOR' : 'Certificate';
-    if (!confirm(`Generate ${typeLabel} codes for ${bulkSelectedIds.size} selected ${bulkSelectedIds.size === 1 ? 'intern' : 'interns'}?`)) return;
-    setActionLoading('bulk-generate');
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Generate Codes',
+      message: `Generate ${typeLabel} codes for ${bulkSelectedIds.size} selected ${bulkSelectedIds.size === 1 ? 'intern' : 'interns'}?`,
+      variant: 'info',
+      confirmLabel: 'Generate',
+      onConfirm: async () => {
+        setActionLoading('bulk-generate');
     let successCount = 0;
     let failCount = 0;
     try {
@@ -168,13 +183,22 @@ export function AdminCertificatesPage() {
       toast.error('Bulk Error', 'An unexpected error occurred during bulk generation.');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleBulkSendEmail = async () => {
     if (bulkSelectedIds.size === 0) return;
-    if (!confirm(`Send certificate/LOR emails to ${bulkSelectedIds.size} selected ${bulkSelectedIds.size === 1 ? 'intern' : 'interns'}?`)) return;
-    setActionLoading('bulk-email');
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Send Emails',
+      message: `Send certificate/LOR emails to ${bulkSelectedIds.size} selected ${bulkSelectedIds.size === 1 ? 'intern' : 'interns'}?`,
+      variant: 'info',
+      confirmLabel: 'Send Emails',
+      onConfirm: async () => {
+        setActionLoading('bulk-email');
     let successCount = 0;
     let failCount = 0;
     try {
@@ -217,7 +241,10 @@ export function AdminCertificatesPage() {
       toast.error('Bulk Error', 'An unexpected error occurred during bulk email.');
     } finally {
       setActionLoading(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const handleGenerateCode = async (app: InternshipAppUser, type: 'internship' | 'lor'): Promise<{success: boolean}> => {
@@ -263,7 +290,9 @@ export function AdminCertificatesPage() {
     try {
       const certs = await getAllCertificates();
       setCertificates(certs);
-    } catch { /* ignore */ }
+    } catch {
+      toast.error('Failed to Load', 'Could not load certificates.');
+    }
     finally { if (showLoading) setLoading(false); }
   }, []);
 
@@ -279,7 +308,7 @@ export function AdminCertificatesPage() {
       if (error) throw error;
       setInternApplicants((fnData?.applications || []) as InternshipAppUser[]);
     } catch {
-      console.error('Failed to fetch internship applicants:');
+      toast.error('Failed to Load', 'Could not load internship applicants.');
       setInternApplicants([]);
     } finally { if (showLoading) setLoadingInterns(false); }
   }, []);
@@ -357,13 +386,24 @@ export function AdminCertificatesPage() {
   }, [certificates, internApplicants]);
 
   const handleDeleteCert = async (certId: string, skill: string, userName: string) => {
-    if (!confirm(`PERMANENTLY DELETE "${skill}" certificate for ${userName}? This cannot be undone!`)) return;
-    setActionLoading(`delete-${certId}`);
-    try {
-      await adminDelete('skill_certifications', certId);
-      await fetchCerts();
-    } catch { /* ignore */ }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Certificate',
+      message: `PERMANENTLY DELETE "${skill}" certificate for ${userName}? This cannot be undone!`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(`delete-${certId}`);
+        try {
+          await adminDelete('skill_certifications', certId);
+          await fetchCerts();
+          toast.success('Deleted', 'Certificate permanently deleted.');
+        } catch {
+          toast.error('Delete Failed', 'Could not delete certificate.');
+        }
+        finally { setActionLoading(null); setConfirmDialog(null); }
+      },
+    });
   };
 
   const handleRevoke = async (certId: string, skill: string, userName: string) => {
@@ -391,8 +431,14 @@ export function AdminCertificatesPage() {
   };
 
   const handleSendCertEmail = async (cert: Certificate) => {
-    if (!confirm(`Send email to ${cert.recipient_name} (${cert.recipient_email}) with their ${cert.certificate_type === 'lor' ? 'Letter of Recommendation' : 'Certificate'}?`)) return;
-    setSendingEmail(cert.id);
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Send Email',
+      message: `Send email to ${cert.recipient_name} (${cert.recipient_email}) with their ${cert.certificate_type === 'lor' ? 'Letter of Recommendation' : 'Certificate'}?`,
+      variant: 'info',
+      confirmLabel: 'Send Email',
+      onConfirm: async () => {
+        setSendingEmail(cert.id);
     try {
       // Fetch the full certificate from DB to get the latest certificate_url
       let certificateUrl = cert.certificate_url;
@@ -445,7 +491,10 @@ export function AdminCertificatesPage() {
       }));
     } finally {
       setSendingEmail(null);
+      setConfirmDialog(null);
     }
+      },
+    });
   };
 
   const filtered = certificates.filter(c => {
@@ -784,19 +833,27 @@ export function AdminCertificatesPage() {
                                   </div>
                                   <button onClick={async () => {
                                     if (!gen.certId || !gen.code) return;
-                                    if (!confirm(`Send Certificate email to ${app.full_name} (${app.email})?`)) return;
-                                    setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: true } }));
-                                    try {
-                                      const r = await sendCertificateEmail({
-                                        certificateId: gen.certId, recipientEmail: app.email, recipientName: app.full_name,
-                                        certificateType: 'internship', roleName: app.role_name, level: 'intermediate',
-                                        verificationCode: gen.code, certificateUrl: gen.pdfUrl,
-                                        performanceSummary: '', skillsDemonstrated: [],
-                                      });
-                                      if (r.success) { toast.success('Email Sent!', `Certificate sent to ${app.full_name}`); setCertEmailLogs(p => ({ ...p, [gen.certId!]: [...(p[gen.certId!] || []), { type: 'Certificate', sent: true, time: new Date().toISOString() }] })); }
-                                      else toast.error('Failed', r.error || 'Email failed');
-                                    } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Error'); }
-                                    finally { setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: false } })); }
+                                    setConfirmDialog({
+                                      isOpen: true,
+                                      title: 'Send Certificate Email',
+                                      message: `Send Certificate email to ${app.full_name} (${app.email})?`,
+                                      variant: 'info',
+                                      confirmLabel: 'Send Email',
+                                      onConfirm: async () => {
+                                        setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: true } }));
+                                        try {
+                                          const r = await sendCertificateEmail({
+                                            certificateId: gen.certId, recipientEmail: app.email, recipientName: app.full_name,
+                                            certificateType: 'internship', roleName: app.role_name, level: 'intermediate',
+                                            verificationCode: gen.code, certificateUrl: gen.pdfUrl,
+                                            performanceSummary: '', skillsDemonstrated: [],
+                                          });
+                                          if (r.success) { toast.success('Email Sent!', `Certificate sent to ${app.full_name}`); setCertEmailLogs(p => ({ ...p, [gen.certId!]: [...(p[gen.certId!] || []), { type: 'Certificate', sent: true, time: new Date().toISOString() }] })); }
+                                          else toast.error('Failed', r.error || 'Email failed');
+                                        } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Error'); }
+                                        finally { setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: false } })); setConfirmDialog(null); }
+                                      },
+                                    });
                                   }} disabled={sending}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg disabled:opacity-30 text-white text-[10px] font-bold bg-emerald-600 hover:bg-emerald-700 transition-all">
                                     {sending ? <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</> : <><Send className="w-3 h-3" /> Send Now</>}
@@ -900,20 +957,28 @@ export function AdminCertificatesPage() {
                                   </div>
                                   <button onClick={async () => {
                                     if (!gen.certId || !gen.code) return;
-                                    if (!confirm(`Send LOR email to ${app.full_name} (${app.email})?`)) return;
-                                    setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: true } }));
-                                    try {
-                                      const r = await sendCertificateEmail({
-                                        certificateId: gen.certId, recipientEmail: app.email, recipientName: app.full_name,
-                                        certificateType: 'lor', roleName: app.role_name, level: 'advanced',
-                                        verificationCode: gen.code, certificateUrl: gen.pdfUrl,
-                                        performanceSummary: `Top performer during ${app.role_name} internship.`,
-                                        skillsDemonstrated: [],
-                                      });
-                                      if (r.success) { toast.success('LOR Sent!', `LOR sent to ${app.full_name}`); setCertEmailLogs(p => ({ ...p, [gen.certId!]: [...(p[gen.certId!] || []), { type: 'LOR', sent: true, time: new Date().toISOString() }] })); }
-                                      else toast.error('Failed', r.error || 'Email failed');
-                                    } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Error'); }
-                                    finally { setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: false } })); }
+                                    setConfirmDialog({
+                                      isOpen: true,
+                                      title: 'Send LOR Email',
+                                      message: `Send LOR email to ${app.full_name} (${app.email})?`,
+                                      variant: 'info',
+                                      confirmLabel: 'Send Email',
+                                      onConfirm: async () => {
+                                        setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: true } }));
+                                        try {
+                                          const r = await sendCertificateEmail({
+                                            certificateId: gen.certId, recipientEmail: app.email, recipientName: app.full_name,
+                                            certificateType: 'lor', roleName: app.role_name, level: 'advanced',
+                                            verificationCode: gen.code, certificateUrl: gen.pdfUrl,
+                                            performanceSummary: `Top performer during ${app.role_name} internship.`,
+                                            skillsDemonstrated: [],
+                                          });
+                                          if (r.success) { toast.success('LOR Sent!', `LOR sent to ${app.full_name}`); setCertEmailLogs(p => ({ ...p, [gen.certId!]: [...(p[gen.certId!] || []), { type: 'LOR', sent: true, time: new Date().toISOString() }] })); }
+                                          else toast.error('Failed', r.error || 'Email failed');
+                                        } catch (err) { toast.error('Failed', err instanceof Error ? err.message : 'Error'); }
+                                        finally { setGeneratedCodes(p => ({ ...p, [`${key}-sending`]: { sending: false } })); setConfirmDialog(null); }
+                                      },
+                                    });
                                   }} disabled={sending}
                                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg disabled:opacity-30 text-white text-[10px] font-bold bg-violet-600 hover:bg-violet-700 transition-all">
                                     {sending ? <><Loader2 className="w-3 h-3 animate-spin" /> Sending...</> : <><Send className="w-3 h-3" /> Send Now</>}
@@ -1365,6 +1430,18 @@ export function AdminCertificatesPage() {
 
 
 
+      {/* Confirm Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }
