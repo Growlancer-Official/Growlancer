@@ -351,6 +351,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
 }
 
 export function OnboardingPage() {
+  const toast = useToast();
   const { user, getDashboardRoute } = useAuth();
   const { skills: allSkills } = useSkills();
   const [searchParams] = useSearchParams();
