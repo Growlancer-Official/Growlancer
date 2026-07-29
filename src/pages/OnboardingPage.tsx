@@ -21,6 +21,7 @@ import { supabase } from '../lib/supabase';
 import { useSkills } from '../hooks/useSkills';
 import { SkillsSelector } from '../components/SkillsSelector';
 import { avatarUploadService } from '../lib/avatarUpload';
+import { fetchUserProfile, createUserProfile } from '../lib/services/authService';
 
 interface FreelancerForm {
   title: string;
@@ -93,13 +94,33 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
     if (!user?.id) return;
     setSaving(true);
     try {
-      // Update the user's role if they changed it
-      if (user.role !== selectedRole) {
-        await supabase.from('profiles').update({ role: selectedRole }).eq('id', user.id);
+      // 🆕 UPSERT PATTERN: First check if profile exists, create if not, then update
+      const existing = await fetchUserProfile(user.id);
+      if (!existing) {
+        const created = await createUserProfile(
+          user.id,
+          user.email || '',
+          user.name || 'User',
+          selectedRole
+        );
+        if (!created) {
+          alert('Failed to create your profile. Please try again or contact support.');
+          setSaving(false);
+          return;
+        }
+      } else if (user.role !== selectedRole) {
+        // Profile exists, update role if changed
+        const { error: roleErr } = await supabase.from('profiles').update({ role: selectedRole }).eq('id', user.id);
+        if (roleErr) {
+          console.error('OAuth onboarding role update error:', roleErr);
+          alert('Failed to save your role: ' + roleErr.message);
+          setSaving(false);
+          return;
+        }
       }
 
       if (isFreelancer) {
-        await supabase.from('freelancer_profiles').upsert({
+        const { error: fpError } = await supabase.from('freelancer_profiles').upsert({
           user_id: user.id,
           title: title || undefined,
           hourly_rate: hourlyRate > 0 ? hourlyRate : null,
@@ -108,25 +129,45 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
           availability: true,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
+        if (fpError) {
+          console.error('OAuth onboarding freelancer_profiles error:', fpError);
+          alert('Failed to save: ' + fpError.message);
+          setSaving(false);
+          return;
+        }
         if (avatar) {
           await supabase.from('profiles').update({ avatar }).eq('id', user.id);
           updateUser({ avatar });
         }
       } else {
-        await supabase.from('client_profiles').upsert({
+        const { error: cpError } = await supabase.from('client_profiles').upsert({
           user_id: user.id,
           company_name: companyName || null,
           industry: industry || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
+        if (cpError) {
+          console.error('OAuth onboarding client_profiles error:', cpError);
+          alert('Failed to save: ' + cpError.message);
+          setSaving(false);
+          return;
+        }
       }
-      await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', user.id);
+
+      const { error: onboardingErr } = await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', user.id);
+      if (onboardingErr) {
+        console.error('OAuth onboarding completion error:', onboardingErr);
+        alert('Failed to complete: ' + onboardingErr.message);
+        setSaving(false);
+        return;
+      }
+
       updateUser({ onboardingCompleted: true });
       setStep('done');
       setTimeout(() => onComplete(), 1500);
     } catch (err) {
       console.error('OAuth onboarding save error:', err);
-      alert('Failed to save. Please try again.');
+      alert('Failed to save. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setSaving(false);
     }
@@ -410,6 +451,23 @@ export function OnboardingPage() {
     setSaving(true);
 
     try {
+      // 🆕 UPSERT PATTERN: First check if profile exists, create if not, then update
+      const existing = await fetchUserProfile(user.id);
+      if (!existing) {
+        // 🆕 Profile doesn't exist yet — create it first
+        const created = await createUserProfile(
+          user.id,
+          user.email || '',
+          user.name || 'User',
+          user.role === 'client' ? 'client' : 'freelancer'
+        );
+        if (!created) {
+          alert('Failed to create your profile. Please try again or contact support.');
+          setSaving(false);
+          return;
+        }
+      }
+
       if (isFreelancer) {
         // Save freelancer profile
         const { error: fpError } = await supabase
@@ -426,14 +484,23 @@ export function OnboardingPage() {
             availability: freelancerForm.availability,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
-        if (fpError) throw fpError;
+        if (fpError) {
+          console.error('Onboarding freelancer_profiles error:', fpError);
+          alert('Failed to save your profile: ' + fpError.message);
+          setSaving(false);
+          return;
+        }
 
         // Save avatar to profiles table (the correct table for avatar)
         if (freelancerForm.avatar_url) {
-          await supabase
+          const { error: avatarError } = await supabase
             .from('profiles')
             .update({ avatar: freelancerForm.avatar_url })
             .eq('id', user.id);
+          if (avatarError) {
+            console.error('Onboarding avatar save error:', avatarError);
+            // Non-fatal — continue
+          }
         }
       } else if (isClient) {
         // Save client profile
@@ -450,19 +517,39 @@ export function OnboardingPage() {
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
 
-        if (cpError) throw cpError;
+        if (cpError) {
+          console.error('Onboarding client_profiles error:', cpError);
+          alert('Failed to save your company profile: ' + cpError.message);
+          setSaving(false);
+          return;
+        }
+      }
+
+      // 🆕 Re-fetch profile to check completion status before marking done
+      const updatedProfile = await fetchUserProfile(user.id);
+      if (!updatedProfile) {
+        alert('Session expired. Please log in again.');
+        setSaving(false);
+        return;
       }
 
       // Mark onboarding as completed
-      await supabase
+      const { error: onboardingError } = await supabase
         .from('profiles')
         .update({ onboarding_completed: true })
         .eq('id', user.id);
 
+      if (onboardingError) {
+        console.error('Onboarding completion error:', onboardingError);
+        alert('Failed to complete onboarding: ' + onboardingError.message);
+        setSaving(false);
+        return;
+      }
+
       window.location.href = getDashboardRoute();
     } catch (err) {
       console.error('Onboarding save error:', err);
-      alert('Failed to save your profile. Please try again.');
+      alert('Failed to save your profile. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setSaving(false);
     }

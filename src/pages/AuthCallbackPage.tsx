@@ -1,7 +1,7 @@
 import { useEffect, useState, startTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
-import { fetchUserProfile } from '../lib/services/authService';
+import { fetchUserProfile, createUserProfile as createProfile } from '../lib/services/authService';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
 
 const isDev = import.meta.env.DEV;
@@ -186,12 +186,46 @@ export function AuthCallbackPage() {
 
         if (cancelled) return;
 
+        // 🆕 Read saved role from localStorage (preserved during OAuth signup)
+        const savedRole = localStorage.getItem('growlancer_oauth_role');
+        const oauthRole = (savedRole === 'freelancer' || savedRole === 'client') ? savedRole : 'freelancer';
+        if (savedRole) {
+          localStorage.removeItem('growlancer_oauth_role');
+        }
+
         // Retry fetching profile (AuthContext may still be syncing)
         let profile = null;
         for (let i = 0; i < 5; i++) {
           profile = authUser?.id ? await fetchUserProfile(authUser.id) : null;
-          if (profile) break;
+          if (profile) {
+            // 🆕 If profile exists but role is wrong (e.g., OAuth defaulted to 'freelancer'), fix it
+            if (profile.role !== oauthRole) {
+              try {
+                const { error: roleUpdateErr } = await supabase
+                  .from('profiles')
+                  .update({ role: oauthRole })
+                  .eq('id', authUser!.id);
+                if (!roleUpdateErr) {
+                  profile = { ...profile, role: oauthRole as 'freelancer' | 'client' | 'admin' };
+                }
+              } catch {
+                // Non-critical — will be corrected on onboarding
+              }
+            }
+            break;
+          }
           await new Promise(r => setTimeout(r, 600));
+        }
+
+        // 🆕 If profile still doesn't exist after retries, create one with saved role
+        if (!profile && authUser?.id) {
+          const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
+          profile = await createProfile(
+            authUser.id,
+            authUser.email || '',
+            name,
+            oauthRole as 'freelancer' | 'client'
+          );
         }
 
         // 🆕 Country gate: If user has no profile country set (first-time OAuth), show country confirmation

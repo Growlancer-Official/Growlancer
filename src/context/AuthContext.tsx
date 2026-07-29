@@ -62,7 +62,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   session: Session | null;
-  signInWithOAuth: (provider: 'google' | 'linkedin_oidc') => Promise<{ success: boolean; error?: string }>;
+  signInWithOAuth: (provider: 'google' | 'linkedin_oidc', role?: UserRole) => Promise<{ success: boolean; error?: string }>;
   login: (
     email: string,
     password: string
@@ -111,6 +111,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       roleHint?: UserRole,
       allowCreate: boolean = true
     ): Promise<AuthUser | null> => {
+      // 🛡️ Guard: prevent duplicate profile creation when ensureUserProfile and syncAuthUser
+      // fire concurrently (e.g., on OAuth callback where both the onAuthStateChange listener
+      // and the manual getSession flow try to create a profile)
+      if (profileCreationInProgressRef.current) {
+        devLog('[Auth] Profile creation already in progress — waiting...');
+        // Wait up to 5s for the other creation to finish
+        for (let wait = 0; wait < 10; wait++) {
+          await new Promise(r => setTimeout(r, 500));
+          const existing = await fetchUserProfile(authUser.id);
+          if (existing) return existing;
+          if (!profileCreationInProgressRef.current) break;
+        }
+      }
+
       // Try to fetch existing profile
       const profile = await fetchUserProfile(authUser.id);
       if (profile) return profile;
@@ -118,17 +132,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Only create profile if explicitly allowed (signup) and roleHint is provided
       if (!allowCreate || !roleHint) return null;
 
-      const userEmail = authUser.email || '';
-      const userName =
-        (typeof authUser.user_metadata?.name === 'string' && authUser.user_metadata.name.trim()) ||
-        userEmail.split('@')[0] ||
-        'User';
-      const referralCode =
-        typeof authUser.user_metadata?.referral_code === 'string'
-          ? authUser.user_metadata.referral_code
-          : createReferralCode(roleHint.substring(0, 2).toUpperCase());
+      // 🛡️ Set guard before creating
+      profileCreationInProgressRef.current = true;
 
-      return createUserProfile(authUser.id, userEmail, userName, roleHint, referralCode);
+      try {
+        const userEmail = authUser.email || '';
+        const userName =
+          (typeof authUser.user_metadata?.name === 'string' && authUser.user_metadata.name.trim()) ||
+          userEmail.split('@')[0] ||
+          'User';
+        const referralCode =
+          typeof authUser.user_metadata?.referral_code === 'string'
+            ? authUser.user_metadata.referral_code
+            : createReferralCode(roleHint.substring(0, 2).toUpperCase());
+
+        return await createUserProfile(authUser.id, userEmail, userName, roleHint, referralCode);
+      } finally {
+        profileCreationInProgressRef.current = false;
+      }
     },
     []
   );
@@ -147,6 +168,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // The BroadcastChannel useEffect reads from this ref to avoid
   // stale closures and prevent unnecessary re-initialization.
   const userIdRef = useRef<string | null>(null);
+  // 🛡️ Guard: prevents duplicate profile creation attempts (race condition between
+  // ensureUserProfile and syncAuthUser firing simultaneously on OAuth callback)
+  const profileCreationInProgressRef = useRef(false);
 
   // Update ref whenever user.id changes — synchronous, no stale closure
   useEffect(() => {
@@ -170,10 +194,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           authUser.email?.split('@')[0] ||
           'User';
         
-        // 🆕 Use saved role from user_metadata if available, else default to 'freelancer'
-        const savedRole = (meta.role === 'freelancer' || meta.role === 'client')
-          ? meta.role as UserRole
-          : (roleHint || 'freelancer');
+        // 🆕 Use saved role from localStorage (preserved during OAuth), then user_metadata,
+        // then roleHint, then default to 'freelancer'
+        const savedOAuthRole = localStorage.getItem('growlancer_oauth_role');
+        const savedRole = (savedOAuthRole === 'freelancer' || savedOAuthRole === 'client')
+          ? savedOAuthRole as UserRole
+          : (meta.role === 'freelancer' || meta.role === 'client')
+            ? meta.role as UserRole
+            : (roleHint || 'freelancer');
+        if (savedOAuthRole) {
+          localStorage.removeItem('growlancer_oauth_role');
+        }
         
         // 🆕 Check for saved referral code from localStorage (preserved during OAuth)
         let oauthRefCode: string | undefined;
@@ -751,13 +782,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user?.id, user?.role]);
 
   const signInWithOAuth = async (
-    provider: 'google' | 'linkedin_oidc'
+    provider: 'google' | 'linkedin_oidc',
+    role?: UserRole
   ): Promise<{ success: boolean; error?: string }> => {
     try {
       // 🆕 Preserve referral code from URL before OAuth redirect
       const refParam = new URLSearchParams(window.location.search).get('ref');
       if (refParam) {
         localStorage.setItem('growlancer_oauth_ref', refParam);
+      }
+
+      // 🆕 Save selected role to localStorage so AuthCallbackPage can read it on return
+      if (role) {
+        localStorage.setItem('growlancer_oauth_role', role);
       }
 
       const { error } = await supabase.auth.signInWithOAuth({
@@ -773,7 +810,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // OAuth redirects the browser — no need to set state here
-      devLog('[Auth] OAuth initiated for provider:', provider);
+      devLog('[Auth] OAuth initiated for provider:', provider, 'role:', role);
       return { success: true };
     } catch (error) {
       devError('[Auth] OAuth exception:', error);

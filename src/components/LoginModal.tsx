@@ -169,6 +169,8 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             onClick={async () => {
               setError(null);
               setOauthProvider('google');
+              // 🆕 Clear any stale role from localStorage before login OAuth
+              localStorage.removeItem('growlancer_oauth_role');
               const result = await signInWithOAuth('google');
               setOauthProvider(null);
               if (!result.success) setError(result.error || 'Google sign in failed. Make sure Google is configured in the Supabase Dashboard.');
@@ -193,6 +195,8 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
             onClick={async () => {
               setError(null);
               setOauthProvider('linkedin');
+              // 🆕 Clear any stale role from localStorage before login OAuth
+              localStorage.removeItem('growlancer_oauth_role');
               const result = await signInWithOAuth('linkedin_oidc');
               setOauthProvider(null);
               if (!result.success) setError(result.error || 'LinkedIn sign in failed. Make sure LinkedIn is configured in the Supabase Dashboard.');
