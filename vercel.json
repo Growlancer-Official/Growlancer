@@ -1,4 +1,5 @@
 {
+  "name": "growlancer",
   "version": 2,
   "framework": "vite",
   "buildCommand": "npm run build",
