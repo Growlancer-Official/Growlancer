@@ -5,6 +5,8 @@ import {
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 
 interface AdminProject {
   id: string; title: string; description: string;
@@ -41,6 +43,8 @@ export function AdminProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const toast = useToast();
+  const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; variant: 'danger' | 'warning' | 'info'; confirmLabel?: string; onConfirm: () => void | Promise<void> } | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
@@ -65,7 +69,10 @@ export function AdminProjectsPage() {
       const projectsWithClients = projs.map(p => ({ ...p, client: clientMap.get(p.client_id) || null }));
 
       setProjects(projectsWithClients);
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      toast.error('Failed to fetch projects', err instanceof Error ? err.message : 'Unknown error');
+    }
     finally { setLoading(false); }
   }, [statusFilter]);
 
@@ -88,23 +95,41 @@ export function AdminProjectsPage() {
   }, []);
 
   const handleUpdateStatus = async (projectId: string, status: string, title: string) => {
-    if (!confirm(`Update "${title}" status to "${status.replace('_', ' ')}"?`)) return;
-    setActionLoading(`${projectId}-${status}`);
-    try {
-      await adminUpdate('projects', projectId, { status, updated_at: new Date().toISOString() });
-      await fetchProjects();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); setOpenDropdown(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Update Project Status',
+      message: `Update "${title}" status to "${status.replace('_', ' ')}"?`,
+      variant: 'info',
+      confirmLabel: `Mark ${status.replace('_', ' ')}`,
+      onConfirm: async () => {
+        setActionLoading(`${projectId}-${status}`);
+        try {
+          await adminUpdate('projects', projectId, { status, updated_at: new Date().toISOString() });
+          await fetchProjects();
+          toast.success(`"${title}" marked as ${status.replace('_', ' ')}`);
+        } catch (err) { console.error(err); toast.error('Failed to update status', err instanceof Error ? err.message : 'Unknown error'); }
+        finally { setActionLoading(null); setOpenDropdown(null); }
+      },
+    });
   };
 
   const handleDeleteProject = async (projectId: string, title: string) => {
-    if (!confirm(`🗑️ Delete project "${title}"? This cannot be undone!`)) return;
-    setActionLoading(`delete-${projectId}`);
-    try {
-      await adminDelete('projects', projectId);
-      await fetchProjects();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Project',
+      message: `🗑️ Delete project "${title}"? This cannot be undone!`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(`delete-${projectId}`);
+        try {
+          await adminDelete('projects', projectId);
+          await fetchProjects();
+          toast.success(`Project "${title}" deleted`);
+        } catch (err) { console.error(err); toast.error('Failed to delete project', err instanceof Error ? err.message : 'Unknown error'); }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const handleViewProject = (projectId: string) => {
@@ -255,6 +280,18 @@ export function AdminProjectsPage() {
           </table>
         </div>
       </div>
+
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }

@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Loader2, RefreshCw, Search, CheckCircle, XCircle, RotateCcw, Trash2 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminInsert, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { paypalService } from '../../lib/paypal';
 import { razorpayService } from '../../lib/razorpay';
 
@@ -43,7 +45,16 @@ export function AdminPaymentsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const toast = useToast();
 
   const fetchTransactions = useCallback(async () => {
     setLoading(true);
@@ -64,7 +75,10 @@ export function AdminPaymentsPage() {
       const { data: profiles } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: userIds } });
       const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
       setTransactions(txs.map(t => ({ ...t, user: profileMap.get(t.user_id) || null })));
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      toast.error('Failed to fetch transactions', err instanceof Error ? err.message : 'Unknown error');
+    }
     finally { setLoading(false); }
   }, [typeFilter]);
 
@@ -78,23 +92,49 @@ export function AdminPaymentsPage() {
   }, [fetchTransactions]);
 
   const handleDeleteTransaction = async (txId: string) => {
-    if (!confirm(`🗑️ Delete this transaction? This cannot be undone!`)) return;
-    setActionLoading(`delete-${txId}`);
-    try {
-      await adminDelete('transactions', txId);
-      await fetchTransactions();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Transaction',
+      message: '🗑️ Delete this transaction? This cannot be undone!',
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(`delete-${txId}`);
+        try {
+          await adminDelete('transactions', txId);
+          await fetchTransactions();
+          toast.success('Transaction deleted successfully');
+          setConfirmDialog(null);
+        } catch (err) { 
+          console.error(err); 
+          toast.error('Failed to delete transaction', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const handleUpdateStatus = async (txId: string, status: string) => {
-    if (!confirm(`Mark transaction as "${status}"?`)) return;
-    setActionLoading(`${txId}-${status}`);
-    try {
-      await adminUpdate('transactions', txId, { status });
-      await fetchTransactions();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Update Transaction Status',
+      message: `Mark transaction as "${status}"?`,
+      variant: 'info',
+      confirmLabel: `Mark as ${status}`,
+      onConfirm: async () => {
+        setActionLoading(`${txId}-${status}`);
+        try {
+          await adminUpdate('transactions', txId, { status });
+          await fetchTransactions();
+          toast.success(`Transaction marked as ${status}`);
+          setConfirmDialog(null);
+        } catch (err) { 
+          console.error(err); 
+          toast.error('Failed to update status', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const totalVolume = transactions.reduce((s, t) => s + (t.amount || 0), 0);
@@ -213,8 +253,14 @@ export function AdminPaymentsPage() {
                         </button>
                         {tx.status === 'completed' && tx.type === 'payment' && (
                           <button onClick={async () => {
-                            if (!confirm(`Issue refund for ${formatCurrency(tx.amount)}? This will attempt to refund via the payment provider.`)) return;
-                            setActionLoading(`${tx.id}-refund`);
+                            setConfirmDialog({
+                              isOpen: true,
+                              title: 'Issue Refund',
+                              message: `Issue refund for ${formatCurrency(tx.amount)}? This will attempt to refund via the payment provider.`,
+                              variant: 'warning',
+                              confirmLabel: 'Issue Refund',
+                              onConfirm: async () => {
+                                setActionLoading(`${tx.id}-refund`);
                             try {
                               // Attempt to refund via payment provider (Razorpay or PayPal)
                               let providerRefunded = false;
@@ -275,8 +321,15 @@ export function AdminPaymentsPage() {
                                   : `Refund pending — no provider payment found for transaction ${tx.id.slice(0, 8)}`
                               });
                               await fetchTransactions();
-                            } catch (err) { console.error(err); }
+                              setConfirmDialog(null);
+                              toast.success('Refund processed successfully');
+                            } catch (err) { 
+                              console.error(err); 
+                              toast.error('Failed to issue refund', err instanceof Error ? err.message : 'Unknown error');
+                            }
                             finally { setActionLoading(null); }
+                          },
+                          });
                           }}
                             disabled={actionLoading === `${tx.id}-refund`}
                             className="p-1.5 hover:bg-amber-500/10 rounded-lg text-amber-400 transition-colors" title="Issue Refund">
@@ -292,6 +345,19 @@ export function AdminPaymentsPage() {
           </table>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }

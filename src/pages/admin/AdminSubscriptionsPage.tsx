@@ -4,6 +4,8 @@ import {
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { paypalService } from '../../lib/paypal';
 
 interface SubscriptionPlan {
@@ -38,7 +40,16 @@ export function AdminSubscriptionsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const toast = useToast();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -68,7 +79,10 @@ export function AdminSubscriptionsPage() {
         profile: profileMap.get(s.user_id) || null,
         plan: planMap.get(s.plan_id) || null,
       })));
-    } catch (err) { console.error('Failed to fetch subscriptions:', err); }
+    } catch (err) { 
+      console.error('Failed to fetch subscriptions:', err);
+      toast.error('Failed to fetch subscriptions', err instanceof Error ? err.message : 'Unknown error');
+    }
     finally { setLoading(false); }
   }, []);
 
@@ -84,51 +98,91 @@ export function AdminSubscriptionsPage() {
 
   // ─── ACTIONS ─────────────────────────────────────────────────────
   const handleCancelSubscription = async (subId: string, userName: string, sub?: UserSubscription) => {
-    if (!confirm(`🚫 Cancel subscription for "${userName}"? They will lose Pro access immediately.`)) return;
-    setActionLoading(`cancel-${subId}`);
-    try {
-      // Cancel via payment provider API if a PayPal subscription ID exists
-      if (sub?.payment_provider === 'paypal' && sub?.payment_subscription_id) {
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Cancel Subscription',
+      message: `🚫 Cancel subscription for "${userName}"? They will lose Pro access immediately.`,
+      variant: 'danger',
+      confirmLabel: 'Cancel Subscription',
+      onConfirm: async () => {
+        setActionLoading(`cancel-${subId}`);
         try {
-          await paypalService.cancelSubscription(sub.payment_subscription_id);
-        } catch (e) {
-          console.warn('PayPal cancel failed, continuing with DB update:', e);
-        }
-      }
+          // Cancel via payment provider API if a PayPal subscription ID exists
+          if (sub?.payment_provider === 'paypal' && sub?.payment_subscription_id) {
+            try {
+              await paypalService.cancelSubscription(sub.payment_subscription_id);
+            } catch (e) {
+              console.warn('PayPal cancel failed, continuing with DB update:', e);
+              // Non-critical — DB update will still proceed
+            }
+          }
 
-      await adminUpdate('subscriptions', subId, {
-        status: 'cancelled',
-        end_date: new Date().toISOString(),
-        cancel_at_period_end: true,
-        updated_at: new Date().toISOString(),
-      });
-      await fetchData();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+          await adminUpdate('subscriptions', subId, {
+            status: 'cancelled',
+            end_date: new Date().toISOString(),
+            cancel_at_period_end: true,
+            updated_at: new Date().toISOString(),
+          });
+          await fetchData();
+          toast.success(`Subscription cancelled for "${userName}"`);
+          setConfirmDialog(null);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to cancel subscription', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const handleReactivateSubscription = async (subId: string, userName: string) => {
-    if (!confirm(`🔄 Reactivate subscription for "${userName}"? They will regain Pro access.`)) return;
-    setActionLoading(`reactivate-${subId}`);
-    try {
-      await adminUpdate('subscriptions', subId, {
-        status: 'active',
-        cancel_at_period_end: false,
-        updated_at: new Date().toISOString(),
-      });
-      await fetchData();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Reactivate Subscription',
+      message: `🔄 Reactivate subscription for "${userName}"? They will regain Pro access.`,
+      variant: 'warning',
+      confirmLabel: 'Reactivate',
+      onConfirm: async () => {
+        setActionLoading(`reactivate-${subId}`);
+        try {
+          await adminUpdate('subscriptions', subId, {
+            status: 'active',
+            cancel_at_period_end: false,
+            updated_at: new Date().toISOString(),
+          });
+          await fetchData();
+          toast.success(`Subscription reactivated for "${userName}"`);
+          setConfirmDialog(null);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to reactivate subscription', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const handleDeleteSubscription = async (subId: string, userName: string) => {
-    if (!confirm(`🗑️ Delete subscription record for "${userName}"? This cannot be undone!`)) return;
-    setActionLoading(`delete-${subId}`);
-    try {
-      await adminDelete('subscriptions', subId);
-      await fetchData();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Subscription',
+      message: `🗑️ Delete subscription record for "${userName}"? This cannot be undone!`,
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(`delete-${subId}`);
+        try {
+          await adminDelete('subscriptions', subId);
+          await fetchData();
+          toast.success(`Subscription deleted for "${userName}"`);
+          setConfirmDialog(null);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to delete subscription', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const handleSendEmail = (email: string) => {
@@ -282,6 +336,19 @@ export function AdminSubscriptionsPage() {
           </table>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }

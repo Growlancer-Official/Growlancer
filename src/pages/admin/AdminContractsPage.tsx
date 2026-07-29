@@ -4,6 +4,8 @@ import { Loader2, RefreshCw, Search,
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 
 interface AdminContract {
   id: string; amount: number; platform_fee: number; status: string;
@@ -38,7 +40,9 @@ export function AdminContractsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; variant: 'danger' | 'warning' | 'info'; confirmLabel?: string; onConfirm: () => void | Promise<void> } | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const toast = useToast();
 
   const fetchContracts = useCallback(async () => {
     setLoading(true);
@@ -64,7 +68,10 @@ export function AdminContractsPage() {
         freelancer: profileMap.get(c.freelancer_id) || null,
         client: profileMap.get(c.client_id) || null,
       })));
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err); 
+      toast.error('Failed to fetch contracts', err instanceof Error ? err.message : 'Unknown error');
+    }
     finally { setLoading(false); }
   }, [statusFilter]);
 
@@ -78,33 +85,60 @@ export function AdminContractsPage() {
   }, [fetchContracts]);
 
   const handleUpdateStatus = async (contractId: string, status: string) => {
-    if (!confirm(`Update contract status to "${status}"?`)) return;
-    setActionLoading(`${contractId}-${status}`);
-    try {
-      await adminUpdate('contracts', contractId, { status, updated_at: new Date().toISOString() });
-      await fetchContracts();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Update Contract Status',
+      message: `Update contract status to "${status}"?`,
+      variant: 'info',
+      confirmLabel: `Mark ${status}`,
+      onConfirm: async () => {
+        setActionLoading(`${contractId}-${status}`);
+        try {
+          await adminUpdate('contracts', contractId, { status, updated_at: new Date().toISOString() });
+          await fetchContracts();
+          toast.success(`Contract status updated to "${status}"`);
+        } catch (err) { console.error(err); toast.error('Failed to update status', err instanceof Error ? err.message : 'Unknown error'); }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const handleDeleteContract = async (contractId: string) => {
-    if (!confirm(`🗑️ Delete this contract? This cannot be undone!`)) return;
-    setActionLoading(`delete-${contractId}`);
-    try {
-      await adminDelete('contracts', contractId);
-      await fetchContracts();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Delete Contract',
+      message: '🗑️ Delete this contract? This cannot be undone!',
+      variant: 'danger',
+      confirmLabel: 'Delete',
+      onConfirm: async () => {
+        setActionLoading(`delete-${contractId}`);
+        try {
+          await adminDelete('contracts', contractId);
+          await fetchContracts();
+          toast.success('Contract deleted successfully');
+        } catch (err) { console.error(err); toast.error('Failed to delete contract', err instanceof Error ? err.message : 'Unknown error'); }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const handleToggleEscrow = async (contractId: string, currentlyFunded: boolean) => {
-    if (!confirm(`${currentlyFunded ? 'Mark escrow as pending' : 'Mark escrow as funded'} for this contract?`)) return;
-    setActionLoading(`escrow-${contractId}`);
-    try {
-      await adminUpdate('contracts', contractId, { escrow_funded: !currentlyFunded, updated_at: new Date().toISOString() });
-      await fetchContracts();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Toggle Escrow Status',
+      message: `${currentlyFunded ? 'Mark escrow as pending' : 'Mark escrow as funded'} for this contract?`,
+      variant: 'warning',
+      confirmLabel: currentlyFunded ? 'Mark Pending' : 'Mark Funded',
+      onConfirm: async () => {
+        setActionLoading(`escrow-${contractId}`);
+        try {
+          await adminUpdate('contracts', contractId, { escrow_funded: !currentlyFunded, updated_at: new Date().toISOString() });
+          await fetchContracts();
+          toast.success(`Escrow ${currentlyFunded ? 'marked pending' : 'marked funded'}`);
+        } catch (err) { console.error(err); toast.error('Failed to toggle escrow', err instanceof Error ? err.message : 'Unknown error'); }
+        finally { setActionLoading(null); }
+      },
+    });
   };
 
   const totalVolume = contracts.reduce((s, c) => s + (c.amount || 0), 0);
@@ -237,6 +271,18 @@ export function AdminContractsPage() {
           </table>
         </div>
       </div>
+
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }

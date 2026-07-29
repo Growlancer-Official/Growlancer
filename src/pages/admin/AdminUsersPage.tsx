@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import type { UserRole } from '../../types/auth';
 
 interface AdminUser {                  id: string;
@@ -54,6 +56,15 @@ export function AdminUsersPage() {
   const [statsData, setStatsData] = useState<{ total: number; freelancers: number; clients: number; admins: number; pro: number; active: number } | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    variant: 'danger' | 'warning' | 'info';
+    confirmLabel?: string;
+    onConfirm: () => void | Promise<void>;
+  } | null>(null);
+  const toast = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
@@ -78,6 +89,7 @@ export function AdminUsersPage() {
       });
     } catch (err) {
       console.error('Failed to fetch user stats:', err);
+      toast.error('Failed to fetch user stats', err instanceof Error ? err.message : 'Unknown error');
     }
   }, []);
 
@@ -106,6 +118,7 @@ export function AdminUsersPage() {
       setUsers((data || []) as AdminUser[]);
     } catch (err) {
       console.error('Failed to fetch users:', err);
+      toast.error('Failed to fetch users', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -136,33 +149,69 @@ export function AdminUsersPage() {
   // ─── ACTIONS ─────────────────────────────────────────────────────
 
   const handleVerifyUser = async (userId: string, userName: string) => {
-    if (!confirm(`✅ Verify "${userName}"? They will be marked as an active user.`)) return;
-    setActionLoading(`verify-${userId}`);
-    try {
-      await adminUpdate('profiles', userId, { onboarding_completed: true });
-      await fetchUsers();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); setOpenDropdown(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Verify User',
+      message: `✅ Verify "${userName}"? They will be marked as an active user.`,
+      variant: 'info',
+      confirmLabel: 'Verify',
+      onConfirm: async () => {
+        setActionLoading(`verify-${userId}`);
+        try {
+          await adminUpdate('profiles', userId, { onboarding_completed: true });
+          await fetchUsers();
+          toast.success(`User "${userName}" verified successfully`);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to verify user', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); setOpenDropdown(null); }
+      },
+    });
   };
 
   const handleTogglePro = async (userId: string, currentPro: boolean | null, userName: string) => {
-    if (!confirm(`${currentPro ? '🔄 Remove Pro status from' : '⭐ Grant Pro status to'} "${userName}"?`)) return;
-    setActionLoading(`pro-${userId}`);
-    try {
-      await adminUpdate('profiles', userId, { is_pro: !currentPro });
-      await fetchUsers();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); setOpenDropdown(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: currentPro ? 'Remove Pro Status' : 'Grant Pro Status',
+      message: `${currentPro ? '🔄 Remove Pro status from' : '⭐ Grant Pro status to'} "${userName}"?`,
+      variant: 'warning',
+      confirmLabel: currentPro ? 'Remove Pro' : 'Grant Pro',
+      onConfirm: async () => {
+        setActionLoading(`pro-${userId}`);
+        try {
+          await adminUpdate('profiles', userId, { is_pro: !currentPro });
+          await fetchUsers();
+          toast.success(`Pro status ${currentPro ? 'removed from' : 'granted to'} "${userName}"`);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to update pro status', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); setOpenDropdown(null); }
+      },
+    });
   };
 
   const handleMakeAdmin = async (userId: string, userName: string) => {
-    if (!confirm(`⚠️ Make "${userName}" an ADMIN? This gives full platform access.`)) return;
-    setActionLoading(`admin-${userId}`);
-    try {
-      await adminUpdate('profiles', userId, { role: 'admin' });
-      await fetchUsers();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); setOpenDropdown(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Make Admin',
+      message: `⚠️ Make "${userName}" an ADMIN? This gives full platform access.`,
+      variant: 'warning',
+      confirmLabel: 'Make Admin',
+      onConfirm: async () => {
+        setActionLoading(`admin-${userId}`);
+        try {
+          await adminUpdate('profiles', userId, { role: 'admin' });
+          await fetchUsers();
+          toast.success(`"${userName}" is now an admin`);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to make admin', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); setOpenDropdown(null); }
+      },
+    });
   };
 
   const handleSuspendUser = async (userId: string, userName: string) => {
@@ -196,21 +245,33 @@ export function AdminUsersPage() {
           },
         }).catch(err => console.error('[Email notification failed]', err));
       }
-    } catch (err) { console.error(err); }
+    } catch (err) { 
+      console.error(err);
+      toast.error('Failed to suspend user', err instanceof Error ? err.message : 'Unknown error');
+    }
     finally { setActionLoading(null); setOpenDropdown(null); }
   };
 
   const handleReactivateUser = async (userId: string, userName: string) => {
-    if (!confirm(`🔄 Reactivate "${userName}"? They will regain full platform access.`)) return;
-    setActionLoading(`reactivate-${userId}`);
-    try {
-      await adminUpdate('profiles', userId, {
-        suspended_at: null,
-        suspend_reason: null,
-      });
-      await fetchUsers();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); setOpenDropdown(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Reactivate User',
+      message: `🔄 Reactivate "${userName}"? They will regain full platform access.`,
+      variant: 'warning',
+      confirmLabel: 'Reactivate',
+      onConfirm: async () => {
+        setActionLoading(`reactivate-${userId}`);
+        try {
+          await adminUpdate('profiles', userId, { suspended_at: null, suspend_reason: null });
+          await fetchUsers();
+          toast.success(`"${userName}" reactivated successfully`);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to reactivate user', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); setOpenDropdown(null); }
+      },
+    });
   };
 
   const handleViewProfile = (userId: string) => {
@@ -219,13 +280,25 @@ export function AdminUsersPage() {
   };
 
   const handleDeleteUser = async (userId: string, userName: string) => {
-    if (!confirm(`🗑️ PERMANENTLY DELETE "${userName}"? This will remove their profile and all associated data. This cannot be undone!`)) return;
-    setActionLoading(`delete-${userId}`);
-    try {
-      await adminDelete('profiles', userId);
-      await fetchUsers();
-    } catch (err) { console.error(err); }
-    finally { setActionLoading(null); setOpenDropdown(null); }
+    setConfirmDialog({
+      isOpen: true,
+      title: 'Permanently Delete User',
+      message: `🗑️ PERMANENTLY DELETE "${userName}"? This will remove their profile and all associated data. This cannot be undone!`,
+      variant: 'danger',
+      confirmLabel: 'Delete Permanently',
+      onConfirm: async () => {
+        setActionLoading(`delete-${userId}`);
+        try {
+          await adminDelete('profiles', userId);
+          await fetchUsers();
+          toast.success(`User "${userName}" permanently deleted`);
+        } catch (err) { 
+          console.error(err);
+          toast.error('Failed to delete user', err instanceof Error ? err.message : 'Unknown error');
+        }
+        finally { setActionLoading(null); setOpenDropdown(null); }
+      },
+    });
   };
 
   const handleSendEmail = (email: string) => {
@@ -448,6 +521,19 @@ export function AdminUsersPage() {
           </table>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmDialog && (
+        <ConfirmModal
+          isOpen={confirmDialog.isOpen}
+          onClose={() => setConfirmDialog(null)}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmLabel={confirmDialog.confirmLabel}
+        />
+      )}
     </div>
   );
 }

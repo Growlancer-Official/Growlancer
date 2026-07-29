@@ -5,6 +5,7 @@ import {
   Search, Loader2, MessageSquare, User, Clock,
   Headphones, Send, X,
 } from 'lucide-react';
+import { useToast } from '../../components/Toast';
 
 interface SupportTicket {
   id: string;
@@ -29,6 +30,7 @@ interface TicketMessage {
 }
 
 export function AdminSupportTicketsPage() {
+  const toast = useToast();
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,6 +55,7 @@ export function AdminSupportTicketsPage() {
       setTickets((data as unknown as SupportTicket[]) || []);
     } catch (err) {
       console.error('Error fetching tickets:', err);
+      toast.error('Failed to fetch tickets', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);
     }
@@ -82,6 +85,7 @@ export function AdminSupportTicketsPage() {
       setTicketMessages((data as unknown as TicketMessage[]) || []);
     } catch (err) {
       console.error('Error fetching messages:', err);
+      toast.error('Failed to load messages', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoadingMessages(false);
     }
@@ -118,6 +122,7 @@ export function AdminSupportTicketsPage() {
       }, 100);
     } catch (err) {
       console.error('Error sending reply:', err);
+      toast.error('Failed to send reply', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setSendingReply(false);
     }
@@ -142,6 +147,7 @@ export function AdminSupportTicketsPage() {
       }
     } catch (err) {
       console.error('Error updating ticket:', err);
+      toast.error('Failed to update ticket', err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setUpdatingId(null);
     }
