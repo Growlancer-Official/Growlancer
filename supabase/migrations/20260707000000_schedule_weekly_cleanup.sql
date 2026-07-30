@@ -13,8 +13,17 @@ CREATE EXTENSION IF NOT EXISTS pg_cron;
 -- PART 2: Schedule cleanup_orphaned_data() to run weekly
 -- ============================================================
 
--- Remove any existing schedule with this name (idempotent — no error if missing)
-DELETE FROM cron.job WHERE jobname = 'cleanup-orphaned-data';
+-- Remove any existing schedule with this name (idempotent — handles Supabase permission model)
+-- In Supabase managed Postgres, DELETE from cron.job may require superuser.
+-- We use a DO block to gracefully handle this.
+DO $$
+BEGIN
+  DELETE FROM cron.job WHERE jobname = 'cleanup-orphaned-data';
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE NOTICE 'Could not delete existing cron job (managed Supabase): %', SQLERRM;
+END;
+$$;
 
 -- Schedule: Every Sunday at 3:00 AM UTC
 -- Cron expression: '0 3 * * 0' = minute 0, hour 3, any day, any month, Sunday
