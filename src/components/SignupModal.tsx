@@ -26,7 +26,7 @@ interface SignupModalProps {
   initialRole?: 'freelancer' | 'client';
 }
 
-export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'freelancer' }: SignupModalProps) {
+export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: SignupModalProps) {
   const navigate = useNavigate();
   const { signup, signInWithOAuth } = useAuth();
 
@@ -39,7 +39,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     }
   })();
 
-  const [role, setRole] = useState<'freelancer' | 'client'>(initialRole);
+  const [role, setRole] = useState<'freelancer' | 'client' | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -54,10 +54,12 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
   const [oauthProvider, setOauthProvider] = useState<'google' | 'linkedin' | null>(null);
   const [existingUser, setExistingUser] = useState(false);
 
-  // Sync role from initialRole when modal opens
+  // Sync role from initialRole when modal opens (only if explicitly provided via URL)
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && initialRole) {
       setRole(initialRole);
+    } else if (isOpen && !initialRole) {
+      setRole(null);
     }
   }, [isOpen, initialRole]);
 
@@ -101,6 +103,12 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
     e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = name.trim();
+
+    // ✅ Role selection validation — must explicitly choose
+    if (!role) {
+      setError('Please select whether you want to work as a freelancer or hire talent.');
+      return;
+    }
 
     const nameValidation = validateRequired(normalizedName, 'Full name');
     if (!nameValidation.isValid) {
@@ -226,7 +234,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
               setError(null);
               setOauthProvider('google');
               // 🆕 Save selected role to localStorage before OAuth redirect
-              localStorage.setItem('growlancer_oauth_role', role);
+              localStorage.setItem('growlancer_oauth_role', role || 'freelancer');
               const result = await signInWithOAuth('google');
               setOauthProvider(null);
               if (!result.success) setError(result.error || 'Google sign in failed. Make sure Google is configured in the Supabase Dashboard.');
@@ -252,7 +260,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
               setError(null);
               setOauthProvider('linkedin');
               // 🆕 Save selected role to localStorage before OAuth redirect
-              localStorage.setItem('growlancer_oauth_role', role);
+              localStorage.setItem('growlancer_oauth_role', role || 'freelancer');
               const result = await signInWithOAuth('linkedin_oidc');
               setOauthProvider(null);
               if (!result.success) setError(result.error || 'LinkedIn sign in failed. Make sure LinkedIn is configured in the Supabase Dashboard.');
@@ -298,6 +306,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                 className={`cursor-pointer flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
                   role === 'freelancer'
                     ? 'border-emerald-500 bg-emerald-50/50 shadow-sm shadow-emerald-500/10'
+                    : role === null
+                    ? 'border-slate-200 hover:border-orange-300 bg-slate-50/50 hover:bg-orange-50/30'
                     : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-100/50'
                 }`}
               >
@@ -312,6 +322,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                 <div className={`shrink-0 flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg border ${
                   role === 'freelancer'
                     ? 'bg-emerald-100 border-emerald-200 text-emerald-600'
+                    : role === null
+                    ? 'bg-white border-orange-200 text-slate-400'
                     : 'bg-white border-slate-200 text-slate-400'
                 } transition-all`}>
                   <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -325,6 +337,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                 className={`cursor-pointer flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
                   role === 'client'
                     ? 'border-emerald-500 bg-emerald-50/50 shadow-sm shadow-emerald-500/10'
+                    : role === null
+                    ? 'border-slate-200 hover:border-orange-300 bg-slate-50/50 hover:bg-orange-50/30'
                     : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-slate-100/50'
                 }`}
               >
@@ -339,6 +353,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                 <div className={`shrink-0 flex items-center justify-center w-7 h-7 sm:w-9 sm:h-9 rounded-lg border ${
                   role === 'client'
                     ? 'bg-emerald-100 border-emerald-200 text-emerald-600'
+                    : role === null
+                    ? 'bg-white border-orange-200 text-slate-400'
                     : 'bg-white border-slate-200 text-slate-400'
                 } transition-all`}>
                   <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -349,6 +365,12 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole = 'f
                 </div>
               </label>
             </div>
+            {role === null && (
+              <p className="text-[11px] text-orange-500 font-medium ml-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Please select a role to continue
+              </p>
+            )}
           </div>
 
           {/* Full Name Field */}

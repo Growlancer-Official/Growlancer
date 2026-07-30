@@ -11,7 +11,7 @@ export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSignupModalOpen, setIsSignupModalOpen] = useState(false);
-  const [signupRole, setSignupRole] = useState<'freelancer' | 'client'>('freelancer');
+  const [signupRole, setSignupRole] = useState<'freelancer' | 'client' | undefined>(undefined);
   const { isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,7 +40,12 @@ export function MainLayout() {
   };
 
   const handleOpenSignup = (role?: 'freelancer' | 'client') => {
-    if (role) setSignupRole(role);
+    if (role) {
+      setSignupRole(role);
+    } else {
+      // 🆕 No role param → don't pre-select any role in SignupModal
+      setSignupRole(undefined);
+    }
     setIsSignupModalOpen(true);
     setMobileMenuOpen(false);
   };
