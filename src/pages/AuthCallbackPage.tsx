@@ -16,6 +16,31 @@ function safeNavigate(navFn: () => void) {
   });
 }
 
+/**
+ * 🛡️ OAuth post-login redirect — FULL PAGE redirect (window.location.replace), not SPA navigate.
+ * The session is already persisted in localStorage by supabase-js after the OAuth callback,
+ * so a full reload lets AuthContext initialize cleanly from storage. SPA navigate() here
+ * races with AuthContext's async profile sync, which can make ProtectedRoute see user=null
+ * and bounce the user BACK to /?modal=login (the "LinkedIn login works but goes back" bug).
+ * window.location.replace() (not href=) prevents the browser Back button from returning
+ * to /auth/callback and re-running this processing.
+ */
+function redirectAfterAuth(profile: { role?: string | null; onboardingCompleted?: boolean } | null) {
+  if (profile && !profile.onboardingCompleted) {
+    window.location.replace('/onboarding?mode=oauth');
+  } else if (profile) {
+    const dashboardRoute =
+      profile.role === 'client'
+        ? '/client'
+        : profile.role === 'admin'
+          ? '/admin'
+          : '/dashboard';
+    window.location.replace(dashboardRoute);
+  } else {
+    window.location.replace('/onboarding?mode=oauth');
+  }
+}
+
 type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate';
 type AuthAction = 'signup' | 'recovery' | 'magiclink' | 'email_change' | 'invite' | 'reauthentication' | 'unknown';
 
@@ -236,19 +261,7 @@ export function AuthCallbackPage() {
           return; // Stop — country confirmation UI will handle the redirect
         }
 
-        if (profile && !profile.onboardingCompleted) {
-          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
-        } else if (profile) {
-          const dashboardRoute =
-            profile.role === 'client'
-              ? '/client'
-              : profile.role === 'admin'
-                ? '/admin'
-                : '/dashboard';
-          safeNavigate(() => navigate(dashboardRoute, { replace: true }));
-        } else {
-          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
-        }
+        redirectAfterAuth(profile);
       } catch (err) {
         if (!cancelled) {
           setStatus('error');
@@ -294,18 +307,10 @@ export function AuthCallbackPage() {
         });
 
         // Now determine redirect based on profile
+        // 🛡️ FULL PAGE redirect — same reason as the main callback flow above.
+        // Avoids the ProtectedRoute bounce-back race after country selection.
         const profile = await fetchUserProfile(userId);
-        if (profile && !profile.onboardingCompleted) {
-          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
-        } else if (profile) {
-          const dashboardRoute =
-            profile.role === 'client' ? '/client' :
-            profile.role === 'admin' ? '/admin' :
-            '/dashboard';
-          safeNavigate(() => navigate(dashboardRoute, { replace: true }));
-        } else {
-          safeNavigate(() => navigate('/onboarding?mode=oauth', { replace: true }));
-        }
+        redirectAfterAuth(profile);
       } else {
         // Non-India country — insert into waitlist, redirect to /waitlist
         const email = sessionData.session?.user?.email || '';
