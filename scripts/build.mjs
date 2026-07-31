@@ -68,12 +68,18 @@ const start = Date.now();
 
 // ── Step 1: Vite build ─────────────────────────────────────────
 console.log(`\n${YELLOW}[1/5]${RESET} Running vite build...`);
-try {
-  execSync('npx vite build', { cwd: ROOT, stdio: 'inherit' });
-} catch (err) {
-  fail(`Vite build failed: ${err.message}`);
+if (process.env.SKIP_VITE_BUILD === '1') {
+  // Test/debug mode: reuse the existing dist/client/ output so the
+  // fallback shell generator can be exercised in isolation.
+  warn('SKIP_VITE_BUILD=1 — skipping vite build (fallback shell test mode)');
+} else {
+  try {
+    execSync('npx vite build', { cwd: ROOT, stdio: 'inherit' });
+    ok('Vite build completed');
+  } catch (err) {
+    fail(`Vite build failed: ${err.message}`);
+  }
 }
-ok('Vite build completed');
 
 // ── Step 2: Copy Vike client output → dist/ (DETERMINISTIC) ──
 // Vike (SSR/prerender) outputs the client build to dist/client/, but Vercel's
@@ -252,6 +258,12 @@ ${cssTags}
   </head>
   <body>
     <div id="root"></div>
+    <!-- Vike REQUIRES #vike_globalContext to exist in the HTML.
+         Vike automatically injects it during prerender/SSR; a hand-written
+         fallback shell must provide it manually or the client router crashes
+         with "Couldn't find #vike_globalContext" (white screen).
+         {} = no server context (client-side only boot). -->
+    <script id="vike_globalContext" type="application/json">{}</script>
     <script type="module" async>
 ${importStmts}
     </script>
