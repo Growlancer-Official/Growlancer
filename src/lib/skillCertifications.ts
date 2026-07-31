@@ -118,14 +118,23 @@ export const skillCertificationService = {
       return { success: false, error: `Score ${score}/${maxScore} is below the passing threshold.` };
     }
 
-    // Upsert certification (upgrade if higher level)
+    // Upsert certification (upgrade if higher level).
+    // NOTE: the UNIQUE(user_id, skill) constraint was intentionally dropped
+    // (migration 20260821000000) to allow both a Certificate and an LOR for
+    // the same skill — so we can't use onConflict: 'user_id,skill' (would throw
+    // 42P10). Instead we look up the latest existing row and update it by id,
+    // or insert a new one when none exists.
     const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
     const { data: existing } = await supabase
       .from('skill_certifications' as any)
-      .select('level')
+      .select('*')
       .eq('user_id', userId)
       .eq('skill', skill)
-      .single();
+      // Include NULL (legacy rows created before certificate_type column existed)
+      .or('certificate_type.eq.skill_test,certificate_type.is.null')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     const existingLevel = (existing as any)?.level;
     const existingIdx = existingLevel ? levels.indexOf(existingLevel) : -1;
@@ -135,19 +144,30 @@ export const skillCertificationService = {
       return { success: true, certification: existing as unknown as SkillCertification };
     }
 
-    const { data, error } = await supabase
-      .from('skill_certifications' as any)
-      .upsert({
-        user_id: userId,
-        skill,
-        level,
-        score,
-        max_score: maxScore,
-        passed_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-      }, { onConflict: 'user_id,skill' })
-      .select()
-      .single();
+    const payload = {
+      level,
+      score,
+      max_score: maxScore,
+      passed_at: new Date().toISOString(),
+      expires_at: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+    };
+
+    const { data, error } = existing
+      ? await supabase
+          .from('skill_certifications' as any)
+          .update(payload)
+          .eq('id', (existing as any).id)
+          .select()
+          .single()
+      : await supabase
+          .from('skill_certifications' as any)
+          .insert({
+            user_id: userId,
+            skill,
+            ...payload,
+          })
+          .select()
+          .single();
 
     if (error) return { success: false, error: error.message };
     return { success: true, certification: data as unknown as SkillCertification };

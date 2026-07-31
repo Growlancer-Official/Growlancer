@@ -37,6 +37,15 @@ export function SkillsSelector({
   const [step, setStep] = useState<'category' | 'subcategory' | 'skills'>(selectedCategoryIds.length > 0 ? 'subcategory' : 'category');
   const [selectedSubcategories, setSelectedSubcategories] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  // 🔍 Real-time search for categories so freelancers can find & add them fast
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
+
+  // Filter categories by the live search query (name match)
+  const filteredCategories = categorySearchQuery.trim()
+    ? categories.filter((cat) =>
+        cat.name.toLowerCase().includes(categorySearchQuery.trim().toLowerCase())
+      )
+    : categories;
 
   // Build category ID → name lookup
   const categoryIdToName = new Map(categories.map(c => [c.id, c.name]));
@@ -146,8 +155,29 @@ export function SkillsSelector({
               ? `Select up to ${maxCategories} categories that best describe your expertise`
               : 'Select a category for your project'}
           </p>
+          {/* 🔍 Category search */}
+          <div className="relative mb-3">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              value={categorySearchQuery}
+              onChange={(e) => setCategorySearchQuery(e.target.value)}
+              placeholder="Search categories..."
+              className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            />
+            {categorySearchQuery && (
+              <button
+                type="button"
+                onClick={() => setCategorySearchQuery('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                aria-label="Clear category search"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-            {categories.map((cat) => {
+            {filteredCategories.map((cat) => {
               const meta = resolveCategoryMeta(cat.name);
               const Icon = meta.icon;
               const isSelected = selectedCategoryIds.includes(cat.id);
@@ -174,6 +204,11 @@ export function SkillsSelector({
               );
             })}
           </div>
+          {filteredCategories.length === 0 && (
+            <p className="text-xs text-slate-400 text-center py-4">
+              No categories found matching &quot;{categorySearchQuery}&quot;
+            </p>
+          )}
 
           {selectedCategoryIds.length > 0 && (
             <button

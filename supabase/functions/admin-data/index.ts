@@ -186,7 +186,7 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
     
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="https://growlancer.vercel.app/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 40px; width: auto; border-radius: 10px;" />
+      <img src="https://growlancer.vercel.app/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto; border-radius: 10px;" />
     </div>
 
     <!-- Header -->

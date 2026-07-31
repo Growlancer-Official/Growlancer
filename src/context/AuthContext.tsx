@@ -1030,11 +1030,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
           
-          // If auto-login also failed, tell user about email settings
+          // If auto-login also failed, guide the user to verify via email
           setIsLoading(false);
           return { 
             success: false, 
-            error: 'Account created but email confirmation failed. Please go to Supabase Dashboard → Authentication → Providers → Email and turn OFF "Confirm email", then try again. Or try logging in with your email and password.'
+            error: 'Account created! Please check your inbox (and spam folder) for the verification email and click the link to activate your account, then log in with your email and password.'
           };
         }
         
@@ -1087,9 +1087,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        // ✅ Auto-login immediately — auto-confirm trigger confirms email on signup
-        // The trigger on_auth_user_created sets email_confirmed_at = NOW() right after
-        // the user is inserted into auth.users, so signInWithPassword should work.
+        // ✅ Try auto-login — works when email verification is off OR the user's
+        // email is already confirmed (e.g., auto-confirm legacy users). With real
+        // email verification enabled, the user must click the verification link
+        // first, so auto-login fails gracefully and we guide them to check email.
         devLog('[Auth] Trying auto-login after signup for:', email);
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -1099,7 +1100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (created) setUser(created);
           devLog('[Auth] Auto-login succeeded after signup');
         } else {
-          devLog('[Auth] Auto-login failed after signup (user can log in manually):', loginError?.message);
+          devLog('[Auth] Auto-login failed after signup — user must verify email first:', loginError?.message);
         }
 
         // 📧 Send professional welcome email via Brevo in real-time (fire-and-forget)
@@ -1125,7 +1126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           success: true,
           message: loginData?.user
             ? 'Account created successfully! Welcome to Growlancer.'
-            : 'Account created! You can now log in with your email and password.'
+            : 'Account created! Check your inbox for a verification link, then log in with your email and password.'
         };
       }
 

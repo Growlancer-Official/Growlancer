@@ -165,7 +165,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
   <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);">
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="https://growlancer.vercel.app/Growlancer%20Logo%20(2).png" alt="Growlancer" style="height: 40px; width: auto;" />
+      <img src="https://growlancer.vercel.app/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto;" />
     </div>
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
@@ -717,7 +717,7 @@ function buildSelectedEmailHtml(
         </table>
       </td>
     </tr>
-    <tr><td style="height: 10px; font-size: 0; line-height: 0;">&nbsp;</td></tr>`).join('')};
+    <tr><td style="height: 10px; font-size: 0; line-height: 0;">&nbsp;</td></tr>`).join('');
 
   const docSection = hasAnyDoc ? `
     <!-- ─── DOCUMENTS SECTION ────────────────────────────────────────── -->
