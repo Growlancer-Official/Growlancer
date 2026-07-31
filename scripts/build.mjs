@@ -258,11 +258,16 @@ ${cssTags}
   </head>
   <body>
     <div id="root"></div>
-    <!-- Vike REQUIRES #vike_globalContext to exist in the HTML.
-         Vike automatically injects it during prerender/SSR; a hand-written
-         fallback shell must provide it manually or the client router crashes
-         with "Couldn't find #vike_globalContext" (white screen).
-         {} = no server context (client-side only boot). -->
+    <!-- Vike REQUIRES BOTH #vike_pageContext AND #vike_globalContext in the HTML.
+         Vike's client router UNCONDITIONALLY reads #vike_pageContext on first render
+         (renderPageClient -> getPageContextFromHooksServer_firstRender). Without it the
+         boot crashes with "Couldn't find #vike_pageContext" (white screen) — this is the
+         root cause of the white screen when the fallback shell is served.
+         pageId is always "/pages/@path" because the app is a single catch-all route
+         (pages/@path/+route.ts = '/*') that renders <App /> (react-router). The routeParams
+         value is therefore irrelevant for routing — this matches exactly what Vike's
+         prerender emits for the "/" URL. {} for globalContext = client-side only boot. -->
+    <script id="vike_pageContext" type="application/json">{"pageId":"/pages/@path","routeParams":{"*":""}}</script>
     <script id="vike_globalContext" type="application/json">{}</script>
     <script type="module" async>
 ${importStmts}
