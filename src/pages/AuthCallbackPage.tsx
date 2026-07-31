@@ -301,10 +301,14 @@ export function AuthCallbackPage() {
 
       if (selectedCountry === 'IN') {
         // Save country as India — proceed normally
-        await supabase.rpc('update_user_country', {
+        const { error: countryErr } = await supabase.rpc('update_user_country', {
           p_user_id: userId,
           p_country: 'IN',
         });
+        if (countryErr) {
+          // Non-blocking: still continue to onboarding, but log so we can fix silently
+          devLog('[AuthCallback] update_user_country RPC warning:', countryErr.message);
+        }
 
         // Now determine redirect based on profile
         // 🛡️ FULL PAGE redirect — same reason as the main callback flow above.
