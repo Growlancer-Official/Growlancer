@@ -29,6 +29,13 @@ jobs:
       # the same install path as production. npm ci fails on the Actions runner
       # for this React 19 lockfile while npm install (Vercel's path) succeeds.
       - run: npm install --no-audit --no-fund
+      # Lockfile-drift guard: npm install (unlike npm ci) would silently fix an
+      # out-of-sync package-lock.json. Fail loudly instead so a package.json
+      # edit without a lockfile update can never slip through.
+      - name: Lockfile sync check
+        run: |
+          git diff --exit-code -- package-lock.json \
+            || { echo '::error::package-lock.json is out of sync — commit the updated lockfile'; exit 1; }
       - name: TypeScript typecheck
         run: npm run typecheck
 
