@@ -22,13 +22,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          # Node 24 (npm 11): npm ci must run on the same npm major that
-          # generated the lockfile. Node 22's npm 10 errors with ERESOLVE on
-          # the React 19 peer-deps that npm 11 resolves fine. Vercel is
-          # unaffected (it runs npm install, not npm ci).
+          # Node 24 matches the local dev toolchain.
           node-version: 24
           cache: npm
-      - run: npm ci
+      # Use npm install (NOT npm ci) — exactly what Vercel runs, so CI guards
+      # the same install path as production. npm ci fails on the Actions runner
+      # for this React 19 lockfile while npm install (Vercel's path) succeeds.
+      - run: npm install --no-audit --no-fund
       - name: TypeScript typecheck
         run: npm run typecheck
 
@@ -42,7 +42,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - name: ESLint
         run: npm run lint
 
@@ -58,7 +58,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - name: Production build
         # VITE_* env vars are only required to satisfy the non-empty check in
         # src/lib/supabase.ts during prerender — real values are injected by
