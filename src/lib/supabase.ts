@@ -1,8 +1,11 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Json } from '../types/supabase';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+// 🛡️ Trim env values — prevents broken auth URLs caused by stray trailing
+// whitespace/newlines when env vars are pasted into Vercel/Supabase dashboards
+// (a trailing \n in the URL silently broke every auth request).
+const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
+const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 const REQUEST_TIMEOUT_MS = 15000;
 let channelCounter = 0;
 
