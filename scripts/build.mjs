@@ -292,6 +292,33 @@ if (!existsSync(DIST_HTML)) {
 }
 ok(`dist/index.html exists`);
 
+// ── Step 4b: White-screen regression guard (NEVER deploy a broken shell) ──
+// Vike's client router UNCONDITIONALLY reads #vike_pageContext (and also
+// #vike_globalContext) from the served HTML on first render. If either element
+// is missing, the boot crashes with "Couldn't find #vike_..." → white screen.
+// This guard HARD-FAILS the build so a broken shell can never be deployed
+// silently again: the deploy fails loudly instead of shipping a white screen.
+// (Valid for BOTH the prerendered HTML and the fallback SPA shell.)
+{
+  const html = readFileSync(DIST_HTML, 'utf8');
+  const CRITICAL_ELEMENTS = [
+    ['#root mount', 'id="root"'],
+    ['#vike_pageContext', 'id="vike_pageContext"'],
+    ['#vike_globalContext', 'id="vike_globalContext"'],
+  ];
+  for (const [label, marker] of CRITICAL_ELEMENTS) {
+    if (!html.includes(marker)) {
+      fail(
+        `CRITICAL: dist/index.html is missing the ${label} element (${marker}).\n` +
+          `  Vike's client router would crash on first render (white screen).\n` +
+          `  Fix scripts/build.mjs step 3b (generateFallbackIndexHtml) or the\n` +
+          `  prerender output — this build must NOT be deployed.`
+      );
+    }
+  }
+  ok('index.html contains #root + both Vike context elements (white-screen guard ✓)');
+}
+
 // ── Step 5: Remove any stray 404.html from dist/ ───────────────
 console.log(`\n${YELLOW}[5/5]${RESET} Cleaning up stray files...`);
 const FALLBACK_404 = resolve(DIST, '404.html');
