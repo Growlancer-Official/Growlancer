@@ -210,6 +210,16 @@ function generateFallbackIndexHtml() {
     }
   }
 
+  // 🛡️ Guard: never write a blank shell (no scripts = blank page).
+  // Dedupe first so the check reflects what will actually be emitted.
+  const scriptSet = [...new Set(scriptImports)];
+  if (scriptSet.length === 0) {
+    fail(
+      `Fallback generator found NO client entry scripts — would produce a blank page.\n` +
+        `  Check that dist/client/assets/entries/ exists after vite build.`
+    );
+  }
+
   // Deterministic order: client-routing entry first, then pages client.
   scriptImports.sort((a, b) => {
     const aIsRouter = a.includes('entry-client-routing') ? 0 : 1;
