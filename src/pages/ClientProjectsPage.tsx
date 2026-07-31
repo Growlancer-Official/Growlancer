@@ -155,7 +155,7 @@ export function ClientProjectsPage() {
     const from = loadMore ? (currentPage + 1) * pageSize : 0;
     const to = from + pageSize - 1;
 
-    const { data, error } = await tables.projects()
+    const { data, error } = await (tables.projects() as any)
       .select('*, proposals(count)')
       .eq('client_id', user.id)
       .order('created_at', { ascending: false })

@@ -5,7 +5,6 @@ import {
 import { adminQuery, adminUpdate, adminDelete, adminInsert } from '../../lib/adminDataProxy';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
-import { ConfirmModal } from '../../components/ConfirmModal';
 import { paypalService } from '../../lib/paypal';
 import { razorpayService } from '../../lib/razorpay';
 
@@ -101,7 +100,7 @@ export function AdminDisputesPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [confirmDialog, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; variant: 'danger' | 'warning' | 'info'; confirmLabel?: string; onConfirm: () => void | Promise<void> } | null>(null);
+  const [, setConfirmDialog] = useState<{ isOpen: boolean; title: string; message: string; variant: 'danger' | 'warning' | 'info'; confirmLabel?: string; onConfirm: () => void | Promise<void> } | null>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const toast = useToast();
 

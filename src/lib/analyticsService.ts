@@ -166,7 +166,7 @@ export const analyticsService = {
       const newMatches = (matchesResult.data || []).length;
 
       // Process wallet
-      const wallet = walletResult.data;
+      const wallet = walletResult.data as { balance?: number; pending_balance?: number } | null;
       const totalEarnings = wallet?.balance || 0;
       const pendingPayouts = wallet?.pending_balance || 0;
 

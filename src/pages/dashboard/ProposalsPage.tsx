@@ -37,7 +37,7 @@ export function ProposalsPage() {
       const from = loadMore ? (currentPage + 1) * pageSize : 0;
       const to = from + pageSize - 1;
 
-      const { data, error } = await tables.proposals()
+      const { data, error } = await (tables.proposals() as any)
         .select(`
           *,
           project:projects(

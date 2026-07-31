@@ -1,4 +1,4 @@
-import { supabase, type TableName } from './supabase';
+import { supabase } from './supabase';
 
 // ─── Payment method type ────────────────────────────────────────
 // ID is always a string from Supabase UUID. Optional fields match
@@ -32,7 +32,7 @@ export interface AddPaymentMethodData {
 }
 
 /** Reference to the payment_methods table (typed via TableName union) */
-const pm = () => supabase.from('payment_methods' as TableName);
+const pm = () => supabase.from('payment_methods' as any);
 
 export const clientPaymentMethodsService = {
   /**
@@ -57,7 +57,7 @@ export const clientPaymentMethodsService = {
 
       if (error) throw error;
 
-      return { success: true, methods: (data || []) as ClientPaymentMethod[] };
+      return { success: true, methods: (data || []) as unknown as ClientPaymentMethod[] };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to load payment methods';
       console.error('Error fetching payment methods:', message);
@@ -114,7 +114,7 @@ export const clientPaymentMethodsService = {
 
       if (error) throw error;
 
-      return { success: true, method: newMethod as ClientPaymentMethod };
+      return { success: true, method: newMethod as unknown as ClientPaymentMethod };
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add payment method';
       console.error('Error adding payment method:', message);

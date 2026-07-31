@@ -68,13 +68,14 @@ export function SubcategoryDetailPage() {
     setProjectsLoading(true);
     setProjectsError(null);
 
-    dbFunctions
-      .getProjectsByCategory({
+    Promise.resolve(
+      dbFunctions.getProjectsByCategory({
         p_category_slug: slug,
         p_search_query: searchQuery || '',
         p_limit: 20,
         p_offset: 0,
       })
+    )
       .then((result: any) => {
         if (result.error) {
           setProjectsError(result.error.message || 'Failed to load projects');
@@ -98,14 +99,15 @@ export function SubcategoryDetailPage() {
     setFreelancersLoading(true);
     setFreelancersError(null);
 
-    dbFunctions
-      .searchFreelancersByCategory({
+    Promise.resolve(
+      dbFunctions.searchFreelancersByCategory({
         p_category_slug: slug,
         p_search_query: searchQuery || '',
         p_sort_by: 'rating',
         p_limit: 20,
         p_offset: 0,
       })
+    )
       .then((result: any) => {
         if (result.error) {
           setFreelancersError(result.error.message || 'Failed to load freelancers');

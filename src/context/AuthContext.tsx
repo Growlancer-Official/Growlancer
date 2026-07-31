@@ -703,7 +703,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // ── Initialize last activity timestamp ──
     // On mount, load from localStorage (survives page refresh).
     // If none exists, set it now (fresh session).
-    let stored = localStorage.getItem(LAST_ACTIVITY_KEY);
+    const stored = localStorage.getItem(LAST_ACTIVITY_KEY);
     let lastActivity = stored ? parseInt(stored, 10) : Date.now();
     if (!stored) {
       localStorage.setItem(LAST_ACTIVITY_KEY, String(lastActivity));

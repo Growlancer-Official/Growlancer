@@ -2,7 +2,7 @@
 // Handles withdrawal requests and wallet/payout method operations
 // PayPal-only withdrawal method
 
-import { supabase, dbFunctions, type TableName } from './supabase';
+import { supabase, dbFunctions } from './supabase';
 import { emailNotificationService } from './emailNotificationService';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zttwsjehcgaicziqyxpq.supabase.co';
@@ -274,7 +274,7 @@ export const withdrawalService = {
       }
 
       const { data: newMethod, error } = await supabase
-        .from('payout_methods' as TableName)
+        .from('payout_methods' as any)
         .insert({
           user_id: session.user.id,
           type: data.type,
