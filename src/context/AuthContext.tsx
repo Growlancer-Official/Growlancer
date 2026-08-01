@@ -178,6 +178,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const syncAuthUser = useCallback(
     async (authUser: SupabaseUser, roleHint?: UserRole) => {
+      // 🛡️ OAuth callback page guard — AuthCallbackPage OWNS profile creation, role
+      // handling, country gate and redirect on /auth/callback. If AuthContext races
+      // ahead and signs out (profile fetch fails) or consumes growlancer_oauth_role
+      // here, the fresh OAuth session is destroyed → user bounces back to login
+      // instead of onboarding (the 'Google/LinkedIn login works but goes back' bug).
+      const isOAuthCallbackPage =
+        typeof window !== 'undefined' &&
+        window.location.pathname.startsWith('/auth/callback');
+
+      if (isOAuthCallbackPage) {
+        // Only surface an existing profile — never create, never sign out, never
+        // consume the saved role. AuthCallbackPage handles all of that.
+        const existing = await ensureUserProfile(authUser, roleHint, !!roleHint);
+        if (existing) setUser(existing);
+        return existing;
+      }
+
       // Try to fetch existing profile
       let profile = await ensureUserProfile(authUser, roleHint, !!roleHint);
 
