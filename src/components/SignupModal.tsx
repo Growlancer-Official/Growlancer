@@ -51,7 +51,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  const [oauthProvider, setOauthProvider] = useState<'google' | 'linkedin' | null>(null);
+  const [oauthProvider, setOauthProvider] = useState<'github' | 'linkedin' | null>(null);
   const [existingUser, setExistingUser] = useState(false);
 
   // Sync role from initialRole when modal opens (only if explicitly provided via URL)
@@ -232,33 +232,30 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           </div>
         )}
 
-        {/* Social Auth — Google & LinkedIn */}
+        {/* Social Auth — GitHub & LinkedIn */}
         <div className="mb-5 space-y-3">
           <button
             type="button"
             disabled={!!oauthProvider}
             onClick={async () => {
               setError(null);
-              setOauthProvider('google');
+              setOauthProvider('github');
               // 🆕 Save selected role to localStorage before OAuth redirect
               localStorage.setItem('growlancer_oauth_role', role || 'freelancer');
-              const result = await signInWithOAuth('google');
+              const result = await signInWithOAuth('github');
               setOauthProvider(null);
-              if (!result.success) setError(result.error || 'Google sign in failed. Make sure Google is configured in the Supabase Dashboard.');
+              if (!result.success) setError(result.error || 'GitHub sign in failed. Make sure GitHub is configured in the Supabase Dashboard.');
             }}
             className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {oauthProvider === 'google' ? (
+            {oauthProvider === 'github' ? (
               <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
             ) : (
               <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.79 15.73 17.57V20.34H19.28C21.36 18.42 22.56 15.6 22.56 12.25Z" fill="#4285F4"/>
-                <path d="M12 23C14.97 23 17.46 21.92 19.28 20.34L15.73 17.57C14.73 18.23 13.45 18.64 12 18.64C9.14 18.64 6.71 16.7 5.84 14.12H2.18V16.96C3.99 20.57 7.7 23 12 23Z" fill="#34A853"/>
-                <path d="M5.84 14.12C5.62 13.46 5.49 12.75 5.49 12C5.49 11.25 5.62 10.54 5.84 9.88V7.04H2.18C1.43 8.54 1 10.23 1 12C1 13.77 1.43 15.46 2.18 16.96L5.84 14.12Z" fill="#FBBC05"/>
-                <path d="M12 5.36C13.59 5.36 15 5.94 16.11 7L19.36 3.75C17.46 1.98 15 1 12 1C7.7 1 3.99 3.43 2.18 7.04L5.84 9.88C6.71 7.3 9.14 5.36 12 5.36Z" fill="#EA4335"/>
+                <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.58 2 12.22c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05.8-.23 1.65-.34 2.5-.34.85 0 1.7.11 2.5.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.59.69.48A10.25 10.25 0 0022 12.22C22 6.58 17.52 2 12 2z" fill="#24292E"/>
               </svg>
             )}
-            {oauthProvider === 'google' ? 'Redirecting to Google...' : 'Continue with Google'}
+            {oauthProvider === 'github' ? 'Redirecting to GitHub...' : 'Continue with GitHub'}
           </button>
           <button
             type="button"

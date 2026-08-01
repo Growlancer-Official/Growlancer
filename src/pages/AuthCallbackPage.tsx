@@ -167,13 +167,13 @@ export function AuthCallbackPage() {
         // For a signup confirmation, the email MUST be confirmed before we route
         // the user onward. Never trust the frontend — supabase.auth.getUser() only
         // returns email_confirmed_at once Supabase has actually confirmed it.
-        // OAuth providers (google/linkedin) auto-confirm the email at account
+        // OAuth providers (github/linkedin) auto-confirm the email at account
         // creation, so the gate only applies to email/password signups.
         const authProvider = (authUser?.app_metadata?.provider as string | undefined) ?? '';
         const isProviderOAuth =
-          authProvider === 'google' || authProvider === 'linkedin_oidc';
+          authProvider === 'github' || authProvider === 'linkedin_oidc';
         const isOAuthFlow =
-          detectedAction === 'unknown' || isProviderOAuth || authProvider === 'github';
+          detectedAction === 'unknown' || isProviderOAuth;
 
         if (sessionFound && authUser && detectedAction === 'signup' && !isOAuthFlow && !authUser.email_confirmed_at) {
           devLog('[AuthCallback] Signup session but email NOT confirmed yet');
@@ -306,7 +306,7 @@ export function AuthCallbackPage() {
         // the signup form and it's already stored in the profile — never overwrite it
         // here (prevents a 'client' email signup being silently flipped to 'freelancer'
         // after email verification).
-        // (isOAuthFlow computed above — includes provider-based detection so Google/
+        // (isOAuthFlow computed above — includes provider-based detection so GitHub/
         //  LinkedIn signups keep their chosen role even when Supabase sends type=signup.)
 
         // Retry fetching profile (AuthContext may still be syncing)

@@ -63,7 +63,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   session: Session | null;
-  signInWithOAuth: (provider: 'google' | 'linkedin_oidc', role?: UserRole) => Promise<{ success: boolean; error?: string }>;
+  signInWithOAuth: (provider: 'github' | 'linkedin_oidc', role?: UserRole) => Promise<{ success: boolean; error?: string }>;
   login: (
     email: string,
     password: string
@@ -183,7 +183,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // handling, country gate and redirect on /auth/callback. If AuthContext races
       // ahead and signs out (profile fetch fails) or consumes growlancer_oauth_role
       // here, the fresh OAuth session is destroyed → user bounces back to login
-      // instead of onboarding (the 'Google/LinkedIn login works but goes back' bug).
+      // instead of onboarding (the 'GitHub/LinkedIn login works but goes back' bug).
       const isOAuthCallbackPage =
         typeof window !== 'undefined' &&
         window.location.pathname.startsWith('/auth/callback');
@@ -819,7 +819,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user?.id, user?.role, SESSION_TIMEOUT_MS]);
 
   const signInWithOAuth = async (
-    provider: 'google' | 'linkedin_oidc',
+    provider: 'github' | 'linkedin_oidc',
     role?: UserRole
   ): Promise<{ success: boolean; error?: string }> => {
     try {
