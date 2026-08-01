@@ -20,7 +20,7 @@ export function SafetyPage() {
     {
       icon: UserCheck,
       title: 'Talent Verification API',
-      description: 'We authenticate freelancer credentials directly via GitHub or PenTool API scopes. This guarantees that all links to portfolios represent actual, verified work, eliminating qualification noise.',
+      description: 'We authenticate freelancer credentials via GitHub or PenTool API scopes where available. This is designed to help confirm that portfolio links represent verified work and to reduce unverified claims.',
       color: 'from-pink-500 to-pink-650',
       badge: 'Identity'
     },
@@ -65,7 +65,7 @@ export function SafetyPage() {
             A secure foundation for <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">remote commerce</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto font-medium">
-            We built multiple security systems directly into active workspaces to prevent payment issues, work loss, and communication breakdowns.
+            We built multiple security systems directly into active workspaces to help reduce payment issues, work loss, and communication breakdowns.
           </p>
         </div>
       </section>
@@ -101,7 +101,7 @@ export function SafetyPage() {
           <div className="relative space-y-6">
             <h2 className="font-display text-3xl font-black tracking-tight leading-tight">Collaborate with Complete Assurance</h2>
             <p className="text-emerald-100 text-xs max-w-md mx-auto leading-relaxed">
-              Have any questions or need to raise an issue? Browse our Help Center or chat with our AI assistant instantly.
+              Have any questions or need to raise an issue? Browse our Help Center or chat with our AI assistant.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Link

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { formatLegalLastUpdatedLine } from '@/lib/legalLastUpdated';
-import { AlertOctagon, ArrowLeft, BookOpen, ChevronRight, DollarSign, FileCode, Gavel, HelpCircle, Lock, Scale, Shield, ShieldCheck,  } from 'lucide-react';
+import { AlertOctagon, ArrowLeft, BookOpen, ChevronRight, DollarSign, FileCode, Gavel, HelpCircle, Lock, Scale, Shield, ShieldCheck, Cpu,  } from 'lucide-react';
 
 interface Section {
   id: string;
@@ -46,7 +46,7 @@ const termsSections: Section[] = [
             You explicitly acknowledge and agree that:
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
-            <li><strong>Independent Status:</strong> Freelancers are independent contractors, not employees, agents, or partners of Growlancer or the Client.</li>
+            <li><strong>Independent Status:</strong> Freelancers are independent contractors, not employees, agents, or partners of Growlancer or the Client. Nothing in these Terms creates an employment, agency, partnership, or joint venture relationship between you and Growlancer, and no freelancer is entitled to employee benefits, withholdings, or protections provided to employees.</li>
             <li><strong>Service Contracts:</strong> Upon a Client purchasing a Freelancer's Service or awarding a bid, a direct, legally binding contract is established between the Client and the Freelancer. Growlancer is not a party to this contract, but acts as a secure platform and escrow facilitator.</li>
             <li><strong>Performance Quality:</strong> Freelancers are solely responsible for the quality, accuracy, and timely delivery of their work as agreed upon in the workspace.</li>
           </ul>
@@ -77,18 +77,18 @@ const termsSections: Section[] = [
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Freelancer Fee</span>
                 <h4 className="text-3xl font-black text-slate-900 mt-1">0%</h4>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  We believe in empowering creators. Growlancer charges freelancers zero percentage fees on standard contracts. The amount earned is the amount received in your wallet!
+                  We believe in empowering creators. Growlancer charges freelancers zero percentage fees on standard contracts. The amount earned is the amount received in your wallet.
                 </p>
                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                   <p className="text-[10px] text-amber-800 font-medium">
-                    <strong>Note:</strong> A separate payment-processing fee applies when you withdraw funds from your wallet, charged by our payment processor, not by Growlancer. PayPal withdrawals incur a 2.9% processing fee. Razorpay (India) withdrawals incur a 2% processing fee. These fees are deducted from the withdrawal amount and are clearly displayed before you confirm any withdrawal.
+                    <strong>Note:</strong> A separate payment-processing fee may apply when you withdraw funds from your wallet, charged by our payment processor, not by Growlancer. As of the date of these Terms, PayPal withdrawals incur a 2.9% processing fee and Razorpay (India) withdrawals incur a 2% processing fee, though these rates may change from time to time. Any current applicable fees are clearly displayed before you confirm any transaction or withdrawal.
                   </p>
                 </div>
               </div>
             </div>
           </div>
           <p className="text-slate-600 leading-relaxed text-sm">
-            All prices and payouts are calculated in USD. Platforms fees are non-refundable once work on a milestone has commenced or the escrow payment has been released to the Freelancer.
+            All prices and payouts are calculated in USD. Platform fees may be updated from time to time, and the fees applicable at the time of a transaction will apply. Platform fees are non-refundable once work on a milestone has commenced or the escrow payment has been released to the Freelancer.
           </p>
         </>
       ),
@@ -100,12 +100,12 @@ const termsSections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-4">
-            Growlancer's proprietary <strong>Escrow Safety Protection</strong> ensures mutual security and eliminates the coordination gaps that plague other freelancing platforms.
+            Growlancer's proprietary <strong>Escrow Safety Protection</strong> is designed to help reduce financial risk for both parties and minimize the coordination gaps that can occur on freelancing platforms. Escrow helps protect both clients and freelancers by holding funds until agreed milestones or completion conditions are met, but it cannot eliminate every dispute.
           </p>
           <div className="relative border-l-2 border-emerald-500 pl-4 space-y-4 mb-6">
             <div>
               <h5 className="font-bold text-slate-900 text-sm">A. Contract Funding</h5>
-              <p className="text-slate-600 text-xs mt-1">Clients must fully fund the contract amount (milestone or project total + the 5% platform fee) into a secure Growlancer Escrow balance before the Freelancer starts working. This signals guaranteed solvency and commitment.</p>
+              <p className="text-slate-600 text-xs mt-1">Clients must fully fund the contract amount (milestone or project total + the 5% platform fee) into a secure Growlancer Escrow balance before the Freelancer starts working. This is designed to help confirm that funds are available before work begins.</p>
             </div>
             <div>
               <h5 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas</h5>
@@ -113,7 +113,7 @@ const termsSections: Section[] = [
             </div>
             <div>
               <h5 className="font-bold text-slate-900 text-sm">C. Milestone Releases</h5>
-              <p className="text-slate-600 text-xs mt-1">Upon delivery of the milestone files or services, the Client will review. Once satisfied, the Client clicks "Release Escrow", transferring funds instantly to the Freelancer's wallet balance. Releasing funds constitutes final acceptance of that milestone.</p>
+              <p className="text-slate-600 text-xs mt-1">Upon delivery of the milestone files or services, the Client will review. Once satisfied, the Client clicks "Release Escrow", which initiates the transfer of funds to the Freelancer's wallet balance. Releasing funds constitutes final acceptance of that milestone.</p>
             </div>
           </div>
         </>
@@ -129,10 +129,13 @@ const termsSections: Section[] = [
             Intellectual Property ("IP") rights are critical for both clients and freelancers. Unless explicitly agreed otherwise in a custom written contract between the Freelancer and the Client:
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
-            <li><strong>Automatic Transfer:</strong> Upon the Client's final payment release of the respective project's escrow funds, all intellectual property rights, ownership, and titles in the deliverables created specifically for that project are transferred automatically and permanently to the Client.</li>
-            <li><strong>Pre-Existing Intellectual Property:</strong> The Freelancer retains all rights to any pre-existing code, libraries, design templates, and tools used during the project. Freelancer grants the Client a perpetual, royalty-free, worldwide license to use such pre-existing intellectual property within the deliverables.</li>
-            <li><strong>Platform Portfolio Rights:</strong> Freelancers are granted a limited license to showcase completed deliverables in their Growlancer portfolios, unless the Client has purchased a "Private Work" contract that specifies complete confidentiality.</li>
+            <li><strong>Automatic Transfer:</strong> Upon the Client's final payment release of the respective project's escrow funds, all intellectual property rights, ownership, and titles in the deliverables created specifically for that project are transferred to the Client, subject to any separate written agreement between the Freelancer and Client to the contrary.</li>
+            <li><strong>Pre-Existing Intellectual Property:</strong> The Freelancer retains all rights to any pre-existing code, libraries, design templates, and tools used during the project. Freelancer grants the Client a perpetual, royalty-free, worldwide license to use such pre-existing intellectual property within the deliverables, as is standard for platform-delivered work.</li>
+            <li><strong>Platform Portfolio Rights:</strong> Freelancers are granted a limited license to showcase completed deliverables in their Growlancer portfolios, unless the Client has purchased a "Private Work" contract that specifies confidentiality.</li>
           </ul>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            <strong>Ownership Distinctions:</strong> Growlancer does not automatically own, and makes no claim to, the work product, deliverables, or content created by Freelancers or uploaded by Users. Growlancer retains ownership of the Platform itself, including its software, design, trademarks, logos, and other platform intellectual property. Users retain ownership of their user-generated content and uploaded files, and Clients retain ownership of assets they provide to a Freelancer for a project. By uploading content to the Platform, you grant Growlancer a limited, non-exclusive, worldwide, royalty-free license to host, display, and process that content solely to operate and improve the Platform.
+          </p>
         </>
       ),
     },
@@ -152,7 +155,7 @@ const termsSections: Section[] = [
             </h5>
             <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-2">
               <li><strong>1. Coordination Check (48 Hours):</strong> Upon raising a dispute, the contract status is changed to "disputed". The workspace asset locker is frozen, preventing any further uploads or modifications. The client and freelancer are given 48 hours to communicate and resolve the issue mutually (e.g. adjust task requirements or agree to a partial refund).</li>
-              <li><strong>2. AI-Assisted Audit:</strong> If no agreement is reached, either party may escalate the dispute to the Growlancer Dispute Center. Our AI Mediator evaluates the workspace logs, chat archives, and task cards, then proposes a fair split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point for resolution.</li>
+              <li><strong>2. AI-Assisted Audit:</strong> If no agreement is reached, either party may escalate the dispute to the Growlancer Dispute Center. Our AI Mediator may assist by evaluating workspace logs, chat archives, and task cards, and may propose a split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point for resolution. AI assistance is provided to support, not replace, human judgment.</li>
               <li><strong>3. Human Review & Binding Decision:</strong> A human dispute resolution specialist reviews the AI's recommendation, along with all evidence, and confirms or adjusts the proposed split. Growlancer then issues a final, binding escrow allocation decision. Both parties agree to abide by this decision. Funds are moved only after human confirmation.</li>
             </ol>
           </div>
@@ -177,7 +180,7 @@ const termsSections: Section[] = [
             <li>Registering multiple user accounts under fake identities to game our AI matching systems or bypass platform suspension restrictions.</li>
           </ul>
           <p className="text-slate-600 text-sm">
-            <strong>Penalties:</strong> Violations of this policy will result in immediate and permanent account suspension, forfeiture of active referral payouts, and a permanent ban from using our matching and workspace services.
+            <strong>Penalties:</strong> Violations of this policy may result in suspension of your account, forfeiture of active referral payouts, and restrictions on access to our matching and workspace services, depending on the nature and severity of the violation.
           </p>
         </>
       ),
@@ -225,8 +228,55 @@ const termsSections: Section[] = [
       ),
     },
     {
+      id: 'ai',
+      title: '10. AI & Automated Features Disclaimer',
+      icon: Cpu,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            Growlancer uses artificial intelligence ("AI") and automated systems to assist with features such as project matching, dispute analysis, and workspace coordination. AI is intended to help improve your experience and may provide recommendations, but it does not make final or perfect decisions.
+          </p>
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+            <li><strong>AI Assists, It Does Not Decide:</strong> AI-generated recommendations and outputs are provided to support, not replace, human judgment. Dispute resolutions and other decisions are subject to human review where applicable.</li>
+            <li><strong>Not Professional Advice:</strong> AI-generated recommendations, including matching suggestions and dispute analysis, should not be treated as legal, financial, tax, or other professional advice.</li>
+            <li><strong>No Guarantee of Outcomes:</strong> AI assistance does not guarantee project success, matching quality, or any particular outcome. Outputs may occasionally require human review or correction.</li>
+          </ul>
+        </>
+      ),
+    },
+    {
+      id: 'professional-advice',
+      title: '11. No Professional Advice',
+      icon: Gavel,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            Growlancer is a technology platform and does not provide legal, financial, tax, accounting, employment, immigration, or other professional consulting services. Content available on the Platform, including AI-generated recommendations and informational materials, is provided for general informational purposes only.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            You remain solely responsible for obtaining independent professional advice where required, including in relation to your contracts, taxes, employment status, intellectual property, or compliance with applicable laws.
+          </p>
+        </>
+      ),
+    },
+    {
+      id: 'force-majeure',
+      title: '12. Force Majeure',
+      icon: Shield,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            Growlancer shall not be liable for any failure or delay in performing its obligations under these Terms caused by events beyond its reasonable control, including but not limited to natural disasters, internet or network outages, cloud provider failures, payment provider outages, cyber attacks, government actions, war, civil unrest, pandemics, power failures, and other unforeseen events.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-4">
+            Where such an event occurs, Growlancer will use reasonable efforts to resume performance as soon as reasonably practicable. Obligations suspended by a force majeure event will resume once the event ceases to affect performance.
+          </p>
+        </>
+      ),
+    },
+    {
       id: 'support',
-      title: '10. Legal Administration & Contact',
+      title: '13. Legal Administration & Contact',
       icon: HelpCircle,
       content: (
         <>

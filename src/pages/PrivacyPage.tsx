@@ -21,13 +21,13 @@ const privacySections: Section[] = [
             At Growlancer ("Platform", "we", "us", or "our"), your privacy is a foundational pillar of our service architecture. Unlike legacy freelancing platforms that rely on static database scraping and third-party advertising tracking, Growlancer is built to coordinate real-time workspaces with the highest standard of client and freelancer confidentiality.
           </p>
           <p className="text-slate-600 leading-relaxed mb-4">
-            This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the enterprise-grade cryptographic standards we employ to safeguard it, and your explicit rights under applicable data protection laws, including the Indian Digital Personal Data Protection (DPDP) Act, 2023.
+            This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the security measures we employ to safeguard it, and your rights under applicable data protection laws, including the Indian Digital Personal Data Protection (DPDP) Act, 2023 where applicable.
           </p>
           <div className="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-4 flex gap-3 text-emerald-800 text-sm font-medium">
             <Lock className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
             <div>
-              <p className="font-bold">Zero Sale of Data</p>
-              <p className="text-emerald-700 text-xs mt-1">We explicitly commit to NEVER selling, trading, or licensing your personal profile information, project parameters, messaging logs, or canvas files to third-party ad networks or data brokers.</p>
+              <p className="font-bold">We Do Not Sell Your Data</p>
+              <p className="text-emerald-700 text-xs mt-1">We do not sell, trade, or license your personal profile information, project parameters, messaging logs, or canvas files to third-party ad networks or data brokers, and we do not intend to do so. If this ever changes, we will update this policy and, where required by applicable law, seek your consent.</p>
             </div>
           </div>
         </>
@@ -49,11 +49,11 @@ const privacySections: Section[] = [
             </div>
             <div>
               <h5 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas Transactions</h5>
-              <p className="text-slate-600 text-xs mt-1">When active in a project workspace, our synchronization engines parse and log task cards on your Kanban board, collaborative scratchpad text entries, real-time message threads, and files uploaded to the shared asset locker. This ensures coordinate states match on both freelancer and client screens instantly.</p>
+              <p className="text-slate-600 text-xs mt-1">When active in a project workspace, our synchronization engines parse and log task cards on your Kanban board, collaborative scratchpad text entries, real-time message threads, and files uploaded to the shared asset locker. This helps coordinate states stay in sync on both freelancer and client screens in real time.</p>
             </div>
             <div>
               <h5 className="font-bold text-slate-900 text-sm">C. Payment & Verification Parameters</h5>
-              <p className="text-slate-600 text-xs mt-1">Escrow payment coordinates, withdrawal methods (PayPal emails, bank wire details), and transaction history are stored securely to comply with international KYC (Know Your Customer) and anti-money laundering (AML) protocols. We never store credit card pin details directly on our servers.</p>
+              <p className="text-slate-600 text-xs mt-1">Escrow payment coordinates, withdrawal methods (PayPal emails, bank wire details), and transaction history are stored securely to comply with international KYC (Know Your Customer) and anti-money laundering (AML) protocols. We do not store credit card PIN details on our servers; payment card data is handled by our payment processors in accordance with their security standards.</p>
             </div>
           </div>
         </>
@@ -77,19 +77,19 @@ const privacySections: Section[] = [
       ),
     },
     {
-      id: 'security',
-      title: '4. AES-256 Encryption & Security Practices',
+    id: 'security',
+    title: '4. Security & Data Protection Practices',
       icon: Lock,
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-4">
-            Security is not an afterthought at Growlancer. We employ enterprise-grade cryptographic standards to protect your data integrity:
+            Security is important to us. We use industry-standard technical and organizational security measures designed to protect personal information:
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-6 text-sm">
-            <li><strong>Data Encryption at Rest:</strong> All user databases, canvas assets, and profiles are encrypted using <strong>AES-256 (Advanced Encryption Standard)</strong> security keys.</li>
-            <li><strong>Data Encryption in Transit:</strong> Session streams and Supabase broadcast updates are routed exclusively over encrypted TLS 1.3 channels.</li>
-            <li><strong>Security Best Practices:</strong> We follow industry-standard security practices including encryption in transit (TLS) and at rest, and we are working toward formal third-party security certifications as we scale. Our infrastructure is hosted on trusted cloud providers with robust physical and network security controls.</li>
-            <li><strong>Dispute Isolation:</strong> In the event of a raised dispute, the workspace asset locker undergoes immediate read-only lock isolation, preventing modification or tampering of evidence while our mediation team audits the logs.</li>
+            <li><strong>Encryption at Rest:</strong> We employ industry-standard encryption to help protect stored data, including user databases, canvas assets, and profiles.</li>
+            <li><strong>Encryption in Transit:</strong> Data transmitted between your device and our services is protected using industry-standard transport encryption (e.g., TLS).</li>
+            <li><strong>Security Best Practices:</strong> We follow industry-standard security practices including encryption in transit and at rest, and we are working toward formal third-party security certifications as we scale. Our infrastructure is hosted on trusted cloud providers with physical and network security controls.</li>
+            <li><strong>Dispute Isolation:</strong> In the event of a raised dispute, the workspace asset locker is placed into read-only isolation to help prevent modification or tampering of evidence while our mediation team reviews the logs.</li>
           </ul>
         </>
       ),
@@ -106,7 +106,7 @@ const privacySections: Section[] = [
           <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
             <li><strong>Active Workspaces:</strong> Completed workspace canvases (Kanban status history, finalized notes) remain archived on your client and freelancer dashboard for reference unless both sides explicitly consent to delete the archive.</li>
             <li><strong>Financial Records:</strong> Transactional logs, escrow allocations, and platform fee billing details are retained for a minimum of seven (7) years to comply with standard audit and taxation requirements.</li>
-            <li><strong>Account Deletion:</strong> Upon filing a profile deletion request under account settings, your public profile and matches are deleted from the database within 48 hours. Cached analytical weights are fully purged within 30 days.</li>
+            <li><strong>Account Deletion:</strong> Upon filing a profile deletion request under account settings, we will use reasonable efforts to delete your public profile and matches from the database, typically within a few business days. Cached analytical weights are generally purged within 30 days, subject to applicable retention obligations.</li>
           </ul>
         </>
       ),
@@ -155,6 +155,9 @@ const privacySections: Section[] = [
         </ul>
         <p className="text-slate-600 text-sm">
           As Growlancer expands to other regions, we will extend equivalent rights to users in those jurisdictions in accordance with local law (e.g., GDPR for EU users, CCPA for California users).
+        </p>
+        <p className="text-slate-600 text-sm mt-4">
+          <strong>International Transfers:</strong> Where we process or transfer personal data to jurisdictions outside your country of residence, we take steps intended to help ensure that such transfers are subject to appropriate safeguards where required by applicable law.
         </p>
         <p className="text-slate-600 text-sm mt-4">
           To execute any data request or download your workspace history, submit a support ticket through our AI assistant and we'll process your request.
@@ -254,7 +257,7 @@ export function PrivacyPage() {
             Privacy & <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">Data Protections</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto font-medium">
-            Your workspace privacy and secure contract data is our utmost priority. Read about our AES-256 encryption and security practices.
+            Your workspace privacy and secure contract data is our priority. Read about our security practices and how we protect your data.
           </p>
           <p className="text-slate-400 text-xs font-bold pt-2">{formatLegalLastUpdatedLine()}</p>
         </div>

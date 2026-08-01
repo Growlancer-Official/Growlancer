@@ -115,7 +115,7 @@ export function GuidelinesPage() {
           <div>
             <h4 className="font-bold text-amber-950 text-sm">Enforcement Protocol</h4>
             <p className="text-xs text-amber-900/80 leading-relaxed mt-1 font-semibold">
-              Growlancer uses automated review processes. Violating these directives triggers workspace lockouts, wallet freezes, and permanent profile banning. You can submit appeals via support tickets.
+              Growlancer may use automated and human review processes to help maintain community standards. Violating these directives may result in actions such as workspace restrictions, wallet holds, or profile limitations, depending on the nature and severity of the violation. You can submit appeals via support tickets.
             </p>
           </div>
         </div>

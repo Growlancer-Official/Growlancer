@@ -52,10 +52,10 @@ export function EscrowPolicyPage() {
             Growlancer Escrow Protection
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
-            Guaranteed safety for <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">every transaction</span>
+            Designed to protect <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">every transaction</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto font-medium">
-            No unbacked work for freelancers, and no undelivered code for clients. Our dual-lock virtual escrow guarantees fair partnerships.
+            Our escrow system is designed to help protect both clients and freelancers by holding funds until agreed milestones or completion conditions are met, and to help promote transparent and fair collaborations.
           </p>
         </div>
       </section>
@@ -92,11 +92,11 @@ export function EscrowPolicyPage() {
             </div>
             
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
-              If coordination breaks down, either party can raise a dispute in the contract workspace. This action freezes file uploads, locks remaining escrow pools, and triggers our **AI dispute resolution engine**.
+              If coordination breaks down, either party can raise a dispute in the contract workspace. This action freezes file uploads and locks remaining escrow pools while our dispute resolution process runs.
             </p>
             
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
-              The AI Mediator evaluates workspace logs, chat archives, and task cards, proposing a fair split ratio (e.g. 70% payout / 30% refund) as a starting point. A human dispute resolution specialist reviews the AI's recommendation and confirms or adjusts it before any funds are released. Once confirmed and accepted by both parties, funds are released.
+              Our AI-assisted dispute analysis may evaluate workspace logs, chat archives, and task cards, and may propose a split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point. Escrow reduces financial risk but cannot eliminate every dispute, and human review may be required during disputes. A human dispute resolution specialist reviews available evidence before any funds are released, and final decisions depend on our platform policies and the available evidence.
             </p>
             
             <div className="pt-4 flex flex-wrap gap-4">

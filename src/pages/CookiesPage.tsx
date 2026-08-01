@@ -70,9 +70,13 @@ export function CookiesPage() {
               ))}
             </div>
 
+            <p className="text-slate-600 mb-8">
+              We do not currently use marketing or advertising cookies, and we do not deploy third-party behavioral tracking pixels. Essential cookies are required for the platform to function; functional and analytics cookies are non-essential and can be managed through your browser settings where applicable. If we ever introduce marketing cookies in the future, this policy will be updated accordingly.
+            </p>
+
             <h2 className="text-2xl font-bold text-slate-900 mb-4">Managing Cookies</h2>
             <p className="text-slate-600 mb-8">
-              You can control cookies through your browser settings. Note that disabling certain cookies 
+              You can manage cookies through your browser settings where applicable. Note that disabling certain cookies 
               may affect the functionality of our platform. For more information, visit 
               <a href="https://www.aboutcookies.org" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline"> aboutcookies.org</a>.
             </p>
