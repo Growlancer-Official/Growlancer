@@ -1,15 +1,13 @@
 // Internship Applications Edge Function
 // Handles new internship application submissions & status updates
-// Sends real email notifications via Brevo (Sendinblue):
+// Sends real email notifications (email service currently disabled):
 //   1) Admin notification to growlancer.own@gmail.com
 //   2) Confirmation email to applicant
 //   3) Status change emails (shortlisted, interview, selected, rejected)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
-const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com'
-const BREVO_FROM_NAME = 'Growlancer Team'
+// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -70,7 +68,7 @@ interface ApplicationData {
 }
 
 // ─── PDF Attachment Helper ──────────────────────────────────────────────
-/** Fetch a PDF from storage URL, base64-encode it, and return as Brevo attachment */
+/** Fetch a PDF from storage URL, base64-encode it, and return as an attachment */
 async function fetchPdfAsAttachment(url: string, filename: string): Promise<Attachment | null> {
   try {
     const response = await fetch(url);
@@ -106,52 +104,17 @@ function getFileNameFromUrl(url: string | null | undefined, fallback: string): s
   }
 }
 
-// ─── Brevo Email Sender ─────────────────────────────────────────────────────
-async function sendBrevoEmail(
+// ─── Email Sender (disabled — Brevo removed) ─────────────────────────────────
+async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string,
   attachments?: Attachment[]
 ): Promise<boolean> {
-  try {
-    const key = Deno.env.get('BREVO_API_KEY') ?? ''
-    console.log('BREVO_API_KEY length:', key.length, 'prefix:', key.substring(0, 15))
-    
-    const bodyObj: Record<string, unknown> = {
-      sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-      to: [{ email: to, name: toName }],
-      subject,
-      htmlContent,
-    }
-
-    // Only add attachments if we have some (Brevo supports up to 10MB total)
-    if (attachments && attachments.length > 0) {
-      bodyObj.attachment = attachments;
-      console.log(`Attaching ${attachments.length} file(s): ${attachments.map(a => a.name).join(', ')}`)
-    }
-
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': key,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(bodyObj),
-    })
-
-    const text = await res.text()
-    console.error('Brevo API response:', res.status, text)
-    
-    if (!res.ok) {
-      return false
-    }
-    return true
-  } catch (err) {
-    console.error('Brevo send error:', err)
-    return false
-  }
+  // Email sending disabled — Brevo completely removed. Returns false (not sent).
+  console.log('[internship-applications] Email sending disabled (Brevo removed):', subject, '→', to)
+  return false
 }
 
 // ─── Email Templates ────────────────────────────────────────────────────────
@@ -978,13 +941,13 @@ function sendStatusEmail(
 ): Promise<boolean> {
   switch (newStatus) {
     case 'shortlisted':
-      return sendBrevoEmail(email, name, `Shortlisted — ${roleName}`, buildShortlistedEmailHtml(name, roleName), attachments)
+      return sendNotificationEmail(email, name, `Shortlisted — ${roleName}`, buildShortlistedEmailHtml(name, roleName), attachments)
     case 'interview_scheduled':
-      return sendBrevoEmail(email, name, `Interview Invitation — ${roleName} 🎤`, buildInterviewEmailHtml(name, roleName, googleMeetLink, interviewTime, interviewDuration), attachments)
+      return sendNotificationEmail(email, name, `Interview Invitation — ${roleName} 🎤`, buildInterviewEmailHtml(name, roleName, googleMeetLink, interviewTime, interviewDuration), attachments)
     case 'selected':
-      return sendBrevoEmail(email, name, `Congratulations — You're Selected for ${roleName}! 🎉`, buildSelectedEmailHtml(name, roleName, offerLetterUrl, ndaUrl, internshipLetterUrl), attachments)
+      return sendNotificationEmail(email, name, `Congratulations — You're Selected for ${roleName}! 🎉`, buildSelectedEmailHtml(name, roleName, offerLetterUrl, ndaUrl, internshipLetterUrl), attachments)
     case 'rejected':
-      return sendBrevoEmail(email, name, `Application Update — ${roleName}`, buildRejectedEmailHtml(name, roleName), attachments)
+      return sendNotificationEmail(email, name, `Application Update — ${roleName}`, buildRejectedEmailHtml(name, roleName), attachments)
     default:
       console.warn(`No email template for status: ${newStatus}`);
       return true
@@ -1151,7 +1114,7 @@ Deno.serve(async (req) => {
         )
       }
 
-      // === SEND EMAILS VIA BREVO ===
+      // === SEND EMAILS (service disabled) ===
       const appData: ApplicationData = {
         full_name, email, phone, country, university, degree, graduation_year,        role_id, role_name, linkedin_url, google_meet_link, github_url, portfolio_url,
         resume_url, resume_file_path, resume_file_name,
@@ -1159,27 +1122,27 @@ Deno.serve(async (req) => {
       }
 
       // 1. Send admin notification email
-      const adminEmailSent = await sendBrevoEmail(
+      const adminEmailSent = await sendNotificationEmail(
         ADMIN_EMAIL, 'Growlancer Admin',
         `[New Application] ${role_name} - ${full_name}`,
         buildAdminEmailHtml(appData)
       )
 
       // 2. Send confirmation email to applicant (with immediate "Under Review" status)
-      const applicantEmailSent = await sendBrevoEmail(
+      const applicantEmailSent = await sendNotificationEmail(
         email, full_name,
         `Application Received — ${role_name} at Growlancer`,
         buildReceivedEmailHtml(appData)
       )
 
       // 3. Send "Under Review" email immediately (no need to wait 24 hours)
-      const underReviewSent = await sendBrevoEmail(
+      const underReviewSent = await sendNotificationEmail(
         email, full_name,
         `Application Under Review — ${role_name} at Growlancer`,
         buildUnderReviewEmailHtml(full_name, role_name)
       )
 
-      console.log(`Brevo emails — admin: ${adminEmailSent}, applicant: ${applicantEmailSent}, under_review: ${underReviewSent}`)
+      console.log(`Emails — admin: ${adminEmailSent}, applicant: ${applicantEmailSent}, under_review: ${underReviewSent}`)
 
       // Notify admin users via in-app notifications
       const { data: admins } = await supabaseClient

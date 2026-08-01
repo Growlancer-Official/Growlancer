@@ -1,14 +1,12 @@
 // Newsletter Subscribe Edge Function
 // Handles newsletter subscriptions with:
 //   1) DB insert of subscriber
-//   2) Welcome email via Brevo
-//   3) Brevo contact sync for future campaigns
+//   2) Welcome email
+//   3) Newsletter contact record
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
-const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com'
-const BREVO_FROM_NAME = 'Growlancer Team'
+// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
@@ -38,75 +36,23 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Brevo API helper ──────────────────────────────────────────────────────
-async function sendBrevoEmail(
+// ─── Email helper (disabled — Brevo removed) ────────────────────────────────
+async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string,
 ): Promise<boolean> {
-  try {
-    const key = Deno.env.get('BREVO_API_KEY') ?? ''
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': key,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-        to: [{ email: to, name: toName }],
-        subject,
-        htmlContent,
-      }),
-    })
-
-    if (!res.ok) {
-      const text = await res.text()
-      console.error('Brevo email error:', res.status, text)
-      return false
-    }
-    return true
-  } catch (err) {
-    console.error('Brevo send error:', err)
-    return false
-  }
+  // Email sending disabled — Brevo completely removed. Returns false (not sent).
+  console.log('[newsletter] Email sending disabled (Brevo removed):', subject, '→', to)
+  return false
 }
 
-// ─── Add contact to Brevo list ─────────────────────────────────────────────
-async function addToBrevoList(email: string, name: string): Promise<string | null> {
-  try {
-    const key = Deno.env.get('BREVO_API_KEY') ?? ''
-    // Create/update contact in Brevo
-    const res = await fetch('https://api.brevo.com/v3/contacts', {
-      method: 'POST',
-      headers: {
-        'api-key': key,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        attributes: {
-          NOM: name || email.split('@')[0],
-          SOURCE: 'Growlancer Newsletter',
-        },
-        listIds: [],  // Add to specific list IDs if needed
-        updateEnabled: true,
-      }),
-    })
-
-    const data = await res.json()
-    if (res.ok && data.id) {
-      return String(data.id)
-    }
-    console.warn('Brevo contact creation warning:', res.status, JSON.stringify(data))
-    return null
-  } catch (err) {
-    console.error('Brevo contact error:', err)
-    return null
-  }
+// ─── Add contact to newsletter list ─────────────────────────────────────────
+async function syncNewsletterContact(email: string, name: string): Promise<string | null> {
+  // Brevo contact sync disabled — Brevo completely removed.
+  console.log('[newsletter] Brevo contact sync disabled (removed):', email)
+  return null
 }
 
 // ─── Welcome Email Template ────────────────────────────────────────────────
@@ -222,17 +168,17 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Sync to Brevo contacts
-      const brevoId = await addToBrevoList(email.toLowerCase(), name || email.split('@')[0])
-      if (brevoId) {
+      // Sync to newsletter contact list
+      const contactId = await syncNewsletterContact(email.toLowerCase(), name || email.split('@')[0])
+      if (contactId) {
         await supabaseClient
           .from('newsletter_subscribers')
-          .update({ brevo_contact_id: brevoId })
+          .update({ brevo_contact_id: contactId })
           .eq('email', email.toLowerCase())
       }
 
       // Send welcome email
-      const welcomeSent = await sendBrevoEmail(
+      const welcomeSent = await sendNotificationEmail(
         email.toLowerCase(),
         name || email.split('@')[0],
         'Welcome to Growlancer Newsletter! 🎉',

@@ -1,14 +1,12 @@
 // Proposal Notifications Edge Function
-// Sends real email notifications to freelancers via Brevo when:
+// Sends real email notifications to freelancers when:
 //   1) Proposal is ACCEPTED → "Congratulations, you're hired!" email
 //   2) Proposal is REJECTED → "Application update" email
 // Also creates in-app notifications for the freelancer.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
-const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com'
-const BREVO_FROM_NAME = 'Growlancer Team'
+// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -39,35 +37,16 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Brevo Email Sender ─────────────────────────────────────────────────────
-async function sendBrevoEmail(
+// ─── Email Sender (disabled — Brevo removed) ─────────────────────────────────
+async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string
 ): Promise<boolean> {
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': BREVO_API_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-        to: [{ email: to, name: toName }],
-        subject,
-        htmlContent,
-      }),
-    })
-    const text = await res.text()
-    console.error('Brevo API response:', res.status, text)
-    return res.ok
-  } catch (err) {
-    console.error('Brevo send error:', err)
-    return false
-  }
+  // Email sending disabled — Brevo completely removed. Returns false (not sent).
+  console.log('[proposal-notifications] Email sending disabled (Brevo removed):', subject, '→', to)
+  return false
 }
 
 function baseEmailHtml(title: string, bodyHtml: string): string {
@@ -270,14 +249,14 @@ Deno.serve(async (req) => {
     // Send email
     let emailSent = false
     if (action === 'accept') {
-      emailSent = await sendBrevoEmail(
+      emailSent = await sendNotificationEmail(
         freelancer.email,
         freelancer.name,
         `You're Hired! — Proposal Accepted for "${project.title}"`,
         buildAcceptedEmailHtml(freelancer.name, project.title, clientName),
       )
     } else {
-      emailSent = await sendBrevoEmail(
+      emailSent = await sendNotificationEmail(
         freelancer.email,
         freelancer.name,
         `Proposal Update — "${project.title}"`,

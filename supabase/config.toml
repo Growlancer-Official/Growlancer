@@ -233,16 +233,9 @@ otp_length = 6
 # Number of seconds before the email OTP expires (defaults to 1 hour).
 otp_expiry = 3600
 
-# SMTP is configured via Supabase Management API.
-# Settings: host=smtp-relay.brevo.com, port=587, user=growlancer.own@gmail.com
-# [auth.email.smtp]
-# enabled = true
-# host = "smtp-relay.brevo.com"
-# port = 587
-# user = "growlancer.own@gmail.com"
-# pass = ""
-# admin_email = "growlancer.own@gmail.com"
-# sender_name = "Growlancer Team"
+# SMTP is configured via the Supabase Dashboard (Authentication → Email).
+# Growlancer uses Supabase's built-in sender (Custom SMTP OFF) so no external
+# SMTP credentials are stored here.
 
 # Uncomment to customize email template
 # [auth.email.template.invite]

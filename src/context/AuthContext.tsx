@@ -990,6 +990,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) {
         devWarn('[Auth] Signup error:', error.message);
         
+        // 🆕 Friendly message when the built-in email sender is rate-limited (429)
+        if (error.message.includes('rate limit') || error.message.includes('429')) {
+          setIsLoading(false);
+          return {
+            success: false,
+            error: 'Too many verification emails were sent recently. Please wait a while and try again.',
+          };
+        }
+        
         // 🆕 If email sending fails (SMTP not configured), try auto-login anyway
         // Supabase still creates the user in auth.users even when email fails.
         if (error.message.includes('confirmation email') || error.message.includes('Error sending')) {
@@ -1012,15 +1021,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             
             if (created) {
               setUser(created);
-              // 📧 Send professional welcome email via Brevo
-              supabase.functions.invoke('admin-data', {
-                method: 'POST',
-                body: {
-                  action: 'send_welcome_email',
-                  recipient_email: email,
-                  recipient_name: name,
-                },
-              }).catch(() => {});
+              // 📧 Welcome email disabled — Brevo removed (Supabase Auth built-in sender handles verification)
               setIsLoading(false);
               return { 
                 success: true, 
@@ -1102,26 +1103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           devLog('[Auth] Auto-login failed after signup — user must verify email first:', loginError?.message);
         }
 
-        // 📧 Send professional welcome email via Brevo in real-time (fire-and-forget)
-        // Only when auto-login succeeded (no verification pending). When real email
-        // verification is on, AuthCallbackPage sends it once after email confirmation
-        // (prevents duplicate welcome emails).
-        if (created && loginData?.user) {
-          devLog('[Auth] Sending welcome email via Brevo...');
-          supabase.functions.invoke('admin-data', {
-            method: 'POST',
-            body: {
-              action: 'send_welcome_email',
-              recipient_email: email,
-              recipient_name: name,
-            },
-          }).then(({ error }) => {
-            if (error) devWarn('[Auth] Welcome email failed:', error);
-            else devLog('[Auth] Welcome email sent to:', email);
-          }).catch((err: unknown) => {
-            devWarn('[Auth] Welcome email send error:', err);
-          });
-        }
+        // 📧 Welcome email disabled — Brevo completely removed.
+        // Verification emails are handled by Supabase Auth built-in sender.
 
         setIsLoading(false);
         return {

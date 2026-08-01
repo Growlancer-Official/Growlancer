@@ -306,7 +306,7 @@ export function AdminInternshipsPage() {
 
       const emailSent = data?.status_email_sent === true;
       if (error || !emailSent) {
-        toast.error('Email Failed', `Could not send "${statusLabel}" email. Check Brevo settings.`);
+        toast.error('Email Failed', `Could not send "${statusLabel}" email. Check email settings.`);
       } else {
         toast.success('Email Sent', `"${statusLabel}" email delivered to ${app.full_name}.`);
       }

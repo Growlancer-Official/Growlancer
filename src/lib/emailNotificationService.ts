@@ -59,7 +59,7 @@ export async function sendAdminNotification(params: {
   details?: Record<string, unknown>;
 }): Promise<void> {
   try {
-    // Use admin-data edge function since it already has Brevo integration
+    // Send via the admin-data edge function
     const { error } = await supabase.functions.invoke('admin-data', {
       method: 'POST',
       body: {

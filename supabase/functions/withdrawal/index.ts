@@ -36,40 +36,21 @@ function getCorsHeaders(origin: string | null) {
 
 // ─── Email Notification Helper ────────────────────────────────────────────────
 
-const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com';
-const BREVO_FROM_NAME = 'Growlancer Team';
+// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(amount);
 }
 
-/** Send a transactional email via Brevo API */
+/** Send a transactional email — disabled (Brevo completely removed) */
 async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string
 ): Promise<void> {
-  try {
-    const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
-    await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': BREVO_API_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-        to: [{ email: to, name: toName }],
-        subject,
-        htmlContent,
-      }),
-    });
-  } catch (err) {
-    console.error('[Email notification failed]', err);
-  }
+  console.log('[withdrawal] Email sending disabled (Brevo removed):', subject, '→', to);
 }
 
 function buildWithdrawalEmail(name: string, amount: number, netAmount: number, method: string, status: 'completed' | 'failed', reason?: string): string {

@@ -8,40 +8,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY')!;
-const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') || 'growlancer.own@gmail.com';
-const BREVO_FROM_NAME = 'Growlancer';
+// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function baseEmailHtml(body: string): string {
-  const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
-  return `
-<!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f1f5f9;margin:0;padding:24px 12px;-webkit-font-smoothing:antialiased">
-  <!--[if mso]><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:640px;"><tr><td style="padding: 24px 16px;" align="center"><![endif]-->
-  <div style="max-width:600px;width:100%;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04),0 4px 16px rgba(0,0,0,0.06)">
-    <div style="background:#ffffff;padding:20px 24px 0;text-align:center">
-      <img src="https://growlancer.vercel.app/UpdatedLogo.webp" alt="Growlancer" style="height:40px;width:auto" />
-    </div>
-    <div style="background:linear-gradient(135deg,#059669,#047857);margin:12px 12px 0;border-radius:12px;padding:28px 24px;text-align:center">
-      <h1 style="color:#ffffff;font-size:20px;font-weight:800;margin:0;letter-spacing:-0.3px">Subscription Update</h1>
-    </div>
-    <div style="padding:28px 24px;color:#334155;font-size:14px;line-height:1.6">
-      ${body}
-    </div>
-    <div style="padding:20px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center">
-      <p style="color:#94a3b8;font-size:11px;margin:0 0 4px">Growlancer — AI-Powered Freelancing Marketplace</p>
-      <p style="margin:0"><a href="${APP_URL}" style="color:#059669;font-size:11px;text-decoration:none">${APP_URL}</a></p>
-    </div>
-  </div>
-  <!--[if mso]></td></tr></table><![endif]-->
-</body></html>`;
 }
 
 async function sendEmail(params: {
@@ -50,24 +22,9 @@ async function sendEmail(params: {
   subject: string;
   htmlBody: string;
 }): Promise<boolean> {
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': BREVO_API_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-        to: [{ email: params.to, name: params.toName }],
-        subject: params.subject,
-        htmlContent: baseEmailHtml(params.htmlBody),
-      }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
+  // Email sending disabled — Brevo completely removed. Returns false (not sent).
+  console.log('[subscription-billing-cron] Email sending disabled (Brevo removed):', params.subject, '→', params.to)
+  return false
 }
 
 serve(async () => {

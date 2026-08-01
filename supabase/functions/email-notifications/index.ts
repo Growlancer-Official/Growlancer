@@ -1,5 +1,5 @@
 // Email Notifications Edge Function
-// Sends real transactional email notifications via Brevo for:
+// Sends real transactional email notifications (email service currently disabled):
 //   1) Withdrawal completed
 //   2) Withdrawal failed (funds returned to wallet)
 //   3) Dispute opened (both parties)
@@ -11,9 +11,7 @@
 //
 // Reuses the same branded template pattern from proposal-notifications
 
-const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? ''
-const BREVO_FROM_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com'
-const BREVO_FROM_NAME = 'Growlancer Team'
+// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
@@ -47,35 +45,16 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Brevo Email Sender ─────────────────────────────────────────────────────
-async function sendBrevoEmail(
+// ─── Email Sender (disabled — Brevo removed) ─────────────────────────────────
+async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string
 ): Promise<boolean> {
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        'api-key': BREVO_API_KEY,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        sender: { name: BREVO_FROM_NAME, email: BREVO_FROM_EMAIL },
-        to: [{ email: to, name: toName }],
-        subject,
-        htmlContent,
-      }),
-    })
-    const text = await res.text()
-    console.log('Brevo email response:', res.status, text)
-    return res.ok
-  } catch (err) {
-    console.error('Brevo send error:', err)
-    return false
-  }
+  // Email sending disabled — Brevo completely removed. Returns false (not sent).
+  console.log('[email-notifications] Email sending disabled (Brevo removed):', subject, '→', to)
+  return false
 }
 
 function baseEmailHtml(title: string, bodyHtml: string): string {
@@ -519,7 +498,7 @@ Deno.serve(async (req) => {
     }
 
     // Send the email
-    const emailSent = await sendBrevoEmail(recipient_email, recipient_name, subject, htmlContent)
+    const emailSent = await sendNotificationEmail(recipient_email, recipient_name, subject, htmlContent)
 
     console.log(`Email notification ${type} — sent: ${emailSent} to ${recipient_email}`)
 

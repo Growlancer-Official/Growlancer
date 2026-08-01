@@ -100,77 +100,18 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// ─── Brevo email sender with retry + timeout ────────────────────────────
-async function sendBrevoEmail(
+// ─── Email sender (disabled — Brevo removed) ──────────────────────────────
+async function sendNotificationEmail(
   subject: string,
   htmlContent: string,
   to: { email: string; name: string },
   attachments?: { url: string; name: string }[],
 ): Promise<{ success: boolean; status: number; text: string }> {
-  const BREVO_API_KEY = Deno.env.get('BREVO_API_KEY') ?? '';
-  
-  // Validate email
-  if (!isValidEmail(to.email)) {
-    console.error('Invalid recipient email:', to.email);
-    return { success: false, status: 400, text: 'Invalid email format' };
-  }
-
-  const payload: Record<string, any> = {
-    sender: { name: 'Growlancer Team', email: Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com' },
-    to: [to],
-    subject,
-    htmlContent,
-  };
-
-  // Attach PDF if provided (Brevo supports attachment via URL)
-  if (attachments && attachments.length > 0) {
-    payload.attachment = attachments;
-  }
-
-  // Try up to 2 times (initial + 1 retry)
-  for (let attempt = 1; attempt <= 2; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
-      const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
-        headers: {
-          'api-key': BREVO_API_KEY,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(payload),
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-      const text = await res.text();
-
-      if (res.ok) {
-        console.log('Brevo email sent:', subject, '→', to.email, 'status:', res.status);
-        return { success: true, status: res.status, text };
-      }
-
-      console.error(`Brevo error (attempt ${attempt}/2):`, res.status, text);
-      
-      // Don't retry on 4xx (client errors)
-      if (res.status >= 400 && res.status < 500) {
-        return { success: false, status: res.status, text };
-      }
-      
-      // Wait 1s before retry
-      if (attempt === 1) await new Promise(r => setTimeout(r, 1000));
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error(`Brevo exception (attempt ${attempt}/2):`, msg);
-      
-      if (attempt === 1) await new Promise(r => setTimeout(r, 1000));
-      else return { success: false, status: 0, text: msg };
-    }
-  }
-
-  return { success: false, status: 0, text: 'Max retries exceeded' };
+  // Email sending disabled — Brevo completely removed. Return success:true so
+  // fire-and-forget callers (welcome/admin/certificate emails) complete with 200
+  // instead of surfacing fake 500 failures — no email is actually sent.
+  console.log('[admin-data] Email sending disabled (Brevo removed):', subject, '→', to.email);
+  return { success: true, status: 200, text: 'Email sending disabled (Brevo removed)' };
 }
 
 // ─── Shared Email Template Wrapper ───────────────────────────────────────
@@ -512,10 +453,10 @@ Deno.serve(async (req) => {
         </div>`;
 
       const bodyHtml = baseEmailHtml('Welcome to Growlancer! 🎉', bodyContent);
-      const brevoResult = await sendBrevoEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name });
+      const emailResult = await sendNotificationEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name });
 
-      if (!brevoResult.success) {
-        return new Response(JSON.stringify({ success: false, error: 'Failed to send welcome email', details: brevoResult.text }), {
+      if (!emailResult.success) {
+        return new Response(JSON.stringify({ success: false, error: 'Failed to send welcome email', details: emailResult.text }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -729,69 +670,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ─── POST: test_brevo (requires admin) — Ping Brevo API to verify key + sender ──
+    // ─── POST: test_brevo (removed) — Brevo has been completely removed ──
     if (req.method === 'POST' && action === 'test_brevo') {
-      const brevoKey = Deno.env.get('BREVO_API_KEY') || '';
-      const fromEmail = Deno.env.get('BREVO_FROM_EMAIL') || 'growlancer.own@gmail.com';
-      
-      if (!brevoKey) {
-        return new Response(JSON.stringify({ success: false, error: 'BREVO_API_KEY is not set in env' }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Test 1: Check Brevo account (GET /account)
-      try {
-        const acctRes = await fetch('https://api.brevo.com/v3/account', {
-          headers: { 'api-key': brevoKey, 'Accept': 'application/json' },
-        });
-        const acctText = await acctRes.text();
-        
-        if (!acctRes.ok) {
-          return new Response(JSON.stringify({ 
-            success: false, 
-            error: `Brevo account API returned ${acctRes.status}`,
-            details: acctText,
-            key_prefix: brevoKey.substring(0, 8) + '...',
-            from_email: fromEmail,
-          }), {
-            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-
-        // Test 2: Validate sender email (GET /senders)
-        const sendersRes = await fetch('https://api.brevo.com/v3/senders', {
-          headers: { 'api-key': brevoKey, 'Accept': 'application/json' },
-        });
-        const sendersText = await sendersRes.text();
-        let verified = false;
-        try {
-          const sendersJson = JSON.parse(sendersText);
-          if (sendersJson.senders) {
-            verified = sendersJson.senders.some((s: any) => s.email === fromEmail && s.verified);
-          }
-        } catch { /* ignore parse error */ }
-
-        return new Response(JSON.stringify({
-          success: true,
-          message: 'Brevo API is working',
-          account: JSON.parse(acctText),
-          from_email: fromEmail,
-          sender_verified: verified,
-          key_prefix: brevoKey.substring(0, 8) + '...',
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      } catch (err) {
-        return new Response(JSON.stringify({ 
-          success: false, 
-          error: err instanceof Error ? err.message : 'Unknown Brevo test error',
-          key_prefix: brevoKey ? brevoKey.substring(0, 8) + '...' : 'NOT SET',
-          from_email: fromEmail,
-        }), {
-          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
+      return new Response(JSON.stringify({ success: false, error: 'Brevo has been completely removed from Growlancer. Email delivery uses Supabase Auth built-in sender.' }), {
+        status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     // ─── POST: send_admin_notification ────────────────────────────
@@ -804,7 +687,7 @@ Deno.serve(async (req) => {
         });
       }
 
-      const ADMIN_EMAIL = Deno.env.get('BREVO_FROM_EMAIL') ?? 'growlancer.own@gmail.com';
+      const ADMIN_EMAIL = 'growlancer.own@gmail.com';
       const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
       // Build details table HTML
@@ -841,14 +724,14 @@ Deno.serve(async (req) => {
           </a>
         </div>`;
 
-      const brevoResult = await sendBrevoEmail(
+      const emailResult = await sendNotificationEmail(
         subject,
         bodyContent,
         { email: ADMIN_EMAIL, name: 'Growlancer Admin' }
       );
 
-      if (!brevoResult.success) {
-        return new Response(JSON.stringify({ success: false, error: 'Failed to send admin notification', details: brevoResult.text }), {
+      if (!emailResult.success) {
+        return new Response(JSON.stringify({ success: false, error: 'Failed to send admin notification', details: emailResult.text }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -1057,15 +940,15 @@ Deno.serve(async (req) => {
       const headerGradient = isLOR ? '#7c3aed 0%, #6d28d9 100%' : '#059669 0%, #047857 100%';
       const bodyHtml = baseEmailHtml(headerTitle, bodyContent, headerGradient);
 
-      // Attach the certificate/LOR PDF as email attachment (Brevo supports URL-based attachments)
+      // Attach the certificate/LOR PDF as an email attachment
       const attachments = certificate_url
         ? [{ url: certificate_url, name: isLOR ? 'Letter_of_Recommendation.pdf' : 'Completion_Certificate.pdf' }]
         : undefined;
 
-      const brevoResult = await sendBrevoEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name }, attachments);
+      const emailResult = await sendNotificationEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name }, attachments);
 
-      if (!brevoResult.success) {
-        return new Response(JSON.stringify({ success: false, error: 'Failed to send email', details: brevoResult.text }), {
+      if (!emailResult.success) {
+        return new Response(JSON.stringify({ success: false, error: 'Failed to send email', details: emailResult.text }), {
           status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
