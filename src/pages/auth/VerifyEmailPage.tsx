@@ -134,7 +134,7 @@ export function VerifyEmailPage() {
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
         },
       });
       if (error) {

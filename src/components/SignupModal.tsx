@@ -145,13 +145,20 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
     const result = await signup(normalizedEmail, password, normalizedName, role, referralCode.trim() || undefined);
 
     if (result.success) {
-      // ✅ Account created + auto-login — navigate to dashboard
+      // ✅ Account created — either auto-logged-in (dashboard) or verification required (verify-email page)
       onClose();
       setIsLoading(false);
-      const dashboardPath = role === 'client' ? '/client' : '/dashboard';
-      setTimeout(() => {
-        navigate(dashboardPath, { replace: true });
-      }, 100);
+      if (result.needsVerification) {
+        // 📧 Real email verification is ON — guide user to their inbox
+        setTimeout(() => {
+          navigate(`/auth/verify-email?email=${encodeURIComponent(normalizedEmail)}`, { replace: true });
+        }, 100);
+      } else {
+        const dashboardPath = role === 'client' ? '/client' : '/dashboard';
+        setTimeout(() => {
+          navigate(dashboardPath, { replace: true });
+        }, 100);
+      }
       return;
     } else {
       setError(result.error || 'Signup failed');

@@ -72,8 +72,7 @@ interface AuthContextType {
     password: string,
     name: string,
     role: UserRole,
-    referrerCode?: string
-  ) => Promise<{ success: boolean; error?: string; message?: string }>;
+    referrerCode?: string    ) => Promise<{ success: boolean; error?: string; message?: string; needsVerification?: boolean }>;
   logout: () => Promise<void>;
   getDashboardRoute: (userRole?: UserRole) => string;
   updateUser: (updates: Partial<AuthUser>) => void;
@@ -968,7 +967,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     name: string,
     role: UserRole,
     referrerCode?: string
-  ): Promise<{ success: boolean; error?: string; message?: string }> => {
+  ): Promise<{ success: boolean; error?: string; message?: string; needsVerification?: boolean }> => {
     try {
       setIsLoading(true);
       devLog('[Auth] Signup attempt started for role:', role);
@@ -984,7 +983,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           data: { name, role, referral_code: referralCode, referred_by: referrerCode || null },
-          emailRedirectTo: `${window.location.origin}/login`,
+          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
         },
       });
 
@@ -1104,7 +1103,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         // 📧 Send professional welcome email via Brevo in real-time (fire-and-forget)
-        if (created) {
+        // Only when auto-login succeeded (no verification pending). When real email
+        // verification is on, AuthCallbackPage sends it once after email confirmation
+        // (prevents duplicate welcome emails).
+        if (created && loginData?.user) {
           devLog('[Auth] Sending welcome email via Brevo...');
           supabase.functions.invoke('admin-data', {
             method: 'POST',
@@ -1126,7 +1128,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           success: true,
           message: loginData?.user
             ? 'Account created successfully! Welcome to Growlancer.'
-            : 'Account created! Check your inbox for a verification link, then log in with your email and password.'
+            : 'Account created! Check your inbox for a verification link, then log in with your email and password.',
+          needsVerification: !loginData?.user,
         };
       }
 

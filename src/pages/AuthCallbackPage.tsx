@@ -95,10 +95,23 @@ export function AuthCallbackPage() {
         if (detectedAction === 'signup' || detectedAction === 'email_change') {
           const tokenHash = searchParams.get('token_hash');
           if (tokenHash) {
-            await supabase.auth.verifyOtp({
+            const { error: verifyOtpError } = await supabase.auth.verifyOtp({
               type: detectedAction === 'email_change' ? 'email_change' : 'signup',
               token_hash: tokenHash,
             });
+
+            // 🛡️ Invalid / expired verification link — show a clear error instead of
+            // a misleading success (this is the primary email signup path now that
+            // real email verification is enabled).
+            if (verifyOtpError) {
+              setStatus('error');
+              setErrorMessage(
+                verifyOtpError.message.includes('expired')
+                  ? 'This verification link has expired. Please sign up again to receive a fresh link.'
+                  : 'This verification link is invalid. Please sign up again to receive a fresh link.'
+              );
+              return;
+            }
           }
         }
 
@@ -158,8 +171,24 @@ export function AuthCallbackPage() {
         }
 
         if (!sessionFound) {
-          // For signup/verification, still show success (email verified)
+          // 🛡️ PKCE flow: if a `code` param is present in the URL but no session was
+          // established, the verification link was expired/invalid — show a clear
+          // error instead of a misleading success.
+          const hasPkceCode = searchParams.get('code');
+
+          // For signup/verification, handle success vs expired-link error properly
           if (detectedAction === 'signup' || detectedAction === 'email_change') {
+            if (hasPkceCode) {
+              devLog('[AuthCallback] PKCE code present but no session — link likely expired/invalid');
+              setStatus('error');
+              setErrorMessage(
+                'This verification link is invalid or has expired. Please sign up again to receive a fresh link, or request a resend from the verify-email page.'
+              );
+              return;
+            }
+
+            // No code in URL — plain visit (e.g., user navigated here directly).
+            // Email is confirmed; guide them to log in.
             setStatus('success');
             await new Promise(resolve => setTimeout(resolve, 1500));
             if (cancelled) return;
@@ -218,13 +247,19 @@ export function AuthCallbackPage() {
           localStorage.removeItem('growlancer_oauth_role');
         }
 
+        // 🛡️ Only OAuth flows (detectedAction === 'unknown') get role correction from
+        // localStorage. Email signup users chose their role in the signup form and it's
+        // already stored in the profile — never overwrite it here (prevents a 'client'
+        // email signup being silently flipped to 'freelancer' after email verification).
+        const isOAuthFlow = detectedAction === 'unknown';
+
         // Retry fetching profile (AuthContext may still be syncing)
         let profile = null;
         for (let i = 0; i < 5; i++) {
           profile = authUser?.id ? await fetchUserProfile(authUser.id) : null;
           if (profile) {
             // 🆕 If profile exists but role is wrong (e.g., OAuth defaulted to 'freelancer'), fix it
-            if (profile.role !== oauthRole) {
+            if (isOAuthFlow && profile.role !== oauthRole) {
               try {
                 const { error: roleUpdateErr } = await supabase
                   .from('profiles')
@@ -242,20 +277,26 @@ export function AuthCallbackPage() {
           await new Promise(r => setTimeout(r, 600));
         }
 
-        // 🆕 If profile still doesn't exist after retries, create one with saved role
+        // 🆕 If profile still doesn't exist after retries, create one with the correct role
+        // (OAuth: saved role; email signup: role from user_metadata set in the signup form)
         if (!profile && authUser?.id) {
           const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
+          const metaRole = authUser.user_metadata?.role;
+          const createRole = isOAuthFlow
+            ? oauthRole
+            : (metaRole === 'freelancer' || metaRole === 'client' ? metaRole : oauthRole);
           profile = await createProfile(
             authUser.id,
             authUser.email || '',
             name,
-            oauthRole as 'freelancer' | 'client'
+            createRole as 'freelancer' | 'client'
           );
         }
 
         // 🆕 Country gate: If user has no profile country set (first-time OAuth), show country confirmation
-        // Only for OAuth signups (detectedAction === 'signup' or profile was just created)
-        if (profile && !profile.country) {
+        // Only for OAuth flows (unknown action) / invites — email signups already
+        // provided an India phone number in the signup modal, so skip the gate.
+        if (profile && !profile.country && detectedAction === 'unknown') {
           setStatus('country_gate');
           if (cancelled) return;
           return; // Stop — country confirmation UI will handle the redirect
@@ -346,7 +387,7 @@ export function AuthCallbackPage() {
   };
 
   const actionDescriptions: Record<AuthAction, string> = {
-    signup: 'Your email has been confirmed. Redirecting to login...',
+    signup: 'Your email has been confirmed. Setting up your account...',
     recovery: 'Redirecting you to set a new password...',
     magiclink: 'You will be signed in automatically...',
     email_change: 'Your email has been changed. Redirecting to login...',
