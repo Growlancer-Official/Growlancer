@@ -46,6 +46,7 @@ const AuthCallbackPage = lazy(() => import('@pages/AuthCallbackPage').then(m => 
 const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
 const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
 const MagicLinkPage = lazy(() => import('@pages/auth/MagicLinkPage').then(m => ({ default: m.MagicLinkPage })));
+const OtpLoginPage = lazy(() => import('@pages/auth/OtpLoginPage').then(m => ({ default: m.OtpLoginPage })));
 const EmailConfirmPage = lazy(() => import('@pages/auth/EmailConfirmPage').then(m => ({ default: m.EmailConfirmPage })));
 const VerifyEmailPage = lazy(() => import('@pages/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 
@@ -198,6 +199,7 @@ function App() {
               <Route path="auth/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="auth/reset-password" element={<ResetPasswordPage />} />
               <Route path="auth/magic-link" element={<MagicLinkPage />} />
+              <Route path="auth/otp" element={<OtpLoginPage />} />
               <Route path="auth/email-confirm" element={<EmailConfirmPage />} />
               <Route path="auth/verify-email" element={<VerifyEmailPage />} />
 

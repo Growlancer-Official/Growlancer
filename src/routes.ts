@@ -118,6 +118,7 @@ export const ROUTES = {
   FORGOT_PASSWORD: '/auth/forgot-password',
   RESET_PASSWORD: '/auth/reset-password',
   MAGIC_LINK: '/auth/magic-link',
+  OTP_LOGIN: '/auth/otp',
   EMAIL_CONFIRM: '/auth/email-confirm',
   AUTH_CALLBACK: '/auth/callback',
 

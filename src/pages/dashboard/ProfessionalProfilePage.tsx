@@ -8,6 +8,7 @@ import { notificationPreferencesService } from '../../lib/notificationPreference
 import { withdrawalService } from '../../lib/withdrawal';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { ReauthDialog, isReauthValid, markReauthVerified } from '../../components/ReauthDialog';
 import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, DollarSign, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useSkills } from '../../hooks/useSkills';
 import { SkillsSelector } from '../../components/SkillsSelector';
@@ -97,12 +98,15 @@ export function ProfessionalProfilePage() {
 
   // ── Security form state ──
   const [securityData, setSecurityData] = useState({
-    currentPassword: '',
     newPassword: '',
     confirmPassword: '',
-    showCurrentPassword: false,
     showNewPassword: false,
   });
+
+  // ── Reauth state (password change gate) ──
+  const [reauthOpen, setReauthOpen] = useState(false);
+  const [pendingPasswordChange, setPendingPasswordChange] = useState(false);
+  const [signOutOthers, setSignOutOthers] = useState(false);
 
   // ── 2FA state ──
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
@@ -438,19 +442,49 @@ export function ProfessionalProfilePage() {
     }
   };
 
-  // ── Password Change ──
+  // ── Password Change (reauth-gated) ──
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null); setSuccessMessage(null);
+    if (securityData.newPassword !== securityData.confirmPassword) { setErrorMessage('Passwords do not match'); return; }
+    if (securityData.newPassword.length < 8) { setErrorMessage('Password must be at least 8 characters'); return; }
+
+    // 🛡️ Reauthentication gate — verify identity (password or OTP) first,
+    // valid for a 10-minute window.
+    if (!isReauthValid()) {
+      setPendingPasswordChange(true);
+      setReauthOpen(true);
+      return;
+    }
+
+    await performPasswordChange();
+  };
+
+  const performPasswordChange = async () => {
     setSaving(true); setErrorMessage(null); setSuccessMessage(null);
-    if (securityData.newPassword !== securityData.confirmPassword) { setErrorMessage('Passwords do not match'); setSaving(false); return; }
-    if (securityData.newPassword.length < 8) { setErrorMessage('Password must be at least 8 characters'); setSaving(false); return; }
     try {
       await supabase.auth.updateUser({ password: securityData.newPassword });
-      setSuccessMessage('Password changed!');
-      setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '', showCurrentPassword: false, showNewPassword: false });
+
+      // 🆕 Optional: sign out all other sessions except this one
+      if (signOutOthers) {
+        await supabase.auth.signOut({ scope: 'others' }).catch(() => {});
+      }
+
+      setSuccessMessage(signOutOthers ? 'Password changed and all other sessions signed out!' : 'Password changed!');
+      setSecurityData({ newPassword: '', confirmPassword: '', showNewPassword: false });
+      setSignOutOthers(false);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch { setErrorMessage('Failed to change password.'); }
     finally { setSaving(false); }
+  };
+
+  const handleReauthVerified = async () => {
+    markReauthVerified();
+    setReauthOpen(false);
+    if (pendingPasswordChange) {
+      setPendingPasswordChange(false);
+      await performPasswordChange();
+    }
   };
 
   // ── Sync SkillsSelector selections to formData.skills ──
@@ -1192,17 +1226,9 @@ export function ProfessionalProfilePage() {
                   <Lock className="w-5 h-5 text-emerald-600" /> Change Password
                 </h2>
                 <form onSubmit={handlePasswordChange} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Current Password</label>
-                    <div className="relative">
-                      <input type={securityData.showCurrentPassword ? 'text' : 'password'} value={securityData.currentPassword} onChange={(e) => setSecurityData({ ...securityData, currentPassword: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all pr-10" />
-                      <button type="button" onClick={() => setSecurityData({ ...securityData, showCurrentPassword: !securityData.showCurrentPassword })}
-                        className="absolute right-4 top-1/2 -translate-y-1/2">
-                        {securityData.showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  </div>
+                  <p className="text-sm text-slate-500 bg-slate-50 rounded-xl p-4">
+                    For security, you'll be asked to confirm your identity before the password is changed.
+                  </p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">New Password</label>
@@ -1221,6 +1247,18 @@ export function ProfessionalProfilePage() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                     </div>
                   </div>
+                  <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={signOutOthers}
+                      onChange={(e) => setSignOutOthers(e.target.checked)}
+                      className="w-4 h-4 text-emerald-600 rounded border-slate-300 cursor-pointer"
+                    />
+                    <div>
+                      <p className="font-medium text-slate-900 text-sm">Sign out all other sessions</p>
+                      <p className="text-xs text-slate-500">Log out every other device after the password change</p>
+                    </div>
+                  </label>
                   <button type="submit" disabled={saving} className="w-full px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50">
                     {saving ? 'Updating...' : 'Update Password'}
                   </button>
@@ -1673,6 +1711,15 @@ export function ProfessionalProfilePage() {
 
         </div>
       </div>
+
+      {/* ── Reauthentication Dialog (password / OTP, 10-min window) ── */}
+      <ReauthDialog
+        open={reauthOpen}
+        onClose={() => setReauthOpen(false)}
+        onVerified={handleReauthVerified}
+        title="Confirm your identity"
+        description="For your security, please verify your identity before changing your password. Your session stays verified for 10 minutes."
+      />
 
       {/* ── Confirm Modals ── */}
       <ConfirmModal

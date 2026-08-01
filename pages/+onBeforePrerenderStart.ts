@@ -47,6 +47,7 @@ const PUBLIC_URLS = [
   '/auth/forgot-password',
   '/auth/reset-password',
   '/auth/magic-link',
+  '/auth/otp',
   '/auth/email-confirm',
   '/auth/verify-email',
 

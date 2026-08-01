@@ -5,6 +5,8 @@ import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
 import { notificationPreferencesService } from '../lib/notificationPreferences';
 import { avatarPackService } from '../lib/avatarPack';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
+import { inviteService, type UserInvitation } from '../lib/inviteService';
+import { ReauthDialog, isReauthValid, markReauthVerified } from '../components/ReauthDialog';
 import {
   AlertCircle,
   AlertTriangle,
@@ -24,12 +26,17 @@ import {
   MapPin,
   Plus,
   QrCode,
+  RefreshCw,
   Save,
+  Send,
   Shield,
   Star,
+  Timer,
   Trash2,
   User,
+  UserPlus,
   X,
+  XCircle,
 } from 'lucide-react';
 
 export function ClientSettingsPage() {
@@ -55,6 +62,25 @@ export function ClientSettingsPage() {
     name: '',
     email: '',
   });
+
+  // ── Change Email state ──
+  const [newEmail, setNewEmail] = useState('');
+  const [changeEmailLoading, setChangeEmailLoading] = useState(false);
+  const [emailChangeSent, setEmailChangeSent] = useState(false);
+
+  // ── Invite User state ──
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteRole, setInviteRole] = useState<'freelancer' | 'client'>('freelancer');
+  const [inviteLoading, setInviteLoading] = useState(false);
+  const [invitations, setInvitations] = useState<UserInvitation[]>([]);
+  const [inviteResendingId, setInviteResendingId] = useState<string | null>(null);
+  const [inviteCancellingId, setInviteCancellingId] = useState<string | null>(null);
+
+  // ── Reauth state (change password / change email / disable 2FA / delete payment) ──
+  const [reauthOpen, setReauthOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'password' | 'email' | 'disable2fa' | 'deletePayment' | null>(null);
+  const [pendingPaymentMethodId, setPendingPaymentMethodId] = useState<string | null>(null);
+  const [signOutOthers, setSignOutOthers] = useState(false);
 
   // Security form state
   const [securityData, setSecurityData] = useState({
@@ -284,22 +310,32 @@ export function ClientSettingsPage() {
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
     setErrorMessage(null);
     setSuccessMessage(null);
 
     if (securityData.newPassword !== securityData.confirmPassword) {
       setErrorMessage('New passwords do not match');
-      setSaving(false);
       return;
     }
 
     if (securityData.newPassword.length < 8) {
       setErrorMessage('Password must be at least 8 characters');
-      setSaving(false);
       return;
     }
 
+    // 🛡️ Reauthentication gate — verify identity (password or OTP) first,
+    // valid for a 10-minute window.
+    if (!isReauthValid()) {
+      setPendingAction('password');
+      setReauthOpen(true);
+      return;
+    }
+
+    await performPasswordChange();
+  };
+
+  const performPasswordChange = async () => {
+    setSaving(true);
     try {
       const { error } = await supabase.auth.updateUser({
         password: securityData.newPassword,
@@ -307,7 +343,14 @@ export function ClientSettingsPage() {
 
       if (error) throw error;
 
-      setSuccessMessage('Password changed successfully!');
+      // 🆕 Optional: sign out all other sessions except this one
+      if (signOutOthers) {
+        await supabase.auth.signOut({ scope: 'others' }).catch(() => {});
+      }
+
+      setSuccessMessage(signOutOthers
+        ? 'Password changed and all other sessions signed out!' 
+        : 'Password changed successfully!');
       setSecurityData({
         currentPassword: '',
         newPassword: '',
@@ -315,12 +358,176 @@ export function ClientSettingsPage() {
         showCurrentPassword: false,
         showNewPassword: false,
       });
+      setSignOutOthers(false);
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error('Error changing password:', error);
       setErrorMessage('Failed to change password. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ── Change Email handler ──
+  const handleChangeEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setChangeEmailLoading(true);
+
+    const normalized = newEmail.trim().toLowerCase();
+    if (!normalized || !normalized.includes('@')) {
+      setErrorMessage('Please enter a valid email address.');
+      setChangeEmailLoading(false);
+      return;
+    }
+    if (normalized === accountData.email.toLowerCase()) {
+      setErrorMessage('This is already your current email address.');
+      setChangeEmailLoading(false);
+      return;
+    }
+
+    // 🛡️ Reauthentication gate for sensitive email change
+    if (!isReauthValid()) {
+      setPendingAction('email');
+      setReauthOpen(true);
+      setChangeEmailLoading(false);
+      return;
+    }
+
+    await performEmailChange(normalized);
+  };
+
+  const performEmailChange = async (normalized: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser(
+        { email: normalized },
+        { emailRedirectTo: `${window.location.origin}/auth/callback?type=email_change` }
+      );
+
+      if (error) throw error;
+
+      setEmailChangeSent(true);
+      setSuccessMessage(
+        'A confirmation email has been sent to your new address. Click the link in it to finish changing your email.'
+      );
+      setTimeout(() => setSuccessMessage(null), 6000);
+    } catch (error) {
+      console.error('Error changing email:', error);
+      setErrorMessage(error instanceof Error && error.message.includes('already')
+        ? 'This email is already registered to another account.'
+        : 'Failed to send email confirmation. Please try again.');
+    } finally {
+      setChangeEmailLoading(false);
+    }
+  };
+
+  // ── Invite User handlers ──
+  const loadInvitations = useCallback(async () => {
+    if (!user?.id) return;
+    const list = await inviteService.listInvitations(user.id);
+    setInvitations(list);
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (activeTab !== 'account' || !user?.id) return;
+    loadInvitations();
+    const sub = inviteService.subscribe(user.id, setInvitations);
+    return () => sub.unsubscribe();
+  }, [activeTab, user?.id, loadInvitations]);
+
+  const handleInviteUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setInviteLoading(true);
+
+    if (!user?.id) {
+      setErrorMessage('You must be signed in to invite someone.');
+      setInviteLoading(false);
+      return;
+    }
+
+    const result = await inviteService.createInvitation(user.id, inviteEmail, inviteRole);
+
+    if (!result.success) {
+      setErrorMessage(result.error || 'Failed to send invitation.');
+      setInviteLoading(false);
+      return;
+    }
+
+    setInviteEmail('');
+    setSuccessMessage(`Invitation sent to ${inviteEmail.trim().toLowerCase()}! They'll receive an email to join.`);
+    setTimeout(() => setSuccessMessage(null), 4000);
+    await loadInvitations();
+    setInviteLoading(false);
+  };
+
+  const handleResendInvite = async (invitationId: string) => {
+    setInviteResendingId(invitationId);
+    setErrorMessage(null);
+    const result = await inviteService.resendInvitation(invitationId);
+    setInviteResendingId(null);
+    if (!result.success) {
+      setErrorMessage(result.error || 'Failed to resend invitation.');
+      return;
+    }
+    setSuccessMessage('Invitation email resent!');
+    setTimeout(() => setSuccessMessage(null), 3000);
+    await loadInvitations();
+  };
+
+  const handleCancelInvite = async (invitationId: string) => {
+    if (!confirm('Cancel this invitation? The invited person will no longer be able to join.')) return;
+    setInviteCancellingId(invitationId);
+    setErrorMessage(null);
+    const result = await inviteService.cancelInvitation(invitationId);
+    setInviteCancellingId(null);
+    if (!result.success) {
+      setErrorMessage(result.error || 'Failed to cancel invitation.');
+      return;
+    }
+    setSuccessMessage('Invitation cancelled.');
+    setTimeout(() => setSuccessMessage(null), 3000);
+    await loadInvitations();
+  };
+
+  const handleReauthVerified = async () => {
+    markReauthVerified();
+    setReauthOpen(false);
+    if (pendingAction === 'password') {
+      await performPasswordChange();
+    } else if (pendingAction === 'email') {
+      await performEmailChange(newEmail.trim().toLowerCase());
+    } else if (pendingAction === 'disable2fa') {
+      await performDisable2FA();
+    } else if (pendingAction === 'deletePayment' && pendingPaymentMethodId) {
+      await performDeletePayment(pendingPaymentMethodId);
+    }
+    setPendingAction(null);
+    setPendingPaymentMethodId(null);
+  };
+
+  const inviteStatusBadge = (status: string) => {
+    const styles: Record<string, string> = {
+      pending: 'bg-amber-50 text-amber-700 border-amber-200',
+      accepted: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      expired: 'bg-slate-50 text-slate-500 border-slate-200',
+      cancelled: 'bg-red-50 text-red-600 border-red-200',
+    };
+    return (
+      <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || styles.pending}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </span>
+    );
+  };
+
+  const inviteStatusIcon = (status: string) => {
+    switch (status) {
+      case 'accepted': return <Check className="w-4 h-4 text-emerald-600" />;
+      case 'cancelled': return <XCircle className="w-4 h-4 text-red-500" />;
+      case 'expired': return <Timer className="w-4 h-4 text-slate-400" />;
+      default: return <Send className="w-4 h-4 text-amber-500" />;
     }
   };
 
@@ -389,6 +596,16 @@ export function ClientSettingsPage() {
   };
 
   const handleDisable2FA = async () => {
+    // 🛡️ Reauthentication gate — disabling 2FA is a sensitive action
+    if (!isReauthValid()) {
+      setPendingAction('disable2fa');
+      setReauthOpen(true);
+      return;
+    }
+    await performDisable2FA();
+  };
+
+  const performDisable2FA = async () => {
     setTwoFactorLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('twofa-management', {
@@ -580,6 +797,17 @@ export function ClientSettingsPage() {
   };
 
   const handleDeletePayment = async (methodId: string) => {
+    // 🛡️ Reauthentication gate — removing a payment method is a sensitive action
+    if (!isReauthValid()) {
+      setPendingPaymentMethodId(methodId);
+      setPendingAction('deletePayment');
+      setReauthOpen(true);
+      return;
+    }
+    await performDeletePayment(methodId);
+  };
+
+  const performDeletePayment = async (methodId: string) => {
     try {
       const result = await clientPaymentMethodsService.deletePaymentMethod(methodId);
       if (result.success) {
@@ -834,6 +1062,158 @@ export function ClientSettingsPage() {
                 </div>
               </div>
 
+              {/* ── Change Email Address ── */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-emerald-600" /> Change Email Address
+                </h2>
+                <p className="text-sm text-slate-500 mb-5">
+                  We'll send a confirmation link to your new address. Your email won't change until you confirm it.
+                </p>
+
+                {emailChangeSent ? (
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2">
+                    <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-emerald-700">
+                      A confirmation email has been sent to <strong className="text-emerald-800">{newEmail}</strong>.
+                      Click the link in it to finish changing your email.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleChangeEmail} className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">New Email Address</label>
+                      <input
+                        type="email"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        placeholder="you@newcompany.com"
+                        autoComplete="email"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={changeEmailLoading}
+                      className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {changeEmailLoading ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" /> Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-5 h-5" /> Send Confirmation
+                        </>
+                      )}
+                    </button>
+                  </form>
+                )}
+              </div>
+
+              {/* ── Invite User ── */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                  <UserPlus className="w-5 h-5 text-emerald-600" /> Invite User
+                </h2>
+                <p className="text-sm text-slate-500 mb-5">
+                  Invite a freelancer or client to join Growlancer. They'll receive an email with a secure invite link.
+                </p>
+
+                <form onSubmit={handleInviteUser} className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Email Address</label>
+                      <input
+                        type="email"
+                        value={inviteEmail}
+                        onChange={(e) => setInviteEmail(e.target.value)}
+                        placeholder="colleague@company.com"
+                        autoComplete="off"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                      <select
+                        value={inviteRole}
+                        onChange={(e) => setInviteRole(e.target.value as 'freelancer' | 'client')}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                      >
+                        <option value="freelancer">Freelancer</option>
+                        <option value="client">Client</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={inviteLoading}
+                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {inviteLoading ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" /> Sending invitation...
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-5 h-5" /> Send Invitation
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Invitations List — real-time status */}
+                {invitations.length > 0 && (
+                  <div className="mt-6 pt-5 border-t border-slate-100">
+                    <h3 className="text-sm font-semibold text-slate-700 mb-3">Sent Invitations</h3>
+                    <div className="space-y-3">
+                      {invitations.map((inv) => (
+                        <div key={inv.id} className="flex items-center justify-between gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-9 h-9 rounded-lg bg-white border border-slate-200 flex items-center justify-center flex-shrink-0">
+                              {inviteStatusIcon(inv.status)}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-medium text-slate-900 text-sm truncate">{inv.email}</p>
+                              <p className="text-xs text-slate-500 capitalize">
+                                {inv.role} · Invited {new Date(inv.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {inviteStatusBadge(inv.status)}
+                            {inv.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleResendInvite(inv.id)}
+                                  disabled={inviteResendingId === inv.id}
+                                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-600 bg-white border border-emerald-200 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+                                >
+                                  {inviteResendingId === inv.id ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                  ) : (
+                                    <RefreshCw className="w-3.5 h-3.5" />
+                                  )}
+                                  Resend
+                                </button>
+                                <button
+                                  onClick={() => handleCancelInvite(inv.id)}
+                                  disabled={inviteCancellingId === inv.id}
+                                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-600 bg-white border border-red-200 hover:bg-red-50 transition-colors disabled:opacity-50"
+                                >
+                                  <X className="w-3.5 h-3.5" />
+                                  Cancel
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Account Tips — fills blank space */}
               <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-6 border border-indigo-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -893,6 +1273,18 @@ export function ClientSettingsPage() {
                     <input type="password" value={securityData.confirmPassword} onChange={(e) => setSecurityData({ ...securityData, confirmPassword: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                   </div>
+                  <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={signOutOthers}
+                      onChange={(e) => setSignOutOthers(e.target.checked)}
+                      className="w-4 h-4 text-emerald-600 rounded border-slate-300 cursor-pointer"
+                    />
+                    <div>
+                      <p className="font-medium text-slate-900 text-sm">Sign out all other sessions</p>
+                      <p className="text-xs text-slate-500">Log out every other device after the password change</p>
+                    </div>
+                  </label>
                   <button type="submit" disabled={saving} className="w-full px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
                     {saving ? 'Updating...' : 'Update Password'}
                   </button>
@@ -1417,6 +1809,15 @@ export function ClientSettingsPage() {
 
         </div>
       </div>
+
+      {/* ── Reauthentication Dialog (password / OTP, 10-min window) ── */}
+      <ReauthDialog
+        open={reauthOpen}
+        onClose={() => setReauthOpen(false)}
+        onVerified={handleReauthVerified}
+        title="Confirm your identity"
+        description="For your security, please verify your identity before changing sensitive account details. Your session stays verified for 10 minutes."
+      />
     </div>
   );
 }

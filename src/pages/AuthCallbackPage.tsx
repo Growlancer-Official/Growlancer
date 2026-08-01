@@ -230,6 +230,14 @@ export function AuthCallbackPage() {
         }
 
         if (detectedAction === 'email_change') {
+          // 🆕 Sync the new email into the profiles table so the dashboard shows it immediately
+          if (authUser?.id && authUser.email) {
+            const { error: emailSyncErr } = await supabase
+              .from('profiles')
+              .update({ email: authUser.email, updated_at: new Date().toISOString() })
+              .eq('id', authUser.id);
+            if (emailSyncErr) devLog('[AuthCallback] email_change profile sync warning:', emailSyncErr.message);
+          }
           setStatus('success');
           await new Promise(resolve => setTimeout(resolve, 1000));
           if (cancelled) return;
@@ -238,7 +246,39 @@ export function AuthCallbackPage() {
         }
 
         if (detectedAction === 'invite') {
-          // User was invited — redirect to onboarding
+          // 🆕 Accept the invitation in real time — mark accepted + apply the invited
+          // role, then route the invitee through onboarding with role pre-selected.
+          const inviteToken = searchParams.get('invite_token');
+          const inviteRole = searchParams.get('invite_role');
+          const invitedRole = inviteRole === 'client' ? 'client' : 'freelancer';
+
+          if (authUser?.id && inviteToken) {
+            // 1. Mark the invitation accepted (only if it's still pending)
+            const { error: acceptErr } = await supabase
+              .from('user_invitations' as any)
+              .update({ status: 'accepted', accepted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+              .eq('invite_token', inviteToken)
+              .eq('status', 'pending');
+            if (acceptErr) devLog('[AuthCallback] invite accept warning:', acceptErr.message);
+
+            // 2. Apply the invited role to the profile — fetch it first, and create
+            //    it with the invited role if it doesn't exist yet (brand-new
+            //    invitee). No localStorage dependency — the role is persisted in
+            //    the DB so onboarding and the dashboard both see it.
+            let inviteProfile = authUser.id ? await fetchUserProfile(authUser.id) : null;
+            if (!inviteProfile && authUser.id) {
+              const name = authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'User';
+              inviteProfile = await createProfile(authUser.id, authUser.email || '', name, invitedRole);
+            }
+            if (inviteProfile) {
+              const { error: roleErr } = await supabase
+                .from('profiles')
+                .update({ role: invitedRole })
+                .eq('id', authUser.id);
+              if (roleErr) devLog('[AuthCallback] invite role warning:', roleErr.message);
+            }
+          }
+
           setStatus('success');
           await new Promise(resolve => setTimeout(resolve, 1000));
           if (cancelled) return;
