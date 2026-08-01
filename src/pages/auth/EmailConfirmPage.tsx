@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { fetchUserProfile, createUserProfile } from '../../lib/services/authService';
+import { redirectAfterAuth } from '../../lib/authAction';
 
 type ConfirmStatus = 'processing' | 'success' | 'error';
 
@@ -17,54 +19,116 @@ export function EmailConfirmPage() {
     async function handleConfirm() {
       try {
         const error = searchParams.get('error');
+        const errorDescription = searchParams.get('error_description');
         if (error) {
           setStatus('error');
-          setMessage('Email verification failed. Please try signing up again.');
+          setMessage(
+            errorDescription?.replace(/\+/g, ' ') ||
+              'Email verification failed. Please try signing up again.'
+          );
           return;
         }
 
-        // Wait for session to be established (Supabase auto-processes the token)
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // ── 1. Detect the verification token from the URL ──
+        // OTP flow → token_hash + type  |  PKCE flow → code
+        const tokenHash = searchParams.get('token_hash');
+        const typeParam = searchParams.get('type');
+        const code = searchParams.get('code');
 
-        const result = await supabase.auth.getSession();
-        const session = result.data?.session ?? null;
+        // ── 2. Exchange the token with Supabase (never trust the frontend) ──
+        if (tokenHash) {
+          const otpType =
+            typeParam === 'email_change'
+              ? ('email_change' as const)
+              : typeParam === 'recovery'
+                ? ('recovery' as const)
+                : ('signup' as const);
+          const { error: otpError } = await supabase.auth.verifyOtp({
+            type: otpType,
+            token_hash: tokenHash,
+          });
+          if (otpError) throw otpError;
+        } else if (code) {
+          const { error: codeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (codeError) throw codeError;
+        } else {
+          // No token in URL — a session may already exist (e.g. the PKCE code was
+          // auto-exchanged by detectSessionInUrl on a prior load, or the user
+          // clicked the link twice). Fall through to session check.
+        }
+
+        // ── 3. Wait for the session to be established (Supabase auto-processes) ──
+        let session = null;
+        for (let attempt = 0; attempt < 6; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, 800));
+          const result = await supabase.auth.getSession();
+          if (result.data.session?.user?.email_confirmed_at) {
+            session = result.data.session;
+            break;
+          }
+        }
 
         if (cancelled) return;
 
-        if ((session as { user?: { email_confirmed_at?: string } } | null)?.user?.email_confirmed_at) {
-          setStatus('success');
-          setMessage('Email verified! Redirecting to your dashboard...');
-
-          // Redirect after showing success
-          setTimeout(() => {
-            navigate('/login', { replace: true });
-          }, 2000);
-        } else {
-          // Try a bit longer
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          const retryResult = await supabase.auth.getSession();
-          const retrySession = retryResult.data?.session ?? null;
-
-          if (cancelled) return;
-
-          if ((retrySession as { user?: { email_confirmed_at?: string } } | null)?.user?.email_confirmed_at) {
+        if (!session?.user?.email_confirmed_at) {
+          // No confirmed session after retries — the link is invalid/expired/already used.
+          const alreadyVerified = await supabase.auth.getUser().catch(() => null);
+          if (alreadyVerified?.data?.user?.email_confirmed_at) {
+            // Email is verified in auth.users but no local session — guide to login.
             setStatus('success');
-            setMessage('Email verified! Redirecting to your dashboard...');
+            setMessage('Your email is already verified! You can now log in.');
             setTimeout(() => {
-              navigate('/login', { replace: true });
+              if (!cancelled) navigate('/?modal=login', { replace: true });
             }, 2000);
-          } else {
-            setStatus('success');
-            setMessage('Your email has been verified! You can now log in.');
-            setTimeout(() => {
-              navigate('/login', { replace: true });
-            }, 2000);
+            return;
           }
+          setStatus('error');
+          setMessage(
+            'This verification link is invalid or has expired. Please sign up again to receive a fresh link, or request a resend.'
+          );
+          return;
         }
-      } catch {
+
+        if (cancelled) return;
+
+        setStatus('success');
+        setMessage('Email verified! Setting up your account...');
+
+        // ── 4. Fetch profile and route to the correct destination ──
+        let profile = null;
+        for (let i = 0; i < 5; i++) {
+          profile = session.user.id ? await fetchUserProfile(session.user.id) : null;
+          if (profile) break;
+          await new Promise(r => setTimeout(r, 600));
+        }
+        // If no profile yet, create one from the confirmed auth user metadata
+        // (email signup already created it via AuthContext — this is a safety net).
+        if (!profile && session.user.id) {
+          const name =
+            session.user.user_metadata?.name ||
+            session.user.email?.split('@')[0] ||
+            'User';
+          const metaRole = session.user.user_metadata?.role;
+          const role = metaRole === 'client' ? 'client' : 'freelancer';
+          profile = await createUserProfile(session.user.id, session.user.email || '', name, role);
+        }
+
+        if (cancelled) return;
+
+        // Full-page redirect (shared logic) — avoids ProtectedRoute bounce-back race.
+        setTimeout(() => {
+          if (!cancelled) redirectAfterAuth(profile);
+        }, 1800);
+      } catch (err) {
         if (!cancelled) {
           setStatus('error');
-          setMessage('Something went wrong. Please try again.');
+          setMessage(
+            err instanceof Error && err.message.includes('expired')
+              ? 'This verification link has expired. Please sign up again to receive a fresh link.'
+              : err instanceof Error
+                ? err.message
+                : 'Something went wrong. Please try again.'
+          );
         }
       }
     }
@@ -125,7 +189,7 @@ export function EmailConfirmPage() {
               </h2>
               <p className="text-sm text-slate-500 mb-6">{message}</p>
               <button
-                onClick={() => navigate('/signup')}
+                onClick={() => navigate('/?modal=signup')}
                 className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
               >
                 Try signing up again

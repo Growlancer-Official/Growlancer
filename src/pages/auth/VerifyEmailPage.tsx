@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Mail, ExternalLink, RefreshCw, Loader2, CheckCircle2,
   ArrowRight,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { fetchUserProfile } from '../../lib/services/authService';
+import { redirectAfterAuth } from '../../lib/authAction';
 
 export function VerifyEmailPage() {
   const navigate = useNavigate();
@@ -15,6 +17,28 @@ export function VerifyEmailPage() {
   const [verified, setVerified] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
+
+  /**
+   * Shared destination logic: fetch the profile once the email is confirmed and
+   * route to onboarding/dashboard by role. Full-page redirect avoids the
+   * ProtectedRoute bounce-back race (same as AuthCallbackPage/EmailConfirmPage).
+   */
+  const goToAppDestination = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    const userId = data?.session?.user?.id;
+    if (!userId) return false;
+
+    let profile = await fetchUserProfile(userId).catch(() => null);
+    if (!profile) {
+      // Profile may be mid-creation (trigger/RPC race) — retry briefly
+      for (let i = 0; i < 4 && !profile; i++) {
+        await new Promise(r => setTimeout(r, 600));
+        profile = await fetchUserProfile(userId).catch(() => null);
+      }
+    }
+    redirectAfterAuth(profile);
+    return true;
+  }, []);
 
   // Auto-detect email provider
   const getEmailProviderUrl = (e: string): string => {
@@ -59,14 +83,9 @@ export function VerifyEmailPage() {
 
         if (data?.user?.email_confirmed_at) {
           setVerified(true);
-          // Auto-redirect to dashboard after showing success
+          // Auto-redirect to onboarding/dashboard (profile-based) after showing success
           setTimeout(() => {
-            const role = data.user?.user_metadata?.role;
-            if (role === 'client') {
-              navigate('/client', { replace: true });
-            } else {
-              navigate('/dashboard', { replace: true });
-            }
+            if (!cancelled) void goToAppDestination();
           }, 2500);
         }
       } catch {
@@ -86,12 +105,7 @@ export function VerifyEmailPage() {
             setVerified(true);
             clearInterval(interval);
             setTimeout(() => {
-              const role = data.user?.user_metadata?.role;
-              if (role === 'client') {
-                navigate('/client', { replace: true });
-              } else {
-                navigate('/dashboard', { replace: true });
-              }
+              if (!cancelled) void goToAppDestination();
             }, 2500);
           }
         }).catch(() => {});
@@ -107,12 +121,7 @@ export function VerifyEmailPage() {
             clearInterval(interval);
             clearInterval(sessionInterval);
             setTimeout(() => {
-              const role = data.session?.user?.user_metadata?.role;
-              if (role === 'client') {
-                navigate('/client', { replace: true });
-              } else {
-                navigate('/dashboard', { replace: true });
-              }
+              if (!cancelled) void goToAppDestination();
             }, 2500);
           }
         }).catch(() => {});
@@ -124,7 +133,7 @@ export function VerifyEmailPage() {
       clearInterval(interval);
       clearInterval(sessionInterval);
     };
-  }, [navigate, email]);
+  }, [email, goToAppDestination]);
 
   const handleResendEmail = async () => {
     setResending(true);
@@ -156,12 +165,7 @@ export function VerifyEmailPage() {
       if (data?.user?.email_confirmed_at) {
         setVerified(true);
         setTimeout(() => {
-          const role = data.user?.user_metadata?.role;
-          if (role === 'client') {
-            navigate('/client', { replace: true });
-          } else {
-            navigate('/dashboard', { replace: true });
-          }
+          void goToAppDestination();
         }, 1500);
       } else {
         setResendMessage('Email not yet verified. Check your inbox and click the verification link.');

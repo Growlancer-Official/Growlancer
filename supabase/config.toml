@@ -160,7 +160,22 @@ site_url = "http://localhost:5173"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""
 # A list of *exact* URLs that auth providers are permitted to redirect to post authentication.
-additional_redirect_urls = ["http://localhost:5173", "https://growlancer.vercel.app", "https://growlancer.com", "https://www.growlancer.com", "https://growlancer-mrkhan154212s-projects.vercel.app"]
+# 🛡️ IMPORTANT: the full /auth/callback paths MUST be present here (and in the Supabase
+# Dashboard → Authentication → URL Configuration → Redirect URLs) — otherwise email
+# verification links fall back to the Site URL (homepage) and the flow never continues
+# to onboarding/dashboard.
+additional_redirect_urls = [
+  "http://localhost:5173",
+  "http://localhost:5173/auth/callback",
+  "https://growlancer.vercel.app",
+  "https://growlancer.vercel.app/auth/callback",
+  "https://growlancer.com",
+  "https://growlancer.com/auth/callback",
+  "https://www.growlancer.com",
+  "https://www.growlancer.com/auth/callback",
+  "https://growlancer-mrkhan154212s-projects.vercel.app",
+  "https://growlancer-mrkhan154212s-projects.vercel.app/auth/callback",
+]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
 jwt_expiry = 3600
 # JWT issuer URL. If not set, defaults to auth.external_url.

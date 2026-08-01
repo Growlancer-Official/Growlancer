@@ -7,6 +7,7 @@ import {
   createUserProfile,
   createReferralCode,
 } from '../lib/services/authService';
+import { shouldRedirectToAuthCallback } from '../lib/authAction';
 import { captureError, captureInfo } from '../lib/telemetry';
 import {
   recordLoginAttempt,
@@ -316,6 +317,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async function initializeAuth() {
       try {
         devLog('[Auth] Initializing...');
+
+        // 🛡️ Homepage-fallback rescue: if Supabase redirected the user to the site URL
+        // (homepage) instead of /auth/callback because the exact callback URL wasn't in
+        // the project's allowed Redirect URLs, the PKCE code / OTP token_hash is sitting
+        // in THIS page's URL. Bounce to /auth/callback preserving the params so the
+        // callback page can exchange the token and route to onboarding/dashboard —
+        // instead of the user being stuck on the homepage with a silent session.
+        if (typeof window !== 'undefined' && shouldRedirectToAuthCallback()) {
+          const search = window.location.search;
+          const hash = window.location.hash;
+          devLog('[Auth] Auth action params on non-callback page — bouncing to /auth/callback');
+          window.location.replace(`/auth/callback${search}${hash}`);
+          return;
+        }
 
         // Set up auth state listener
         try {

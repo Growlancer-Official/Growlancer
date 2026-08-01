@@ -2,6 +2,7 @@ import { useEffect, useState, startTransition } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { fetchUserProfile, createUserProfile as createProfile } from '../lib/services/authService';
+import { redirectAfterAuth } from '../lib/authAction';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
 
 const isDev = import.meta.env.DEV;
@@ -16,30 +17,10 @@ function safeNavigate(navFn: () => void) {
   });
 }
 
-/**
- * 🛡️ OAuth post-login redirect — FULL PAGE redirect (window.location.replace), not SPA navigate.
- * The session is already persisted in localStorage by supabase-js after the OAuth callback,
- * so a full reload lets AuthContext initialize cleanly from storage. SPA navigate() here
- * races with AuthContext's async profile sync, which can make ProtectedRoute see user=null
- * and bounce the user BACK to /?modal=login (the "LinkedIn login works but goes back" bug).
- * window.location.replace() (not href=) prevents the browser Back button from returning
- * to /auth/callback and re-running this processing.
- */
-function redirectAfterAuth(profile: { role?: string | null; onboardingCompleted?: boolean } | null) {
-  if (profile && !profile.onboardingCompleted) {
-    window.location.replace('/onboarding?mode=oauth');
-  } else if (profile) {
-    const dashboardRoute =
-      profile.role === 'client'
-        ? '/client'
-        : profile.role === 'admin'
-          ? '/admin'
-          : '/dashboard';
-    window.location.replace(dashboardRoute);
-  } else {
-    window.location.replace('/onboarding?mode=oauth');
-  }
-}
+// ⚠️ redirectAfterAuth is imported from ../lib/authAction (shared with
+// EmailConfirmPage + VerifyEmailPage) so every auth entry point converges on
+// the SAME destination rules: role selection → onboarding → dashboard.
+// Full-page window.location.replace avoids the ProtectedRoute bounce-back race.
 
 type CallbackStatus = 'processing' | 'success' | 'error' | 'country_gate';
 type AuthAction = 'signup' | 'recovery' | 'magiclink' | 'email_change' | 'invite' | 'reauthentication' | 'unknown';
@@ -117,11 +98,12 @@ export function AuthCallbackPage() {
 
         // 4b. Welcome email disabled — Brevo removed. Verification handled by Supabase Auth.
 
-        // ── 5. Get the current session (with retry + fallback for OAuth PKCE) ──
+        // ── 5. Get the current session (with retry + fallbacks) ──
         let authUser: import('@supabase/supabase-js').User | null = null;
         let sessionFound = false;
 
-        // Try getSession with retry
+        // Try getSession with retry first — supabase-js's detectSessionInUrl usually
+        // auto-exchanges the PKCE `code` on load, so getSession is the common path.
         for (let attempt = 0; attempt < 3; attempt++) {
           if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
           
@@ -131,6 +113,26 @@ export function AuthCallbackPage() {
             authUser = data.session.user;
             sessionFound = true;
             break;
+          }
+        }
+
+        // 🆕 PKCE explicit exchange fallback: if no session after getSession retries
+        // and a `code` param is present (e.g. the redirect chain through the homepage
+        // fallback bounced here and the auto-detection was missed), exchange it now.
+        if (!sessionFound) {
+          const pkceCode = searchParams.get('code');
+          if (pkceCode) {
+            const { data: exchanged, error: exchangeError } = await supabase.auth
+              .exchangeCodeForSession(pkceCode)
+              .catch(err => ({ data: { session: null }, error: err }));
+            if (!exchangeError && exchanged?.session?.user) {
+              authUser = exchanged.session.user;
+              sessionFound = true;
+              devLog('[AuthCallback] PKCE code exchanged successfully');
+            } else {
+              devLog('[AuthCallback] PKCE exchange failed (may already be exchanged):',
+                exchangeError?.message || 'unknown');
+            }
           }
         }
 
@@ -150,6 +152,19 @@ export function AuthCallbackPage() {
               sessionFound = true;
             }
           }
+        }
+
+        // ── 5b. 🛡️ Email verification gate ──
+        // For a signup confirmation, the email MUST be confirmed before we route
+        // the user onward. Never trust the frontend — supabase.auth.getUser() only
+        // returns email_confirmed_at once Supabase has actually confirmed it.
+        if (sessionFound && authUser && detectedAction === 'signup' && !authUser.email_confirmed_at) {
+          devLog('[AuthCallback] Signup session but email NOT confirmed yet');
+          setStatus('error');
+          setErrorMessage(
+            'Your email is not confirmed yet. Check your inbox (and spam folder) for the verification link, then click it to activate your account.'
+          );
+          return;
         }
 
         if (!sessionFound) {
