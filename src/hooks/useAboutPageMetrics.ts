@@ -88,13 +88,35 @@ const LOADING_CARDS: AboutStatCard[] = [
   { value: '…', label: 'Loading public metrics…' },
 ];
 
+/** Raw live values (not formatted) so other UI (e.g. the live code terminal) can inject real numbers. */
+export type AboutMetricsRaw = {
+  members: number | null;
+  escrowUsd: number | null;
+  satisfactionPercent: number | null;
+  countries: number | null;
+};
+
+const EMPTY_RAW: AboutMetricsRaw = {
+  members: null,
+  escrowUsd: null,
+  satisfactionPercent: null,
+  countries: null,
+};
+
 export function useAboutPageMetrics() {
   const [stats, setStats] = useState<AboutStatCard[]>(LOADING_CARDS);
   const [ready, setReady] = useState(false);
+  const [raw, setRaw] = useState<AboutMetricsRaw>(EMPTY_RAW);
 
   const refresh = useCallback(async () => {
     const [file, profileCount] = await Promise.all([loadMetricsFile(), loadProfileCount()]);
     setStats(buildCards(profileCount, file));
+    setRaw({
+      members: profileCount,
+      escrowUsd: file.paymentsProcessedUsd ?? null,
+      satisfactionPercent: file.avgSatisfactionPercent ?? null,
+      countries: file.countriesWithMembers ?? null,
+    });
     setReady(true);
   }, []);
 
@@ -133,5 +155,5 @@ export function useAboutPageMetrics() {
     };
   }, [refresh]);
 
-  return { stats, ready, refresh };
+  return { stats, ready, refresh, raw };
 }

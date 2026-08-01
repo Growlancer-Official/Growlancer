@@ -78,6 +78,32 @@
     animation-delay: 320ms;
   }
 
+  /* Live code terminal — blinking block cursor */
+  .terminal-cursor {
+    display: inline-block;
+    width: 8px;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background-color: #10b981;
+    border-radius: 1px;
+    animation: terminalBlink 1s step-end infinite;
+  }
+
+  @keyframes terminalBlink {
+    0%,
+    45% {
+      opacity: 1;
+    }
+    50%,
+    95% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
   .animate-fade-in {
     animation: fadeIn 200ms ease-out;
   }

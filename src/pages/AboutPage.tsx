@@ -1,9 +1,46 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Globe, Heart, ShieldCheck, Sparkles, Target, TrendingUp, Users, Zap } from 'lucide-react';
+import { LiveCodeTerminal, type TerminalLine } from '@/components/LiveCodeTerminal';
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
 
+function formatUsdFull(usd: number): string {
+  if (!Number.isFinite(usd) || usd < 0) return '$0';
+  return `$${Math.round(usd).toLocaleString('en-US')}`;
+}
+
 export function AboutPage() {
-  const { stats, ready } = useAboutPageMetrics();
+  const { stats, ready, raw } = useAboutPageMetrics();
+
+  // Real content — inject live platform numbers into the terminal script.
+  const terminalLines = useMemo<TerminalLine[]>(() => {
+    const members = raw.members != null ? raw.members.toLocaleString('en-US') : '—';
+    const escrow = raw.escrowUsd != null ? formatUsdFull(raw.escrowUsd) : '$0';
+    const sat = raw.satisfactionPercent != null ? `${Math.round(raw.satisfactionPercent)}%` : '—';
+    const countries = raw.countries != null ? raw.countries.toLocaleString('en-US') : '—';
+    return [
+      [{ text: '// Real-Time Canvas Synced Init', className: 'text-emerald-600' }],
+      [
+        { text: 'const workspace = await Growlancer.createWorkspace(contractId);' },
+        { text: `  // ${members} members online`, className: 'text-slate-400' },
+      ],
+      [
+        { text: 'await workspace.mountKanbanBoard();' },
+        { text: '  // tasks sync in real time', className: 'text-slate-400' },
+      ],
+      [{ text: 'await workspace.mountScratchpad({ focusLock: true });' }],
+      [
+        { text: 'await workspace.escrow.verifyPayPalFunding();', className: 'text-amber-500' },
+        { text: `  // ${escrow} secured`, className: 'text-slate-400' },
+      ],
+      [
+        {
+          text: `// ${sat} satisfaction · ${countries} countries — ready to co-work seamlessly!`,
+          className: 'text-slate-400',
+        },
+      ],
+    ];
+  }, [raw]);
 
   const values = [
     {
@@ -134,13 +171,8 @@ export function AboutPage() {
                 <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
                 <span className="w-3 h-3 rounded-full bg-green-400"></span>
               </div>
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/30 text-xs font-mono space-y-2 text-slate-600">
-                <p className="text-emerald-600">// Real-Time Canvas Synced Init</p>
-                <p>const workspace = await Growlancer.createWorkspace(contractId);</p>
-                <p>await workspace.mountKanbanBoard();</p>
-                <p>await workspace.mountScratchpad({`{`} focusLock: true {`}`});</p>
-                <p className="text-amber-500">await workspace.escrow.verifyPayPalFunding();</p>
-                <p className="text-slate-400">// Ready to co-work seamlessly!</p>
+              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/30 text-xs font-mono text-slate-600">
+                <LiveCodeTerminal lines={terminalLines} className="space-y-2" />
               </div>
               <div className="flex items-center gap-3 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
