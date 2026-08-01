@@ -141,7 +141,7 @@ export function AdminDisputesPage() {
       toast.error('Failed to fetch disputes', err instanceof Error ? err.message : 'Unknown error');
     }
     finally { setLoading(false); }
-  }, [statusFilter]);
+  }, [statusFilter, toast]);
 
   useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
   useEffect(() => {

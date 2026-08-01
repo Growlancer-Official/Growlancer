@@ -290,7 +290,7 @@ export function AdminIdentityVerificationPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     fetchVerifications();

@@ -101,7 +101,7 @@ export function ServicesCatalogPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, maxPrice, sortBy]);
+  }, [searchQuery, selectedCategory, maxPrice, sortBy, toast]);
 
   useEffect(() => {
     fetchServices();

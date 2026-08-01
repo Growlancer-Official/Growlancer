@@ -89,7 +89,7 @@ export function PublicFreelancerProfilePage() {
     };
 
     fetchProfile();
-  }, [freelancerId]);
+  }, [freelancerId, toast]);
 
   if (loading) {
     return (

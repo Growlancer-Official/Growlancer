@@ -59,7 +59,7 @@ export function AdminSupportTicketsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => { fetchTickets(); }, [fetchTickets]);
 

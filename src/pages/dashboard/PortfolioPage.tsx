@@ -58,7 +58,7 @@ export function PortfolioPage() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     fetchItems();

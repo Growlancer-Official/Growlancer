@@ -24,7 +24,7 @@ export function AnalyticsPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, timeframe]);
+  }, [user, timeframe, toast]);
 
   useEffect(() => {
     fetchAnalytics();

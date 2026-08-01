@@ -65,7 +65,7 @@ export function InboxPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user]);
+  }, [user, toast]);
 
   // Fetch messages for selected contract
   const fetchMessages = useCallback(async (contractId: string) => {
@@ -79,7 +79,7 @@ export function InboxPage() {
     } catch (err) {
       toast.error('Error', 'Failed to load messages.');
     }
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     fetchConversations();

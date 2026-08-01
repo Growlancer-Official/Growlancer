@@ -80,7 +80,7 @@ export function AdminQRManager({ credentialId, verificationCode, recipientName, 
     } finally {
       setLoading(false);
     }
-  }, [credentialId]);
+  }, [credentialId, toast]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

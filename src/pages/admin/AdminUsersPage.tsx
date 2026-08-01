@@ -91,7 +91,7 @@ export function AdminUsersPage() {
       console.error('Failed to fetch user stats:', err);
       toast.error('Failed to fetch user stats', err instanceof Error ? err.message : 'Unknown error');
     }
-  }, []);
+  }, [toast]);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -122,7 +122,7 @@ export function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [roleFilter, statusFilter]);
+  }, [roleFilter, statusFilter, toast]);
 
   useEffect(() => { fetchStats(); fetchUsers(); }, [fetchStats, fetchUsers]);
 

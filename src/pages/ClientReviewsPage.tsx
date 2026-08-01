@@ -46,7 +46,7 @@ export function ClientReviewsPage() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     fetchReviews();

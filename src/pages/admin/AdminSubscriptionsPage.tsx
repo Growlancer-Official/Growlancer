@@ -84,7 +84,7 @@ export function AdminSubscriptionsPage() {
       toast.error('Failed to fetch subscriptions', err instanceof Error ? err.message : 'Unknown error');
     }
     finally { setLoading(false); }
-  }, []);
+  }, [toast]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
   useEffect(() => {

@@ -123,7 +123,7 @@ export function FreelancersSearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, minRate, maxRate, minRating, availabilityOnly, sortBy, selectedSkills]);
+  }, [searchQuery, selectedCategory, minRate, maxRate, minRating, availabilityOnly, sortBy, selectedSkills, toast]);
 
   useEffect(() => {
     fetchFreelancers();

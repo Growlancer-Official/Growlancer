@@ -795,7 +795,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         window.removeEventListener(event, handleActivity);
       }
     };
-  }, [user?.id, user?.role]);
+  }, [user?.id, user?.role, SESSION_TIMEOUT_MS]);
 
   const signInWithOAuth = async (
     provider: 'google' | 'linkedin_oidc',

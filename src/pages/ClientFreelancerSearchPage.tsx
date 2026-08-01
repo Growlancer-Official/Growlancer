@@ -96,7 +96,7 @@ export function ClientFreelancerSearchPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, selectedCategory, minRate, maxRate, availabilityOnly, sortBy]);
+  }, [searchQuery, selectedCategory, minRate, maxRate, availabilityOnly, sortBy, toast]);
 
   useEffect(() => { fetchFreelancers(); }, [fetchFreelancers]);
 

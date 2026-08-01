@@ -74,7 +74,7 @@ export function AdminProjectsPage() {
       toast.error('Failed to fetch projects', err instanceof Error ? err.message : 'Unknown error');
     }
     finally { setLoading(false); }
-  }, [statusFilter]);
+  }, [statusFilter, toast]);
 
   useEffect(() => { fetchProjects(); }, [fetchProjects]);
   useEffect(() => {

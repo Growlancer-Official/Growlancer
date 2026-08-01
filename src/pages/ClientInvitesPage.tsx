@@ -95,7 +95,7 @@ export function ClientInvitesPage() {
     } finally {
       setLoading(false);
     }
-  }, [user?.id]);
+  }, [user?.id, toast]);
 
   const handleCancel = async (inviteId: string) => {
     setActionId(inviteId);

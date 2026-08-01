@@ -80,7 +80,7 @@ export function AdminPaymentsPage() {
       toast.error('Failed to fetch transactions', err instanceof Error ? err.message : 'Unknown error');
     }
     finally { setLoading(false); }
-  }, [typeFilter]);
+  }, [typeFilter, toast]);
 
   useEffect(() => { fetchTransactions(); }, [fetchTransactions]);
   useEffect(() => {

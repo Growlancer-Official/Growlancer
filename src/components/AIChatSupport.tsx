@@ -93,7 +93,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     };
 
     fetchUsage();
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

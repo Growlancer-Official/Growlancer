@@ -86,7 +86,7 @@ export function ServiceDetailPage() {
     };
 
     fetchService();
-  }, [serviceId]);
+  }, [serviceId, toast]);
 
   if (loading) {
     return (

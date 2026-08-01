@@ -109,7 +109,7 @@ export function WorkspacePage() {
     } catch (err) {
       toast.error('Error', 'Failed to refresh contract.');
     }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     if (!user) return;
@@ -163,7 +163,7 @@ export function WorkspacePage() {
     fetchData();
 
     return () => clearTimeout(timeoutId);
-  }, [user, contractId, loading]);
+  }, [user, contractId, loading, toast]);
 
   const fetchSharedTasks = useCallback(async () => {
     if (!selectedContract) return;
@@ -179,7 +179,7 @@ export function WorkspacePage() {
     } catch (error) {
       toast.error('Error', 'Failed to load shared tasks.');
     }
-  }, [selectedContract]);
+  }, [selectedContract, toast]);
 
   const [messagesPage, setMessagesPage] = useState(0);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
@@ -204,7 +204,7 @@ export function WorkspacePage() {
       toast.error('Error', 'Failed to load shared notes.');
       setNotesText('');
     }
-  }, [selectedContract]);
+  }, [selectedContract, toast]);
 
   useEffect(() => {
     if (!selectedContract) return;
@@ -345,7 +345,7 @@ export function WorkspacePage() {
       void channel.unsubscribe();
       void contractSub.unsubscribe();
     };
-  }, [selectedContract, refreshContract, messagesPage]);
+  }, [selectedContract, refreshContract, messagesPage, toast]);
 
   // Fetch contract files
   useEffect(() => {

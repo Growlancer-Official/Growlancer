@@ -73,7 +73,7 @@ export function AdminContractsPage() {
       toast.error('Failed to fetch contracts', err instanceof Error ? err.message : 'Unknown error');
     }
     finally { setLoading(false); }
-  }, [statusFilter]);
+  }, [statusFilter, toast]);
 
   useEffect(() => { fetchContracts(); }, [fetchContracts]);
   useEffect(() => {

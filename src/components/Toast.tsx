@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef, type ReactNode } from 'react';
 import {
   AlertCircle,
   AlertTriangle,
@@ -22,7 +22,11 @@ export interface Toast {
 }
 
 interface ToastContextType {
-  toasts: Toast[];
+  // NOTE: `toasts` is intentionally NOT part of the context value.
+  // The toast container is rendered inside ToastProvider from local state,
+  // and no consumer reads the list from context. Keeping the context value
+  // stable (only stable useCallback methods) makes `toast` safe to include
+  // in effect dependency arrays without re-running them on every toast.
   addToast: (toast: Omit<Toast, 'id'>) => string;
   removeToast: (id: string) => void;
   success: (title: string, message?: string, duration?: number) => string;
@@ -88,8 +92,13 @@ export function ToastProvider({ children, maxToasts = 5 }: { children: ReactNode
     };
   }, []);
 
+  const value = useMemo(
+    () => ({ addToast, removeToast, success, error, warning, info, loading }),
+    [addToast, removeToast, success, error, warning, info, loading]
+  );
+
   return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast, success, error, warning, info, loading }}>
+    <ToastContext.Provider value={value}>
       {children}
       {/* Toast Container */}
       <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2 pointer-events-none">

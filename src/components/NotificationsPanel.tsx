@@ -71,7 +71,7 @@ export function NotificationsPanel() {
     } finally {
       setLoading(false);
     }
-  }, [user, filterType]);
+  }, [user, filterType, toast]);
 
   // Fetch on tab/filter change
   useEffect(() => {

@@ -49,7 +49,7 @@ export function ClientAISubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, toast]);
 
   useEffect(() => {
     if (!user) return;

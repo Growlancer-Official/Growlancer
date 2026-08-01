@@ -109,6 +109,7 @@ function ProposalMenu({
 
 export function ClientProposalsPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const [proposals, setProposals] = useState<Proposal[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'accepted' | 'rejected'>('all');
@@ -179,9 +180,7 @@ export function ClientProposalsPage() {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [user]);
-
-  const toast = useToast();
+  }, [user, toast]);
 
   useEffect(() => {
     if (!user) return;

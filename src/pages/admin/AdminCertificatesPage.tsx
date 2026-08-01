@@ -294,7 +294,7 @@ export function AdminCertificatesPage() {
       toast.error('Failed to Load', 'Could not load certificates.');
     }
     finally { if (showLoading) setLoading(false); }
-  }, []);
+  }, [toast]);
 
   const fetchInternApplicants = useCallback(async (showLoading = true) => {
     if (showLoading) setLoadingInterns(true);
@@ -311,7 +311,7 @@ export function AdminCertificatesPage() {
       toast.error('Failed to Load', 'Could not load internship applicants.');
       setInternApplicants([]);
     } finally { if (showLoading) setLoadingInterns(false); }
-  }, []);
+  }, [toast]);
 
   useEffect(() => { 
     fetchCerts(); 

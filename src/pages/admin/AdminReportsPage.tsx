@@ -78,7 +78,7 @@ export function AdminReportsPage() {
       toast.error('Failed to fetch metrics', err instanceof Error ? err.message : 'Unknown error');
     }
     finally { setLoading(false); }
-  }, []);
+  }, [toast]);
 
   useEffect(() => { fetchMetrics(); }, [fetchMetrics]);
 

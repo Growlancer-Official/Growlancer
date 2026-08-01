@@ -169,7 +169,7 @@ function PlatformStats() {
       });
     } catch (err) { console.error('Failed to fetch metrics:', err); toast.error('Metrics Error', 'Could not load platform metrics.'); }
     finally { setLoading(false); }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     fetchMetrics();
@@ -248,7 +248,7 @@ function UserManagementTable() {
       setUsers((data || []) as AdminUser[]);
     } catch (err) { console.error(err); toast.error('Users Error', 'Could not load users.'); }
     finally { setLoading(false); }
-  }, [roleFilter]);
+  }, [roleFilter, toast]);
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
   useEffect(() => {
@@ -409,7 +409,7 @@ function DisputeResolution() {
       setDisputes(all as AdminDispute[]);
     } catch (err) { console.error(err); toast.error('Disputes Error', 'Could not load disputes.'); }
     finally { setLoading(false); }
-  }, [filter]);
+  }, [filter, toast]);
 
   useEffect(() => { fetchDisputes(); }, [fetchDisputes]);
   useEffect(() => {
@@ -648,7 +648,7 @@ function AIRiskAnalysis() {
         severity: 'high', actions: [{ label: 'Retry', primary: true, color: 'bg-red-500/10 text-red-500' }] }]);
     }
     finally { setLoading(false); }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     fetchRisks();
@@ -750,7 +750,7 @@ function LiveActivityFeed() {
       setActivities(items.slice(0, 15));
     } catch (err) { console.error(err); toast.error('Activity Error', 'Could not load activity feed.'); }
     finally { setLoading(false); }
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     setConnectionStatus('connecting');
