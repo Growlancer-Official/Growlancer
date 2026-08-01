@@ -51,16 +51,31 @@ export function redirectAfterAuth(profile: PostAuthProfile | null): void {
 }
 
 /**
- * True if the given URL search string carries Supabase auth action params
- * (PKCE `code`, OTP `token_hash`, or an OAuth `error`/`error_description`).
+ * True if the given URL carries Supabase auth action params:
+ * - search: PKCE `code`, OTP `token_hash`, or OAuth `error`/`error_description`
+ * - hash (implicit flow): `access_token` / `refresh_token` / `error` (the
+ *   confirmation email link redirects to #access_token=... — no code verifier
+ *   needed, works across devices/browsers)
  */
-export function urlHasAuthActionParams(search: string = window.location.search): boolean {
+export function urlHasAuthActionParams(
+  search: string = window.location.search,
+  hash: string = window.location.hash
+): boolean {
   const params = new URLSearchParams(search);
-  return (
+  if (
     params.has('code') ||
     params.has('token_hash') ||
     params.has('error') ||
     params.has('error_description')
+  ) {
+    return true;
+  }
+  const hashParams = new URLSearchParams(hash.replace(/^#/, ''));
+  return (
+    hashParams.has('access_token') ||
+    hashParams.has('refresh_token') ||
+    hashParams.has('error') ||
+    hashParams.has('error_description')
   );
 }
 
@@ -85,10 +100,11 @@ const AUTH_ACTION_PATHS = [
  */
 export function shouldRedirectToAuthCallback(
   pathname: string = window.location.pathname,
-  search: string = window.location.search
+  search: string = window.location.search,
+  hash: string = window.location.hash
 ): boolean {
   if (AUTH_ACTION_PATHS.some((p) => pathname.startsWith(p))) return false;
-  return urlHasAuthActionParams(search);
+  return urlHasAuthActionParams(search, hash);
 }
 
 /** Minimal shape needed from a profile row for destination logic. */

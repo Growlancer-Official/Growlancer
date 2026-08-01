@@ -38,13 +38,22 @@ export function AuthCallbackPage() {
     async function handleCallback() {
       try {
         // ── 1. Detect auth action type ──
-        const typeParam = searchParams.get('type') as AuthAction | null;
+        // With flowType 'implicit', session tokens arrive in the URL hash
+        // (#access_token=...&type=signup). React fires child effects before parent
+        // effects, so THIS effect runs BEFORE AuthProvider's getSession() — the hash
+        // is still present here and supabase-js hasn't stripped it yet. Read `type`
+        // from BOTH the search string (email links carry ?type=signup) and the hash.
+        const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+        const typeParam = (searchParams.get('type') || hashParams.get('type') || null) as
+          | AuthAction
+          | null;
         const detectedAction = typeParam || 'unknown';
         setAction(detectedAction);
 
-        // ── 2. Check for OAuth error ──
-        const error = searchParams.get('error');
-        const errorDescription = searchParams.get('error_description');
+        // ── 2. Check for OAuth error (search or hash) ──
+        const error = searchParams.get('error') || hashParams.get('error');
+        const errorDescription =
+          searchParams.get('error_description') || hashParams.get('error_description');
 
         if (error) {
           setStatus('error');
@@ -158,7 +167,15 @@ export function AuthCallbackPage() {
         // For a signup confirmation, the email MUST be confirmed before we route
         // the user onward. Never trust the frontend — supabase.auth.getUser() only
         // returns email_confirmed_at once Supabase has actually confirmed it.
-        if (sessionFound && authUser && detectedAction === 'signup' && !authUser.email_confirmed_at) {
+        // OAuth providers (google/linkedin) auto-confirm the email at account
+        // creation, so the gate only applies to email/password signups.
+        const authProvider = (authUser?.app_metadata?.provider as string | undefined) ?? '';
+        const isProviderOAuth =
+          authProvider === 'google' || authProvider === 'linkedin_oidc';
+        const isOAuthFlow =
+          detectedAction === 'unknown' || isProviderOAuth || authProvider === 'github';
+
+        if (sessionFound && authUser && detectedAction === 'signup' && !isOAuthFlow && !authUser.email_confirmed_at) {
           devLog('[AuthCallback] Signup session but email NOT confirmed yet');
           setStatus('error');
           setErrorMessage(
@@ -244,11 +261,13 @@ export function AuthCallbackPage() {
           localStorage.removeItem('growlancer_oauth_role');
         }
 
-        // 🛡️ Only OAuth flows (detectedAction === 'unknown') get role correction from
-        // localStorage. Email signup users chose their role in the signup form and it's
-        // already stored in the profile — never overwrite it here (prevents a 'client'
-        // email signup being silently flipped to 'freelancer' after email verification).
-        const isOAuthFlow = detectedAction === 'unknown';
+        // 🛡️ Only OAuth flows (detectedAction === 'unknown' OR a real OAuth provider)
+        // get role correction from localStorage. Email signup users chose their role in
+        // the signup form and it's already stored in the profile — never overwrite it
+        // here (prevents a 'client' email signup being silently flipped to 'freelancer'
+        // after email verification).
+        // (isOAuthFlow computed above — includes provider-based detection so Google/
+        //  LinkedIn signups keep their chosen role even when Supabase sends type=signup.)
 
         // Retry fetching profile (AuthContext may still be syncing)
         let profile = null;

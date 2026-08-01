@@ -320,11 +320,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // 🛡️ Homepage-fallback rescue: if Supabase redirected the user to the site URL
         // (homepage) instead of /auth/callback because the exact callback URL wasn't in
-        // the project's allowed Redirect URLs, the PKCE code / OTP token_hash is sitting
-        // in THIS page's URL. Bounce to /auth/callback preserving the params so the
-        // callback page can exchange the token and route to onboarding/dashboard —
-        // instead of the user being stuck on the homepage with a silent session.
-        if (typeof window !== 'undefined' && shouldRedirectToAuthCallback()) {
+        // the project's allowed Redirect URLs, the PKCE code / OTP token_hash / implicit
+        // hash tokens are sitting in THIS page's URL. Bounce to /auth/callback preserving
+        // the params so the callback page can exchange the token and route to
+        // onboarding/dashboard — instead of the user being stuck on the homepage with a
+        // silent session.
+        if (typeof window !== 'undefined' &&
+            shouldRedirectToAuthCallback(
+              window.location.pathname,
+              window.location.search,
+              window.location.hash
+            )) {
           const search = window.location.search;
           const hash = window.location.hash;
           devLog('[Auth] Auth action params on non-callback page — bouncing to /auth/callback');

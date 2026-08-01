@@ -26,7 +26,17 @@ const supabaseClient: SupabaseClient<Database> = createClient<Database>(supabase
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce',
+    // ⚠️ flowType MUST be 'implicit' (NOT 'pkce') for production email verification:
+    // with 'pkce', the confirmation email link ends at /auth/callback?code=... and
+    // exchangeCodeForSession() requires a `code_verifier` stored in the SIGNUP
+    // browser's localStorage. If the user signs up on localhost/phone/browser A and
+    // clicks the link on the vercel domain/browser B, the verifier is missing →
+    // exchange fails → 'Authentication failed' even though Supabase already set
+    // email_confirmed_at server-side (auth.sessions stays empty — the exact bug
+    // we fixed). With 'implicit', session tokens arrive in the URL hash
+    // (#access_token=...) and are auto-processed by detectSessionInUrl — no code
+    // verifier needed, works on any device/browser.
+    flowType: 'implicit',
     debug: import.meta.env.DEV,
   },
   realtime: {
