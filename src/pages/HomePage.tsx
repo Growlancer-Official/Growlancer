@@ -39,7 +39,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
           <div className="lg:col-span-6 lg:pr-4">
             <div className="inline-flex items-center gap-2 rounded-full bg-white ring-1 ring-slate-200 px-3 py-1.5 shadow-sm opacity-0 translate-y-2 animate-fade-up">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[11px] font-medium text-slate-600">No proposal spam · Matching-first hiring</span>
+              <span className="text-[11px] font-medium text-slate-600">Growlancer · AI-Powered Freelancing Marketplace</span>
             </div>
 
             <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 opacity-0 translate-y-2 animate-fade-up animation-delay-80 font-display leading-[1.1]">
@@ -48,8 +48,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
             </h1>
 
             <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed max-w-lg opacity-0 translate-y-2 animate-fade-up animation-delay-140">
-              Find the right freelancer in seconds using intelligent matching. 
-              No proposal spam. No endless searching. Just precise, data-driven matches.
+              <strong className="text-slate-800">Growlancer is an AI-powered freelancing marketplace</strong> that connects talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly — with intelligent matching, protected escrow payments, and a shared workspace.
             </p>
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-200">
