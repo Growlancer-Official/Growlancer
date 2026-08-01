@@ -291,8 +291,9 @@ export function AuthCallbackPage() {
         // If user authenticated via OAuth and has no country set, show country confirmation.
         setStatus('success');
 
-        // ⚡ Brief success flash (350ms) — no artificial 1s wait.
-        await new Promise(resolve => setTimeout(resolve, 350));
+        // ⚡ Fast for OAuth (350ms), but keep the "Email verified successfully!"
+        // milestone visible for ~1s on the email/password signup path.
+        await new Promise(resolve => setTimeout(resolve, isProviderOAuth ? 350 : 1000));
 
         if (cancelled) return;
 
