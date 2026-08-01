@@ -113,8 +113,9 @@ export function AuthCallbackPage() {
 
         // Try getSession with retry first — supabase-js's detectSessionInUrl usually
         // auto-exchanges the PKCE `code` on load, so getSession is the common path.
+        // ⚡ Fast retries (400ms) — no artificial multi-second waits.
         for (let attempt = 0; attempt < 3; attempt++) {
-          if (attempt > 0) await new Promise(r => setTimeout(r, 1000));
+          if (attempt > 0) await new Promise(r => setTimeout(r, 400));
           
           const { data, error: sessionError } = await supabase.auth.getSession();
           if (sessionError) continue;
@@ -290,7 +291,8 @@ export function AuthCallbackPage() {
         // If user authenticated via OAuth and has no country set, show country confirmation.
         setStatus('success');
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // ⚡ Brief success flash (350ms) — no artificial 1s wait.
+        await new Promise(resolve => setTimeout(resolve, 350));
 
         if (cancelled) return;
 
@@ -309,28 +311,29 @@ export function AuthCallbackPage() {
         // (isOAuthFlow computed above — includes provider-based detection so GitHub/
         //  LinkedIn signups keep their chosen role even when Supabase sends type=signup.)
 
-        // Retry fetching profile (AuthContext may still be syncing)
-        let profile = null;
-        for (let i = 0; i < 5; i++) {
-          profile = authUser?.id ? await fetchUserProfile(authUser.id) : null;
-          if (profile) {
-            // 🆕 If profile exists but role is wrong (e.g., OAuth defaulted to 'freelancer'), fix it
-            if (isOAuthFlow && profile.role !== oauthRole) {
-              try {
-                const { error: roleUpdateErr } = await supabase
-                  .from('profiles')
-                  .update({ role: oauthRole })
-                  .eq('id', authUser!.id);
-                if (!roleUpdateErr) {
-                  profile = { ...profile, role: oauthRole as 'freelancer' | 'client' | 'admin' };
-                }
-              } catch {
-                // Non-critical — will be corrected on onboarding
-              }
+        // ⚡ Fast profile fetch — the DB trigger creates the profile row synchronously on
+        // auth.users insert, so a single fetch (plus one quick retry) is enough. No more
+        // 5×600ms polling loop (was adding up to 3s of artificial delay).
+        let profile = authUser?.id ? await fetchUserProfile(authUser.id) : null;
+        if (!profile && authUser?.id) {
+          await new Promise(r => setTimeout(r, 300));
+          profile = await fetchUserProfile(authUser.id);
+        }
+        if (profile && isOAuthFlow && savedRole && profile.role !== oauthRole) {
+          // 🆕 Role correction ONLY when the user explicitly chose a role in the signup
+          // modal (savedRole is set). Returning OAuth users (login flow, no savedRole)
+          // keep their existing profile role — never flip a client to freelancer.
+          try {
+            const { error: roleUpdateErr } = await supabase
+              .from('profiles')
+              .update({ role: oauthRole })
+              .eq('id', authUser!.id);
+            if (!roleUpdateErr) {
+              profile = { ...profile, role: oauthRole as 'freelancer' | 'client' | 'admin' };
             }
-            break;
+          } catch {
+            // Non-critical — will be corrected on onboarding
           }
-          await new Promise(r => setTimeout(r, 600));
         }
 
         // 🆕 If profile still doesn't exist after retries, create one with the correct role
@@ -358,7 +361,13 @@ export function AuthCallbackPage() {
           return; // Stop — country confirmation UI will handle the redirect
         }
 
-        redirectAfterAuth(profile);
+        // ⚡ oauthMode: GitHub/LinkedIn OAuth users with incomplete onboarding go to the
+        // role-selection mini form (/onboarding?mode=oauth) — email was auto-confirmed
+        // by the provider, so no verification screen. Email users go to their
+        // role-specific full onboarding (role already chosen at signup).
+        // isProviderOAuth (not isOAuthFlow) so a rare manual email navigation to
+        // /auth/callback without a type param still keeps role-specific onboarding.
+        redirectAfterAuth(profile, isProviderOAuth);
       } catch (err) {
         if (!cancelled) {
           setStatus('error');
@@ -410,8 +419,10 @@ export function AuthCallbackPage() {
         // Now determine redirect based on profile
         // 🛡️ FULL PAGE redirect — same reason as the main callback flow above.
         // Avoids the ProtectedRoute bounce-back race after country selection.
+        // oauthMode=true: the country gate is only reachable for OAuth flows
+        // (GitHub/LinkedIn), so route them to the role-selection mini form.
         const profile = await fetchUserProfile(userId);
-        redirectAfterAuth(profile);
+        redirectAfterAuth(profile, true);
       } else {
         // Non-India country — insert into waitlist, redirect to /waitlist
         const email = sessionData.session?.user?.email || '';

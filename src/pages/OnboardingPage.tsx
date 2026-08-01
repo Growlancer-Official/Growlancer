@@ -46,7 +46,7 @@ interface ClientForm {
 
 type Step = 'welcome' | 'profile' | 'skills' | 'review';
 
-function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
+function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'client') => void }) {
   const { user, updateUser } = useAuth();
   const { skills: allSkills } = useSkills();
   const toast = useToast();
@@ -164,9 +164,12 @@ function OAuthMiniForm({ onComplete }: { onComplete: () => void }) {
         return;
       }
 
-      updateUser({ onboardingCompleted: true });
+      // 🆕 Sync BOTH onboarding completion AND the chosen role into context so the
+      // dashboard redirect below lands on the correct dashboard (a user who switched
+      // from freelancer → client must reach /client, not /dashboard).
+      updateUser({ onboardingCompleted: true, role: selectedRole });
       setStep('done');
-      setTimeout(() => onComplete(), 1500);
+      setTimeout(() => onComplete(selectedRole), 1500);
     } catch (err) {
       console.error('OAuth onboarding save error:', err);
       toast.error('Save Error', 'Failed to save. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
@@ -407,8 +410,8 @@ export function OnboardingPage() {
   if (isOAuthMode) {
     return (
       <OAuthMiniForm
-        onComplete={() => {
-          const route = user?.role === 'client' ? '/client' : user?.role === 'admin' ? '/admin' : '/dashboard';
+        onComplete={(role) => {
+          const route = role === 'client' ? '/client' : '/dashboard';
           navigate(route, { replace: true });
         }}
       />

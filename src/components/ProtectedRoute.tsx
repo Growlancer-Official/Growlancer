@@ -159,13 +159,20 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }, [user?.id, role]);
 
   // ── Email verification check effect (ALWAYS called before early returns) ──
+  // GitHub/LinkedIn OAuth auto-confirm the user's email at signup (the provider
+  // already verified identity), so those users must NOT be blocked by the
+  // "Open Gmail" verification screen even if email_confirmed_at is momentarily
+  // missing. Email/password signups still require a confirmed email.
   useEffect(() => {
     let cancelled = false;
     async function checkEmailVerified() {
       try {
         const { data } = await supabase.auth.getUser();
         if (cancelled) return;
-        setEmailConfirmed(!!data?.user?.email_confirmed_at);
+        const provider = data?.user?.app_metadata?.provider as string | undefined;
+        const isOAuthProvider =
+          provider === 'github' || provider === 'linkedin_oidc';
+        setEmailConfirmed(!!data?.user?.email_confirmed_at || isOAuthProvider);
       } catch {
         if (!cancelled) setEmailConfirmed(false);
       } finally {

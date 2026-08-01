@@ -18,14 +18,30 @@ export interface PostAuthProfile {
   onboardingCompleted?: boolean;
 }
 
-/** Resolve the correct destination for an authenticated (and verified) user. */
-export function getPostAuthPath(profile: PostAuthProfile | null): string {
+/**
+ * Resolve the correct destination for an authenticated (and verified) user.
+ *
+ * @param profile    The user's profile row (null = brand new user, no role yet).
+ * @param oauthMode  When true (OAuth signup via GitHub/LinkedIn), users with
+ *                   incomplete onboarding are sent to the role-selection mini
+ *                   form (/onboarding?mode=oauth) instead of the role-specific
+ *                   full onboarding. OAuth providers auto-confirm the email, so
+ *                   these users never see the email-verification flow and need
+ *                   an explicit role choice first. GitHub and LinkedIn behave
+ *                   identically here.
+ */
+export function getPostAuthPath(
+  profile: PostAuthProfile | null,
+  oauthMode: boolean = false
+): string {
   if (!profile) {
     // No profile / no role selected → role selection screen
     return '/onboarding?mode=oauth';
   }
   if (profile.onboardingCompleted === false) {
-    // Onboarding incomplete → role-specific onboarding
+    // OAuth users pick their role on the mini form (consistency for GitHub/LinkedIn);
+    // email users go to their role-specific full onboarding (role already chosen at signup).
+    if (oauthMode) return '/onboarding?mode=oauth';
     return profile.role === 'client' ? '/onboarding/client' : '/onboarding/freelancer';
   }
   switch (profile.role) {
@@ -46,8 +62,11 @@ export function getPostAuthPath(profile: PostAuthProfile | null): string {
  * replace() (not href=) prevents the browser Back button from returning
  * to the auth page and re-running token processing.
  */
-export function redirectAfterAuth(profile: PostAuthProfile | null): void {
-  window.location.replace(getPostAuthPath(profile));
+export function redirectAfterAuth(
+  profile: PostAuthProfile | null,
+  oauthMode: boolean = false
+): void {
+  window.location.replace(getPostAuthPath(profile, oauthMode));
 }
 
 /**
