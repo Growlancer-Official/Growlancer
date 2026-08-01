@@ -26,6 +26,7 @@ function escapeHtml(str: string): string {
 }
 
 const ALLOWED_ORIGINS = [
+  'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
   'https://growlancer.com',
   'https://www.growlancer.com',

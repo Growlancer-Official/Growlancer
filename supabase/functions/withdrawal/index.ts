@@ -7,6 +7,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const ALLOWED_ORIGINS = [
+  'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
   'https://growlancer.com',
   'https://www.growlancer.com',

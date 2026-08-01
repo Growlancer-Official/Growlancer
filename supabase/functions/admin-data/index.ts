@@ -35,6 +35,7 @@ const ROUTE = 'admin-data-auth'
 
 // CORS whitelist — restricts which origins can call admin endpoints
 const ALLOWED_ORIGINS = [
+  'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
   'https://growlancer.com',
   'https://www.growlancer.com',

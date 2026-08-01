@@ -15,6 +15,7 @@ const PAYPAL_API_URL =
 const PAYPAL_WEBHOOK_ID = Deno.env.get('PAYPAL_WEBHOOK_ID') || '';
 
 const ALLOWED_ORIGINS = [
+  'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
   'https://growlancer.com',
   'https://www.growlancer.com',

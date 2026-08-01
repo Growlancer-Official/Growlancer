@@ -4,6 +4,7 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const ALLOWED_ORIGINS = [
+  'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
   'https://growlancer.com',
   'https://www.growlancer.com',
