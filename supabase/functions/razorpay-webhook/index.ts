@@ -60,8 +60,17 @@ async function verifySignature(rawBody: string, signature: string): Promise<bool
 
 /** Build a deterministic idempotency key from a Razorpay event. */
 function buildEventKey(eventType: string, payload: any): string {
-  const orderId = payload?.order?.entity?.id || payload?.payment?.entity?.order_id || '';
-  const paymentId = payload?.payment?.entity?.id || '';
+  // Payment events carry payload.payment.entity; refund events carry
+  // payload.refund.entity.payment_id — cover both shapes.
+  const orderId =
+    payload?.order?.entity?.id ||
+    payload?.payment?.entity?.order_id ||
+    payload?.refund?.entity?.order_id ||
+    '';
+  const paymentId =
+    payload?.payment?.entity?.id ||
+    payload?.refund?.entity?.payment_id ||
+    '';
   const refundId = payload?.refund?.entity?.id || '';
   return `${eventType}|${orderId}|${paymentId}|${refundId}`;
 }
@@ -153,7 +162,10 @@ serve(async (req) => {
     { auth: { persistSession: false, autoRefreshToken: false } }
   );
 
-  // 2. Idempotency — record the event first; duplicates are silently ignored
+  // 2. Idempotency — record the event first; duplicates are silently ignored.
+  //    The unique(event_id) constraint is the real backstop; a concurrent
+  //    duplicate would fail this insert (500 → Razorpay retries → hits the
+  //    existing row below and is ignored). Proven live against production.
   const { data: existing } = await supabaseAdmin
     .from('payment_webhook_events')
     .select('id, status')
@@ -217,6 +229,25 @@ serve(async (req) => {
 
       // Idempotency — already captured via the client verify flow or an earlier webhook
       if (dbOrder.status === 'captured') {
+        // Failure recovery: if the earlier attempt captured the payment but
+        // escrow funding failed transiently, RETRY the funding here (the
+        // admin_fund_escrow guard makes this a safe no-op if already funded).
+        if (dbOrder.contract_id) {
+          const { error: retryFundErr } = await supabaseAdmin.rpc('admin_fund_escrow', {
+            p_contract_id: dbOrder.contract_id,
+          });
+          if (retryFundErr) {
+            console.error('[razorpay-webhook] retry admin_fund_escrow failed:', retryFundErr.message);
+          } else {
+            await notify(
+              supabaseAdmin, dbOrder.user_id, 'payment',
+              'Escrow funded',
+              `Your escrow payment of ${dbOrder.currency} ${Number(dbOrder.amount).toFixed(2)} was received and the contract is now active.`,
+              '/dashboard/contracts',
+              { contract_id: dbOrder.contract_id }
+            );
+          }
+        }
         await insertAuditLog(supabaseAdmin, {
           action: 'payment_captured',
           entity_type: 'razorpay_order',
@@ -356,12 +387,71 @@ serve(async (req) => {
       return jsonResponse(200, { ok: true });
     }
 
-    // ─── REFUND EVENT: refund.processed / refund.failed ─────────────────────
-    if (eventType === 'refund.processed' || eventType === 'refund.failed') {
+    // ─── AUTHORIZED EVENT: payment.authorized (auth-capture flows) ──────────
+    // Informational only — escrow is funded only once the payment is actually
+    // captured (order.paid / payment.captured). Log + audit, never fund twice.
+    if (eventType === 'payment.authorized') {
+      const { data: dbOrder } = orderId
+        ? await supabaseAdmin.from('razorpay_orders').select('*').eq('razorpay_order_id', orderId).maybeSingle()
+        : await supabaseAdmin
+            .from('razorpay_orders')
+            .select('*')
+            .eq('razorpay_payment_id', paymentId)
+            .maybeSingle();
+
+      await insertAuditLog(supabaseAdmin, {
+        action: 'payment_authorized',
+        entity_type: 'razorpay_order',
+        entity_id: dbOrder?.id || orderId || paymentId,
+        user_id: dbOrder?.user_id || null,
+        amount: dbOrder?.amount ?? paymentAmount(paymentEntity),
+        currency: dbOrder?.currency || paymentEntity.currency || 'INR',
+        metadata: { event: eventType, note: 'authorized — awaiting capture' },
+      });
+
+      return jsonResponse(200, { ok: true });
+    }
+
+    // ─── REFUND CREATED: refund.created (refund initiated, in progress) ─────
+    // Informational — the order only becomes 'refunded' on refund.processed.
+    if (eventType === 'refund.created') {
+      const refundPaymentId = payload?.refund?.entity?.payment_id || paymentId;
       const { data: dbOrder } = await supabaseAdmin
         .from('razorpay_orders')
         .select('*')
-        .eq('razorpay_payment_id', paymentId)
+        .eq('razorpay_payment_id', refundPaymentId)
+        .maybeSingle();
+
+      if (dbOrder) {
+        await notify(
+          supabaseAdmin, dbOrder.user_id, 'payment',
+          'Refund initiated',
+          `Your refund of ${dbOrder.currency} ${Number(dbOrder.amount).toFixed(2)} has been initiated and is being processed.`,
+          '/client/payments',
+          { contract_id: dbOrder.contract_id || null }
+        );
+
+        await insertAuditLog(supabaseAdmin, {
+          action: 'refund_initiated',
+          entity_type: 'razorpay_order',
+          entity_id: dbOrder.id,
+          user_id: dbOrder.user_id,
+          amount: dbOrder.amount,
+          currency: dbOrder.currency,
+          metadata: { event: eventType, refund_id: payload?.refund?.entity?.id || null },
+        });
+      }
+
+      return jsonResponse(200, { ok: true });
+    }
+
+    // ─── REFUND EVENT: refund.processed / refund.failed ─────────────────────
+    if (eventType === 'refund.processed' || eventType === 'refund.failed') {
+      const refundPaymentId = payload?.refund?.entity?.payment_id || paymentId;
+      const { data: dbOrder } = await supabaseAdmin
+        .from('razorpay_orders')
+        .select('*')
+        .eq('razorpay_payment_id', refundPaymentId)
         .maybeSingle();
 
       if (dbOrder && eventType === 'refund.processed') {
@@ -369,6 +459,17 @@ serve(async (req) => {
           .from('razorpay_orders')
           .update({ status: 'refunded' })
           .eq('id', dbOrder.id);
+
+        // Reconcile escrow: return a funded escrow to 'refunded' + debit the
+        // client's escrow balance (Razorpay already returned the money).
+        if (dbOrder.contract_id) {
+          const { error: reverseErr } = await supabaseAdmin.rpc('admin_reverse_escrow', {
+            p_contract_id: dbOrder.contract_id,
+          });
+          if (reverseErr) {
+            console.error('[razorpay-webhook] admin_reverse_escrow failed:', reverseErr.message);
+          }
+        }
 
         await notify(
           supabaseAdmin, dbOrder.user_id, 'payment',
@@ -380,6 +481,24 @@ serve(async (req) => {
 
         await insertAuditLog(supabaseAdmin, {
           action: 'refund_issued',
+          entity_type: 'razorpay_order',
+          entity_id: dbOrder.id,
+          user_id: dbOrder.user_id,
+          amount: dbOrder.amount,
+          currency: dbOrder.currency,
+          metadata: { event: eventType },
+        });
+      } else if (dbOrder && eventType === 'refund.failed') {
+        await notify(
+          supabaseAdmin, dbOrder.user_id, 'payment',
+          'Refund failed',
+          `Your refund of ${dbOrder.currency} ${Number(dbOrder.amount).toFixed(2)} could not be processed. Our team will contact you, or you can retry from your payments page.`,
+          '/client/payments',
+          { contract_id: dbOrder.contract_id || null }
+        );
+
+        await insertAuditLog(supabaseAdmin, {
+          action: 'refund_failed',
           entity_type: 'razorpay_order',
           entity_id: dbOrder.id,
           user_id: dbOrder.user_id,
