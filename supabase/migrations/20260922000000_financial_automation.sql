@@ -343,7 +343,8 @@ BEGIN
   WHERE user_id = v_contract.client_id;
 
   -- ★ AUTOMATIC FINANCIAL PROCESSING: book commission + invoice + ledger
-  PERFORM public._book_escrow_release(p_contract_id);
+  -- Explicit (UUID, NUMERIC) signature — avoids overload ambiguity with (UUID)
+  PERFORM public._book_escrow_release(p_contract_id, NULL);
 
   RETURN TRUE;
 END;
