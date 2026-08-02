@@ -2,9 +2,11 @@
 // This component allows users to upgrade to Pro subscription using PayPal
 
 import { useState } from 'react';
-import { Crown, CheckCircle, AlertCircle, Loader2, Calendar, CreditCard } from 'lucide-react';
+import { Crown, CheckCircle, AlertCircle, Loader2, Calendar, CreditCard, CircleDollarSign } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { PayPalCheckout } from './PayPalCheckout';
+import { RazorpayCheckout } from './RazorpayCheckout';
+import { PAYMENTS_CONFIG } from '../lib/payments';
 import { supabase } from '../lib/supabase';
 
 interface SubscriptionPayPalPaymentProps {
@@ -133,7 +135,8 @@ export function SubscriptionPayPalPayment({
           <h2 className="text-xl font-bold text-slate-900">Upgrade to Pro</h2>
         </div>
 
-        <PayPalCheckout
+        {/* Primary: Razorpay — amount is recomputed from the plan on the server */}
+        <RazorpayCheckout
           orderData={{
             order_type: 'subscription',
             amount: planPrice,
@@ -151,7 +154,56 @@ export function SubscriptionPayPalPayment({
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
           buttonText={`Subscribe for $${planPrice.toFixed(2)}/month`}
+          userInfo={{
+            name: (user as any)?.user_metadata?.name,
+            email: user?.email,
+          }}
         />
+
+        {/* Secondary: PayPal — feature-flagged, Coming Soon until live credentials */}
+        {PAYMENTS_CONFIG.paypalEnabled ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-xs text-slate-400 uppercase tracking-wider">or pay with</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+            <PayPalCheckout
+              orderData={{
+                order_type: 'subscription',
+                amount: planPrice,
+                currency: 'USD',
+                description: `${planName} subscription for ${role}`,
+                subscription_id: subscriptionId || undefined,
+                metadata: {
+                  plan_name: planName,
+                  role: role,
+                  trial_days: trialDays,
+                  user_id: user?.id,
+                },
+              }}
+              onSuccess={handlePayPalSuccess}
+              onError={handlePayPalError}
+              onCancel={handlePayPalCancel}
+              buttonText={`Subscribe for $${planPrice.toFixed(2)}/month`}
+            />
+          </>
+        ) : (
+          <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 border border-dashed border-slate-300 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-slate-200 rounded-lg flex items-center justify-center">
+                <CircleDollarSign className="w-5 h-5 text-slate-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-600">PayPal</p>
+                <p className="text-xs text-slate-400">Available soon — Razorpay is the current payment method</p>
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
+              Coming Soon
+            </span>
+          </div>
+        )}
 
         <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-100">
           <div className="flex items-center gap-2 text-amber-700 mb-2">

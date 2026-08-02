@@ -9,6 +9,15 @@ import {
 } from 'lucide-react';
 import { razorpayService, type RazorpayOrderRequest, type RazorpayPaymentData } from '../lib/razorpay';
 
+/** Currency-aware formatting (Razorpay supports INR, USD, etc.). */
+function formatMoney(amount: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount);
+  } catch {
+    return `${amount.toFixed(2)} ${currency}`;
+  }
+}
+
 interface RazorpayCheckoutProps {
   orderData: RazorpayOrderRequest;
   onSuccess?: (orderId: string, paymentData: RazorpayPaymentData) => void;
@@ -175,7 +184,7 @@ export function RazorpayCheckout({
           <div>
             <p className="text-sm text-slate-600">Total Amount</p>
             <p className="text-2xl font-bold text-slate-900">
-              ₹{orderData.amount.toFixed(2)} {orderData.currency || 'INR'}
+              {formatMoney(orderData.amount, orderData.currency || 'INR')}
             </p>
           </div>
           <CreditCard className="w-8 h-8 text-emerald-600" />

@@ -76,6 +76,50 @@ async function razorpayFetch(path: string, options: any = {}) {
   return await response.json();
 }
 
+/** Best-effort notification insert (service role bypasses RLS). */
+async function notify(
+  supabaseAdmin: any,
+  userId: string | null | undefined,
+  type: string,
+  title: string,
+  message: string,
+  actionUrl?: string,
+  metadata: Record<string, unknown> = {}
+) {
+  if (!userId) return;
+  try {
+    await supabaseAdmin.from('notifications').insert({
+      user_id: userId,
+      type,
+      title,
+      message,
+      action_url: actionUrl || null,
+      metadata,
+    });
+  } catch (e) {
+    console.error('notification insert failed:', e);
+  }
+}
+
+/** Best-effort financial audit trail insert. */
+async function insertAuditLog(supabaseAdmin: any, fields: Record<string, unknown>) {
+  try {
+    await supabaseAdmin.rpc('insert_payment_audit_log', {
+      p_action: fields.action,
+      p_entity_type: fields.entity_type || null,
+      p_entity_id: fields.entity_id || null,
+      p_provider: 'razorpay',
+      p_amount: fields.amount ?? null,
+      p_currency: fields.currency || 'INR',
+      p_metadata: fields.metadata || {},
+      p_ip_address: fields.ip_address || null,
+      p_user_id: fields.user_id || null,
+    });
+  } catch (e) {
+    console.error('audit log failed:', e);
+  }
+}
+
 serve(async req => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -96,6 +140,13 @@ serve(async req => {
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+    );
+
+    // Internal service-role client for cross-user notifications + audit logs
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false, autoRefreshToken: false } }
     );
 
     const { data: { user } } = await supabaseClient.auth.getUser();
@@ -154,11 +205,33 @@ serve(async req => {
         if (validOrderType === 'contract_escrow') {
           if (!contract_id) throw new Error('contract_id is required for contract_escrow');
           const { data: contract } = await supabaseClient
-            .from('contracts').select('client_id, amount').eq('id', contract_id).single();
+            .from('contracts').select('client_id, amount, platform_fee').eq('id', contract_id).single();
           if (!contract || contract.client_id !== user.id) {
             throw new Error('Unauthorized: You do not own this contract');
           }
-          serverAmount = Number(contract.amount) || 0;
+          // AUTHORITATIVE AMOUNT = funding amount + 5% platform fee (parity with
+          // the PayPal path). The client may only pick WHICH milestones to fund;
+          // their amounts are read from the DB, never from the request body.
+          let fundingAmount = Number(contract.amount) || 0;
+          const milestoneIndices = Array.isArray(metadata?.milestone_indices)
+            ? metadata.milestone_indices.map((i: unknown) => Number(i))
+            : [];
+          if (milestoneIndices.length > 0) {
+            const { data: escrowRow } = await supabaseClient
+              .from('escrow').select('milestones').eq('contract_id', contract_id).maybeSingle();
+            const milestones = Array.isArray(escrowRow?.milestones) ? escrowRow.milestones : [];
+            const sum = milestoneIndices.reduce((acc: number, idx: number) => {
+              const amt = Number(milestones[idx]?.amount) || 0;
+              return acc + amt;
+            }, 0);
+            if (sum > 0) fundingAmount = sum;
+          }
+          // Server-side fee: use the stored contract fee for full funding, else
+          // compute 5% (matches PLATFORM_CONFIG.fees.platform_percentage).
+          const fee = milestoneIndices.length === 0 && Number(contract.platform_fee) > 0
+            ? Number(contract.platform_fee)
+            : Math.round(fundingAmount * 0.05 * 100) / 100;
+          serverAmount = Math.round((fundingAmount + fee) * 100) / 100;
         } else if (validOrderType === 'subscription') {
           if (!subscription_id) throw new Error('subscription_id is required for subscription');
           const { data: subscription } = await supabaseClient
@@ -227,6 +300,18 @@ serve(async req => {
 
         if (dbError) throw new Error(`Failed to store order: ${dbError.message}`);
 
+        // Financial audit trail
+        await insertAuditLog(supabaseAdmin, {
+          action: 'order_created',
+          entity_type: 'razorpay_order',
+          entity_id: dbOrder.id,
+          user_id: user.id,
+          amount: validAmount,
+          currency,
+          metadata: { order_type: validOrderType, contract_id: contract_id || null, subscription_id: subscription_id || null },
+          ip_address: req.headers.get('x-forwarded-for') || null,
+        });
+
         result = {
           order: dbOrder,
           razorpay_order: razorpayOrder,
@@ -274,11 +359,23 @@ serve(async req => {
         // Verify the order belongs to the authenticated user before proceeding
         const { data: orderOwner } = await supabaseClient
           .from('razorpay_orders')
-          .select('user_id, amount')
+          .select('id, user_id, amount, status')
           .eq('razorpay_order_id', razorpay_order_id)
           .single();
         if (!orderOwner || orderOwner.user_id !== user.id) {
           throw new Error('Unauthorized to verify this order');
+        }
+
+        // Idempotency guard — never process the same payment twice (prevents
+        // duplicate transactions / double escrow funding on retries)
+        if (orderOwner.status === 'captured') {
+          const { data: alreadyCaptured } = await supabaseClient
+            .from('razorpay_orders')
+            .select('*')
+            .eq('razorpay_order_id', razorpay_order_id)
+            .single();
+          result = { order: alreadyCaptured, already_processed: true, payment: {} };
+          break;
         }
 
         // Get payment details from Razorpay
@@ -322,10 +419,34 @@ serve(async req => {
 
         // Update contract/subscription
         if (updatedOrder.contract_id) {
-          await supabaseClient.rpc('fund_escrow', {
+          const { error: fundErr } = await supabaseClient.rpc('fund_escrow', {
             p_contract_id: updatedOrder.contract_id,
             p_client_id: user.id,
           });
+          if (fundErr) throw new Error(`Failed to fund escrow: ${fundErr.message}`);
+
+          // Notify both parties
+          const { data: contract } = await supabaseAdmin
+            .from('contracts')
+            .select('client_id, freelancer_id')
+            .eq('id', updatedOrder.contract_id)
+            .maybeSingle();
+          if (contract) {
+            await notify(
+              supabaseAdmin, contract.client_id, 'payment',
+              'Escrow funded',
+              `Your escrow payment of ${updatedOrder.currency} ${Number(updatedOrder.amount).toFixed(2)} was received and the contract is now active.`,
+              '/dashboard/contracts',
+              { contract_id: updatedOrder.contract_id }
+            );
+            await notify(
+              supabaseAdmin, contract.freelancer_id, 'contract',
+              'Contract funded — work can begin',
+              'The client has funded the escrow. You can now start working on the contract.',
+              '/dashboard/contracts',
+              { contract_id: updatedOrder.contract_id }
+            );
+          }
         }
 
         if (updatedOrder.subscription_id) {
@@ -334,6 +455,18 @@ serve(async req => {
             .update({ status: 'active', subscription_start_date: new Date().toISOString() })
             .eq('id', updatedOrder.subscription_id);
         }
+
+        // Financial audit trail
+        await insertAuditLog(supabaseAdmin, {
+          action: 'payment_captured',
+          entity_type: 'razorpay_order',
+          entity_id: updatedOrder.id,
+          user_id: user.id,
+          amount: Number(updatedOrder.amount),
+          currency: updatedOrder.currency,
+          metadata: { order_type: updatedOrder.order_type, contract_id: updatedOrder.contract_id, source: 'client_verify' },
+          ip_address: req.headers.get('x-forwarded-for') || null,
+        });
 
         result = { order: updatedOrder, payment: paymentDetails };
         break;
@@ -401,6 +534,25 @@ serve(async req => {
           status: refundResult.status,
           processor_response: refundResult,
         });
+
+        // Financial audit trail + notify the client
+        await insertAuditLog(supabaseAdmin, {
+          action: 'refund_issued',
+          entity_type: 'razorpay_order',
+          entity_id: orderRec.id,
+          user_id: orderRec.user_id,
+          amount: parseFloat(refundResult.amount) / 100,
+          currency: refundResult.currency || 'INR',
+          metadata: { payment_id: razorpay_payment_id, refund_id: refundResult.id, actor: isAdmin ? 'admin' : 'client' },
+          ip_address: req.headers.get('x-forwarded-for') || null,
+        });
+        await notify(
+          supabaseAdmin, orderRec.user_id, 'payment',
+          'Refund processed',
+          `Your refund of ${refundResult.currency || 'INR'} ${(parseFloat(refundResult.amount) / 100).toFixed(2)} has been processed.`,
+          '/client/payments',
+          { refund_id: refundResult.id }
+        );
 
         result = { refund: refundResult };
         break;

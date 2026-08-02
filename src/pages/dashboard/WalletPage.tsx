@@ -16,6 +16,7 @@ import {
   Plus,
   RefreshCw,
   Search,
+  Shield,
   Star,
   Trash2,
   Wallet,
@@ -112,6 +113,7 @@ export function WalletPage() {
   // ── Overview state ──
   const [balance, setBalance] = useState(0);
   const [pendingBalance, setPendingBalance] = useState(0);
+  const [escrowBalance, setEscrowBalance] = useState(0);
   const [totalWithdrawn, setTotalWithdrawn] = useState(0);
   const [overviewLoading, setOverviewLoading] = useState(true);
 
@@ -171,6 +173,7 @@ export function WalletPage() {
       if (balanceResult.success && balanceResult.balance) {
         setBalance(balanceResult.balance.balance);
         setPendingBalance(balanceResult.balance.pending_balance);
+        setEscrowBalance(Number(balanceResult.balance.escrow_balance) || 0);
       }
 
       // Get total withdrawn (completed withdrawals)
@@ -577,7 +580,7 @@ export function WalletPage() {
       {activeTab === 'overview' && (
         <div className="space-y-6">
           {/* Balance Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* Available Balance */}
             <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-500/10">
               <div className="flex items-center justify-between mb-4">
@@ -603,7 +606,21 @@ export function WalletPage() {
                 </span>
               </div>
               <p className="text-3xl font-bold text-slate-900">{formatCurrency(pendingBalance)}</p>
-              <p className="text-slate-500 text-sm mt-1">In escrow / processing</p>
+              <p className="text-slate-500 text-sm mt-1">Withdrawals in processing</p>
+            </div>
+
+            {/* Escrow Balance */}
+            <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                  <Shield className="w-6 h-6 text-blue-500" />
+                </div>
+                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                  Escrow
+                </span>
+              </div>
+              <p className="text-3xl font-bold text-slate-900">{formatCurrency(escrowBalance)}</p>
+              <p className="text-slate-500 text-sm mt-1">Funds held in escrow</p>
             </div>
 
             {/* Total Withdrawn */}

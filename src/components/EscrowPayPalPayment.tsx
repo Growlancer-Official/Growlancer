@@ -7,12 +7,15 @@ import { AlertCircle,
   Banknote,
   CheckCircle,
   ChevronRight,
+  CircleDollarSign,
   DollarSign,
   ListChecks,
   Loader2,
   Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { PayPalCheckout } from './PayPalCheckout';
+import { RazorpayCheckout } from './RazorpayCheckout';
+import { PAYMENTS_CONFIG } from '../lib/payments';
 import { supabase } from '../lib/supabase';
 import { PLATFORM_CONFIG, calculatePlatformFee, calculateTotalWithFee } from '../lib/config';
 import { milestoneService, getMilestoneProgress } from '../lib/contractMilestones';
@@ -393,7 +396,8 @@ export function EscrowPayPalPayment({
           </div>
         )}
 
-        <PayPalCheckout
+        {/* Primary: Razorpay — server recomputes the amount + platform fee */}
+        <RazorpayCheckout
           orderData={{
             order_type: 'contract_escrow',
             amount: totalAmount,
@@ -413,8 +417,60 @@ export function EscrowPayPalPayment({
           onSuccess={handlePayPalSuccess}
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
-          buttonText={`Pay $${totalAmount.toFixed(2)} with PayPal`}
+          buttonText={`Pay $${totalAmount.toFixed(2)} with Razorpay`}
+          userInfo={{
+            name: (user as any)?.user_metadata?.name,
+            email: user?.email,
+          }}
         />
+
+        {/* Secondary: PayPal — feature-flagged, Coming Soon until live credentials */}
+        {PAYMENTS_CONFIG.paypalEnabled ? (
+          <>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-xs text-slate-400 uppercase tracking-wider">or pay with</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+            <PayPalCheckout
+              orderData={{
+                order_type: 'contract_escrow',
+                amount: totalAmount,
+                currency: 'USD',
+                description: milestoneDescription,
+                contract_id: contractId,
+                metadata: {
+                  project_title: projectTitle,
+                  freelancer_name: freelancerName,
+                  escrow_amount: fundingAmount,
+                  platform_fee: platformFee,
+                  client_id: user?.id,
+                  milestone_indices: Array.from(selectedMilestones),
+                  milestone_count: selectedMilestones.size,
+                },
+              }}
+              onSuccess={handlePayPalSuccess}
+              onError={handlePayPalError}
+              onCancel={handlePayPalCancel}
+              buttonText={`Pay $${totalAmount.toFixed(2)} with PayPal`}
+            />
+          </>
+        ) : (
+          <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 border border-dashed border-slate-300 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-slate-200 rounded-lg flex items-center justify-center">
+                <CircleDollarSign className="w-5 h-5 text-slate-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-slate-600">PayPal</p>
+                <p className="text-xs text-slate-400">Available soon — Razorpay is the current payment method</p>
+              </div>
+            </div>
+            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
+              Coming Soon
+            </span>
+          </div>
+        )}
 
         <div className="mt-6 p-4 bg-slate-50 rounded-lg">
           <h3 className="font-semibold text-slate-900 mb-2">Payment Breakdown</h3>

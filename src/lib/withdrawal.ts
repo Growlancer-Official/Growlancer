@@ -58,6 +58,8 @@ export interface PayoutMethod {
 export interface WalletBalance {
   balance: number;
   pending_balance: number;
+  /** Funds currently held in escrow on the client side */
+  escrow_balance?: number;
   currency: string;
 }
 
