@@ -110,7 +110,8 @@ async function sendNotificationEmail(
   // Email sending disabled — Brevo completely removed. Return success:true so
   // fire-and-forget callers (welcome/admin/certificate emails) complete with 200
   // instead of surfacing fake 500 failures — no email is actually sent.
-  console.log('[admin-data] Email sending disabled (Brevo removed):', subject, '→', to.email);
+  // Log the subject only — never the recipient address (PII).
+  console.log('[admin-data] Email sending disabled (Brevo removed):', subject);
   return { success: true, status: 200, text: 'Email sending disabled (Brevo removed)' };
 }
 
@@ -648,7 +649,8 @@ Deno.serve(async (req) => {
         insertData.certificate_url = certificate_url;
       }
 
-      console.log('Inserting certificate:', JSON.stringify({ ...insertData, verification_code: verificationCode }));
+      // NOTE: never log the verification code — it is a credential for
+      // public certificate verification.
 
       const { data, error } = await supabaseClient
         .from('skill_certifications')

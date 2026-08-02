@@ -4,6 +4,11 @@ const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
+// Fail loudly if the Gemini key is missing — never silently degrade
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY is not configured in environment variables');
+}
+
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
@@ -286,7 +291,32 @@ Deno.serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // Fail closed: refuse requests when the Gemini key is not configured
+  if (!GEMINI_API_KEY) {
+    return new Response(JSON.stringify({ error: 'AI service is not configured' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
+    // ─── AUTHENTICATION (JWT required) ───
+    // The user identity MUST come from the verified JWT, never from the
+    // request body — otherwise anyone could impersonate any user_id to
+    // exhaust another user's AI quota (or use the AI at the platform's cost).
+    const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
+      global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+    const { data: { user: authUser }, error: authError } = await anonClient.auth.getUser();
+    if (authError || !authUser) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const user_id = authUser.id;
+
     let body: ChatRequest;
     try {
       body = await req.json();
@@ -297,9 +327,9 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { user_id, user_role, messages, context } = body;
+    const { user_role, messages, context } = body;
 
-    if (!user_id || !user_role || !messages) {
+    if (!user_role || !messages) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -329,7 +359,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Rate limit check
+    // Rate limit check (per authenticated user)
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = user_id || clientIP;
     const rateAllowed = await checkRateLimit(supabase, identifier);

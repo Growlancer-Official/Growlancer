@@ -355,7 +355,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
 
 export function OnboardingPage() {
   const toast = useToast();
-  const { user, getDashboardRoute } = useAuth();
+  const { user, getDashboardRoute, updateUser } = useAuth();
   const { skills: allSkills } = useSkills();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -444,6 +444,8 @@ export function OnboardingPage() {
         .from('profiles')
         .update({ onboarding_completed: true })
         .eq('id', user.id);
+      // Sync context immediately so the dashboard renders without a stale gate
+      updateUser({ onboardingCompleted: true });
     }
     window.location.href = getDashboardRoute();
   };
@@ -545,6 +547,9 @@ export function OnboardingPage() {
         return;
       }
 
+      // 🆕 Sync context BEFORE redirect so the dashboard route check sees
+      // onboardingCompleted = true immediately (no stale-gate flash).
+      updateUser({ onboardingCompleted: true });
       window.location.href = getDashboardRoute();
     } catch (err) {
       console.error('Onboarding save error:', err);

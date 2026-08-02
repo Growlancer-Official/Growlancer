@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Mail, ExternalLink, RefreshCw, Loader2, CheckCircle2,
@@ -12,20 +12,40 @@ export function VerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const email = searchParams.get('email') || '';
+  // mode=oauth → this is a GitHub/LinkedIn signup whose email needs confirming.
+  // OAuth users go to the role-selection mini-form when onboarding is pending.
+  const isOAuthMode = searchParams.get('mode') === 'oauth';
 
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
+  // Guards against double-redirect when the realtime listener and the poll
+  // both observe the confirmation in the same tick.
+  const redirectedRef = useRef(false);
 
   /**
    * Shared destination logic: fetch the profile once the email is confirmed and
    * route to onboarding/dashboard by role. Full-page redirect avoids the
    * ProtectedRoute bounce-back race (same as AuthCallbackPage/EmailConfirmPage).
+   * oauthMode=true keeps OAuth users on the role-selection mini-form path.
    */
   const goToAppDestination = useCallback(async () => {
+    if (redirectedRef.current) return false;
+    redirectedRef.current = true;
+
+    // Session may not be established yet (fresh confirm in another tab/device) —
+    // try getSession, then getUser + refreshSession as recovery fallbacks so the
+    // redirect is never skipped because the session was momentarily missing.
     const { data } = await supabase.auth.getSession();
-    const userId = data?.session?.user?.id;
+    let userId = data?.session?.user?.id;
+    if (!userId) {
+      const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+      if (userData?.user?.id) {
+        const { data: refreshed } = await supabase.auth.refreshSession().catch(() => ({ data: { session: null } }));
+        userId = refreshed?.session?.user?.id ?? userData.user.id;
+      }
+    }
     if (!userId) return false;
 
     let profile = await fetchUserProfile(userId).catch(() => null);
@@ -36,9 +56,9 @@ export function VerifyEmailPage() {
         profile = await fetchUserProfile(userId).catch(() => null);
       }
     }
-    redirectAfterAuth(profile);
+    redirectAfterAuth(profile, isOAuthMode);
     return true;
-  }, []);
+  }, [isOAuthMode]);
 
   // Auto-detect email provider
   const getEmailProviderUrl = (e: string): string => {
@@ -68,25 +88,32 @@ export function VerifyEmailPage() {
   const providerUrl = getEmailProviderUrl(email);
   const providerName = getEmailProviderName(email);
 
-  // Check verification status automatically
+  // Check verification status automatically AND redirect in real time.
+  // Two mechanisms work together:
+  //   1. onAuthStateChange listener — fires the INSTANT Supabase confirms the
+  //      email (same-tab confirm link, token refresh, or cross-tab sync), so the
+  //      user is redirected to onboarding/dashboard without waiting for a poll.
+  //   2. 3s polling fallback — catches confirmations in a different browser or
+  //      device where no auth event reaches this tab.
   useEffect(() => {
     let cancelled = false;
+
+    const confirmAndGo = async () => {
+      if (cancelled) return;
+      setVerified(true);
+      // Brief success flash, then redirect (real-time but not jarring)
+      setTimeout(() => {
+        if (!cancelled) void goToAppDestination();
+      }, 900);
+    };
 
     async function checkVerification() {
       setVerifying(true);
       try {
-        // Small delay so the UI doesn't flash
-        await new Promise(r => setTimeout(r, 1500));
-
         const { data } = await supabase.auth.getUser();
         if (cancelled) return;
-
         if (data?.user?.email_confirmed_at) {
-          setVerified(true);
-          // Auto-redirect to onboarding/dashboard (profile-based) after showing success
-          setTimeout(() => {
-            if (!cancelled) void goToAppDestination();
-          }, 2500);
+          void confirmAndGo();
         }
       } catch {
         // Silently retry
@@ -95,34 +122,28 @@ export function VerifyEmailPage() {
       }
     }
 
-    // Check every 3 seconds until verified
+    // 🟢 Real-time listener — no polling lag once the email is confirmed
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (cancelled) return;
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+        if (session?.user?.email_confirmed_at) {
+          void confirmAndGo();
+        } else if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
+          // User confirmed but session still carrying stale flags — re-check
+          void checkVerification();
+        }
+      }
+    });
+
+    // Poll fallback (other browser/device confirmations)
     checkVerification();
     const interval = setInterval(() => {
       if (!cancelled) {
         supabase.auth.getUser().then(({ data }) => {
           if (cancelled) return;
           if (data?.user?.email_confirmed_at) {
-            setVerified(true);
             clearInterval(interval);
-            setTimeout(() => {
-              if (!cancelled) void goToAppDestination();
-            }, 2500);
-          }
-        }).catch(() => {});
-      }
-    }, 3000);
-    // Also try to get session (might be more up-to-date)
-    const sessionInterval = setInterval(() => {
-      if (!cancelled) {
-        supabase.auth.getSession().then(({ data }) => {
-          if (cancelled) return;
-          if (data?.session?.user?.email_confirmed_at) {
-            setVerified(true);
-            clearInterval(interval);
-            clearInterval(sessionInterval);
-            setTimeout(() => {
-              if (!cancelled) void goToAppDestination();
-            }, 2500);
+            void confirmAndGo();
           }
         }).catch(() => {});
       }
@@ -130,8 +151,8 @@ export function VerifyEmailPage() {
 
     return () => {
       cancelled = true;
+      authListener?.subscription.unsubscribe();
       clearInterval(interval);
-      clearInterval(sessionInterval);
     };
   }, [email, goToAppDestination]);
 
@@ -147,7 +168,13 @@ export function VerifyEmailPage() {
         },
       });
       if (error) {
-        setResendMessage(error.message);
+        // For OAuth-created accounts (GitHub/LinkedIn) the provider may not have
+        // exposed a verified email — resend can fail. Give the user a recovery hint.
+        setResendMessage(
+          isOAuthMode
+            ? `${error.message} If you signed up with GitHub, make sure your email is public/verified on GitHub, or use Sign up with email instead.`
+            : error.message
+        );
       } else {
         setResendMessage('Verification email resent! Check your inbox.');
       }
@@ -166,7 +193,7 @@ export function VerifyEmailPage() {
         setVerified(true);
         setTimeout(() => {
           void goToAppDestination();
-        }, 1500);
+        }, 900);
       } else {
         setResendMessage('Email not yet verified. Check your inbox and click the verification link.');
       }

@@ -50,7 +50,8 @@ async function sendNotificationEmail(
   subject: string,
   htmlContent: string
 ): Promise<void> {
-  console.log('[withdrawal] Email sending disabled (Brevo removed):', subject, '→', to);
+  // Log the subject only — never the recipient address (PII).
+  console.log('[withdrawal] Email sending disabled (Brevo removed):', subject);
 }
 
 function buildWithdrawalEmail(name: string, amount: number, netAmount: number, method: string, status: 'completed' | 'failed', reason?: string): string {

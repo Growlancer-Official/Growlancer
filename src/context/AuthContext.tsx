@@ -243,23 +243,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 🆕 Process referral if this OAuth signup came from a referral link
         if (oauthRefCode && profile) {
           try {
-            await supabase.rpc('process_referral', {
+            const { data: refData, error: refError } = await supabase.rpc('process_referral', {
               p_referral_code: oauthRefCode,
               p_new_user_id: authUser.id,
               p_new_user_email: authUser.email || '',
             });
-            devLog('[Auth] OAuth referral processed for code:', oauthRefCode);
-            // 🆕 Grant referred OAuth user 5 free connects as welcome bonus
-            try {
-              await supabase.from('connects_transactions').insert({
-                user_id: authUser.id,
-                amount: 5,
-                type: 'bonus',
-                description: 'Welcome bonus - referred by friend',
-              });
-              devLog('[Auth] OAuth referred user granted 5 free connects');
-            } catch (bonusErr) {
-              devWarn('[Auth] OAuth referral bonus grant error:', bonusErr);
+            if (refError || (refData as any)?.success !== true) {
+              devWarn('[Auth] OAuth referral not recorded:', refError?.message || (refData as any)?.error);
+            } else {
+              devLog('[Auth] OAuth referral processed for code:', oauthRefCode);
+              // 🆕 Grant referred OAuth user 5 free connects as welcome bonus
+              try {
+                await supabase.from('connects_transactions').insert({
+                  user_id: authUser.id,
+                  amount: 5,
+                  type: 'bonus',
+                  description: 'Welcome bonus - referred by friend',
+                });
+                devLog('[Auth] OAuth referred user granted 5 free connects');
+              } catch (bonusErr) {
+                devWarn('[Auth] OAuth referral bonus grant error:', bonusErr);
+              }
             }
           } catch (refErr) {
             devWarn('[Auth] OAuth referral processing error:', refErr);
@@ -302,6 +306,57 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setSupabaseUser(null);
           return null;
         }
+      }
+
+      // 🆕 Deferred referral processing — email-verification signups can't call
+      // process_referral at signup time (no session yet), so it's recorded here
+      // on the user's first authenticated login. Idempotent: the RPC returns
+      // 'User already referred' if a duplicate is detected. A per-user flag
+      // prevents re-querying on every page load once recorded.
+      try {
+        const pendingRefRaw = localStorage.getItem('growlancer_pending_ref');
+        const metaReferredBy =
+          typeof authUser.user_metadata?.referred_by === 'string' &&
+          authUser.user_metadata.referred_by
+            ? authUser.user_metadata.referred_by
+            : undefined;
+        const refCode = pendingRefRaw
+          ? (JSON.parse(pendingRefRaw) as { code?: string }).code
+          : metaReferredBy;
+
+        if (refCode && !localStorage.getItem(`growlancer_ref_done_${authUser.id}`)) {
+          const { data: refData, error: refError } = await supabase.rpc('process_referral', {
+            p_referral_code: refCode,
+            p_new_user_id: authUser.id,
+            p_new_user_email: authUser.email || '',
+          });
+          if (refError) {
+            // Transient failure (network/RPC) — don't mark done so it retries later
+            devWarn('[Auth] Deferred referral RPC error:', refError.message);
+          } else if ((refData as any)?.success !== true) {
+            // Definitive server answer (already referred / invalid code) — mark done
+            devWarn('[Auth] Deferred referral not recorded:', (refData as any)?.error);
+            localStorage.setItem(`growlancer_ref_done_${authUser.id}`, '1');
+          } else {
+            devLog('[Auth] Deferred referral processed for code:', refCode);
+            localStorage.setItem(`growlancer_ref_done_${authUser.id}`, '1');
+            // Grant the referred user 5 free connects as welcome bonus (once)
+            try {
+              await supabase.from('connects_transactions').insert({
+                user_id: authUser.id,
+                amount: 5,
+                type: 'bonus',
+                description: 'Welcome bonus - referred by friend',
+              });
+              devLog('[Auth] Deferred referred user granted 5 free connects');
+            } catch (bonusErr) {
+              devWarn('[Auth] Deferred referral bonus grant error:', bonusErr);
+            }
+          }
+          localStorage.removeItem('growlancer_pending_ref');
+        }
+      } catch (refErr) {
+        devWarn('[Auth] Deferred referral processing error:', refErr);
       }
 
       setUser(profile);
@@ -1096,35 +1151,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           devWarn('[Auth] Profile creation deferred');
         }
 
-        // Process referral if this signup came from a referral link
-        if (referrerCode) {
-          try {
-            const { error: refError } = await supabase.rpc('process_referral', {
-              p_referral_code: referrerCode,
-              p_new_user_id: data.user.id,
-              p_new_user_email: email,
-            });
-            if (refError) {
-              devWarn('[Auth] Referral processing error:', refError.message);
-            } else {
-              devLog('[Auth] Referral processed successfully for code:', referrerCode);
-              try {
-                await supabase.from('connects_transactions').insert({
-                  user_id: data.user.id,
-                  amount: 5,
-                  type: 'bonus',
-                  description: 'Welcome bonus - referred by friend',
-                });
-                devLog('[Auth] Referred user granted 5 free connects');
-              } catch (bonusErr) {
-                devWarn('[Auth] Referral bonus grant error:', bonusErr);
-              }
-            }
-          } catch (refErr) {
-            devWarn('[Auth] Referral processing exception:', refErr);
-          }
-        }
-
         // ✅ Try auto-login — works when email verification is off OR the user's
         // email is already confirmed (e.g., auto-confirm legacy users). With real
         // email verification enabled, the user must click the verification link
@@ -1139,6 +1165,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           devLog('[Auth] Auto-login succeeded after signup');
         } else {
           devLog('[Auth] Auto-login failed after signup — user must verify email first:', loginError?.message);
+        }
+
+        // Process referral if this signup came from a referral link.
+        // process_referral now requires an authenticated session (auth.uid() ==
+        // p_new_user_id). With email verification ON there is no session at signup
+        // time, so the referral is deferred and recorded on first login instead.
+        if (referrerCode) {
+          if (loginData?.user && !loginError) {
+            try {
+              const { data: refData, error: refError } = await supabase.rpc('process_referral', {
+                p_referral_code: referrerCode,
+                p_new_user_id: data.user.id,
+                p_new_user_email: email,
+              });
+              if (refError || (refData as any)?.success !== true) {
+                devWarn('[Auth] Referral not recorded:', refError?.message || (refData as any)?.error);
+              } else {
+                devLog('[Auth] Referral processed successfully for code:', referrerCode);
+                // Mark done so the deferred syncAuthUser path doesn't re-query
+                localStorage.setItem(`growlancer_ref_done_${data.user.id}`, '1');
+                try {
+                  await supabase.from('connects_transactions').insert({
+                    user_id: data.user.id,
+                    amount: 5,
+                    type: 'bonus',
+                    description: 'Welcome bonus - referred by friend',
+                  });
+                  devLog('[Auth] Referred user granted 5 free connects');
+                } catch (bonusErr) {
+                  devWarn('[Auth] Referral bonus grant error:', bonusErr);
+                }
+              }
+            } catch (refErr) {
+              devWarn('[Auth] Referral processing exception:', refErr);
+            }
+          } else {
+            // Email verification required — process the referral on first login
+            // (syncAuthUser picks up the pending flag + user_metadata.referred_by).
+            try {
+              localStorage.setItem('growlancer_pending_ref', JSON.stringify({ code: referrerCode }));
+              devLog('[Auth] Referral deferred until first login');
+            } catch {
+              // localStorage unavailable — referral is best-effort only
+            }
+          }
         }
 
         // 📧 Welcome email disabled — Brevo completely removed.

@@ -28,23 +28,26 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Verify webhook secret if configured
+    // Verify webhook secret — FAIL CLOSED: if not configured, reject the
+    // webhook rather than processing unverified payout events.
     const webhookSecret = Deno.env.get('RAZORPAY_WEBHOOK_SECRET')
-    if (webhookSecret) {
-      const signature = req.headers.get('x-razorpay-signature') || ''
-      const body = await req.text()
-      // Basic HMAC-SHA256 verification
-      const encoder = new TextEncoder()
-      const key = await crypto.subtle.importKey('raw', encoder.encode(webhookSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify'])
-      const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(body))
-      const expectedSig = Array.from(new Uint8Array(signatureBytes)).map(b => b.toString(16).padStart(2, '0')).join('')
-      if (signature !== expectedSig) {
-        console.error('Invalid webhook signature')
-        return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-      }
+    if (!webhookSecret) {
+      console.error('RAZORPAY_WEBHOOK_SECRET is not configured — rejecting webhook (fail closed)')
+      return new Response(JSON.stringify({ error: 'Webhook not configured' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+    const signature = req.headers.get('x-razorpay-signature') || ''
+    const bodyText = await req.text()
+    // Basic HMAC-SHA256 verification
+    const encoder = new TextEncoder()
+    const key = await crypto.subtle.importKey('raw', encoder.encode(webhookSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify'])
+    const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText))
+    const expectedSig = Array.from(new Uint8Array(signatureBytes)).map(b => b.toString(16).padStart(2, '0')).join('')
+    if (signature !== expectedSig) {
+      console.error('Invalid webhook signature')
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const event = await req.json()
+    const event = JSON.parse(bodyText)
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',

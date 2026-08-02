@@ -8,7 +8,7 @@ import { CacheManager } from './services/cacheManager';
 import { renderStars as renderStarsUtil } from './utils';
 import type { Tables } from '../types/supabase';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://zttwsjehcgaicziqyxpq.supabase.co';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 // Re-export canonical DB type
 export type Review = Tables<'reviews'>;

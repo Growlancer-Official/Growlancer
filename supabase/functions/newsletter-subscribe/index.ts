@@ -44,7 +44,7 @@ async function sendNotificationEmail(
   htmlContent: string,
 ): Promise<boolean> {
   // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[newsletter] Email sending disabled (Brevo removed):', subject, '→', to)
+  console.log('[newsletter] Email sending disabled (Brevo removed):', subject)
   return false
 }
 

@@ -103,9 +103,10 @@ export function ProfessionalProfilePage() {
     showNewPassword: false,
   });
 
-  // ── Reauth state (password change gate) ──
+  // ── Reauth state (password change / disable 2FA gate) ──
   const [reauthOpen, setReauthOpen] = useState(false);
   const [pendingPasswordChange, setPendingPasswordChange] = useState(false);
+  const [pendingDisable2FA, setPendingDisable2FA] = useState(false);
   const [signOutOthers, setSignOutOthers] = useState(false);
 
   // ── 2FA state ──
@@ -484,6 +485,9 @@ export function ProfessionalProfilePage() {
     if (pendingPasswordChange) {
       setPendingPasswordChange(false);
       await performPasswordChange();
+    } else if (pendingDisable2FA) {
+      setPendingDisable2FA(false);
+      await performDisable2FA();
     }
   };
 
@@ -573,14 +577,31 @@ export function ProfessionalProfilePage() {
     } finally { setTwoFactorLoading(false); }
   };
   const handleDisable2FA = async () => {
+    // 🛡️ Reauthentication gate — disabling 2FA is a sensitive action
+    if (!isReauthValid()) {
+      setPendingDisable2FA(true);
+      setReauthOpen(true);
+      return;
+    }
+    await performDisable2FA();
+  };
+  const performDisable2FA = async () => {
     setTwoFactorLoading(true);
     try {
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      if (factors?.all?.length) await supabase.auth.mfa.unenroll({ factorId: factors.all[0].id });
-      setTwoFactorEnabled(false); setSuccessMessage('2FA disabled.');
+      const { data, error } = await supabase.functions.invoke('twofa-management', {
+        body: { action: 'disable' },
+      });
+      if (error) throw error;
+      const res = data as { success?: boolean; error?: string };
+      if (res.error) throw new Error(res.error);
+      setTwoFactorEnabled(false);
+      setSuccessMessage('2FA disabled.');
       setTimeout(() => setSuccessMessage(null), 3000);
-    } catch { setErrorMessage('Failed to disable 2FA.'); }
-    finally { setTwoFactorLoading(false); }
+    } catch {
+      setErrorMessage('Failed to disable 2FA.');
+    } finally {
+      setTwoFactorLoading(false);
+    }
   };
   const handleCopyRecoveryCodes = () => { navigator.clipboard.writeText(recoveryCodes.join('\n')); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 

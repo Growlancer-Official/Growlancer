@@ -97,6 +97,8 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   // ── Email verification state (ALWAYS declared before any early return) ──
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
   const [checkingEmail, setCheckingEmail] = useState(true);
+  // OAuth user whose email exists but isn't confirmed → real-time verify page
+  const [oauthUnconfirmedEmail, setOauthUnconfirmedEmail] = useState<string | null>(null);
 
   // ── Server-side role verification + suspension check (ALWAYS called) ──
   useEffect(() => {
@@ -161,8 +163,11 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   // ── Email verification check effect (ALWAYS called before early returns) ──
   // GitHub/LinkedIn OAuth auto-confirm the user's email at signup (the provider
   // already verified identity), so those users must NOT be blocked by the
-  // "Open Gmail" verification screen even if email_confirmed_at is momentarily
-  // missing. Email/password signups still require a confirmed email.
+  // "Open Gmail" verification screen when email_confirmed_at is set.
+  // BUT: a GitHub/LinkedIn account with a private/unverified email has
+  // email_confirmed_at = null while still having an email address — those users
+  // are routed to the real-time verify-email page (mode=oauth) instead.
+  // OAuth users with NO email at all (nothing to confirm) are allowed through.
   useEffect(() => {
     let cancelled = false;
     async function checkEmailVerified() {
@@ -172,7 +177,15 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
         const provider = data?.user?.app_metadata?.provider as string | undefined;
         const isOAuthProvider =
           provider === 'github' || provider === 'linkedin_oidc';
-        setEmailConfirmed(!!data?.user?.email_confirmed_at || isOAuthProvider);
+        const confirmed = !!data?.user?.email_confirmed_at;
+        const hasEmail = !!data?.user?.email;
+        // Confirmed email → pass. OAuth without any email → pass (nothing to
+        // confirm; provider already verified identity). Everything else (email
+        // signups OR OAuth-with-unconfirmed-email) → verification required.
+        setEmailConfirmed(confirmed || (isOAuthProvider && !hasEmail));
+        setOauthUnconfirmedEmail(
+          isOAuthProvider && !confirmed && hasEmail ? data?.user?.email ?? '' : null
+        );
       } catch {
         if (!cancelled) setEmailConfirmed(false);
       } finally {
@@ -210,6 +223,16 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
   // Block access if email not verified
   if (!emailConfirmed) {
+    // OAuth user with an unconfirmed email → send them through the real-time
+    // email-confirmation flow (mode=oauth) instead of the email-signup "Open
+    // Gmail" screen (no confirmation email was sent for an OAuth signup).
+    if (oauthUnconfirmedEmail) {
+      const params = new URLSearchParams({
+        email: oauthUnconfirmedEmail,
+        mode: 'oauth',
+      });
+      return <Navigate to={`/auth/verify-email?${params.toString()}`} replace />;
+    }
     return <EmailNotVerifiedPage />;
   }
 

@@ -23,7 +23,7 @@ async function sendEmail(params: {
   htmlBody: string;
 }): Promise<boolean> {
   // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[subscription-billing-cron] Email sending disabled (Brevo removed):', params.subject, '→', params.to)
+  console.log('[subscription-billing-cron] Email sending disabled (Brevo removed):', params.subject)
   return false
 }
 

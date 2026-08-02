@@ -12,6 +12,11 @@ const PAYPAL_API_URL =
     ? 'https://api-m.sandbox.paypal.com'
     : 'https://api-m.paypal.com';
 
+// Fail loudly if PayPal credentials are missing — never silently continue
+if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+  console.error('PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET are not configured in environment variables');
+}
+
 // CORS headers - restricted to allowed origins
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
@@ -233,6 +238,13 @@ serve(async req => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // Fail closed: refuse requests when PayPal credentials are not configured
+  if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+    return new Response(JSON.stringify({ error: 'Payment service is not configured' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -287,7 +299,6 @@ serve(async req => {
       case 'create_order': {
         const {
           order_type,
-          amount,
           currency = 'USD',
           description,
           contract_id,
@@ -295,34 +306,58 @@ serve(async req => {
           metadata,
         } = data;
 
-        const validAmount = validateAmount(amount);
         const validOrderType = validateString(order_type, 'order_type', 50);
         if (!['contract_escrow', 'subscription', 'service_purchase'].includes(validOrderType)) {
           throw new Error('Invalid order_type');
         }
 
-        if (contract_id) {
+        // ─── AUTHORITATIVE AMOUNT (server-side recompute) ───
+        // NEVER trust a client-submitted amount: recompute from the DB record
+        // so an attacker cannot modify the contract/service price in the body.
+        let serverAmount = 0;
+
+        if (validOrderType === 'contract_escrow') {
+          if (!contract_id) throw new Error('contract_id is required for contract_escrow');
           const { data: contract } = await supabaseClient
             .from('contracts')
-            .select('client_id')
+            .select('client_id, amount')
             .eq('id', contract_id)
             .single();
           if (!contract || contract.client_id !== user.id) {
             throw new Error('Unauthorized: You do not own this contract');
           }
-        }
-
-        if (subscription_id) {
+          serverAmount = Number(contract.amount) || 0;
+        } else if (validOrderType === 'subscription') {
+          if (!subscription_id) throw new Error('subscription_id is required for subscription');
           const { data: subscription } = await supabaseClient
             .from('subscriptions')
-            .select('user_id')
+            .select('user_id, plan_id')
             .eq('id', subscription_id)
             .single();
           if (!subscription || subscription.user_id !== user.id) {
             throw new Error('Unauthorized: You do not own this subscription');
           }
+          const { data: plan } = await supabaseClient
+            .from('subscription_plans')
+            .select('price')
+            .eq('id', subscription.plan_id)
+            .single();
+          serverAmount = Number(plan?.price) || 0;
+        } else if (validOrderType === 'service_purchase') {
+          const serviceId = metadata?.service_id || data.service_id;
+          if (!serviceId) throw new Error('service_id is required for service_purchase');
+          const { data: service } = await supabaseClient
+            .from('services')
+            .select('price, active, freelancer_id')
+            .eq('id', serviceId)
+            .single();
+          if (!service || service.active === false) {
+            throw new Error('Service not found or inactive');
+          }
+          serverAmount = Number(service.price) || 0;
         }
 
+        const validAmount = validateAmount(serverAmount);
         const paypalOrder = await createPayPalOrder(
           {
             intent: 'CAPTURE',
@@ -557,7 +592,21 @@ serve(async req => {
           .eq('payment_subscription_id', subscription_id)
           .maybeSingle();
 
-        if (!subRecord) {
+        // Ownership check: only the subscription owner (or an admin) may cancel
+        if (subRecord) {
+          const { data: profile } = await supabaseClient
+            .from('profiles')
+            .select('role, is_admin')
+            .eq('id', user.id)
+            .maybeSingle();
+          const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+          if (subRecord.user_id !== user.id && !isAdmin) {
+            return new Response(JSON.stringify({ error: 'Unauthorized to cancel this subscription' }), {
+              status: 403,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+        } else {
           // Allow cancellation even if not found in our DB — may be a legacy PayPal ID
           console.warn('Subscription not found in DB, proceeding with PayPal cancel:', subscription_id);
         }

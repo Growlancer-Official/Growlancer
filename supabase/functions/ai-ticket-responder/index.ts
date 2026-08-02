@@ -5,6 +5,35 @@ if (!GEMINI_API_KEY) {
   console.error('GEMINI_API_KEY environment variable is not set');
 }
 
+// Rate limiting — every call costs a Gemini credit, so unthrottled loops are
+// a direct cost-abuse vector. DB-backed via rate_limits table.
+const ROUTE = 'ai-ticket-responder';
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 60000;
+
+async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_WINDOW_MS);
+
+  try { await supabaseClient.rpc('cleanup_expired_rate_limits'); } catch { /* non-critical */ }
+
+  const { count, error } = await supabaseClient
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('identifier', identifier)
+    .eq('route', ROUTE)
+    .gte('window_start', windowStart.toISOString());
+
+  if (error) return true; // allow if table doesn't exist yet
+  if (count !== null && count >= RATE_LIMIT) return false;
+
+  await supabaseClient
+    .from('rate_limits')
+    .insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
+
+  return true;
+}
+
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
@@ -146,6 +175,17 @@ Deno.serve(async (req: Request) => {
       console.error('AI Ticket: Auth failed', userError?.message || 'No user');
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limit check (per authenticated user — Gemini cost abuse guard)
+    const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
+    const identifier = user.id || clientIP;
+    const allowed = await checkRateLimit(supabase, identifier);
+    if (!allowed) {
+      return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+        status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

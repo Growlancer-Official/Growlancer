@@ -9,6 +9,11 @@ const RAZORPAY_KEY_ID = Deno.env.get('RAZORPAY_KEY_ID') || '';
 const RAZORPAY_KEY_SECRET = Deno.env.get('RAZORPAY_KEY_SECRET') || '';
 const RAZORPAY_API_URL = 'https://api.razorpay.com/v1';
 
+// Fail loudly if payment credentials are missing — never silently continue
+if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+  console.error('RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET are not configured in environment variables');
+}
+
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
@@ -79,6 +84,13 @@ serve(async req => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // Fail closed: refuse requests when payment credentials are not configured
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    return new Response(JSON.stringify({ error: 'Payment service is not configured' }), {
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
   try {
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -121,7 +133,6 @@ serve(async req => {
       case 'create_order': {
         const {
           order_type,
-          amount,
           currency = 'USD',
           description,
           contract_id,
@@ -129,31 +140,50 @@ serve(async req => {
           metadata,
         } = data;
 
-        const validAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
-        if (isNaN(validAmount) || validAmount <= 0 || validAmount > 100000) {
-          throw new Error('Invalid amount');
-        }
-
         const validOrderType = typeof order_type === 'string' ? order_type.trim() : '';
         if (!['contract_escrow', 'subscription', 'service_purchase'].includes(validOrderType)) {
           throw new Error('Invalid order_type');
         }
 
-        // Verify ownership if contract_id provided
-        if (contract_id) {
+        // ─── AUTHORITATIVE AMOUNT (server-side recompute) ───
+        // NEVER trust a client-submitted amount: the amount is recomputed
+        // from the DB record so an attacker cannot modify the contract/service
+        // price in the request body.
+        let serverAmount = 0;
+
+        if (validOrderType === 'contract_escrow') {
+          if (!contract_id) throw new Error('contract_id is required for contract_escrow');
           const { data: contract } = await supabaseClient
-            .from('contracts').select('client_id').eq('id', contract_id).single();
+            .from('contracts').select('client_id, amount').eq('id', contract_id).single();
           if (!contract || contract.client_id !== user.id) {
             throw new Error('Unauthorized: You do not own this contract');
           }
-        }
-
-        if (subscription_id) {
+          serverAmount = Number(contract.amount) || 0;
+        } else if (validOrderType === 'subscription') {
+          if (!subscription_id) throw new Error('subscription_id is required for subscription');
           const { data: subscription } = await supabaseClient
-            .from('subscriptions').select('user_id').eq('id', subscription_id).single();
+            .from('subscriptions').select('user_id, plan_id').eq('id', subscription_id).single();
           if (!subscription || subscription.user_id !== user.id) {
             throw new Error('Unauthorized: You do not own this subscription');
           }
+          // Look up the plan's price from the server (never trust client amount)
+          const { data: plan } = await supabaseClient
+            .from('subscription_plans').select('price').eq('id', subscription.plan_id).single();
+          serverAmount = Number(plan?.price) || 0;
+        } else if (validOrderType === 'service_purchase') {
+          const serviceId = metadata?.service_id || data.service_id;
+          if (!serviceId) throw new Error('service_id is required for service_purchase');
+          const { data: service } = await supabaseClient
+            .from('services').select('price, active, freelancer_id').eq('id', serviceId).single();
+          if (!service || service.active === false) {
+            throw new Error('Service not found or inactive');
+          }
+          serverAmount = Number(service.price) || 0;
+        }
+
+        const validAmount = serverAmount;
+        if (isNaN(validAmount) || validAmount <= 0 || validAmount > 100000) {
+          throw new Error('Invalid amount');
         }
 
         // Razorpay expects amount in paise (currency subunits)
@@ -241,8 +271,25 @@ serve(async req => {
           throw new Error('Invalid payment signature');
         }
 
+        // Verify the order belongs to the authenticated user before proceeding
+        const { data: orderOwner } = await supabaseClient
+          .from('razorpay_orders')
+          .select('user_id, amount')
+          .eq('razorpay_order_id', razorpay_order_id)
+          .single();
+        if (!orderOwner || orderOwner.user_id !== user.id) {
+          throw new Error('Unauthorized to verify this order');
+        }
+
         // Get payment details from Razorpay
         const paymentDetails = await razorpayFetch(`/payments/${razorpay_payment_id}`);
+
+        // Server-side amount check: the paid amount must match the order amount
+        const paidAmount = (Number(paymentDetails.amount) || 0) / 100;
+        const orderAmount = Number(orderOwner.amount) || 0;
+        if (paidAmount < orderAmount - 0.01) {
+          throw new Error('Payment amount does not match order amount');
+        }
 
         // Update order in database
         const { data: updatedOrder, error: updateError } = await supabaseClient
@@ -316,6 +363,24 @@ serve(async req => {
       case 'refund_payment': {
         const { razorpay_payment_id, amount: refundAmount } = data;
         if (!razorpay_payment_id) throw new Error('Missing razorpay_payment_id');
+
+        // Ownership check: only the order owner or an admin may refund
+        const { data: orderRec } = await supabaseClient
+          .from('razorpay_orders')
+          .select('user_id')
+          .eq('razorpay_payment_id', razorpay_payment_id)
+          .maybeSingle();
+
+        const { data: profile } = await supabaseClient
+          .from('profiles')
+          .select('role, is_admin')
+          .eq('id', user.id)
+          .maybeSingle();
+        const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+
+        if (!orderRec || (orderRec.user_id !== user.id && !isAdmin)) {
+          throw new Error('Unauthorized to refund this payment');
+        }
 
         const refundBody: any = { payment_id: razorpay_payment_id };
         if (refundAmount) {
@@ -431,26 +496,14 @@ serve(async req => {
       }
 
       // ─── CREATE PAYOUT (for withdrawals) ──────────────
+      // REMOVED (security): this action let any authenticated user trigger a
+      // payout to an arbitrary fund account — a direct fund-drain vector.
+      // All withdrawals must go through the `withdrawal` edge function, which
+      // verifies wallet balance, holds funds, and enforces rate limits.
       case 'create_payout': {
-        const { amount, fund_account_id, purpose = 'payout', description } = data;
-        if (!amount || !fund_account_id) throw new Error('Missing payout parameters');
-
-        const payoutResult = await razorpayFetch('/payouts', {
-          method: 'POST',
-          body: JSON.stringify({
-            account_number: Deno.env.get('RAZORPAY_ACCOUNT_NUMBER') || '',
-            fund_account_id,
-            amount: Math.round(parseFloat(amount) * 100),
-            currency: 'INR',
-            mode: 'NEFT',
-            purpose: purpose,
-            queue_if_low_balance: true,
-            description: description || 'Growlancer Withdrawal',
-          }),
+        return new Response(JSON.stringify({ error: 'Action disabled. Use the withdrawal function instead.' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
-
-        result = { payout: payoutResult };
-        break;
       }
 
       default:

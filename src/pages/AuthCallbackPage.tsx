@@ -185,6 +185,19 @@ export function AuthCallbackPage() {
           return;
         }
 
+        // 🆕 OAuth email confirmation gate — GitHub/LinkedIn may not return a
+        // verified email (e.g., GitHub account with a private/unverified email).
+        // Route those users through the email-confirmation flow (real-time
+        // auto-redirect once confirmed) instead of letting them into onboarding/
+        // dashboard unverified. If the provider returned NO email at all, there is
+        // nothing to confirm — proceed (provider already verified identity).
+        if (sessionFound && authUser && isOAuthFlow && !authUser.email_confirmed_at && authUser.email) {
+          devLog('[AuthCallback] OAuth session but email NOT confirmed — routing to verify-email');
+          const emailParam = `email=${encodeURIComponent(authUser.email)}`;
+          window.location.replace(`/auth/verify-email?${emailParam}&mode=oauth`);
+          return;
+        }
+
         if (!sessionFound) {
           // 🛡️ PKCE flow: if a `code` param is present in the URL but no session was
           // established, the verification link was expired/invalid — show a clear

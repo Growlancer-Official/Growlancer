@@ -500,7 +500,7 @@ Deno.serve(async (req) => {
     // Send the email
     const emailSent = await sendNotificationEmail(recipient_email, recipient_name, subject, htmlContent)
 
-    console.log(`Email notification ${type} — sent: ${emailSent} to ${recipient_email}`)
+    console.log(`Email notification ${type} — sent: ${emailSent}`)
 
     return new Response(
       JSON.stringify({

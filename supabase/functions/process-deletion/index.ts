@@ -30,33 +30,32 @@ Deno.serve(async (req) => {
   }
 
   try {
-    // Use service role key for admin operations (scheduled cleanup)
-    const authHeader = req.headers.get('Authorization') ?? '';
-    const isServiceRole = authHeader.includes('service_role');
+    // ─── AUTHORIZATION (fail closed) ───
+    // Only two callers are allowed:
+    //   1. A scheduled job carrying the CRON_SECRET header (x-cron-secret).
+    //   2. An authenticated admin (JWT verified via auth.getUser() + is_admin).
+    // The previous `authHeader.includes('service_role')` string check was
+    // trivially spoofable — anyone could append "service_role" to any header
+    // value and the function would use the REAL service-role key to delete
+    // arbitrary users. Never trust header substrings.
+    const cronSecret = Deno.env.get('CRON_SECRET');
+    const cronHeader = req.headers.get('x-cron-secret') || '';
+    const isCronCall = !!cronSecret && cronHeader === cronSecret;
 
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      isServiceRole
-        ? Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-        : Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: authHeader },
-        },
-        auth: {
-          // Don't auto-detect session for service role
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    )
-
-    // If not service role, verify user is admin
-    if (!isServiceRole) {
+    if (!isCronCall) {
+      // Verify the caller is an authenticated admin via their JWT
+      const anonClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        {
+          global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
+          auth: { autoRefreshToken: false, persistSession: false },
+        }
+      );
       const {
         data: { user },
         error: userError,
-      } = await supabaseClient.auth.getUser()
+      } = await anonClient.auth.getUser()
 
       if (userError || !user) {
         return new Response(
@@ -66,19 +65,36 @@ Deno.serve(async (req) => {
       }
 
       // Check if user is admin
-      const { data: profile } = await supabaseClient
+      const serviceClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+        { auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      const { data: profile } = await serviceClient
         .from('profiles')
-        .select('role')
+        .select('is_admin')
         .eq('id', user.id)
         .single()
 
-      if (!profile || profile.role !== 'admin') {
+      if (!profile || profile.is_admin !== true) {
         return new Response(
           JSON.stringify({ error: 'Admin access required' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
     }
+
+    // Service-role client for the actual admin operations
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    )
 
     const { method } = req
 

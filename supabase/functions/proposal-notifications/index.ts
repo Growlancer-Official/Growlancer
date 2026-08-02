@@ -280,7 +280,7 @@ Deno.serve(async (req) => {
       action_url: action === 'accept' ? '/dashboard/contracts' : '/dashboard/projects',
     })
 
-    console.log(`Proposal ${action} — email sent: ${emailSent} to ${freelancer.email}`)
+    console.log(`Proposal ${action} — email sent: ${emailSent}`)
 
     return new Response(
       JSON.stringify({

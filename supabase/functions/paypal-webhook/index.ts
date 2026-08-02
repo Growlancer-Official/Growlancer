@@ -142,12 +142,21 @@ serve(async req => {
             processor_response: resource,
           });
 
-          // If linked to contract, fund escrow
+          // If linked to contract, fund escrow — but ONLY after verifying the
+          // captured amount matches the order amount (server-side recompute).
           const { data: order } = await supabaseClient
             .from('paypal_orders')
-            .select('contract_id, subscription_id, user_id')
+            .select('contract_id, subscription_id, user_id, amount')
             .eq('paypal_order_id', paypalOrderId)
             .single();
+
+          const capturedAmount = parseFloat(resource.amount?.value || '0');
+          const orderAmount = Number(order?.amount) || 0;
+
+          if (order && capturedAmount < orderAmount - 0.01) {
+            console.error(`Capture amount mismatch for ${paypalOrderId}: captured ${capturedAmount}, expected ${orderAmount}`);
+            break;
+          }
 
           if (order?.contract_id) {
             await supabaseClient.rpc('fund_escrow', {
@@ -281,10 +290,17 @@ serve(async req => {
             .from('withdrawals')
             .update({ status: 'completed', processed_at: new Date().toISOString(), updated_at: new Date().toISOString() })
             .eq('paypal_payout_id', batchId);
-          await supabaseClient
-            .from('transactions')
-            .update({ status: 'completed' })
-            .filter('metadata->>withdrawal_id', 'in', `(select id from withdrawals where paypal_payout_id = '${batchId}')`);
+          // Parameterized update of linked transactions (no raw SQL interpolation)
+          const { data: wdRows } = await supabaseClient
+            .from('withdrawals')
+            .select('id')
+            .eq('paypal_payout_id', batchId);
+          for (const w of wdRows || []) {
+            await supabaseClient
+              .from('transactions')
+              .update({ status: 'completed' })
+              .eq('metadata->>withdrawal_id', w.id);
+          }
         }
         break;
       }

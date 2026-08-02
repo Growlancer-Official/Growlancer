@@ -113,7 +113,7 @@ async function sendNotificationEmail(
   attachments?: Attachment[]
 ): Promise<boolean> {
   // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[internship-applications] Email sending disabled (Brevo removed):', subject, '→', to)
+  console.log('[internship-applications] Email sending disabled (Brevo removed):', subject)
   return false
 }
 
