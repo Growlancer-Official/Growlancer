@@ -5,8 +5,7 @@ import { supabase } from '../lib/supabase';
 import { ArrowRight, Briefcase, CheckCircle, DollarSign, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
-import { useSkills } from '../hooks/useSkills';
-import { SkillsSelector } from '../components/SkillsSelector';
+import { CategoryPicker } from '../components/CategoryPicker';
 
 export function ClientPostProjectPage() {
   const navigate = useNavigate();
@@ -14,12 +13,11 @@ export function ClientPostProjectPage() {
   const [searchParams] = useSearchParams();
   const editProjectId = searchParams.get('edit');
   const { categories } = useCategories();
-  const { skills: allSkills } = useSkills();
   const toast = useToast();
   const [loading, setLoading] = useState(false);
   const [fetchingEditData, setFetchingEditData] = useState(!!editProjectId);
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
-  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  const [skillNames, setSkillNames] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -60,10 +58,13 @@ export function ClientPostProjectPage() {
             visibility: (data.visibility as 'public' | 'private' | 'invited') || 'public',
           });
 
-          // Resolve category and skill IDs from existing data
+          // Resolve category ID and free-text skills from existing data
           if (data.category) {
             const cat = categories.find(c => c.name === data.category);
             if (cat) setSelectedCategoryIds([cat.id]);
+          }
+          if (skillNames.length > 0) {
+            setSkillNames(skillNames);
           }
         }
       } catch (err) {
@@ -76,35 +77,30 @@ export function ClientPostProjectPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editProjectId, user?.id]);
 
-  // Map selected skill IDs to skill names for form submission
-  const getSelectedSkillNames = (): string[] => {
-    return selectedSkillIds
-      .map(id => allSkills.find(s => s.id === id))
-      .filter((s): s is NonNullable<typeof s> => !!s)
-      .map(s => s.name);
-  };
-
-  // Sync selected category into formData.category string
+  // Sync selected category into formData.category string (also clears on deselect)
   useEffect(() => {
     if (selectedCategoryIds.length > 0) {
       const cat = categories.find(c => c.id === selectedCategoryIds[0]);
-      if (cat) setFormData(prev => ({ ...prev, category: cat.name }));
+      setFormData(prev => ({ ...prev, category: cat ? cat.name : '' }));
+    } else {
+      setFormData(prev => ({ ...prev, category: '' }));
     }
   }, [selectedCategoryIds, categories]);
 
-  // Sync selected skill IDs into formData.skills_required
+  // Sync free-text skills into formData.skills_required
   useEffect(() => {
-    const skillNames = getSelectedSkillNames();
-    if (skillNames.length > 0) {
-      setFormData(prev => ({ ...prev, skills_required: skillNames }));
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedSkillIds]);
+    setFormData(prev => ({ ...prev, skills_required: skillNames }));
+  }, [skillNames]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title || !formData.description || !formData.budget_min || !formData.budget_max) {
       toast.error('Validation Error', 'Please fill in all required fields');
+      return;
+    }
+
+    if (!formData.category) {
+      toast.error('Validation Error', 'Please select a category for your project');
       return;
     }
 
@@ -173,13 +169,8 @@ export function ClientPostProjectPage() {
         }, { onConflict: 'project_id, category_id', ignoreDuplicates: true });
       }
 
-      // Save skill links
-      for (const skillId of selectedSkillIds) {
-        await supabase.from('project_skills').upsert({
-          project_id: projectId,
-          skill_id: skillId,
-        }, { onConflict: 'project_id, skill_id', ignoreDuplicates: true });
-      }
+      // Free-text skills are stored directly on the project (skills_required).
+      // No junction-table writes needed — freelancers match on the category.
 
       // Clear old AI matches so fresh skill-based matching runs on matches page
       await supabase.from('ai_matches').delete().eq('project_id', projectId);
@@ -308,45 +299,42 @@ export function ClientPostProjectPage() {
           </div>
         </div>
 
-        {/* Category → Subcategory → Skills Hierarchy (restored from SkillsSelector) */}
+        {/* Category + Skills (145 categories only, free-text skills) */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-emerald-600" />
             Category & Skills
           </h2>
           <p className="text-sm text-slate-500 mb-4">
-            Select a category, subcategories, and specific skills your project requires
+            Pick the category for your project, then type the skills you need. Growlancer matches freelancers by category.
           </p>
-          <SkillsSelector
+          <CategoryPicker
             mode="client"
-            maxSkills={15}
             maxCategories={1}
             selectedCategoryIds={selectedCategoryIds}
-            selectedSkillIds={selectedSkillIds}
+            selectedSkills={skillNames}
             onCategoriesChange={setSelectedCategoryIds}
-            onSkillsChange={setSelectedSkillIds}
+            onSkillsChange={setSkillNames}
           />
 
-          {/* Show selected skills summary */}
-          {selectedSkillIds.length > 0 && (
+          {/* Show selected category */}
+          {formData.category && (
             <div className="mt-4 p-3 bg-emerald-50 rounded-xl">
-              <div className="flex items-center gap-1.5 mb-2">
+              <div className="flex items-center gap-1.5 mb-1">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                 <span className="text-sm font-medium text-emerald-700">
-                  {selectedSkillIds.length} skills selected
+                  {formData.category}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-1.5">
-                {selectedSkillIds
-                  .map(id => allSkills.find(s => s.id === id))
-                  .filter((s): s is NonNullable<typeof s> => !!s)
-                  .sort((a, b) => a.name.localeCompare(b.name))
-                  .map(skill => (
-                    <span key={skill.id} className="px-2 py-1 bg-white text-emerald-700 rounded-lg text-xs font-medium">
-                      {skill.name}
+              {skillNames.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {skillNames.map(skill => (
+                    <span key={skill} className="px-2 py-1 bg-white text-emerald-700 rounded-lg text-xs font-medium border border-emerald-200">
+                      {skill}
                     </span>
                   ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </div>

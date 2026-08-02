@@ -211,7 +211,7 @@ export function ServicesPage() {
               <p className="text-2xl font-bold text-slate-900">
                 {services.length > 0
                   ? (services.reduce((sum, s) => sum + (s.rating || 0), 0) / services.length).toFixed(1)
-                  : '0'}
+                  : '—'}
               </p>
               <p className="text-sm text-slate-500">Avg Rating</p>
             </div>

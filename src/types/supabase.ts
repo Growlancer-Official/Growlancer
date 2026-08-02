@@ -270,6 +270,7 @@ export type Database = {
       }
       client_profiles: {
         Row: {
+          company_logo: string | null
           company_name: string | null
           created_at: string | null
           description: string | null
@@ -282,6 +283,7 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          company_logo?: string | null
           company_name?: string | null
           created_at?: string | null
           description?: string | null
@@ -294,6 +296,7 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          company_logo?: string | null
           company_name?: string | null
           created_at?: string | null
           description?: string | null
@@ -1147,6 +1150,7 @@ export type Database = {
         Row: {
           availability: boolean | null
           bio: string | null
+          categories: string[] | null
           certifications: string[] | null
           completion_rate: number | null
           created_at: string | null
@@ -1174,6 +1178,7 @@ export type Database = {
         Insert: {
           availability?: boolean | null
           bio?: string | null
+          categories?: string[] | null
           certifications?: string[] | null
           completion_rate?: number | null
           created_at?: string | null
@@ -1201,6 +1206,7 @@ export type Database = {
         Update: {
           availability?: boolean | null
           bio?: string | null
+          categories?: string[] | null
           certifications?: string[] | null
           completion_rate?: number | null
           created_at?: string | null

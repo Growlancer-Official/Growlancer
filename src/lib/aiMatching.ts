@@ -19,6 +19,7 @@ export interface AIMatchWithProfile extends AIMatch {
     id: string;
     name: string;
     avatar: string;
+    categories: string[];
     skills: string[];
     hourly_rate: number;
     availability: string;
@@ -55,10 +56,12 @@ export interface AIMatchWithProject extends AIMatch {
   };
 }
 
-// Skill-Based Matchmaking Engine — matches freelancers to projects by skills
+// Category-Based Matchmaking Engine — matches freelancers to projects by CATEGORY (the primary signal).
+// Growlancer works on 145 top-level categories: the project's category must overlap with the
+// freelancer's selected categories to qualify; skills are a secondary boost.
 async function runSkillBasedMatching(projectId: string): Promise<{ success: boolean; matches?: AIMatch[]; error?: string }> {
   try {
-    if (import.meta.env.DEV) console.log('[aiMatching] Running Skill-Based Matchmaking for Project:', projectId);
+    if (import.meta.env.DEV) console.log('[aiMatching] Running Category-Based Matchmaking for Project:', projectId);
     
     // 1. Fetch project details
     const { data: project, error: projError } = await supabase
@@ -71,10 +74,11 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       return { success: false, error: `Fallback failed: project not found (${projError?.message})` };
     }
 
+    const projectCategory: string = project.category || '';
     const requiredSkills: string[] = project.skills_required || [];
-    
-    // If no skills required, return empty — can't match intelligently
-    if (requiredSkills.length === 0) {
+
+    // If the project has no category, we can't match on category — return empty
+    if (!projectCategory) {
       return { success: true, matches: [] };
     }
 
@@ -86,6 +90,7 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
         name,
         avatar,
         freelancer_profiles (
+          categories,
           skills,
           experience,
           rating,
@@ -112,6 +117,7 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       if (!fpRaw) continue;
 
       const fp = fpRaw as {
+        categories?: string[];
         skills?: string[];
         experience?: number;
         rating?: number;
@@ -120,18 +126,25 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
         location?: string;
       };
 
+      const freelancerCategories: string[] = fp.categories || [];
       const freelancerSkills: string[] = fp.skills || [];
-      
-      // --- SKILL MATCHING (Primary filter) ---
-      // Only show freelancers who have AT LEAST ONE matching skill
-      const matchedSkills = requiredSkills.filter((s: string) => 
+
+      // --- CATEGORY MATCHING (Primary filter) ---
+      // The freelancer must have selected the project's category (case-insensitive)
+      const categoryMatched = freelancerCategories.some(
+        (cat: string) => cat.toLowerCase().trim() === projectCategory.toLowerCase().trim()
+      );
+      if (!categoryMatched) continue; // Skip freelancers who don't cover this category
+      const categoryScore = 100;
+
+      // --- SKILL MATCHING (Secondary boost) ---
+      // Any overlapping skill text adds to the score — but skills never disqualify a match
+      const matchedSkills = requiredSkills.filter((s: string) =>
         freelancerSkills.some((fs: string) => fs.toLowerCase().trim() === s.toLowerCase().trim())
       );
-      
-      if (matchedSkills.length === 0) continue; // Skip freelancers with ZERO skill match
-      
-      // Calculate Skill Score (0-100) — percentage of required skills matched
-      const skillScore = Math.round((matchedSkills.length / requiredSkills.length) * 100);
+      const skillScore = requiredSkills.length > 0
+        ? Math.round((matchedSkills.length / requiredSkills.length) * 100)
+        : 50;
 
       // --- EXPERIENCE SCORE (0-100) ---
       const expYears = fp.experience || 0;
@@ -145,41 +158,38 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       }
 
       // --- BUDGET SCORE (0-100) ---
-      // Compare hourly rate against project's implied hourly budget
-      // Assume 40hr/week for ~2 weeks = 80hrs total for budget estimation
       const hourlyRate = fp.hourly_rate || 0;
       const budgetMax = project.budget_max || 999;
-      
-      // Estimate implicit hourly budget: budget_max / 80 (2 weeks of work)
       const impliedHourlyBudget = budgetMax > 0 ? budgetMax / 80 : 0;
       let budgetScore = 50;
       if (hourlyRate > 0 && impliedHourlyBudget > 0) {
         if (hourlyRate <= impliedHourlyBudget && hourlyRate >= impliedHourlyBudget * 0.4) {
-          budgetScore = 100; // Freelancer rate fits well within budget
+          budgetScore = 100;
         } else if (hourlyRate <= impliedHourlyBudget * 1.3) {
-          budgetScore = 80; // Slightly above but still reasonable
+          budgetScore = 80;
         } else if (hourlyRate <= impliedHourlyBudget * 0.4) {
-          budgetScore = 70; // Very cheap — might indicate lower quality
+          budgetScore = 70;
         } else if (hourlyRate <= impliedHourlyBudget * 1.8) {
-          budgetScore = 50; // Above budget but could negotiate
+          budgetScore = 50;
         } else {
-          budgetScore = 30; // Too expensive
+          budgetScore = 30;
         }
       }
 
       // --- AVAILABILITY SCORE (0-100) ---
       const availabilityScore = fp.availability ? 100 : 20;
 
-      // --- OVERALL MATCH SCORE (weighted) ---
+      // --- OVERALL MATCH SCORE (weighted — category is the anchor) ---
       const matchScore = Math.min(100, Math.round(
-        (skillScore * 0.40) +
-        (expScore * 0.25) +
-        (budgetScore * 0.20) +
-        (availabilityScore * 0.15)
+        (categoryScore * 0.45) +
+        (skillScore * 0.20) +
+        (expScore * 0.15) +
+        (budgetScore * 0.12) +
+        (availabilityScore * 0.08)
       ));
 
-      // Minimum threshold: at least 40% overall AND at least 50% skill match (strict skill filtering)
-      if (matchScore >= 40 && skillScore >= 50) {
+      // Minimum threshold: category matched + at least 45% overall
+      if (matchScore >= 45) {
         calculatedMatches.push({
           project_id: projectId,
           freelancer_id: profile.id,
@@ -189,7 +199,7 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
           budget_score: budgetScore,
           availability_score: availabilityScore,
           completion_score: 100,
-          category_score: skillScore
+          category_score: categoryScore
         });
       }
     }
@@ -250,6 +260,7 @@ export const aiMatchingService = {
             name,
             avatar,
             freelancer_profiles (
+              categories,
               skills,
               hourly_rate,
               availability,
@@ -287,6 +298,7 @@ export const aiMatchingService = {
             id: freelancerRaw.id,
             name: freelancerRaw.name,
             avatar: freelancerRaw.avatar || '',
+            categories: fp.categories || [],
             skills: fp.skills || [],
             hourly_rate: fp.hourly_rate || 0,
             availability: fp.availability ? 'Available' : 'Unavailable',

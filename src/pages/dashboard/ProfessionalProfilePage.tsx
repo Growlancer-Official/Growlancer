@@ -10,8 +10,8 @@ import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { ReauthDialog, isReauthValid, markReauthVerified } from '../../components/ReauthDialog';
 import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, DollarSign, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
-import { useSkills } from '../../hooks/useSkills';
-import { SkillsSelector } from '../../components/SkillsSelector';
+import { useCategories } from '../../hooks/useCategories';
+import { CategoryPicker } from '../../components/CategoryPicker';
 import type { Tables } from '../../types/supabase';
 import type { PayoutMethod } from '../../lib/withdrawal';
 
@@ -164,9 +164,11 @@ export function ProfessionalProfilePage() {
   const [deletionStep, setDeletionStep] = useState<'initial' | 'confirm' | 'processing'>('initial');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  // ── SkillsSelector state ──
-  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
-  const { skills: allSkills } = useSkills();
+  // ── Category state (145 categories only, free-text skills) ──
+  const { categories } = useCategories();
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [selectedCategoryNames, setSelectedCategoryNames] = useState<string[]>([]);
+  const categoriesPreloaded = useRef(false);
   // ── Input states ──
   const [skillInput, setSkillInput] = useState('');
   const [languageInput, setLanguageInput] = useState('');
@@ -233,6 +235,20 @@ export function ProfessionalProfilePage() {
       setLoading(false);
     }
   }, [user?.id]);
+
+  // Pre-select saved categories ONCE both the profile and category list are loaded.
+  // Guarded by a ref so realtime category refetches never clobber an in-progress edit.
+  useEffect(() => {
+    if (!freelancerProfile || categories.length === 0 || categoriesPreloaded.current) return;
+    const savedCats: string[] = (freelancerProfile as any).categories || [];
+    if (savedCats.length > 0) {
+      const matched = categories
+        .filter(c => savedCats.includes(c.name))
+        .map(c => c.id);
+      setSelectedCategoryIds(matched);
+    }
+    categoriesPreloaded.current = true;
+  }, [freelancerProfile, categories]);
 
   useEffect(() => { fetchProfileData(); }, [fetchProfileData]);
 
@@ -355,6 +371,7 @@ export function ProfessionalProfilePage() {
             hourly_rate: formData.hourly_rate,
             experience: formData.experience,
             skills: formData.skills,
+            categories: selectedCategoryNames.length > 0 ? selectedCategoryNames : null,
             languages: formData.languages,
             location: formData.location,
             portfolio_url: formData.portfolio_url,
@@ -372,6 +389,7 @@ export function ProfessionalProfilePage() {
             hourly_rate: formData.hourly_rate,
             experience: formData.experience,
             skills: formData.skills,
+            categories: selectedCategoryNames.length > 0 ? selectedCategoryNames : null,
             languages: formData.languages,
             location: formData.location,
             portfolio_url: formData.portfolio_url,
@@ -491,33 +509,16 @@ export function ProfessionalProfilePage() {
     }
   };
 
-  // ── Sync SkillsSelector selections to formData.skills ──
+  // ── Sync selected category IDs to names (for saving to freelancer_profiles.categories) ──
   useEffect(() => {
-    if (selectedSkillIds.length > 0) {
-      // Add new skills from SkillsSelector
-      const skillNames = selectedSkillIds
-        .map(id => allSkills.find(s => s.id === id))
-        .filter((s): s is NonNullable<typeof s> => !!s)
-        .map(s => s.name);
-      if (skillNames.length > 0) {
-        setFormData(prev => {
-          const newSkills = skillNames.filter(name => !prev.skills.includes(name));
-          if (newSkills.length > 0) {
-            return { ...prev, skills: [...prev.skills, ...newSkills] };
-          }
-          return prev;
-        });
-      }
-    }
-    // Note: when all skills are deselected in SkillsSelector, previously synced
-    // skills remain in formData.skills. User can remove them via the free-text section.
-  }, [selectedSkillIds, allSkills]);
+    const names = selectedCategoryIds
+      .map(id => categories.find(c => c.id === id))
+      .filter((c): c is NonNullable<typeof c> => !!c)
+      .map(c => c.name);
+    setSelectedCategoryNames(names);
+  }, [selectedCategoryIds, categories]);
 
   // ── Skill/Language/Cert helpers ──
-  // Map skill IDs to names when SkillsSelector changes
-  const handleSkillsChange = (skillIds: string[]) => {
-    setSelectedSkillIds(skillIds);
-  };
   const addSkill = () => { if (skillInput.trim() && !formData.skills.includes(skillInput.trim())) { setFormData({ ...formData, skills: [...formData.skills, skillInput.trim()] }); setSkillInput(''); } };
   const removeSkill = (s: string) => setFormData({ ...formData, skills: formData.skills.filter(x => x !== s) });
   const addLanguage = () => { if (languageInput.trim() && !formData.languages.includes(languageInput.trim())) { setFormData({ ...formData, languages: [...formData.languages, languageInput.trim()] }); setLanguageInput(''); } };
@@ -945,25 +946,26 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
 
-                  {/* Skills — Hierarchy Selector + Free-text */}
+                  {/* Categories + Free-text Skills */}
                   <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Skills</h3>
-                    
-                    {/* Category → Subcategory → Skills Selector */}
+                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Categories & Skills</h3>
+                    <p className="text-xs text-slate-500 mb-4">
+                      Pick up to 3 categories — Growlancer matches you to projects by category. Add your own skills freely.
+                    </p>
+
+                    {/* Category → Skills picker (145 categories, no subcategory/skill hierarchy) */}
                     <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
-                      <p className="text-xs text-slate-500 mb-3">Select skills from the hierarchy to get better AI-matched projects</p>
-                      <SkillsSelector
+                      <CategoryPicker
                         mode="freelancer"
-                        maxSkills={15}
                         maxCategories={3}
-                        selectedCategoryIds={[]}
-                        selectedSkillIds={selectedSkillIds}
-                        onSkillsChange={handleSkillsChange}
-                        onCategoriesChange={() => {}}
+                        selectedCategoryIds={selectedCategoryIds}
+                        selectedSkills={formData.skills}
+                        onCategoriesChange={setSelectedCategoryIds}
+                        onSkillsChange={(skills) => setFormData(prev => ({ ...prev, skills }))}
                       />
                     </div>
 
-                    {/* Free-text skill input (legacy support) */}
+                    {/* Free-text skill input (quick add) */}
                     <div className="flex gap-2 mb-3">
                       <input type="text" value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                         className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g., React, Node.js, Python" />
@@ -1077,6 +1079,15 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                      <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Categories</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedCategoryNames.length > 0 ? selectedCategoryNames.map(c => <span key={c} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm">{c}</span>) : <p className="text-slate-400">No categories selected</p>}
+                      </div>
+                      {selectedCategoryNames.length === 0 && (
+                        <p className="text-xs text-slate-400 mt-2">Pick categories to get AI-matched to projects</p>
+                      )}
+                    </div>
                     <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Skills</h3>
                       <div className="flex flex-wrap gap-2">

@@ -18,9 +18,10 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { useSkills } from '../hooks/useSkills';
-import { SkillsSelector } from '../components/SkillsSelector';
+import { CategoryPicker } from '../components/CategoryPicker';
+import { useCategories } from '../hooks/useCategories';
 import { avatarUploadService } from '../lib/avatarUpload';
+import { avatarPackService } from '../lib/avatarPack';
 import { fetchUserProfile, createUserProfile } from '../lib/services/authService';
 import { useToast } from '../components/Toast';
 
@@ -42,13 +43,14 @@ interface ClientForm {
   location: string;
   description: string;
   website: string;
+  company_logo: string | null;
 }
 
 type Step = 'welcome' | 'profile' | 'skills' | 'review';
 
 function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'client') => void }) {
   const { user, updateUser } = useAuth();
-  const { skills: allSkills } = useSkills();
+  const { categories } = useCategories();
   const toast = useToast();
   const [saving, setSaving] = useState(false);
   const [step, setStep] = useState<'info' | 'done'>('info');
@@ -63,7 +65,8 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
   const [title, setTitle] = useState('');
   const [hourlyRate, setHourlyRate] = useState(0);
   const [location, setLocation] = useState('');
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+  const [skillNames, setSkillNames] = useState<string[]>([]);
   const [avatar, setAvatar] = useState<string | null>(null);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -71,12 +74,32 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
   // Client fields
   const [companyName, setCompanyName] = useState('');
   const [industry, setIndustry] = useState('');
+  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync selectedSkills to skill names
-  const skillNames = selectedSkills
-    .map(id => allSkills.find(s => s.id === id))
-    .filter((s): s is NonNullable<typeof s> => !!s)
-    .map(s => s.name);
+  // Map selected category IDs to names for saving
+  const categoryNames = selectedCategoryIds
+    .map(id => categories.find(c => c.id === id))
+    .filter((c): c is NonNullable<typeof c> => !!c)
+    .map(c => c.name);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user?.id) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('File Too Large', 'Company logo must be less than 2MB'); return; }
+    setUploadingLogo(true);
+    try {
+      const result = await avatarPackService.uploadCompanyLogo(file, user.id);
+      if (result.success && result.logo_url) {
+        setCompanyLogo(result.logo_url);
+        toast.success('Logo Uploaded', 'Company logo added!');
+      } else {
+        toast.error('Upload Failed', result.error || 'Failed to upload logo');
+      }
+    } catch { toast.error('Upload Failed', 'Failed to upload company logo'); }
+    finally { setUploadingLogo(false); }
+  };
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -128,6 +151,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
           hourly_rate: hourlyRate > 0 ? hourlyRate : null,
           location: location || null,
           skills: skillNames.length > 0 ? skillNames : null,
+          categories: categoryNames.length > 0 ? categoryNames : null,
           availability: true,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
@@ -146,6 +170,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
           user_id: user.id,
           company_name: companyName || null,
           industry: industry || null,
+          company_logo: companyLogo || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
         if (cpError) {
@@ -277,45 +302,40 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
               </div>
             </div>
 
-            {/* Simple Skills Picker */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Skills (optional)</label>
-              <div className="flex flex-wrap gap-2 mb-2">
-                {skillNames.map(name => (
-                  <span key={name} className="inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
-                    {name}
-                    <button onClick={() => {
-                      const skill = allSkills.find(s => s.name === name);
-                      if (skill) setSelectedSkills(prev => prev.filter(id => id !== skill.id));
-                    }} className="hover:text-emerald-900">
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-              <select
-                value=""
-                onChange={e => {
-                  const val = e.target.value;
-                  if (val && !selectedSkills.includes(val)) {
-                    setSelectedSkills(prev => [...prev, val]);
-                  }
-                }}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm"
-              >
-                <option value="">Search or select skills...</option>
-                {allSkills
-                  .filter(s => !selectedSkills.includes(s.id))
-                  .slice(0, 30)
-                  .map(s => (
-                    <option key={s.id} value={s.id}>{s.name}</option>
-                  ))}
-              </select>
+            {/* Categories + Free-text skills */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <p className="text-xs text-slate-500 mb-3">Select your categories and add the skills you offer</p>
+              <CategoryPicker
+                mode="freelancer"
+                maxCategories={3}
+                selectedCategoryIds={selectedCategoryIds}
+                selectedSkills={skillNames}
+                onCategoriesChange={setSelectedCategoryIds}
+                onSkillsChange={setSkillNames}
+              />
             </div>
           </div>
         ) : (
           /* Client Fields */
           <div className="space-y-5">
+            {/* Company Logo */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center">
+                  {companyLogo ? <img src={companyLogo} alt="Company logo" className="w-full h-full object-cover" /> : <Building2 className="w-8 h-8 text-slate-400" />}
+                </div>
+                <button onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}
+                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg">
+                  {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                </button>
+                <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" onChange={handleLogoUpload} className="hidden" />
+              </div>
+              <div>
+                <p className="font-medium text-slate-900">Company Logo</p>
+                <p className="text-xs text-slate-500">Add your company logo to build trust (optional)</p>
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Name <span className="text-red-400">*</span></label>
               <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
@@ -356,7 +376,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
 export function OnboardingPage() {
   const toast = useToast();
   const { user, getDashboardRoute, updateUser } = useAuth();
-  const { skills: allSkills } = useSkills();
+  const { categories } = useCategories();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const isOAuthMode = searchParams.get('mode') === 'oauth';
@@ -370,6 +390,10 @@ export function OnboardingPage() {
   // Avatar upload state
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Client company logo upload state
+  const [uploadingClientLogo, setUploadingClientLogo] = useState(false);
+  const clientLogoInputRef = useRef<HTMLInputElement>(null);
 
   // Freelancer form state
   const [freelancerForm, setFreelancerForm] = useState<FreelancerForm>({
@@ -391,20 +415,22 @@ export function OnboardingPage() {
     location: '',
     description: '',
     website: '',
+    company_logo: null,
   });
 
-  // Skills selector state (freelancer only)
-  const [selectedSkillIds, setSelectedSkillIds] = useState<string[]>([]);
+  // Category + free-text skills state (freelancer only)
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [skillNames, setSkillNames] = useState<string[]>([]);
+  const [selectedCategoryNames, setSelectedCategoryNames] = useState<string[]>([]);
 
-  // Sync selectedSkillIds to skillNames for form submission
+  // Sync selected category IDs to names for form submission
   useEffect(() => {
-    const names = selectedSkillIds
-      .map(id => allSkills.find(s => s.id === id))
-      .filter((s): s is NonNullable<typeof s> => !!s)
-      .map(s => s.name);
-    setSkillNames(names);
-  }, [selectedSkillIds, allSkills]);
+    const names = selectedCategoryIds
+      .map(id => categories.find(c => c.id === id))
+      .filter((c): c is NonNullable<typeof c> => !!c)
+      .map(c => c.name);
+    setSelectedCategoryNames(names);
+  }, [selectedCategoryIds, categories]);
 
   // OAuth users get a simpler 1-step form
   if (isOAuthMode) {
@@ -484,6 +510,7 @@ export function OnboardingPage() {
             hourly_rate: freelancerForm.hourly_rate || null,
             experience: freelancerForm.experience || null,
             skills: skillNames.length > 0 ? skillNames : freelancerForm.title ? [freelancerForm.title] : [],
+            categories: selectedCategoryNames.length > 0 ? selectedCategoryNames : null,
             location: freelancerForm.location || null,
             portfolio_url: freelancerForm.portfolio_url || null,
             availability: freelancerForm.availability,
@@ -517,6 +544,7 @@ export function OnboardingPage() {
             location: clientForm.location || null,
             description: clientForm.description || null,
             website: clientForm.website || null,
+            company_logo: clientForm.company_logo || null,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
 
@@ -707,9 +735,9 @@ export function OnboardingPage() {
                 </div>
 
                 {isFreelancer ? (
-                  <div className="space-y-5">
-                {/* Avatar / Profile Photo */}
-                <div className="flex items-center gap-4 mb-4">
+                  <div>
+                    {/* Avatar / Profile Photo */}
+                    <div className="flex items-center gap-4 mb-4">
                   <div className="relative">
                     <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200">
                       {freelancerForm.avatar_url ? (
@@ -868,6 +896,63 @@ export function OnboardingPage() {
                   </div>
                 ) : (
                   <div className="space-y-5">
+                    {/* Company Logo */}
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="relative">
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center">
+                          {clientForm.company_logo ? (
+                            <img src={clientForm.company_logo} alt="Company logo" className="w-full h-full object-cover" />
+                          ) : (
+                            <Building2 className="w-8 h-8 text-slate-400" />
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => clientLogoInputRef.current?.click()}
+                          disabled={uploadingClientLogo}
+                          className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg"
+                        >
+                          {uploadingClientLogo ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Camera className="w-4 h-4" />
+                          )}
+                        </button>
+                        <input
+                          ref={clientLogoInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file || !user?.id) return;
+                            if (file.size > 2 * 1024 * 1024) {
+                              toast.error('File Too Large', 'Company logo must be less than 2MB');
+                              return;
+                            }
+                            setUploadingClientLogo(true);
+                            try {
+                              const result = await avatarPackService.uploadCompanyLogo(file, user.id);
+                              if (result.success && result.logo_url) {
+                                setClientForm(prev => ({ ...prev, company_logo: result.logo_url }));
+                                toast.success('Logo Uploaded', 'Company logo added!');
+                              } else {
+                                toast.error('Upload Failed', result.error || 'Failed to upload logo');
+                              }
+                            } catch {
+                              toast.error('Upload Failed', 'Failed to upload company logo');
+                            } finally {
+                              setUploadingClientLogo(false);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-medium text-slate-900">Company Logo</p>
+                        <p className="text-xs text-slate-500">Add your company logo to build trust (optional)</p>
+                      </div>
+                    </div>
+
                     {/* Company Name */}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -1007,18 +1092,17 @@ export function OnboardingPage() {
                   <div>
                     <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl mb-6">
                       <p className="text-sm text-purple-700">
-                        <strong>Tip:</strong> Select skills from the hierarchy below to get AI-matched to relevant projects. 
-                        You can always add more skills later from your profile settings.
+                        <strong>Tip:</strong> Pick up to 3 categories that describe your work, then add your own skills.
+                        Growlancer matches you to projects based on your categories — you can update these anytime from your profile settings.
                       </p>
                     </div>
-                    <SkillsSelector
+                    <CategoryPicker
                       mode="freelancer"
-                      maxSkills={15}
                       maxCategories={3}
-                      selectedCategoryIds={[]}
-                      selectedSkillIds={selectedSkillIds}
-                      onSkillsChange={setSelectedSkillIds}
-                      onCategoriesChange={() => {}}
+                      selectedCategoryIds={selectedCategoryIds}
+                      selectedSkills={skillNames}
+                      onCategoriesChange={setSelectedCategoryIds}
+                      onSkillsChange={setSkillNames}
                     />
 
                     {/* Selected skills summary */}
@@ -1153,8 +1237,12 @@ export function OnboardingPage() {
                   ) : (
                     <div className="space-y-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
-                          <Building2 className="w-8 h-8 text-emerald-600" />
+                        <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center overflow-hidden">
+                          {clientForm.company_logo ? (
+                            <img src={clientForm.company_logo} alt="Company logo" className="w-full h-full object-cover" />
+                          ) : (
+                            <Building2 className="w-8 h-8 text-emerald-600" />
+                          )}
                         </div>
                         <div>
                           <h3 className="font-bold text-lg text-slate-900">{clientForm.company_name || 'Your Company'}</h3>
