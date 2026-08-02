@@ -16,6 +16,7 @@ import {
   Award,
   GraduationCap,
   Star,
+  TrendingUp,
 } from 'lucide-react';
 import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
@@ -35,6 +36,7 @@ const sidebarSections: SidebarItem[] = [
   { id: 'projects', path: '/admin/projects', icon: FolderKanban, label: 'Projects' },
   { id: 'contracts', path: '/admin/contracts', icon: Handshake, label: 'Contracts' },
   { id: 'payments', path: '/admin/payments', icon: Banknote, label: 'Payments' },
+  { id: 'finance', path: '/admin/finance', icon: TrendingUp, label: 'Finance' },
   { id: 'disputes', path: '/admin/disputes', icon: AlertOctagon, label: 'Disputes' },
   { id: 'subscriptions', path: '/admin/subscriptions', icon: Zap, label: 'Subscriptions' },
   { id: 'reports', path: '/admin/reports', icon: BarChart3, label: 'Reports' },
@@ -402,6 +404,10 @@ export function AdminDashboardLayout() {
           <Link to="/admin/payments" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/payments') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
             <Banknote className="w-5 h-5" />
             <span className="text-[8px] font-bold uppercase whitespace-nowrap">Payments</span>
+          </Link>
+          <Link to="/admin/finance" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/finance') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+            <TrendingUp className="w-5 h-5" />
+            <span className="text-[8px] font-bold uppercase whitespace-nowrap">Finance</span>
           </Link>
           <Link to="/admin/disputes" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/disputes') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
             <AlertOctagon className="w-5 h-5" />

@@ -94,6 +94,7 @@ export const ROUTES = {
     PROJECTS: '/admin/projects',
     CONTRACTS: '/admin/contracts',
     PAYMENTS: '/admin/payments',
+    FINANCE: '/admin/finance',
     DISPUTES: '/admin/disputes',
     SUBSCRIPTIONS: '/admin/subscriptions',
     REPORTS: '/admin/reports',

@@ -57,6 +57,42 @@ export function ClientPaymentsPage() {
   const [savedCardsLoading, setSavedCardsLoading] = useState(false);
   const [deletingSavedCardId, setDeletingSavedCardId] = useState<string | null>(null);
 
+  // Auto-generated invoices (on escrow release)
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const load = async () => {
+      setInvoicesLoading(true);
+      const { data, error } = await supabase
+        .from('invoices' as any)
+        .select('*')
+        .eq('client_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (!error && !cancelled) setInvoices((data || []) as any[]);
+      if (!cancelled) setInvoicesLoading(false);
+    };
+    void load();
+    const channel = supabase
+      .channel('client-invoices-' + user.id)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices', filter: `client_id=eq.${user.id}` }, () => void load())
+      .subscribe();
+    return () => { cancelled = true; void supabase.removeChannel(channel); };
+  }, [user]);
+
+  const openInvoice = async (invoiceId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/invoice?id=${invoiceId}`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${session.access_token}` } });
+    if (!res.ok) return;
+    const blob = await res.blob();
+    window.open(URL.createObjectURL(blob), '_blank');
+  };
+
   const fetchTransactions = useCallback(async () => {
     if (!user?.id) return;
 
@@ -275,6 +311,9 @@ export function ClientPaymentsPage() {
   const formatAmount = (amount: number, type: string) => {
     return `${type === 'credit' ? '+' : '-'}$${Math.abs(amount).toLocaleString()}`;
   };
+
+  const formatInvoiceAmount = (amount: number) =>
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount || 0);
 
   const exportCsv = () => {
     const rows = [
@@ -904,6 +943,54 @@ export function ClientPaymentsPage() {
           </div>
         </div>
       )}
+
+      {/* Invoices & Receipts — auto-generated on escrow release */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-4">
+          <div>
+            <h3 className="font-display text-lg font-bold text-slate-900">Invoices & Receipts</h3>
+            <p className="text-sm text-slate-500 mt-0.5">Tax-ready invoices generated automatically when escrow is released</p>
+          </div>
+          {invoicesLoading && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
+        </div>
+        {invoices.length === 0 && !invoicesLoading ? (
+          <div className="p-12 text-center text-slate-400">
+            <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <p className="text-sm">No invoices yet — they appear here once you release escrow on a contract.</p>
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-100">
+            {invoices.map((inv: any) => (
+              <div key={inv.id} className="p-5 flex items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>
+                    <p className="text-xs text-slate-500 truncate">{inv.project_title || 'Contract work'}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{new Date(inv.issued_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 flex-shrink-0">
+                  <div className="text-right">
+                    <p className="font-bold text-slate-900">{formatInvoiceAmount(inv.total)}</p>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : inv.status === 'refunded' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
+                      {inv.status}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => void openInvoice(inv.id)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+                  >
+                    <Download className="w-3.5 h-3.5" /> View / PDF
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
