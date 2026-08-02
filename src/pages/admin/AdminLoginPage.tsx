@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, Shield, Loader2, AlertCircle } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, clearSupabaseAuthStorage } from '../../lib/supabase';
 
 /**
  * AdminLoginPage — Real-time login via Supabase Auth.
@@ -119,7 +119,8 @@ export function AdminLoginPage() {
 
       if (!isAdmin) {
         // Not an admin — sign out and show error
-        await supabase.auth.signOut();
+        await supabase.auth.signOut().catch(() => {});
+        clearSupabaseAuthStorage();
         setError('Access denied. This account does not have admin privileges.');
         return;
       }

@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
 import type { UserRole } from '../types/auth';
 import { captureInfo, captureError } from '../lib/telemetry';
 
@@ -120,7 +120,8 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
         // Check if user is suspended
         if (profileResult?.suspended_at) {
           captureInfo('ProtectedRoute: suspended user blocked', { userId: user.id });
-          await supabase.auth.signOut();
+          await supabase.auth.signOut().catch(() => {});
+          clearSupabaseAuthStorage();
           window.location.href = '/?modal=login';
           if (!cancelled) { setVerifying(false); }
           return;
@@ -168,23 +169,49 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   // email_confirmed_at = null while still having an email address — those users
   // are routed to the real-time verify-email page (mode=oauth) instead.
   // OAuth users with NO email at all (nothing to confirm) are allowed through.
+  //
+  // 🔥 STALE SESSION: if getUser() fails or returns no user, the session in
+  // localStorage belongs to a user that no longer exists server-side (deleted
+  // from Supabase). That is NOT "email not verified" — it's a dead session.
+  // Force-clear it and redirect to login so the user isn't stuck on the
+  // "Email not verified" screen with a logout that never sticks.
   useEffect(() => {
     let cancelled = false;
     async function checkEmailVerified() {
       try {
-        const { data } = await supabase.auth.getUser();
+        const { data, error } = await supabase.auth.getUser();
         if (cancelled) return;
-        const provider = data?.user?.app_metadata?.provider as string | undefined;
+
+        if (isStaleSessionError(error)) {
+          // User no longer exists server-side (401 / 'user not found') → dead
+          // session → force logout. Transient network errors are NOT stale —
+          // they fall through to the normal (cached) email check below.
+          await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+          clearSupabaseAuthStorage();
+          if (!cancelled) {
+            setCheckingEmail(false);
+            window.location.replace('/?modal=login');
+          }
+          return;
+        }
+        if (error && !data?.user) {
+          // Transient network error — fall back to cached user's email state.
+          setEmailConfirmed(false);
+          setOauthUnconfirmedEmail(null);
+          return;
+        }
+
+        const provider = data.user.app_metadata?.provider as string | undefined;
         const isOAuthProvider =
           provider === 'github' || provider === 'linkedin_oidc';
-        const confirmed = !!data?.user?.email_confirmed_at;
-        const hasEmail = !!data?.user?.email;
+        const confirmed = !!data.user.email_confirmed_at;
+        const hasEmail = !!data.user.email;
         // Confirmed email → pass. OAuth without any email → pass (nothing to
         // confirm; provider already verified identity). Everything else (email
         // signups OR OAuth-with-unconfirmed-email) → verification required.
         setEmailConfirmed(confirmed || (isOAuthProvider && !hasEmail));
         setOauthUnconfirmedEmail(
-          isOAuthProvider && !confirmed && hasEmail ? data?.user?.email ?? '' : null
+          isOAuthProvider && !confirmed && hasEmail ? data.user.email ?? '' : null
         );
       } catch {
         if (!cancelled) setEmailConfirmed(false);

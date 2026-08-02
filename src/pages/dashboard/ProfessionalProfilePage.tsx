@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { supabase, clearSupabaseAuthStorage } from '../../lib/supabase';
 import { CacheManager } from '../../lib/services/cacheManager';
 import { avatarUploadService } from '../../lib/avatarUpload';
 import { notificationPreferencesService } from '../../lib/notificationPreferences';
@@ -728,7 +728,8 @@ export function ProfessionalProfilePage() {
 
       // Sign out and clear local state immediately
       toast.success('Your account has been permanently deleted.');
-      await supabase.auth.signOut();
+      await supabase.auth.signOut().catch(() => {});
+      clearSupabaseAuthStorage();
       window.location.href = '/';
     } catch (err: any) {
       console.error('[delete-account]', err);

@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 
-import { supabase } from '../lib/supabase';
+import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { validateEmail, validatePassword, validateRequired, getPasswordStrength } from '../utils/validation';
 import { Modal } from './Modal';
@@ -63,13 +63,24 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
     }
   }, [isOpen, initialRole]);
 
-  // Check if there's already a session on this device
+  // Check if there's already a VALID session on this device.
+  // Uses getUser() (server-validated) instead of getSession() (localStorage
+  // only) — a stale token for a deleted user would otherwise show the
+  // "Already logged in" banner forever. Dead sessions are force-cleared.
   useEffect(() => {
     async function checkSession() {
       const { data } = await supabase.auth.getSession();
-      if (data.session?.user) {
-        setExistingUser(true);
+      if (!data.session?.user) return;
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (isStaleSessionError(userError)) {
+        // 🔥 Stale session for a deleted user — clear it so it stops blocking auth.
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+        clearSupabaseAuthStorage();
+        setExistingUser(false);
+        return;
       }
+      if (userError || !userData?.user) return; // transient network — don't show banner
+      setExistingUser(true);
     }
     checkSession();
   }, [isOpen]);
@@ -200,7 +211,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
                   type="button"
                   onClick={async () => {
                     onClose();
-                    await supabase.auth.signOut();
+                    await supabase.auth.signOut().catch(() => {});
+                    clearSupabaseAuthStorage();
                     window.location.href = '/';
                   }}
                   className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline px-2 py-1"
@@ -221,7 +233,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               <button
                 type="button"
                 onClick={async () => {
-                  await supabase.auth.signOut();
+                  await supabase.auth.signOut().catch(() => {});
+                  clearSupabaseAuthStorage();
                   setExistingUser(false);
                 }}
                 className="w-full py-2 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"

@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useRef, startTransition, ReactNode } from 'react';
 import { Session, User as SupabaseUser, RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
 import type { AuthUser, UserRole } from '../types/auth';
 import {
   fetchUserProfile,
@@ -97,6 +97,11 @@ function devError(...args: unknown[]) {
       console.error(...filteredArgs);
     }
   }
+}
+
+/** True while on the OAuth callback page (AuthCallbackPage owns token processing there). */
+function isOAuthCallbackPath(): boolean {
+  return typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -275,6 +280,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (roleHint) {
           devError('[Auth] Failed to sync user profile during login/signup');
           await supabase.auth.signOut().catch(() => {});
+          clearSupabaseAuthStorage();
           setUser(null);
           setSession(null);
           setSupabaseUser(null);
@@ -301,6 +307,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             '[Auth] Profile fetch failed during session refresh after retry — user likely deleted from backend. Signing out.'
           );
           await supabase.auth.signOut().catch(() => {});
+          clearSupabaseAuthStorage();
           setUser(null);
           setSession(null);
           setSupabaseUser(null);
@@ -477,17 +484,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (!mounted) return;
 
-        setSession(currentSession);
-        setSupabaseUser(currentSession?.user || null);
-
-        if (currentSession?.user) {
-          await syncAuthUser(currentSession.user);
-          // Broadcast that we have a session (for cross-tab sync)
-          broadcastAuthMessage({ type: 'SESSION_REFRESHED', userId: currentSession.user.id });
+        // 🔥 Stale-session rescue: the cached session in localStorage may belong to a
+        // user that was deleted from Supabase (e.g. test users removed from the
+        // Auth dashboard while the browser kept the old token). `getSession()` only
+        // reads localStorage — it does NOT verify the user still exists server-side.
+        // `getUser()` does, so validate the session before restoring it. If the user
+        // is gone, force-clear the persisted session so the app doesn't loop between
+        // "Email not verified" and a logout that never sticks.
+        if (currentSession?.user && !isOAuthCallbackPath()) {
+          const { error: userError } = await supabase.auth.getUser();
+          // 🔥 Only force-clear when the user genuinely no longer exists (401 /
+          // 'user not found'). Transient network errors must NOT log out a
+          // legitimately signed-in user — they fall through to the normal restore.
+          if (mounted && isStaleSessionError(userError)) {
+            devLog('[Auth] Stale session detected (user no longer exists server-side) — force-clearing');
+            await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
+            clearSupabaseAuthStorage();
+            setSession(null);
+            setSupabaseUser(null);
+            setUser(null);
+            broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
+          } else if (mounted && currentSession?.user) {
+            // Valid user OR transient network error — restore normally (old behavior).
+            setSession(currentSession);
+            setSupabaseUser(currentSession.user);
+            await syncAuthUser(currentSession.user);
+            broadcastAuthMessage({ type: 'SESSION_REFRESHED', userId: currentSession.user.id });
+          }
         } else {
-          setUser(null);
-          setSession(null);
-          setSupabaseUser(null);
+          setSession(currentSession);
+          setSupabaseUser(currentSession?.user || null);
+
+          if (currentSession?.user) {
+            await syncAuthUser(currentSession.user);
+            // Broadcast that we have a session (for cross-tab sync)
+            broadcastAuthMessage({ type: 'SESSION_REFRESHED', userId: currentSession.user.id });
+          } else {
+            setUser(null);
+            setSession(null);
+            setSupabaseUser(null);
+          }
         }
         
         // ✅ Attempt to recover a stale session if user is authenticated but
@@ -636,6 +672,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (payload.eventType === 'DELETE') {
             devLog('[Auth] Profile deleted from backend — signing out');
             await supabase.auth.signOut().catch(() => {});
+            clearSupabaseAuthStorage();
             setUser(null);
             setSession(null);
             setSupabaseUser(null);
@@ -711,6 +748,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
             devLog('[Auth] Periodic check: Profile not found after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
             await supabase.auth.signOut().catch(() => {});
+            clearSupabaseAuthStorage();
             broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
             setUser(null);
             setSession(null);
@@ -727,6 +765,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (consecutiveFailures >= MAX_PROFILE_CHECK_FAILURES) {
           devLog('[Auth] Periodic check: Profile fetch error after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
           await supabase.auth.signOut().catch(() => {});
+          clearSupabaseAuthStorage();
           broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
           setUser(null);
           setSession(null);
@@ -1235,33 +1274,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async (): Promise<void> => {
-    try {
-      const { error } = await supabase.auth.signOut();
+    // 🔥 Bulletproof logout: first try the normal server-side signOut, but ALWAYS
+    // force-clear the persisted session afterwards. For deleted users signOut()
+    // returns early without clearing localStorage — without this the stale token
+    // survives and re-logs the user in on the next page load.
+    await supabase.auth.signOut().catch(() => {});
 
-      if (error) {
-        captureError('Sign out failed', {
-          source: 'auth',
-          message: error.message,
-        });
-      }
+    // 🔥 Guaranteed cleanup — removes every sb-*-auth-token key.
+    clearSupabaseAuthStorage();
 
-      // 📡 Broadcast cross-tab auth sync BEFORE clearing state
-      // Other tabs need to know BEFORE we navigate away
-      broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
+    // 📡 Broadcast cross-tab auth sync BEFORE clearing state
+    // Other tabs need to know BEFORE we navigate away
+    broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
 
-      setUser(null);
-      setSession(null);
-      setSupabaseUser(null);
+    setUser(null);
+    setSession(null);
+    setSupabaseUser(null);
 
-      window.location.href = '/';
-    } catch (error) {
-      devError('[Auth] Logout exception:', error);
-      broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
-      setUser(null);
-      setSession(null);
-      setSupabaseUser(null);
-      window.location.href = '/';
-    }
+    window.location.href = '/';
   };
 
   const getDashboardRoute = (userRole?: UserRole): string => {

@@ -75,6 +75,57 @@ export async function getClient(): Promise<SupabaseClient<Database>> {
   return supabaseClient;
 }
 
+/**
+ * 🔥 Force-clears ALL persisted Supabase auth sessions from localStorage.
+ *
+ * WHY THIS EXISTS:
+ * When a user is deleted from Supabase (Auth → Users) while their browser
+ * still holds a session, supabase-js keeps the stale token in localStorage.
+ * `supabase.auth.signOut()` can return early WITHOUT clearing storage when
+ * the token belongs to a deleted/invalid user (it only clears storage on the
+ * success path), so the app reloads → re-reads the stale session → the user
+ * is stuck in a loop ("Email not verified" / can't log out).
+ *
+ * This helper guarantees cleanup by removing every `sb-*-auth-token*` key
+ * directly from localStorage, regardless of what supabase-js does.
+ */
+export function clearSupabaseAuthStorage(): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    const staleKeys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('sb-') && key.includes('-auth-token')) {
+        staleKeys.push(key);
+      }
+    }
+    staleKeys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // localStorage unavailable (private browsing, disabled) — ignore
+  }
+}
+
+/**
+ * True ONLY when the error means the auth user no longer exists server-side
+ * (deleted from Supabase / revoked token). Returns false for transient
+ * network errors, timeouts, or GoTrue 5xx — those must NOT trigger a
+ * force-logout of a legitimately signed-in user.
+ */
+export function isStaleSessionError(error: unknown): boolean {
+  if (!error) return false;
+  const err = error as { status?: number; message?: string };
+  // GoTrue returns HTTP 401 for a deleted/unknown user (code 'user_not_found')
+  if (typeof err.status === 'number' && err.status === 401) return true;
+  const msg = (err.message || '').toLowerCase();
+  return (
+    msg.includes('user from sub claim') ||
+    msg.includes('invalid claim') ||
+    msg.includes('user not found') ||
+    (msg.includes('does not exist') && msg.includes('user')) ||
+    (msg.includes('jwt') && msg.includes('expired'))
+  );
+}
+
 // ═══ Export the client ════════════════════════════════════════════
 // All existing code that does `import { supabase } from '../lib/supabase'`
 // continues to work unchanged.

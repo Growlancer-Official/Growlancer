@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { supabase, realtimeChannels } from '../lib/supabase';
+import { supabase, realtimeChannels, clearSupabaseAuthStorage } from '../lib/supabase';
 import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
 import { notificationPreferencesService } from '../lib/notificationPreferences';
 import { avatarPackService } from '../lib/avatarPack';
@@ -705,7 +705,8 @@ export function ClientSettingsPage() {
       // Sign out and redirect immediately
       setSuccessMessage('Your account has been permanently deleted.');
       setTimeout(async () => {
-        await supabase.auth.signOut();
+        await supabase.auth.signOut().catch(() => {});
+        clearSupabaseAuthStorage();
         window.location.href = '/';
       }, 1500);
     } catch (err: any) {

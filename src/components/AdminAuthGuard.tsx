@@ -1,5 +1,5 @@
 import { useEffect, useState, ReactNode } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, clearSupabaseAuthStorage } from '../lib/supabase';
 import { AdminLoginPage } from '../pages/admin/AdminLoginPage';
 
 interface AdminSession {
@@ -175,7 +175,10 @@ export function getAdminSession(): { email: string; label: string } | null {
 /** Log out of admin session. */
 // eslint-disable-next-line react-refresh/only-export-components
 export async function adminLogout(): Promise<void> {
-  await supabase.auth.signOut();
+  await supabase.auth.signOut().catch(() => {});
+  // 🔥 Force-clear the persisted Supabase session too — a stale/deleted-user
+  // token would otherwise survive signOut and re-log the browser in.
+  clearSupabaseAuthStorage();
   clearAdminSession();
   window.location.href = '/admin';
 }
