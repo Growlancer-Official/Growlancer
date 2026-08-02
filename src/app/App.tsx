@@ -51,7 +51,6 @@ const EmailConfirmPage = lazy(() => import('@pages/auth/EmailConfirmPage').then(
 const VerifyEmailPage = lazy(() => import('@pages/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 
 // Dynamic routes (can't be prerendered — no fixed URL list at build time)
-const SubcategoryDetailPage = lazy(() => import('@pages/SubcategoryDetailPage').then(m => ({ default: m.SubcategoryDetailPage })));
 const PublicFreelancerProfilePage = lazy(() => import('@pages/PublicFreelancerProfilePage').then(m => ({ default: m.PublicFreelancerProfilePage })));
 const ServiceDetailPage = lazy(() => import('@pages/ServiceDetailPage').then(m => ({ default: m.ServiceDetailPage })));
 const ProjectDetailsPage = lazy(() => import('@pages/ProjectDetailsPage').then(m => ({ default: m.ProjectDetailsPage })));
@@ -164,7 +163,6 @@ function App() {
                 <Route path="how-it-works" element={<HowItWorksPage />} />
                 <Route path="features" element={<FeaturesPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
-                <Route path="categories/:slug/:subslug" element={<SubcategoryDetailPage />} />
                 <Route path="pricing" element={<PricingPage />} />
                 <Route path="about" element={<AboutPage />} />
                 <Route path="philosophy" element={<PhilosophyPage />} />

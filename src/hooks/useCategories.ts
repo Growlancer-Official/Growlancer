@@ -5,20 +5,6 @@ import { FALLBACK_CATEGORIES } from '../lib/categories';
 // Ensures each hook instance gets a unique channel to avoid 'cannot add callbacks after subscribe()'
 let channelInstanceId = 0;
 
-export interface Skill {
-  id: string;
-  name: string;
-  slug: string;
-}
-
-export interface Subcategory {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  skills: Skill[];
-}
-
 export interface Category {
   id: string;
   name: string;
@@ -26,7 +12,6 @@ export interface Category {
   icon: string;
   description: string | null;
   display_order: number;
-  subcategories: Subcategory[];
 }
 
 interface CategoryCounts {
@@ -59,15 +44,23 @@ export function useCategories(): UseCategoriesReturn {
       setLoading(true);
       setError(null);
 
-      const [hierarchyResult, countsResult, freelancerResult] = await Promise.all([
-        dbFunctions.getCategoryHierarchy(),
+      // ⚡ Lightweight direct table query — returns ONLY the 145 top-level
+      // categories. Replaces the old get_category_hierarchy RPC which returned
+      // every subcategory + skill nested inside (thousands of JSON objects per
+      // page load — a big chunk of the site's loading time). Growlancer is a
+      // category-first platform now, so subcategories/skills are never shown.
+      const [catsResult, countsResult, freelancerResult] = await Promise.all([
+        supabase
+          .from('categories')
+          .select('id, name, slug, icon, description, display_order')
+          .eq('is_active', true)
+          .order('name', { ascending: true }),
         dbFunctions.getCategoryCountsV2(),
         dbFunctions.getActiveFreelancersByCategory(),
       ]);
 
-      // Gracefully handle missing RPC functions (pre-launch: migrations may not be applied yet)
-      if (hierarchyResult.error) {
-        console.warn('Category hierarchy RPC not available (migration pending):', hierarchyResult.error.message);
+      if (catsResult.error) {
+        console.warn('Categories query failed:', catsResult.error.message);
         // Fall back to static FALLBACK_CATEGORIES so the homepage always shows categories
         const fallback = FALLBACK_CATEGORIES.map((name, i) => ({
           id: `fallback-${i}`,
@@ -76,12 +69,11 @@ export function useCategories(): UseCategoriesReturn {
           icon: 'Layers',
           description: null,
           display_order: i + 1,
-          subcategories: [],
         }));
         setCategories(fallback);
-      } else if (hierarchyResult.data) {
-        const raw = hierarchyResult.data as Category[];
-        // Sort categories A-Z alphabetically for consistent display across all pages
+      } else if (catsResult.data) {
+        // A-Z sort (localeCompare) for consistent display across all pages
+        const raw = catsResult.data as Category[];
         raw.sort((a, b) => a.name.localeCompare(b.name));
         setCategories(raw);
       }
@@ -119,11 +111,6 @@ export function useCategories(): UseCategoriesReturn {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'categories' },
-        () => { fetchAll(); }
-      )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'subcategories' },
         () => { fetchAll(); }
       )
       .on(
