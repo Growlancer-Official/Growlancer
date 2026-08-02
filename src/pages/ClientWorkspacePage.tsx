@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from '../components/Toast'
 import { supabase, dbFunctions } from '../lib/supabase'
 import { messagesService } from '../lib/messages'
 import { fileUploadService } from '../lib/fileUpload'
@@ -18,6 +19,7 @@ import {
   DollarSign,
   Download,
   FileText,
+  History,
   Laptop,
   Loader2,
   Lock,
@@ -25,12 +27,15 @@ import {
   Paperclip,
   Play,
   Plus,
+  RotateCcw,
   Send,
   ShieldCheck,
+  Snowflake,
   Trash2,
   Upload,
   X,
 } from 'lucide-react'
+import { refundService, type RefundRequest, type RefundHistoryEvent } from '../lib/refundService'
 
 interface Contract {
   id: string
@@ -50,6 +55,11 @@ interface Contract {
   dispute_initiated_by: string | null
   dispute_escalated: boolean
   dispute_resolved: boolean
+  freelancer_started_at: string | null
+  cancellation_status?: string
+  cancellation_requested_by?: string | null
+  frozen_at?: string | null
+  freeze_reason?: string | null
   freelancer?: {
     id: string
     full_name: string
@@ -88,6 +98,7 @@ type ActiveTab = 'chat' | 'canvas' | 'milestones'
 
 export function ClientWorkspacePage() {
   const { user } = useAuth()
+  const toast = useToast()
   const { contractId: routeContractId } = useParams<{ contractId: string }>()
   const [searchParams] = useSearchParams()
   const contractId = searchParams.get('contract') || searchParams.get('contractId') || routeContractId || undefined
@@ -106,6 +117,12 @@ export function ClientWorkspacePage() {
   const [disputeReason, setDisputeReason] = useState('')
   const [disputeDescription, setDisputeDescription] = useState('')
   const [submittingDispute, setSubmittingDispute] = useState(false)
+  const [showRefundModal, setShowRefundModal] = useState(false)
+  const [refundReason, setRefundReason] = useState('')
+  const [refundDescription, setRefundDescription] = useState('')
+  const [submittingRefund, setSubmittingRefund] = useState(false)
+  const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([])
+  const [refundHistory, setRefundHistory] = useState<RefundHistoryEvent[]>([])
   const [showFundEscrow, setShowFundEscrow] = useState(false)
   const [releasingEscrow, setReleasingEscrow] = useState(false)
   const [activeTab, setActiveTab] = useState<ActiveTab>('chat')
@@ -299,6 +316,68 @@ export function ClientWorkspacePage() {
     if (result) void refreshContract(selectedContract.id)
     setReleasingEscrow(false)
   }
+
+  // ─── Refund / Cancellation ───────────────────────────────────
+  const loadRefundData = useCallback(async () => {
+    if (!selectedContract) return
+    const reqs = await refundService.getRefundRequests(selectedContract.id)
+    setRefundRequests(reqs)
+    if (reqs.length > 0) {
+      // timeline for the most recent active request
+      const active = reqs.find(r => !['completed', 'rejected', 'cancelled', 'failed'].includes(r.status)) || reqs[0]
+      const history = await refundService.getRefundHistory(active.id)
+      setRefundHistory(history)
+    } else {
+      setRefundHistory([])
+    }
+  }, [selectedContract])
+
+  useEffect(() => {
+    if (!selectedContract) return
+    void loadRefundData()
+
+    const channel = supabase
+      .channel(`refund-live-${selectedContract.id}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'refund_requests',
+        filter: `contract_id=eq.${selectedContract.id}`,
+      }, () => { void loadRefundData() })
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'refunds',
+        filter: `contract_id=eq.${selectedContract.id}`,
+      }, () => { void loadRefundData() })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [selectedContract, loadRefundData])
+
+  const handleRequestRefund = async () => {
+    if (!selectedContract || !refundReason.trim()) return
+    setSubmittingRefund(true)
+    const result = await refundService.requestRefund(
+      selectedContract.id,
+      refundReason.trim(),
+      refundDescription.trim() || undefined
+    )
+    if (result.success) {
+      setShowRefundModal(false)
+      setRefundReason('')
+      setRefundDescription('')
+      void refreshContract(selectedContract.id)
+      void loadRefundData()
+      toast.success(
+        result.data?.request_type === 'client_cancel_before_work'
+          ? 'Cancellation approved — automatic refund in progress'
+          : 'Cancellation request sent — awaiting freelancer response'
+      )
+    } else {
+      toast.error('Refund request failed', result.error || 'Unknown error')
+    }
+    setSubmittingRefund(false)
+  }
+
+  const activeRefund = refundRequests.find(r => ['pending_freelancer', 'pending_admin', 'approved', 'auto_approved'].includes(r.status))
+  const isFrozen = !!selectedContract?.frozen_at
 
   const getTasks = useCallback(async (): Promise<SharedTask[]> => {
     if (!selectedContract) return []
@@ -580,10 +659,22 @@ export function ClientWorkspacePage() {
                         Fund Escrow
                       </button>
                     )}
+                    {isFrozen && (
+                      <div className="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm" title={selectedContract.freeze_reason || ''}>
+                        <Snowflake className="h-4 w-4 mr-1.5" />
+                        Frozen
+                      </div>
+                    )}
                     {selectedContract.is_disputed && (
                       <div className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm">
                         <AlertCircle className="h-4 w-4 mr-1.5" />
                         Dispute Active
+                      </div>
+                    )}
+                    {activeRefund && (
+                      <div className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-sm">
+                        <RotateCcw className="h-4 w-4 mr-1.5" />
+                        Refund {activeRefund.status.replace('_', ' ')}
                       </div>
                     )}
                   </div>
@@ -983,7 +1074,7 @@ export function ClientWorkspacePage() {
                           Release Escrow
                         </button>
                       )}
-                      {!selectedContract.is_disputed && selectedContract.escrow_funded && (
+                      {!selectedContract.is_disputed && !isFrozen && selectedContract.escrow_funded && (
                         <button
                           onClick={() => setShowDisputeModal(true)}
                           className="inline-flex items-center px-6 py-3 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-medium"
@@ -992,8 +1083,80 @@ export function ClientWorkspacePage() {
                           Raise Dispute
                         </button>
                       )}
+                      {!selectedContract.is_disputed && !isFrozen && !selectedContract.escrow_released && (
+                        <button
+                          onClick={() => setShowRefundModal(true)}
+                          disabled={!!activeRefund}
+                          className="inline-flex items-center px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-colors font-medium"
+                        >
+                          <RotateCcw className="h-5 w-5 mr-2" />
+                          {activeRefund ? 'Refund In Progress' : 'Cancel Project / Request Refund'}
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {/* Refunds & Cancellation Panel */}
+                  {(refundRequests.length > 0 || selectedContract.cancellation_status === 'pending_freelancer') && (
+                    <div className="bg-white rounded-xl border border-slate-200 p-6 mt-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                          <RotateCcw className="h-5 w-5 text-amber-500" />
+                          Refund & Cancellation
+                        </h3>
+                        {activeRefund && (
+                          <span className="text-xs px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 font-medium capitalize">
+                            {activeRefund.status.replace('_', ' ')}
+                          </span>
+                        )}
+                      </div>
+
+                      {refundRequests.map(req => (
+                        <div key={req.id} className="p-4 bg-slate-50 rounded-xl mb-4">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-900">{req.reason}</p>
+                              <p className="text-xs text-slate-500 mt-0.5 capitalize">
+                                {req.request_type.replace(/_/g, ' ')}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-bold text-slate-900">
+                                {formatCurrency(Number(req.refund_amount))}
+                              </p>
+                              <p className="text-xs text-slate-500 capitalize">{req.status.replace(/_/g, ' ')}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+
+                      {refundHistory.length > 0 && (
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                            <History className="h-4 w-4 text-slate-400" />
+                            Timeline
+                          </p>
+                          <div className="relative">
+                            <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-slate-200" />
+                            {refundHistory.map((ev, idx) => (
+                              <div key={idx} className="relative flex items-start gap-3 pb-4 last:pb-0">
+                                <div className="relative z-10 w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
+                                  <RotateCcw className="h-3 w-3 text-amber-600" />
+                                </div>
+                                <div className="flex-1 pt-0.5">
+                                  <p className="text-sm font-medium text-slate-800 capitalize">{ev.event.replace(/_/g, ' ')}</p>
+                                  {ev.note && <p className="text-xs text-slate-500 mt-0.5">{ev.note}</p>}
+                                  <p className="text-xs text-slate-400 mt-0.5">
+                                    {new Date(ev.created_at).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -1141,6 +1304,89 @@ export function ClientWorkspacePage() {
                   <AlertCircle className="h-4 w-4 mr-1.5" />
                 )}
                 Submit Dispute
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Request Refund / Cancel Project Modal */}
+      {showRefundModal && selectedContract && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-900">Cancel Project / Request Refund</h3>
+              <button
+                onClick={() => {
+                  setShowRefundModal(false)
+                  setRefundReason('')
+                  setRefundDescription('')
+                }}
+                className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
+                {selectedContract.freelancer_started_at || (milestones.some(m => ['released', 'paid', 'completed', 'approved'].includes(m.status)))
+                  ? 'Work has started on this project. The freelancer must accept your cancellation; if they decline, the case goes to dispute resolution. Released milestones are never refunded.'
+                  : 'Work has not started yet. Your escrow will be refunded automatically — no questions asked, no platform fee.'}
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Reason <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={refundReason}
+                  onChange={e => setRefundReason(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900"
+                >
+                  <option value="">Select a reason...</option>
+                  <option value="changed_mind">Changed my mind before work started</option>
+                  <option value="scope_change">Project scope changed</option>
+                  <option value="no_longer_needed">No longer needed</option>
+                  <option value="duplicate_payment">Duplicate payment</option>
+                  <option value="poor_quality">Poor quality of work</option>
+                  <option value="missed_deadline">Missed deadline</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Description
+                </label>
+                <textarea
+                  value={refundDescription}
+                  onChange={e => setRefundDescription(e.target.value)}
+                  placeholder="Provide details..."
+                  rows={4}
+                  className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none text-slate-900"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+              <button
+                onClick={() => {
+                  setShowRefundModal(false)
+                  setRefundReason('')
+                  setRefundDescription('')
+                }}
+                className="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void handleRequestRefund()}
+                disabled={!refundReason.trim() || submittingRefund}
+                className="inline-flex items-center px-4 py-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                {submittingRefund ? (
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                ) : (
+                  <RotateCcw className="h-4 w-4 mr-1.5" />
+                )}
+                Submit Request
               </button>
             </div>
           </div>

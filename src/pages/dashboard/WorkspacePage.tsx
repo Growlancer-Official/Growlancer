@@ -18,11 +18,13 @@ import {
   Paperclip,
   Play,
   Plus,
+  RotateCcw,
   Save,
   Send,
   ShieldCheck,
   Trash2,
   Upload,
+  XCircle,
   X,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
@@ -30,6 +32,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { supabase, realtimeChannels } from '../../lib/supabase';
+import { refundService, type RefundRequest } from '../../lib/refundService';
 import { fileUploadService, type ContractFile } from '../../lib/fileUpload';
 import { normalizeEscrow } from '../../lib/contractMilestones';
 import type { Tables } from '../../types/supabase';
@@ -39,6 +42,10 @@ type ContractWithDetails = Tables<'contracts'> & {
   client: Tables<'profiles'>;
   escrow?: { id: string; amount: number; status: string }[] | { id: string; amount: number; status: string } | null;
   freelancer_amount?: number;
+  freelancer_started_at?: string | null;
+  cancellation_status?: string | null;
+  frozen_at?: string | null;
+  freeze_reason?: string | null;
 };
 
 type Message = Tables<'messages'> & {
@@ -65,6 +72,10 @@ export function WorkspacePage() {
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
   const [milestones, setMilestones] = useState<Array<{ title: string; description?: string; amount: number; status: string; due_date?: string }>>([]);
+  const [pendingCancellation, setPendingCancellation] = useState<RefundRequest | null>(null);
+  const [cancellationBusy, setCancellationBusy] = useState(false);
+  const [startBusy, setStartBusy] = useState(false);
+  const [declineBusy, setDeclineBusy] = useState(false);
   const [contractFiles, setContractFiles] = useState<ContractFile[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -432,11 +443,82 @@ export function WorkspacePage() {
     setDeleteFileConfirm(null);
   };
 
+  // ─── Refund / Cancellation (freelancer side) ─────────────────
+  const loadPendingCancellation = useCallback(async () => {
+    if (!selectedContract) return;
+    const reqs = await refundService.getRefundRequests(selectedContract.id);
+    const pending = reqs.find(r => r.status === 'pending_freelancer') || null;
+    setPendingCancellation(pending);
+  }, [selectedContract]);
+
+  useEffect(() => {
+    if (!selectedContract) return;
+    void loadPendingCancellation();
+    const channel = supabase
+      .channel(`freelancer-refund-${selectedContract.id}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'refund_requests',
+        filter: `contract_id=eq.${selectedContract.id}`,
+      }, () => { void loadPendingCancellation(); })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [selectedContract, loadPendingCancellation]);
+
+  const handleRespondCancellation = async (accept: boolean) => {
+    if (!pendingCancellation) return;
+    setCancellationBusy(true);
+    const result = await refundService.respondToCancellation(pendingCancellation.id, accept);
+    if (result.success) {
+      setPendingCancellation(null);
+      toast.success(
+        accept
+          ? 'Cancellation accepted — remaining escrow will be refunded to the client'
+          : 'Cancellation rejected — a dispute has been opened automatically'
+      );
+      void refreshContract(selectedContract.id);
+    } else {
+      toast.error(result.error || 'Failed to respond to cancellation');
+    }
+    setCancellationBusy(false);
+  };
+
+  const workStarted = !!selectedContract?.freelancer_started_at;
+  const handleStartWork = async () => {
+    if (!selectedContract) return;
+    setStartBusy(true);
+    const result = await refundService.markStarted(selectedContract.id);
+    if (result.success) {
+      toast.success('Work started — escrow protection is now active');
+      void refreshContract(selectedContract.id);
+    } else {
+      toast.error(result.error || 'Failed to start work');
+    }
+    setStartBusy(false);
+  };
+
+  const handleDeclineProject = async () => {
+    if (!selectedContract) return;
+    setDeclineBusy(true);
+    const result = await refundService.freelancerDecline(selectedContract.id);
+    if (result.success) {
+      toast.success('Project declined — escrow will be refunded to the client automatically');
+      void refreshContract(selectedContract.id);
+    } else {
+      toast.error(result.error || 'Failed to decline project');
+    }
+    setDeclineBusy(false);
+  };
+
   const handleMilestoneStatusChange = async (index: number, newStatus: string) => {
     if (!selectedContract) return;
     if (selectedContract.status === 'disputed') {
       toast.warning('Milestone actions are frozen while this contract is in dispute.');
       return;
+    }
+
+    // First progress = work started (Case 1 -> Case 3 boundary)
+    if (!workStarted && ['in_progress', 'completed'].includes(newStatus)) {
+      void refundService.markStarted(selectedContract.id);
     }
     
     const updatedMilestones = [...milestones];
@@ -788,6 +870,41 @@ export function WorkspacePage() {
             </div>
           )}
 
+          {/* Cancellation Request Banner */}
+          {pendingCancellation && (
+            <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-scale-in">
+              <div className="flex items-start gap-3">
+                <RotateCcw className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
+                <div>
+                  <h4 className="font-bold text-amber-900">Client Requested Cancellation</h4>
+                  <p className="text-xs text-amber-700 mt-1 leading-relaxed max-w-2xl">
+                    <span className="font-semibold">Reason:</span> {pendingCancellation.reason}.{' '}
+                    Accept to refund the remaining escrow ({formatCurrency(Number(pendingCancellation.refund_amount))}) to the client,
+                    or reject to open a dispute for admin review.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => void handleRespondCancellation(true)}
+                  disabled={cancellationBusy}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-all text-sm font-medium"
+                >
+                  {cancellationBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  Accept & Refund
+                </button>
+                <button
+                  onClick={() => void handleRespondCancellation(false)}
+                  disabled={cancellationBusy}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-red-600 text-white rounded-xl hover:bg-red-700 disabled:opacity-50 transition-all text-sm font-medium"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Reject → Dispute
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* TAB 1: Chat & Assets Hub */}
           {activeTab === 'chat' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1134,9 +1251,31 @@ export function WorkspacePage() {
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">Budget protected in Growlancer Escrow protection</p>
                     </div>
-                    <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 uppercase">
-                      {selectedContract.status === 'disputed' ? 'Locked (Dispute)' : 'In Progress'}
-                    </span>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {!workStarted && selectedContract.status !== 'disputed' && !pendingCancellation && (
+                        <>
+                          <button
+                            onClick={() => void handleStartWork()}
+                            disabled={startBusy}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition-all"
+                          >
+                            {startBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                            Start Work
+                          </button>
+                          <button
+                            onClick={() => void handleDeclineProject()}
+                            disabled={declineBusy}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50 transition-all"
+                          >
+                            {declineBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                            Decline Project
+                          </button>
+                        </>
+                      )}
+                      <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 uppercase">
+                        {selectedContract.status === 'disputed' ? 'Locked (Dispute)' : workStarted ? 'In Progress' : 'Pending Start'}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-3 gap-4 mb-6">

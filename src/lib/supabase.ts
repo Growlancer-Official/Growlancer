@@ -246,7 +246,22 @@ export type RpcName =
   | 'raise_contract_dispute'
   | 'create_contract_with_escrow'
   | 'process_referral'
-  | 'update_user_country';
+  | 'update_user_country'
+  // Refund & Dispute Resolution System
+  | 'request_contract_refund'
+  | 'respond_cancellation_request'
+  | 'freelancer_decline_contract'
+  | 'mark_freelancer_started'
+  | 'admin_decide_dispute'
+  | 'admin_assign_dispute'
+  | 'admin_add_internal_note'
+  | 'appeal_dispute'
+  | 'send_dispute_message'
+  | 'attach_dispute_evidence'
+  | 'freeze_contract'
+  | 'unfreeze_contract'
+  | 'process_pending_refunds'
+  | 'process_no_response_disputes';
 
 /**
  * Safe typed RPC caller.

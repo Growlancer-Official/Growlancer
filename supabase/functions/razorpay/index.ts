@@ -8,6 +8,9 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 const RAZORPAY_KEY_ID = Deno.env.get('RAZORPAY_KEY_ID') || '';
 const RAZORPAY_KEY_SECRET = Deno.env.get('RAZORPAY_KEY_SECRET') || '';
 const RAZORPAY_API_URL = 'https://api.razorpay.com/v1';
+// Shared secret for cron-triggered internal actions (execute_refund).
+// pg_cron calls this function via pg_net with `Authorization: Bearer <CRON_SECRET>`.
+const CRON_SECRET = Deno.env.get('CRON_SECRET') || '';
 
 // Fail loudly if payment credentials are missing — never silently continue
 if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
@@ -149,20 +152,6 @@ serve(async req => {
       { auth: { persistSession: false, autoRefreshToken: false } }
     );
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const identifier = user.id || req.headers.get('x-forwarded-for') || 'unknown';
-    if (!(await checkRateLimit(supabaseClient, identifier))) {
-      return new Response(JSON.stringify({ error: 'Too many requests' }), {
-        status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     let body;
     try { body = await req.json(); } catch {
       return new Response(JSON.stringify({ error: 'Invalid JSON body' }), {
@@ -175,6 +164,36 @@ serve(async req => {
       return new Response(JSON.stringify({ error: 'Missing action' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+
+    // Cron-triggered internal actions: authenticated by CRON_SECRET, not a user JWT.
+    // These are never callable from the browser (the secret is server-side only).
+    let isCron = false;
+    if (action === 'execute_refund') {
+      const authHeader = req.headers.get('Authorization') || '';
+      const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+      if (!CRON_SECRET || bearer !== CRON_SECRET) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      isCron = true;
+    } else if (!user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Rate limit user actions only (cron calls are low-volume + secret-guarded)
+    if (!isCron) {
+      const identifier = user.id || req.headers.get('x-forwarded-for') || 'unknown';
+      if (!(await checkRateLimit(supabaseClient, identifier))) {
+        return new Response(JSON.stringify({ error: 'Too many requests' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
     let result: any;
@@ -656,6 +675,178 @@ serve(async req => {
         return new Response(JSON.stringify({ error: 'Action disabled. Use the withdrawal function instead.' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
+      }
+
+      // ─── EXECUTE REFUND (cron / internal) ───────────
+      // Called by pg_cron → pg_net with CRON_SECRET. Processes a refund_request
+      // that was auto-approved (Case 1 / Case 2 / Case 3 accepted): creates the
+      // Razorpay refund, reverses escrow, closes the contract, and records the
+      // refund + timeline + notifications + audit. Fully idempotent.
+      case 'execute_refund': {
+        const refundRequestId: string = data?.refund_request_id;
+        if (!refundRequestId) throw new Error('Missing refund_request_id');
+
+        const { data: refundRequest, error: reqErr } = await supabaseAdmin
+          .from('refund_requests')
+          .select('*')
+          .eq('id', refundRequestId)
+          .maybeSingle();
+        if (reqErr || !refundRequest) throw new Error('Refund request not found');
+
+        // Idempotency: only auto_approved/approved may be executed; already
+        // executed (completed / provider_refund_id set) is a no-op.
+        if (!['auto_approved', 'approved'].includes(refundRequest.status)) {
+          result = { refund_request_id: refundRequestId, skipped: true, reason: refundRequest.status };
+          break;
+        }
+
+        // Prevent duplicate provider refunds
+        const { data: existingRefund } = await supabaseAdmin
+          .from('refunds')
+          .select('id, provider_refund_id, status')
+          .eq('refund_request_id', refundRequestId)
+          .neq('status', 'failed')
+          .maybeSingle();
+        if (existingRefund) {
+          result = { refund_request_id: refundRequestId, skipped: true, reason: 'already_refunded' };
+          break;
+        }
+
+        // Find the captured Razorpay order for this contract
+        const { data: order } = await supabaseAdmin
+          .from('razorpay_orders')
+          .select('*')
+          .eq('contract_id', refundRequest.contract_id)
+          .eq('order_type', 'contract_escrow')
+          .eq('status', 'captured')
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (!order || !order.razorpay_payment_id) {
+          // No captured payment on file → nothing to refund via Razorpay; just
+          // reverse the escrow and close (idempotent).
+          await supabaseAdmin.rpc('admin_reverse_escrow', { p_contract_id: refundRequest.contract_id });
+          await supabaseAdmin.from('refund_requests').update({ status: 'completed', closed_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', refundRequestId);
+          await insertAuditLog(supabaseAdmin, { action: 'refund_escrow_only', entity_type: 'refund_request', entity_id: refundRequestId, user_id: refundRequest.requested_by, amount: refundRequest.refund_amount, currency: 'INR', metadata: { contract_id: refundRequest.contract_id, note: 'no captured razorpay payment' } });
+          result = { refund_request_id: refundRequestId, refunded: true, escrow_reversed: true, note: 'no_captured_payment' };
+          break;
+        }
+
+        // Create the Razorpay refund (server-side, never trust client amounts).
+        // Correct endpoint: POST /refunds with { payment_id, amount }.
+        const refundAmountPaisa = Math.round(Number(refundRequest.refund_amount) * 100);
+        let refundRes: any;
+        try {
+          refundRes = await razorpayFetch('/refunds', {
+            method: 'POST',
+            body: JSON.stringify({
+              payment_id: order.razorpay_payment_id,
+              amount: refundAmountPaisa,
+              notes: { refund_request_id: refundRequestId, contract_id: refundRequest.contract_id },
+            }),
+          });
+        } catch (refundErr) {
+          // Failure recovery: record a failed refund with retry metadata so the
+          // pg_cron job (process_pending_refunds) retries it later. Escrow is
+          // NOT reversed until the refund actually completes (webhook confirms).
+          const errMsg = refundErr instanceof Error ? refundErr.message : String(refundErr);
+          const { data: failedRefund } = await supabaseAdmin
+            .from('refunds')
+            .select('id, retry_count')
+            .eq('refund_request_id', refundRequestId)
+            .eq('status', 'failed')
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (failedRefund) {
+            await supabaseAdmin.from('refunds').update({
+              retry_count: (failedRefund.retry_count || 0) + 1,
+              last_error: errMsg.slice(0, 500),
+              status: 'failed',
+              updated_at: new Date().toISOString(),
+            }).eq('id', failedRefund.id);
+          } else {
+            await supabaseAdmin.from('refunds').insert({
+              refund_request_id: refundRequestId,
+              contract_id: refundRequest.contract_id,
+              provider: 'razorpay',
+              provider_payment_id: order.razorpay_payment_id,
+              amount: refundRequest.refund_amount,
+              currency: 'INR',
+              status: 'failed',
+              retry_count: 1,
+              last_error: errMsg.slice(0, 500),
+              timeline: [{ event: 'failed', at: new Date().toISOString(), error: errMsg.slice(0, 200) }],
+            });
+          }
+
+          // Keep the request in auto_approved so the cron retries it
+          await notify(
+            supabaseAdmin, refundRequest.requested_by, 'refund',
+            'Refund could not be completed — will retry automatically',
+            'Your refund is pending. Our system retries automatically; you will be notified when it completes.',
+            '/client/payments',
+            { refund_request_id: refundRequestId, contract_id: refundRequest.contract_id }
+          );
+          await insertAuditLog(supabaseAdmin, {
+            action: 'refund_failed',
+            entity_type: 'refund_request',
+            entity_id: refundRequestId,
+            user_id: refundRequest.requested_by,
+            amount: refundRequest.refund_amount,
+            currency: 'INR',
+            metadata: { contract_id: refundRequest.contract_id, error: errMsg.slice(0, 200) },
+          });
+
+          result = { refund_request_id: refundRequestId, status: 'failed', retry_scheduled: true };
+          break;
+        }
+
+        const razorpayRefundId: string = refundRes.id || '';
+
+        // Record the refund (idempotent: unique-ish guard via existing check above)
+        await supabaseAdmin.from('refunds').insert({
+          refund_request_id: refundRequestId,
+          contract_id: refundRequest.contract_id,
+          provider: 'razorpay',
+          provider_refund_id: razorpayRefundId,
+          provider_payment_id: order.razorpay_payment_id,
+          amount: refundRequest.refund_amount,
+          currency: refundRes.currency || 'INR',
+          status: 'processing',
+          timeline: [{ event: 'created', at: new Date().toISOString(), razorpay_refund_id: razorpayRefundId }],
+        });
+
+        // Mark the request as executing; completion is confirmed by the webhook
+        // (refund.processed) which flips it to completed and reverses escrow.
+        await supabaseAdmin.from('refund_requests').update({
+          provider_refund_id: razorpayRefundId,
+          updated_at: new Date().toISOString(),
+        }).eq('id', refundRequestId);
+
+        await supabaseAdmin.rpc('insert_payment_audit_log', {
+          p_action: 'refund_initiated',
+          p_entity_type: 'refund_request',
+          p_entity_id: refundRequestId,
+          p_provider: 'razorpay',
+          p_amount: refundRequest.refund_amount,
+          p_currency: refundRes.currency || 'INR',
+          p_metadata: { razorpay_refund_id: razorpayRefundId, contract_id: refundRequest.contract_id },
+          p_user_id: refundRequest.requested_by,
+        });
+
+        await notify(
+          supabaseAdmin, refundRequest.requested_by, 'refund',
+          'Refund in progress',
+          `Your refund of ${refundRes.currency || 'INR'} ${Number(refundRequest.refund_amount).toFixed(2)} is being processed.`,
+          '/client/payments',
+          { refund_request_id: refundRequestId, contract_id: refundRequest.contract_id }
+        );
+
+        result = { refund_request_id: refundRequestId, razorpay_refund_id: razorpayRefundId, status: 'processing' };
+        break;
       }
 
       default:

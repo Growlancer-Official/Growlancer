@@ -460,6 +460,42 @@ serve(async (req) => {
           .update({ status: 'refunded' })
           .eq('id', dbOrder.id);
 
+        // Complete the refund tracking record (match by razorpay refund id)
+        const refundId = payload?.refund?.entity?.id || '';
+        if (refundId) {
+          const { data: trackedRefund } = await supabaseAdmin
+            .from('refunds')
+            .select('id, refund_request_id')
+            .eq('provider_refund_id', refundId)
+            .maybeSingle();
+
+          if (trackedRefund) {
+            const timeline = (trackedRefund as any)?.timeline || [];
+            await supabaseAdmin.from('refunds').update({
+              status: 'completed',
+              timeline: [...timeline, { event: 'processed', at: new Date().toISOString() }],
+              updated_at: new Date().toISOString(),
+            }).eq('id', trackedRefund.id);
+
+            if (trackedRefund.refund_request_id) {
+              await supabaseAdmin.from('refund_requests').update({
+                status: 'completed',
+                closed_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              }).eq('id', trackedRefund.refund_request_id);
+
+              await supabaseAdmin.rpc('_refund_history_event', {
+                p_refund_request_id: trackedRefund.refund_request_id,
+                p_event: 'completed',
+                p_actor_id: null,
+                p_actor_role: 'system',
+                p_note: 'Razorpay refund processed',
+                p_metadata: { razorpay_refund_id: refundId },
+              }).catch(() => undefined);
+            }
+          }
+        }
+
         // Reconcile escrow: return a funded escrow to 'refunded' + debit the
         // client's escrow balance (Razorpay already returned the money).
         if (dbOrder.contract_id) {
