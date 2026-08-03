@@ -63,7 +63,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   session: Session | null;
-  signInWithOAuth: (provider: 'github' | 'linkedin_oidc', role?: UserRole) => Promise<{ success: boolean; error?: string }>;
+  signInWithOAuth: (provider: 'github' | 'linkedin_oidc', role?: UserRole) => Promise<{ success: boolean; error?: string; url?: string }>;
   login: (
     email: string,
     password: string
@@ -915,7 +915,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithOAuth = async (
     provider: 'github' | 'linkedin_oidc',
     role?: UserRole
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; error?: string; url?: string }> => {
     try {
       // 🆕 Preserve referral code from URL before OAuth redirect
       const refParam = new URLSearchParams(window.location.search).get('ref');
@@ -928,11 +928,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('growlancer_oauth_role', role);
       }
 
-      const { error } = await supabase.auth.signInWithOAuth({
+      const redirectTo = `${window.location.origin}/auth/callback`;
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: { redirectTo },
       });
 
       if (error) {
@@ -941,8 +940,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // OAuth redirects the browser — no need to set state here
-      devLog('[Auth] OAuth initiated for provider:', provider, 'role:', role);
-      return { success: true };
+      devLog('[Auth] OAuth initiated for provider:', provider, 'role:', role, 'url:', data?.url);
+      return { success: true, url: data?.url };
     } catch (error) {
       devError('[Auth] OAuth exception:', error);
       return {
