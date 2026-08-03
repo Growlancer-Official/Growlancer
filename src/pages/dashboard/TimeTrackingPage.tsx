@@ -97,7 +97,8 @@ export function TimeTrackingPage() {
       .select('*')
       .eq('freelancer_id', user.id)
       .eq('contract_id', activeContract)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (!error && data) {
       setTimeEntries(data as unknown as TimeEntry[]);

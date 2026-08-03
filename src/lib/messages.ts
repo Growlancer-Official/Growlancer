@@ -66,32 +66,50 @@ export const messagesService = {
 
     const contractIds = contracts.map(c => c.id);
 
-    const { data: messages, error } = await supabase
-      .from('messages')
-      .select('*')
-      .in('contract_id', contractIds)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
+    // ⚡ Perf: fetch at most the latest message per contract (one query per
+    // contract is bounded — a single .in() with no limit would pull EVERY
+    // message across all contracts on the page, growing unbounded over time).
     const conversationsMap = new Map<string, Conversation>();
 
-    (messages as Message[]).forEach(msg => {
-      if (!conversationsMap.has(msg.contract_id)) {
-        conversationsMap.set(msg.contract_id, {
-          id: msg.contract_id,
-          contract_id: msg.contract_id,
-          last_message: msg.content,
-          last_message_at: msg.created_at,
-          unread_count: 0,
+    await Promise.all(contractIds.map(async (contractId) => {
+      const { data: latest, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('contract_id', contractId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) return;
+
+      if (!latest) return;
+
+      conversationsMap.set(contractId, {
+        id: contractId,
+        contract_id: contractId,
+        last_message: latest.content,
+        last_message_at: latest.created_at,
+        unread_count: 0,
+      });
+
+      // Unread count comes from a lightweight aggregate below (not the message rows).
+    }));
+
+    // Unread counts: count unread messages per contract (bounded, indexed by
+    // contract_id + is_read) instead of scanning every message body.
+    if (contractIds.length > 0) {
+      const { data: unreadRows, error: unreadError } = await supabase
+        .from('messages')
+        .select('contract_id')
+        .in('contract_id', contractIds)
+        .eq('is_read', false)
+        .neq('sender_id', userId);
+      if (!unreadError && unreadRows) {
+        (unreadRows as { contract_id: string }[]).forEach(row => {
+          const conv = conversationsMap.get(row.contract_id);
+          if (conv) conv.unread_count++;
         });
       }
-
-      const conv = conversationsMap.get(msg.contract_id)!;
-      if (!msg.is_read && msg.sender_id !== userId) {
-        conv.unread_count++;
-      }
-    });
+    }
 
     return Array.from(conversationsMap.values()).sort(
       (a, b) =>
@@ -107,7 +125,8 @@ export const messagesService = {
       .from('messages')
       .select('*, profiles!messages_sender_id_fkey(name, avatar)')
       .eq('contract_id', contractId)
-      .order('created_at', { ascending: true });
+      .order('created_at', { ascending: true })
+      .limit(200);
 
     if (error) throw error;
     return (data || []) as unknown as MessageWithSender[];
