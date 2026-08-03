@@ -19,3 +19,9 @@ supabase/supabase/
 supabase/functions/test-*/
 output.txt
 test-base64.txt
+
+# TypeScript incremental build artifacts (never commit).
+*.tsbuildinfo
+
+# Supabase CLI temp dir (never commit).
+supabase/.temp/

@@ -1,0 +1,83 @@
+# Supabase Deploy (main)
+# Runs on push to main when supabase/ changed. Deploys all edge functions and
+# applies pending migrations to the live project.
+#
+# ⚠️ DB SAFETY GATE — the migration step only APPLIES when the GitHub repo
+# variable `SUPABASE_DB_AUTO_PUSH` equals "true". Until then it runs
+# `db push --dry-run` and reports the pending list (nothing changes).
+#   → Set the variable ONLY after the one-time migration-drift reconciliation
+#     documented in DEPLOYMENT.md is complete.
+#
+# Required GitHub secrets:
+#   SUPABASE_ACCESS_TOKEN   — Supabase personal access token
+#   SUPABASE_PROJECT_REF    — "zttwsjehcgaicziqyxpq" (main Growlancer project)
+#   SUPABASE_DB_PASSWORD    — Postgres password of the linked project
+# Required GitHub variable:
+#   SUPABASE_DB_AUTO_PUSH   — "true" to auto-apply migrations (see above)
+#
+# Ordering with CI: enable GitHub branch protection on `main` requiring the
+# `CI — Regression Guard` checks to pass. All pushes to main are then merges
+# that already passed CI, so this workflow can deploy directly.
+
+name: Supabase Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/**'
+  workflow_dispatch:
+
+concurrency:
+  group: supabase-deploy-${{ github.ref }}
+  cancel-in-progress: false   # never kill an in-flight deploy
+
+jobs:
+  deploy-functions:
+    name: Deploy edge functions
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Deploy all edge functions
+        run: supabase functions deploy --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" --all
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+  migrate-db:
+    name: Apply DB migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
+      - name: Apply migrations (gated) or dry-run
+        shell: bash
+        run: |
+          if [ "${{ vars.SUPABASE_DB_AUTO_PUSH }}" = "true" ]; then
+            echo "::notice::SUPABASE_DB_AUTO_PUSH=true — applying migrations to production."
+            supabase db push --yes
+          else
+            echo "::notice::SUPABASE_DB_AUTO_PUSH is not 'true' — DRY-RUN only (no changes applied)."
+            echo "::notice::Set the repo variable to 'true' after migration-drift reconciliation."
+            supabase db push --dry-run
+          fi
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
