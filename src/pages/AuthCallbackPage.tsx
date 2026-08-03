@@ -31,6 +31,9 @@ export function AuthCallbackPage() {
   const [status, setStatus] = useState<CallbackStatus>('processing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [action, setAction] = useState<AuthAction>('unknown');
+  // 🐞 Diagnostic — captures the exact callback URL + recovery outcome so a
+  // failed OAuth round-trip can be diagnosed without guessing.
+  const [diag, setDiag] = useState<string>('');
 
   useEffect(() => {
     let cancelled = false;
@@ -49,6 +52,14 @@ export function AuthCallbackPage() {
           | null;
         const detectedAction = typeParam || 'unknown';
         setAction(detectedAction);
+
+        // 🐞 Diagnostic snapshot of the incoming callback URL
+        setDiag(
+          `url=${window.location.href.slice(0, 150)}\n` +
+          `search=${window.location.search.slice(0, 100)}\n` +
+          `hash=${window.location.hash.slice(0, 200)}\n` +
+          `action=${detectedAction}`
+        );
 
         // ── 2. Check for OAuth error (search or hash) ──
         const error = searchParams.get('error') || hashParams.get('error');
@@ -250,6 +261,7 @@ export function AuthCallbackPage() {
 
           // For OAuth (unknown), try one more thing — check URL hash directly
           devLog('[AuthCallback] All session recovery failed — showing error');
+          setDiag((p) => p + `\nsessionFound=false\nhashAccessToken=${!!hashParams.get('access_token')}\nhashRefresh=${!!hashParams.get('refresh_token')}`);
           setStatus('error');
           setErrorMessage('No session found. Please try logging in again.');
           return;
@@ -405,9 +417,16 @@ export function AuthCallbackPage() {
         // role-specific full onboarding (role already chosen at signup).
         // isProviderOAuth (not isOAuthFlow) so a rare manual email navigation to
         // /auth/callback without a type param still keeps role-specific onboarding.
+        devLog('[AuthCallback] redirectAfterAuth', {
+          hasProfile: !!profile,
+          oauthMode: isProviderOAuth,
+          role: profile?.role,
+        });
+        setDiag((p) => p + `\nSUCCESS → redirect oauthMode=${isProviderOAuth} hasProfile=${!!profile} role=${profile?.role ?? 'none'}`);
         redirectAfterAuth(profile, isProviderOAuth);
       } catch (err) {
         if (!cancelled) {
+          setDiag((p) => p + `\nEXCEPTION: ${err instanceof Error ? err.message : String(err)}`);
           setStatus('error');
           setErrorMessage(
             err instanceof Error
@@ -632,6 +651,13 @@ export function AuthCallbackPage() {
               <p className="text-sm text-slate-500 mb-6">
                 {errorMessage || 'Something went wrong. Please try again.'}
               </p>
+              {diag && (
+                <div className="mb-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-left">
+                  <p className="text-[10px] font-mono text-slate-500 whitespace-pre-wrap break-all">
+                    {diag}
+                  </p>
+                </div>
+              )}
               <button
                 onClick={() => safeNavigate(() => navigate('/?modal=login', { replace: true }))}
                 className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
