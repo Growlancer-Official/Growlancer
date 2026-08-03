@@ -9,7 +9,7 @@ import { withdrawalService } from '../../lib/withdrawal';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { ReauthDialog, isReauthValid, markReauthVerified } from '../../components/ReauthDialog';
-import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, DollarSign, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
+import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, DollarSign, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, RefreshCw, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { CategoryPicker } from '../../components/CategoryPicker';
 import type { Tables } from '../../types/supabase';
@@ -71,6 +71,8 @@ export function ProfessionalProfilePage() {
   // ── Email verification state ──
   const [emailVerified, setEmailVerified] = useState(false);
   const [checkingEmailVerification, setCheckingEmailVerification] = useState(true);
+  const [sendingVerification, setSendingVerification] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function checkEmailVerified() {
@@ -85,6 +87,39 @@ export function ProfessionalProfilePage() {
     }
     checkEmailVerified();
   }, []);
+
+  // Send a fresh verification email (OAuth users with unconfirmed email can
+  // verify later from here — the app never blocks them from the dashboard).
+  const handleSendVerificationEmail = async () => {
+    setSendingVerification(true);
+    setVerificationMessage(null);
+    try {
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: accountData.email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
+        },
+      });
+      if (error) {
+        // Supabase User (not the app's AuthUser) carries app_metadata — fetch
+        // it fresh so OAuth users get a recovery hint instead of a raw error.
+        const { data: meta } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+        const provider = meta?.user?.app_metadata?.provider as string | undefined;
+        const oauthHint =
+          provider === 'github' || provider === 'linkedin_oidc'
+            ? ` If you signed up with ${provider === 'github' ? 'GitHub' : 'LinkedIn'}, make sure your email is public/verified on the provider, or use Sign up with email instead.`
+            : '';
+        setVerificationMessage(`Could not send verification email: ${error.message}${oauthHint}`);
+      } else {
+        setVerificationMessage('Verification email sent! Check your inbox (and spam folder).');
+      }
+    } catch {
+      setVerificationMessage('Failed to send verification email. Please try again.');
+    } finally {
+      setSendingVerification(false);
+    }
+  };
 
   // ── Account form state ──
   const [accountData, setAccountData] = useState({
@@ -1178,6 +1213,27 @@ export function ProfessionalProfilePage() {
                         </div>
                       </div>
                       <p className="text-xs text-slate-400 mt-1">Email cannot be changed here. Contact support.</p>
+                      {!emailVerified && !checkingEmailVerification && (
+                        <>
+                          <button
+                            onClick={handleSendVerificationEmail}
+                            disabled={sendingVerification}
+                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                          >
+                            {sendingVerification ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <RefreshCw className="w-3.5 h-3.5" />
+                            )}
+                            {sendingVerification ? 'Sending...' : 'Verify Email'}
+                          </button>
+                          {verificationMessage && (
+                            <p className={`text-xs mt-2 ${verificationMessage.includes('Could not') || verificationMessage.includes('Failed') ? 'text-red-500' : 'text-emerald-600'}`}>
+                              {verificationMessage}
+                            </p>
+                          )}
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -97,8 +97,6 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   // ── Email verification state (ALWAYS declared before any early return) ──
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
   const [checkingEmail, setCheckingEmail] = useState(true);
-  // OAuth user whose email exists but isn't confirmed → real-time verify page
-  const [oauthUnconfirmedEmail, setOauthUnconfirmedEmail] = useState<string | null>(null);
 
   // ── Server-side role verification + suspension check (ALWAYS called) ──
   useEffect(() => {
@@ -162,13 +160,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }, [user?.id, role]);
 
   // ── Email verification check effect (ALWAYS called before early returns) ──
-  // GitHub/LinkedIn OAuth auto-confirm the user's email at signup (the provider
-  // already verified identity), so those users must NOT be blocked by the
-  // "Open Gmail" verification screen when email_confirmed_at is set.
-  // BUT: a GitHub/LinkedIn account with a private/unverified email has
-  // email_confirmed_at = null while still having an email address — those users
-  // are routed to the real-time verify-email page (mode=oauth) instead.
-  // OAuth users with NO email at all (nothing to confirm) are allowed through.
+  // GitHub/LinkedIn OAuth already verified identity at the provider — those
+  // users ALWAYS pass regardless of email_confirmed_at (no "Open Gmail"
+  // block, no verify-email redirect). They can verify their email later from
+  // Settings. Only email/password signups with an unconfirmed email are gated.
   //
   // 🔥 STALE SESSION: if getUser() fails or returns no user, the session in
   // localStorage belongs to a user that no longer exists server-side (deleted
@@ -178,6 +173,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   useEffect(() => {
     let cancelled = false;
     async function checkEmailVerified() {
+      // Skip until the session user is loaded — avoids a redundant getUser()
+      // call on mount and a possible content flash before a blocked user is
+      // bounced (the [user?.id] dep re-runs this once the user resolves).
+      if (!user?.id) return;
       try {
         const { data, error } = await supabase.auth.getUser();
         if (cancelled) return;
@@ -195,9 +194,15 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
           return;
         }
         if (error && !data?.user) {
-          // Transient network error — fall back to cached user's email state.
-          setEmailConfirmed(false);
-          setOauthUnconfirmedEmail(null);
+          // Transient network error — fall back to the session cached in local
+          // storage (getSession resolves locally, no network) so OAuth users are
+          // never falsely blocked, and cached email state for everyone else.
+          const { data: sessionData } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+          const cachedUser = sessionData?.session?.user ?? null;
+          const cachedProvider = cachedUser?.app_metadata?.provider as string | undefined;
+          const cachedIsOAuth =
+            cachedProvider === 'github' || cachedProvider === 'linkedin_oidc';
+          setEmailConfirmed(cachedIsOAuth || !!cachedUser?.email_confirmed_at);
           return;
         }
 
@@ -205,14 +210,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
         const isOAuthProvider =
           provider === 'github' || provider === 'linkedin_oidc';
         const confirmed = !!data.user.email_confirmed_at;
-        const hasEmail = !!data.user.email;
-        // Confirmed email → pass. OAuth without any email → pass (nothing to
-        // confirm; provider already verified identity). Everything else (email
-        // signups OR OAuth-with-unconfirmed-email) → verification required.
-        setEmailConfirmed(confirmed || (isOAuthProvider && !hasEmail));
-        setOauthUnconfirmedEmail(
-          isOAuthProvider && !confirmed && hasEmail ? data.user.email ?? '' : null
-        );
+        // GitHub/LinkedIn OAuth → always pass (provider verified identity at
+        // sign-in; app-level confirmation is optional, done later from Settings).
+        // Only email/password signups require email confirmation.
+        setEmailConfirmed(confirmed || isOAuthProvider);
       } catch {
         if (!cancelled) setEmailConfirmed(false);
       } finally {
@@ -221,7 +222,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     }
     checkEmailVerified();
     return () => { cancelled = true; };
-  }, []);
+    // user?.id dep: re-run once the session user is loaded so the check (and
+    // its storage-cached fallback) always runs with the real session in place.
+  }, [user?.id]);
 
   // ── Loading state ──
   if (isLoading) {
@@ -248,18 +251,9 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     );
   }
 
-  // Block access if email not verified
+  // Block access if email not verified (email/password signups only — OAuth
+  // users already passed above, so they never land here)
   if (!emailConfirmed) {
-    // OAuth user with an unconfirmed email → send them through the real-time
-    // email-confirmation flow (mode=oauth) instead of the email-signup "Open
-    // Gmail" screen (no confirmation email was sent for an OAuth signup).
-    if (oauthUnconfirmedEmail) {
-      const params = new URLSearchParams({
-        email: oauthUnconfirmedEmail,
-        mode: 'oauth',
-      });
-      return <Navigate to={`/auth/verify-email?${params.toString()}`} replace />;
-    }
     return <EmailNotVerifiedPage />;
   }
 
