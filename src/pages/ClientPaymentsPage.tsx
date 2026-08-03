@@ -106,7 +106,11 @@ export function ClientPaymentsPage() {
         )
       `)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      // ⚡ Cap the result — unbounded history loads every transaction ever made
+      // (payload grows forever). Latest 200 keeps the page fast; older rows stay
+      // available in the wallet/DB for accounting.
+      .limit(200);
 
     if (error) {
       console.error('Error fetching transactions:', error);

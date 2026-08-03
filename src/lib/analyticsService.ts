@@ -86,6 +86,7 @@ export const analyticsService = {
         proposalsResult,
         reviewsResult,
         profileResult,
+        profileViewsResult,
         servicesResult,
         matchesResult,
         walletResult,
@@ -112,9 +113,17 @@ export const analyticsService = {
         // Profile
         supabase
           .from('freelancer_profiles')
-          .select('profile_views, response_rate, on_time_delivery_rate, repeat_hire_rate')
+          .select('response_rate, on_time_delivery_rate, repeat_hire_rate')
           .eq('user_id', freelancerId)
           .maybeSingle(),
+        // Profile views live in usage_logs (feature='profile_view') — the
+        // freelancer_profiles table has no such column (old code silently
+        // returned 0 via a non-existent column). Count rows headlessly.
+        supabase
+          .from('usage_logs')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', freelancerId)
+          .eq('feature', 'profile_view'),
         // Services
         supabase
           .from('services')
@@ -154,7 +163,7 @@ export const analyticsService = {
 
       // Process profile
       const profileData = profileResult.data as any;
-      const profileViews = (profileData?.profile_views as number) || 0;
+      const profileViews = profileViewsResult?.count ?? 0;
 
       // Process services
       const services = servicesResult.data || [];

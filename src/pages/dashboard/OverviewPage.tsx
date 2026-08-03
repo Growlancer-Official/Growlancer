@@ -12,7 +12,6 @@ import {
   invitesService,
   transactionsService,
 } from '../../lib/dataService';
-import { analyticsService } from '../../lib/analyticsService';
 import { notificationService } from '../../lib/notifications';
 
 interface DashboardStats {
@@ -63,6 +62,11 @@ export function OverviewPage() {
         // Clear only stale (expired) entries — keeps fresh data in cache for instant load
         CacheManager.prune();
 
+        // ⚡ Performance: ONE light query fetches `skills` (for matching) and
+        // one tiny usage_logs count for profile views. Previously this called
+        // analyticsService.getFreelancerAnalytics() — 8 parallel heavy queries
+        // (contracts, proposals, reviews, services, ai_matches, wallet RPC,
+        // transactions) — just to display a single profile-views number.
         const [
           contractsData,
           proposalsData,
@@ -70,24 +74,32 @@ export function OverviewPage() {
           projectsData,
           notificationResult,
           earningsData,
-          profileCheck,
-          analyticsResult,
+          profileResult,
+          profileViewsResult,
         ] = await Promise.all([
           contractsService.getByUser(user.id, 'freelancer', true),
           proposalsService.getByFreelancer(user.id, true),
           invitesService.getFreelancerInvites(user.id, true),
-          projectsService.getOpenProjects(100, true),
+          projectsService.getOpenProjects(50, true),
           notificationService.getByUser(user.id),
           transactionsService.getEarningsSummary(user.id),
           supabase
             .from('freelancer_profiles')
-            .select('*')
+            .select('skills')
             .eq('user_id', user.id)
             .maybeSingle(),
-          analyticsService.getFreelancerAnalytics(user.id),
+          // Profile views live in usage_logs (feature='profile_view') — the
+          // freelancer_profiles table has no such column (old code silently
+          // returned 0 via a non-existent column). Count rows headlessly.
+          supabase
+            .from('usage_logs')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('feature', 'profile_view'),
         ]);
 
-        const profileData = profileCheck?.data as Record<string, unknown> | null;
+        const profileData = profileResult?.data as Record<string, unknown> | null;
+        const profileViews = profileViewsResult?.count ?? 0;
 
         // Calculate stats
         const activeContracts = Array.isArray(contractsData)
@@ -155,7 +167,7 @@ export function OverviewPage() {
           pendingInvites,
           totalEarnings: earningsData.total,
           monthlyEarnings: earningsData.monthly,
-          profileViews: analyticsResult.profileViews || 0,
+          profileViews,
           unreadNotifications,
         });
 
