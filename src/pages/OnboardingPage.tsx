@@ -34,7 +34,14 @@ interface FreelancerForm {
   portfolio_url: string;
   availability: boolean;
   avatar_url: string | null;
+  languages: string[];
 }
+
+/** Common languages offered to freelancers during onboarding (module-scope constant). */
+const COMMON_LANGUAGES = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Portuguese', 'Arabic', 'Japanese', 'Chinese', 'Korean', 'Russian', 'Italian', 'Dutch', 'Turkish', 'Bengali', 'Telugu', 'Tamil', 'Marathi', 'Gujarati', 'Kannada', 'Malayalam', 'Punjabi', 'Urdu'];
+
+/** Max characters allowed for a custom language name. */
+const MAX_LANGUAGE_LENGTH = 40;
 
 interface ClientForm {
   company_name: string;
@@ -220,6 +227,14 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/30 flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-sm border border-slate-100 animate-fade-in">
+        {/* Progress indication */}
+        <div className="flex items-center gap-2 mb-6">
+          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+            <div className="h-full w-full bg-emerald-500 rounded-full" />
+          </div>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Setup</span>
+        </div>
+
         {/* Role Toggle */}
         <div className="flex items-center gap-3 mb-6">
           <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
@@ -405,7 +420,11 @@ export function OnboardingPage() {
     portfolio_url: '',
     availability: true,
     avatar_url: null,
+    languages: [],
   });
+
+  const [languageInput, setLanguageInput] = useState('');
+  const [languageSuggestions, setLanguageSuggestions] = useState<string[]>([]);
 
   // Client form state
   const [clientForm, setClientForm] = useState<ClientForm>({
@@ -450,7 +469,11 @@ export function OnboardingPage() {
   const handleNext = () => {
     setAnimationDir('next');
     if (step === 'welcome') setStep('profile');
-    else if (step === 'profile') setStep('skills');
+    else if (step === 'profile') {
+      // Client users skip the skills step (no skills to add) and go straight to review
+      if (isClient) setStep('review');
+      else setStep('skills');
+    }
     else if (step === 'skills') setStep('review');
   };
 
@@ -458,21 +481,74 @@ export function OnboardingPage() {
     setAnimationDir('prev');
     if (step === 'profile') setStep('welcome');
     else if (step === 'skills') setStep('profile');
-    else if (step === 'review') setStep('skills');
+    else if (step === 'review') {
+      // Client users go back to profile (they never visited skills)
+      if (isClient) setStep('profile');
+      else setStep('skills');
+    }
   };
 
   const handleSkip = () => setShowSkipModal(true);
 
   const confirmSkip = async () => {
-    // Mark onboarding as completed without saving profile data
-    if (user?.id) {
-      await supabase
+    if (!user?.id) return;
+
+    try {
+      // Ensure a basic profile row exists so the dashboard doesn't
+      // see an empty/null profile (breaks getOpenProjects matching).
+      const existing = await fetchUserProfile(user.id);
+      if (!existing) {
+        const created = await createUserProfile(
+          user.id, user.email || '', user.name || 'User',
+          user.role === 'client' ? 'client' : 'freelancer'
+        );
+        if (!created) {
+          toast.error('Profile Error', 'Failed to create your profile. Please try again or contact support.');
+          return;
+        }
+      }
+
+      // If freelancer, create a minimal freelancer_profiles row
+      if (isFreelancer) {
+        const { error: fpErr } = await supabase.from('freelancer_profiles').upsert({
+          user_id: user.id,
+          availability: true,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+        if (fpErr) {
+          toast.error('Save Error', 'Failed to save your profile: ' + fpErr.message);
+          return;
+        }
+      }
+
+      // If client, create a minimal client_profiles row
+      if (isClient) {
+        const { error: cpErr } = await supabase.from('client_profiles').upsert({
+          user_id: user.id,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+        if (cpErr) {
+          toast.error('Save Error', 'Failed to save your company profile: ' + cpErr.message);
+          return;
+        }
+      }
+
+      const { error: onboardingErr } = await supabase
         .from('profiles')
         .update({ onboarding_completed: true })
         .eq('id', user.id);
-      // Sync context immediately so the dashboard renders without a stale gate
+      if (onboardingErr) {
+        toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingErr.message);
+        return;
+      }
+
       updateUser({ onboardingCompleted: true });
+    } catch (err) {
+      console.error('Skip onboarding error:', err);
+      toast.error('Save Error', 'Failed to skip setup. Please try again.');
+      return;
     }
+
     window.location.href = getDashboardRoute();
   };
 
@@ -513,6 +589,7 @@ export function OnboardingPage() {
             categories: selectedCategoryNames.length > 0 ? selectedCategoryNames : null,
             location: freelancerForm.location || null,
             portfolio_url: freelancerForm.portfolio_url || null,
+            languages: freelancerForm.languages.length > 0 ? freelancerForm.languages : null,
             availability: freelancerForm.availability,
             updated_at: new Date().toISOString(),
           }, { onConflict: 'user_id' });
@@ -588,16 +665,23 @@ export function OnboardingPage() {
   };
 
   // Calculate progress
+  // Clients skip the skills step, so their flow is 3 steps (welcome → profile → review)
   const stepIndex = ['welcome', 'profile', 'skills', 'review'].indexOf(step);
-  const totalSteps = 4;
+  const totalSteps = isClient ? 3 : 4;
   const progress = ((stepIndex + 1) / totalSteps) * 100;
 
-  const stepDots = [
-    { id: 'welcome', label: 'Welcome', icon: Sparkles },
-    { id: 'profile', label: 'Profile', icon: User },
-    { id: 'skills', label: 'Skills', icon: Briefcase },
-    { id: 'review', label: 'Review', icon: Check },
-  ];
+  const stepDots = isClient
+    ? [
+        { id: 'welcome', label: 'Welcome', icon: Sparkles },
+        { id: 'profile', label: 'Profile', icon: User },
+        { id: 'review', label: 'Review', icon: Check },
+      ]
+    : [
+        { id: 'welcome', label: 'Welcome', icon: Sparkles },
+        { id: 'profile', label: 'Profile', icon: User },
+        { id: 'skills', label: 'Skills', icon: Briefcase },
+        { id: 'review', label: 'Review', icon: Check },
+      ];
 
   const isFormValid = () => {
     if (step === 'welcome') return true;
@@ -880,6 +964,82 @@ export function OnboardingPage() {
                       />
                     </div>
 
+                    {/* Languages */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Languages</label>
+                      <div className="relative">
+                        <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <input
+                          type="text"
+                          value={languageInput}
+                          maxLength={MAX_LANGUAGE_LENGTH}
+                          onChange={(e) => {
+                            setLanguageInput(e.target.value);
+                            if (e.target.value.trim().length > 0) {
+                              const filtered = COMMON_LANGUAGES.filter(l =>
+                                l.toLowerCase().includes(e.target.value.toLowerCase()) &&
+                                !freelancerForm.languages.includes(l)
+                              );
+                              setLanguageSuggestions(filtered.slice(0, 5));
+                            } else {
+                              setLanguageSuggestions([]);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && languageInput.trim()) {
+                              e.preventDefault();
+                              const lang = languageInput.trim();
+                              if (!freelancerForm.languages.includes(lang)) {
+                                setFreelancerForm(prev => ({ ...prev, languages: [...prev.languages, lang] }));
+                              }
+                              setLanguageInput('');
+                              setLanguageSuggestions([]);
+                            }
+                          }}
+                          onBlur={() => setTimeout(() => setLanguageSuggestions([]), 150)}
+                          placeholder="Add languages you speak (e.g., English, Hindi)"
+                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                        />
+                        {languageSuggestions.length > 0 && (
+                          <div className="absolute z-10 top-full mt-1 left-0 right-0 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden">
+                            {languageSuggestions.map(lang => (
+                              <button
+                                key={lang}
+                                type="button"
+                                onClick={() => {
+                                  if (!freelancerForm.languages.includes(lang)) {
+                                    setFreelancerForm(prev => ({ ...prev, languages: [...prev.languages, lang] }));
+                                  }
+                                  setLanguageInput('');
+                                  setLanguageSuggestions([]);
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-sm hover:bg-emerald-50 transition-colors"
+                              >{lang}</button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {freelancerForm.languages.length > 0 && (
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          {freelancerForm.languages.map(lang => (
+                            <span
+                              key={lang}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg text-xs font-medium"
+                            >
+                              {lang}
+                              <button
+                                type="button"
+                                onClick={() => setFreelancerForm(prev => ({ ...prev, languages: prev.languages.filter(l => l !== lang) }))}
+                                className="hover:text-red-500 transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
                     {/* Availability */}
                     <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
                       <input
@@ -1077,18 +1237,14 @@ export function OnboardingPage() {
                     <Briefcase className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="font-display text-xl font-bold text-slate-900">
-                      {isFreelancer ? 'Your Skills & Expertise' : 'Review Your Profile'}
-                    </h2>
+                    <h2 className="font-display text-xl font-bold text-slate-900">Your Skills & Expertise</h2>
                     <p className="text-sm text-slate-500">
-                      {isFreelancer
-                        ? 'Select skills so our AI can match you with relevant projects'
-                        : 'Review your company details before finishing'}
+                      Select skills so our AI can match you with relevant projects
                     </p>
                   </div>
                 </div>
 
-                {isFreelancer ? (
+                {isFreelancer && (
                   <div>
                     <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl mb-6">
                       <p className="text-sm text-purple-700">
@@ -1122,37 +1278,9 @@ export function OnboardingPage() {
                       </div>
                     )}
                   </div>
-                ) : (
-                  /* Client review of their profile */
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="p-4 bg-slate-50 rounded-xl">
-                        <p className="text-xs text-slate-500 mb-1">Company</p>
-                        <p className="font-medium text-slate-900">{clientForm.company_name || 'Not set'}</p>
-                      </div>
-                      <div className="p-4 bg-slate-50 rounded-xl">
-                        <p className="text-xs text-slate-500 mb-1">Industry</p>
-                        <p className="font-medium text-slate-900">{clientForm.industry || 'Not set'}</p>
-                      </div>
-                      <div className="p-4 bg-slate-50 rounded-xl">
-                        <p className="text-xs text-slate-500 mb-1">Team Size</p>
-                        <p className="font-medium text-slate-900">{clientForm.size || 'Not set'}</p>
-                      </div>
-                      <div className="p-4 bg-slate-50 rounded-xl">
-                        <p className="text-xs text-slate-500 mb-1">Location</p>
-                        <p className="font-medium text-slate-900">{clientForm.location || 'Not set'}</p>
-                      </div>
-                    </div>
-                    {clientForm.description && (
-                      <div className="p-4 bg-slate-50 rounded-xl">
-                        <p className="text-xs text-slate-500 mb-1">Description</p>
-                        <p className="font-medium text-slate-900 line-clamp-3">{clientForm.description}</p>
-                      </div>
-                    )}
-                  </div>
                 )}
 
-                {/* Navigation */}
+                {/* Navigation — skills step is freelancer-only (clients skip it) */}
                 <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-100">
                   <button
                     onClick={handleBack}
@@ -1162,10 +1290,10 @@ export function OnboardingPage() {
                     Back
                   </button>
                   <button
-                    onClick={isFreelancer || step === 'skills' ? handleNext : handleSubmit}
+                    onClick={handleNext}
                     className="flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
                   >
-                    {isFreelancer ? 'Next: Review' : 'Complete Setup'}
+                    Next: Review
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -1233,6 +1361,12 @@ export function OnboardingPage() {
                           {freelancerForm.location}
                         </div>
                       )}
+                      {freelancerForm.languages.length > 0 && (
+                        <div className="flex items-center gap-1.5 text-sm text-slate-500">
+                          <Globe className="w-4 h-4" />
+                          {freelancerForm.languages.join(', ')}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -1261,6 +1395,12 @@ export function OnboardingPage() {
                         <div className="flex items-center gap-1.5 text-sm text-slate-500">
                           <MapPin className="w-4 h-4" />
                           {clientForm.location}
+                        </div>
+                      )}
+                      {clientForm.website && (
+                        <div className="flex items-center gap-1.5 text-sm text-slate-500">
+                          <Globe className="w-4 h-4" />
+                          {clientForm.website}
                         </div>
                       )}
                     </div>
