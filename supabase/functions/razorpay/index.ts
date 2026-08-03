@@ -224,7 +224,7 @@ serve(async req => {
         if (validOrderType === 'contract_escrow') {
           if (!contract_id) throw new Error('contract_id is required for contract_escrow');
           const { data: contract } = await supabaseClient
-            .from('contracts').select('client_id, amount, platform_fee').eq('id', contract_id).single();
+            .from('contracts').select('client_id, amount, platform_fee, milestones').eq('id', contract_id).single();
           if (!contract || contract.client_id !== user.id) {
             throw new Error('Unauthorized: You do not own this contract');
           }
@@ -236,9 +236,12 @@ serve(async req => {
             ? metadata.milestone_indices.map((i: unknown) => Number(i))
             : [];
           if (milestoneIndices.length > 0) {
-            const { data: escrowRow } = await supabaseClient
-              .from('escrow').select('milestones').eq('contract_id', contract_id).maybeSingle();
-            const milestones = Array.isArray(escrowRow?.milestones) ? escrowRow.milestones : [];
+            // ⚠️ FIX (2026-08-03): milestones live on contracts.milestones (JSONB),
+            // NOT escrow — escrow has no `milestones` column, so the old query
+            // returned nothing → sum was 0 → the client was silently charged the
+            // FULL contract amount when funding selected milestones. Amounts are
+            // still read server-side (never from the request body).
+            const milestones = Array.isArray(contract?.milestones) ? contract.milestones : [];
             const sum = milestoneIndices.reduce((acc: number, idx: number) => {
               const amt = Number(milestones[idx]?.amount) || 0;
               return acc + amt;

@@ -164,6 +164,35 @@ export function AuthCallbackPage() {
           }
         }
 
+        // 🛡️ RACE-FREE implicit-flow fallback — GitHub/LinkedIn OAuth fix.
+        // getSession() only reads localStorage; supabase-js's detectSessionInUrl
+        // runs lazily when AuthProvider registers onAuthStateChange — which fires
+        // AFTER this child effect. So on a fresh OAuth round-trip the session isn't
+        // in storage yet, getSession returns null, and we'd bounce the user back to
+        // login ("Processing → back to login"). Fix: the hash tokens were captured
+        // in hashParams at the very top (before anything could clear the URL) —
+        // build the session directly with setSession(). This is deterministic and
+        // works regardless of detectSessionInUrl timing.
+        if (!sessionFound) {
+          const hashAccessToken = hashParams.get('access_token');
+          const hashRefreshToken = hashParams.get('refresh_token');
+          if (hashAccessToken && hashRefreshToken) {
+            devLog('[AuthCallback] Implicit-flow hash tokens present — setting session directly');
+            const { data: setSessionData, error: setSessionErr } = await supabase.auth.setSession({
+              access_token: hashAccessToken,
+              refresh_token: hashRefreshToken,
+            });
+            if (!setSessionErr && setSessionData?.session?.user) {
+              authUser = setSessionData.session.user;
+              sessionFound = true;
+              devLog('[AuthCallback] Session established from hash tokens (race-free OAuth fix)');
+            } else {
+              devLog('[AuthCallback] setSession from hash failed:',
+                setSessionErr?.message || 'unknown');
+            }
+          }
+        }
+
         // ── 5b. 🛡️ Email verification gate ──
         // For a signup confirmation, the email MUST be confirmed before we route
         // the user onward. Never trust the frontend — supabase.auth.getUser() only

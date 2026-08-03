@@ -297,10 +297,18 @@ Deno.serve(async (req) => {
           else payoutStatus = 'processing'
 
           await supabaseClient.from('withdrawals').update({
-            razorpay_payout_id: providerPayoutId, status: payoutStatus,
-            processed_at: payoutStatus === 'completed' ? new Date().toISOString() : null,
+            razorpay_payout_id: providerPayoutId,
+            status: payoutStatus === 'completed' ? 'processing' : payoutStatus,
             updated_at: new Date().toISOString(),
           }).eq('id', withdrawal.id)
+
+          // 🛡️ Finalize completed payouts: process_withdrawal_complete marks the
+          // withdrawal 'completed' AND deducts the held amount from pending_balance.
+          // Without this, completed payouts left the money stuck in pending_balance
+          // forever (freelancer's available balance under-counted by the amount).
+          if (payoutStatus === 'completed') {
+            await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
+          }
 
           await supabaseClient.from('transactions').update({
             status: payoutStatus === 'completed' ? 'completed' : 'pending',
@@ -336,10 +344,15 @@ Deno.serve(async (req) => {
           else payoutStatus = 'processing'
 
           await supabaseClient.from('withdrawals').update({
-            paypal_payout_id: providerPayoutId, status: payoutStatus,
-            processed_at: payoutStatus === 'completed' ? new Date().toISOString() : null,
+            paypal_payout_id: providerPayoutId,
+            status: payoutStatus === 'completed' ? 'processing' : payoutStatus,
             updated_at: new Date().toISOString(),
           }).eq('id', withdrawal.id)
+
+          // 🛡️ Finalize completed payouts (see razorpay path above)
+          if (payoutStatus === 'completed') {
+            await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
+          }
 
           await supabaseClient.from('transactions').update({
             status: payoutStatus === 'completed' ? 'completed' : 'pending',

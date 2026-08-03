@@ -7,6 +7,7 @@ import { avatarPackService } from '../lib/avatarPack';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
 import { inviteService, type UserInvitation } from '../lib/inviteService';
 import { ReauthDialog, isReauthValid, markReauthVerified } from '../components/ReauthDialog';
+import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 import {
   AlertCircle,
   AlertTriangle,
@@ -874,6 +875,10 @@ export function ClientSettingsPage() {
         <h1 className="font-display text-2xl font-bold text-slate-900">Settings</h1>
         <p className="text-slate-500 mt-1">Manage your account settings and preferences</p>
       </div>
+
+      {/* Email verification recommendation — industry-standard: nudge unverified
+          users to confirm their email; hidden automatically once confirmed */}
+      <EmailVerificationBanner />
 
       {/* Messages */}
       {successMessage && (

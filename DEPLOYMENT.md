@@ -64,22 +64,26 @@ Supabase dashboard → **Project → Edge Functions → Secrets** (or `supabase 
 ### 3.5 (Recommended) Branch protection on `main`
 Repo → **Settings → Branches → Add rule** for `main`: require status checks to pass (**CI — Regression Guard**), require PR review, disallow force-push. This guarantees every deploy-to-`main` already passed CI.
 
-## 4. ⚠️ Migration-drift reconciliation (do this BEFORE flipping `SUPABASE_DB_AUTO_PUSH`)
+## 4. Migration-drift reconciliation (status as of 2026-08-03)
 
-`supabase migration list` shows the repo's migrations vs. what's applied on the live DB. **It currently shows several local files NOT yet applied remotely.** Auto-`db push` would apply them all — some are destructive or auth-affecting, so reconcile them deliberately first:
+A reconciliation pass was already done. Current state:
 
-1. Run `npx supabase migration list` and note every row where the **Remote** column is blank (applied-on-push-only).
-2. For each pending file, decide **apply** or **intentionally skip**:
-   - `20260612_internship_applications.sql` — check whether internships were provisioned another way; if the live schema already works, skip (or rename to avoid re-applying).
-   - `20260731000000_*` (add_interview_time / enable_realtime_admin_tables) — decide which of the same-prefix pair is genuinely new.
-   - `20260801000000_*` trio (`admin_credentials`, **`combined_migration`**, `newsletter_subscribers`) — **`combined_migration.sql` TRUNCATEs and reseeds all 143 categories.** If applied now it re-creates category rows with new UUIDs → breaks `freelancer_profiles.category` / `project_categories` references. Only apply if you intend that reseed.
-   - `20260806000000_*` pair (`credential_verification_portal` / `restore_auto_confirm_trigger`) — the auto-confirm one changes **email-verification auth behavior**. Confirm the intended live auth state first.
-   - `20260831000000_add_categories_to_freelancer_profiles.sql` — adds `category` to `freelancer_profiles`; apply if the live table lacks it.
-3. Apply the decided set with `npx supabase db push` (local CLI, linked to prod) — or remove/skip files you don't want by renaming them or applying only the chosen ones.
-4. Re-run `npx supabase migration list` until Remote matches Local for every row you intend to keep.
-5. **Only then** flip the GitHub variable `SUPABASE_DB_AUTO_PUSH` → `true`. From then on, pushes to `main` apply new migrations automatically (additive, deterministic).
+- **Archived (never apply):** `20260801000000_combined_migration.sql` (destructive category TRUNCATE/reseed) and `20260806000000_restore_auto_confirm_trigger.sql` (auth-behavior toggle, superseded) and `20260731000000_enable_realtime_admin_tables.sql` (version collision with `add_interview_time`). See `supabase/migrations/archived/README.md`.
+- **Restored/pending (safe, apply next):** `20260612_internship_applications.sql`, `20260801000000_newsletter_subscribers.sql` (made idempotent), `20260831000000_add_categories_to_freelancer_profiles.sql`, `20260924000000_fix_usage_logs_schema.sql`.
 
-> If you never want auto-migrations, leave the variable `false` — the deploy workflow will then only **dry-run** and print the pending list, and you push migrations manually.
+**One-time blocker — a "ghost" migration row blocks `db push`.** The remote
+`supabase_migrations.schema_migrations` has a bare `20260612` row with no matching
+local file (`migration repair` does not clear it). `db push` fails until it's removed.
+Fix in Supabase dashboard → SQL Editor (one line):
+
+```sql
+DELETE FROM supabase_migrations.schema_migrations WHERE version = '20260612';
+```
+
+Then run `npx supabase db push --include-all` to apply the pending safe migrations
+above, and `npx supabase migration list` until Remote matches Local. **Only then** flip
+the GitHub variable `SUPABASE_DB_AUTO_PUSH` → `true`; from then on pushes to `main`
+apply new migrations automatically. Until then the deploy workflow dry-runs (non-blocking).
 
 ## 5. Day-to-day workflow
 

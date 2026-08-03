@@ -1,6 +1,6 @@
-// Check if Google and LinkedIn OIDC providers are enabled on the Supabase project.
+// Check if GitHub and LinkedIn OIDC providers are enabled on the Supabase project.
 // Hits the authorize endpoint with redirect:manual — a 302 to the provider
-// (accounts.google.com / linkedin.com) means the provider is ENABLED.
+// (github.com / linkedin.com) means the provider is ENABLED.
 import { readFileSync } from 'node:fs';
 
 const env = readFileSync('.env', 'utf8');
@@ -12,13 +12,13 @@ const getEnv = (key) => {
 
 const ANON_KEY = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('SUPABASE_ANON_KEY');
 const URL = getEnv('VITE_SUPABASE_URL') || getEnv('SUPABASE_URL') || 'https://zttwsjehcgaicziqyxpq.supabase.co';
-const REDIRECT = 'https://growlancer-mrkhan154212s-projects.vercel.app/auth/callback';
+const REDIRECT = 'https://growlancer.vercel.app/auth/callback';
 
 if (!ANON_KEY) {
   console.error('NO_ANON_KEY');
   process.exitCode = 1;
 } else {
-  for (const provider of ['google', 'linkedin_oidc']) {
+  for (const provider of ['github', 'linkedin_oidc']) {
     const res = await fetch(
       `${URL}/auth/v1/authorize?provider=${provider}&redirect_to=${encodeURIComponent(REDIRECT)}`,
       { headers: { apikey: ANON_KEY }, redirect: 'manual' }

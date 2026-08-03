@@ -101,9 +101,26 @@ Deno.serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  // Service-role client for DB ops (used below).
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  // Anon client with the caller's JWT — verify identity before touching the DB.
+  const supabaseAnon = createClient(
+    supabaseUrl,
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } } }
+  );
 
   try {
+    // 🔒 Require an authenticated user — never leave a service-role function
+    // callable by anyone with the anon key (dead code today, but still a footgun).
+    const { data: authData } = await supabaseAnon.auth.getUser();
+    if (!authData?.user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const { project_id } = await req.json();
 
     if (!project_id) {

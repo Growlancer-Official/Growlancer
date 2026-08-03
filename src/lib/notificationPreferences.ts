@@ -166,7 +166,7 @@ export const notificationPreferencesService = {
         .from('notification_preferences')
         .upsert({
           user_id: user.user.id,
-          categories: DEFAULT_NOTIFICATION_PREFERENCES as unknown as Json,
+          preferences: DEFAULT_NOTIFICATION_PREFERENCES as unknown as Json,
           updated_at: new Date().toISOString(),
         } as any, { onConflict: 'user_id' });
 

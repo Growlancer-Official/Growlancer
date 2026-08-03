@@ -1005,6 +1005,28 @@ Deno.serve(async (req) => {
 
     const { method } = req
 
+    // 🛡️ ADMIN-ONLY routes — GET (list all applicants = full PII: names, emails,
+    // resumes, phone numbers) and PATCH (status/offer-letter updates) must be
+    // restricted to authenticated admins. Previously ANY caller with the anon key
+    // could read every applicant's PII and change statuses/meet links.
+    // POST (public application submission) intentionally stays open.
+    if (method === 'GET' || method === 'PATCH') {
+      const { data: authData } = await supabaseAnon.auth.getUser();
+      const adminId = authData?.user?.id;
+      const isAdmin = !!adminId && (await supabaseAnon
+        .from('profiles')
+        .select('is_admin, role')
+        .eq('id', adminId)
+        .maybeSingle()
+      )?.data;
+      if (!adminId || !isAdmin || (isAdmin.is_admin !== true && isAdmin.role !== 'admin')) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden: admin access required' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
     // ─── POST: Submit new application ──────────────────────────────────────
     if (method === 'POST') {
       const body = await req.json()

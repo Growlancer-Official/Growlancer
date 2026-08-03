@@ -3,7 +3,6 @@
 // PayPal-only withdrawal method
 
 import { supabase, dbFunctions } from './supabase';
-import { emailNotificationService } from './emailNotificationService';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -13,6 +12,8 @@ export interface WithdrawalRequest {
   paypal_email?: string;
   /** For razorpay_payout: the bank account or UPI fund account ID */
   fund_account_id?: string;
+  /** For razorpay_payout: 'UPI' | 'bank' (defaults to 'UPI' server-side) */
+  payout_mode?: string;
 }
 
 export interface Withdrawal {
@@ -102,7 +103,17 @@ export const withdrawalService = {
   // Withdrawals
   // ============================================================
 
-  /** Create a new withdrawal request — holds wallet funds first, then creates the withdrawal record */
+  /**
+   * Create a withdrawal request.
+   *
+   * ⚠️ FIX (2026-08-03): this previously held wallet funds + inserted a `withdrawals`
+   * row directly with fee 0 — it NEVER called the payout edge function, so no real
+   * RazorpayX/PayPal payout ever fired (withdrawals sat 'pending' until the
+   * stale-withdrawal cron failed them after 72h and returned the funds). Now we
+   * route through the `withdrawal` edge function POST, which validates the balance
+   * + amount server-side, computes the fee, holds funds, executes the actual payout
+   * API call, and rolls back on failure.
+   */
   async createWithdrawal(request: WithdrawalRequest): Promise<{ success: boolean; withdrawal?: Withdrawal; error?: string }> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -110,48 +121,34 @@ export const withdrawalService = {
         return { success: false, error: 'Not authenticated' };
       }
 
-      // 1. Hold the funds in the wallet (balance → pending_balance)
-      const { error: holdError } = await dbFunctions.holdWalletFunds(session.user.id, request.amount);
-      if (holdError) {
-        return { success: false, error: `Failed to hold funds: ${holdError.message}` };
-      }
-
-      // 2. Create the withdrawal record with net_amount (amount minus fee; fee defaults to 0 for new records)
-      const { data, error } = await supabase
-        .from('withdrawals')
-        .insert({
-          user_id: session.user.id,
-          amount: request.amount,
-          net_amount: request.amount,
-          fee: 0,
-          method: request.method,
-          paypal_email: request.paypal_email,
-          status: 'pending',
-        })
-        .select()
-        .single();
-
-      if (error) {
-        // Rollback: release the held funds if withdrawal creation fails
-        // Use try/catch since PostgrestBuilder does not expose .catch()
-        try {
-          await dbFunctions.releaseWalletFunds(session.user.id, request.amount);
-        } catch (_rollbackErr) {
-          console.error('Failed to rollback held funds after withdrawal creation error:', _rollbackErr);
-        }
-        return { success: false, error: error.message };
-      }
-
-      // Fire-and-forget: notify user via email that withdrawal is pending
-      emailNotificationService.withdrawalCompleted({
-        recipientEmail: session.user.email || '',
-        recipientName: session.user.user_metadata?.name || 'User',
+      // Map frontend field names to the edge function's expected API
+      // (frontend `method` → edge `withdrawal_method`).
+      const isRazorpay = request.method === 'razorpay_payout';
+      const body: Record<string, unknown> = {
         amount: request.amount,
-        netAmount: request.amount,
-        method: request.method,
+        withdrawal_method: request.method,
+        payout_mode: isRazorpay ? (request.payout_mode || 'UPI') : undefined,
+      };
+      if (isRazorpay) body.fund_account_id = request.fund_account_id;
+      else body.paypal_email = request.paypal_email;
+
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/withdrawal`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
       });
 
-      return { success: true, withdrawal: data as Withdrawal };
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error('Withdrawal edge function error:', data?.error);
+        return { success: false, error: data?.error || 'Failed to process withdrawal' };
+      }
+
+      return { success: true, withdrawal: (data?.withdrawal ?? data) as Withdrawal };
     } catch (error) {
       console.error('Withdrawal error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Network error occurred';

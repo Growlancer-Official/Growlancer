@@ -241,14 +241,9 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       );
       setStreamingContent('');
 
-      // Log usage
-      await supabase.from('usage_logs').insert({
-        user_id: user?.id,
-        feature_type: 'ai_chat',
-        usage_count: 1,
-        metadata: { context, message_length: userMessage.length },
-      });
-
+      // ⚠️ Usage is recorded SERVER-SIDE by the ai-assistant edge function (for
+      // non-Pro users). Do NOT insert another usage_logs row here — that would
+      // double-count free users and make them hit their monthly limit 2× fast.
       setUsageLimit((prev) => ({ ...prev, used: prev.used + 1 }));
 
     } catch (error: any) {

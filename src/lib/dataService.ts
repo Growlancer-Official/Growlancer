@@ -734,12 +734,13 @@ export const invitesService = {
   },
 
   async resend(inviteId: string): Promise<boolean> {
+    // Note: never rewrite created_at on resend — it's a history field. Only
+    // refresh status + expiry so the invite is actionable again.
     const { error } = await supabase
       .from('invites')
       .update({
         status: 'pending',
         expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        created_at: new Date().toISOString(),
       })
       .eq('id', inviteId);
     return !error;

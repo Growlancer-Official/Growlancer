@@ -419,6 +419,8 @@ export function WalletPage() {
         method: isRazorpayPayout ? 'razorpay_payout' : 'paypal',
         paypal_email: !isRazorpayPayout ? method.email || '' : undefined,
         fund_account_id: isRazorpayPayout ? method.account_number || method.upi_id || undefined : undefined,
+        // RazorpayX payout mode must match the fund account: bank transfer → 'bank', UPI → 'UPI'
+        payout_mode: isRazorpayPayout ? (method.type === 'bank_transfer' ? 'bank' : 'UPI') : undefined,
       });
 
       if (result.success && result.withdrawal) {

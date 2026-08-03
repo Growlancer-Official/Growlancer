@@ -1,12 +1,12 @@
 # Supabase Check (Pull Requests)
 # Runs on every PR that touches supabase/. Catches SQL errors / migration-order
-# problems BEFORE they reach main, using `db push --dry-run` (read-only — never
+# problems BEFORE they reach main, using `db push --dry-run` (read-only - never
 # applies changes to the live database).
 #
 # Required GitHub secrets:
-#   SUPABASE_ACCESS_TOKEN   — Supabase personal access token (dashboard → Account → Access Tokens)
-#   SUPABASE_PROJECT_REF    — "zttwsjehcgaicziqyxpq" (main Growlancer project)
-#   SUPABASE_DB_PASSWORD    — Postgres password of the linked project
+#   SUPABASE_ACCESS_TOKEN   - Supabase personal access token (dashboard -> Account -> Access Tokens)
+#   SUPABASE_PROJECT_REF    - "zttwsjehcgaicziqyxpq" (main Growlancer project)
+#   SUPABASE_DB_PASSWORD    - Postgres password of the linked project
 #
 # NOTE: on PRs from forks, secrets are NOT passed to this workflow (GitHub
 # safety), so the dry-run will fail. The repo is private; for same-repo PRs it
@@ -25,7 +25,7 @@ concurrency:
 
 jobs:
   db-migration-dry-run:
-    name: DB migrations — dry run
+    name: DB migrations - dry run
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
