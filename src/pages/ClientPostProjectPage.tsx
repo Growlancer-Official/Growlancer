@@ -27,7 +27,7 @@ export function ClientPostProjectPage() {
     deadline: '',
     category: '',
     experience_level: 'intermediate' as 'entry' | 'intermediate' | 'expert',
-    visibility: 'public' as 'public' | 'private' | 'invited',
+    visibility: 'public' as 'public' | 'private' | 'invite_only',
   });
 
   // Load existing project data for edit mode
@@ -55,7 +55,7 @@ export function ClientPostProjectPage() {
             deadline: data.deadline ? data.deadline.slice(0, 10) : '',
             category: data.category || '',
             experience_level: (data.experience_level as 'entry' | 'intermediate' | 'expert') || 'intermediate',
-            visibility: (data.visibility as 'public' | 'private' | 'invited') || 'public',
+            visibility: (data.visibility as 'public' | 'private' | 'invite_only') || 'public',
           });
 
           // Resolve category ID and free-text skills from existing data
@@ -346,7 +346,7 @@ export function ClientPostProjectPage() {
             {[
               { value: 'public', label: 'Public - Visible to all freelancers', desc: 'Get maximum exposure and proposals' },
               { value: 'private', label: 'Private - Only invited freelancers', desc: 'Control who can see your project' },
-              { value: 'invited', label: 'Invited Only - Send specific invites', desc: 'Target specific freelancers' },
+              { value: 'invite_only', label: 'Invited Only - Send specific invites', desc: 'Target specific freelancers' },
             ].map((option) => (
               <label
                 key={option.value}
@@ -361,7 +361,7 @@ export function ClientPostProjectPage() {
                   name="visibility"
                   value={option.value}
                   checked={formData.visibility === option.value}
-                  onChange={(e) => setFormData({ ...formData, visibility: e.target.value as 'public' | 'private' | 'invited' })}
+                  onChange={(e) => setFormData({ ...formData, visibility: e.target.value as 'public' | 'private' | 'invite_only' })}
                   className="mt-1"
                 />
                 <div>
