@@ -546,6 +546,13 @@ export function AuthCallbackPage() {
               <p className="text-sm text-slate-500">
                 {actionDescriptions[action]}
               </p>
+              {diag && (
+                <div className="mt-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-left">
+                  <p className="text-[10px] font-mono text-slate-500 whitespace-pre-wrap break-all">
+                    {diag}
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
