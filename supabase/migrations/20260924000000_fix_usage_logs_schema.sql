@@ -17,9 +17,6 @@ ALTER TABLE public.usage_logs
 CREATE INDEX IF NOT EXISTS idx_usage_logs_user_feature_type
   ON public.usage_logs(user_id, feature_type);
 
--- Backfill: copy any legacy rows into the new columns so existing quota
--- history is not lost.
-UPDATE public.usage_logs
-SET feature_type = COALESCE(feature_type, feature),
-    usage_count  = COALESCE(usage_count, count)
-WHERE feature_type IS NULL OR usage_count IS NULL;
+-- NOTE: no backfill from `feature`/`count` — the live DB was patched directly to
+-- feature_type/usage_count (those old columns may not exist). Fresh environments
+-- get the columns via this migration; legacy rows are out of scope.

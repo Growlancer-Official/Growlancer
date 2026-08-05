@@ -22,5 +22,3 @@ SET categories = (
 WHERE (fp.categories IS NULL OR array_length(fp.categories, 1) IS NULL)
   AND fp.skills IS NOT NULL
   AND array_length(fp.skills, 1) > 0;
-
-RAISE NOTICE 'categories column added to freelancer_profiles ✓';
