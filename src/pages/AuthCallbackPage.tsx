@@ -157,33 +157,15 @@ export function AuthCallbackPage() {
           }
         }
 
-        // If still no session, try silent refresh via getUser (works for PKCE)
-        if (!sessionFound) {
-          devLog('[AuthCallback] getSession failed — trying getUser + refresh');
-          const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
-          if (userData?.user) {
-            // User exists but no session — try refreshing
-            const { data: refreshed } = await supabase.auth.refreshSession().catch(() => ({ data: { session: null } }));
-            if (refreshed?.session?.user) {
-              authUser = refreshed.session.user;
-              sessionFound = true;
-            } else {
-              // Last resort: just use the user (AuthContext will create session)
-              authUser = userData.user;
-              sessionFound = true;
-            }
-          }
-        }
-
-        // 🛡️ RACE-FREE implicit-flow fallback — GitHub/LinkedIn OAuth fix.
-        // getSession() only reads localStorage; supabase-js's detectSessionInUrl
-        // runs lazily when AuthProvider registers onAuthStateChange — which fires
-        // AFTER this child effect. So on a fresh OAuth round-trip the session isn't
-        // in storage yet, getSession returns null, and we'd bounce the user back to
-        // login ("Processing → back to login"). Fix: the hash tokens were captured
-        // in hashParams at the very top (before anything could clear the URL) —
-        // build the session directly with setSession(). This is deterministic and
-        // works regardless of detectSessionInUrl timing.
+        // 🛡️ DIRECT implicit-flow session from the URL hash — run BEFORE the
+        // getUser fallback. getSession() only reads localStorage; if supabase-js's
+        // detectSessionInUrl hasn't persisted the OAuth tokens (or failed to),
+        // there's no session in storage and getSession returns null. Building the
+        // session here with setSession() PERSISTS it, so the post-callback redirect
+        // actually has a session — otherwise ProtectedRoute bounces the user back
+        // to login even though the GitHub/LinkedIn user exists.
+        // (Confirmed via console: user found via getUser, but no session in
+        //  storage → 'Protected route blocked unauthenticated' → back to login.)
         if (!sessionFound) {
           const hashAccessToken = hashParams.get('access_token');
           const hashRefreshToken = hashParams.get('refresh_token');
@@ -196,10 +178,43 @@ export function AuthCallbackPage() {
             if (!setSessionErr && setSessionData?.session?.user) {
               authUser = setSessionData.session.user;
               sessionFound = true;
-              devLog('[AuthCallback] Session established from hash tokens (race-free OAuth fix)');
+              devLog('[AuthCallback] Session established from hash tokens');
             } else {
               devLog('[AuthCallback] setSession from hash failed:',
                 setSessionErr?.message || 'unknown');
+            }
+          }
+        }
+
+        // 🆕 PKCE explicit exchange fallback (email-verification links / PKCE OAuth)
+        if (!sessionFound) {
+          const pkceCode = searchParams.get('code');
+          if (pkceCode) {
+            const { data: exchanged, error: exchangeError } = await supabase.auth
+              .exchangeCodeForSession(pkceCode)
+              .catch(err => ({ data: { session: null }, error: err }));
+            if (!exchangeError && exchanged?.session?.user) {
+              authUser = exchanged.session.user;
+              sessionFound = true;
+              devLog('[AuthCallback] PKCE code exchanged successfully');
+            } else {
+              devLog('[AuthCallback] PKCE exchange failed (may already be exchanged):',
+                exchangeError?.message || 'unknown');
+            }
+          }
+        }
+
+        // If still no session, try silent refresh via getUser — but ONLY a real
+        // session counts. A bare user (no persisted session) does NOT survive the
+        // next page load and would bounce back to login.
+        if (!sessionFound) {
+          devLog('[AuthCallback] getSession failed — trying getUser + refresh');
+          const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+          if (userData?.user) {
+            const { data: refreshed } = await supabase.auth.refreshSession().catch(() => ({ data: { session: null } }));
+            if (refreshed?.session?.user) {
+              authUser = refreshed.session.user;
+              sessionFound = true;
             }
           }
         }
