@@ -939,8 +939,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: error.message };
       }
 
-      // OAuth redirects the browser — no need to set state here
-      devLog('[Auth] OAuth initiated for provider:', provider, 'role:', role, 'url:', data?.url);
+      // OAuth redirects the browser. The library calls window.location.assign
+      // internally, but on some setups that navigation doesn't fire (user stays
+      // on the login modal). Force it explicitly with window.location.href so
+      // the browser ALWAYS leaves for the provider authorize page.
+      if (data?.url) {
+        devLog('[Auth] OAuth initiated for provider:', provider, 'role:', role, 'url:', data.url);
+        window.location.href = data.url;
+      }
       return { success: true, url: data?.url };
     } catch (error) {
       devError('[Auth] OAuth exception:', error);
