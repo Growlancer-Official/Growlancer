@@ -54,18 +54,18 @@ const supabaseClient: SupabaseClient<Database> = createClient<Database>(supabase
       const urlStr = typeof url === 'string' ? url : url instanceof Request ? url.url : '';
       const isEdgeFunction = urlStr.includes('/functions/v1/');
 
+      // ⚠️ IMPORTANT: do NOT throw on non-2xx here. supabase-js (auth, postgrest,
+      // realtime) reads the HTTP status from the response and handles it
+      // internally (401 → invalid JWT → silent refresh; 400/403 → returned as
+      // `{ error }`). Throwing a generic Error here breaks the auth/session
+      // restore flow — e.g. a 401 while validating the OAuth callback token
+      // crashed initialization, so the session never persisted and the user was
+      // bounced back to login. Only apply the timeout; let supabase-js handle
+      // status codes. (Edge-function 4xx are already surfaced by callers.)
       return fetch(url, {
         ...options,
         signal: controller.signal,
-      })
-        .then(async response => {
-          if (!response.ok && response.status !== 406 && !isEdgeFunction) {
-            const errorText = await response.text();
-            throw new Error(`HTTP ${response.status}: ${errorText}`);
-          }
-          return response;
-        })
-        .finally(() => clearTimeout(timeoutId));
+      }).finally(() => clearTimeout(timeoutId));
     },
   },
 });
