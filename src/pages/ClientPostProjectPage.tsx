@@ -114,8 +114,8 @@ export function ClientPostProjectPage() {
       toast.error('Validation Error', 'Please enter valid budget amounts.');
       return;
     }
-    if (minBudget < 500) {
-      toast.error('Validation Error', 'Minimum budget must be at least ₹500.');
+    if (minBudget < 0 || maxBudget < 0) {
+      toast.error('Validation Error', 'Budget amounts cannot be negative.');
       return;
     }
     if (maxBudget < minBudget) {
@@ -290,22 +290,20 @@ export function ClientPostProjectPage() {
               <input
                 type="number"
                 required
-                min="500"
-                step="100"
+                min="0"
                 value={formData.budget_min}
                 onChange={(e) => setFormData({ ...formData, budget_min: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                 placeholder="e.g., 5000"
               />
-              <p className="text-xs text-slate-400 mt-1.5">Minimum ₹500</p>
+              <p className="text-xs text-slate-400 mt-1.5">Set the starting amount for your project</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Max Budget (₹) *</label>
               <input
                 type="number"
                 required
-                min="500"
-                step="100"
+                min="0"
                 value={formData.budget_max}
                 onChange={(e) => setFormData({ ...formData, budget_max: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
