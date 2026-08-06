@@ -432,6 +432,31 @@ export function AuthCallbackPage() {
         // role-specific full onboarding (role already chosen at signup).
         // isProviderOAuth (not isOAuthFlow) so a rare manual email navigation to
         // /auth/callback without a type param still keeps role-specific onboarding.
+        // 🛡️ VERIFY the session is actually persisted to storage before
+        // redirecting. If getSession() returns null here, the redirect would land
+        // on a page with no session → ProtectedRoute bounces back to login.
+        // Re-establish from the hash once; if it STILL won't persist, stay on a
+        // clear error screen (no more silent bounce) so we can capture why.
+        const persistCheck = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        if (!persistCheck.data?.session?.user) {
+          const at = hashParams.get('access_token');
+          const rt = hashParams.get('refresh_token');
+          let reestablished = false;
+          if (at && rt) {
+            const s = await supabase.auth
+              .setSession({ access_token: at, refresh_token: rt })
+              .catch(() => ({ data: { session: null } }));
+            reestablished = !!s?.data?.session?.user;
+            if (reestablished) setDiag((p) => p + '\nRE-ESTABLISHED session from hash (was not persisted)');
+          }
+          if (!reestablished) {
+            setDiag((p) => p + `\nPERSIST FAILED: getSession()=null after recovery (hashAT=${!!hashParams.get('access_token')}, hashRT=${!!hashParams.get('refresh_token')})`);
+            setStatus('error');
+            setErrorMessage('Session could not be persisted. Please try again.');
+            return;
+          }
+        }
+
         devLog('[AuthCallback] redirectAfterAuth', {
           hasProfile: !!profile,
           oauthMode: isProviderOAuth,
