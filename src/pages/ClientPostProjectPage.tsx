@@ -114,8 +114,8 @@ export function ClientPostProjectPage() {
       toast.error('Validation Error', 'Please enter valid budget amounts.');
       return;
     }
-    if (minBudget < 2000) {
-      toast.error('Validation Error', 'Minimum budget must be at least ₹2,000.');
+    if (minBudget < 500) {
+      toast.error('Validation Error', 'Minimum budget must be at least ₹500.');
       return;
     }
     if (maxBudget < minBudget) {
@@ -290,24 +290,28 @@ export function ClientPostProjectPage() {
               <input
                 type="number"
                 required
-                min="2000"
+                min="500"
+                step="100"
                 value={formData.budget_min}
                 onChange={(e) => setFormData({ ...formData, budget_min: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="2000"
+                placeholder="e.g., 5000"
               />
+              <p className="text-xs text-slate-400 mt-1.5">Minimum ₹500</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Max Budget (₹) *</label>
               <input
                 type="number"
                 required
-                min="2000"
+                min="500"
+                step="100"
                 value={formData.budget_max}
                 onChange={(e) => setFormData({ ...formData, budget_max: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="5000"
+                placeholder="e.g., 10000"
               />
+              <p className="text-xs text-slate-400 mt-1.5">Set a realistic range — freelancers use it to gauge scope</p>
             </div>
           </div>
         </div>
