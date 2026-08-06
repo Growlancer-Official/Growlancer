@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ChevronDown, ChevronUp, Loader2, Layers } from 'lucide-react';
+import { ChevronDown, ChevronUp, Loader2, Layers, Search, X } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { resolveCategoryMeta } from '../lib/categories';
 
@@ -23,15 +23,23 @@ export function CategoriesSection({
 }: CategoriesSectionProps) {
   const { categories, counts, loading, error, refresh } = useCategories();
   const [showAll, setShowAll] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Sort categories A-Z alphabetically
   const sortedCategories = useMemo(() => {
     return [...categories].sort((a, b) => a.name.localeCompare(b.name));
   }, [categories]);
 
-  const displayCategories = showAll || maxInitial === 0
-    ? sortedCategories
-    : sortedCategories.slice(0, maxInitial);
+  // Live search filter (select mode)
+  const searchedCategories = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sortedCategories;
+    return sortedCategories.filter((cat) => cat.name.toLowerCase().includes(q));
+  }, [sortedCategories, searchQuery]);
+
+  const displayCategories = showAll || maxInitial === 0 || searchQuery.trim()
+    ? searchedCategories
+    : searchedCategories.slice(0, maxInitial);
 
   const showToggleButton = maxInitial > 0 && sortedCategories.length > maxInitial;
 
@@ -58,7 +66,7 @@ export function CategoriesSection({
     );
   }
 
-  // ─── SELECT MODE: Category selection cards ───
+  // ─── SELECT MODE: searchable A–Z line list ───
   if (mode === 'select') {
     return (
       <div>
@@ -67,49 +75,90 @@ export function CategoriesSection({
             <Loader2 className="w-4 h-4 animate-spin" />
             Loading categories...
           </div>
-        ) : displayCategories.length === 0 ? (
-          <p className="text-sm text-slate-400 py-4">No categories available</p>
         ) : (
           <>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
-              {displayCategories.map((cat) => {
-                const meta = resolveCategoryMeta(cat.name);
-                const Icon = meta.icon;
-                const isSelected = selectedCategory === cat.name;
-
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => handleCategoryClick(cat.name)}
-                    className={`group flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all duration-200 ${
-                      isSelected
-                        ? 'border-emerald-500 bg-emerald-50 shadow-md shadow-emerald-500/10 scale-[1.02]'
-                        : 'border-slate-200 hover:border-emerald-200 hover:bg-slate-50 hover:shadow-sm'
-                    }`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 ${
-                      isSelected
-                        ? `${meta.bgColor} ${meta.color} scale-110`
-                        : 'bg-slate-50 text-slate-500 group-hover:scale-110'
-                    }`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <span className={`text-xs font-medium text-center leading-tight ${
-                      isSelected ? 'text-emerald-700' : 'text-slate-600'
-                    }`}>
-                      {cat.name}
-                    </span>
-                    {isSelected && (
-                      <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Search */}
+            <div className="relative mb-3">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search categories..."
+                className="w-full pl-9 pr-9 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  aria-label="Clear category search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
-            {/* Show More / Show Less */}
-            {showToggleButton && (
+            {/* A–Z line list */}
+            {displayCategories.length === 0 ? (
+              <div className="border border-slate-200 rounded-xl bg-white py-8 text-center">
+                <p className="text-sm text-slate-500">
+                  No categories found matching &quot;{searchQuery}&quot;
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="mt-2 text-xs font-semibold text-emerald-600 hover:text-emerald-700 transition-colors"
+                >
+                  Clear search
+                </button>
+              </div>
+            ) : (
+              <div className="border border-slate-200 rounded-xl bg-white overflow-hidden shadow-sm">
+                <div className="max-h-80 overflow-y-auto overscroll-contain divide-y divide-slate-50">
+                  {displayCategories.map((cat) => {
+                    const meta = resolveCategoryMeta(cat.name);
+                    const Icon = meta.icon;
+                    const isSelected = selectedCategory === cat.name;
+
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => handleCategoryClick(cat.name)}
+                        aria-pressed={isSelected}
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150 group ${
+                          isSelected ? 'bg-emerald-50/80' : 'hover:bg-slate-50/80'
+                        }`}
+                      >
+                        <span
+                          className={`shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-transform duration-150 group-hover:scale-105 ${meta.bgColor} ${meta.color}`}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </span>
+                        <span
+                          className={`flex-1 min-w-0 truncate text-[13px] ${
+                            isSelected ? 'font-semibold text-emerald-800' : 'font-medium text-slate-700'
+                          }`}
+                        >
+                          {cat.name}
+                        </span>
+                        <span
+                          className={`shrink-0 w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-colors ${
+                            isSelected ? 'border-emerald-500' : 'border-slate-300 group-hover:border-emerald-400'
+                          }`}
+                        >
+                          {isSelected && <span className="w-2 h-2 rounded-full bg-emerald-500" />}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Show More / Show Less (hidden while searching) */}
+            {showToggleButton && !searchQuery.trim() && (
               <button
                 type="button"
                 onClick={() => setShowAll(!showAll)}
