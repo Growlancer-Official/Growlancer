@@ -10,11 +10,6 @@ import { portfolioImageUpload } from '../lib/portfolioImageUpload';
 
 const MAX_FILE_SIZE_MB = 5;
 const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-const RECOMMENDED_DIMENSIONS = '1200 × 675 px';
-const RECOMMENDED_WIDTH = 800;
-const RECOMMENDED_HEIGHT = 450;
-const MIN_ASPECT_RATIO = 1.4;
-const MAX_ASPECT_RATIO = 2.0;
 const ALLOWED_FORMATS = 'JPEG, PNG, WebP, GIF';
 
 interface ImageUploadProps {
@@ -36,6 +31,14 @@ interface ImageUploadProps {
   compact?: boolean;
 }
 
+/**
+ * 🖼️ ImageUpload — size-independent image uploader.
+ *
+ * Any image size is accepted (no min-dimension / aspect-ratio rejection). The
+ * preview renders the FULL image (object-contain) inside a fixed frame with a
+ * professional backdrop, so portrait, landscape or square images all look
+ * clean without cropping.
+ */
 export function ImageUpload({
   currentImage,
   onUploadComplete,
@@ -58,7 +61,7 @@ export function ImageUpload({
   const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  /** Validate image dimensions using a hidden Image element */
+  /** Read image dimensions (informational only — never blocks upload) */
   const validateImageDimensions = useCallback((file: File): Promise<{ width: number; height: number }> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
@@ -73,24 +76,6 @@ export function ImageUpload({
       };
       img.src = objectUrl;
     });
-  }, []);
-
-  /** Get dimension validation error message */
-  const getDimensionError = useCallback((w: number, h: number): string | null => {
-    if (w < RECOMMENDED_WIDTH) {
-      return `Image width too small (${w}px). Minimum width: ${RECOMMENDED_WIDTH}px. Recommended: 1200px.`;
-    }
-    if (h < RECOMMENDED_HEIGHT) {
-      return `Image height too small (${h}px). Minimum height: ${RECOMMENDED_HEIGHT}px. Recommended: 675px.`;
-    }
-    const ratio = w / h;
-    if (ratio < MIN_ASPECT_RATIO) {
-      return `Image is too tall (${ratio.toFixed(1)}:1). Cover images should be landscape (min ${MIN_ASPECT_RATIO.toFixed(1)}:1).`;
-    }
-    if (ratio > MAX_ASPECT_RATIO) {
-      return `Image is too wide (${ratio.toFixed(1)}:1). Cover images should be landscape (max ${MAX_ASPECT_RATIO.toFixed(1)}:1).`;
-    }
-    return null;
   }, []);
 
   const handleFile = useCallback(async (file: File) => {
@@ -116,27 +101,17 @@ export function ImageUpload({
     const localUrl = URL.createObjectURL(file);
     setPreviewUrl(localUrl);
 
-    // Validate image dimensions
+    // Read dimensions for the info badge — ANY size is accepted
     try {
       const dims = await validateImageDimensions(file);
       setImageDimensions(dims);
-
-      const dimError = getDimensionError(dims.width, dims.height);
-      if (dimError) {
-        setValidationError(dimError);
-        URL.revokeObjectURL(localUrl);
-        setPreviewUrl(currentImage || null);
-        return;
-      }
-
-      // All validations passed — store file for upload
-      setSelectedFile(file);
     } catch {
-      setValidationError('Could not read image dimensions. Try a different file.');
-      URL.revokeObjectURL(localUrl);
-      setPreviewUrl(currentImage || null);
+      setImageDimensions(null);
     }
-  }, [validateImageDimensions, getDimensionError, currentImage]);
+
+    // All validations passed — store file for upload
+    setSelectedFile(file);
+  }, [validateImageDimensions]);
 
   /** Actually upload the selected file to Supabase */
   const handleUpload = useCallback(async () => {
@@ -229,7 +204,7 @@ export function ImageUpload({
       <div className="flex items-center gap-2 mb-2 text-xs text-slate-500">
         <span className="px-2 py-0.5 bg-slate-100 rounded-md font-medium">Max {MAX_FILE_SIZE_MB}MB</span>
         <span className="px-2 py-0.5 bg-slate-100 rounded-md font-medium">{ALLOWED_FORMATS}</span>
-        <span className="px-2 py-0.5 bg-slate-100 rounded-md font-medium">{RECOMMENDED_DIMENSIONS}</span>
+        <span className="px-2 py-0.5 bg-slate-100 rounded-md font-medium">Any size</span>
       </div>
 
       {/* Validation Error */}
@@ -255,17 +230,19 @@ export function ImageUpload({
       )}
 
       {/* Preview / Upload Area */}
-      {previewUrl && !uploaded ? (
+      {previewUrl ? (
         <div className="space-y-3">
-          {/* Preview */}
+          {/* 🖼️ Full-image preview — object-contain so EVERY part of the image
+              is visible regardless of its aspect ratio. Professional backdrop
+              keeps portrait/square images looking clean inside the frame. */}
           <div
-            className={`relative rounded-xl overflow-hidden border-2 border-slate-200 group ${compact ? 'max-h-40' : ''}`}
-            style={{ aspectRatio: compact ? undefined : aspectRatio }}
+            className={`relative rounded-xl overflow-hidden border-2 border-slate-200 group bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 ${compact ? 'max-h-44' : ''}`}
+            style={{ aspectRatio: compact ? undefined : aspectRatio, minHeight: compact ? undefined : '140px' }}
           >
             <img
               src={previewUrl}
               alt="Preview"
-              className={`w-full ${compact ? 'h-32' : 'h-full'} object-cover`}
+              className="w-full h-full object-contain p-2"
             />
             {/* Dimension badge */}
             {imageDimensions && (
@@ -273,13 +250,13 @@ export function ImageUpload({
                 {imageDimensions.width} × {imageDimensions.height}px
               </div>
             )}
-            {/* Hover overlay — only if not showing upload state */}
+            {/* Hover overlay — replace/remove when image is already uploaded or current */}
             {!selectedFile && (
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center gap-3 opacity-0 group-hover:opacity-100">
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="p-1.5 bg-white rounded-lg hover:bg-slate-100 transition-colors shadow-lg"
+                  className="p-2 bg-white rounded-lg hover:bg-slate-100 transition-colors shadow-lg"
                   title="Replace image"
                 >
                   <Upload className="w-4 h-4 text-slate-700" />
@@ -287,7 +264,7 @@ export function ImageUpload({
                 <button
                   type="button"
                   onClick={handleRemove}
-                  className="p-1.5 bg-white rounded-lg hover:bg-red-50 transition-colors shadow-lg"
+                  className="p-2 bg-white rounded-lg hover:bg-red-50 transition-colors shadow-lg"
                   title="Remove image"
                 >
                   <X className="w-4 h-4 text-red-500" />
@@ -320,6 +297,14 @@ export function ImageUpload({
                 </span>
               )}
             </div>
+          )}
+
+          {/* Uploaded state badge */}
+          {uploaded && !selectedFile && (
+            <p className="text-xs text-emerald-600 flex items-center gap-1">
+              <CheckCircle2 className="w-3 h-3" />
+              Image uploaded
+            </p>
           )}
         </div>
       ) : uploading ? (
@@ -357,7 +342,7 @@ export function ImageUpload({
           <p className={`text-xs font-medium ${dragOver ? 'text-emerald-600' : 'text-slate-500'}`}>
             {dragOver ? 'Drop here' : 'Click or drag to upload'}
           </p>
-          <p className="text-[10px] text-slate-400 mt-0.5">{ALLOWED_FORMATS} · Max {MAX_FILE_SIZE_MB}MB · {RECOMMENDED_DIMENSIONS}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{ALLOWED_FORMATS} · Max {MAX_FILE_SIZE_MB}MB · Any size</p>
         </div>
       )}
 
@@ -403,14 +388,6 @@ export function ImageUpload({
             </button>
           )}
         </div>
-      )}
-
-      {/* Uploaded state badge */}
-      {uploaded && !selectedFile && (
-        <p className="text-xs text-emerald-600 flex items-center gap-1">
-          <CheckCircle2 className="w-3 h-3" />
-          Image uploaded
-        </p>
       )}
     </div>
   );
