@@ -279,7 +279,7 @@ export function ClientProjectsPage() {
   };
 
   const formatBudget = (min: number, max: number) => {
-    return `$${min?.toLocaleString()} - $${max?.toLocaleString()}`;
+    return `₹${min?.toLocaleString('en-IN')} - ₹${max?.toLocaleString('en-IN')}`;
   };
 
   if (loading) {

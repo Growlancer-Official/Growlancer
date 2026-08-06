@@ -162,22 +162,31 @@ export function ClientPostProjectPage() {
       if (insertError) throw insertError;
       if (!projectDataResult) throw new Error('No project data returned');
 
-      // Save to project_categories and project_skills junction tables
+      // Save to project_categories junction table
       const projectId = projectDataResult.id;
 
-      // Save category link
+      // Save category link — surface errors so matching issues are never silent
       for (const catId of selectedCategoryIds) {
-        await supabase.from('project_categories').upsert({
+        const { error: catError } = await supabase.from('project_categories').upsert({
           project_id: projectId,
           category_id: catId,
         }, { onConflict: 'project_id, category_id', ignoreDuplicates: true });
+        if (catError) {
+          console.error('Failed to link project category:', catError.message);
+        }
       }
 
       // Free-text skills are stored directly on the project (skills_required).
       // No junction-table writes needed — freelancers match on the category.
 
       // Clear old AI matches so fresh skill-based matching runs on matches page
-      await supabase.from('ai_matches').delete().eq('project_id', projectId);
+      const { error: matchError } = await supabase
+        .from('ai_matches')
+        .delete()
+        .eq('project_id', projectId);
+      if (matchError) {
+        console.error('Failed to clear old AI matches:', matchError.message);
+      }
 
       navigate(`/client/matches?project_id=${projectDataResult.id}`);
     } catch (error) {
