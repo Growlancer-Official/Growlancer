@@ -186,12 +186,14 @@ export function ProfessionalProfilePage() {
   const [deletingPayoutId, setDeletingPayoutId] = useState<string | null>(null);
   const [confirmDeletePayout, setConfirmDeletePayout] = useState<string | null>(null);
   const [newPayout, setNewPayout] = useState({
-    type: 'paypal' as 'paypal' | 'bank_transfer' | 'stripe',
+    type: 'upi' as 'upi' | 'bank' | 'paypal',
     email: '',
     accountHolderName: '',
     accountNumber: '',
     routingNumber: '',
     bankName: '',
+    ifscCode: '',
+    upiId: '',
   });
 
   // ── Account deletion state ──
@@ -680,13 +682,23 @@ export function ProfessionalProfilePage() {
     if (!user?.id) return;
     setAddingPayout(true); setPayoutMethodsError(null);
     try {
+      if (newPayout.type === 'paypal') {
+        setPayoutMethodsError('PayPal withdrawals are coming soon. Please add UPI or a Bank Account.');
+        return;
+      }
       const formData2: any = { type: newPayout.type };
-      if (newPayout.type === 'paypal') formData2.email = newPayout.email || null;
-      else { formData2.account_holder_name = newPayout.accountHolderName || null; formData2.account_number = newPayout.accountNumber || null; formData2.routing_number = newPayout.routingNumber || null; formData2.bank_name = newPayout.bankName || null; }
+      if (newPayout.type === 'upi') {
+        formData2.upi_id = newPayout.upiId || null;
+      } else {
+        formData2.account_holder_name = newPayout.accountHolderName || null;
+        formData2.account_number = newPayout.accountNumber || null;
+        formData2.ifsc_code = newPayout.ifscCode || null;
+        formData2.bank_name = newPayout.bankName || null;
+      }
       if (payoutMethods.length === 0) formData2.is_default = true;
       const result = await withdrawalService.addPayoutMethod(formData2);
       if (!result.success) { setPayoutMethodsError(result.error || 'Failed to add'); return; }
-      setShowAddPayout(false); setNewPayout({ type: 'paypal', email: '', accountHolderName: '', accountNumber: '', routingNumber: '', bankName: '' });
+      setShowAddPayout(false); setNewPayout({ type: 'upi', email: '', accountHolderName: '', accountNumber: '', routingNumber: '', bankName: '', ifscCode: '', upiId: '' });
       setSuccessMessage('Payout method added!'); setTimeout(() => setSuccessMessage(null), 3000);
       void fetchPayoutMethods();
     } catch { setPayoutMethodsError('Failed to add'); }
@@ -957,7 +969,7 @@ export function ProfessionalProfilePage() {
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Professional Info</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Hourly Rate (USD)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Hourly Rate (₹/hr)</label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
                           <input type="number" step="0.01" min="0" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: parseFloat(e.target.value) || 0 })}
@@ -1664,38 +1676,47 @@ export function ProfessionalProfilePage() {
                         <label className="block text-sm font-medium text-slate-700 mb-2">Method Type</label>
                         <select value={newPayout.type} onChange={(e) => setNewPayout({ ...newPayout, type: e.target.value as any })}
                           className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
-                          <option value="paypal">PayPal</option>
-                          <option value="bank_transfer">Bank Account</option>
-                          <option value="stripe">Stripe</option>
+                          <option value="upi">UPI (Recommended)</option>
+                          <option value="bank">Bank Account</option>
+                          <option value="paypal">PayPal (Coming Soon)</option>
                         </select>
                       </div>
                       {newPayout.type === 'paypal' && (
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">PayPal Email</label>
-                          <input type="email" value={newPayout.email} onChange={(e) => setNewPayout({ ...newPayout, email: e.target.value })}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="your@email.com" />
+                        <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
+                          <p className="text-xs text-amber-800">
+                            PayPal withdrawals are <strong>coming soon</strong>. For now, add a UPI ID or Bank Account to withdraw in INR via RazorpayX.
+                          </p>
                         </div>
                       )}
-                      {newPayout.type === 'bank_transfer' && (
+                      {newPayout.type === 'upi' && (
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">UPI ID <span className="text-red-400">*</span></label>
+                          <input type="text" value={newPayout.upiId} onChange={(e) => setNewPayout({ ...newPayout, upiId: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="yourname@upi" />
+                          <p className="text-xs text-slate-400 mt-1">e.g. yourname@okhdfcbank, yourname@ybl — paid via RazorpayX (INR)</p>
+                        </div>
+                      )}
+                      {newPayout.type === 'bank' && (
                         <>
                           <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Account Holder Name</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Account Holder Name <span className="text-red-400">*</span></label>
                             <input type="text" value={newPayout.accountHolderName} onChange={(e) => setNewPayout({ ...newPayout, accountHolderName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-sm font-medium text-slate-700 mb-2">Bank Name</label>
-                              <input type="text" value={newPayout.bankName} onChange={(e) => setNewPayout({ ...newPayout, bankName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
+                              <input type="text" value={newPayout.bankName} onChange={(e) => setNewPayout({ ...newPayout, bankName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g. HDFC Bank" />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-slate-700 mb-2">Routing Number</label>
-                              <input type="text" value={newPayout.routingNumber} onChange={(e) => setNewPayout({ ...newPayout, routingNumber: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
+                              <label className="block text-sm font-medium text-slate-700 mb-2">IFSC Code <span className="text-red-400">*</span></label>
+                              <input type="text" value={newPayout.ifscCode} onChange={(e) => setNewPayout({ ...newPayout, ifscCode: e.target.value.toUpperCase() })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase" placeholder="HDFC0001234" />
                             </div>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-2">Account Number</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-2">Account Number <span className="text-red-400">*</span></label>
                             <input type="text" value={newPayout.accountNumber} onChange={(e) => setNewPayout({ ...newPayout, accountNumber: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                           </div>
+                          <p className="text-xs text-slate-400 mt-1">Bank transfers are processed via RazorpayX (INR)</p>
                         </>
                       )}
                       <div className="flex gap-2">

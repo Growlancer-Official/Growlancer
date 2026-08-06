@@ -608,11 +608,16 @@ export function AuthCallbackPage() {
       } else {
         // Non-India country — insert into waitlist, redirect to /waitlist
         const email = sessionData.session?.user?.email || '';
+        const oauthName = sessionData.session?.user?.user_metadata?.name
+          || sessionData.session?.user?.user_metadata?.full_name
+          || sessionData.session?.user?.user_metadata?.user_name
+          || null;
         await supabase.rpc('join_waitlist', {
           p_email: email,
           p_country: selectedCountry,
           p_signup_source: 'oauth',
           p_user_id: userId,
+          p_name: oauthName,
         });
 
         safeNavigate(() => navigate('/waitlist', { replace: true }));

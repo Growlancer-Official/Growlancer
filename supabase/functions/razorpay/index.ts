@@ -674,6 +674,91 @@ serve(async req => {
       // payout to an arbitrary fund account — a direct fund-drain vector.
       // All withdrawals must go through the `withdrawal` edge function, which
       // verifies wallet balance, holds funds, and enforces rate limits.
+      // ─── CREATE FUND ACCOUNT (RazorpayX) ────────────
+      // RazorpayX /v1/payouts requires a fund_account_id created server-side via
+      // POST /v1/fund_accounts. Raw account numbers / UPI IDs are not accepted.
+      // Creates (or reuses) the RazorpayX contact + fund account for a user's
+      // payout method and stores the returned fund_account_id on the row.
+      case 'create_fund_account': {
+        const { payout_method_id, name, email, phone } = data || {};
+        if (!payout_method_id) throw new Error('Missing payout_method_id');
+
+        const { data: method, error: methodErr } = await supabaseClient
+          .from('payout_methods')
+          .select('*')
+          .eq('id', payout_method_id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (methodErr || !method) throw new Error('Payout method not found');
+
+        // Already linked to a RazorpayX fund account → return it (idempotent).
+        if (method.razorpay_fund_account_id) {
+          result = { fund_account_id: method.razorpay_fund_account_id, payout_method_id, already_existed: true };
+          break;
+        }
+
+        // Create (or reuse) the RazorpayX contact for this user.
+        const contactPayload: Record<string, unknown> = {
+          name: name || method.account_holder_name || 'Growlancer User',
+          type: 'customer',
+          reference_id: `user_${user.id.slice(0, 20)}`,
+        };
+        if (email || method.email) contactPayload.email = email || method.email;
+        if (phone || method.phone) contactPayload.contact = phone || method.phone;
+
+        let contactRes;
+        try {
+          contactRes = await razorpayFetch('/contacts', { method: 'POST', body: JSON.stringify(contactPayload) });
+        } catch {
+          // If the contact already exists, look it up by the reference id.
+          const list = await razorpayFetch('/contacts?count=100');
+          contactRes = (list?.items || []).find((c: any) => c.reference_id === `user_${user.id.slice(0, 20)}`);
+          if (!contactRes) throw new Error('Failed to create RazorpayX contact');
+        }
+
+        // Build the fund account payload by method type.
+        const isBank = method.type === 'bank' || method.type === 'bank_transfer';
+        let fundPayload: Record<string, unknown>;
+        if (isBank) {
+          fundPayload = {
+            contact_id: contactRes.id,
+            account_type: 'bank_account',
+            bank_account: {
+              name: method.account_holder_name || contactRes.name || 'Growlancer User',
+              ifsc: method.ifsc_code || '',
+              account_number: method.account_number || '',
+            },
+          };
+        } else {
+          // UPI (vpa)
+          fundPayload = {
+            contact_id: contactRes.id,
+            account_type: 'vpa',
+            vpa: { address: method.upi_id || '' },
+          };
+        }
+
+        const fundRes = await razorpayFetch('/fund_accounts', { method: 'POST', body: JSON.stringify(fundPayload) });
+
+        await supabaseClient
+          .from('payout_methods')
+          .update({ razorpay_fund_account_id: fundRes.id, updated_at: new Date().toISOString() })
+          .eq('id', payout_method_id)
+          .eq('user_id', user.id);
+
+        await insertAuditLog(supabaseAdmin, {
+          action: 'fund_account_created',
+          entity_type: 'payout_method',
+          entity_id: payout_method_id,
+          amount: null,
+          metadata: { razorpay_fund_account_id: fundRes.id, type: method.type },
+          user_id: user.id,
+        });
+
+        result = { fund_account_id: fundRes.id, payout_method_id, already_existed: false };
+        break;
+      }
+
       case 'create_payout': {
         return new Response(JSON.stringify({ error: 'Action disabled. Use the withdrawal function instead.' }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },

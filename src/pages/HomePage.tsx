@@ -11,6 +11,7 @@ import {
   Users, Wallet, Wand2, X, Zap,
 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
+import { useCountries } from '../hooks/useCountries';
 import { CategoriesSection as CategoriesSectionComponent } from '../components/CategoriesSection';
 import { supabase } from '../lib/supabase';
 
@@ -802,21 +803,27 @@ function TrustSection() {
 // Waitlist Section
 // ═══════════════════════════════════════════════════════════════
 function WaitlistSection() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [country, setCountry] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const { countries, loading: countriesLoading } = useCountries();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+    if (!name.trim() || !email.trim() || !country) {
+      setError('Please fill in your name, email, and country.');
+      return;
+    }
     setIsLoading(true);
     setError('');
     
     try {
       const { data, error: fnError } = await supabase.functions.invoke('newsletter-subscribe', {
         method: 'POST',
-        body: { email: email.trim() },
+        body: { name: name.trim(), email: email.trim(), country },
       });
       
       if (fnError || !data?.success) {
@@ -872,32 +879,60 @@ function WaitlistSection() {
                 </p>
               </div>
               <div>
-                <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    id="waitlist-email"
-                    name="email"
-                    placeholder="you@company.com"
-                    required
-                    autoComplete="email"
-                    className="flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isLoading}
-                    className="inline-flex items-center justify-center h-12 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-semibold text-slate-900 disabled:opacity-50 gap-2 whitespace-nowrap text-sm"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        Get Early Access
-                        <ArrowRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
+                <form onSubmit={handleSubmit} className="space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={e => setName(e.target.value)}
+                      id="waitlist-name"
+                      name="name"
+                      placeholder="Your name"
+                      required
+                      autoComplete="name"
+                      className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                    />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={e => setEmail(e.target.value)}
+                      id="waitlist-email"
+                      name="email"
+                      placeholder="you@company.com"
+                      required
+                      autoComplete="email"
+                      className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <select
+                      value={country}
+                      onChange={e => setCountry(e.target.value)}
+                      id="waitlist-country"
+                      name="country"
+                      required
+                      className="flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all [&>option]:text-slate-900"
+                    >
+                      <option value="">{countriesLoading ? 'Loading countries...' : 'Select your country'}</option>
+                      {countries.map((c) => (
+                        <option key={c.id} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="inline-flex items-center justify-center h-12 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-semibold text-slate-900 disabled:opacity-50 gap-2 whitespace-nowrap text-sm"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          Get Early Access
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </form>
                 {error && (
                   <p className="mt-2 text-xs text-red-400">{error}</p>

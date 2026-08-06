@@ -6,7 +6,7 @@ const POLL_MS = 60_000;
 
 export type PlatformMetricsFile = {
   note?: string;
-  /** Total USD moved through escrow (your internal / finance source until automated). */
+  /** Total INR moved through escrow (your internal / finance source until automated). */
   paymentsProcessedUsd?: number | null;
   /** Average satisfaction % when you have enough responses to publish. */
   avgSatisfactionPercent?: number | null;
@@ -16,12 +16,12 @@ export type PlatformMetricsFile = {
 
 export type AboutStatCard = { value: string; label: string };
 
-function formatUsdShort(usd: number): string {
-  if (!Number.isFinite(usd) || usd < 0) return '—';
-  if (usd === 0) return '$0';
-  if (usd < 1_000) return `$${Math.round(usd).toLocaleString('en-US')}`;
-  if (usd < 1_000_000) return `$${(usd / 1_000).toFixed(usd < 10_000 ? 1 : 0)}K`;
-  return `$${(usd / 1_000_000).toFixed(usd < 10_000_000 ? 1 : 0)}M`;
+function formatInrShort(inr: number): string {
+  if (!Number.isFinite(inr) || inr < 0) return '—';
+  if (inr === 0) return '₹0';
+  if (inr < 1_000) return `₹${Math.round(inr).toLocaleString('en-IN')}`;
+  if (inr < 1_00_00_000) return `₹${(inr / 1_000).toFixed(inr < 10_000 ? 1 : 0)}K`;
+  return `₹${(inr / 1_00_00_000).toFixed(inr < 10_00_00_000 ? 2 : 1)}Cr`;
 }
 
 function formatPercent(p: number): string {
@@ -60,8 +60,8 @@ function buildCards(profileCount: number | null, file: PlatformMetricsFile): Abo
 
   const pay = file.paymentsProcessedUsd;
   const paymentsValue =
-    pay === null || pay === undefined ? '—' : formatUsdShort(Number(pay));
-  const paymentsLabel = 'Payments through escrow (USD, to date)';
+    pay === null || pay === undefined ? '—' : formatInrShort(Number(pay));
+  const paymentsLabel = 'Payments through escrow (INR, to date)';
 
   const sat = file.avgSatisfactionPercent;
   const satValue =

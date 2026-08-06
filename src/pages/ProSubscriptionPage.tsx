@@ -262,7 +262,7 @@ export function ProSubscriptionPage() {
                   <div className="mb-6">
                     <div className="flex items-baseline gap-1">
                       <span className="font-display text-4xl font-extrabold">
-                        ${plan.price}
+                        ₹{plan.price.toLocaleString('en-IN')}
                       </span>
                       <span className="text-slate-400 font-bold text-sm">
                         /{plan.interval}
@@ -389,7 +389,7 @@ export function ProSubscriptionPage() {
             </div>
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <CreditCard className="text-emerald-500 w-4 h-4" />
-              PayPal Checkout
+              UPI / Cards / NetBanking
             </div>
           </div>
         </section>
@@ -536,7 +536,7 @@ export function ProSubscriptionPage() {
                       Secure Payment
                     </h4>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      All transactions are handled via PayPal with AES-256 encryption.
+                      All transactions are handled securely via Razorpay with AES-256 encryption — UPI, Cards, NetBanking & Wallets.
                     </p>
                   </div>
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/10">

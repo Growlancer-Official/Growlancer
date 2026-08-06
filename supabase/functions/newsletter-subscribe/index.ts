@@ -120,13 +120,32 @@ Deno.serve(async (req) => {
     // ─── POST: Subscribe ──────────────────────────────────────────────
     if (method === 'POST') {
       const body = await req.json()
-      const { email, name } = body
+      const { email, name, country } = body
 
       if (!email || !email.includes('@')) {
         return new Response(
           JSON.stringify({ error: 'Valid email is required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
+      }
+      if (country && typeof country !== 'string') {
+        return new Response(
+          JSON.stringify({ error: 'Invalid country' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Also record the waitlist interest (name + email + country) so the admin
+      // section can show which country is interested.
+      try {
+        await supabaseClient.rpc('join_waitlist', {
+          p_email: email.toLowerCase(),
+          p_country: country || null,
+          p_signup_source: 'homepage',
+          p_name: name || null,
+        })
+      } catch (waitlistErr) {
+        console.error('Waitlist insert error (non-fatal):', waitlistErr)
       }
 
       // Check if already subscribed

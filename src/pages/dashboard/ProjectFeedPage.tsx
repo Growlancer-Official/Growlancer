@@ -103,7 +103,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Your Rate (USD)
+                  Your Rate (₹/hr)
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>

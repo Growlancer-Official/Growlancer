@@ -34,7 +34,7 @@ const FEATURE_COMPARISON = [
   { feature: 'Project Feed Access', free: 'Standard', pro: 'Early Access', proHighlight: true },
   { feature: 'Analytics Dashboard', free: 'Basic', pro: 'Advanced + Insights', proHighlight: true },
   { feature: 'Support', free: 'AI Assistant', pro: 'Priority AI Support', proHighlight: true },
-  { feature: 'Withdrawal Limits', free: 'Up to $500/mo', pro: 'Up to $10,000/mo', proHighlight: true },
+  { feature: 'Withdrawal Limits', free: 'Up to ₹40,000/mo', pro: 'Up to ₹8,00,000/mo', proHighlight: true },
   { feature: 'Early Access to Features', free: '—', pro: '✓', proHighlight: true },
 ];
 
@@ -256,7 +256,7 @@ export function AISubscriptionPage() {
 
             <div className="mb-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-slate-900">$0</span>
+                <span className="text-4xl font-bold text-slate-900">₹0</span>
                 <span className="text-slate-500">/{freePlan.interval}</span>
               </div>
               <p className="text-sm text-slate-500 mt-1">No credit card required</p>
@@ -298,7 +298,7 @@ export function AISubscriptionPage() {
           </div>
         )}
 
-        {/* Pro Plan — $10 */}
+        {/* Pro Plan — ₹499 */}
         {proPlan && (
           <div className={`relative p-6 rounded-2xl border-2 transition-all bg-gradient-to-br from-emerald-50 via-white to-emerald-50/50 shadow-xl shadow-emerald-600/10 ${
             isPro ? 'border-emerald-600 ring-2 ring-emerald-400' : 'border-emerald-500'
@@ -324,7 +324,7 @@ export function AISubscriptionPage() {
 
             <div className="mb-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-slate-900">${proPlan.price}</span>
+                <span className="text-4xl font-bold text-slate-900">₹{proPlan.price.toLocaleString('en-IN')}</span>
                 <span className="text-slate-500">/{proPlan.interval}</span>
                 <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Save 17% yearly</span>
               </div>
@@ -400,7 +400,7 @@ export function AISubscriptionPage() {
             <div className="mt-4 flex items-center justify-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <span className="flex items-center gap-1">
                 <Shield className="w-3 h-3 text-emerald-500" />
-                Secure PayPal
+                Secure Razorpay UPI
               </span>
               <span className="flex items-center gap-1">
                 <RefreshCw className="w-3 h-3 text-emerald-500" />

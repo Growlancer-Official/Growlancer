@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ShieldCheck,
   ExternalLink,
+  Globe,
   Search,
   Award,
   GraduationCap,
@@ -52,6 +53,7 @@ const sidebarSections: SidebarItem[] = [
   },
   { id: 'identity-verification', path: '/admin/identity-verification', icon: ShieldCheck, label: 'Verification' },
   { id: 'support-tickets', path: '/admin/support-tickets', icon: AlertOctagon, label: 'Support Tickets' },
+  { id: 'waitlist', path: '/admin/waitlist', icon: Globe, label: 'Waitlist' },
 ];
 
 export function AdminDashboardLayout() {

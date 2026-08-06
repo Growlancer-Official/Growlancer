@@ -271,7 +271,7 @@ export function ServicesCatalogPage() {
                         )}
                       </div>
                       <span className="text-lg font-bold text-emerald-600">
-                        ${service.price}
+                        ₹{Number(service.price).toLocaleString('en-IN')}
                         {service.price_type === 'hourly' && <span className="text-xs font-normal text-slate-400">/hr</span>}
                       </span>
                     </div>
@@ -308,7 +308,7 @@ export function ServicesCatalogPage() {
                         </div>
                       </div>
                       <div className="text-right ml-4">
-                        <span className="text-xl font-bold text-emerald-600">${service.price}</span>
+                        <span className="text-xl font-bold text-emerald-600">₹{Number(service.price).toLocaleString('en-IN')}</span>
                         <span className="text-xs text-slate-400 block">{service.price_type}</span>
                       </div>
                     </div>

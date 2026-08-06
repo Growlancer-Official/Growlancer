@@ -52,7 +52,7 @@ const supabaseClient: SupabaseClient<Database> = createClient<Database>(supabase
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
       const urlStr = typeof url === 'string' ? url : url instanceof Request ? url.url : '';
-      const isEdgeFunction = urlStr.includes('/functions/v1/');
+      void urlStr; // reserved for future edge-function-specific handling
 
       // ⚠️ IMPORTANT: do NOT throw on non-2xx here. supabase-js (auth, postgrest,
       // realtime) reads the HTTP status from the response and handles it
@@ -239,6 +239,7 @@ export const realtimeChannels = {
   reviews: (scope?: string) => supabase.channel(nextChannelName('reviews', scope)),
   paypalOrders: (scope?: string) => supabase.channel(nextChannelName('paypal_orders', scope)),
   razorpayOrders: (scope?: string) => supabase.channel(nextChannelName('razorpay_orders', scope)),
+  waitlist: (scope?: string) => supabase.channel(nextChannelName('waitlist', scope)),
   referrals: (scope?: string) => supabase.channel(nextChannelName('referrals', scope)),
   referralStats: (scope?: string) => supabase.channel(nextChannelName('referral_stats', scope)),
   portfolio: (scope?: string) => supabase.channel(nextChannelName('portfolio_items', scope)),

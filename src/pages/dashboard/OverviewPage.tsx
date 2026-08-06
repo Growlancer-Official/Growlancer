@@ -316,7 +316,7 @@ export function OverviewPage() {
           changeType: stats.pendingInvites > 0 ? 'positive' : 'neutral',
         },
         {
-          label: 'Earnings (USD)',
+          label: 'Earnings (INR)',
           value: `$${stats.totalEarnings.toLocaleString()}`,
           change: `$${stats.monthlyEarnings.toLocaleString()} this month`,
           changeType: stats.monthlyEarnings > 0 ? 'positive' : 'neutral',

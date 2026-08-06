@@ -139,7 +139,7 @@ export function PayPalCheckout({
           <div>
             <p className="text-sm text-slate-600">Total Amount</p>
             <p className="text-2xl font-bold text-slate-900">
-              ${orderData.amount.toFixed(2)} {orderData.currency || 'USD'}
+              ${orderData.amount.toLocaleString('en-IN')} {orderData.currency || 'INR'}
             </p>
           </div>
           <CreditCard className="w-8 h-8 text-blue-600" />

@@ -19,6 +19,7 @@ import {
   RefreshCw,
   Search,
   Shield,
+  Smartphone,
   Star,
   Trash2,
   Wallet,
@@ -67,7 +68,7 @@ interface InvoiceRow {
 const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
@@ -162,7 +163,7 @@ export function WalletPage() {
   const [methodsLoading, setMethodsLoading] = useState(false);
   const [methodError, setMethodError] = useState<string | null>(null);
   const [addingMethod, setAddingMethod] = useState(false);
-  const [newMethodType, setNewMethodType] = useState<'paypal' | 'bank_transfer'>('paypal');
+  const [newMethodType, setNewMethodType] = useState<'upi' | 'bank' | 'paypal'>('upi');
   const [newMethodEmail, setNewMethodEmail] = useState('');
   const [newMethodBankName, setNewMethodBankName] = useState('');
   const [newMethodAccountHolder, setNewMethodAccountHolder] = useState('');
@@ -412,15 +413,17 @@ export function WalletPage() {
 
     try {
       // Determine withdrawal method type from selected payout method
-      const isRazorpayPayout = method.type === 'bank_transfer' || method.type === 'razorpay_payout';
+      const isRazorpayPayout = method.type === 'upi' || method.type === 'bank' || method.type === 'bank_transfer' || method.type === 'razorpay_payout';
       
       const result = await withdrawalService.createWithdrawal({
         amount,
         method: isRazorpayPayout ? 'razorpay_payout' : 'paypal',
         paypal_email: !isRazorpayPayout ? method.email || '' : undefined,
-        fund_account_id: isRazorpayPayout ? method.account_number || method.upi_id || undefined : undefined,
-        // RazorpayX payout mode must match the fund account: bank transfer → 'bank', UPI → 'UPI'
-        payout_mode: isRazorpayPayout ? (method.type === 'bank_transfer' ? 'bank' : 'UPI') : undefined,
+        // Pass the payout method ID — the server resolves the real RazorpayX
+        // fund account (created via create_fund_account) and never trusts raw
+        // account numbers from the client.
+        payout_method_id: isRazorpayPayout ? method.id : undefined,
+        payout_mode: isRazorpayPayout ? (method.type === 'bank' || method.type === 'bank_transfer' ? 'bank' : 'UPI') : undefined,
       });
 
       if (result.success && result.withdrawal) {
@@ -456,11 +459,15 @@ export function WalletPage() {
   const handleAddPayoutMethod = useCallback(async () => {
     if (!user) return;
 
-    if (newMethodType === 'paypal' && !newMethodEmail) {
-      setMethodError('PayPal email is required');
+    if (newMethodType === 'paypal') {
+      setMethodError('PayPal withdrawals are coming soon. Please add UPI or a Bank Account.');
       return;
     }
-    if (newMethodType === 'bank_transfer') {
+    if (newMethodType === 'upi' && !newMethodUpiId) {
+      setMethodError('Please enter your UPI ID');
+      return;
+    }
+    if (newMethodType === 'bank') {
       if (!newMethodAccountHolder || !newMethodAccountNumber || !newMethodIfscCode) {
         setMethodError('Please fill in account holder name, account number, and IFSC code');
         return;
@@ -474,15 +481,25 @@ export function WalletPage() {
       const result = await withdrawalService.addPayoutMethod({
         type: newMethodType,
         email: newMethodType === 'paypal' ? newMethodEmail : null,
-        account_holder_name: newMethodType === 'bank_transfer' ? newMethodAccountHolder : null,
-        account_number: newMethodType === 'bank_transfer' ? newMethodAccountNumber : null,
-        routing_number: newMethodType === 'bank_transfer' ? newMethodRoutingNumber || null : null,
-        bank_name: newMethodType === 'bank_transfer' ? newMethodBankName || null : null,
-        ifsc_code: newMethodType === 'bank_transfer' ? newMethodIfscCode || null : null,
-        upi_id: newMethodType === 'bank_transfer' ? newMethodUpiId || null : null,
+        account_holder_name: newMethodType === 'bank' ? newMethodAccountHolder : null,
+        account_number: newMethodType === 'bank' ? newMethodAccountNumber : null,
+        routing_number: newMethodType === 'bank' ? newMethodRoutingNumber || null : null,
+        bank_name: newMethodType === 'bank' ? newMethodBankName || null : null,
+        ifsc_code: newMethodType === 'bank' ? newMethodIfscCode || null : null,
+        upi_id: newMethodType === 'upi' || newMethodType === 'bank' ? newMethodUpiId || null : null,
       } as any);
 
       if (result.success && result.method) {
+        // Auto-link UPI/bank methods to RazorpayX so payouts always use a real
+        // fund account ID (created server-side) instead of raw account numbers.
+        if (newMethodType === 'upi' || newMethodType === 'bank') {
+          const linkResult = await withdrawalService.linkRazorpayXAccount(result.method.id, {
+            name: newMethodType === 'bank' ? newMethodAccountHolder || undefined : undefined,
+          });
+          if (!linkResult.success) {
+            console.warn('RazorpayX fund account link pending:', linkResult.error);
+          }
+        }
         await fetchPayoutMethods();
         setAddingMethod(false);
         // Reset form
@@ -1036,7 +1053,7 @@ export function WalletPage() {
                   {/* Amount */}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Amount (USD)
+                      Amount (₹)
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
@@ -1096,6 +1113,8 @@ export function WalletPage() {
                             <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
                               {method.type === 'paypal' ? (
                                 <CircleDollarSign className="w-5 h-5 text-blue-600" />
+                              ) : method.type === 'upi' ? (
+                                <Smartphone className="w-5 h-5 text-emerald-600" />
                               ) : (
                                 <Landmark className="w-5 h-5 text-slate-600" />
                               )}
@@ -1104,11 +1123,15 @@ export function WalletPage() {
                               <p className="font-medium text-slate-900 text-sm">
                                 {method.type === 'paypal'
                                   ? 'PayPal'
+                                  : method.type === 'upi'
+                                  ? 'UPI'
                                   : method.bank_name || 'Bank Transfer'}
                               </p>
                               <p className="text-xs text-slate-500">
                                 {method.type === 'paypal'
                                   ? maskEmail(method.email)
+                                  : method.type === 'upi'
+                                  ? method.upi_id || 'UPI ID'
                                   : `${maskAccount(method.account_number)} — ${method.account_holder_name || ''}`}
                               </p>
                             </div>
@@ -1292,11 +1315,15 @@ export function WalletPage() {
                       className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${
                         method.type === 'paypal'
                           ? 'bg-blue-50'
+                          : method.type === 'upi'
+                          ? 'bg-emerald-50'
                           : 'bg-slate-100'
                       }`}
                     >
                       {method.type === 'paypal' ? (
                         <CircleDollarSign className="w-6 h-6 text-blue-600" />
+                      ) : method.type === 'upi' ? (
+                        <Smartphone className="w-6 h-6 text-emerald-600" />
                       ) : (
                         <Landmark className="w-6 h-6 text-slate-600" />
                       )}
@@ -1308,6 +1335,8 @@ export function WalletPage() {
                         <p className="font-semibold text-slate-900">
                           {method.type === 'paypal'
                             ? 'PayPal'
+                            : method.type === 'upi'
+                            ? 'UPI'
                             : method.bank_name || 'Bank Transfer'}
                         </p>
                         {method.is_default && (
@@ -1320,6 +1349,8 @@ export function WalletPage() {
                       <p className="text-sm text-slate-500">
                         {method.type === 'paypal'
                           ? maskEmail(method.email)
+                          : method.type === 'upi'
+                          ? method.upi_id || 'UPI ID'
                           : `${maskAccount(method.account_number)} — ${method.account_holder_name || ''}`}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">
@@ -1399,47 +1430,68 @@ export function WalletPage() {
                 </div>
 
                 {/* Type selector */}
-                <div className="flex gap-2 mb-5">
+                <div className="grid grid-cols-3 gap-2 mb-5">
                   <button
                     type="button"
-                    onClick={() => setNewMethodType('paypal')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-medium transition-colors ${
-                      newMethodType === 'paypal'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    onClick={() => setNewMethodType('upi')}
+                    className={`flex flex-col items-center justify-center gap-1 py-3 rounded-xl border text-sm font-medium transition-colors ${
+                      newMethodType === 'upi'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
-                    <CircleDollarSign className="w-5 h-5" />
-                    PayPal
+                    <Smartphone className="w-5 h-5" />
+                    UPI
                   </button>
                   <button
                     type="button"
-                    onClick={() => setNewMethodType('bank_transfer')}
-                    className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-medium transition-colors ${
-                      newMethodType === 'bank_transfer'
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    onClick={() => setNewMethodType('bank')}
+                    className={`flex flex-col items-center justify-center gap-1 py-3 rounded-xl border text-sm font-medium transition-colors ${
+                      newMethodType === 'bank'
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
                     <Landmark className="w-5 h-5" />
                     Bank
                   </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewMethodType('paypal')}
+                    className={`flex flex-col items-center justify-center gap-1 py-3 rounded-xl border text-sm font-medium transition-colors ${
+                      newMethodType === 'paypal'
+                        ? 'border-amber-400 bg-amber-50 text-amber-700'
+                        : 'border-slate-200 text-slate-400 hover:border-slate-300'
+                    }`}
+                    title="PayPal withdrawals are coming soon"
+                  >
+                    <CircleDollarSign className="w-5 h-5" />
+                    PayPal
+                    <span className="text-[9px] font-bold text-amber-500">Soon</span>
+                  </button>
                 </div>
 
                 {/* Fields */}
                 <div className="space-y-4">
                   {newMethodType === 'paypal' ? (
+                    <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <p className="text-sm text-amber-800">
+                        PayPal withdrawals are <strong>coming soon</strong>. For now, add a UPI ID or Bank Account to withdraw in INR via RazorpayX.
+                      </p>
+                    </div>
+                  ) : newMethodType === 'upi' ? (
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
-                        PayPal Email
+                        UPI ID <span className="text-red-500">*</span>
                       </label>
                       <input
-                        type="email"
-                        value={newMethodEmail}
-                        onChange={(e) => setNewMethodEmail(e.target.value)}
+                        type="text"
+                        value={newMethodUpiId}
+                        onChange={(e) => setNewMethodUpiId(e.target.value)}
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                        placeholder="your@email.com"
+                        placeholder="username@upi"
                       />
+                      <p className="text-xs text-slate-400 mt-1.5">e.g. yourname@okhdfcbank — paid via RazorpayX (INR)</p>
                     </div>
                   ) : (
                     <>
@@ -1537,7 +1589,7 @@ export function WalletPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-500 mt-0.5">•</span>
-                    <span>PayPal withdrawals are processed within 24-48 hours</span>
+                    <span>UPI & Bank withdrawals via RazorpayX are processed in INR, usually within 24 hours</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-500 mt-0.5">•</span>

@@ -318,7 +318,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Hourly Rate (USD)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Hourly Rate (₹/hr)</label>
                 <input type="number" min={0} value={hourlyRate || ''} onChange={e => setHourlyRate(Math.max(0, parseInt(e.target.value) || 0))}
                   placeholder="50" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
               </div>
@@ -916,7 +916,7 @@ export function OnboardingPage() {
                     {/* Hourly Rate & Experience */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Hourly Rate (USD)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Hourly Rate (₹/hr)</label>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">$</span>
                           <input

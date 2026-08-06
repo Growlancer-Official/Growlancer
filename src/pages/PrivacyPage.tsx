@@ -53,7 +53,7 @@ const privacySections: Section[] = [
             </div>
             <div>
               <h5 className="font-bold text-slate-900 text-sm">C. Payment & Verification Parameters</h5>
-              <p className="text-slate-600 text-xs mt-1">Escrow payment coordinates, withdrawal methods (PayPal emails, bank wire details), and transaction history are stored securely to comply with international KYC (Know Your Customer) and anti-money laundering (AML) protocols. We do not store credit card PIN details on our servers; payment card data is handled by our payment processors in accordance with their security standards.</p>
+              <p className="text-slate-600 text-xs mt-1">Escrow payment coordinates, withdrawal methods (UPI IDs, bank account details with IFSC), and transaction history are stored securely to comply with international KYC (Know Your Customer) and anti-money laundering (AML) protocols. We do not store credit card PIN details on our servers; payment card data is handled by our payment processors in accordance with their security standards.</p>
             </div>
           </div>
         </>

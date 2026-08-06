@@ -224,7 +224,7 @@ export function FreelancersSearchPage() {
 
               {/* Min Rate */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Min Rate ($/hr)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Min Rate (₹/hr)</label>
                 <input
                   type="number"
                   value={minRate}
@@ -236,7 +236,7 @@ export function FreelancersSearchPage() {
 
               {/* Max Rate */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Max Rate ($/hr)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Max Rate (₹/hr)</label>
                 <input
                   type="number"
                   value={maxRate}
@@ -423,7 +423,7 @@ export function FreelancersSearchPage() {
                     </div>
                     {freelancer.hourly_rate && (
                       <span className="text-lg font-bold text-emerald-600">
-                        ${freelancer.hourly_rate}
+                        ₹{Number(freelancer.hourly_rate).toLocaleString('en-IN')}
                         <span className="text-xs text-slate-400 font-normal">/hr</span>
                       </span>
                     )}

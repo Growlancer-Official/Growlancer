@@ -109,7 +109,7 @@ export function ServiceDetailPage() {
   }
 
   const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
   const currentPrice = service.price_package
     ? service.price_package[selectedPackage]?.price || service.price

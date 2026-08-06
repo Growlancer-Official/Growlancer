@@ -6,6 +6,7 @@ import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
 import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
 import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, DollarSign, Download, FileText, Filter, Loader2, Plus, PlusCircle, Shield, Trash2 } from 'lucide-react';
+import { formatCurrency } from '../utils/date';
 
 interface Transaction {
   id: string;
@@ -378,11 +379,11 @@ export function ClientPaymentsPage() {
             </div>
           </div>
           <p className="text-3xl font-bold tracking-tight">
-            $
-            {transactions
-              .filter((t) => t.type === 'debit' && t.status === 'completed')
-              .reduce((sum, t) => sum + t.amount, 0)
-              .toLocaleString()}
+            {formatCurrency(
+              transactions
+                .filter((t) => t.type === 'debit' && t.status === 'completed')
+                .reduce((sum, t) => sum + t.amount, 0)
+            )}
           </p>
         </div>
 
@@ -396,11 +397,11 @@ export function ClientPaymentsPage() {
             </div>
           </div>
           <p className="text-3xl font-bold tracking-tight">
-            $
-            {transactions
-              .filter((t) => t.source === 'escrow' && t.status === 'pending')
-              .reduce((sum, t) => sum + t.amount, 0)
-              .toLocaleString()}
+            {formatCurrency(
+              transactions
+                .filter((t) => t.source === 'escrow' && t.status === 'pending')
+                .reduce((sum, t) => sum + t.amount, 0)
+            )}
           </p>
         </div>
 
@@ -414,11 +415,11 @@ export function ClientPaymentsPage() {
             </div>
           </div>
           <p className="text-3xl font-bold tracking-tight">
-            $
-            {transactions
-              .filter((t) => t.source === 'refund' && t.status === 'completed')
-              .reduce((sum, t) => sum + t.amount, 0)
-              .toLocaleString()}
+            {formatCurrency(
+              transactions
+                .filter((t) => t.source === 'refund' && t.status === 'completed')
+                .reduce((sum, t) => sum + t.amount, 0)
+            )}
           </p>
         </div>
       </div>

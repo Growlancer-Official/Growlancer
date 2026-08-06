@@ -40,7 +40,7 @@ function getCorsHeaders(origin: string | null) {
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(amount);
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(amount);
 }
 
 /** Send a transactional email — disabled (Brevo completely removed) */
@@ -214,7 +214,7 @@ Deno.serve(async (req) => {
 
     if (method === 'POST') {
       const body = await req.json()
-      const { amount, withdrawal_method, paypal_email, fund_account_id, payout_mode } = body
+      const { amount, withdrawal_method, paypal_email, fund_account_id, payout_mode, payout_method_id } = body
 
       if (!amount || amount <= 0) {
         return new Response(JSON.stringify({ error: 'Invalid amount' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -225,8 +225,34 @@ Deno.serve(async (req) => {
       if (wdMethod === 'paypal' && !paypal_email) {
         return new Response(JSON.stringify({ error: 'PayPal email is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
-      if (wdMethod === 'razorpay_payout' && !fund_account_id) {
-        return new Response(JSON.stringify({ error: 'Fund account ID is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+
+      // ── Resolve the RazorpayX fund account SERVER-SIDE ─────────────────
+      // Never trust a client-supplied fund_account_id. Look up the user's payout
+      // method and use the stored razorpay_fund_account_id (created via the
+      // `create_fund_account` action). Legacy raw IDs are still accepted for
+      // backward compatibility but are validated against the user's own methods.
+      let resolvedFundAccountId = fund_account_id || ''
+      if (wdMethod === 'razorpay_payout') {
+        if (payout_method_id) {
+          const { data: pm } = await supabaseClient
+            .from('payout_methods')
+            .select('*')
+            .eq('id', payout_method_id)
+            .eq('user_id', user.id)
+            .maybeSingle()
+          if (!pm) {
+            return new Response(JSON.stringify({ error: 'Payout method not found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+          }
+          if (pm.razorpay_fund_account_id) {
+            resolvedFundAccountId = pm.razorpay_fund_account_id
+          } else if (pm.upi_id) {
+            // UPI fallback: the raw VPA is acceptable for RazorpayX vpa payouts.
+            resolvedFundAccountId = pm.upi_id
+          }
+        }
+        if (!resolvedFundAccountId) {
+          return new Response(JSON.stringify({ error: 'Fund account ID is required. Link this payout method to RazorpayX first.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
       }
 
       const { data: walletData, error: walletError } = await supabaseClient.rpc('get_wallet_balance', { p_user_id: user.id })
@@ -246,7 +272,7 @@ Deno.serve(async (req) => {
       // Create withdrawal record
       const insertData: Record<string, any> = { user_id: user.id, amount, method: wdMethod, status: 'pending', fee, net_amount: netAmount, payout_mode: payout_mode || null }
       if (wdMethod === 'paypal') insertData.paypal_email = paypal_email
-      if (wdMethod === 'razorpay_payout') insertData.razorpay_fund_account_id = fund_account_id
+      if (wdMethod === 'razorpay_payout') insertData.razorpay_fund_account_id = resolvedFundAccountId
 
       const { data: withdrawal, error: withdrawalError } = await supabaseClient.from('withdrawals').insert(insertData).select().single()
       if (withdrawalError) throw withdrawalError
@@ -279,7 +305,7 @@ Deno.serve(async (req) => {
             method: 'POST',
             body: JSON.stringify({
               account_number: RAZORPAY_ACCOUNT_NUMBER,
-              fund_account_id,
+              fund_account_id: resolvedFundAccountId,
               amount: Math.round(amount * 100), // Convert to paise
               currency: 'INR',
               mode,
@@ -324,7 +350,7 @@ Deno.serve(async (req) => {
               sender_batch_header: {
                 sender_batch_id: senderBatchId,
                 email_subject: 'You have received a payment from Growlancer!',
-                email_message: `You have received $${netAmount} USD from Growlancer. It may take up to 1-3 business days to appear.`,
+                email_message: `You have received ${formatCurrency(netAmount)} from Growlancer. It may take up to 1-3 business days to appear.`,
               },
               items: [{
                 recipient_type: 'EMAIL',

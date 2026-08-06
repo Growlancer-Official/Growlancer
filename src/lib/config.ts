@@ -5,15 +5,15 @@ export const PLATFORM_CONFIG = {
   // Platform Fees
   fees: {
     platform_percentage: 5, // 5% platform fee (client pays on top of bid)
-    payment_processing_percentage: 2.9, // PayPal processing fee (charged to freelancer on withdrawal)
-    razorpay_payout_percentage: 2, // RazorpayX payout fee for Indian bank transfers
+    payment_processing_percentage: 2, // RazorpayX payout fee (charged to freelancer on withdrawal)
+    razorpay_payout_percentage: 2, // RazorpayX payout fee for Indian bank/UPI transfers
     withdrawal_fee_fixed: 0, // Free withdrawals (no additional fixed fee)
   },
   
-  // Platform Limits
+  // Platform Limits (INR)
   limits: {
-    min_project_budget: 50,
-    max_project_budget: 100000,
+    min_project_budget: 2000,
+    max_project_budget: 10000000,
     max_file_upload_size_mb: 25,
     max_proposal_per_day: 20,
     max_messages_per_minute: 10,
@@ -26,7 +26,7 @@ export const PLATFORM_CONFIG = {
     auto_cancel_unfunded_days: 7,
   },
   
-  // Subscription Plans (prices in USD)
+  // Subscription Plans (prices in INR — India-first, affordable)
   subscriptions: {
     free: {
       proposals_per_month: 5,
@@ -34,25 +34,25 @@ export const PLATFORM_CONFIG = {
       portfolio_items: 3,
     },
     pro_monthly: {
-      price: 19.99,
+      price: 499,
       proposals_per_month: 50,
       ai_matches_per_month: 100,
       portfolio_items: 20,
       features: ['priority_support', 'analytics', 'verified_badge'],
     },
     pro_yearly: {
-      price: 199.99,
+      price: 4999,
       proposals_per_month: 50,
       ai_matches_per_month: 100,
       portfolio_items: 20,
       features: ['priority_support', 'analytics', 'verified_badge'],
     },
     ai_monthly: {
-      price: 14.99,
+      price: 399,
       features: ['unlimited_ai_chat', 'ai_proposal_review', 'ai_profile_optimization'],
     },
     ai_yearly: {
-      price: 149.99,
+      price: 3999,
       features: ['unlimited_ai_chat', 'ai_proposal_review', 'ai_profile_optimization'],
     },
   },

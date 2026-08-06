@@ -401,7 +401,7 @@ export function EscrowPayPalPayment({
           orderData={{
             order_type: 'contract_escrow',
             amount: totalAmount,
-            currency: 'USD',
+            currency: 'INR',
             description: milestoneDescription,
             contract_id: contractId,
             metadata: {
@@ -417,7 +417,7 @@ export function EscrowPayPalPayment({
           onSuccess={handlePayPalSuccess}
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
-          buttonText={`Pay $${totalAmount.toFixed(2)} with Razorpay`}
+          buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')} with Razorpay`}
           userInfo={{
             name: (user as any)?.user_metadata?.name,
             email: user?.email,
@@ -436,7 +436,7 @@ export function EscrowPayPalPayment({
               orderData={{
                 order_type: 'contract_escrow',
                 amount: totalAmount,
-                currency: 'USD',
+                currency: 'INR',
                 description: milestoneDescription,
                 contract_id: contractId,
                 metadata: {
@@ -452,7 +452,7 @@ export function EscrowPayPalPayment({
               onSuccess={handlePayPalSuccess}
               onError={handlePayPalError}
               onCancel={handlePayPalCancel}
-              buttonText={`Pay $${totalAmount.toFixed(2)} with PayPal`}
+              buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')} with PayPal`}
             />
           </>
         ) : (

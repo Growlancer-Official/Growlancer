@@ -114,8 +114,8 @@ export function ClientPostProjectPage() {
       toast.error('Validation Error', 'Please enter valid budget amounts.');
       return;
     }
-    if (minBudget < 500) {
-      toast.error('Validation Error', 'Minimum budget must be at least $500.');
+    if (minBudget < 2000) {
+      toast.error('Validation Error', 'Minimum budget must be at least ₹2,000.');
       return;
     }
     if (maxBudget < minBudget) {
@@ -277,27 +277,27 @@ export function ClientPostProjectPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Min Budget ($) *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Min Budget (₹) *</label>
               <input
                 type="number"
                 required
-                min="500"
+                min="2000"
                 value={formData.budget_min}
                 onChange={(e) => setFormData({ ...formData, budget_min: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="500"
+                placeholder="2000"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Max Budget ($) *</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Max Budget (₹) *</label>
               <input
                 type="number"
                 required
-                min="500"
+                min="2000"
                 value={formData.budget_max}
                 onChange={(e) => setFormData({ ...formData, budget_max: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="2000"
+                placeholder="5000"
               />
             </div>
           </div>

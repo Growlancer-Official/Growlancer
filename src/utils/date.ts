@@ -141,13 +141,13 @@ export function addDays(date: Date | string | number, days: number): Date {
 }
 
 /**
- * Format currency with symbol
+ * Format currency with symbol (Growlancer is India-first: default INR)
  * @param amount - Amount to format
- * @param currency - Currency code (default: USD)
+ * @param currency - Currency code (default: INR)
  * @returns Formatted currency string
  */
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatCurrency(amount: number, currency = 'INR'): string {
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,

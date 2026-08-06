@@ -180,11 +180,11 @@ export const NAVIGATION = {
   ],
 } as const;
 
-// Platform configuration
+// Platform configuration (India-first — all pricing in INR)
 export const PLATFORM_CONFIG = {
   FEE_PERCENTAGE: 5,
-  PRO_PRICE: 10,
-  CURRENCY: 'USD',
+  PRO_PRICE: 499,
+  CURRENCY: 'INR',
 } as const;
 
 // Disposable email domains to block

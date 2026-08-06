@@ -140,7 +140,7 @@ export function SubscriptionPayPalPayment({
           orderData={{
             order_type: 'subscription',
             amount: planPrice,
-            currency: 'USD',
+            currency: 'INR',
             description: `${planName} subscription for ${role}`,
             subscription_id: subscriptionId || undefined,
             metadata: {
@@ -153,7 +153,7 @@ export function SubscriptionPayPalPayment({
           onSuccess={handlePayPalSuccess}
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
-          buttonText={`Subscribe for $${planPrice.toFixed(2)}/month`}
+          buttonText={`Subscribe for ₹${planPrice.toLocaleString('en-IN')}/month`}
           userInfo={{
             name: (user as any)?.user_metadata?.name,
             email: user?.email,
@@ -172,7 +172,7 @@ export function SubscriptionPayPalPayment({
               orderData={{
                 order_type: 'subscription',
                 amount: planPrice,
-                currency: 'USD',
+                currency: 'INR',
                 description: `${planName} subscription for ${role}`,
                 subscription_id: subscriptionId || undefined,
                 metadata: {
@@ -185,7 +185,7 @@ export function SubscriptionPayPalPayment({
               onSuccess={handlePayPalSuccess}
               onError={handlePayPalError}
               onCancel={handlePayPalCancel}
-              buttonText={`Subscribe for $${planPrice.toFixed(2)}/month`}
+              buttonText={`Subscribe for ₹${planPrice.toLocaleString('en-IN')}/month`}
             />
           </>
         ) : (

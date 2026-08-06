@@ -62,7 +62,7 @@ const faqs: FAQ[] = [
   {
     category: 'For Freelancers',
     question: 'How do I withdraw my earnings from the Growlancer Wallet?',
-    answer: 'Go to your Wallet dashboard, click "Withdraw Funds", select your withdrawal method (PayPal or Direct Bank Wire), input your credentials (e.g. PayPal email), and confirm. Growlancer processes all withdrawals within 24 hours with zero additional platform markup fees.',
+    answer: 'Go to your Wallet dashboard, click "Withdraw Funds", select your withdrawal method (UPI or Bank Account), add your credentials (e.g. UPI ID or bank account details with IFSC), and confirm. Withdrawals are processed via RazorpayX in INR, usually within 24 hours, with a transparent 2% processing fee. PayPal withdrawals are coming soon.',
   },
   {
     category: 'For Freelancers',

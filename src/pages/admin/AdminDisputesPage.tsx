@@ -35,7 +35,7 @@ const NEW_STATUSES = ['open', 'investigating', 'resolved_refunded', 'resolved_re
 
 function formatCurrency(amount: number | null | undefined): string {
   if (amount === null || amount === undefined) return '—';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
 }
 
 function formatRelativeTime(dateStr: string): string {

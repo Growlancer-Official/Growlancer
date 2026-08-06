@@ -217,7 +217,7 @@ export function ClientAISubscriptionPage() {
             </div>
             <div className="mb-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-slate-900">$0</span>
+                <span className="text-4xl font-bold text-slate-900">₹0</span>
                 <span className="text-slate-500">/{freePlan.interval}</span>
               </div>
               <p className="text-sm text-slate-500 mt-1">No credit card required</p>
@@ -274,7 +274,7 @@ export function ClientAISubscriptionPage() {
 
             <div className="mb-6">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-bold text-slate-900">${proPlan.price}</span>
+                <span className="text-4xl font-bold text-slate-900">₹{proPlan.price.toLocaleString('en-IN')}</span>
                 <span className="text-slate-500">/{proPlan.interval}</span>
               </div>
               <p className="text-sm text-emerald-600 font-medium mt-1 flex items-center gap-1">
@@ -391,7 +391,7 @@ export function ClientAISubscriptionPage() {
           </div>
           <div className="p-4 bg-white rounded-xl border border-slate-200">
             <h4 className="font-semibold text-slate-900 text-sm mb-1">How does payment work when I subscribe?</h4>
-            <p className="text-sm text-slate-600">Payments are handled securely via PayPal. You'll only be charged after your trial period ends. You can cancel anytime before the trial ends — no questions asked.</p>
+            <p className="text-sm text-slate-600">Payments are handled securely via Razorpay (UPI, Cards, NetBanking). You'll only be charged after your trial period ends. You can cancel anytime before the trial ends — no questions asked.</p>
           </div>
           <div className="p-4 bg-white rounded-xl border border-slate-200">
             <h4 className="font-semibold text-slate-900 text-sm mb-1">Can I cancel during the trial?</h4>

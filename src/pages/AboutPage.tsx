@@ -4,9 +4,9 @@ import { ArrowRight, Globe, Heart, ShieldCheck, Sparkles, Target, TrendingUp, Us
 import { LiveCodeTerminal, type TerminalLine } from '@/components/LiveCodeTerminal';
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
 
-function formatUsdFull(usd: number): string {
-  if (!Number.isFinite(usd) || usd < 0) return '$0';
-  return `$${Math.round(usd).toLocaleString('en-US')}`;
+function formatInrFull(inr: number): string {
+  if (!Number.isFinite(inr) || inr < 0) return '₹0';
+  return `₹${Math.round(inr).toLocaleString('en-IN')}`;
 }
 
 export function AboutPage() {
@@ -15,7 +15,7 @@ export function AboutPage() {
   // Real content — inject live platform numbers into the terminal script.
   const terminalLines = useMemo<TerminalLine[]>(() => {
     const members = raw.members != null ? raw.members.toLocaleString('en-US') : '—';
-    const escrow = raw.escrowUsd != null ? formatUsdFull(raw.escrowUsd) : '$0';
+    const escrow = raw.escrowUsd != null ? formatInrFull(raw.escrowUsd) : '₹0';
     const sat = raw.satisfactionPercent != null ? `${Math.round(raw.satisfactionPercent)}%` : '—';
     const countries = raw.countries != null ? raw.countries.toLocaleString('en-US') : '—';
     return [
