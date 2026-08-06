@@ -116,13 +116,17 @@ export function AuthCallbackPage() {
         // ⚡ Fast retries (400ms) — no artificial multi-second waits.
         for (let attempt = 0; attempt < 3; attempt++) {
           if (attempt > 0) await new Promise(r => setTimeout(r, 400));
-          
-          const { data, error: sessionError } = await supabase.auth.getSession();
-          if (sessionError) continue;
-          if (data.session?.user) {
-            authUser = data.session.user;
-            sessionFound = true;
-            break;
+          try {
+            const { data, error: sessionError } = await supabase.auth.getSession();
+            if (sessionError) continue;
+            if (data.session?.user) {
+              authUser = data.session.user;
+              sessionFound = true;
+              break;
+            }
+          } catch (sessionThrow) {
+            devLog('[AuthCallback] getSession threw (attempt', attempt, '):',
+              sessionThrow instanceof Error ? sessionThrow.message : String(sessionThrow));
           }
         }
 
@@ -132,16 +136,20 @@ export function AuthCallbackPage() {
         if (!sessionFound) {
           const pkceCode = searchParams.get('code');
           if (pkceCode) {
-            const { data: exchanged, error: exchangeError } = await supabase.auth
-              .exchangeCodeForSession(pkceCode)
-              .catch(err => ({ data: { session: null }, error: err }));
-            if (!exchangeError && exchanged?.session?.user) {
-              authUser = exchanged.session.user;
-              sessionFound = true;
-              devLog('[AuthCallback] PKCE code exchanged successfully');
-            } else {
-              devLog('[AuthCallback] PKCE exchange failed (may already be exchanged):',
-                exchangeError?.message || 'unknown');
+            try {
+              const { data: exchanged, error: exchangeError } = await supabase.auth
+                .exchangeCodeForSession(pkceCode);
+              if (!exchangeError && exchanged?.session?.user) {
+                authUser = exchanged.session.user;
+                sessionFound = true;
+                devLog('[AuthCallback] PKCE code exchanged successfully');
+              } else {
+                devLog('[AuthCallback] PKCE exchange failed (may already be exchanged):',
+                  exchangeError?.message || 'unknown');
+              }
+            } catch (pkceThrow) {
+              devLog('[AuthCallback] PKCE exchange threw:',
+                pkceThrow instanceof Error ? pkceThrow.message : String(pkceThrow));
             }
           }
         }
@@ -160,17 +168,22 @@ export function AuthCallbackPage() {
           const hashRefreshToken = hashParams.get('refresh_token');
           if (hashAccessToken && hashRefreshToken) {
             devLog('[AuthCallback] Implicit-flow hash tokens present — setting session directly');
-            const { data: setSessionData, error: setSessionErr } = await supabase.auth.setSession({
-              access_token: hashAccessToken,
-              refresh_token: hashRefreshToken,
-            });
-            if (!setSessionErr && setSessionData?.session?.user) {
-              authUser = setSessionData.session.user;
-              sessionFound = true;
-              devLog('[AuthCallback] Session established from hash tokens');
-            } else {
-              devLog('[AuthCallback] setSession from hash failed:',
-                setSessionErr?.message || 'unknown');
+            try {
+              const { data: setSessionData, error: setSessionErr } = await supabase.auth.setSession({
+                access_token: hashAccessToken,
+                refresh_token: hashRefreshToken,
+              });
+              if (!setSessionErr && setSessionData?.session?.user) {
+                authUser = setSessionData.session.user;
+                sessionFound = true;
+                devLog('[AuthCallback] Session established from hash tokens');
+              } else {
+                devLog('[AuthCallback] setSession from hash failed:',
+                  setSessionErr?.message || 'unknown');
+              }
+            } catch (setSessionThrow) {
+              devLog('[AuthCallback] setSession from hash threw:',
+                setSessionThrow instanceof Error ? setSessionThrow.message : String(setSessionThrow));
             }
           }
         }
@@ -179,16 +192,20 @@ export function AuthCallbackPage() {
         if (!sessionFound) {
           const pkceCode = searchParams.get('code');
           if (pkceCode) {
-            const { data: exchanged, error: exchangeError } = await supabase.auth
-              .exchangeCodeForSession(pkceCode)
-              .catch(err => ({ data: { session: null }, error: err }));
-            if (!exchangeError && exchanged?.session?.user) {
-              authUser = exchanged.session.user;
-              sessionFound = true;
-              devLog('[AuthCallback] PKCE code exchanged successfully');
-            } else {
-              devLog('[AuthCallback] PKCE exchange failed (may already be exchanged):',
-                exchangeError?.message || 'unknown');
+            try {
+              const { data: exchanged, error: exchangeError } = await supabase.auth
+                .exchangeCodeForSession(pkceCode);
+              if (!exchangeError && exchanged?.session?.user) {
+                authUser = exchanged.session.user;
+                sessionFound = true;
+                devLog('[AuthCallback] PKCE code exchanged successfully');
+              } else {
+                devLog('[AuthCallback] PKCE exchange failed (may already be exchanged):',
+                  exchangeError?.message || 'unknown');
+              }
+            } catch (pkceThrow) {
+              devLog('[AuthCallback] PKCE exchange threw:',
+                pkceThrow instanceof Error ? pkceThrow.message : String(pkceThrow));
             }
           }
         }
@@ -198,13 +215,60 @@ export function AuthCallbackPage() {
         // next page load and would bounce back to login.
         if (!sessionFound) {
           devLog('[AuthCallback] getSession failed — trying getUser + refresh');
-          const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
-          if (userData?.user) {
-            const { data: refreshed } = await supabase.auth.refreshSession().catch(() => ({ data: { session: null } }));
-            if (refreshed?.session?.user) {
-              authUser = refreshed.session.user;
-              sessionFound = true;
+          try {
+            const { data: userData } = await supabase.auth.getUser();
+            if (userData?.user) {
+              const { data: refreshed } = await supabase.auth.refreshSession();
+              if (refreshed?.session?.user) {
+                authUser = refreshed.session.user;
+                sessionFound = true;
+              }
             }
+          } catch (getUserThrow) {
+            devLog('[AuthCallback] getUser/refresh threw:',
+              getUserThrow instanceof Error ? getUserThrow.message : String(getUserThrow));
+          }
+        }
+
+        // 🆕 localStorage-direct recovery: if supabase-js saved the OAuth session
+        // to storage but the in-memory state is missing (e.g. _initialize raced or
+        // failed partway), read the raw stored session and re-establish it. The
+        // stored value is the full Session JSON (user included) under
+        // sb-<project-ref>-auth-token.
+        if (!sessionFound) {
+          let storedKey = '';
+          try {
+            storedKey = `sb-${new URL(import.meta.env.VITE_SUPABASE_URL || '').host.split('.')[0]}-auth-token`;
+          } catch {
+            // env missing — skip
+          }
+          try {
+            const raw = storedKey ? localStorage.getItem(storedKey) : null;
+            if (raw && raw !== 'null') {
+              const parsed = JSON.parse(raw) as
+                | { access_token?: string; refresh_token?: string; user?: { id: string } | null }
+                | null;
+              if (parsed?.access_token && parsed?.refresh_token) {
+                devLog('[AuthCallback] Recovered session from localStorage — re-establishing');
+                await supabase.auth
+                  .setSession({
+                    access_token: parsed.access_token,
+                    refresh_token: parsed.refresh_token,
+                  })
+                  .catch(() => ({ data: { session: null } }));
+                const { data: recovered } = await supabase.auth
+                  .getSession()
+                  .catch(() => ({ data: { session: null } }));
+                if (recovered?.session?.user) {
+                  authUser = recovered.session.user;
+                  sessionFound = true;
+                  devLog('[AuthCallback] Session re-established from localStorage');
+                }
+              }
+            }
+          } catch (localRecoveryThrow) {
+            devLog('[AuthCallback] localStorage session recovery failed:',
+              localRecoveryThrow instanceof Error ? localRecoveryThrow.message : String(localRecoveryThrow));
           }
         }
 
@@ -250,6 +314,19 @@ export function AuthCallbackPage() {
               setStatus('error');
               setErrorMessage(
                 'This verification link is invalid or has expired. Please sign up again to receive a fresh link, or request a resend from the verify-email page.'
+              );
+              return;
+            }
+
+            // 🛡️ OAuth signup callbacks can arrive with type=signup in the URL.
+            // NEVER send an OAuth (GitHub/LinkedIn) user back to /login — show a
+            // clear, actionable error instead (the login redirect was a big part
+            // of the 'OAuth login works but bounces back to login' bug).
+            if (isProviderOAuth) {
+              devLog('[AuthCallback] OAuth signup callback without session — showing error');
+              setStatus('error');
+              setErrorMessage(
+                'Your GitHub/LinkedIn sign-in did not complete. Please try signing in again.'
               );
               return;
             }
@@ -403,6 +480,17 @@ export function AuthCallbackPage() {
             name,
             createRole as 'freelancer' | 'client'
           );
+          // 🆕 Retry once — the DB trigger and the RPC insert can race; a second
+          // attempt usually lands (create_user_profile is idempotent via upsert).
+          if (!profile && authUser?.id) {
+            await new Promise(r => setTimeout(r, 500));
+            profile = await createProfile(
+              authUser.id,
+              authUser.email || '',
+              name,
+              createRole as 'freelancer' | 'client'
+            );
+          }
         }
 
         // 🆕 Country gate: If user has no profile country set (first-time OAuth), show country confirmation
@@ -429,7 +517,7 @@ export function AuthCallbackPage() {
         const sbUrl = import.meta.env.VITE_SUPABASE_URL || '';
         const sbKey = `sb-${new URL(sbUrl).host.split('.')[0]}-auth-token`;
 
-        let sessionReady = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        const sessionReady = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
         let session = sessionReady.data?.session ?? null;
 
         // If no session in-memory (or storage), re-establish from URL tokens.

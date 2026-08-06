@@ -248,6 +248,17 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
           </div>
         </div>
 
+        {/* 🆕 New-account note — OAuth users without an existing Growlancer account
+            land on this mini form after GitHub/LinkedIn sign-in. Show a clear
+            'signup' message so it's obvious a new account is being created. */}
+        <div className="mb-5 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
+          <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+          <p className="text-xs text-amber-800 leading-relaxed">
+            New account detected — you're one step away from joining Growlancer.
+            Pick your role below to finish signing up.
+          </p>
+        </div>
+
         {/* Role Switcher */}
         <div className="mb-6 p-3 bg-slate-50 rounded-xl">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">I want to...</p>

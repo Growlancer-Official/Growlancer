@@ -104,6 +104,36 @@ function isOAuthCallbackPath(): boolean {
   return typeof window !== 'undefined' && window.location.pathname.startsWith('/auth/callback');
 }
 
+/**
+ * True for GitHub/LinkedIn OAuth users — the provider already verified identity
+ * at sign-in, so a missing profiles row is a data issue, never an auth failure.
+ */
+function isOAuthProviderUser(authUser: SupabaseUser): boolean {
+  const provider = authUser.app_metadata?.provider as string | undefined;
+  return provider === 'github' || provider === 'linkedin_oidc';
+}
+
+/**
+ * Resolves the role for an OAuth (GitHub/LinkedIn) user: the role saved in
+ * localStorage during the signup modal (growlancer_oauth_role) →
+ * user_metadata.role → roleHint → 'freelancer'.
+ *
+ * Does NOT consume the localStorage value — callers remove it only AFTER a
+ * successful profile creation so a failed creation + retry doesn't lose the
+ * user's chosen role.
+ */
+function resolveOAuthRole(authUser: SupabaseUser, roleHint?: UserRole): UserRole {
+  const meta = authUser.user_metadata || {};
+  const savedOAuthRole = localStorage.getItem('growlancer_oauth_role');
+  if (savedOAuthRole === 'freelancer' || savedOAuthRole === 'client') {
+    return savedOAuthRole;
+  }
+  if (meta.role === 'freelancer' || meta.role === 'client') {
+    return meta.role as UserRole;
+  }
+  return roleHint || 'freelancer';
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
@@ -204,10 +234,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Try to fetch existing profile
       let profile = await ensureUserProfile(authUser, roleHint, !!roleHint);
 
-      // 🆕 Deferred profile creation: if email is confirmed but no profile exists
-      // (e.g., signup RPC failed, or OAuth signup), create one now.
-      // Uses saved role from user_metadata to preserve user's choice.
-      if (!profile && authUser.email_confirmed_at) {
+      // 🆕 Deferred profile creation: if no profile exists (signup RPC failed,
+      // OAuth signup, or a profile row that hasn't propagated yet), create one now.
+      // OAuth (GitHub/LinkedIn) users get this EVEN IF the provider didn't return
+      // a confirmed email — the provider already verified identity at sign-in, and
+      // signing an OAuth user out over a missing profiles row would destroy the
+      // fresh session and bounce them back to login (the 'OAuth login works but
+      // returns to login' bug). Uses saved role to preserve the user's choice.
+      if (!profile && (authUser.email_confirmed_at || isOAuthProviderUser(authUser))) {
         devLog('[Auth] User without profile — auto-creating now (email confirmed)');
         const meta = authUser.user_metadata || {};
         const name =
@@ -216,17 +250,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           authUser.email?.split('@')[0] ||
           'User';
         
-        // 🆕 Use saved role from localStorage (preserved during OAuth), then user_metadata,
-        // then roleHint, then default to 'freelancer'
-        const savedOAuthRole = localStorage.getItem('growlancer_oauth_role');
-        const savedRole = (savedOAuthRole === 'freelancer' || savedOAuthRole === 'client')
-          ? savedOAuthRole as UserRole
-          : (meta.role === 'freelancer' || meta.role === 'client')
-            ? meta.role as UserRole
-            : (roleHint || 'freelancer');
-        if (savedOAuthRole) {
-          localStorage.removeItem('growlancer_oauth_role');
-        }
+        // 🆕 Use saved role from localStorage (preserved during OAuth), then
+        // user_metadata, then roleHint, then default to 'freelancer'. Consumed
+        // only after a successful creation (see below).
+        const savedRole = resolveOAuthRole(authUser, roleHint);
         
         // 🆕 Check for saved referral code from localStorage (preserved during OAuth)
         let oauthRefCode: string | undefined;
@@ -244,6 +271,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           savedRole,
           refCode,
         );
+        if (profile) {
+          // 🆕 Role consumed — only after a successful creation, so a failed
+          // creation + retry (safety net below) still sees the saved role.
+          localStorage.removeItem('growlancer_oauth_role');
+        }
 
         // 🆕 Process referral if this OAuth signup came from a referral link
         if (oauthRefCode && profile) {
@@ -293,6 +325,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (profile) {
             setUser(profile);
             return profile;
+          }
+
+          // 🛡️ OAuth (GitHub/LinkedIn) safety net: NEVER sign out an OAuth user
+          // because their profile row is missing. The provider already verified
+          // identity — a missing profiles row is a data issue, not an auth
+          // failure. Auto-create the profile here (saved role → metadata role →
+          // freelancer), and if creation still fails, keep the session alive so
+          // the next page load retries. Signing out would destroy the OAuth
+          // session and bounce the user back to the login page.
+          if (isOAuthProviderUser(authUser)) {
+            devLog('[Auth] OAuth user without profile — auto-creating (safety net)');
+            const meta = authUser.user_metadata || {};
+            const oauthRole = resolveOAuthRole(authUser);
+            const oauthName =
+              (typeof meta.name === 'string' && meta.name.trim()) ||
+              (typeof meta.full_name === 'string' && meta.full_name.trim()) ||
+              authUser.email?.split('@')[0] ||
+              'User';
+            profile = await createUserProfile(authUser.id, authUser.email || '', oauthName, oauthRole);
+            if (profile) {
+              // 🆕 Role consumed — only after a successful creation
+              localStorage.removeItem('growlancer_oauth_role');
+              setUser(profile);
+              return profile;
+            }
+            devWarn('[Auth] OAuth profile creation failed — keeping session (retry on next load)');
+            return null; // 🚫 Do NOT sign out
           }
           
           // 🚫 Don't sign out admin users — AdminAuthGuard handles admin auth separately.
