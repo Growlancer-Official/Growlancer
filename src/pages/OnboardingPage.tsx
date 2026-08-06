@@ -19,6 +19,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { CategoryPicker } from '../components/CategoryPicker';
+import { IndustrySelect } from '../components/IndustrySelect';
 import { useCategories } from '../hooks/useCategories';
 import { avatarUploadService } from '../lib/avatarUpload';
 import { avatarPackService } from '../lib/avatarPack';
@@ -370,17 +371,11 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Industry</label>
-              <select value={industry} onChange={e => setIndustry(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
-                <option value="">Select industry...</option>
-                <option value="Technology">Technology</option>
-                <option value="E-commerce">E-commerce</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Finance">Finance</option>
-                <option value="Healthcare">Healthcare</option>
-                <option value="Education">Education</option>
-                <option value="Other">Other</option>
-              </select>
+              <IndustrySelect
+                value={industry}
+                onChange={setIndustry}
+                placeholder="Select your industry..."
+              />
             </div>
           </div>
         )}
@@ -1141,23 +1136,11 @@ export function OnboardingPage() {
                     {/* Industry */}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">Industry</label>
-                      <select
+                      <IndustrySelect
                         value={clientForm.industry}
-                        onChange={(e) => setClientForm({ ...clientForm, industry: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                      >
-                        <option value="">Select your industry...</option>
-                        <option value="Technology">Technology</option>
-                        <option value="E-commerce">E-commerce</option>
-                        <option value="Marketing">Marketing & Advertising</option>
-                        <option value="Finance">Finance & Banking</option>
-                        <option value="Healthcare">Healthcare</option>
-                        <option value="Education">Education</option>
-                        <option value="Real Estate">Real Estate</option>
-                        <option value="Media">Media & Entertainment</option>
-                        <option value="Consulting">Consulting</option>
-                        <option value="Other">Other</option>
-                      </select>
+                        onChange={(ind) => setClientForm({ ...clientForm, industry: ind })}
+                        placeholder="Select your industry..."
+                      />
                     </div>
 
                     {/* Company Size & Location */}

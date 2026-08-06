@@ -8,6 +8,7 @@ import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
 import { inviteService, type UserInvitation } from '../lib/inviteService';
 import { ReauthDialog, isReauthValid, markReauthVerified } from '../components/ReauthDialog';
 import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
+import { IndustrySelect } from '../components/IndustrySelect';
 import {
   AlertCircle,
   AlertTriangle,
@@ -978,8 +979,11 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Industry</label>
-                      <input type="text" value={companyData.industry} onChange={(e) => setCompanyData({ ...companyData, industry: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g., Technology, Healthcare" />
+                      <IndustrySelect
+                        value={companyData.industry}
+                        onChange={(ind) => setCompanyData({ ...companyData, industry: ind })}
+                        placeholder="Select your industry..."
+                      />
                     </div>
                   </div>
                   <div>

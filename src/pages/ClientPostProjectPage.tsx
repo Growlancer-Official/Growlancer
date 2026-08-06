@@ -6,6 +6,7 @@ import { ArrowRight, Briefcase, CheckCircle, DollarSign, Sparkles, CheckCircle2 
 import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryPicker } from '../components/CategoryPicker';
+import { IndustrySelect } from '../components/IndustrySelect';
 
 export function ClientPostProjectPage() {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ export function ClientPostProjectPage() {
     skills_required: [] as string[],
     deadline: '',
     category: '',
+    industry: '',
     experience_level: 'intermediate' as 'entry' | 'intermediate' | 'expert',
     visibility: 'public' as 'public' | 'private' | 'invite_only',
   });
@@ -54,6 +56,7 @@ export function ClientPostProjectPage() {
             skills_required: skillNames,
             deadline: data.deadline ? data.deadline.slice(0, 10) : '',
             category: data.category || '',
+            industry: data.industry || '',
             experience_level: (data.experience_level as 'entry' | 'intermediate' | 'expert') || 'intermediate',
             visibility: (data.visibility as 'public' | 'private' | 'invite_only') || 'public',
           });
@@ -131,6 +134,7 @@ export function ClientPostProjectPage() {
         skills_required: formData.skills_required,
         deadline: formData.deadline || null,
         category: formData.category,
+        industry: formData.industry || null,
         experience_level: formData.experience_level,
         visibility: formData.visibility,
       };
@@ -308,6 +312,20 @@ export function ClientPostProjectPage() {
           <p className="text-sm text-slate-500 mb-4">
             Pick the category for your project, then type the skills you need. Growlancer matches freelancers by category.
           </p>
+
+          {/* Industry — which business sector this project belongs to (optional) */}
+          <div className="mb-5">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Your Industry</label>
+            <IndustrySelect
+              value={formData.industry}
+              onChange={(ind) => setFormData((prev) => ({ ...prev, industry: ind }))}
+              placeholder="Select the industry your business is in..."
+            />
+            <p className="text-xs text-slate-400 mt-1.5">
+              Helps us recommend the right freelancers for projects like yours (optional)
+            </p>
+          </div>
+
           <CategoryPicker
             mode="client"
             maxCategories={1}

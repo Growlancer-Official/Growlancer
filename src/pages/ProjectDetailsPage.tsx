@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   Briefcase,
+  Building2,
   CheckCircle,
   CheckCircle2,
   Clock,
@@ -33,6 +34,7 @@ interface ProjectDetails {
   status: string;
   deadline: string | null;
   category: string;
+  industry: string | null;
   experience_level: string;
   visibility: string;
   created_at: string;
@@ -403,6 +405,12 @@ export function ProjectDetailsPage() {
                   <Tag className="w-4 h-4 text-slate-500" />
                   <span>{project.category}</span>
                 </div>
+                {project.industry && (
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-slate-500" />
+                    <span>{project.industry}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-slate-500" />
                   <span className="capitalize">{project.experience_level}</span>
