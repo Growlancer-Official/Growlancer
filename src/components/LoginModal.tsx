@@ -30,8 +30,6 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [oauthProvider, setOauthProvider] = useState<'github' | 'linkedin' | null>(null);
-  // 🐞 Diagnostic — captures what signInWithOAuth actually returns (error or URL)
-  const [oauthDiag, setOauthDiag] = useState<string>('');
   const [existingUser, setExistingUser] = useState(false);
 
   // Check if there's already a VALID session on this device.
@@ -100,7 +98,10 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
           navigate(redirectPath, { replace: true });
         }, 100);
       } else {
-        setError(result.error || 'Login failed. Please check your credentials.');
+        setError(
+          (result.error || 'Login failed. Please check your credentials.') +
+            ' No account yet? Click "Sign up here" below.'
+        );
         setIsLoading(false);
       }
     } catch {
@@ -187,7 +188,6 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
               localStorage.removeItem('growlancer_oauth_role');
               const result = await signInWithOAuth('github');
               setOauthProvider(null);
-              setOauthDiag(JSON.stringify({ ok: result.success, url: result.url ?? null, err: result.error ?? null }));
               if (!result.success) setError(result.error || 'GitHub sign in failed. Make sure GitHub is configured in the Supabase Dashboard.');
             }}
             className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -211,7 +211,6 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
               localStorage.removeItem('growlancer_oauth_role');
               const result = await signInWithOAuth('linkedin_oidc');
               setOauthProvider(null);
-              setOauthDiag(JSON.stringify({ ok: result.success, url: result.url ?? null, err: result.error ?? null }));
               if (!result.success) setError(result.error || 'LinkedIn sign in failed. Make sure LinkedIn is configured in the Supabase Dashboard.');
             }}
             className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
@@ -266,13 +265,6 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
           <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <p className="text-xs text-red-600">{error}</p>
-          </div>
-        )}
-
-        {/* 🐞 OAuth diagnostic — temporary; shows what signInWithOAuth returned */}
-        {oauthDiag && (
-          <div className="mb-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-left">
-            <p className="text-[10px] font-mono text-slate-500 break-all whitespace-pre-wrap">{oauthDiag}</p>
           </div>
         )}
 

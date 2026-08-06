@@ -31,9 +31,6 @@ export function AuthCallbackPage() {
   const [status, setStatus] = useState<CallbackStatus>('processing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [action, setAction] = useState<AuthAction>('unknown');
-  // 🐞 Diagnostic — captures the exact callback URL + recovery outcome so a
-  // failed OAuth round-trip can be diagnosed without guessing.
-  const [diag, setDiag] = useState<string>('');
 
   useEffect(() => {
     let cancelled = false;
@@ -52,14 +49,6 @@ export function AuthCallbackPage() {
           | null;
         const detectedAction = typeParam || 'unknown';
         setAction(detectedAction);
-
-        // 🐞 Diagnostic snapshot of the incoming callback URL
-        setDiag(
-          `url=${window.location.href.slice(0, 150)}\n` +
-          `search=${window.location.search.slice(0, 100)}\n` +
-          `hash=${window.location.hash.slice(0, 200)}\n` +
-          `action=${detectedAction}`
-        );
 
         // ── 2. Check for OAuth error (search or hash) ──
         const error = searchParams.get('error') || hashParams.get('error');
@@ -276,7 +265,6 @@ export function AuthCallbackPage() {
 
           // For OAuth (unknown), try one more thing — check URL hash directly
           devLog('[AuthCallback] All session recovery failed — showing error');
-          setDiag((p) => p + `\nsessionFound=false\nhashAccessToken=${!!hashParams.get('access_token')}\nhashRefresh=${!!hashParams.get('refresh_token')}`);
           setStatus('error');
           setErrorMessage('No session found. Please try logging in again.');
           return;
@@ -432,29 +420,40 @@ export function AuthCallbackPage() {
         // role-specific full onboarding (role already chosen at signup).
         // isProviderOAuth (not isOAuthFlow) so a rare manual email navigation to
         // /auth/callback without a type param still keeps role-specific onboarding.
-        // 🛡️ VERIFY the session is actually persisted to storage before
-        // redirecting. If getSession() returns null here, the redirect would land
-        // on a page with no session → ProtectedRoute bounces back to login.
-        // Re-establish from the hash once; if it STILL won't persist, stay on a
-        // clear error screen (no more silent bounce) so we can capture why.
-        const persistCheck = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-        if (!persistCheck.data?.session?.user) {
-          const at = hashParams.get('access_token');
-          const rt = hashParams.get('refresh_token');
-          let reestablished = false;
-          if (at && rt) {
-            const s = await supabase.auth
-              .setSession({ access_token: at, refresh_token: rt })
-              .catch(() => ({ data: { session: null } }));
-            reestablished = !!s?.data?.session?.user;
-            if (reestablished) setDiag((p) => p + '\nRE-ESTABLISHED session from hash (was not persisted)');
-          }
-          if (!reestablished) {
-            setDiag((p) => p + `\nPERSIST FAILED: getSession()=null after recovery (hashAT=${!!hashParams.get('access_token')}, hashRT=${!!hashParams.get('refresh_token')})`);
-            setStatus('error');
-            setErrorMessage('Session could not be persisted. Please try again.');
-            return;
-          }
+        // 🛡️ GUARANTEE the session is in localStorage before redirecting.
+        // getSession() can return an in-memory session even when supabase-js
+        // didn't finish writing storage — the next page load had no session →
+        // ProtectedRoute bounced back to login ("login works but back to login").
+        // So we write the session + user directly under supabase-js's storage
+        // keys, then confirm it reads back before redirecting.
+        const sbUrl = import.meta.env.VITE_SUPABASE_URL || '';
+        const sbKey = `sb-${new URL(sbUrl).host.split('.')[0]}-auth-token`;
+
+        let sessionReady = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        let session = sessionReady.data?.session ?? null;
+
+        // If no session in-memory (or storage), re-establish from URL tokens.
+        if (!session?.user && hashParams.get('access_token') && hashParams.get('refresh_token')) {
+          const re = await supabase.auth.setSession({
+            access_token: hashParams.get('access_token')!,
+            refresh_token: hashParams.get('refresh_token')!,
+          }).catch(() => ({ data: { session: null } }));
+          session = re.data?.session ?? null;
+        }
+
+        if (session?.access_token && session?.refresh_token) {
+          // Write both the session and the separate user object supabase-js uses.
+          localStorage.setItem(sbKey, JSON.stringify(session));
+          localStorage.setItem(`${sbKey}-user`, JSON.stringify({ user: session.user }));
+        }
+
+        // Confirm the write actually landed in storage.
+        const check = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        const rawStored = localStorage.getItem(sbKey);
+        if (!check.data?.session?.user && (!rawStored || rawStored === 'null')) {
+          setStatus('error');
+          setErrorMessage('Session could not be persisted. Please try again.');
+          return;
         }
 
         devLog('[AuthCallback] redirectAfterAuth', {
@@ -462,11 +461,9 @@ export function AuthCallbackPage() {
           oauthMode: isProviderOAuth,
           role: profile?.role,
         });
-        setDiag((p) => p + `\nSUCCESS → redirect oauthMode=${isProviderOAuth} hasProfile=${!!profile} role=${profile?.role ?? 'none'}`);
         redirectAfterAuth(profile, isProviderOAuth);
       } catch (err) {
         if (!cancelled) {
-          setDiag((p) => p + `\nEXCEPTION: ${err instanceof Error ? err.message : String(err)}`);
           setStatus('error');
           setErrorMessage(
             err instanceof Error
@@ -586,13 +583,6 @@ export function AuthCallbackPage() {
               <p className="text-sm text-slate-500">
                 {actionDescriptions[action]}
               </p>
-              {diag && (
-                <div className="mt-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-left">
-                  <p className="text-[10px] font-mono text-slate-500 whitespace-pre-wrap break-all">
-                    {diag}
-                  </p>
-                </div>
-              )}
             </div>
           )}
 
@@ -698,13 +688,6 @@ export function AuthCallbackPage() {
               <p className="text-sm text-slate-500 mb-6">
                 {errorMessage || 'Something went wrong. Please try again.'}
               </p>
-              {diag && (
-                <div className="mb-4 p-3 bg-slate-100 border border-slate-200 rounded-xl text-left">
-                  <p className="text-[10px] font-mono text-slate-500 whitespace-pre-wrap break-all">
-                    {diag}
-                  </p>
-                </div>
-              )}
               <button
                 onClick={() => safeNavigate(() => navigate('/?modal=login', { replace: true }))}
                 className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
