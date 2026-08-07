@@ -47,7 +47,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [streamingContent, setStreamingContent] = useState('');
   // Real-time model name — defaults to the configured model, updates live from
   // the AI stream (the edge function relays the actual model on first chunk).
-  const [modelName, setModelName] = useState(() => (import.meta.env.VITE_OMNIROUTE_MODEL as string | undefined) || 'Growlancer AI');
+  const [modelName, setModelName] = useState(() => (import.meta.env.VITE_GEMINI_MODEL as string | undefined) || 'Gemini');
   const toast = useToast();
   const [escalating, setEscalating] = useState(false);
   const [escalated, setEscalated] = useState(false);

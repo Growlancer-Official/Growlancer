@@ -1,13 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { GEMINI_API_KEY, GEMINI_MODEL, GEMINI_BASE_URL } from '../_shared/gemini.ts';
 
-// ─── OmniRoute LLM gateway (OpenAI-compatible) ──────────────────────────────
+// ─── Gemini (Google AI) — OpenAI-compatible endpoint ────────────────────────
 // Base URL + key from secrets ONLY — never exposed to the frontend.
-const OMNIROUTE_BASE_URL = (Deno.env.get('OMNIROUTE_BASE_URL') || 'http://localhost:20128/v1').replace(/\/+$/, '');
-const OMNIROUTE_API_KEY = Deno.env.get('OMNIROUTE_API_KEY') || '';
-const OMNIROUTE_MODEL = Deno.env.get('OMNIROUTE_MODEL') || 'auto';
-
-if (!OMNIROUTE_API_KEY) {
-  console.error('OMNIROUTE_API_KEY environment variable is not set');
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY environment variable is not set');
 }
 
 // Rate limiting — every call costs a credit on the gateway, so unthrottled
@@ -85,8 +82,8 @@ const PRIORITY_RESPONSES: Record<string, string> = {
 
 async function generateAIResponse(ticket: TicketData): Promise<string | null> {
   // Fail fast if the gateway key is not configured
-  if (!OMNIROUTE_API_KEY) {
-    console.error('OMNIROUTE_API_KEY is not set. Cannot generate AI response.');
+  if (!GEMINI_API_KEY) {
+    console.error('GEMINI_API_KEY is not set. Cannot generate AI response.');
     return null;
   }
 
@@ -118,27 +115,27 @@ ${categoryGuidance}`;
   const userMessage = `Subject: ${ticket.subject}\n\nDescription: ${ticket.description}\n\nPriority: ${ticket.priority}\n\n${priorityResponse}`;
 
   try {
-    const response = await fetch(`${OMNIROUTE_BASE_URL}/chat/completions`, {
+    const response = await fetch(`${GEMINI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OMNIROUTE_API_KEY}`,
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: OMNIROUTE_MODEL,
+        model: GEMINI_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
         ],
         temperature: 0.7,
-        max_tokens: 800,
+        max_tokens: 8192,
       }),
     });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('OmniRoute API error:', data?.error || data);
+      console.error('Gemini API error:', data?.error || data);
       return null;
     }
 

@@ -1,12 +1,8 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
+import { GEMINI_API_KEY, GEMINI_MODEL, GEMINI_BASE_URL } from '../_shared/gemini.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-
-// ─── OmniRoute LLM gateway (OpenAI-compatible) — AI semantic match boost ────
-const OMNIROUTE_BASE_URL = (Deno.env.get('OMNIROUTE_BASE_URL') || 'http://localhost:20128/v1').replace(/\/+$/, '');
-const OMNIROUTE_API_KEY = Deno.env.get('OMNIROUTE_API_KEY') || '';
-const OMNIROUTE_MODEL = Deno.env.get('OMNIROUTE_MODEL') || 'auto';
 
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
@@ -102,17 +98,17 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
 }
 
 /**
- * AI semantic scoring pass via OmniRoute.
+ * AI semantic scoring pass via Gemini.
  * Asks the LLM to evaluate the top deterministic candidates against the
  * project and return refined scores + a one-line reason. Best-effort: if the
- * gateway is unreachable (e.g. local gateway offline), returns null and the
- * deterministic scores are used as-is — matching ALWAYS works.
+ * gateway is unreachable, returns null and the deterministic scores are used
+ * as-is — matching ALWAYS works.
  */
-async function omniRouteSemanticBoost(
+async function geminiSemanticBoost(
   project: Project,
   candidates: FreelancerCandidate[]
 ): Promise<Map<string, { ai_score: number; reason: string }> | null> {
-  if (!OMNIROUTE_API_KEY || candidates.length === 0) return null;
+  if (!GEMINI_API_KEY || candidates.length === 0) return null;
 
   const candidatePayload = candidates.map((c) => ({
     id: c.id.slice(0, 8),
@@ -151,20 +147,20 @@ ${JSON.stringify(candidatePayload)}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 9000); // 9s hard cap
 
-    const response = await fetch(`${OMNIROUTE_BASE_URL}/chat/completions`, {
+    const response = await fetch(`${GEMINI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${OMNIROUTE_API_KEY}`,
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: OMNIROUTE_MODEL,
+        model: GEMINI_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
         ],
         temperature: 0.3,
-        max_tokens: 1500,
+        max_tokens: 4096,
       }),
       signal: controller.signal,
     });
@@ -172,7 +168,7 @@ ${JSON.stringify(candidatePayload)}`;
     clearTimeout(timeout);
 
     if (!response.ok) {
-      console.error('[ai-matching] OmniRoute semantic pass failed:', response.status);
+      console.error('[ai-matching] Gemini semantic pass failed:', response.status);
       return null;
     }
 
@@ -197,7 +193,7 @@ ${JSON.stringify(candidatePayload)}`;
     }
     return resultMap;
   } catch (err) {
-    console.error('[ai-matching] OmniRoute semantic pass error (falling back to deterministic):', err?.message || err);
+    console.error('[ai-matching] Gemini semantic pass error (falling back to deterministic):', err?.message || err);
     return null;
   }
 }
@@ -357,13 +353,13 @@ Deno.serve(async (req: Request) => {
     // Sort by match score descending
     matches.sort((a, b) => b.match_score - a.match_score);
 
-    // ─── PASS 2: OmniRoute AI semantic boost (top 25, best-effort) ─────────
+    // ─── PASS 2: Gemini AI semantic boost (top 25, best-effort) ─────────
     const topDeterministic = matches.slice(0, 25);
     const topCandidates = candidates.slice(0, 25);
     let aiBoost: Map<string, { ai_score: number; reason: string }> | null = null;
 
     if (topDeterministic.length > 0) {
-      aiBoost = await omniRouteSemanticBoost(project as Project, topCandidates);
+      aiBoost = await geminiSemanticBoost(project as Project, topCandidates);
     }
 
     const finalMatches: MatchResult[] = topDeterministic.map((m) => {

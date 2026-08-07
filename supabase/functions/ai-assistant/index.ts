@@ -1,16 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
+import { GEMINI_API_KEY, callGemini } from '../_shared/gemini.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// ─── OmniRoute LLM gateway (OpenAI-compatible) ──────────────────────────────
+// ─── Gemini (Google AI) — OpenAI-compatible endpoint ────────────────────────
 // Base URL + key are read from secrets ONLY — never exposed to the frontend.
-const OMNIROUTE_BASE_URL = (Deno.env.get('OMNIROUTE_BASE_URL') || 'http://localhost:20128/v1').replace(/\/+$/, '');
-const OMNIROUTE_API_KEY = Deno.env.get('OMNIROUTE_API_KEY') || '';
-const OMNIROUTE_MODEL = Deno.env.get('OMNIROUTE_MODEL') || 'auto';
-
-if (!OMNIROUTE_API_KEY) {
-  console.error('OMNIROUTE_API_KEY is not configured in environment variables');
+if (!GEMINI_API_KEY) {
+  console.error('GEMINI_API_KEY is not configured in environment variables');
 }
 
 const ALLOWED_ORIGINS = [
@@ -96,7 +93,7 @@ async function checkMessageLimit(): Promise<{ allowed: boolean; isPro: boolean; 
   return { allowed: true, isPro: true, used: 0, limit: 0 };
 }
 
-/** OpenAI-compatible message conversion for the OmniRoute gateway. */
+/** OpenAI-compatible message conversion for the Gemini endpoint. */
 function convertToOpenAIMessages(
   messages: ChatMessage[],
   systemPrompt: string
@@ -163,30 +160,7 @@ function buildSystemPrompt(
   }
 }
 
-/** Call the OmniRoute gateway (OpenAI-compatible). */
-async function callOmniRoute(
-  messages: ChatMessage[],
-  options: { stream?: boolean; maxTokens?: number } = {}
-): Promise<Response> {
-  const body: Record<string, unknown> = {
-    model: OMNIROUTE_MODEL,
-    messages,
-    temperature: 0.7,
-    max_tokens: options.maxTokens ?? 1024,
-    top_p: 0.95,
-  };
-  if (options.stream) {
-    body.stream = true;
-  }
-  return await fetch(`${OMNIROUTE_BASE_URL}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${OMNIROUTE_API_KEY}`,
-    },
-    body: JSON.stringify(body),
-  });
-}
+
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get('origin');
@@ -197,8 +171,8 @@ Deno.serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Fail closed: refuse requests when the OmniRoute key is not configured
-  if (!OMNIROUTE_API_KEY) {
+  // Fail closed: refuse requests when the Gemini key is not configured
+  if (!GEMINI_API_KEY) {
     return new Response(JSON.stringify({ error: 'AI service is not configured' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -273,7 +247,7 @@ Deno.serve(async (req: Request) => {
     // Build system prompt
     const systemPrompt = buildSystemPrompt(user_role, context);
 
-    // Convert to OpenAI-compatible format for the OmniRoute gateway
+    // Convert to OpenAI-compatible format for the Gemini endpoint
     const openAIMessages = convertToOpenAIMessages(
       sanitizedMessages.slice(-10),
       systemPrompt
@@ -281,20 +255,20 @@ Deno.serve(async (req: Request) => {
 
     if (prefersStreaming) {
       // === STREAMING RESPONSE ===
-      const omniResponse = await callOmniRoute(openAIMessages, { stream: true });
+      const geminiResponse = await callGemini(openAIMessages, { stream: true });
 
-      if (!omniResponse.ok) {
-        const errText = await omniResponse.text();
+      if (!geminiResponse.ok) {
+        const errText = await geminiResponse.text();
         return new Response(JSON.stringify({ error: `AI gateway error: ${errText.slice(0, 300)}` }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      // Stream the OmniRoute SSE response back to the client
+      // Stream the Gemini SSE response back to the client
       const stream = new ReadableStream({
         async start(controller) {
-          const reader = omniResponse.body?.getReader();
+          const reader = geminiResponse.body?.getReader();
           if (!reader) {
             controller.close();
             return;
@@ -356,11 +330,11 @@ Deno.serve(async (req: Request) => {
       });
     } else {
       // === NON-STREAMING RESPONSE ===
-      const omniResponse = await callOmniRoute(openAIMessages, { stream: false });
+      const geminiResponse = await callGemini(openAIMessages, { stream: false });
 
-      const data = await omniResponse.json().catch(() => ({}));
+      const data = await geminiResponse.json().catch(() => ({}));
 
-      if (!omniResponse.ok) {
+      if (!geminiResponse.ok) {
         return new Response(
           JSON.stringify({ error: data?.error?.message || 'AI gateway error' }),
           {
