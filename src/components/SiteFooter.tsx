@@ -102,29 +102,22 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               {/* Payment Methods */}
               <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl ring-1 ring-slate-200">
                 <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payments</span>
-                {/* Cashfree (India — primary gateway) */}
-                <div className="flex items-center gap-1.5" title="Cashfree — UPI, Cards, Net Banking & Wallets">
-                  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cashfree">
-                    <defs>
-                      <linearGradient id="cf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#0043FF"/>
-                        <stop offset="100%" stopColor="#00CCFF"/>
-                      </linearGradient>
-                    </defs>
-                    <rect width="24" height="24" rx="5.5" fill="url(#cf-grad)"/>
-                    <path fill="#fff" d="M12 6.2c-3.2 0-5.8 2.6-5.8 5.8s2.6 5.8 5.8 5.8c1.1 0 2.14-.31 3.02-.86l-1.06-1.28a4.14 4.14 0 0 1-1.96.47c-2.26 0-4.1-1.84-4.1-4.1s1.84-4.1 4.1-4.1c.53 0 1.03.1 1.5.28L8.28 14.3l1.16 1.4 7.26-7.26A5.78 5.78 0 0 0 12 6.2z"/>
-                  </svg>
-                  <span className="text-[10px] font-semibold text-slate-600">Cashfree</span>
-                </div>
+                {/* PayPal */}
+                <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PayPal">
+                  <path fill="#003087" d="M7.016 19.198h-4.2a.562.562 0 0 1-.555-.65L5.093.584A.692.692 0 0 1 5.776 0h7.222c3.417 0 5.904 2.488 5.846 5.5-.006.25-.027.5-.066.747A6.794 6.794 0 0 1 12.071 12H8.743a.69.69 0 0 0-.682.583l-.325 2.056-.013.083-.692 4.39-.015.087z"/>
+                  <path fill="#009cde" d="M19.79 6.142c-.01.087-.01.175-.023.261a7.76 7.76 0 0 1-7.695 6.598H9.007l-.283 1.795-.013.083-.692 4.39-.134.843-.014.088H6.86l-.497 3.15a.562.562 0 0 0 .555.65h3.612c.34 0 .63-.249.683-.585l.952-6.031a.692.692 0 0 1 .683-.584h2.126a6.793 6.793 0 0 0 6.707-5.752c.306-1.95-.466-3.744-1.89-4.906z"/>
+                </svg>
                 <span className="text-slate-300 text-xs">|</span>
-                {/* PayPal (Upcoming) */}
-                <div className="flex items-center gap-1.5" title="PayPal — Coming soon for international payments">
-                  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PayPal">
-                    <path fill="#003087" d="M7.016 19.198h-4.2a.562.562 0 0 1-.555-.65L5.093.584A.692.692 0 0 1 5.776 0h7.222c3.417 0 5.904 2.488 5.846 5.5-.006.25-.027.5-.066.747A6.794 6.794 0 0 1 12.071 12H8.743a.69.69 0 0 0-.682.583l-.325 2.056-.013.083-.692 4.39-.015.087z"/>
-                    <path fill="#009cde" d="M19.79 6.142c-.01.087-.01.175-.023.261a7.76 7.76 0 0 1-7.695 6.598H9.007l-.283 1.795-.013.083-.692 4.39-.134.843-.014.088H6.86l-.497 3.15a.562.562 0 0 0 .555.65h3.612c.34 0 .63-.249.683-.585l.952-6.031a.692.692 0 0 1 .683-.584h2.126a6.793 6.793 0 0 0 6.707-5.752c.306-1.95-.466-3.744-1.89-4.906z"/>
-                  </svg>
-                  <span className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-px text-[9px] font-bold uppercase tracking-wide text-amber-700">Upcoming</span>
-                </div>
+                {/* Razorpay */}
+                <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Razorpay">
+                  <defs>
+                    <linearGradient id="rzp-grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#3395FF"/>
+                      <stop offset="100%" stopColor="#1A5CFF"/>
+                    </linearGradient>
+                  </defs>
+                  <path fill="url(#rzp-grad2)" fillRule="evenodd" d="M22.436 0l-11.91 7.773-1.174 4.276 6.625-4.297L11.65 24h4.391l6.395-24zM14.26 10.098L3.389 17.166 1.564 24h9.008l3.688-13.902Z"/>
+                </svg>
                 <span className="text-[10px] text-slate-400">Secure</span>
               </div>
 

@@ -29,7 +29,7 @@ app.use((req, res, next) => {
     'camera=(), microphone=(), geolocation=(), payment=()'
   );
   // Baseline CSP: Vite dev server injects inline scripts/styles, so keep
-  // 'unsafe-inline' for style and allow self + Cashfree/PayPal scripts.
+  // 'unsafe-inline' for style and allow self + Razorpay/PayPal scripts.
   // Google Fonts (fonts.googleapis.com / fonts.gstatic.com) and Fontshare
   // (api.fontshare.com) are loaded via <link> in pages/+Head.tsx — they must
   // be allowed in style-src/font-src or the typography silently breaks.
@@ -37,12 +37,12 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-      "script-src 'self' 'unsafe-inline' https://sdk.cashfree.com https://*.cashfree.com https://*.paypal.com https://*.paypalobjects.com; " +
+      "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://*.paypal.com https://*.paypalobjects.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; " +
       "img-src 'self' data: blob: https:; " +
       "font-src 'self' data: https://fonts.gstatic.com https://api.fontshare.com; " +
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.cashfree.com https://api.cashfree.com https://sandbox.cashfree.com https://*.paypal.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.fontshare.com https://o4511722119495680.ingest.us.sentry.io; " +
-      "frame-src 'self' https://*.cashfree.com https://payments.cashfree.com https://*.paypal.com; " +
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.paypal.com https://api.razorpay.com https://checkout.razorpay.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.fontshare.com https://o4511722119495680.ingest.us.sentry.io; " +
+      "frame-src 'self' https://checkout.razorpay.com https://*.paypal.com; " +
       "media-src 'self' blob:; " +
       "object-src 'none'; base-uri 'self'; form-action 'self'"
   );

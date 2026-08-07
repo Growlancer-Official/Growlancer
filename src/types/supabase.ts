@@ -2746,6 +2746,148 @@ export type Database = {
         }
         Relationships: []
       }
+      razorpay_orders: {
+        Row: {
+          amount: number
+          captured_at: string | null
+          contract_id: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          metadata: Json | null
+          order_type: string
+          razorpay_order_id: string
+          razorpay_payment_id: string | null
+          razorpay_signature: string | null
+          status: string
+          subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          captured_at?: string | null
+          contract_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          order_type: string
+          razorpay_order_id: string
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          captured_at?: string | null
+          contract_id?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          order_type?: string
+          razorpay_order_id?: string
+          razorpay_payment_id?: string | null
+          razorpay_signature?: string | null
+          status?: string
+          subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "razorpay_orders_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "razorpay_orders_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "razorpay_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "active_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "razorpay_orders_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      razorpay_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          method: string | null
+          payer_contact: string | null
+          payer_email: string | null
+          processor_response: Json | null
+          razorpay_order_id: string | null
+          razorpay_payment_id: string | null
+          razorpay_transaction_id: string | null
+          status: string
+          transaction_type: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: string | null
+          payer_contact?: string | null
+          payer_email?: string | null
+          processor_response?: Json | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_transaction_id?: string | null
+          status?: string
+          transaction_type: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: string | null
+          payer_contact?: string | null
+          payer_email?: string | null
+          processor_response?: Json | null
+          razorpay_order_id?: string | null
+          razorpay_payment_id?: string | null
+          razorpay_transaction_id?: string | null
+          status?: string
+          transaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "razorpay_transactions_razorpay_order_id_fkey"
+            columns: ["razorpay_order_id"]
+            isOneToOne: false
+            referencedRelation: "razorpay_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recovery_codes: {
         Row: {
           code_hash: string
@@ -3030,6 +3172,7 @@ export type Database = {
           id: string
           is_default: boolean
           last_used_at: string | null
+          razorpay_customer_id: string | null
           used_count: number
           user_id: string
         }
@@ -3045,6 +3188,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           last_used_at?: string | null
+          razorpay_customer_id?: string | null
           used_count?: number
           user_id: string
         }
@@ -3060,6 +3204,7 @@ export type Database = {
           id?: string
           is_default?: boolean
           last_used_at?: string | null
+          razorpay_customer_id?: string | null
           used_count?: number
           user_id?: string
         }

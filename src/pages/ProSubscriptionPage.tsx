@@ -536,7 +536,7 @@ export function ProSubscriptionPage() {
                       Secure Payment
                     </h4>
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      All transactions are handled securely via Cashfree with AES-256 encryption — UPI, Cards, NetBanking & Wallets.
+                      All transactions are handled securely via Razorpay with AES-256 encryption — UPI, Cards, NetBanking & Wallets.
                     </p>
                   </div>
                   <div className="p-6 rounded-2xl bg-white/5 border border-white/10">

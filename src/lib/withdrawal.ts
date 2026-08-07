@@ -1,6 +1,6 @@
 // Withdrawal Service
 // Handles withdrawal requests and wallet/payout method operations
-// Withdrawals in INR are paid via Cashfree Payouts; PayPal is Coming Soon.
+// PayPal-only withdrawal method
 
 import { supabase, dbFunctions } from './supabase';
 
@@ -8,11 +8,13 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 export interface WithdrawalRequest {
   amount: number;
-  method: 'paypal' | 'cashfree_payout';
+  method: 'paypal' | 'razorpay_payout';
   paypal_email?: string;
-  /** For cashfree_payout: the user's payout_method id — server resolves the Cashfree beneficiary */
+  /** For razorpay_payout: the user's payout_method id — server resolves the RazorpayX fund account */
   payout_method_id?: string;
-  /** For cashfree_payout: 'UPI' | 'bank' (defaults to 'UPI' server-side) */
+  /** Legacy fallback for razorpay_payout: raw fund account ID (server validates ownership) */
+  fund_account_id?: string;
+  /** For razorpay_payout: 'UPI' | 'bank' (defaults to 'UPI' server-side) */
   payout_mode?: string;
 }
 
@@ -22,12 +24,13 @@ export interface Withdrawal {
   amount: number;
   fee: number;
   net_amount: number;
-  method: 'paypal' | 'cashfree_payout';
+  method: 'paypal' | 'razorpay_payout';
   paypal_email: string | null;
-  /** For cashfree_payout: Cashfree payout ID */
-  cashfree_payout_id?: string | null;
-  /** For cashfree_payout: linked Cashfree beneficiary ID (DB column: cashfree_beneficiary_id) */
-  cashfree_beneficiary_id?: string | null;
+  /** For razorpay_payout: Razorpay payout ID */
+  razorpay_payout_id?: string | null;
+  /** For razorpay_payout: linked fund account ID (DB column: razorpay_fund_account_id) */
+  fund_account_id?: string | null;
+  razorpay_fund_account_id?: string | null;
   status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
   paypal_payout_id: string | null;
   failure_reason: string | null;
@@ -50,8 +53,8 @@ export interface PayoutMethod {
   ifsc_code: string | null;
   /** UPI ID for Indian payments */
   upi_id: string | null;
-  /** Cashfree beneficiary ID (created server-side via create_beneficiary) */
-  cashfree_beneficiary_id: string | null;
+  /** RazorpayX fund account ID (created server-side via create_fund_account) */
+  razorpay_fund_account_id: string | null;
   is_default: boolean;
   created_at: string;
   updated_at: string;
@@ -107,9 +110,9 @@ export const withdrawalService = {
   /**
    * Create a withdrawal request.
    *
-   * ⚠️ FIX: this previously held wallet funds + inserted a `withdrawals` row
-   * directly with fee 0 — it NEVER called the payout edge function, so no real
-   * Cashfree/PayPal payout ever fired (withdrawals sat 'pending' until the
+   * ⚠️ FIX (2026-08-03): this previously held wallet funds + inserted a `withdrawals`
+   * row directly with fee 0 — it NEVER called the payout edge function, so no real
+   * RazorpayX/PayPal payout ever fired (withdrawals sat 'pending' until the
    * stale-withdrawal cron failed them after 72h and returned the funds). Now we
    * route through the `withdrawal` edge function POST, which validates the balance
    * + amount server-side, computes the fee, holds funds, executes the actual payout
@@ -124,14 +127,16 @@ export const withdrawalService = {
 
       // Map frontend field names to the edge function's expected API
       // (frontend `method` → edge `withdrawal_method`).
-      const isCashfree = request.method === 'cashfree_payout';
+      const isRazorpay = request.method === 'razorpay_payout';
       const body: Record<string, unknown> = {
         amount: request.amount,
         withdrawal_method: request.method,
-        payout_mode: isCashfree ? (request.payout_mode || 'UPI') : undefined,
+        payout_mode: isRazorpay ? (request.payout_mode || 'UPI') : undefined,
       };
-      if (isCashfree) {
+      if (isRazorpay) {
         body.payout_method_id = request.payout_method_id;
+        // Legacy fallback for raw IDs — server validates ownership.
+        if (request.fund_account_id) body.fund_account_id = request.fund_account_id;
       } else {
         body.paypal_email = request.paypal_email;
       }
@@ -327,42 +332,46 @@ export const withdrawalService = {
   },
 
   /**
-   * Link a UPI/bank payout method to a Cashfree beneficiary.
-   * Creates the Cashfree Payouts beneficiary server-side and stores the returned
-   * beneficiary_id on the payout_methods row so payouts always use a real
-   * beneficiary (never a raw account number / UPI handle).
+   * Link a UPI/bank payout method to RazorpayX.
+   * Creates the RazorpayX fund account server-side and stores the returned
+   * fund_account_id on the payout_methods row so payouts always use a real
+   * fund account ID (never a raw account number / UPI handle).
    */
-  async linkCashfreeBeneficiary(
-    payoutMethodId: string
-  ): Promise<{ success: boolean; beneficiary_id?: string; error?: string }> {
+  async linkRazorpayXAccount(
+    payoutMethodId: string,
+    opts?: { name?: string; email?: string; phone?: string }
+  ): Promise<{ success: boolean; fund_account_id?: string; error?: string }> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         return { success: false, error: 'Not authenticated' };
       }
 
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/cashfree`, {
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/razorpay`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          action: 'create_beneficiary',
+          action: 'create_fund_account',
           data: {
             payout_method_id: payoutMethodId,
+            name: opts?.name,
+            email: opts?.email,
+            phone: opts?.phone,
           },
         }),
       });
 
       const payload = await response.json();
       if (!response.ok || !payload?.success) {
-        return { success: false, error: payload?.error || 'Failed to link Cashfree beneficiary' };
+        return { success: false, error: payload?.error || 'Failed to link RazorpayX account' };
       }
-      return { success: true, beneficiary_id: payload?.data?.beneficiary_id };
+      return { success: true, fund_account_id: payload?.data?.fund_account_id };
     } catch (error) {
-      console.error('Link Cashfree beneficiary error:', error);
-      return { success: false, error: 'Network error linking Cashfree beneficiary' };
+      console.error('Link RazorpayX account error:', error);
+      return { success: false, error: 'Network error linking RazorpayX account' };
     }
   },
 

@@ -5,8 +5,8 @@ export const PLATFORM_CONFIG = {
   // Platform Fees
   fees: {
     platform_percentage: 5, // 5% platform fee (client pays on top of bid)
-    payment_processing_percentage: 2, // Cashfree payout fee (charged to freelancer on withdrawal)
-    cashfree_payout_percentage: 2, // Cashfree Payouts fee for Indian bank/UPI transfers
+    payment_processing_percentage: 2, // RazorpayX payout fee (charged to freelancer on withdrawal)
+    razorpay_payout_percentage: 2, // RazorpayX payout fee for Indian bank/UPI transfers
     withdrawal_fee_fixed: 0, // Free withdrawals (no additional fixed fee)
   },
   
@@ -69,7 +69,6 @@ export const PLATFORM_CONFIG = {
     ai_assistant: { requests: 30, window_ms: 60000 },
     ai_matching: { requests: 20, window_ms: 60000 },
     paypal: { requests: 20, window_ms: 60000 },
-    cashfree: { requests: 20, window_ms: 60000 },
     withdrawal: { requests: 10, window_ms: 3600000 }, // 10 per hour
   },
   

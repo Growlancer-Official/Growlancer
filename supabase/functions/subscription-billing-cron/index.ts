@@ -69,7 +69,7 @@ serve(async () => {
             continue;
           }
 
-          // Try to convert — since real payment via Cashfree/PayPal happens client-side,
+          // Try to convert — since real payment via Razorpay/PayPal happens client-side,
           // mark as past_due and notify user to set up payment
           await supabase
             .from('subscriptions')

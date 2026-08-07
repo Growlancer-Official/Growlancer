@@ -31,7 +31,7 @@ Our mission is to make freelancing faster, safer, and smarter for both businesse
 - 🔒 Secure Escrow Payments
 - 📁 Project Workspace
 - 📊 Analytics Dashboard
-- 💳 Cashfree Payment Gateway (UPI, Cards, Net Banking, Wallets)
+- 💳 Razorpay Integration
 - 🌍 PayPal Integration
 - 🛡 Identity Verification
 - ⭐ Review & Rating System
@@ -53,7 +53,7 @@ Our mission is to make freelancing faster, safer, and smarter for both businesse
 | Database | PostgreSQL |
 | Authentication | Supabase Auth |
 | Storage | Supabase Storage |
-| Payments | Cashfree (India) & PayPal (Coming Soon) |
+| Payments | Razorpay & PayPal |
 | Monitoring | Sentry |
 | Deployment | Vercel |
 | Version Control | GitHub |
@@ -112,7 +112,7 @@ Create a `.env` file:
 ```env
 VITE_SUPABASE_URL=
 VITE_SUPABASE_ANON_KEY=
-VITE_CASHFREE_ENVIRONMENT=TEST
+VITE_RAZORPAY_KEY=
 VITE_PAYPAL_CLIENT_ID=
 VITE_SENTRY_DSN=
 ```

@@ -14,7 +14,7 @@ import { AlertCircle,
   Shield } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { PayPalCheckout } from './PayPalCheckout';
-import { CashfreeCheckout } from './CashfreeCheckout';
+import { RazorpayCheckout } from './RazorpayCheckout';
 import { PAYMENTS_CONFIG } from '../lib/payments';
 import { supabase } from '../lib/supabase';
 import { PLATFORM_CONFIG, calculatePlatformFee, calculateTotalWithFee } from '../lib/config';
@@ -124,7 +124,7 @@ function MilestoneStepIndicator({
               {/* Amount and status */}
               <div className="text-right flex-shrink-0">
                 <p className="text-sm font-semibold text-slate-900">
-                  ₹{Number(milestone.amount || 0).toLocaleString('en-IN')}
+                  ${Number(milestone.amount || 0).toFixed(2)}
                 </p>
                 <span className={`text-xs font-medium capitalize ${
                   isCompleted ? 'text-emerald-600' : isDisputed ? 'text-red-600' : 'text-slate-400'
@@ -151,7 +151,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
     <div className="p-4 bg-slate-50 rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-slate-700">Escrow Funding Progress</span>
-        <span className="text-sm font-bold text-slate-900">₹{funded.toLocaleString('en-IN')} / ₹{total.toLocaleString('en-IN')}</span>
+        <span className="text-sm font-bold text-slate-900">${funded.toFixed(0)} / ${total.toFixed(0)}</span>
       </div>
       <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
         <div
@@ -163,7 +163,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
       </div>
       <div className="flex justify-between text-xs text-slate-500">
         <span>{percent}% funded</span>
-        {remaining > 0 && <span>₹{remaining.toLocaleString('en-IN')} remaining</span>}
+        {remaining > 0 && <span>${remaining.toFixed(2)} remaining</span>}
       </div>
     </div>
   );
@@ -396,8 +396,8 @@ export function EscrowPayPalPayment({
           </div>
         )}
 
-        {/* Primary: Cashfree — server recomputes the amount + platform fee */}
-        <CashfreeCheckout
+        {/* Primary: Razorpay — server recomputes the amount + platform fee */}
+        <RazorpayCheckout
           orderData={{
             order_type: 'contract_escrow',
             amount: totalAmount,
@@ -417,7 +417,11 @@ export function EscrowPayPalPayment({
           onSuccess={handlePayPalSuccess}
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
-          buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')} with Cashfree`}
+          buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')} with Razorpay`}
+          userInfo={{
+            name: (user as any)?.user_metadata?.name,
+            email: user?.email,
+          }}
         />
 
         {/* Secondary: PayPal — feature-flagged, Coming Soon until live credentials */}
@@ -459,7 +463,7 @@ export function EscrowPayPalPayment({
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-600">PayPal</p>
-                <p className="text-xs text-slate-400">Available soon — Cashfree is the current payment method</p>
+                <p className="text-xs text-slate-400">Available soon — Razorpay is the current payment method</p>
               </div>
             </div>
             <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
@@ -479,23 +483,23 @@ export function EscrowPayPalPayment({
                 return (
                   <div key={idx} className="flex justify-between text-slate-600">
                     <span>{ms?.title || `Milestone ${idx + 1}`}</span>
-                    <span>₹{msAmount.toLocaleString('en-IN')}</span>
+                    <span>${msAmount.toFixed(2)}</span>
                   </div>
                 );
               })
             ) : (
               <div className="flex justify-between text-slate-600">
                 <span>Project Amount</span>
-                <span>₹{fundingAmount.toLocaleString('en-IN')}</span>
+                <span>${fundingAmount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between text-slate-600">
               <span>Platform Fee ({feePercentage}%)</span>
-              <span>₹{platformFee.toLocaleString('en-IN')}</span>
+              <span>${platformFee.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total</span>
-              <span>₹{totalAmount.toLocaleString('en-IN')}</span>
+              <span>${totalAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -540,15 +544,15 @@ export function EscrowPayPalPayment({
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Funding Amount</span>
-              <span className="font-semibold text-slate-900">₹{fundingAmount.toLocaleString('en-IN')}</span>
+              <span className="font-semibold text-slate-900">${fundingAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Platform Fee ({feePercentage}%)</span>
-              <span>₹{platformFee.toLocaleString('en-IN')}</span>
+              <span>${platformFee.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total to Pay</span>
-              <span>₹{totalAmount.toLocaleString('en-IN')}</span>
+              <span>${totalAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -606,12 +610,12 @@ export function EscrowPayPalPayment({
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Project Amount</span>
-            <span className="font-medium text-slate-900">₹{amount.toLocaleString('en-IN')}</span>
+            <span className="font-medium text-slate-900">${amount.toFixed(2)}</span>
           </div>
           {selectedMilestones.size > 0 && (
             <div className="flex justify-between text-slate-600">
               <span>Funding Amount (Selected Milestones)</span>
-              <span className="font-medium text-slate-900">₹{fundingAmount.toLocaleString('en-IN')}</span>
+              <span className="font-medium text-slate-900">${fundingAmount.toFixed(2)}</span>
             </div>
           )}
           <div className="flex justify-between text-slate-600">
@@ -620,7 +624,7 @@ export function EscrowPayPalPayment({
           </div>
           <div className="flex justify-between font-semibold text-slate-900 pt-3 border-t border-slate-200 text-lg">
             <span>Total to Pay</span>
-            <span>₹{totalAmount.toLocaleString('en-IN')}</span>
+            <span>${totalAmount.toFixed(2)}</span>
           </div>
         </div>
       </div>

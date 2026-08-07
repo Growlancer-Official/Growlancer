@@ -15,7 +15,7 @@ Every change (implement/edit/update/delete) in this repo MUST pass the relevant 
 ## 1. What this is
 
 - **Product:** Freelancers find/hire work; clients post projects and hire talent. Escrow payments, real-time chat, AI matching/assistant, Pro subscriptions, wallet + withdrawals, identity verification, certificates, internships, contests, admin dashboard.
-- **Status:** Beta, in active production development. Deployed: `growlancer.vercel.app`. India-first launch, Cashfree primary.
+- **Status:** Beta, in active production development. Deployed: `growlancer.vercel.app`. India-first launch, Razorpay primary.
 - **Repo:** `https://github.com/Growlancer-Official/Growlancer` — proprietary (LICENSE = All Rights Reserved). 322 commits on `main` (also `origin/develop`).
 
 ## 2. Tech stack & architecture
@@ -26,7 +26,7 @@ Every change (implement/edit/update/delete) in this repo MUST pass the relevant 
 | Styling | Tailwind CSS 3 |
 | State | Zustand (minimal), React Context for auth/toast/i18n |
 | Backend | **Supabase** — Postgres 17 + Edge Functions (Deno) + Auth + Storage |
-| Payments | **Cashfree** (primary, INR — UPI/Cards/NetBanking/Wallets) + PayPal (implemented but gated behind `VITE_PAYPAL_ENABLED=false`) |
+| Payments | **Razorpay** (primary, INR) + PayPal (implemented but gated behind `VITE_PAYPAL_ENABLED=false`) |
 | AI | Gemini 2.0 Flash via raw REST fetch in edge functions (AI SDK deps unused) |
 | Monitoring | Sentry (browser, DSN optional via `VITE_SENTRY_DSN`) |
 | Deploy | **Vercel** (frontend) + **Supabase** (backend) + GitHub Actions CI |
@@ -45,7 +45,7 @@ Every change (implement/edit/update/delete) in this repo MUST pass the relevant 
 ```
 src/
   app/App.tsx            — React Router tree (all routes)
-  components/            — shared UI (ProtectedRoute, CashfreeCheckout, AIChatSupport, NotificationsPanel…)
+  components/            — shared UI (ProtectedRoute, RazorpayCheckout, AIChatSupport, NotificationsPanel…)
   context/AuthContext.tsx— global auth state (large, ~1344 lines)
   layouts/               — MainLayout (public), DashboardLayout (freelancer), ClientDashboardLayout, AdminDashboardLayout
   lib/                   — services, supabase client, config, helpers (see §5)
@@ -80,7 +80,7 @@ npm start / npm run start:prod   # Express SPA server (server.js) — alternativ
 - **CI:** `.github/workflows/ci.yml` runs typecheck + lint + build on every push/PR to `main`. Red CI blocks deploy.
 
 ### Env vars (see `.env.example`)
-`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, optional `VITE_SENTRY_DSN`, `VITE_APP_VERSION`, `VITE_CASHFREE_ENVIRONMENT`. Server-side (edge functions): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `CASHFREE_APP_ID/SECRET_KEY/ENVIRONMENT/WEBHOOK_SECRET`, `CASHFREE_PAYOUT_CLIENT_ID/SECRET`, `PAYPAL_*`, `ADMIN_SIGNUP_SECRET`, `CRON_SECRET`, `APP_URL`.
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, optional `VITE_SENTRY_DSN`, `VITE_APP_VERSION`. Server-side (edge functions): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `RAZORPAY_KEY_ID/SECRET/ACCOUNT_NUMBER`, `RAZORPAY_WEBHOOK_SECRET`, `PAYPAL_*`, `ADMIN_SIGNUP_SECRET`, `CRON_SECRET`, `APP_URL`.
 
 ## 4. Build pipeline — the fragile parts (read before changing builds)
 
@@ -128,21 +128,21 @@ Auth is the most heavily reworked, most fragile area. **Many production bugs liv
 
 ## 7. Payments & finance subsystem
 
-- **Money model:** Client pays contract amount + 5% platform fee; freelancer receives the amount. Escrow holds funds until release. Cashfree = primary gateway (INR); PayPal gated.
-- **Key tables:** `contracts`, `escrow`, `transactions`, `wallets` (balance/pending_balance/escrow_balance), `cashfree_orders`/`cashfree_transactions`, `paypal_orders`/`paypal_transactions`, `withdrawals`, `payout_methods`, `payment_methods`, `refunds`, `refund_requests`, `disputes`, `platform_revenue`, `invoices`, `ledger_entries`, `cashfree_webhooks`, `payment_audit_logs`.
+- **Money model:** Client pays contract amount + 5% platform fee; freelancer receives the amount. Escrow holds funds until release. Razorpay = primary gateway (INR); PayPal gated.
+- **Key tables:** `contracts`, `escrow`, `transactions`, `wallets` (balance/pending_balance/escrow_balance), `razorpay_orders`/`razorpay_transactions`, `paypal_orders`/`paypal_transactions`, `withdrawals`, `payout_methods`, `payment_methods`, `refunds`, `refund_requests`, `disputes`, `platform_revenue`, `invoices`, `ledger_entries`, `payment_webhook_events`, `payment_audit_logs`.
 - **Critical RPCs (all SECURITY DEFINER, in migrations):**
   - `create_contract_with_escrow` — validates amount>0 & ≤100000, proposal ownership, project ownership; creates contract+escrow+workspace. **NOTE: this RPC computes `freelancer_amount = amount − 5%` (fee deducted from freelancer), which contradicts `contractsService.createFromProposal` (fee added on top, freelancer gets 100%). The fee model is inconsistent between paths — confirm before changing either.**
-  - `fund_escrow` — now **requires a captured payment order** (`cashfree_orders.status='captured'` or paypal equivalent) — prevents funding escrow without paying.
+  - `fund_escrow` — now **requires a captured payment order** (`razorpay_orders.status='captured'` or paypal equivalent) — prevents funding escrow without paying.
   - `release_escrow` — releases escrow, credits freelancer wallet, and calls `_book_escrow_release` (idempotent: platform_revenue + invoice + double-entry ledger + audit + notifications).
   - Wallet RPCs (`get/update/hold/release_wallet_balance`, `process_withdrawal_complete`, `cancel_withdrawal`) — all enforce `auth.uid()`. **`update_wallet_balance` is REVOKED from anon/authenticated/PUBLIC** (free-money exploit) — service-role/internal only.
   - Refund/dispute system (`20260921000000_refund_dispute_system.sql`): `request_contract_refund`, `admin_decide_dispute`, `_refundable_amount`, `_mark_revenue_refunded`, etc.
   - `get_finance_stats()` — admin revenue dashboard (admin-only).
   - `process_stale_withdrawals()` — cron every 15min, fails stuck payouts and returns funds (never double-pays).
-- **Cashfree webhook** (`cashfree-webhook/index.ts`): Base64(HMAC-SHA256(timestamp+rawBody)) signature verification, idempotency via `cashfree_webhooks.event_id`, reconciles unverified orders, funds escrow once via `admin_fund_escrow`, writes audit trail. **Never process unsigned webhooks.**
+- **Razorpay webhook** (`razorpay-webhook/index.ts`): HMAC-SHA256 signature over raw body, idempotency via `payment_webhook_events.event_id`, reconciles unverified orders, funds escrow once via `admin_fund_escrow`, writes audit trail. **Never process unsigned webhooks.**
 - **Finance automation** (`20260922000000_financial_automation.sql`): double-entry ledger, auto-invoices (`GL-YYYYMM-NNNNNN`), `platform_revenue` commission ledger — everything booked server-side, frontend never calculates.
 - **Schema-drift history:** `transactions` and `withdrawals` had columns fixed in later migrations (`20260920000000`, `20260923000000`, `20260922000000`). When touching these tables, check the *latest* migration — the base schema and earlier migrations may be stale.
-- **✅ FIXED — UI withdrawals now actually pay out.** Previously `withdrawalService.createWithdrawal` held funds + inserted a `withdrawals` row directly (fee 0) and NEVER called the payout edge function — withdrawals sat `pending` until the stale cron failed them. Now `createWithdrawal` routes through the `withdrawal` edge function POST (server-side balance/amount validation, fee, hold, real Cashfree/PayPal payout, rollback). Also added `process_withdrawal_complete` on successful payout so `pending_balance` is cleared (previously money stayed stuck there forever).
-- **✅ FIXED — milestone funding overcharge.** The `cashfree` fn's `create_order` reads `contracts.milestones` (JSONB) server-side, so funding selected milestones charges only those milestones.
+- **✅ FIXED (2026-08-03, edge-function deploy pending) — UI withdrawals now actually pay out.** Previously `withdrawalService.createWithdrawal` held funds + inserted a `withdrawals` row directly (fee 0) and NEVER called the payout edge function — withdrawals sat `pending` until the stale cron failed them. Now `createWithdrawal` routes through the `withdrawal` edge function POST (server-side balance/amount validation, fee, hold, real RazorpayX/PayPal payout, rollback). Also added `process_withdrawal_complete` on successful payout so `pending_balance` is cleared (previously money stayed stuck there forever).
+- **✅ FIXED (2026-08-03, edge-function deploy pending) — milestone funding overcharge.** The `razorpay` fn's `create_order` read `escrow.milestones` (no such column) → sum=0 → charged the FULL contract amount when funding selected milestones. Now reads `contracts.milestones` (JSONB) server-side.
 - **⚠️ Milestone funding:** milestones live on `contracts.milestones` (JSONB), NOT `escrow` (which has no `milestones` column). When touching milestone funding, read from the contract.
 - **Recurring billing is not implemented:** both gateways create one-time capture orders; `subscription-billing-cron` "renews" by extending dates without charging. `subscribeToPlan` activates paid plans before collecting payment.
 - **Two competing dispute systems:** the legacy `src/lib/disputeService.ts` writes `disputes` statuses (`pending`, `under_review`, `resolved`, `dismissed`) that violate the new `disputes_status_check` (only `open|investigating|resolved_refunded|resolved_released|cancelled|escalated`) — those inserts fail. The new system is `refundService.ts` RPCs + `admin_decide_dispute`.
@@ -223,7 +223,7 @@ Auth is the most heavily reworked, most fragile area. **Many production bugs liv
 | Add a page | `src/pages/...` → route in `src/app/App.tsx` (eager import if public/SSR, lazy if protected) → nav in `src/routes.ts` |
 | Add a service | `src/lib/` service module following `dataService.ts` patterns → import in pages |
 | Fix auth flow | `AuthContext.tsx`, `AuthCallbackPage.tsx`, `authService.ts`, `authAction.ts` |
-| Fix payments | Cashfree: `cashfree/index.ts`, `cashfree-webhook/index.ts`, `cashfree-payout-webhook/index.ts`, `src/lib/cashfree.ts`; escrow RPCs in migrations |
+| Fix payments | Razorpay: `razorpay/index.ts`, `razorpay-webhook/index.ts`, `src/lib/razorpay.ts`; escrow RPCs in migrations |
 | Realtime | Table must be in `supabase_realtime` publication (see migration `20260711000001` pattern) + `realtimeChannels` |
 
 ---

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Crown, CheckCircle, AlertCircle, Loader2, Calendar, CreditCard, CircleDollarSign } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { PayPalCheckout } from './PayPalCheckout';
-import { CashfreeCheckout } from './CashfreeCheckout';
+import { RazorpayCheckout } from './RazorpayCheckout';
 import { PAYMENTS_CONFIG } from '../lib/payments';
 import { supabase } from '../lib/supabase';
 
@@ -135,8 +135,8 @@ export function SubscriptionPayPalPayment({
           <h2 className="text-xl font-bold text-slate-900">Upgrade to Pro</h2>
         </div>
 
-        {/* Primary: Cashfree — amount is recomputed from the plan on the server */}
-        <CashfreeCheckout
+        {/* Primary: Razorpay — amount is recomputed from the plan on the server */}
+        <RazorpayCheckout
           orderData={{
             order_type: 'subscription',
             amount: planPrice,
@@ -154,6 +154,10 @@ export function SubscriptionPayPalPayment({
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
           buttonText={`Subscribe for ₹${planPrice.toLocaleString('en-IN')}/month`}
+          userInfo={{
+            name: (user as any)?.user_metadata?.name,
+            email: user?.email,
+          }}
         />
 
         {/* Secondary: PayPal — feature-flagged, Coming Soon until live credentials */}
@@ -192,7 +196,7 @@ export function SubscriptionPayPalPayment({
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-600">PayPal</p>
-                <p className="text-xs text-slate-400">Available soon — Cashfree is the current payment method</p>
+                <p className="text-xs text-slate-400">Available soon — Razorpay is the current payment method</p>
               </div>
             </div>
             <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
@@ -225,7 +229,7 @@ export function SubscriptionPayPalPayment({
         <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
           <h3 className="font-semibold text-amber-900 mb-1">{planName} Plan</h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-amber-600">₹{planPrice.toLocaleString('en-IN')}</span>
+            <span className="text-3xl font-bold text-amber-600">${planPrice.toFixed(2)}</span>
             <span className="text-amber-700">/month</span>
           </div>
         </div>

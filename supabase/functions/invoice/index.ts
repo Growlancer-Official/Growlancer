@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
         <div>
           <h4>Issued</h4>
           <p>${esc(new Date(invoice.issued_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }))}</p>
-          <small>Payment via ${esc(invoice.payment_method || 'cashfree')}</small>
+          <small>Payment via ${esc(invoice.payment_method || 'razorpay')}</small>
         </div>
       </div>
 

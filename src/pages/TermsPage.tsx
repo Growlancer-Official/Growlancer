@@ -81,7 +81,7 @@ const termsSections: Section[] = [
                 </p>
                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                   <p className="text-[10px] text-amber-800 font-medium">
-                    <strong>Note:</strong> A separate payment-processing fee may apply when you withdraw funds from your wallet, charged by our payment processor, not by Growlancer. As of the date of these Terms, Cashfree (India) withdrawals incur a 2% processing fee, though this rate may change from time to time. PayPal withdrawals are coming soon. Any current applicable fees are clearly displayed before you confirm any transaction or withdrawal.
+                    <strong>Note:</strong> A separate payment-processing fee may apply when you withdraw funds from your wallet, charged by our payment processor, not by Growlancer. As of the date of these Terms, RazorpayX (India) withdrawals incur a 2% processing fee, though this rate may change from time to time. PayPal withdrawals are coming soon. Any current applicable fees are clearly displayed before you confirm any transaction or withdrawal.
                   </p>
                 </div>
               </div>

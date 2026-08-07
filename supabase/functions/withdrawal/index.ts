@@ -1,7 +1,7 @@
 // Withdrawal Edge Function
 // Handles withdrawal requests and processes actual payout API calls:
-//   - Cashfree Payouts (India, INR) via POST /payout/v2/transfers
-//   - PayPal Payouts (international, USD) via POST /v1/payments/payouts (Coming Soon)
+//   - RazorpayX Payouts (India, INR) via POST /v1/payouts
+//   - PayPal Payouts (international, USD) via POST /v1/payments/payouts
 // With full rollback on failure and provider payout ID tracking.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -14,17 +14,11 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
 ];
 
-// ─── Cashfree Payouts (India) ────────────────────────────────────────────────
-// Payouts product credentials — falls back to the PG credentials so a single
-// Cashfree merchant account works for both collection and payouts.
-const CASHFREE_ENVIRONMENT = (Deno.env.get('CASHFREE_ENVIRONMENT') || 'TEST').toUpperCase();
-const CASHFREE_PAYOUT_CLIENT_ID = Deno.env.get('CASHFREE_PAYOUT_CLIENT_ID') || Deno.env.get('CASHFREE_APP_ID') || '';
-const CASHFREE_PAYOUT_CLIENT_SECRET = Deno.env.get('CASHFREE_PAYOUT_CLIENT_SECRET') || Deno.env.get('CASHFREE_SECRET_KEY') || '';
-const CASHFREE_PAYOUT_API_URL = CASHFREE_ENVIRONMENT === 'PROD'
-  ? 'https://api.cashfree.com/payout/v2'
-  : 'https://sandbox.cashfree.com/payout/v2';
+const RAZORPAY_KEY_ID = Deno.env.get('RAZORPAY_KEY_ID') || '';
+const RAZORPAY_KEY_SECRET = Deno.env.get('RAZORPAY_KEY_SECRET') || '';
+const RAZORPAY_ACCOUNT_NUMBER = Deno.env.get('RAZORPAY_ACCOUNT_NUMBER') || '';
+const RAZORPAY_API_URL = 'https://api.razorpay.com/v1';
 
-// ─── PayPal (Coming Soon) ────────────────────────────────────────────────────
 const PAYPAL_CLIENT_ID = Deno.env.get('PAYPAL_CLIENT_ID') || '';
 const PAYPAL_CLIENT_SECRET = Deno.env.get('PAYPAL_CLIENT_SECRET') || '';
 const PAYPAL_API_URL = Deno.env.get('PAYPAL_SANDBOX') === 'true'
@@ -42,6 +36,7 @@ function getCorsHeaders(origin: string | null) {
 
 // ─── Email Notification Helper ────────────────────────────────────────────────
 
+// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
 function formatCurrency(amount: number): string {
@@ -99,91 +94,26 @@ function buildWithdrawalEmail(name: string, amount: number, netAmount: number, m
 
 // ─── Payout API Helpers ───────────────────────────────────────────────────────
 
-function getPayoutHeaders(): Record<string, string> {
-  return {
-    'Content-Type': 'application/json',
-    'x-client-id': CASHFREE_PAYOUT_CLIENT_ID,
-    'x-client-secret': CASHFREE_PAYOUT_CLIENT_SECRET,
-    'x-api-version': '2024-01-01',
-  };
+function getRazorpayBasicAuth(): string {
+  return `Basic ${btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`)}`;
 }
 
-async function cashfreePayoutFetch(path: string, options: RequestInit = {}): Promise<any> {
-  const response = await fetch(`${CASHFREE_PAYOUT_API_URL}${path}`, {
+async function razorpayFetch(path: string, options: RequestInit = {}): Promise<any> {
+  const response = await fetch(`${RAZORPAY_API_URL}${path}`, {
     ...options,
-    headers: { ...getPayoutHeaders(), ...(options.headers || {}) },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: getRazorpayBasicAuth(),
+      ...(options.headers || {}),
+    },
   });
   const body = await response.text();
   if (!response.ok) {
-    let errorMsg = `Cashfree Payouts API error (${response.status})`;
-    try {
-      const err = JSON.parse(body);
-      errorMsg = err.message || err.error?.message || err.type || errorMsg;
-    } catch { /* ignore */ }
+    let errorMsg = `Razorpay API error (${response.status})`;
+    try { const err = JSON.parse(body); errorMsg = err.error?.description || err.error?.reason || errorMsg; } catch { /* ignore */ }
     throw new Error(errorMsg);
   }
   return JSON.parse(body);
-}
-
-/**
- * Create a Cashfree Payouts beneficiary from a payout method row.
- * Returns the beneficiary_id (reusing an existing one when possible).
- */
-async function ensureBeneficiary(
-  supabaseClient: any,
-  payoutMethod: any,
-  userId: string,
-  userName: string,
-  userEmail: string,
-  userPhone: string
-): Promise<string> {
-  if (payoutMethod.cashfree_beneficiary_id) {
-    return payoutMethod.cashfree_beneficiary_id;
-  }
-
-  const isBank = payoutMethod.type === 'bank' || payoutMethod.type === 'bank_transfer';
-  const beneficiaryId = `bene_${userId.slice(0, 16)}_${payoutMethod.id.slice(0, 8)}`;
-  const payload: Record<string, unknown> = {
-    beneficiary: {
-      beneficiary_id: beneficiaryId,
-      beneficiary_name: payoutMethod.account_holder_name || userName || 'Growlancer User',
-      beneficiary_instrument_details: isBank
-        ? { bank_account: { account_number: payoutMethod.account_number || '', ifsc: payoutMethod.ifsc_code || '' } }
-        : { vpa: payoutMethod.upi_id },
-      beneficiary_contact_details: {
-        beneficiary_phone: payoutMethod.phone || userPhone || '9999999999',
-        beneficiary_email: payoutMethod.email || userEmail || '',
-      },
-    },
-    beneficiary_otp_verification: false,
-  };
-
-  let beneficiaryRes: any;
-  try {
-    beneficiaryRes = await cashfreePayoutFetch('/beneficiary', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  } catch (beneErr: any) {
-    // Idempotency: a 409 (beneficiary already exists) means it's already usable.
-    if (String(beneErr?.message || '').includes('409') || String(beneErr?.message || '').includes('exists')) {
-      beneficiaryRes = { beneficiary: { beneficiary_id: beneficiaryId } };
-    } else {
-      throw beneErr;
-    }
-  }
-
-  const savedBeneficiaryId = beneficiaryRes?.beneficiary?.beneficiary_id || beneficiaryId;
-
-  // Persist for future withdrawals (idempotent)
-  await supabaseClient
-    .from('payout_methods')
-    .update({ cashfree_beneficiary_id: savedBeneficiaryId, updated_at: new Date().toISOString() })
-    .eq('id', payoutMethod.id)
-    .eq('user_id', userId)
-    .catch(() => {});
-
-  return savedBeneficiaryId;
 }
 
 async function getPayPalAccessToken(): Promise<string> {
@@ -284,46 +214,44 @@ Deno.serve(async (req) => {
 
     if (method === 'POST') {
       const body = await req.json()
-      const { amount, withdrawal_method, paypal_email, payout_mode, payout_method_id } = body
+      const { amount, withdrawal_method, paypal_email, fund_account_id, payout_mode, payout_method_id } = body
 
       if (!amount || amount <= 0) {
         return new Response(JSON.stringify({ error: 'Invalid amount' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      const wdMethod = withdrawal_method || 'cashfree_payout'
+      const wdMethod = withdrawal_method || 'paypal'
 
       if (wdMethod === 'paypal' && !paypal_email) {
         return new Response(JSON.stringify({ error: 'PayPal email is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      // ── Resolve the payout destination SERVER-SIDE ─────────────────────
-      // Never trust a client-supplied destination. Look up the user's own
-      // payout method and build the Cashfree beneficiary from its stored
-      // details (bank account + IFSC or UPI ID).
-      let transferMode = 'vpa'
-      let resolvedMethod: any = null
-
-      if (wdMethod === 'cashfree_payout') {
-        if (!payout_method_id) {
-          return new Response(JSON.stringify({ error: 'Payout method is required. Add a UPI or Bank Account first.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      // ── Resolve the RazorpayX fund account SERVER-SIDE ─────────────────
+      // Never trust a client-supplied fund_account_id. Look up the user's payout
+      // method and use the stored razorpay_fund_account_id (created via the
+      // `create_fund_account` action). Legacy raw IDs are still accepted for
+      // backward compatibility but are validated against the user's own methods.
+      let resolvedFundAccountId = fund_account_id || ''
+      if (wdMethod === 'razorpay_payout') {
+        if (payout_method_id) {
+          const { data: pm } = await supabaseClient
+            .from('payout_methods')
+            .select('*')
+            .eq('id', payout_method_id)
+            .eq('user_id', user.id)
+            .maybeSingle()
+          if (!pm) {
+            return new Response(JSON.stringify({ error: 'Payout method not found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+          }
+          if (pm.razorpay_fund_account_id) {
+            resolvedFundAccountId = pm.razorpay_fund_account_id
+          } else if (pm.upi_id) {
+            // UPI fallback: the raw VPA is acceptable for RazorpayX vpa payouts.
+            resolvedFundAccountId = pm.upi_id
+          }
         }
-        const { data: pm } = await supabaseClient
-          .from('payout_methods')
-          .select('*')
-          .eq('id', payout_method_id)
-          .eq('user_id', user.id)
-          .maybeSingle()
-        if (!pm) {
-          return new Response(JSON.stringify({ error: 'Payout method not found' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-        }
-        resolvedMethod = pm
-        const isBank = pm.type === 'bank' || pm.type === 'bank_transfer'
-        transferMode = isBank ? 'banktransfer' : (payout_mode === 'bank' ? 'banktransfer' : 'vpa')
-        if (transferMode === 'banktransfer' && (!pm.ifsc_code || !pm.account_number)) {
-          return new Response(JSON.stringify({ error: 'Bank account details (account number + IFSC) are incomplete.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
-        }
-        if (transferMode === 'vpa' && !pm.upi_id) {
-          return new Response(JSON.stringify({ error: 'UPI ID is missing on this payout method.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        if (!resolvedFundAccountId) {
+          return new Response(JSON.stringify({ error: 'Fund account ID is required. Link this payout method to RazorpayX first.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
         }
       }
 
@@ -337,13 +265,14 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Insufficient balance', available_balance: availableBalance, requested_amount: amount }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      const feeRate = wdMethod === 'cashfree_payout' ? 0.02 : 0.029
+      const feeRate = wdMethod === 'razorpay_payout' ? 0.02 : 0.029
       const fee = Math.round(amount * feeRate)
       const netAmount = Math.round(amount * (1 - feeRate))
 
       // Create withdrawal record
-      const insertData: Record<string, any> = { user_id: user.id, amount, method: wdMethod, status: 'pending', fee, net_amount: netAmount, payout_mode: transferMode }
+      const insertData: Record<string, any> = { user_id: user.id, amount, method: wdMethod, status: 'pending', fee, net_amount: netAmount, payout_mode: payout_mode || null }
       if (wdMethod === 'paypal') insertData.paypal_email = paypal_email
+      if (wdMethod === 'razorpay_payout') insertData.razorpay_fund_account_id = resolvedFundAccountId
 
       const { data: withdrawal, error: withdrawalError } = await supabaseClient.from('withdrawals').insert(insertData).select().single()
       if (withdrawalError) throw withdrawalError
@@ -356,7 +285,7 @@ Deno.serve(async (req) => {
       }
 
       // Create transaction record
-      const txDesc = wdMethod === 'paypal' ? `Withdrawal to PayPal (${paypal_email})` : 'Withdrawal via Cashfree Payout'
+      const txDesc = wdMethod === 'paypal' ? `Withdrawal to PayPal (${paypal_email})` : 'Withdrawal via Razorpay Payout'
       await supabaseClient.from('transactions').insert({
         user_id: user.id, amount, type: 'debit', source: 'withdrawal', status: 'pending', description: txDesc,
         metadata: { withdrawal_id: withdrawal.id, method: wdMethod },
@@ -369,62 +298,51 @@ Deno.serve(async (req) => {
       let payoutStatus = 'processing'
 
       try {
-        if (wdMethod === 'cashfree_payout') {
-          // ── Cashfree Payouts API: POST /payout/v2/transfers ──
-          // Ensure the beneficiary exists on Cashfree (server-side, from the
-          // payout method's OWN stored details — never client-supplied).
-          const cashfreeBeneficiaryId = await ensureBeneficiary(
-            supabaseClient,
-            resolvedMethod,
-            user.id,
-            user.user_metadata?.name || user.email || '',
-            user.email || '',
-            user.user_metadata?.phone || user.phone || ''
-          );
-
-          const transferId = `wd_${withdrawal.id.slice(0, 20)}`;
-          const payoutResult = await cashfreePayoutFetch('/transfers', {
+        if (wdMethod === 'razorpay_payout') {
+          // ── RazorpayX Payouts API: POST /v1/payouts ──
+          const mode = payout_mode || 'UPI'
+          const payoutResult = await razorpayFetch('/payouts', {
             method: 'POST',
             body: JSON.stringify({
-              transfer: {
-                transfer_id: transferId,
-                transfer_amount: netAmount,
-                transfer_currency: 'INR',
-                transfer_mode: transferMode === 'banktransfer' ? 'banktransfer' : 'vpa',
-                transfer_remarks: `Growlancer Withdrawal - ${user.email || user.id.slice(0, 8)}`,
-              },
-              beneficiary_details: {
-                beneficiary_id: cashfreeBeneficiaryId,
-              },
+              account_number: RAZORPAY_ACCOUNT_NUMBER,
+              fund_account_id: resolvedFundAccountId,
+              amount: Math.round(amount * 100), // Convert to paise
+              currency: 'INR',
+              mode,
+              purpose: 'payout',
+              queue_if_low_balance: true,
+              reference_id: `wd_${withdrawal.id.slice(0, 12)}`,
+              narration: `Growlancer Withdrawal - ${user.email || user.id.slice(0, 8)}`,
             }),
-          });
+          })
 
-          const transfer = payoutResult.transfer || payoutResult;
-          providerPayoutId = String(transfer.transfer_id || '');
-          const cfStatus = String(transfer.transfer_status || '').toUpperCase();
-          if (cfStatus === 'SUCCESS' || cfStatus === 'COMPLETED') payoutStatus = 'completed';
-          else if (cfStatus === 'FAILED' || cfStatus === 'REVERSED' || cfStatus === 'CANCELLED') payoutStatus = 'failed';
-          else payoutStatus = 'processing';
+          providerPayoutId = payoutResult.id
+          const rpStatus = payoutResult.status
+          if (rpStatus === 'processed' || rpStatus === 'completed') payoutStatus = 'completed'
+          else if (rpStatus === 'failed' || rpStatus === 'cancelled') payoutStatus = 'failed'
+          else payoutStatus = 'processing'
 
           await supabaseClient.from('withdrawals').update({
-            cashfree_payout_id: providerPayoutId,
+            razorpay_payout_id: providerPayoutId,
             status: payoutStatus === 'completed' ? 'processing' : payoutStatus,
             updated_at: new Date().toISOString(),
-          }).eq('id', withdrawal.id);
+          }).eq('id', withdrawal.id)
 
           // 🛡️ Finalize completed payouts: process_withdrawal_complete marks the
           // withdrawal 'completed' AND deducts the held amount from pending_balance.
+          // Without this, completed payouts left the money stuck in pending_balance
+          // forever (freelancer's available balance under-counted by the amount).
           if (payoutStatus === 'completed') {
             await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
           }
 
           await supabaseClient.from('transactions').update({
             status: payoutStatus === 'completed' ? 'completed' : 'pending',
-            description: `Withdrawal via Cashfree Payout (${providerPayoutId})`,
+            description: `Withdrawal via Razorpay Payout (${payoutResult.id})`,
           }).eq('metadata->>withdrawal_id', withdrawal.id)
 
         } else if (wdMethod === 'paypal') {
-          // ── PayPal Payouts API: POST /v1/payments/payouts (Coming Soon) ──
+          // ── PayPal Payouts API: POST /v1/payments/payouts ──
           const senderBatchId = `wd_${withdrawal.id}_${Date.now()}`
           const payoutResult = await paypalFetch('/v1/payments/payouts', {
             method: 'POST',
@@ -457,6 +375,7 @@ Deno.serve(async (req) => {
             updated_at: new Date().toISOString(),
           }).eq('id', withdrawal.id)
 
+          // 🛡️ Finalize completed payouts (see razorpay path above)
           if (payoutStatus === 'completed') {
             await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
           }
@@ -471,7 +390,7 @@ Deno.serve(async (req) => {
         // ── FAILURE → Rollback ──
         const errorMsg = payoutError?.message || 'Payout API call failed'
         await rollbackWithdrawal(supabaseClient, withdrawal.id, user.id, amount, errorMsg)
-
+        
         // Send failure notification email (fire-and-forget)
         sendNotificationEmail(
           user.email || '',
