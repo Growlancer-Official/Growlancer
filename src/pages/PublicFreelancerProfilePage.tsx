@@ -8,6 +8,7 @@ import { useToast } from '../components/Toast';
 
 interface FreelancerProfile {
   id: string;
+  user_id: string;
   full_name: string | null;
   avatar: string | null;
   location: string | null;
@@ -62,22 +63,43 @@ export function PublicFreelancerProfilePage() {
     const fetchProfile = async () => {
       setLoading(true);
       try {
-        // Fetch freelancer profile
-        const { data: profileData, error: profileError } = await supabase
+        // freelancer_profiles has BOTH an `id` (its own PK) and a `user_id`
+        // (the auth user id). Routes pass the USER id (proposal.freelancer_id),
+        // so we must query by user_id first — querying by id returns 0 rows and
+        // throws "Profile Not Found". Fall back to id for old-style links.
+        const { data: byUser, error: byUserErr } = await supabase
           .from('freelancer_profiles')
           .select('*')
-          .eq('id', freelancerId)
-          .single();
+          .eq('user_id', freelancerId)
+          .maybeSingle();
 
-        if (profileError) throw profileError;
+        let profileData = byUser;
+        if (!profileData && byUserErr && byUserErr.code !== 'PGRST116') {
+          // unexpected error on user_id query
+          throw byUserErr;
+        }
+        if (!profileData) {
+          const { data: byId, error: byIdErr } = await supabase
+            .from('freelancer_profiles')
+            .select('*')
+            .eq('id', freelancerId)
+            .maybeSingle();
+          if (byIdErr && byIdErr.code !== 'PGRST116') throw byIdErr;
+          profileData = byId;
+        }
+
+        if (!profileData) {
+          setProfile(null);
+          return;
+        }
         setProfile(profileData as unknown as FreelancerProfile);
 
-        // Fetch portfolio
-        const portfolioItems = await portfolioService.getByUser(freelancerId);
+        // Fetch portfolio + reviews keyed by the freelancer's USER id
+        const userKey = profileData.user_id || freelancerId;
+        const portfolioItems = await portfolioService.getByUser(userKey);
         setPortfolio(portfolioItems as unknown as PortfolioItem[]);
 
-        // Fetch reviews
-        const reviewsResult = await reviewService.getUserReviews(freelancerId);
+        const reviewsResult = await reviewService.getUserReviews(userKey);
         setReviews(reviewsResult.reviews as unknown as ReviewData[]);
         setAverageRating(reviewsResult.average_rating);
         setTotalReviews(reviewsResult.total_reviews);

@@ -221,6 +221,11 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
           setSaving(false);
           return;
         }
+        // 🔄 Sync company logo into profiles.avatar for the header/profile icon
+        if (companyLogo) {
+          await supabase.from('profiles').update({ avatar: companyLogo, updated_at: new Date().toISOString() }).eq('id', user.id);
+          updateUser({ avatar: companyLogo });
+        }
       }
 
       const { error: onboardingErr } = await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', user.id);
@@ -743,6 +748,18 @@ export function OnboardingPage() {
           toast.error('Save Error', 'Failed to save your company profile: ' + cpError.message);
           setSaving(false);
           return;
+        }
+
+        // 🔄 Sync company logo into profiles.avatar so the header/profile icon
+        // updates immediately (AuthContext reacts to profiles realtime).
+        if (clientForm.company_logo) {
+          const { error: avatarError } = await supabase
+            .from('profiles')
+            .update({ avatar: clientForm.company_logo, updated_at: new Date().toISOString() })
+            .eq('id', user.id);
+          if (avatarError) {
+            console.error('Onboarding client avatar sync error:', avatarError);
+          }
         }
       }
 

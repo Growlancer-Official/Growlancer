@@ -298,12 +298,20 @@ Deno.serve(async (req: Request) => {
                   const parsed = JSON.parse(jsonStr);
                   const text = parsed.choices?.[0]?.delta?.content || '';
                   if (text) {
-                    controller.enqueue(new TextEncoder().encode(JSON.stringify({ text }) + '\n'));
+                    // Proper SSE framing: 'data: ' prefix + blank-line terminator.
+                    // The frontend parses lines starting with 'data: ' — WITHOUT
+                    // the prefix the stream looked empty ("reply aaya but nothing
+                    // showed").
+                    controller.enqueue(
+                      new TextEncoder().encode(`data: ${JSON.stringify({ text })}\n\n`)
+                    );
                   }
                   // Relay the actual model name once (frontend shows it in real time)
                   if (!modelSent && parsed.model) {
                     modelSent = true;
-                    controller.enqueue(new TextEncoder().encode(JSON.stringify({ model: parsed.model }) + '\n'));
+                    controller.enqueue(
+                      new TextEncoder().encode(`data: ${JSON.stringify({ model: parsed.model })}\n\n`)
+                    );
                   }
                 } catch {
                   // Skip malformed JSON

@@ -244,10 +244,13 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const jsonStr = line.slice(6).trim();
-            if (!jsonStr) continue;              try {
-                const parsed = JSON.parse(jsonStr);
+          // Accept BOTH SSE ('data: {...}') and raw-JSON ('{...}') chunk formats
+          const trimmed = line.trim();
+          if (!trimmed || trimmed === '[DONE]') continue;
+          const jsonStr = trimmed.startsWith('data:') ? trimmed.slice(5).trim() : trimmed;
+          if (!jsonStr || jsonStr === '[DONE]') continue;
+          try {
+            const parsed = JSON.parse(jsonStr);
               if (parsed.model) {
                 setModelName(parsed.model);
               }
@@ -278,7 +281,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             } catch {
               // Skip malformed JSON
             }
-          }
         }
       }
 

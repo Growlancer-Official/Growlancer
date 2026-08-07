@@ -178,11 +178,12 @@ export const messagesService = {
    * Send a message on a contract.
    * Returns the created message row, or throws on error.
    */
-  async sendMessage(senderId: string, contractId: string, content: string): Promise<Message> {
+  async sendMessage(senderId: string, contractId: string, content: string, receiverId?: string): Promise<Message> {
     const { data, error } = await supabase
       .from('messages')
       .insert({
         sender_id: senderId,
+        receiver_id: receiverId || null,
         contract_id: contractId,
         content,
         is_read: false,
@@ -202,12 +203,14 @@ export const messagesService = {
     contractId: string,
     senderId: string,
     content: string,
-    messageType: string = 'contract'
+    messageType: string = 'contract',
+    receiverId?: string
   ): Promise<boolean> {
     try {
       const { error } = await supabase.from('messages').insert({
         contract_id: contractId,
         sender_id: senderId,
+        receiver_id: receiverId || null,
         content,
         is_read: false,
         message_type: messageType,

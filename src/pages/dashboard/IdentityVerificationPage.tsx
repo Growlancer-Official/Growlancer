@@ -400,29 +400,65 @@ export function IdentityVerificationPage() {
     </div>
   );
 
-  const renderPendingState = () => (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
-      <div className="p-3 bg-amber-100 rounded-2xl w-fit mx-auto mb-4">
-        <Clock className="w-8 h-8 text-amber-600" />
-      </div>
-      <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Pending</h2>
-      <p className="text-slate-500 mb-6">
-        Your identity documents are being reviewed by our team. This usually takes 1-2 business days.
-        We'll notify you once the review is complete.
-      </p>
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 inline-flex items-center gap-3">
-        <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
-        <span className="text-sm font-medium text-amber-800">Under Review</span>
-      </div>
-      {verification?.created_at && (
-        <p className="text-xs text-slate-400 mt-4">
-          Submitted on {new Date(verification.created_at).toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric',
-          })}
+  const renderPendingState = () => {
+    // Industry-standard verification stepper: Submitted → In Review → Verified
+    const steps = [
+      { label: 'Submitted', done: true, current: false },
+      { label: 'In Review', done: false, current: true },
+      { label: 'Verified', done: false, current: false },
+    ];
+    return (
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+        <div className="p-3 bg-amber-100 rounded-2xl w-fit mx-auto mb-4">
+          <Clock className="w-8 h-8 text-amber-600" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h2>
+        <p className="text-slate-500 mb-6">
+          Your identity documents are being reviewed by our team. This usually takes 1-2 business days.
+          Your status updates here in real time — no refresh needed.
         </p>
-      )}
-    </div>
-  );
+
+        {/* Status Stepper */}
+        <div className="flex items-center justify-center gap-0 mb-6">
+          {steps.map((step, idx) => (
+            <div key={step.label} className="flex items-center">
+              <div className="flex flex-col items-center">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                    step.done
+                      ? 'bg-emerald-500 border-emerald-500 text-white'
+                      : step.current
+                      ? 'bg-amber-100 border-amber-500 text-amber-600'
+                      : 'bg-slate-100 border-slate-200 text-slate-400'
+                  }`}
+                >
+                  {step.done ? <CheckCircle2 className="w-5 h-5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
+                </div>
+                <span className={`text-xs mt-2 font-medium ${step.current ? 'text-amber-700' : step.done ? 'text-emerald-700' : 'text-slate-400'}`}>
+                  {step.label}
+                </span>
+              </div>
+              {idx < steps.length - 1 && (
+                <div className={`w-12 sm:w-16 h-0.5 mb-6 mx-1 ${step.done ? 'bg-emerald-500' : 'bg-slate-200'}`} />
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 inline-flex items-center gap-3">
+          <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
+          <span className="text-sm font-medium text-amber-800">Under Review</span>
+        </div>
+        {verification?.created_at && (
+          <p className="text-xs text-slate-400 mt-4">
+            Submitted on {new Date(verification.created_at).toLocaleDateString('en-US', {
+              year: 'numeric', month: 'long', day: 'numeric',
+            })}
+          </p>
+        )}
+      </div>
+    );
+  };
 
   const renderVerifiedState = () => (
     <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">

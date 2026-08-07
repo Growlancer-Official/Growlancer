@@ -180,6 +180,18 @@ export const avatarPackService = {
         return { success: false, error: updateError.message };
       }
 
+      // 🔄 Sync the company logo into profiles.avatar so the header/profile
+      // icon updates instantly (AuthContext subscribes to profiles realtime).
+      const profilesUpdate = supabase
+        .from('profiles') as any;
+      const { error: avatarError } = await profilesUpdate
+        .update({ avatar: publicUrl, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+      if (avatarError) {
+        // Non-fatal: logo is still saved on client_profiles
+        console.warn('Company logo avatar sync warning:', avatarError.message);
+      }
+
       return { success: true, logo_url: publicUrl };
     } catch (error) {
       console.error('Company logo upload error:', error);
@@ -231,6 +243,16 @@ export const avatarPackService = {
 
       if (updateError) {
         return { success: false, error: updateError.message };
+      }
+
+      // 🔄 Clear profiles.avatar too (keep in sync with the header icon)
+      const profilesUpdate = supabase
+        .from('profiles') as any;
+      const { error: avatarError } = await profilesUpdate
+        .update({ avatar: null, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+      if (avatarError) {
+        console.warn('Company logo avatar clear warning:', avatarError.message);
       }
 
       return { success: true };

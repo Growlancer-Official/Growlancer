@@ -218,6 +218,8 @@ export function ClientSettingsPage() {
     setDeletingLogo(true);
     try {
       await supabase.from('client_profiles').update({ company_logo: null } as any).eq('user_id', user?.id);
+      // 🔄 Keep profiles.avatar in sync so the header icon clears too
+      await supabase.from('profiles').update({ avatar: null, updated_at: new Date().toISOString() } as any).eq('id', user?.id);
       setCompanyLogo(null);
       setSuccessMessage('Logo removed!');
       setTimeout(() => setSuccessMessage(null), 3000);

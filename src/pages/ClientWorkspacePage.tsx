@@ -255,9 +255,15 @@ export function ClientWorkspacePage() {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedContract || !user) return
     setSendingMessage(true)
+    // receiver_id must be set so the OTHER party can see + receive the message in realtime
+    const receiverId =
+      selectedContract.client_id === user.id
+        ? selectedContract.freelancer_id
+        : selectedContract.client_id
     const { error } = await supabase.from('messages').insert({
       contract_id: selectedContract.id,
       sender_id: user.id,
+      receiver_id: receiverId,
       content: newMessage.trim(),
     })
     if (!error) setNewMessage('')

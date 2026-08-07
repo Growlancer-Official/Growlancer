@@ -263,7 +263,8 @@ export function ProjectFeedPage() {
         // filter — that silently hid every match when skills didn't overlap).
         const realMatches = rawMatches.filter(m => 
           !declinedProjects.has(m.project_id) && 
-          (m.match_score ?? 0) >= 40
+          (m.match_score ?? 0) >= 40 &&
+          !!m.project // project embed can be null when RLS hides it — drop those rows
         );
 
         // ── Open-projects fallback ───────────────────────────────────────────
@@ -367,7 +368,7 @@ export function ProjectFeedPage() {
                 .eq('id', payload.new.id)
                 .single();
               
-              if (data) {
+              if (data && (data as any).project) {
                 const matchData = data as unknown as MatchWithProject;
                 setMatches(prev => [matchData, ...prev]);
                 setFilteredMatches(prev => [matchData, ...prev]);
@@ -667,7 +668,7 @@ export function ProjectFeedPage() {
                   {/* Header */}
                   <div className="flex items-center gap-3 mb-3">
                     <h3 className="font-display text-lg font-bold text-slate-900">
-                      {match.project.title}
+                      {match.project?.title || 'Untitled Project'}
                     </h3>
                     <span
                       className={`px-3 py-1 text-sm font-bold rounded-full ${getMatchScoreColor(
@@ -680,24 +681,24 @@ export function ProjectFeedPage() {
 
                   {/* Description */}
                   <p className="text-slate-600 mb-4 line-clamp-2">
-                    {match.project.description}
+                    {match.project?.description || ''}
                   </p>
 
                   {/* Meta Info */}
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
                     <span className="flex items-center gap-1">
                       <Wallet className="w-4 h-4" />
-                      ₹{match.project.budget_min?.toLocaleString('en-IN')} - ₹{
-                        match.project.budget_max?.toLocaleString('en-IN')
+                      ₹{(match.project?.budget_min ?? 0).toLocaleString('en-IN')} - ₹{
+                        (match.project?.budget_max ?? 0).toLocaleString('en-IN')
                       }
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      Due {match.project.deadline && new Date(match.project.deadline).toLocaleDateString()}
+                      Due {match.project?.deadline && new Date(match.project.deadline).toLocaleDateString()}
                     </span>
                     <span className="flex items-center gap-1">
                       <Briefcase className="w-4 h-4" />
-                      {match.project.experience_level}
+                      {match.project?.experience_level || 'Any'}
                     </span>
                     {match.skill_score && match.skill_score > 0 && (
                       <span className="flex items-center gap-1 text-emerald-600">
@@ -708,7 +709,7 @@ export function ProjectFeedPage() {
                   </div>
 
                   {/* Skills */}
-                  {match.project.skills_required && (
+                  {match.project?.skills_required && match.project.skills_required.length > 0 && (
                     <div className="flex items-center gap-2 flex-wrap mb-4">
                       {match.project.skills_required.slice(0, 5).map((skill) => (
                         <span
