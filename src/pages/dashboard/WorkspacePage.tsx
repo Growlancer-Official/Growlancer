@@ -275,12 +275,16 @@ export function WorkspacePage() {
         const from = loadMore ? (messagesPage + 1) * messagesPageSize : 0;
         const to = from + messagesPageSize - 1;
 
-        // Fetch most recent messages first, then reverse for display
+        // Fetch most recent messages first, then reverse for display.
+        // NOTE: `messages` has THREE FKs to `profiles` (sender_id, receiver_id,
+        // typing_user_id), so PostgREST cannot auto-resolve the join — without
+        // the explicit FK hint this query throws PGRST201 and the chat fails
+        // with "Failed to load messages".
         const { data, error } = await supabase
           .from('messages')
           .select(`
             *,
-            sender:profiles(id, name, avatar)
+            sender:profiles!messages_sender_id_fkey(id, name, avatar)
           `)
           .eq('contract_id', selectedContract.id)
           .order('created_at', { ascending: false })
@@ -324,7 +328,7 @@ export function WorkspacePage() {
             .from('messages')
             .select(`
               *,
-              sender:profiles(id, name, avatar)
+              sender:profiles!messages_sender_id_fkey(id, name, avatar)
             `)
             .eq('id', payload.new.id)
             .single();

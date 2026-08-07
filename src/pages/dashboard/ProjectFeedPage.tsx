@@ -256,19 +256,65 @@ export function ProjectFeedPage() {
           throw error;
         }
 
-        if (matchesData) {
-          const rawMatches = matchesData as unknown as MatchWithProject[];
-          // Filter out declined projects; show all category-first matches.
-          // NOTE: sub-scores are 0-100 on both generation paths now, so a
-          // match_score threshold alone is the correct gate (no skill_score>=50
-          // filter — that silently hid every match when skills didn't overlap).
-          const realMatches = rawMatches.filter(m => 
-            !declinedProjects.has(m.project_id) && 
-            (m.match_score ?? 0) >= 40
-          );
-          setMatches(realMatches);
-          setFilteredMatches(realMatches);
+        const rawMatches = (matchesData as unknown as MatchWithProject[]) || [];
+        // Filter out declined projects; show all category-first matches.
+        // NOTE: sub-scores are 0-100 on both generation paths now, so a
+        // match_score threshold alone is the correct gate (no skill_score>=50
+        // filter — that silently hid every match when skills didn't overlap).
+        const realMatches = rawMatches.filter(m => 
+          !declinedProjects.has(m.project_id) && 
+          (m.match_score ?? 0) >= 40
+        );
+
+        // ── Open-projects fallback ───────────────────────────────────────────
+        // If AI matches are sparse (new freelancer / matching job just posted),
+        // also surface open projects that match the freelancer's skills so the
+        // feed is never empty while matching projects exist. These entries use
+        // a neutral heuristic score — real AI scores replace them as soon as
+        // the ai-matching engine writes a match for this freelancer.
+        const freelancerSkillSet = new Set(
+          (Array.isArray(profileData?.skills) ? profileData.skills : []).map(
+            (s: string) => s.toLowerCase().trim()
+          )
+        );
+        const alreadyMatched = new Set(realMatches.map(m => m.project_id));
+        let syntheticMatches: MatchWithProject[] = [];
+        if (freelancerSkillSet.size > 0) {
+          const { data: openProjects } = await supabase
+            .from('projects')
+            .select('*, client:profiles!projects_client_id_fkey(id, name, avatar, deleted_at)')
+            .eq('status', 'open')
+            .order('created_at', { ascending: false })
+            .limit(50);
+
+          syntheticMatches = ((openProjects as any[]) || [])
+            .filter((pr: any) => {
+              if (alreadyMatched.has(pr.id) || declinedProjects.has(pr.id)) return false;
+              const clientProf = pr.client;
+              if (!clientProf || clientProf.deleted_at || !clientProf.name) return false;
+              const required = Array.isArray(pr.skills_required) ? pr.skills_required : [];
+              return required.some((skill: string) =>
+                freelancerSkillSet.has(skill.toLowerCase().trim())
+              );
+            })
+            .map((pr: any) => ({
+              id: `open-${pr.id}`,
+              freelancer_id: user.id,
+              project_id: pr.id,
+              match_score: 60,
+              skill_score: null,
+              experience_score: null,
+              budget_score: null,
+              availability_score: null,
+              completion_score: null,
+              created_at: new Date().toISOString(),
+              project: pr,
+            }));
         }
+
+        const combinedMatches = [...realMatches, ...syntheticMatches];
+        setMatches(combinedMatches);
+        setFilteredMatches(combinedMatches);
 
         // Fetch proposals
         const { data: proposals } = await supabase
@@ -415,9 +461,9 @@ export function ProjectFeedPage() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (match) =>
-          match.project.title.toLowerCase().includes(query) ||
-          match.project.description.toLowerCase().includes(query) ||
-          match.project.skills_required?.some((skill) => skill.toLowerCase().includes(query))
+          match.project?.title?.toLowerCase().includes(query) ||
+          match.project?.description?.toLowerCase().includes(query) ||
+          match.project?.skills_required?.some((skill) => skill.toLowerCase().includes(query))
       );
     }
 
@@ -641,8 +687,8 @@ export function ProjectFeedPage() {
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
                     <span className="flex items-center gap-1">
                       <Wallet className="w-4 h-4" />
-                      ₹{match.project.budget_min?.toLocaleString()} - ₹{
-                        match.project.budget_max?.toLocaleString()
+                      ₹{match.project.budget_min?.toLocaleString('en-IN')} - ₹{
+                        match.project.budget_max?.toLocaleString('en-IN')
                       }
                     </span>
                     <span className="flex items-center gap-1">

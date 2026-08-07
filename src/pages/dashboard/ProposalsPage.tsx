@@ -348,7 +348,7 @@ export function ProposalsPage() {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
-                        Client: <span className="font-medium text-slate-700">{proposal.project.client?.name}</span>
+                        Client: <span className="font-medium text-slate-700">{proposal.project?.client?.name || 'Client'}</span>
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
@@ -386,7 +386,7 @@ export function ProposalsPage() {
                       <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-xs text-slate-500 mb-1">Client Budget</p>
                         <p className="text-lg font-bold text-slate-900">
-                          ₹{proposal.project.budget_min?.toLocaleString()} - ₹{proposal.project.budget_max?.toLocaleString()}
+                          ₹{proposal.project?.budget_min?.toLocaleString('en-IN') ?? '—'} - ₹{proposal.project?.budget_max?.toLocaleString('en-IN') ?? '—'}
                         </p>
                       </div>
                     </div>

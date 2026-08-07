@@ -32,6 +32,28 @@ interface QuickStat {
   changeType?: 'positive' | 'negative' | 'neutral';
 }
 
+/**
+ * Resolve a project title from a row that embeds `projects`/`project`
+ * (PostgREST may embed a to-one FK as an object OR an array depending on
+ * relationship detection). Falls back gracefully instead of showing 'Unknown'.
+ */
+function resolveProjectTitle(row: any): string {
+  const embedded = row?.projects ?? row?.project;
+  const target = Array.isArray(embedded) ? embedded[0] : embedded;
+  const title = target?.title;
+  return title && String(title).trim() ? String(title) : 'Untitled project';
+}
+
+/**
+ * Resolve a party (client/freelancer) name from an embedded profile key.
+ */
+function resolvePartyName(row: any, key: string, fallback: string): string {
+  const embedded = row?.[key];
+  const target = Array.isArray(embedded) ? embedded[0] : embedded;
+  const name = target?.name;
+  return name && String(name).trim() ? String(name) : fallback;
+}
+
 export function OverviewPage() {
   const { user, role } = useAuth();
   const [stats, setStats] = useState<DashboardStats>({
@@ -138,7 +160,7 @@ export function OverviewPage() {
             id: c.id,
             type: 'contract',
             title: c.status === 'active' ? 'Contract Active' : 'Contract Pending',
-            description: `Project: ${c.projects?.title || 'Unknown'}`,
+            description: `Project: ${resolveProjectTitle(c)}`,
             timestamp: c.created_at,
             icon: Handshake,
           })) : []),
@@ -146,7 +168,7 @@ export function OverviewPage() {
             id: p.id,
             type: 'proposal',
             title: p.status === 'pending' ? 'Proposal Pending' : `Proposal ${p.status}`,
-            description: `Project: ${p.projects?.title || 'Unknown'}`,
+            description: `Project: ${resolveProjectTitle(p)}`,
             timestamp: p.created_at,
             icon: FileText,
           })) : []),
@@ -154,7 +176,7 @@ export function OverviewPage() {
             id: i.id,
             type: 'invite',
             title: 'New Invitation',
-            description: `Project: ${i.projects?.title || 'Unknown'}`,
+            description: `Project: ${resolveProjectTitle(i)}`,
             timestamp: i.created_at,
             icon: Briefcase,
           })) : []),
@@ -222,7 +244,7 @@ export function OverviewPage() {
             id: c.id,
             type: 'contract',
             title: c.status === 'active' ? 'Contract Started' : 'Contract Pending',
-            description: `Freelancer: ${c.freelancer_profile?.name || 'Unknown'}`,
+            description: `Freelancer: ${resolvePartyName(c, 'freelancer_profile', 'Freelancer')}`,
             timestamp: c.created_at,
             icon: Handshake,
           })) : []),
