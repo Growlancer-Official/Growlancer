@@ -2,7 +2,9 @@
 
 **Audit date:** 2026-08-02
 **Scope:** All 5 checks from `Growlancer-Security-Audit-Prompts.pdf` (Secret Leak Prevention → Attacker's Perspective Review)
-**Target:** React 19 + Vike (SSR) + Express + Supabase · Razorpay + PayPal · escrow/wallets · Supabase Auth + custom MFA · Gemini AI · admin Edge Functions
+**Target:** React 19 + Vike (SSR) + Express + Supabase · Cashfree (India) + PayPal (Coming Soon) · escrow/wallets · Supabase Auth + custom MFA · Gemini AI · admin Edge Functions
+
+> **Note (2026-08-07):** The payment stack has migrated from Razorpay to **Cashfree** (primary, India) with PayPal kept as the future international provider. Findings below remain historically accurate; the affected components now live in `supabase/functions/cashfree*` and `src/lib/cashfree.ts`.
 
 **Status: 5/5 checks completed. Migration applied to production (`zttwsjehcgaicziqyxpq`), 14 Edge Functions redeployed.**
 
@@ -22,8 +24,8 @@
 - **RLS verified live on production** — query of `pg_class` for the `public` schema returned **zero tables without RLS** (credential tables included after Check 4 fix).
 
 ### Accepted risk
-- **Razorpay keys are not configured in production at all** (`RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `RAZORPAY_ACCOUNT_NUMBER` all absent). The `razorpay` function now **fails closed** (returns 500 "Payment service is not configured") until they're set. Zero orders/saved cards exist in prod, so nothing breaks today.
-- **`PAYPAL_WEBHOOK_ID` not set** — pre-existing fail-closed (webhook processing disabled). `PAYPAL_SANDBOX=true` means PayPal runs in sandbox mode.
+- **Cashfree keys are not configured in production yet** (`CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`, `CASHFREE_ENVIRONMENT`, `CASHFREE_WEBHOOK_SECRET` all absent). The `cashfree` function now **fails closed** (returns 500 "Payment service is not configured") until they're set. Zero orders/saved cards exist in prod, so nothing breaks today.
+- **`PAYPAL_WEBHOOK_ID` not set** — pre-existing fail-closed (webhook processing disabled). `PAYPAL_SANDBOX=true` means PayPal runs in sandbox mode; PayPal remains **Coming Soon** in the UI.
 - **No real transactional email is sent** — Brevo was removed; email functions are stubbed (logged, not delivered).
 
 ---
@@ -62,13 +64,13 @@
 
 ### What was fixed
 - **Security headers added** to `server.js` (nosniff, DENY framing, HSTS, full CSP).
-- **CSP fixed in `vercel.json` + `server.js` + `nginx.conf`** — allows `fonts.googleapis.com`, `fonts.gstatic.com`, `api.fontshare.com`, `wss://*.supabase.co`, Sentry ingest, `checkout.razorpay.com`, PayPal SDK domains.
-- **Fail-loud env checks** added to `razorpay`, `paypal`, `ai-assistant` (log at boot + fail-closed 500 at request time) and `razorpay-payout-webhook` (fail-closed on missing webhook secret).
+- **CSP fixed in `vercel.json` + `server.js` + `nginx.conf`** — allows `fonts.googleapis.com`, `fonts.gstatic.com`, `api.fontshare.com`, `wss://*.supabase.co`, Sentry ingest, Cashfree SDK/checkout domains (`*.cashfree.com`), PayPal SDK domains.
+- **Fail-loud env checks** added to `cashfree`, `cashfree-webhook`, `paypal`, `ai-assistant` (log at boot + fail-closed 500 at request time) and `cashfree-payout-webhook` (fail-closed on missing webhook secret).
 - **`server.js` lint cleaned** (`/* eslint-env node */`, `_next` rename).
-- **Rate limiting confirmed** — DB-backed `rate_limits` enforced in 16 functions (withdrawal, paypal, razorpay, 2fa-management, ai-*, avatar/file upload, admin-data, admin-signup, etc.); added to `ai-ticket-responder` (new, 10/min).
+- **Rate limiting confirmed** — DB-backed `rate_limits` enforced in 16 functions (withdrawal, paypal, cashfree, 2fa-management, ai-*, avatar/file upload, admin-data, admin-signup, etc.); added to `ai-ticket-responder` (new, 10/min).
 
 ### Accepted risk
-- **Missing secrets make features fail closed** (see Check 1) — intended behavior, but requires setting `RAZORPAY_KEY_ID/SECRET/WEBHOOK_SECRET` and `CRON_SECRET` to activate payments/cron.
+- **Missing secrets make features fail closed** (see Check 1) — intended behavior, but requires setting `CASHFREE_APP_ID/SECRET_KEY/WEBHOOK_SECRET` and `CRON_SECRET` to activate payments/cron.
 - No dedicated OTP/login Edge Function exists (login is Supabase-native); Supabase Auth's built-in rate limiting applies.
 
 ---
@@ -82,12 +84,12 @@
 | 4.2 | **Account-deletion RPCs had no ownership check** — `request_account_deletion`, `cancel_account_deletion`, `check_deletion_status` (IDOR). | **High** |
 | 4.3 | **`get_wallet_balance` IDOR** — read any user's wallet balance. | **High** |
 | 4.4 | **`update_wallet_balance` = free money** — any authenticated user could credit their own wallet arbitrarily, then withdraw. **Plus a PUBLIC EXECUTE grant** (default grant) left it callable by anon even after the initial REVOKE — caught during live verification and closed. | **Critical** |
-| 4.5 | **`fund_escrow` without payment** — client could mark escrow funded (no captured Razorpay/PayPal order required), then release to freelancer → platform loses money. | **Critical** |
+| 4.5 | **`fund_escrow` without payment** — client could mark escrow funded (no captured Cashfree/PayPal order required), then release to freelancer → platform loses money. | **Critical** |
 | 4.6 | **`create_contract_with_escrow`** — no amount validation (zero/negative/absurd), no proposal/project ownership check. A legacy **integer overload** had `auth.uid() IS NOT NULL AND auth.uid() != p_client_id` which passes vacuously for anon → anyone could create contracts as any client. | **Critical** |
 | 4.7 | **Referral RPCs unauthenticated** — `process_referral`/`complete_referral` could link arbitrary accounts; **referral RLS** let any authenticated user UPDATE any referral row (mark own referral completed → claim rewards). | High |
-| 4.8 | **`razorpay create_payout` fund-drain** — any authenticated user could trigger a payout to an arbitrary fund account. | **Critical** |
-| 4.9 | **Client-submitted amounts trusted** — `razorpay`/`paypal` `create_order` used body `amount`; refund had no ownership check; PayPal cancel no ownership check. | **High** |
-| 4.10 | **`razorpay-payout-webhook` fail-open** — signature verified only "if configured"; unverified payouts could be marked complete. | **High** |
+| 4.8 | **`cashfree create_payout` fund-drain** — any authenticated user could trigger a payout to an arbitrary fund account. | **Critical** |
+| 4.9 | **Client-submitted amounts trusted** — `cashfree`/`paypal` `create_order` used body `amount`; refund had no ownership check; PayPal cancel no ownership check. | **High** |
+| 4.10 | **`cashfree-payout-webhook` fail-open** — signature verified only "if configured"; unverified payouts could be marked complete. | **High** |
 | 4.11 | **`paypal-webhook` raw SQL interpolation** in `transactions` update (`.filter('metadata->>withdrawal_id', 'in', \`(select ...)\`)`). | Medium |
 | 4.12 | **`process-deletion` auth spoof** — `authHeader.includes('service_role')` string check → anyone appending "service_role" to a header triggered use of the real service-role key for arbitrary user deletion. | **Critical** |
 
@@ -95,16 +97,16 @@
 **Migration `20260917000000_security_hardening.sql` (applied to production):**
 - `auth.uid() = p_user_id` checks on all 13 hardened RPCs (MFA ×6, deletion ×3, wallet, escrow ×2, referral ×2).
 - `update_wallet_balance` — REVOKE from `PUBLIC` + `anon` + `authenticated`; `service_role` only (ACL verified live: `{postgres, service_role}`).
-- `fund_escrow` — requires a **captured** `razorpay_orders`/`paypal_orders` row; owner-checked.
+- `fund_escrow` — requires a **captured** `cashfree_orders`/`paypal_orders` row; owner-checked.
 - `create_contract_with_escrow` — amount `> 0` and `≤ 100000` (aligned with gateway caps), proposal belongs to freelancer + project belongs to client; **legacy integer overload dropped**.
 - Referral RLS tightened (participant-only read/update; own-row insert/update; SELECT kept open for the leaderboard).
 - RLS enabled on the 3 credential tables.
 
 **Edge Functions (14 redeployed to production):**
-- `razorpay` — server-side amount recompute from DB (never trusts body), order-owner check on `verify_payment`, refund owner/admin check, **`create_payout` disabled** (403 → use `withdrawal`).
+- `cashfree` — server-side amount recompute from DB (never trusts body), order-owner check on `verify_payment`, refund owner/admin check, **`create_payout` disabled** (403 → use `withdrawal`).
 - `paypal` — fail-closed creds, authoritative amount from contract/subscription-plan/service, subscription-cancel ownership check.
 - `paypal-webhook` — capture-amount mismatch guard + parameterized transaction update.
-- `razorpay-payout-webhook` — fail-closed HMAC signature verification.
+- `cashfree-payout-webhook` — fail-closed HMAC signature verification.
 - `process-deletion` — CRON_SECRET or verified admin JWT (spoof check removed).
 - `ai-assistant` — JWT identity; `ai-ticket-responder` — rate limiting.
 
@@ -130,14 +132,14 @@
 
 ### What was fixed
 - All Check-4 fixes (IDOR, admin auth, escrow, wallet, referral).
-- `ai-assistant` now JWT-gated + rate-limited; `ai-ticket-responder` rate-limited; `razorpay`/`paypal` rate-limited.
+- `ai-assistant` now JWT-gated + rate-limited; `ai-ticket-responder` rate-limited; `cashfree`/`paypal` rate-limited.
 - RLS coverage verified 100% on `public` tables (live check).
 - **OAuth email-confirmation flow** (follow-up hardening): unconfirmed-email GitHub/LinkedIn users are routed to a real-time verify-email gate instead of entering onboarding unverified; `ProtectedRoute` routes unconfirmed OAuth users correctly; onboarding → dashboard redirect is real-time.
 - Internal exposure: `.env`, `supabase/.temp`, `.git` not served by Vercel config; `_health` returns plain status only.
 
 ### Accepted risk
 - **Business-logic edge cases** — promo/discount double-apply on the same contract wasn't deep-verified (no promo engine surfaced in audit paths); escrow amount caps now enforced server-side.
-- **No human security review yet** — the PDF itself notes this audit is a complement to, not a replacement for, professional testing before public launch (real money flows through Razorpay/PayPal escrow).
+- **No human security review yet** — the PDF itself notes this audit is a complement to, not a replacement for, professional testing before public launch (real money flows through Cashfree/PayPal escrow).
 
 ---
 
@@ -146,13 +148,13 @@
 | Item | Status |
 |------|--------|
 | Migration `20260917000000_security_hardening.sql` | ✅ Applied to prod; `user_invitations` tracked as `20260917000001`; migration list clean |
-| 14 Edge Functions redeployed | ✅ razorpay, paypal, paypal-webhook, razorpay-payout-webhook, admin-data, process-deletion, ai-assistant, ai-ticket-responder, withdrawal, email-notifications, internship-applications, newsletter-subscribe, proposal-notifications, subscription-billing-cron — all ACTIVE |
+| Edge Functions redeployed | ✅ cashfree, cashfree-webhook, cashfree-payout-webhook, withdrawal, paypal, paypal-webhook, admin-data, process-deletion, ai-assistant, ai-ticket-responder, email-notifications, internship-applications, newsletter-subscribe, proposal-notifications, subscription-billing-cron — all ACTIVE |
 | Legacy vulnerable overload dropped | ✅ `create_contract_with_escrow(uuid,uuid,uuid,integer,uuid)` removed |
 | Typecheck + lint | ✅ Clean |
 | Code review | ✅ Reviewed, all findings resolved |
 
 ## Blocking follow-ups (before going live with payments)
-1. Set `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` (unlock Razorpay payments/payouts — currently fail-closed).
+1. Set `CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`, `CASHFREE_ENVIRONMENT`, `CASHFREE_WEBHOOK_SECRET` (unlock Cashfree payments/payouts — currently fail-closed).
 2. Set `PAYPAL_WEBHOOK_ID` + switch `PAYPAL_SANDBOX=false` for real PayPal webhooks.
 3. Configure the `CRON_SECRET` + scheduler for `process-deletion` if you want automated GDPR erasure.
 4. Restore a transactional email provider (Brevo was removed) for welcome/verification/notification emails.

@@ -1684,7 +1684,7 @@ export function ProfessionalProfilePage() {
                       {newPayout.type === 'paypal' && (
                         <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl">
                           <p className="text-xs text-amber-800">
-                            PayPal withdrawals are <strong>coming soon</strong>. For now, add a UPI ID or Bank Account to withdraw in INR via RazorpayX.
+                            PayPal withdrawals are <strong>coming soon</strong>. For now, add a UPI ID or Bank Account to withdraw in INR via Cashfree Payouts.
                           </p>
                         </div>
                       )}
@@ -1693,7 +1693,7 @@ export function ProfessionalProfilePage() {
                           <label className="block text-sm font-medium text-slate-700 mb-2">UPI ID <span className="text-red-400">*</span></label>
                           <input type="text" value={newPayout.upiId} onChange={(e) => setNewPayout({ ...newPayout, upiId: e.target.value })}
                             className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="yourname@upi" />
-                          <p className="text-xs text-slate-400 mt-1">e.g. yourname@okhdfcbank, yourname@ybl — paid via RazorpayX (INR)</p>
+                          <p className="text-xs text-slate-400 mt-1">e.g. yourname@okhdfcbank, yourname@ybl — paid via Cashfree Payouts (INR)</p>
                         </div>
                       )}
                       {newPayout.type === 'bank' && (
@@ -1716,7 +1716,7 @@ export function ProfessionalProfilePage() {
                             <label className="block text-sm font-medium text-slate-700 mb-2">Account Number <span className="text-red-400">*</span></label>
                             <input type="text" value={newPayout.accountNumber} onChange={(e) => setNewPayout({ ...newPayout, accountNumber: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                           </div>
-                          <p className="text-xs text-slate-400 mt-1">Bank transfers are processed via RazorpayX (INR)</p>
+                          <p className="text-xs text-slate-400 mt-1">Bank transfers are processed via Cashfree Payouts (INR)</p>
                         </>
                       )}
                       <div className="flex gap-2">

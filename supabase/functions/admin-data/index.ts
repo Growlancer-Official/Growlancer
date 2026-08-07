@@ -12,7 +12,7 @@ const ALLOWED_TABLES = [
   'transactions', 'withdrawals', 'subscriptions', 'subscription_plans',
   'services', 'messages', 'notifications', 'reviews',
   'invites', 'project_matches', 'referrals', 'referral_stats',
-  'paypal_orders', 'paypal_transactions', 'razorpay_orders', 'razorpay_transactions',
+  'paypal_orders', 'paypal_transactions', 'cashfree_orders', 'cashfree_transactions',
   'categories', 'subcategories', 'skills',
   'skill_certifications', 'internship_applications',
   'credential_verification_tokens', 'credential_version_history', 'credential_audit_logs',

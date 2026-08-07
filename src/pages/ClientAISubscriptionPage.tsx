@@ -391,7 +391,7 @@ export function ClientAISubscriptionPage() {
           </div>
           <div className="p-4 bg-white rounded-xl border border-slate-200">
             <h4 className="font-semibold text-slate-900 text-sm mb-1">How does payment work when I subscribe?</h4>
-            <p className="text-sm text-slate-600">Payments are handled securely via Razorpay (UPI, Cards, NetBanking). You'll only be charged after your trial period ends. You can cancel anytime before the trial ends — no questions asked.</p>
+            <p className="text-sm text-slate-600">Payments are handled securely via Cashfree (UPI, Cards, NetBanking). You'll only be charged after your trial period ends. You can cancel anytime before the trial ends — no questions asked.</p>
           </div>
           <div className="p-4 bg-white rounded-xl border border-slate-200">
             <h4 className="font-semibold text-slate-900 text-sm mb-1">Can I cancel during the trial?</h4>

@@ -413,17 +413,17 @@ export function WalletPage() {
 
     try {
       // Determine withdrawal method type from selected payout method
-      const isRazorpayPayout = method.type === 'upi' || method.type === 'bank' || method.type === 'bank_transfer' || method.type === 'razorpay_payout';
+      const isCashfreePayout = method.type === 'upi' || method.type === 'bank' || method.type === 'bank_transfer' || method.type === 'cashfree_payout';
       
       const result = await withdrawalService.createWithdrawal({
         amount,
-        method: isRazorpayPayout ? 'razorpay_payout' : 'paypal',
-        paypal_email: !isRazorpayPayout ? method.email || '' : undefined,
-        // Pass the payout method ID — the server resolves the real RazorpayX
-        // fund account (created via create_fund_account) and never trusts raw
+        method: isCashfreePayout ? 'cashfree_payout' : 'paypal',
+        paypal_email: !isCashfreePayout ? method.email || '' : undefined,
+        // Pass the payout method ID — the server resolves the real Cashfree
+        // beneficiary (created via create_beneficiary) and never trusts raw
         // account numbers from the client.
-        payout_method_id: isRazorpayPayout ? method.id : undefined,
-        payout_mode: isRazorpayPayout ? (method.type === 'bank' || method.type === 'bank_transfer' ? 'bank' : 'UPI') : undefined,
+        payout_method_id: isCashfreePayout ? method.id : undefined,
+        payout_mode: isCashfreePayout ? (method.type === 'bank' || method.type === 'bank_transfer' ? 'bank' : 'UPI') : undefined,
       });
 
       if (result.success && result.withdrawal) {
@@ -490,14 +490,12 @@ export function WalletPage() {
       } as any);
 
       if (result.success && result.method) {
-        // Auto-link UPI/bank methods to RazorpayX so payouts always use a real
-        // fund account ID (created server-side) instead of raw account numbers.
+        // Auto-link UPI/bank methods to Cashfree so payouts always use a real
+        // beneficiary (created server-side) instead of raw account numbers.
         if (newMethodType === 'upi' || newMethodType === 'bank') {
-          const linkResult = await withdrawalService.linkRazorpayXAccount(result.method.id, {
-            name: newMethodType === 'bank' ? newMethodAccountHolder || undefined : undefined,
-          });
+          const linkResult = await withdrawalService.linkCashfreeBeneficiary(result.method.id);
           if (!linkResult.success) {
-            console.warn('RazorpayX fund account link pending:', linkResult.error);
+            console.warn('Cashfree beneficiary link pending:', linkResult.error);
           }
         }
         await fetchPayoutMethods();
@@ -793,7 +791,7 @@ export function WalletPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-slate-900">
-                        Withdrawal — {w.method === 'paypal' ? 'PayPal' : w.method}
+                        Withdrawal — {w.method === 'paypal' ? 'PayPal' : w.method === 'cashfree_payout' ? 'Cashfree' : w.method}
                       </p>
                       <p className="text-xs text-slate-500">
                         {new Date(w.created_at).toLocaleDateString(undefined, {
@@ -1057,7 +1055,7 @@ export function WalletPage() {
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
-                        $
+                        ₹
                       </span>
                       <input
                         type="number"
@@ -1235,6 +1233,8 @@ export function WalletPage() {
                         <span className="font-medium text-slate-900">
                           {payoutMethods.find((m) => m.id === selectedMethodId)?.type === 'paypal'
                             ? 'PayPal'
+                            : payoutMethods.find((m) => m.id === selectedMethodId)?.type === 'upi'
+                            ? 'UPI'
                             : 'Bank Transfer'}
                         </span>
                       </div>
@@ -1476,7 +1476,7 @@ export function WalletPage() {
                   {newMethodType === 'paypal' ? (
                     <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
                       <p className="text-sm text-amber-800">
-                        PayPal withdrawals are <strong>coming soon</strong>. For now, add a UPI ID or Bank Account to withdraw in INR via RazorpayX.
+                        PayPal withdrawals are <strong>coming soon</strong>. For now, add a UPI ID or Bank Account to withdraw in INR via Cashfree Payouts.
                       </p>
                     </div>
                   ) : newMethodType === 'upi' ? (
@@ -1491,7 +1491,7 @@ export function WalletPage() {
                         className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                         placeholder="username@upi"
                       />
-                      <p className="text-xs text-slate-400 mt-1.5">e.g. yourname@okhdfcbank — paid via RazorpayX (INR)</p>
+                      <p className="text-xs text-slate-400 mt-1.5">e.g. yourname@okhdfcbank — paid via Cashfree Payouts (INR)</p>
                     </div>
                   ) : (
                     <>
@@ -1589,7 +1589,7 @@ export function WalletPage() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-500 mt-0.5">•</span>
-                    <span>UPI & Bank withdrawals via RazorpayX are processed in INR, usually within 24 hours</span>
+                    <span>UPI & Bank withdrawals via Cashfree Payouts are processed in INR, usually within 24 hours</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-500 mt-0.5">•</span>

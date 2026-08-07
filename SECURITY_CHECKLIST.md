@@ -16,7 +16,7 @@ surfaces YOUR diff touches.
 
 ## Check 1 — Secret Leak Prevention
 - [ ] No secret uses a `VITE_` prefix (those get bundled into the client JS). Only `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are allowed client-side (anon is public, safe **only if RLS is on**).
-- [ ] `service_role` key / raw `eyJ...` JWT / `RAZORPAY_*_SECRET` / `PAYPAL_*_SECRET` / `PAYPAL_WEBHOOK_ID` / `GEMINI_API_KEY` appear **nowhere** in `src/` — server-side Edge Functions only.
+- [ ] `service_role` key / raw `eyJ...` JWT / `CASHFREE_SECRET_KEY` / `PAYPAL_*_SECRET` / `PAYPAL_WEBHOOK_ID` / `GEMINI_API_KEY` appear **nowhere** in `src/` — server-side Edge Functions only.
 - [ ] Real keys never committed: `.env` stays gitignored; `.env.example` holds only placeholders.
 - [ ] No `console.log` in Edge Functions or `src/lib` prints a secret, JWT, or full Supabase token.
 
@@ -41,7 +41,7 @@ surfaces YOUR diff touches.
 - [ ] **Ownership:** every RPC/edge function that takes `contract_id` / `milestone_id` / `wallet_id` / `dispute_id` / `contract_id` / `conversation_id` / `user_id` confirms the caller is a party (`auth.uid()` = owner) — no IDOR possible by swapping IDs.
 - [ ] **Money auth:** escrow/wallet RPCs are SECURITY DEFINER with `auth.uid()` checks; no path passing another user's id to move funds; no RPC re-granted to `anon`/`authenticated` that touches money.
 - [ ] **Amount:** never trust a client-submitted amount/currency/price — the Edge Function recomputes from the DB (`contracts.amount`, `subscription_plans.price`, etc.) before creating an order.
-- [ ] **Webhooks:** Razorpay **and** PayPal webhook signatures verified (raw body HMAC / PayPal verify); status only marked after verification, never from a client callback. Webhook secrets fail-closed.
+- [ ] **Webhooks:** Cashfree **and** PayPal webhook signatures verified (Base64(HMAC-SHA256(timestamp+body)) / PayPal verify); status only marked after verification, never from a client callback. Webhook secrets fail-closed.
 - [ ] **Query safety:** parameterized Supabase queries only — no string-concatenated SQL / regex-interpolated `.filter`.
 - [ ] **MFA:** recovery codes single-use + hashed; disabling 2FA requires re-auth.
 - [ ] **Inputs:** free-text rendered without `dangerouslySetInnerHTML` (XSS); file upload type/size validated **server-side**, files not served executable from same domain.
@@ -66,4 +66,4 @@ surfaces YOUR diff touches.
 - **An Edge Function or webhook:** 1.4, 2.4, 3.3, 3.5, 4.6, 4.7, 5.2.
 
 ## Blocking items before enabling live payments (from the audit)
-Set in Supabase Edge Functions secrets: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`, `PAYPAL_WEBHOOK_ID` (and flip `PAYPAL_SANDBOX=false`), `CRON_SECRET`; restore a transactional email provider. A human security review of the wallet/withdrawal RPCs is still recommended before public launch.
+Set in Supabase Edge Functions secrets: `CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`, `CASHFREE_ENVIRONMENT`, `CASHFREE_WEBHOOK_SECRET`, `CASHFREE_PAYOUT_CLIENT_ID/SECRET`, `PAYPAL_WEBHOOK_ID` (and flip `PAYPAL_SANDBOX=false`), `CRON_SECRET`; restore a transactional email provider. A human security review of the wallet/withdrawal RPCs is still recommended before public launch.

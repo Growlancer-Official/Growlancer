@@ -400,7 +400,7 @@ export function AISubscriptionPage() {
             <div className="mt-4 flex items-center justify-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <span className="flex items-center gap-1">
                 <Shield className="w-3 h-3 text-emerald-500" />
-                Secure Razorpay UPI
+                Secure Cashfree UPI
               </span>
               <span className="flex items-center gap-1">
                 <RefreshCw className="w-3 h-3 text-emerald-500" />

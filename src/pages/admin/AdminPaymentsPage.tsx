@@ -5,7 +5,7 @@ import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { paypalService } from '../../lib/paypal';
-import { razorpayService } from '../../lib/razorpay';
+import { cashfreeService } from '../../lib/cashfree';
 
 interface Transaction {
   id: string; user_id: string; contract_id: string | null; type: string;
@@ -262,29 +262,27 @@ export function AdminPaymentsPage() {
                               onConfirm: async () => {
                                 setActionLoading(`${tx.id}-refund`);
                             try {
-                              // Attempt to refund via payment provider (Razorpay or PayPal)
+                              // Attempt to refund via payment provider (Cashfree or PayPal)
                               let providerRefunded = false;
 
-                              // Check Razorpay orders linked to this contract
+                              // Check Cashfree orders linked to this contract
                               if (tx.contract_id) {
-                                const rzpResult = await adminQuery({
-                                  table: 'razorpay_orders',
-                                  select: 'razorpay_payment_id',
+                                const cfResult = await adminQuery({
+                                  table: 'cashfree_orders',
+                                  select: 'cashfree_order_id, status',
                                   filters: { contract_id: tx.contract_id },
                                   limit: 10,
                                 });
-                                const rzpOrders = rzpResult.data || [];
+                                const cfOrders = cfResult.data || [];
 
-                                if (rzpOrders.length > 0) {
-                                  for (const order of rzpOrders) {
-                                    const paymentId = (order as any).razorpay_payment_id;
-                                    if (paymentId) {
-                                      try {
-                                        await razorpayService.refundPayment(paymentId);
-                                        providerRefunded = true;
-                                      } catch (e) {
-                                        console.warn('Razorpay refund failed for', paymentId, e);
-                                      }
+                                for (const order of cfOrders) {
+                                  const cfOrderId = (order as any).cashfree_order_id;
+                                  if (cfOrderId && (order as any).status === 'captured') {
+                                    try {
+                                      await cashfreeService.refundPayment(cfOrderId);
+                                      providerRefunded = true;
+                                    } catch (e) {
+                                      console.warn('Cashfree refund failed for', cfOrderId, e);
                                     }
                                   }
                                 }

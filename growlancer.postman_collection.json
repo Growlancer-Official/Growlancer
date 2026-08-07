@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "b8f3c9a1-4d5e-4f6a-9b2c-3d4e5f6a7b8c",
     "name": "Growlancer Backend",
-    "description": "Complete Growlancer backend collection — Supabase Auth, REST API (PostgREST), Storage, Realtime, and all 24 Edge Functions.\n\n## Setup\n1. Open the collection → Variables tab.\n2. Set `SUPABASE_URL` = https://zttwsjehcgaicziqyxpq.supabase.co (already filled)\n3. Set `ANON_KEY` = your Supabase anon public key (Project Settings → API → anon public)\n4. Run the **Auth → Login** request first — it auto-saves the access token to `AUTH_TOKEN` via a test script.\n5. Auth-required edge functions use `Authorization: Bearer {{AUTH_TOKEN}}`.\n\n## Notes\n- Public functions (newsletter-subscribe, webhooks, cron) use the anon key as Bearer.\n- Auth-required functions will return 401 if `AUTH_TOKEN` is empty/expired.\n- Webhooks (paypal-webhook, razorpay-payout-webhook) are called by external providers — use the provided sample payloads for manual testing.",
+    "description": "Complete Growlancer backend collection — Supabase Auth, REST API (PostgREST), Storage, Realtime, and all 24 Edge Functions.\n\n## Setup\n1. Open the collection → Variables tab.\n2. Set `SUPABASE_URL` = https://zttwsjehcgaicziqyxpq.supabase.co (already filled)\n3. Set `ANON_KEY` = your Supabase anon public key (Project Settings → API → anon public)\n4. Run the **Auth → Login** request first — it auto-saves the access token to `AUTH_TOKEN` via a test script.\n5. Auth-required edge functions use `Authorization: Bearer {{AUTH_TOKEN}}`.\n\n## Notes\n- Public functions (newsletter-subscribe, webhooks, cron) use the anon key as Bearer.\n- Auth-required functions will return 401 if `AUTH_TOKEN` is empty/expired.\n- Webhooks (paypal-webhook, cashfree-payout-webhook) are called by external providers — use the provided sample payloads for manual testing.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -850,7 +850,7 @@
           "response": []
         },
         {
-          "name": "razorpay (Auth)",
+          "name": "cashfree (Auth)",
           "request": {
             "method": "POST",
             "header": [
@@ -860,38 +860,39 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"action\": \"create_order\",\n  \"amount\": 100,\n  \"currency\": \"INR\"\n}",
+              "raw": "{\n  \"action\": \"create_order\",\n  \"data\": {\n    \"order_type\": \"subscription\",\n    \"subscription_id\": \"REPLACE_WITH_SUBSCRIPTION_UUID\",\n    \"currency\": \"INR\"\n  }\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
-              "raw": "{{SUPABASE_URL}}/functions/v1/razorpay",
+              "raw": "{{SUPABASE_URL}}/functions/v1/cashfree",
               "host": ["{{SUPABASE_URL}}"],
-              "path": ["functions", "v1", "razorpay"]
+              "path": ["functions", "v1", "cashfree"]
             }
           },
-          "response": []
+          "description": "Actions: create_order (server recomputes amount), verify_payment, refund_payment, create_beneficiary."
         },
         {
-          "name": "razorpay-payout-webhook (External — no auth)",
+          "name": "cashfree-payout-webhook (External — no auth)",
           "request": {
             "method": "POST",
             "header": [
               { "key": "apikey", "value": "{{ANON_KEY}}", "type": "text" },
               { "key": "Authorization", "value": "Bearer {{ANON_KEY}}", "type": "text" },
               { "key": "Content-Type", "value": "application/json", "type": "text" },
-              { "key": "X-Razorpay-Signature", "value": "test-signature", "type": "text" }
+              { "key": "x-webhook-signature", "value": "test-signature", "type": "text" },
+              { "key": "x-webhook-timestamp", "value": "2026-08-07T00:00:00Z", "type": "text" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"entity\": \"event\",\n  \"event\": \"payout.processed\",\n  \"payload\": {\n    \"payout\": {\n      \"entity\": {\n        \"id\": \"pout_EXAMPLE\",\n        \"amount\": 10000\n      }\n    }\n  }\n}",
+              "raw": "{\n  \"type\": \"PAYOUT_STATUS_WEBHOOK\",\n  \"data\": {\n    \"transfer\": {\n      \"transfer_id\": \"wd_EXAMPLE\",\n      \"transfer_status\": \"SUCCESS\",\n      \"transfer_utr\": \"UTR123\"\n    }\n  }\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
-              "raw": "{{SUPABASE_URL}}/functions/v1/razorpay-payout-webhook",
+              "raw": "{{SUPABASE_URL}}/functions/v1/cashfree-payout-webhook",
               "host": ["{{SUPABASE_URL}}"],
-              "path": ["functions", "v1", "razorpay-payout-webhook"]
+              "path": ["functions", "v1", "cashfree-payout-webhook"]
             },
-            "description": "Called by Razorpay. Sample payload for manual testing."
+            "description": "Called by Cashfree Payouts. Sample payload for manual testing only — real signature verification will fail with fake headers."
           },
           "response": []
         },
@@ -992,7 +993,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": 500,\n  \"withdrawal_method\": \"razorpay\",\n  \"fund_account_id\": \"fa_EXAMPLE\",\n  \"payout_mode\": \"IMPS\"\n}",
+              "raw": "{\n  \"amount\": 500,\n  \"withdrawal_method\": \"cashfree_payout\",\n  \"payout_method_id\": \"REPLACE_WITH_PAYOUT_METHOD_UUID\",\n  \"payout_mode\": \"UPI\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": {
@@ -1000,7 +1001,7 @@
               "host": ["{{SUPABASE_URL}}"],
               "path": ["functions", "v1", "withdrawal"]
             },
-            "description": "amount required (>0). withdrawal_method: razorpay | paypal."
+            "description": "amount required (>0). withdrawal_method: cashfree_payout | paypal (Coming Soon)."
           },
           "response": []
         }

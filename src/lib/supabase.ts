@@ -159,7 +159,10 @@ export type TableName =
   | 'workspace_activity_logs'
   | 'opportunity_events'
   | 'team_invitations'
-  | 'fraud_events';
+  | 'fraud_events'
+  | 'cashfree_orders'
+  | 'cashfree_transactions'
+  | 'cashfree_webhooks';
 
 /**
  * Safe typed table reference.
@@ -213,8 +216,8 @@ export const tables = {
   serviceCategories: () => t('service_categories'),
   workspaceTasks: () => t('workspace_tasks'),
   workspaceNotes: () => t('workspace_notes'),
-  razorpayOrders: () => t('razorpay_orders'),
-  razorpayTransactions: () => t('razorpay_transactions'),
+  cashfreeOrders: () => t('cashfree_orders'),
+  cashfreeTransactions: () => t('cashfree_transactions'),
 };
 
 // ═══ Realtime channels manager ════════════════════════════════════
@@ -238,7 +241,7 @@ export const realtimeChannels = {
   notifications: (scope?: string) => supabase.channel(nextChannelName('notifications', scope)),
   reviews: (scope?: string) => supabase.channel(nextChannelName('reviews', scope)),
   paypalOrders: (scope?: string) => supabase.channel(nextChannelName('paypal_orders', scope)),
-  razorpayOrders: (scope?: string) => supabase.channel(nextChannelName('razorpay_orders', scope)),
+  cashfreeOrders: (scope?: string) => supabase.channel(nextChannelName('cashfree_orders', scope)),
   waitlist: (scope?: string) => supabase.channel(nextChannelName('waitlist', scope)),
   referrals: (scope?: string) => supabase.channel(nextChannelName('referrals', scope)),
   referralStats: (scope?: string) => supabase.channel(nextChannelName('referral_stats', scope)),

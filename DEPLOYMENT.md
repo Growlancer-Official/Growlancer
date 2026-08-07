@@ -59,7 +59,7 @@ Vercel project → **Settings → Environment Variables** (Production). Must inc
 > `VITE_*` vars are inlined at build time on Vercel. They are public-safe (anon key is public by design).
 
 ### 3.4 Confirm Supabase edge-function secrets (2 min)
-Supabase dashboard → **Project → Edge Functions → Secrets** (or `supabase secrets set`). Must include: `GEMINI_API_KEY`, `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_ACCOUNT_NUMBER`, `RAZORPAY_WEBHOOK_SECRET`, `PAYPAL_*`, `ADMIN_SIGNUP_SECRET`, `CRON_SECRET`, `APP_URL`. These persist across function deploys.
+Supabase dashboard → **Project → Edge Functions → Secrets** (or `supabase secrets set`). Must include: `GEMINI_API_KEY`, `CASHFREE_APP_ID`, `CASHFREE_SECRET_KEY`, `CASHFREE_ENVIRONMENT`, `CASHFREE_WEBHOOK_SECRET`, `CASHFREE_PAYOUT_CLIENT_ID`, `CASHFREE_PAYOUT_CLIENT_SECRET`, `PAYPAL_*`, `ADMIN_SIGNUP_SECRET`, `CRON_SECRET`, `APP_URL`. These persist across function deploys.
 
 ### 3.5 (Recommended) Branch protection on `main`
 Repo → **Settings → Branches → Add rule** for `main`: require status checks to pass (**CI — Regression Guard**), require PR review, disallow force-push. This guarantees every deploy-to-`main` already passed CI.
