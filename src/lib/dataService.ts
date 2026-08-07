@@ -235,7 +235,9 @@ export const proposalsService = {
         .select('id')
         .eq('project_id', proposal.project_id)
         .eq('freelancer_id', freelancerId)
-        .single();
+        // limit(1) guards against duplicate proposal rows (PGRST116 would throw)
+        .limit(1)
+        .maybeSingle();
 
       if (existing) {
         return { success: false, error: 'You have already submitted a proposal for this project' };
@@ -626,7 +628,9 @@ export const escrowService = {
         .from('escrow')
         .select('*')
         .eq('contract_id', contractId)
-        .single();
+        // limit(1) guards against duplicate escrow rows (PGRST116 would throw)
+        .limit(1)
+        .maybeSingle();
 
       if (!escrow || escrow.status !== 'funded') {
         return false;
@@ -655,7 +659,9 @@ export const escrowService = {
       .from('escrow')
       .select('*')
       .eq('contract_id', contractId)
-      .single();
+      // limit(1) guards against duplicate escrow rows (PGRST116 would throw)
+      .limit(1)
+      .maybeSingle();
 
     return data;
   },

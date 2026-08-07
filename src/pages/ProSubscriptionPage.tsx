@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Award, BarChart3, Check, CheckCircle, CreditCard, Crown, Eye, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { safeFormatDate } from '../utils/date';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -177,7 +178,7 @@ export function ProSubscriptionPage() {
                           subscription.subscription_end_date
                             ? new Date(subscription.subscription_end_date).toLocaleDateString()
                             : subscription.trial_end_date
-                            ? `Trial ends ${new Date(subscription.trial_end_date).toLocaleDateString()}`
+                            ? `Trial ends ${safeFormatDate(subscription.trial_end_date) || '—'}`
                             : 'N/A'
                         }`}
                   </p>

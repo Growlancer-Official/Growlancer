@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase, realtimeChannels } from '../lib/supabase';
+import { safeNumber } from '../utils/date';
 import { useAuth } from '../context/AuthContext';
 import {
   AlertTriangle,
@@ -395,7 +396,7 @@ export function ProjectDetailsPage() {
               <div className="space-y-3 text-sm text-slate-700">
                 <div className="flex items-center gap-2">
                   <IndianRupee className="w-4 h-4 text-emerald-500" />
-                  <span>{`Budget ₹${project.budget_min.toLocaleString('en-IN')} - ₹${project.budget_max.toLocaleString('en-IN')}`}</span>
+                  <span>{`Budget ₹${safeNumber(project.budget_min).toLocaleString('en-IN')} - ₹${safeNumber(project.budget_max).toLocaleString('en-IN')}`}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4 text-slate-500" />

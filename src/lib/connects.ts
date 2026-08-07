@@ -45,7 +45,10 @@ export const connectsService = {
         .select('plan_id, status, subscription_plans(name)')
         .eq('user_id', userId)
         .eq('status', 'active')
-        .single();
+        // A user can hold multiple active plans (free + pro); limit(1) + maybeSingle
+        // prevents PGRST116 when more than one row exists.
+        .limit(1)
+        .maybeSingle();
 
       const planName = (sub?.subscription_plans as any)?.name?.toLowerCase() || '';
       const isPro = planName.includes('pro') || planName.includes('premium');
@@ -76,7 +79,8 @@ export const connectsService = {
         .eq('user_id', userId)
         .eq('type', 'monthly_grant')
         .gte('created_at', monthStart)
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       // If no grant yet this month, add allowance to current balance
       const hasGrantThisMonth = !!monthlyGrant;
