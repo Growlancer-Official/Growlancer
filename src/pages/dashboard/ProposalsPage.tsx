@@ -362,7 +362,7 @@ export function ProposalsPage() {
                       <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-xs text-slate-500 mb-1">Client Budget</p>
                         <p className="text-lg font-bold text-slate-900">
-                          ${proposal.project.budget_min?.toLocaleString()} - ${proposal.project.budget_max?.toLocaleString()}
+                          ₹{proposal.project.budget_min?.toLocaleString()} - ₹{proposal.project.budget_max?.toLocaleString()}
                         </p>
                       </div>
                     </div>

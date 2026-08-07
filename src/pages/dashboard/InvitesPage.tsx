@@ -471,7 +471,7 @@ export function InvitesPage() {
                       <div className="flex items-center gap-6 text-sm">
                         <span className="flex items-center gap-1 text-slate-600">
                           <Wallet className="w-4 h-4 text-slate-400" />
-                          ${invite.projects.budget_min?.toLocaleString()} - ${
+                          ₹{invite.projects.budget_min?.toLocaleString()} - ₹{
                             invite.projects.budget_max?.toLocaleString()
                           }
                         </span>

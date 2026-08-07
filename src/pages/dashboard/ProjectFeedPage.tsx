@@ -106,7 +106,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
                   Your Rate (₹/hr)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₹</span>
                   <input
                     type="number"
                     required
@@ -122,7 +122,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
             
             {project.budget_min && project.budget_max && (
               <p className="text-xs text-slate-600 mt-2">
-                Client budget: ${project.budget_min.toLocaleString()} - ${project.budget_max.toLocaleString()}
+                Client budget: ₹{project.budget_min.toLocaleString()} - ₹{project.budget_max.toLocaleString()}
               </p>
             )}
           </div>
@@ -258,10 +258,12 @@ export function ProjectFeedPage() {
 
         if (matchesData) {
           const rawMatches = matchesData as unknown as MatchWithProject[];
-          // Filter out declined projects and only show REAL skill-based matches
+          // Filter out declined projects; show all category-first matches.
+          // NOTE: sub-scores are 0-100 on both generation paths now, so a
+          // match_score threshold alone is the correct gate (no skill_score>=50
+          // filter — that silently hid every match when skills didn't overlap).
           const realMatches = rawMatches.filter(m => 
             !declinedProjects.has(m.project_id) && 
-            (m.skill_score ?? 0) >= 50 &&
             (m.match_score ?? 0) >= 40
           );
           setMatches(realMatches);
@@ -639,7 +641,7 @@ export function ProjectFeedPage() {
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
                     <span className="flex items-center gap-1">
                       <Wallet className="w-4 h-4" />
-                      ${match.project.budget_min?.toLocaleString()} - ${
+                      ₹{match.project.budget_min?.toLocaleString()} - ₹{
                         match.project.budget_max?.toLocaleString()
                       }
                     </span>

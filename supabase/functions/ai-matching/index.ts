@@ -298,6 +298,23 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    // PRIMARY category source: freelancer_profiles.categories (145-category-first
+    // pivot) — merged with service categories so matching works even when a
+    // freelancer has no published services yet.
+    const { data: freelancerCats } = await supabase
+      .from('freelancer_profiles')
+      .select('user_id, categories');
+    if (freelancerCats) {
+      for (const fp of freelancerCats) {
+        const cats = Array.isArray(fp.categories) ? fp.categories : [];
+        if (cats.length === 0) continue;
+        if (!freelancerCategoryMap.has(fp.user_id)) {
+          freelancerCategoryMap.set(fp.user_id, new Set());
+        }
+        for (const c of cats) freelancerCategoryMap.get(fp.user_id)!.add(c);
+      }
+    }
+
     if (freelancersError) {
       console.error('Failed to fetch freelancers:', freelancersError);
       return new Response(JSON.stringify({ error: 'Failed to fetch freelancers', details: freelancersError.message }), {
@@ -405,48 +422,58 @@ Deno.serve(async (req: Request) => {
 });
 
 function calculateMatchScore(project: Project, freelancer: FreelancerCandidate): MatchResult {
-  // 1. CATEGORY MATCH (10 points)
-  const categoryMatch = freelancer.categories.some(c => {
-    const cleanCat = c.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const cleanProjCat = (project.category || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-    return cleanCat.includes(cleanProjCat) || cleanProjCat.includes(cleanCat);
-  });
-  const categoryScore = categoryMatch ? 10 : 0;
+  // All sub-scores are 0-100 (consistent with the server-side SQL engine so the
+  // freelancer feed's filters and score bars behave the same on both paths).
 
-  // 2. SKILL MATCH (35 points)
+  // 1. CATEGORY MATCH (anchor — 35% weight)
+  const categoryMatch = freelancer.categories.some(c => {
+    const cleanCat = c.toLowerCase().trim();
+    const cleanProjCat = (project.category || '').toLowerCase().trim();
+    return cleanCat === cleanProjCat;
+  });
+  const categoryScore = categoryMatch ? 100 : 0;
+
+  // 2. SKILL MATCH (25%)
   const skillScore = calculateSkillScore(project.skills_required, freelancer.skills);
 
-  // 3. EXPERIENCE (20 points)
+  // 3. EXPERIENCE (15%)
   const experienceScore = calculateExperienceScore(project.experience_level, freelancer.experience_years);
 
-  // 4. BUDGET FIT (20 points)
+  // 4. BUDGET FIT (12%)
   const budgetScore = calculateBudgetScore(project.budget_min, project.budget_max, freelancer.hourly_rate);
 
-  // 5. AVAILABILITY (10 points)
-  const availabilityScore = freelancer.availability ? 10 : 0;
+  // 5. AVAILABILITY (8%)
+  const availabilityScore = freelancer.availability ? 100 : 40;
 
-  // 6. COMPLETION & REPUTATION (5 points)
-  const completionScore = ((freelancer.completion_rate + freelancer.reputation_score) / 200) * 5;
+  // 6. COMPLETION & REPUTATION (5%)
+  const completionScore = Math.max(0, Math.min(100, Math.round((freelancer.completion_rate + freelancer.reputation_score) / 2)));
 
-  const totalScore = categoryScore + skillScore + experienceScore + budgetScore + availabilityScore + completionScore;
+  const matchScore = Math.min(100, Math.round(
+    (categoryScore * 0.35) +
+    (skillScore     * 0.25) +
+    (experienceScore * 0.15) +
+    (budgetScore    * 0.12) +
+    (availabilityScore * 0.08) +
+    (completionScore * 0.05)
+  ));
 
   return {
     project_id: project.id,
     freelancer_id: freelancer.id,
-    match_score: Math.min(100, Math.round(totalScore)),
+    match_score: matchScore,
     skill_score: Math.round(skillScore),
     experience_score: Math.round(experienceScore),
     budget_score: Math.round(budgetScore),
     availability_score: Math.round(availabilityScore),
-    completion_score: Math.round(completionScore),
-    category_score: Math.round(categoryScore),
+    completion_score: completionScore,
+    category_score: categoryScore,
     ai_score: null,
     match_reason: null,
   };
 }
 
 function calculateSkillScore(requiredSkills: string[], freelancerSkills: string[]): number {
-  if (!requiredSkills || requiredSkills.length === 0) return 40;
+  if (!requiredSkills || requiredSkills.length === 0) return 50;
   if (!freelancerSkills || freelancerSkills.length === 0) return 0;
 
   const matchedSkills = requiredSkills.filter(skill =>
@@ -457,7 +484,7 @@ function calculateSkillScore(requiredSkills: string[], freelancerSkills: string[
     })
   );
 
-  return (matchedSkills.length / requiredSkills.length) * 35;
+  return (matchedSkills.length / requiredSkills.length) * 100;
 }
 
 function calculateExperienceScore(requiredLevel: string, freelancerYears: number): number {
@@ -471,40 +498,26 @@ function calculateExperienceScore(requiredLevel: string, freelancerYears: number
   const req = requirements[requiredLevel] || requirements.intermediate;
 
   if (freelancerYears >= req.min && freelancerYears <= req.max) {
-    return 20;
+    return 100;
   } else if (freelancerYears > req.max) {
-    return 15; // Overqualified
+    return 70; // Overqualified
   } else if (freelancerYears >= req.min - 1) {
-    return 10; // Close to requirement
+    return 50; // Close to requirement
   }
 
-  return 0;
+  return 20;
 }
 
 function calculateBudgetScore(budgetMin: number, budgetMax: number, hourlyRate: number): number {
-  if (hourlyRate === 0) return 10; // Baseline points if no rate is set
+  if (!hourlyRate) return 50; // Neutral if no rate is set
 
-  // If budget_max is small (<= 150), it is treated as a direct hourly rate filter
-  if (budgetMax <= 150) {
-    if (hourlyRate >= budgetMin && hourlyRate <= budgetMax) {
-      return 20;
-    } else if (hourlyRate > budgetMax && hourlyRate <= budgetMax * 1.2) {
-      return 10;
-    } else if (hourlyRate < budgetMin && hourlyRate >= budgetMin * 0.8) {
-      return 15;
-    }
-    return 0;
+  const impliedHourly = budgetMax > 0 ? budgetMax / 80 : 0;
+  if (impliedHourly > 0) {
+    if (hourlyRate <= impliedHourly && hourlyRate >= impliedHourly * 0.4) return 100;
+    if (hourlyRate <= impliedHourly * 1.3) return 80;
+    if (hourlyRate < impliedHourly * 0.4) return 70;
+    if (hourlyRate <= impliedHourly * 1.8) return 50;
+    return 30;
   }
-
-  // If budget_max is large (> 150), it is a fixed budget. We assume a 40-hour project volume.
-  const estimatedCost = hourlyRate * 40;
-  if (estimatedCost >= budgetMin && estimatedCost <= budgetMax) {
-    return 20;
-  } else if (estimatedCost > budgetMax && estimatedCost <= budgetMax * 1.2) {
-    return 10;
-  } else if (estimatedCost < budgetMin && estimatedCost >= budgetMin * 0.8) {
-    return 15;
-  }
-
-  return 5; // Moderate fit
+  return 50;
 }
