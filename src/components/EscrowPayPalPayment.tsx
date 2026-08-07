@@ -144,14 +144,16 @@ function MilestoneStepIndicator({
  * Escrow progress bar showing funded vs total amounts.
  */
 function EscrowProgressBar({ funded, total }: { funded: number; total: number }) {
-  const percent = total > 0 ? Math.min(100, Math.round((funded / total) * 100)) : 0;
-  const remaining = Math.max(0, total - funded);
+  const safeTotal = Number.isFinite(Number(total)) ? Number(total) : 0;
+  const safeFunded = Number.isFinite(Number(funded)) ? Number(funded) : 0;
+  const percent = safeTotal > 0 ? Math.min(100, Math.round((safeFunded / safeTotal) * 100)) : 0;
+  const remaining = Math.max(0, safeTotal - safeFunded);
 
   return (
     <div className="p-4 bg-slate-50 rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-slate-700">Escrow Funding Progress</span>
-        <span className="text-sm font-bold text-slate-900">₹{funded.toFixed(0)} / ₹{total.toFixed(0)}</span>
+        <span className="text-sm font-bold text-slate-900">₹{safeFunded.toFixed(0)} / ₹{safeTotal.toFixed(0)}</span>
       </div>
       <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
         <div
@@ -179,6 +181,8 @@ export function EscrowPayPalPayment({
   onCancel,
 }: EscrowPayPalPaymentProps) {
   const { user } = useAuth();
+  // NaN-safe amount — contracts can have null/undefined amounts; never crash the payment UI.
+  const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
   const [step, setStep] = useState<PaymentStep>(propMilestones && propMilestones.length > 0 ? 'select_milestones' : 'review');
   const [error, setError] = useState<string | null>(null);
   const [isCreatingContract, setIsCreatingContract] = useState(false);
@@ -200,7 +204,7 @@ export function EscrowPayPalPayment({
   // Calculate the total amount to fund based on selected milestones
   const calculateFundingAmount = (): number => {
     if (milestones.length === 0 || selectedMilestones.size === 0) {
-      return amount;
+      return safeAmount;
     }
     let total = 0;
     selectedMilestones.forEach((idx) => {
@@ -505,7 +509,7 @@ export function EscrowPayPalPayment({
         </div>
 
         {/* Escrow Progress */}
-        <EscrowProgressBar funded={fundedAmount + fundingAmount} total={amount} />
+        <EscrowProgressBar funded={fundedAmount + fundingAmount} total={safeAmount} />
       </div>
     );
   }
@@ -533,7 +537,7 @@ export function EscrowPayPalPayment({
         />
 
         {/* Escrow progress */}
-        <EscrowProgressBar funded={fundedAmount} total={amount} />
+        <EscrowProgressBar funded={fundedAmount} total={safeAmount} />
 
         {/* Selected amount summary */}
         <div className="mt-6 p-4 bg-slate-50 rounded-lg">
@@ -596,7 +600,7 @@ export function EscrowPayPalPayment({
 
         {/* Escrow progress bar on review step */}
         {milestones.length > 0 && (
-          <EscrowProgressBar funded={fundedAmount} total={amount} />
+          <EscrowProgressBar funded={fundedAmount} total={safeAmount} />
         )}
 
         <div className="space-y-3">
@@ -610,7 +614,7 @@ export function EscrowPayPalPayment({
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Project Amount</span>
-            <span className="font-medium text-slate-900">₹{amount.toFixed(2)}</span>
+            <span className="font-medium text-slate-900">₹{safeAmount.toFixed(2)}</span>
           </div>
           {selectedMilestones.size > 0 && (
             <div className="flex justify-between text-slate-600">

@@ -8,12 +8,13 @@ import {
   Check,
   Copy,
   Globe,
-  Send,
-  Sparkles,
-  User,
   Headphones,
   Loader2,
   Mail,
+  Send,
+  Sparkles,
+  Trash2,
+  User,
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -52,12 +53,36 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [escalated, setEscalated] = useState(false);
   const [verifyCta, setVerifyCta] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // Real-time greeting with the user's name based on their local time of day
+  // ── Chat persistence ──
+  // Chat history is saved per-user in localStorage so it survives page
+  // refreshes and browser restarts. On first visit we show a time-based greeting.
+  const CHAT_STORAGE_KEY = (uid: string) => `growlancer_ai_chat_v1_${uid}`;
+
   useEffect(() => {
     if (!user) return;
+    const saved = localStorage.getItem(CHAT_STORAGE_KEY(user.id));
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved) as Array<{
+          id: string;
+          role: 'user' | 'assistant';
+          content: string;
+          timestamp: string;
+        }>;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed.map((m) => ({ ...m, timestamp: new Date(m.timestamp), isStreaming: false })));
+          return; // history restored — skip the greeting
+        }
+      } catch {
+        // corrupted history — fall through to greeting
+      }
+    }
+    // Real-time greeting with the user's name based on their local time of day
     const hour = new Date().getHours();
     const part =
       hour < 5 ? 'Good night' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : hour < 21 ? 'Good evening' : 'Good night';
@@ -71,6 +96,22 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       },
     ]);
   }, [user]);
+
+  // Persist chat history so it survives refreshes. When the chat is emptied
+  // (e.g. every message deleted via selection), the saved key is removed so the
+  // cleared history doesn't resurrect on the next page load.
+  useEffect(() => {
+    if (!user) return;
+    try {
+      if (messages.length === 0) {
+        localStorage.removeItem(CHAT_STORAGE_KEY(user.id));
+      } else {
+        localStorage.setItem(CHAT_STORAGE_KEY(user.id), JSON.stringify(messages));
+      }
+    } catch {
+      // storage unavailable — non-critical
+    }
+  }, [messages, user]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,6 +130,42 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     await navigator.clipboard.writeText(content);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  // ── Chat management: clear chat / delete selected messages ──
+  const handleToggleSelectionMode = () => {
+    setSelectionMode((prev) => !prev);
+    setSelectedIds(new Set());
+  };
+
+  const handleToggleMessageSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedIds.size === 0) return;
+    setMessages((prev) => prev.filter((m) => !selectedIds.has(m.id)));
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+  };
+
+  const handleClearAllChat = () => {
+    setMessages([]);
+    setSelectedIds(new Set());
+    setSelectionMode(false);
+    setStreamingContent('');
+    if (user) {
+      try {
+        localStorage.removeItem(CHAT_STORAGE_KEY(user.id));
+      } catch {
+        // non-critical
+      }
+    }
   };
 
   const getStreamingAIResponse = async (userMessage: string): Promise<void> => {
@@ -244,6 +321,8 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
+    setSelectionMode(false);
+    setSelectedIds(new Set());
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -432,6 +511,21 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
               </p>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            {messages.length > 0 && (
+              <button
+                onClick={handleToggleSelectionMode}
+                title={selectionMode ? 'Cancel selection' : 'Manage / clear chat'}
+                className={`p-2 rounded-lg transition-colors ${
+                  selectionMode
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                }`}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -469,8 +563,21 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         {messages.map((message) => (
           <div
             key={message.id}
-            className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            className={`flex gap-3 items-start ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
           >
+            {selectionMode && (
+              <button
+                onClick={() => handleToggleMessageSelection(message.id)}
+                className={`mt-1 w-5 h-5 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                  selectedIds.has(message.id)
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'border-slate-300 hover:border-emerald-400'
+                }`}
+                title={selectedIds.has(message.id) ? 'Remove from selection' : 'Select message'}
+              >
+                {selectedIds.has(message.id) && <Check className="w-3 h-3" />}
+              </button>
+            )}
             {message.role === 'assistant' && (
               <div className="p-2 bg-emerald-100 rounded-xl self-start">
                 <Bot className="w-4 h-4 text-emerald-600" />
@@ -522,6 +629,38 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Selection action bar */}
+      {selectionMode && (
+        <div className="px-6 py-3 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+          <span className="text-xs font-medium text-slate-500">
+            {selectedIds.size > 0
+              ? `${selectedIds.size} message${selectedIds.size > 1 ? 's' : ''} selected`
+              : 'Select messages to delete'}
+          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleToggleSelectionMode}
+              className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDeleteSelected}
+              disabled={selectedIds.size === 0}
+              className="px-3 py-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Delete Selected
+            </button>
+            <button
+              onClick={handleClearAllChat}
+              className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+            >
+              Delete All
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Input */}
       <div className="p-4 border-t border-slate-100 bg-slate-50">

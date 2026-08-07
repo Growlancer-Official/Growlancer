@@ -52,11 +52,9 @@ export function ProposalsPage() {
       if (error) throw error;
 
       if (data) {
-        // Filter out proposals for projects belonging to deleted clients
-        const filtered = (data as unknown as ProposalWithProject[]).filter(p => {
-          const client = p.project?.client as { deleted_at?: string | null } | null;
-          return client && !client.deleted_at;
-        });
+        // Show every proposal — clients with deleted/unavailable accounts get a
+        // fallback label in the UI instead of silently hiding the proposal.
+        const filtered = data as unknown as ProposalWithProject[];
 
         if (loadMore) {
           setProposals(prev => [...prev, ...filtered]);
@@ -337,13 +335,13 @@ export function ProposalsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <h3 className="font-display text-lg font-bold text-slate-900">
-                        {proposal.project.title}
+                        {proposal.project?.title || 'Project'}
                       </h3>
                       {getStatusBadge(proposal.status)}
                     </div>
 
                     <p className="text-slate-600 mb-4 line-clamp-2">
-                      {proposal.project.description}
+                      {proposal.project?.description || 'No description provided'}
                     </p>
 
                     {/* Meta Info */}

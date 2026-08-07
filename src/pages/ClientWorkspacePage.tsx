@@ -16,7 +16,7 @@ import {
   Check,
   CheckCircle2,
   ClipboardList,
-  DollarSign,
+  IndianRupee,
   Download,
   FileText,
   History,
@@ -43,13 +43,10 @@ interface Contract {
   freelancer_id: string
   project_id: string
   status: string
-  escrow_amount: number
+  amount: number
   escrow_funded: boolean
   created_at: string
   updated_at: string
-  escrow_released: boolean
-  escrow_refunded: boolean
-  is_disputed: boolean
   dispute_reason: string | null
   dispute_description: string | null
   dispute_initiated_by: string | null
@@ -484,8 +481,8 @@ export function ClientWorkspacePage() {
       events.push({
         date: '',
         title: 'Escrow Funded',
-        description: `Payment of ${formatCurrency(selectedContract.escrow_amount)} secured in escrow`,
-        icon: 'dollar',
+        description: `Payment of ${formatCurrency(selectedContract.amount)} secured in escrow`,
+        icon: 'rupee',
         status: 'completed',
       })
     } else {
@@ -493,12 +490,12 @@ export function ClientWorkspacePage() {
         date: '',
         title: 'Fund Escrow',
         description: 'Client needs to fund the escrow to begin work',
-        icon: 'dollar',
+        icon: 'rupee',
         status: 'current',
       })
     }
 
-    if (selectedContract.escrow_released) {
+    if (selectedContract.status === 'completed') {
       events.push({
         date: '',
         title: 'Payment Released',
@@ -524,11 +521,11 @@ export function ClientWorkspacePage() {
       })
     }
 
-    if (selectedContract.is_disputed) {
+    if (selectedContract.status === 'disputed') {
       events.push({
         date: '',
         title: 'Dispute Active',
-        description: selectedContract.dispute_reason || 'Issue reported',
+        description: 'An issue was reported on this contract',
         icon: 'alert',
         status: 'current',
       })
@@ -538,12 +535,14 @@ export function ClientWorkspacePage() {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    // NaN-safe — contracts can have null/undefined amounts; never render ₹NaN.
+    const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount)
+    }).format(safeAmount)
   }
 
   const milestoneProgress = selectedContract ? getMilestoneProgress((selectedContract as any).milestones) : { completed: 0, total: 0, percent: 0, milestones: [] }
@@ -552,7 +551,7 @@ export function ClientWorkspacePage() {
     : typeof (selectedContract as any)?.milestones === 'string'
     ? (() => { try { return JSON.parse((selectedContract as any).milestones) } catch { return [] } })()
     : []
-  const needsFunding = selectedContract && !selectedContract.escrow_funded && !selectedContract.escrow_released
+  const needsFunding = selectedContract && !selectedContract.escrow_funded && selectedContract.status !== 'completed'
 
   if (loading) {
     return (
@@ -624,7 +623,7 @@ export function ClientWorkspacePage() {
                     {contract.freelancer?.name || 'Unknown Freelancer'}
                   </span>
                   <span className="mx-2">•</span>
-                  <span>{formatCurrency(contract.escrow_amount)}</span>
+                  <span>{formatCurrency(contract.amount)}</span>
                 </div>
               </button>
             ))}
@@ -655,7 +654,7 @@ export function ClientWorkspacePage() {
                         onClick={() => setShowFundEscrow(true)}
                         className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
                       >
-                        <DollarSign className="h-4 w-4 mr-1.5" />
+                        <IndianRupee className="h-4 w-4 mr-1.5" />
                         Fund Escrow
                       </button>
                     )}
@@ -665,7 +664,7 @@ export function ClientWorkspacePage() {
                         Frozen
                       </div>
                     )}
-                    {selectedContract.is_disputed && (
+                    {selectedContract.status === 'disputed' && (
                       <div className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm">
                         <AlertCircle className="h-4 w-4 mr-1.5" />
                         Dispute Active
@@ -934,7 +933,7 @@ export function ClientWorkspacePage() {
                               : 'bg-slate-100'
                           }`}>
                             {event.icon === 'file' && <FileText className={`h-4 w-4 ${event.status === 'completed' ? 'text-green-600' : 'text-slate-400'}`} />}
-                            {event.icon === 'dollar' && <DollarSign className={`h-4 w-4 ${event.status === 'completed' ? 'text-green-600' : event.status === 'current' ? 'text-amber-600' : 'text-slate-400'}`} />}
+                            {event.icon === 'rupee' && <IndianRupee className={`h-4 w-4 ${event.status === 'completed' ? 'text-green-600' : event.status === 'current' ? 'text-amber-600' : 'text-slate-400'}`} />}
                             {event.icon === 'check' && <CheckCircle2 className={`h-4 w-4 ${event.status === 'completed' ? 'text-green-600' : event.status === 'current' ? 'text-amber-600' : 'text-slate-400'}`} />}
                             {event.icon === 'alert' && <AlertCircle className="h-4 w-4 text-red-500" />}
                           </div>
@@ -1026,7 +1025,7 @@ export function ClientWorkspacePage() {
                       <div className="p-4 bg-slate-50 rounded-lg">
                         <p className="text-sm text-slate-500 mb-1">Total Amount</p>
                         <p className="text-2xl font-bold text-slate-900">
-                          {formatCurrency(selectedContract.escrow_amount)}
+                          {formatCurrency(selectedContract.amount)}
                         </p>
                       </div>
                       <div className="p-4 bg-slate-50 rounded-lg">
@@ -1056,11 +1055,11 @@ export function ClientWorkspacePage() {
                           onClick={() => setShowFundEscrow(true)}
                           className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
                         >
-                          <DollarSign className="h-5 w-5 mr-2" />
+                          <IndianRupee className="h-5 w-5 mr-2" />
                           Fund Escrow
                         </button>
                       )}
-                      {selectedContract.escrow_funded && !selectedContract.escrow_released && !selectedContract.is_disputed && (
+                      {selectedContract.escrow_funded && selectedContract.status !== 'completed' && selectedContract.status !== 'disputed' && (
                         <button
                           onClick={() => void handleReleaseEscrow()}
                           disabled={releasingEscrow}
@@ -1074,7 +1073,7 @@ export function ClientWorkspacePage() {
                           Release Escrow
                         </button>
                       )}
-                      {!selectedContract.is_disputed && !isFrozen && selectedContract.escrow_funded && (
+                      {selectedContract.status !== 'disputed' && !isFrozen && selectedContract.escrow_funded && (
                         <button
                           onClick={() => setShowDisputeModal(true)}
                           className="inline-flex items-center px-6 py-3 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-medium"
@@ -1083,7 +1082,7 @@ export function ClientWorkspacePage() {
                           Raise Dispute
                         </button>
                       )}
-                      {!selectedContract.is_disputed && !isFrozen && !selectedContract.escrow_released && (
+                      {selectedContract.status !== 'disputed' && !isFrozen && selectedContract.status !== 'completed' && (
                         <button
                           onClick={() => setShowRefundModal(true)}
                           disabled={!!activeRefund}
@@ -1410,7 +1409,7 @@ export function ClientWorkspacePage() {
               <p className="text-sm text-slate-500 mb-4">
                 Fund the escrow account for{' '}
                 <span className="font-semibold text-slate-900">
-                  {formatCurrency(selectedContract.escrow_amount)}
+                  {formatCurrency(selectedContract.amount)}
                 </span>{' '}
                 to begin working with{' '}
                 <span className="font-semibold text-slate-900">
@@ -1420,7 +1419,7 @@ export function ClientWorkspacePage() {
               </p>
               <EscrowPayPalPayment
                 contractId={selectedContract.id}
-                amount={selectedContract.escrow_amount}
+                amount={selectedContract.amount}
                 freelancerName={selectedContract.freelancer?.name || 'the freelancer'}
                 projectTitle={selectedContract.project?.title || 'Project'}
                 onSuccess={() => {

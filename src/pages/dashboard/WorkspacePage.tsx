@@ -725,12 +725,14 @@ export function WorkspacePage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    // NaN-safe — contracts can have null/undefined amounts; never render ₹NaN.
+    const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(safeAmount);
   };
 
   if (loading) {
@@ -835,7 +837,7 @@ export function WorkspacePage() {
           >
             {contracts.map((contract) => (
               <option key={contract.id} value={contract.id}>
-                {contract.project.title}
+                {contract.project?.title || 'Project'}
               </option>
             ))}
           </select>
@@ -1247,7 +1249,7 @@ export function WorkspacePage() {
                   <div className="flex items-start justify-between mb-4 pb-3 border-b border-slate-100">
                     <div>
                       <h3 className="font-semibold text-slate-900 text-lg">
-                        {selectedContract.project.title}
+                        {selectedContract.project?.title || 'Project'}
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">Budget protected in Growlancer Escrow protection</p>
                     </div>

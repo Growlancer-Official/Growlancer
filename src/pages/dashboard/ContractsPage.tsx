@@ -9,8 +9,8 @@ import { milestoneService, getMilestoneProgress } from '../../lib/contractMilest
 import type { MilestoneItem } from '../../lib/contractMilestones';
 
 type ContractWithDetails = Tables<'contracts'> & {
-  projects: Tables<'projects'>;
-  profiles: Tables<'profiles'>;
+  project?: Tables<'projects'> | null;
+  profiles?: Tables<'profiles'> | null;
 };
 
 interface EscrowState {
@@ -116,7 +116,7 @@ export function ContractsPage() {
         .from('contracts')
         .select(`
           *,
-          projects!inner(*),
+          project:projects(*),
           profiles!contracts_client_id_fkey(*)
         `)
         .eq('freelancer_id', user.id)
@@ -220,7 +220,7 @@ export function ContractsPage() {
               .from('contracts')
               .select(`
                 *,
-                projects!inner(*),
+                project:projects(*),
                 profiles!contracts_client_id_fkey(*)
               `)
               .eq('id', payload.new.id)
@@ -298,12 +298,14 @@ export function ContractsPage() {
   };
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    // NaN-safe — contracts can have null/undefined amounts; never render ₹NaN.
+    const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount);
+    }).format(safeAmount);
   };
 
   const handleReleaseMilestone = async (contractId: string, milestoneIndex: number) => {
@@ -473,7 +475,7 @@ export function ContractsPage() {
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-3">
                       <h3 className="font-display text-lg font-bold text-slate-900">
-                        {contract.projects.title}
+                        {contract.project?.title || 'Project'}
                       </h3>
                       {getStatusBadge(contract.status || 'active')}
                       {balance && <EscrowStatusBadge balance={balance} />}

@@ -65,13 +65,16 @@ interface InvoiceRow {
 // Helpers
 // ────────────────────────────────────────
 
-const formatCurrency = (amount: number) =>
-  new Intl.NumberFormat('en-US', {
+const formatCurrency = (amount: number) => {
+  // NaN-safe — wallet balances can be null/undefined; never render ₹NaN.
+  const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
+  return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency: 'INR',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(safeAmount);
+};
 
 
 

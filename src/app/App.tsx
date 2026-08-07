@@ -283,6 +283,8 @@ function App() {
                 <Route path="proposals" element={<ClientProposalsPage />} />
                 <Route path="contracts" element={<ClientContractsPage />} />
                 <Route path="workspace" element={<ClientWorkspacePage />} />
+                {/* Direct contract workspace URLs (e.g. /client/workspace/:id) — must not 404 on refresh */}
+                <Route path="workspace/:contractId" element={<ClientWorkspacePage />} />
                 <Route path="inbox" element={<InboxPage />} />
                 <Route path="payments" element={<ClientPaymentsPage />} />
                 <Route path="settings" element={<ClientSettingsPage />} />
