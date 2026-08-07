@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, CheckCircle2, Clock, CreditCard, DollarSign, FileText, Handshake, Plus, Sparkles, Users,  } from 'lucide-react';
+import { Briefcase, CheckCircle2, Clock, CreditCard, IndianRupee, FileText, Handshake, Plus, Sparkles, Users,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import {
   projectsService,
@@ -163,7 +163,7 @@ export default function ClientDashboard() {
     { 
       label: 'Total Spent', 
       value: `₹${stats.totalSpent.toLocaleString()}`, 
-      icon: DollarSign, 
+      icon: IndianRupee, 
       color: 'bg-orange-50 text-orange-600' 
     },
   ];

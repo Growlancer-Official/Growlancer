@@ -4,7 +4,7 @@ import { aiMatchingService, type AIMatchWithProfile } from '../lib/aiMatching';
 import { realtimeChannels, supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { inviteFreelancerToProject } from '../lib/workflowService';
-import { CheckCircle2, DollarSign, MapPin, RefreshCw, Send, Sparkles, Star, User, XCircle, Plus, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
+import { CheckCircle2, IndianRupee, MapPin, RefreshCw, Send, Sparkles, Star, User, XCircle, Plus, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 export function ClientMatchesPage() {
@@ -401,7 +401,7 @@ export function ClientMatchesPage() {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
-                  <DollarSign className="w-4 h-4" />
+                  <IndianRupee className="w-4 h-4" />
                   <span>₹{match.freelancer.hourly_rate || 0}/hr</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-600">

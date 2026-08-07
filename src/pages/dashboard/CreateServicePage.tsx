@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { ArrowRight, Briefcase, CheckCircle, DollarSign, Image, Plus, Shield, Sparkles, Tag, X, Zap } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Plus, Shield, Sparkles, Tag, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { useCategories } from '../../hooks/useCategories';
 import { ImageUpload } from '../../components/ImageUpload';
@@ -200,7 +200,7 @@ export function CreateServicePage() {
         {/* Pricing & Delivery */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-emerald-600" />
+            <IndianRupee className="w-5 h-5 text-emerald-600" />
             Pricing & Delivery
           </h2>
 

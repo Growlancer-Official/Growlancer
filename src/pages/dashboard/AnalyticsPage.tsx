@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, DollarSign, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users } from 'lucide-react';
+import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, IndianRupee, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
@@ -133,7 +133,7 @@ export function AnalyticsPage() {
           {/* Earnings & Contracts Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <MetricCard
-              icon={DollarSign}
+              icon={IndianRupee}
               label="Total Earnings"
               value={formatCurrency(data.totalEarnings)}
               sublabel={`${formatCurrency(data.monthlyEarnings)} this month`}

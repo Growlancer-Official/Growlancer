@@ -68,7 +68,7 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
   return true;
 }
 
-const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+const MAX_FILE_SIZE = 25 * 1024 * 1024 // 25MB — aligned with PLATFORM_CONFIG.limits.max_file_upload_size_mb
 const ALLOWED_TYPES = [
   'image/jpeg',
   'image/png',
@@ -192,10 +192,11 @@ Deno.serve(async (req) => {
       const fileExt = file.name.split('.').pop()
       const fileName = `${contractId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage (contract-files bucket — the old 'deliverables'
+      // bucket never existed in production, which made every upload fail)
       const { data: uploadData, error: uploadError } = await supabaseClient
         .storage
-        .from('deliverables')
+        .from('contract-files')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false,
@@ -208,7 +209,7 @@ Deno.serve(async (req) => {
       // Get public URL
       const { data: { publicUrl } } = supabaseClient
         .storage
-        .from('deliverables')
+        .from('contract-files')
         .getPublicUrl(fileName)
 
       // Create file record in database
@@ -229,7 +230,7 @@ Deno.serve(async (req) => {
 
       if (fileError) {
         // Rollback storage upload if database insert fails
-        await supabaseClient.storage.from('deliverables').remove([fileName])
+        await supabaseClient.storage.from('contract-files').remove([fileName])
         throw fileError
       }
 
@@ -326,7 +327,7 @@ Deno.serve(async (req) => {
       // Delete from storage
       const { error: storageError } = await supabaseClient
         .storage
-        .from('deliverables')
+        .from('contract-files')
         .remove([fileRecord.file_path])
 
       if (storageError) {

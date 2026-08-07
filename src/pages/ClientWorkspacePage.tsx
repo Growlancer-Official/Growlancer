@@ -110,6 +110,8 @@ export function ClientWorkspacePage() {
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [fileDescription, setFileDescription] = useState('')
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadBlocked, setUploadBlocked] = useState(false)
   const [showDisputeModal, setShowDisputeModal] = useState(false)
   const [disputeReason, setDisputeReason] = useState('')
   const [disputeDescription, setDisputeDescription] = useState('')
@@ -265,6 +267,8 @@ export function ClientWorkspacePage() {
   const handleFileUpload = async () => {
     if (!selectedFile || !selectedContract || !user) return
     setUploadingFile(true)
+    setUploadError(null)
+    setUploadBlocked(false)
     try {
       const result = await fileUploadService.uploadFile(
         selectedFile,
@@ -276,8 +280,12 @@ export function ClientWorkspacePage() {
         setFileDescription('')
         setShowUploadModal(false)
         void fetchFiles()
+      } else {
+        setUploadError(result.error || 'Failed to upload file')
       }
-    } catch { /* handled silently */ }
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed. Please try again.')
+    }
     setUploadingFile(false)
   }
 
@@ -748,7 +756,11 @@ export function ClientWorkspacePage() {
                       <div className="border-t border-slate-200 p-4">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => setShowUploadModal(true)}
+                            onClick={() => {
+                              setShowUploadModal(true)
+                              setUploadError(null)
+                              setUploadBlocked(false)
+                            }}
                             className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
                             title="Attach file"
                           >
@@ -792,7 +804,11 @@ export function ClientWorkspacePage() {
                           Shared Assets
                         </h3>
                         <button
-                          onClick={() => setShowUploadModal(true)}
+                          onClick={() => {
+                            setShowUploadModal(true)
+                            setUploadError(null)
+                            setUploadBlocked(false)
+                          }}
                           className="text-sm text-emerald-600 hover:text-emerald-700"
                         >
                           + Upload
@@ -1174,6 +1190,8 @@ export function ClientWorkspacePage() {
                   setShowUploadModal(false)
                   setSelectedFile(null)
                   setFileDescription('')
+                  setUploadError(null)
+                  setUploadBlocked(false)
                 }}
                 className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
               >
@@ -1187,9 +1205,40 @@ export function ClientWorkspacePage() {
                 </label>
                 <input
                   type="file"
-                  onChange={e => setSelectedFile(e.target.files?.[0] || null)}
+                  onChange={e => {
+                    const file = e.target.files?.[0] || null
+                    setSelectedFile(file)
+                    setUploadError(null)
+                    setUploadBlocked(false)
+                    if (file) {
+                      const ALLOWED_TYPES = [
+                        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
+                        'application/pdf',
+                        'application/msword',
+                        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                        'application/vnd.ms-excel',
+                        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                        'application/vnd.ms-powerpoint',
+                        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                        'text/plain', 'text/csv', 'application/zip', 'application/x-zip-compressed',
+                      ]
+                      if (file.size > 25 * 1024 * 1024) {
+                        setUploadError('File exceeds the 25MB size limit')
+                        setUploadBlocked(true)
+                      } else if (!ALLOWED_TYPES.includes(file.type)) {
+                        setUploadError('File type not supported. Use images, PDF, Word, Excel, PowerPoint, text, CSV, or ZIP.')
+                        setUploadBlocked(true)
+                      }
+                    }
+                  }}
                   className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
                 />
+                {uploadError && (
+                  <p className="mt-2 flex items-start gap-1.5 text-xs text-red-600">
+                    <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
+                    {uploadError}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
@@ -1210,6 +1259,8 @@ export function ClientWorkspacePage() {
                   setShowUploadModal(false)
                   setSelectedFile(null)
                   setFileDescription('')
+                  setUploadError(null)
+                  setUploadBlocked(false)
                 }}
                 className="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
               >
@@ -1217,7 +1268,7 @@ export function ClientWorkspacePage() {
               </button>
               <button
                 onClick={() => void handleFileUpload()}
-                disabled={!selectedFile || uploadingFile}
+                disabled={!selectedFile || uploadingFile || uploadBlocked}
                 className="inline-flex items-center px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
               >
                 {uploadingFile ? (

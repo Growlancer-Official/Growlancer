@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, DollarSign, FileText, Handshake, Loader2, Shield, ThumbsUp, User, Wallet,  } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, Wallet,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, realtimeChannels } from '../../lib/supabase';
@@ -79,7 +79,7 @@ function EscrowStatusBadge({ balance }: { balance: EscrowState['balance'] | unde
   }
   return (
     <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-full">
-      <DollarSign className="w-3 h-3" />
+      <IndianRupee className="w-3 h-3" />
       Not Funded
     </span>
   );

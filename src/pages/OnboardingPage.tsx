@@ -86,6 +86,40 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
 
+  // Referral code (optional, validated live)
+  const [referralCode, setReferralCode] = useState('');
+  const [referralStatus, setReferralStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [referrerName, setReferrerName] = useState<string | null>(null);
+
+  // Real-time referral code validation (debounced)
+  useEffect(() => {
+    const code = referralCode.trim();
+    if (!code) {
+      setReferralStatus('idle');
+      setReferrerName(null);
+      return;
+    }
+    if (!user?.id) return;
+    setReferralStatus('checking');
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .eq('referral_code', code)
+        .neq('id', user.id)
+        .maybeSingle();
+      if (error) { setReferralStatus('invalid'); return; }
+      if (data) {
+        setReferralStatus('valid');
+        setReferrerName(data.name);
+      } else {
+        setReferralStatus('invalid');
+        setReferrerName(null);
+      }
+    }, 600);
+    return () => clearTimeout(t);
+  }, [referralCode, user?.id]);
+
   // Map selected category IDs to names for saving
   const categoryNames = selectedCategoryIds
     .map(id => categories.find(c => c.id === id))
@@ -195,6 +229,16 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
         toast.error('Completion Error', 'Failed to complete: ' + onboardingErr.message);
         setSaving(false);
         return;
+      }
+
+      // Apply referral code (optional, non-blocking)
+      if (referralStatus === 'valid' && referralCode.trim()) {
+        const { error: refErr } = await supabase.rpc('process_referral', {
+          p_referral_code: referralCode.trim(),
+          p_new_user_id: user.id,
+          p_new_user_email: user.email || '',
+        });
+        if (refErr) console.error('Referral apply error:', refErr);
       }
 
       // 🆕 Sync BOTH onboarding completion AND the chosen role into context so the
@@ -380,6 +424,35 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
           </div>
         )}
 
+        {/* Referral Code (optional) */}
+        <div className="mt-5">
+          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            Referral Code <span className="text-slate-400 font-normal">(optional)</span>
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={referralCode}
+              onChange={e => setReferralCode(e.target.value)}
+              placeholder="Have a Growlancer referral code? Enter it here"
+              className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2">
+              {referralStatus === 'checking' && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
+              {referralStatus === 'valid' && <Check className="w-4 h-4 text-emerald-600" />}
+              {referralStatus === 'invalid' && <X className="w-4 h-4 text-red-500" />}
+            </span>
+          </div>
+          {referralStatus === 'valid' && referrerName && (
+            <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1">
+              <Check className="w-3 h-3" /> Valid code — you were referred by {referrerName}
+            </p>
+          )}
+          {referralStatus === 'invalid' && (
+            <p className="mt-1.5 text-xs text-red-500">This referral code doesn't exist.</p>
+          )}
+        </div>
+
         <button
           onClick={handleSave}
           disabled={saving || (isFreelancer && !title.trim()) || (!isFreelancer && !companyName.trim())}
@@ -443,6 +516,11 @@ export function OnboardingPage() {
     company_logo: null,
   });
 
+  // Referral code state (optional, validated live against profiles.referral_code)
+  const [referralCode, setReferralCode] = useState('');
+  const [referralStatus, setReferralStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [referrerName, setReferrerName] = useState<string | null>(null);
+
   // Category + free-text skills state (freelancer only)
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [skillNames, setSkillNames] = useState<string[]>([]);
@@ -456,6 +534,35 @@ export function OnboardingPage() {
       .map(c => c.name);
     setSelectedCategoryNames(names);
   }, [selectedCategoryIds, categories]);
+
+  // Real-time referral code validation (debounced)
+  useEffect(() => {
+    const code = referralCode.trim();
+    if (!code) {
+      setReferralStatus('idle');
+      setReferrerName(null);
+      return;
+    }
+    if (!user?.id) return;
+    setReferralStatus('checking');
+    const t = setTimeout(async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, name')
+        .eq('referral_code', code)
+        .neq('id', user.id)
+        .maybeSingle();
+      if (error) { setReferralStatus('invalid'); return; }
+      if (data) {
+        setReferralStatus('valid');
+        setReferrerName(data.name);
+      } else {
+        setReferralStatus('invalid');
+        setReferrerName(null);
+      }
+    }, 600);
+    return () => clearTimeout(t);
+  }, [referralCode, user?.id]);
 
   // OAuth users get a simpler 1-step form
   if (isOAuthMode) {
@@ -656,6 +763,16 @@ export function OnboardingPage() {
         toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingError.message);
         setSaving(false);
         return;
+      }
+
+      // Apply referral code (optional — never blocks onboarding)
+      if (referralStatus === 'valid' && referralCode.trim()) {
+        const { error: refErr } = await supabase.rpc('process_referral', {
+          p_referral_code: referralCode.trim(),
+          p_new_user_id: user.id,
+          p_new_user_email: user.email || '',
+        });
+        if (refErr) console.error('Referral apply error:', refErr);
       }
 
       // 🆕 Sync context BEFORE redirect so the dashboard route check sees
@@ -1201,6 +1318,35 @@ export function OnboardingPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Referral Code (optional) */}
+                <div className="mt-6">
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    Referral Code <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={referralCode}
+                      onChange={e => setReferralCode(e.target.value)}
+                      placeholder="Have a Growlancer referral code? Enter it here"
+                      className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2">
+                      {referralStatus === 'checking' && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
+                      {referralStatus === 'valid' && <Check className="w-4 h-4 text-emerald-600" />}
+                      {referralStatus === 'invalid' && <X className="w-4 h-4 text-red-500" />}
+                    </span>
+                  </div>
+                  {referralStatus === 'valid' && (
+                    <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Valid code{referrerName ? ` — you were referred by ${referrerName}` : ''}!
+                    </p>
+                  )}
+                  {referralStatus === 'invalid' && (
+                    <p className="mt-1.5 text-xs text-red-500">This referral code doesn't exist.</p>
+                  )}
+                </div>
 
                 {/* Navigation */}
                 <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-100">
