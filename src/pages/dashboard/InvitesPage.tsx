@@ -5,6 +5,7 @@ import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, dbFunctions } from '../../lib/supabase';
+import { safeFormatDate } from '../../utils/date';
 import type { Tables } from '../../types/supabase';
 
 type InviteWithDetails = Tables<'invites'> & {
@@ -426,12 +427,12 @@ export function InvitesPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {new Date(invite.created_at || '').toLocaleDateString()}
+                          {safeFormatDate(invite.created_at) || '—'}
                         </span>
                         {invite.expires_at && !isExpired(invite.expires_at) && (
                           <span className="flex items-center gap-1 text-orange-600">
                             <Clock className="w-4 h-4" />
-                            Expires {new Date(invite.expires_at).toLocaleDateString()}
+                            Expires {safeFormatDate(invite.expires_at) || '—'}
                           </span>
                         )}
                       </div>

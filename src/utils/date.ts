@@ -1,12 +1,75 @@
 // Date and Time Utilities for Growlancer
 
 /**
+ * Format a date safely — never throws on null/undefined/invalid input.
+ * Returns '' when the input cannot be parsed, so the UI renders an empty
+ * string instead of crashing the whole dashboard with a RangeError.
+ */
+export function safeFormatDate(
+  value: string | Date | number | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (value === null || value === undefined || value === '') return '';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '';
+  try {
+    return d.toLocaleDateString('en-US', options);
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Format a date+time safely — returns '' on invalid input (never throws).
+ */
+export function safeFormatDateTime(
+  value: string | Date | number | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (value === null || value === undefined || value === '') return '';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '';
+  try {
+    return d.toLocaleString('en-US', options);
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Format a time safely — returns '' on invalid input (never throws).
+ */
+export function safeFormatTime(
+  value: string | Date | number | null | undefined,
+  options?: Intl.DateTimeFormatOptions
+): string {
+  if (value === null || value === undefined || value === '') return '';
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return '';
+  try {
+    return d.toLocaleTimeString('en-US', options);
+  } catch {
+    return '';
+  }
+}
+
+/**
+ * Coerce an unknown value to a finite number — never NaN/undefined.
+ * Falls back to `fallback` (default 0) so renders never throw on nulls.
+ */
+export function safeNumber(value: unknown, fallback = 0): number {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
+/**
  * Format a date to a readable string
  * @param date - Date to format
  * @returns Formatted date string
  */
 export function formatDate(date: Date | string | number): string {
   const d = new Date(date);
+  if (isNaN(d.getTime())) return '—';
   const now = new Date();
   const diffTime = Math.abs(now.getTime() - d.getTime());
   const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -57,6 +120,7 @@ export function formatDate(date: Date | string | number): string {
  */
 export function formatDateTime(date: Date | string | number): string {
   const d = new Date(date);
+  if (isNaN(d.getTime())) return '—';
   return d.toLocaleString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -74,6 +138,7 @@ export function formatDateTime(date: Date | string | number): string {
  */
 export function formatTime(date: Date | string | number): string {
   const d = new Date(date);
+  if (isNaN(d.getTime())) return '—';
   return d.toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
@@ -88,6 +153,7 @@ export function formatTime(date: Date | string | number): string {
  */
 export function getRelativeTime(date: Date | string | number): string {
   const d = new Date(date);
+  if (isNaN(d.getTime())) return '—';
   const now = new Date();
   const diffMs = now.getTime() - d.getTime();
   const diffSecs = Math.floor(diffMs / 1000);

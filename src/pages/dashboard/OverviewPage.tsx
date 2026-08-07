@@ -4,6 +4,7 @@ import { ArrowRight, Briefcase, CreditCard, FileText, Handshake, MessageSquare, 
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { safeFormatDate, safeNumber } from '../../utils/date';
 import { CacheManager } from '../../lib/services/cacheManager';
 import {
   projectsService,
@@ -339,13 +340,13 @@ export function OverviewPage() {
         },
         {
           label: 'Earnings (INR)',
-          value: `₹${stats.totalEarnings.toLocaleString()}`,
-          change: `₹${stats.monthlyEarnings.toLocaleString()} this month`,
+          value: `₹${safeNumber(stats.totalEarnings).toLocaleString()}`,
+          change: `₹${safeNumber(stats.monthlyEarnings).toLocaleString()} this month`,
           changeType: stats.monthlyEarnings > 0 ? 'positive' : 'neutral',
         },
         {
           label: 'Profile Views',
-          value: stats.profileViews.toLocaleString(),
+          value: safeNumber(stats.profileViews).toLocaleString(),
           change: 'From your public profile',
           changeType: stats.profileViews > 0 ? 'positive' : 'neutral',
         },
@@ -365,7 +366,7 @@ export function OverviewPage() {
         },
         {
           label: 'Total Spent',
-          value: `₹${stats.totalEarnings.toLocaleString()}`,
+          value: `₹${safeNumber(stats.totalEarnings).toLocaleString()}`,
           change: 'Across all contracts',
           changeType: 'neutral',
         },
@@ -517,7 +518,7 @@ export function OverviewPage() {
                       <p className="text-sm text-slate-500 truncate">{activity.description}</p>
                     </div>
                     <span className="text-xs text-slate-400">
-                      {new Date(activity.timestamp).toLocaleDateString()}
+                      {safeFormatDate(activity.timestamp)}
                     </span>
                   </div>
                 ))}

@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
 import { milestoneService, getMilestoneProgress } from '../../lib/contractMilestones';
+import { safeFormatDate } from '../../utils/date';
 import type { MilestoneItem } from '../../lib/contractMilestones';
 
 type ContractWithDetails = Tables<'contracts'> & {
@@ -489,12 +490,12 @@ export function ContractsPage() {
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
-                        Started {new Date(contract.start_date || '').toLocaleDateString()}
+                        Started {safeFormatDate(contract.start_date) || '—'}
                       </span>
                       {contract.end_date && (
                         <span className="flex items-center gap-1">
                           <Clock className="w-4 h-4" />
-                          Ends {new Date(contract.end_date).toLocaleDateString()}
+                          Ends {safeFormatDate(contract.end_date)}
                         </span>
                       )}
                     </div>

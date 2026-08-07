@@ -5,6 +5,7 @@ import { useToast } from '../components/Toast'
 import { supabase, dbFunctions } from '../lib/supabase'
 import { messagesService } from '../lib/messages'
 import { fileUploadService } from '../lib/fileUpload'
+import { safeFormatDate, safeFormatTime } from '../utils/date'
 import { EscrowPayPalPayment } from '../components/EscrowPayPalPayment'
 import {
   getMilestoneProgress,
@@ -484,7 +485,7 @@ export function ClientWorkspacePage() {
     const events: { date: string; title: string; description: string; icon: string; status: 'completed' | 'current' | 'pending' }[] = []
 
     events.push({
-      date: new Date(selectedContract.created_at).toLocaleDateString(),
+      date: safeFormatDate(selectedContract.created_at),
       title: 'Contract Created',
       description: 'Work agreement established',
       icon: 'file',
@@ -750,7 +751,7 @@ export function ClientWorkspacePage() {
                               <p className={`text-xs mt-1 ${
                                 msg.sender_id === user?.id ? 'text-emerald-200' : 'text-slate-400'
                               }`}>
-                                {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                {safeFormatTime(msg.created_at, { hour: '2-digit', minute: '2-digit' })}
                               </p>
                             </div>
                           </div>

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { notificationService, type NotificationWithMeta } from '../lib/notifications';
+import { safeFormatDate } from '../utils/date';
 import { useToast } from './Toast';
 
 type TabId = 'all' | 'unread' | 'archived';
@@ -213,6 +214,7 @@ export function NotificationsPanel() {
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '—';
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -223,7 +225,7 @@ export function NotificationsPanel() {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return safeFormatDate(dateString, { month: 'short', day: 'numeric', year: 'numeric' }) || '—';
   };
 
   // Pseudo-categories for date grouping

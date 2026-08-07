@@ -187,7 +187,10 @@ export const messagesService = {
         contract_id: contractId,
         content,
         is_read: false,
-        message_type: 'contract',
+        // 'text' — the messages.message_type CHECK constraint only allows
+        // ('text','file','system'); 'contract' violates it and the insert fails
+        // (this was the root cause of "Failed to send message" in the inbox).
+        message_type: 'text',
       } as MessageInsert)
       .select()
       .single();
@@ -203,7 +206,7 @@ export const messagesService = {
     contractId: string,
     senderId: string,
     content: string,
-    messageType: string = 'contract',
+    messageType: string = 'text',
     receiverId?: string
   ): Promise<boolean> {
     try {

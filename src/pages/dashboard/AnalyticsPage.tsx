@@ -5,6 +5,7 @@ import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { analyticsService, type AnalyticsData } from '../../lib/analyticsService';
 import { supabase } from '../../lib/supabase';
+import { safeFormatDate } from '../../utils/date';
 
 export function AnalyticsPage() {
   const { user } = useAuth();
@@ -175,7 +176,7 @@ export function AnalyticsPage() {
                 data.earningsByMonth.map((month, idx) => {
                   const maxAmount = Math.max(...data.earningsByMonth.map((m) => m.amount), 1);
                   const heightPercent = (month.amount / maxAmount) * 100;
-                  const monthLabel = new Date(month.month + '-01').toLocaleDateString('en-US', { month: 'short' });
+                  const monthLabel = safeFormatDate(month.month ? month.month + '-01' : null, { month: 'short' }) || '—';
                   return (
                     <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">

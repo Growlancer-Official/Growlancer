@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Wallet, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
+import { safeNumber } from '../../utils/date';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
@@ -122,7 +123,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
             
             {project.budget_min && project.budget_max && (
               <p className="text-xs text-slate-600 mt-2">
-                Client budget: ₹{project.budget_min.toLocaleString()} - ₹{project.budget_max.toLocaleString()}
+                Client budget: ₹{safeNumber(project.budget_min).toLocaleString()} - ₹{safeNumber(project.budget_max).toLocaleString()}
               </p>
             )}
           </div>

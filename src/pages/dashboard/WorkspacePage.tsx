@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { safeFormatDate, safeFormatTime, safeFormatDateTime } from '../../utils/date';
 import {
   AlertCircle,
   Briefcase,
@@ -955,7 +956,7 @@ export function WorkspacePage() {
                         >
                           <p className="text-sm">{message.content}</p>
                           <p className={`text-[10px] mt-1 text-right ${message.sender_id === user?.id ? 'text-emerald-200' : 'text-slate-400'}`}>
-                            {new Date(message.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            {safeFormatTime(message.created_at, { hour: '2-digit', minute: '2-digit' })}
                           </p>
                         </div>
                       </div>
@@ -1305,7 +1306,7 @@ export function WorkspacePage() {
                       <p className="text-[10px] text-orange-600 mb-1">Target End Date</p>
                       <p className="text-base font-bold text-orange-800">
                         {selectedContract.end_date 
-                          ? new Date(selectedContract.end_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+                          ? safeFormatDate(selectedContract.end_date, { month: 'short', day: 'numeric', year: 'numeric' })
                           : 'Not Set'}
                       </p>
                     </div>
@@ -1388,7 +1389,7 @@ export function WorkspacePage() {
                                 {milestone.due_date && (
                                   <span className="flex items-center gap-1 text-slate-400">
                                     <Calendar className="w-3.5 h-3.5" />
-                                    Due {new Date(milestone.due_date).toLocaleDateString()}
+                                    Due {safeFormatDate(milestone.due_date)}
                                   </span>
                                 )}
                               </div>
@@ -1429,7 +1430,7 @@ export function WorkspacePage() {
                         </div>
                         <div className="flex-1 min-w-0 bg-slate-50/60 border border-slate-100 rounded-xl p-3 hover:bg-slate-50 hover:border-slate-200 transition-all shadow-sm">
                           <span className="text-[9px] text-slate-400 font-semibold block mb-0.5 uppercase tracking-wider">
-                            {new Date(event.timestamp).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            {safeFormatDateTime(event.timestamp, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
                           <h4 className="text-xs font-semibold text-slate-900 leading-normal">{event.title}</h4>
                           <p className="text-[10px] text-slate-500 mt-1 leading-normal">{event.description}</p>
