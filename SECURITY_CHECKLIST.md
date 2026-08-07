@@ -16,13 +16,13 @@ surfaces YOUR diff touches.
 
 ## Check 1 — Secret Leak Prevention
 - [ ] No secret uses a `VITE_` prefix (those get bundled into the client JS). Only `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` are allowed client-side (anon is public, safe **only if RLS is on**).
-- [ ] `service_role` key / raw `eyJ...` JWT / `RAZORPAY_*_SECRET` / `PAYPAL_*_SECRET` / `PAYPAL_WEBHOOK_ID` / `GEMINI_API_KEY` appear **nowhere** in `src/` — server-side Edge Functions only.
+- [ ] `service_role` key / raw `eyJ...` JWT / `RAZORPAY_*_SECRET` / `PAYPAL_*_SECRET` / `PAYPAL_WEBHOOK_ID` / `OMNIROUTE_API_KEY` appear **nowhere** in `src/` — server-side Edge Functions only.
 - [ ] Real keys never committed: `.env` stays gitignored; `.env.example` holds only placeholders.
 - [ ] No `console.log` in Edge Functions or `src/lib` prints a secret, JWT, or full Supabase token.
 
 ## Check 2 — Personal Data Flow
 - [ ] Diff of `identityVerification`/`credentialVerification`, `clientPaymentMethods`/`withdrawal`, uploads, `messages`/`reviews`: no PII (emails, phones, bank/UPI, KYC URLs, auth tokens) written to logs.
-- [ ] AI payloads (`ai-assistant`, `ai-matching`, `ai-ticket-responder` → Gemini): only fields the feature needs; no payment/KYC/contact that isn't required. Identity from JWT, never from request body.
+- [ ] AI payloads (`ai-assistant`, `ai-matching`, `ai-ticket-responder` → OmniRoute): only fields the feature needs; no payment/KYC/contact that isn't required. Identity from JWT, never from request body.
 - [ ] Recovery codes stored hashed/bcrypt, single-use; TOTP secret not returned after setup.
 - [ ] No PII in `localStorage` (only Supabase's own session storage).
 - [ ] `admin-data` returns only fields an admin truly needs — never raw payout account numbers / KYC doc URLs.
@@ -50,7 +50,7 @@ surfaces YOUR diff touches.
 - [ ] **IDOR:** substitute another user's id on every id-keyed endpoint → must be ownership-checked server-side, not just UI-filtered.
 - [ ] **Session/login:** no edge function skips JWT verification; expired/malformed tokens rejected everywhere; `admin-signup` cannot self-provision an admin without existing admin authorization / `ADMIN_SIGNUP_SECRET`.
 - [ ] **Privilege escalation:** `admin-data` / `admin-signup` verify the `admin` role **inside the function** (DB/claim), so a regular user gets 403 when calling directly — not just a client-side route guard.
-- [ ] **Abuse / AI cost:** rate limits actually apply to signup, OTP/confirm, messaging spam, file uploads, and the AI functions (Gemini credits) — an unthrottled loop is direct cost-abuse.
+- [ ] **Abuse / AI cost:** rate limits actually apply to signup, OTP/confirm, messaging spam, file uploads, and the AI functions (OmniRoute LLM credits) — an unthrottled loop is direct cost-abuse.
 - [ ] **Referral / trial:** cannot self-refer to farm rewards; cannot delete+re-signup to restart a trial.
 - [ ] **Content injection:** try script/HTML in every free-text field (bio, review, portfolio, message, ticket) and confirm it never executes on render.
 - [ ] **Internal exposure:** `.git`, raw `.env`, `supabase/.temp`, `_health` all unreachable on the deployed domain; RLS **on** for every `public` table PostgREST can expose.

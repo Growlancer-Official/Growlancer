@@ -27,7 +27,7 @@ Every change (implement/edit/update/delete) in this repo MUST pass the relevant 
 | State | Zustand (minimal), React Context for auth/toast/i18n |
 | Backend | **Supabase** — Postgres 17 + Edge Functions (Deno) + Auth + Storage |
 | Payments | **Razorpay** (primary, INR) + PayPal (implemented but gated behind `VITE_PAYPAL_ENABLED=false`) |
-| AI | Gemini 2.0 Flash via raw REST fetch in edge functions (AI SDK deps unused) |
+| AI | OmniRoute (OpenAI-compatible gateway) via raw REST fetch in edge functions (AI SDK deps unused) |
 | Monitoring | Sentry (browser, DSN optional via `VITE_SENTRY_DSN`) |
 | Deploy | **Vercel** (frontend) + **Supabase** (backend) + GitHub Actions CI |
 | i18n | Lightweight hand-rolled provider, `en.json` / `hi.json` |
@@ -80,7 +80,7 @@ npm start / npm run start:prod   # Express SPA server (server.js) — alternativ
 - **CI:** `.github/workflows/ci.yml` runs typecheck + lint + build on every push/PR to `main`. Red CI blocks deploy.
 
 ### Env vars (see `.env.example`)
-`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, optional `VITE_SENTRY_DSN`, `VITE_APP_VERSION`. Server-side (edge functions): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, `RAZORPAY_KEY_ID/SECRET/ACCOUNT_NUMBER`, `RAZORPAY_WEBHOOK_SECRET`, `PAYPAL_*`, `ADMIN_SIGNUP_SECRET`, `CRON_SECRET`, `APP_URL`.
+`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, optional `VITE_SENTRY_DSN`, `VITE_APP_VERSION`. Server-side (edge functions): `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `OMNIROUTE_API_KEY`, `OMNIROUTE_BASE_URL`, `OMNIROUTE_MODEL`, `RAZORPAY_KEY_ID/SECRET/ACCOUNT_NUMBER`, `RAZORPAY_WEBHOOK_SECRET`, `PAYPAL_*`, `ADMIN_SIGNUP_SECRET`, `CRON_SECRET`, `APP_URL`.
 
 ## 4. Build pipeline — the fragile parts (read before changing builds)
 
@@ -153,10 +153,10 @@ Auth is the most heavily reworked, most fragile area. **Many production bugs liv
 
 ## 8. AI subsystem
 
-- **Three AI-coded features, but only two call an LLM:**
-  - **AI Chat Assistant** (`ai-assistant/index.ts`) — Gemini 2.0 Flash, server-side, role-specific system prompts (freelancer vs client). Free vs Pro gated (free = 10 msgs/month via `usage_logs`, Pro = unlimited). Rate limited 30/60s. Streams SSE to `AIChatSupport.tsx`.
-  - **Ticket responder** (`ai-ticket-responder/index.ts`) — same Gemini model; inserts a reply into `ticket_messages` and sets ticket to pending. ⚠️ Wired but fragile (see gotchas).
-  - **"AI" talent matching is deterministic heuristics, not an LLM.** Two competing implementations: client-side `src/lib/aiMatching.ts` (what the UI uses) and SQL `generate_project_matches` RPC (weighted score, writes `ai_matches`). The `ai-matching` edge function is dead code (no callers).
+- **AI runs on OmniRoute** (OpenAI-compatible gateway; env-driven `OMNIROUTE_BASE_URL`/`API_KEY`/`MODEL`). All AI functions fail gracefully to deterministic behavior when the gateway is unreachable.
+  - **AI Chat Assistant** (`ai-assistant/index.ts`) — OmniRoute, server-side, role-specific system prompts (freelancer vs client). **Unlimited for both roles** (clients are 100% free; no usage-gating since 2026-08-07). Rate limited 30/60s. Streams SSE to `AIChatSupport.tsx`.
+  - **Ticket responder** (`ai-ticket-responder/index.ts`) — same OmniRoute model; inserts a reply into `ticket_messages` and sets ticket to pending. ⚠️ Wired but fragile (see gotchas).
+  - **Talent matching** (`ai-matching/index.ts` + client `src/lib/aiMatching.ts`) — real-time deterministic scoring (category overlap, budget, rating) + optional OmniRoute semantic boost with graceful fallback. Writes to `ai_matches`.
 - **`ai_matches` table** is the live match table (project_id, freelancer_id, ~10 sub-scores, match_score, unique(project, freelancer)). Written by the RPC or client-side service.
 - **Client consumption:** `AIChatSupport.tsx` (streaming, upgrade gate, escalation-to-ticket), `dashboard/AIAssistantPage.tsx` & `ClientAIAssistantPage.tsx` (same component, different `context` prop → different system prompt).
 
@@ -198,7 +198,7 @@ Auth is the most heavily reworked, most fragile area. **Many production bugs liv
 11. **`contractsService.createFromProposal` vs RPC fee model differ** (see §7) — changing one without the other breaks money math.
 12. **AI usage double-counting:** `AIChatSupport` inserts a `usage_logs` row AND the `ai-assistant` edge function inserts one too — free users get counted twice. Also, the client counts the last 30 days while the server counts the calendar month.
 13. **`ai_matches` RLS gap:** migrations only define a SELECT policy for `ai_matches` (own freelancer). The client-side write path (`aiMatching.ts` delete+insert) and client reads would be RLS-denied per the migrations — the live DB was patched manually. Verify before adding client writes.
-14. **Ticket-responder prompt injection:** ticket `subject`/`description` go straight into the Gemini prompt with only a light filter in `ai-assistant`; the `ai-ticket-responder` has none.
+14. **Ticket-responder prompt injection:** ticket `subject`/`description` go straight into the OmniRoute prompt with only a light filter in `ai-assistant`; the `ai-ticket-responder` has none.
 15. **`notificationPreferencesService.resetToDefaults`** — **FIXED (2026-08-03)**: upserted `{ categories: ... }` but the table column is `preferences`; now uses the correct column.
 16. **`getUserReviews` averages only the latest 50 reviews** (disagrees with DB-side `get_reputation_stats`).
 17. **`invitesService.resend` rewrites `created_at`** — **FIXED (2026-08-03)**: no longer mutates the history timestamp.

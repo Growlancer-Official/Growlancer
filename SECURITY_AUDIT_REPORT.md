@@ -2,7 +2,7 @@
 
 **Audit date:** 2026-08-02
 **Scope:** All 5 checks from `Growlancer-Security-Audit-Prompts.pdf` (Secret Leak Prevention → Attacker's Perspective Review)
-**Target:** React 19 + Vike (SSR) + Express + Supabase · Razorpay + PayPal · escrow/wallets · Supabase Auth + custom MFA · Gemini AI · admin Edge Functions
+**Target:** React 19 + Vike (SSR) + Express + Supabase · Razorpay + PayPal · escrow/wallets · Supabase Auth + custom MFA · OmniRoute AI · admin Edge Functions
 
 **Status: 5/5 checks completed. Migration applied to production (`zttwsjehcgaicziqyxpq`), 14 Edge Functions redeployed.**
 
@@ -45,7 +45,7 @@
 - **MFA TOTP secret** verified not returned post-setup; recovery codes bcrypt-hashed, single-use.
 
 ### Accepted risk
-- **AI data sent to Gemini**: message content / project context is still sent (required for the feature). Fields the AI doesn't need (payment, KYC, contact) are not sent; identity now server-derived.
+- **AI data sent to OmniRoute**: message content / project context is still sent (required for the feature). Fields the AI doesn't need (payment, KYC, contact) are not sent; identity now server-derived.
 - **Account erasure** (`request-deletion` → `process-deletion`): the SQL erasure functions (`delete_user_all_data`) exist and are ownership-checked; `process-deletion` now requires `CRON_SECRET` or admin JWT — but **no cron caller is configured**, so scheduled processing is dormant until a cron is added (admin-triggered deletion still works).
 
 ---
@@ -123,7 +123,7 @@
 | 5.1 | IDOR on wallet / MFA / deletion RPCs (Check 4.1–4.3) — attacker substitutes another user's ID. | **Critical** |
 | 5.2 | Admin bypass via spoofable `service_role` header (Check 4.12). | **Critical** |
 | 5.3 | Free-money via `update_wallet_balance` (Check 4.4) and escrow-without-payment (Check 4.5). | **Critical** |
-| 5.4 | AI cost-abuse — `ai-assistant` unauthenticated + unthrottled (Gemini credits per call). | High |
+| 5.4 | AI cost-abuse — `ai-assistant` unauthenticated + unthrottled (OmniRoute LLM credits per call). | High |
 | 5.5 | Missing RLS on credential tables (Check 2.1). | **High** |
 | 5.6 | Referral farming (Check 4.7). | High |
 | 5.7 | Content injection — free-text fields (bio, review, messages, ticket): verified rendered safely by React (no `dangerouslySetInnerHTML` on user content found in audit paths). | Pass |
