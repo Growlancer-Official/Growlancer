@@ -193,7 +193,7 @@ export function RazorpayCheckout({
         </div>
       </div>
 
-      {orderData.currency !== 'USD' && (
+      {orderData.currency === 'INR' && (
         <label className="flex items-center gap-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 transition-colors cursor-pointer">
           <input
             type="checkbox"

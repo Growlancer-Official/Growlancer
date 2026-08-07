@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ChevronDown, Clock, DollarSign, Filter, Loader2, Search, Sparkles, Trophy, Users,  } from 'lucide-react';
+import { ArrowRight, ChevronDown, Clock, IndianRupee, Filter, Loader2, Search, Sparkles, Trophy, Users,  } from 'lucide-react';
 import { contestService, type Contest, CONTEST_CATEGORIES, getTimeRemaining } from '../lib/contests';
 
 type ContestType = 'all' | 'design' | 'development' | 'writing' | 'marketing' | 'other';
@@ -231,7 +231,7 @@ export function ContestsPage() {
                         {contest.submission_count}
                       </div>
                       <div className="flex items-center gap-1 text-emerald-600 font-bold">
-                        <DollarSign className="w-4 h-4" />
+                        <IndianRupee className="w-4 h-4" />
                         {contest.prize_amount.toLocaleString()}
                       </div>
                     </div>

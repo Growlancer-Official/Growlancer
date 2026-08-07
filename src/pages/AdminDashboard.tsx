@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import {
   Activity, AlertTriangle, ArrowDownRight, ArrowUpRight, Award, Ban, Briefcase,
-  CheckCircle2, DollarSign, Eye, Handshake, Loader2,
+  CheckCircle2, IndianRupee, Eye, Handshake, Loader2,
   RefreshCw, Scale, Shield, ShieldAlert, ShieldCheck, Star, Users, XCircle, Zap, Mail,
   TrendingUp
 } from 'lucide-react';
@@ -38,7 +38,7 @@ interface ActivityItem {
 
 interface RiskItem {
   id: string;
-  icon: typeof AlertTriangle | typeof DollarSign | typeof Users | typeof Shield | typeof ShieldAlert | typeof Scale | typeof Award | typeof Ban;
+  icon: typeof AlertTriangle | typeof IndianRupee | typeof Users | typeof Shield | typeof ShieldAlert | typeof Scale | typeof Award | typeof Ban;
   iconBg: string; iconColor: string;
   title: string; description: string;
   severity: 'critical' | 'high' | 'medium' | 'low';
@@ -196,7 +196,7 @@ function PlatformStats() {
     { title: 'Platform GMV', value: formatCurrency(metrics?.platformGmv || 0),
       change: `${metrics?.gmvGrowth && metrics.gmvGrowth >= 0 ? '+' : ''}${metrics?.gmvGrowth || 0}%`,
       up: (metrics?.gmvGrowth || 0) >= 0,
-      icon: DollarSign, color: 'text-emerald-400' },
+      icon: IndianRupee, color: 'text-emerald-400' },
   ];
 
   return (
@@ -546,8 +546,8 @@ function AIRiskAnalysis() {
       const largeRes = await adminQuery({ table: 'contracts', select: 'id, amount, created_at', gte: { created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() }, limit: 5 }).then(r => r.data as any[]);
       const largeEscrows = (largeRes || []).filter((c: any) => (c.amount || 0) > 15000) as any[];
       if (largeEscrows && largeEscrows.length > 1) {
-        detected.push({ id: 'large-escrow', icon: DollarSign, iconBg: 'bg-orange-500/20', iconColor: 'text-orange-500',
-          title: '💰 Large Escrow Deposits', description: `${largeEscrows.length} contracts over $15,000 this week. Total: ${formatCurrency(largeEscrows.reduce((s, c) => s + (c.amount || 0), 0))}.`,
+        detected.push({ id: 'large-escrow', icon: IndianRupee, iconBg: 'bg-orange-500/20', iconColor: 'text-orange-500',
+          title: '💰 Large Escrow Deposits', description: `${largeEscrows.length} contracts over ₹15,000 this week. Total: ${formatCurrency(largeEscrows.reduce((s, c) => s + (c.amount || 0), 0))}.`,
           severity: 'high', actions: [{ label: 'Review', primary: true, color: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white' }] });
       }
 
@@ -585,7 +585,7 @@ function AIRiskAnalysis() {
         const unverifiedClients = (clientProfiles || []).filter((p: any) => !p.onboarding_completed).length;
         if (unverifiedClients > 1) {
           detected.push({ id: 'unverified-clients', icon: ShieldAlert, iconBg: 'bg-amber-500/20', iconColor: 'text-amber-500',
-            title: 'Unverified Clients with High-Value Projects', description: `${unverifiedClients} unverified clients posted projects over $5k. Flag for identity verification.`,
+            title: 'Unverified Clients with High-Value Projects', description: `${unverifiedClients} unverified clients posted projects over ₹5k. Flag for identity verification.`,
             severity: 'high', actions: [{ label: 'Review Clients', primary: true, color: 'bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white' }] });
         }
       }
@@ -890,7 +890,7 @@ export function AdminDashboard() {
           <Handshake className="w-3 h-3" /> Contracts
         </a>
         <a href="/admin/payments" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
-          <DollarSign className="w-3 h-3" /> Payments
+          <IndianRupee className="w-3 h-3" /> Payments
         </a>
         <a href="/admin/disputes" className="px-3 py-1.5 bg-red-500/10 rounded-lg text-[9px] font-bold uppercase text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-1.5">
           <Scale className="w-3 h-3" /> Disputes

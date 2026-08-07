@@ -309,7 +309,7 @@ export function ClientFreelancerSearchPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSaveModal(false)}>
           <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 mb-4">Save This Search</h3>
-            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under $50/hr" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under ₹500/hr" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             <div className="flex gap-3">
               <button onClick={() => setShowSaveModal(false)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>
               <button onClick={handleSaveSearch} disabled={!saveName.trim()} className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50">Save Search</button>

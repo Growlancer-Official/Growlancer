@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, DollarSign, Eye, Filter, Loader2, Plus, Trash2, Trophy, Users,  } from 'lucide-react';
+import { Calendar, Clock, IndianRupee, Eye, Filter, Loader2, Plus, Trash2, Trophy, Users,  } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
@@ -123,7 +123,7 @@ export function ClientContestsPage() {
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-100 rounded-xl">
-              <DollarSign className="w-5 h-5 text-blue-600" />
+              <IndianRupee className="w-5 h-5 text-blue-600" />
             </div>
             <span className="text-sm text-slate-500 font-medium">Total Prizes</span>
           </div>
@@ -223,7 +223,7 @@ export function ClientContestsPage() {
                       {contest.submission_count} submissions
                     </div>
                     <div className="flex items-center gap-1 text-emerald-600 font-semibold">
-                      <DollarSign className="w-4 h-4" />
+                      <IndianRupee className="w-4 h-4" />
                       {contest.prize_amount.toLocaleString()}
                     </div>
                   </div>

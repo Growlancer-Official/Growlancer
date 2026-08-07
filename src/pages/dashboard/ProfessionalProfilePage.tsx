@@ -10,7 +10,7 @@ import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { ReauthDialog, isReauthValid, markReauthVerified } from '../../components/ReauthDialog';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
-import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, DollarSign, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, RefreshCw, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
+import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, RefreshCw, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { CategoryPicker } from '../../components/CategoryPicker';
 import type { Tables } from '../../types/supabase';
@@ -820,7 +820,7 @@ export function ProfessionalProfilePage() {
     { id: 'security' as TabId, label: 'Security', icon: Shield, desc: 'Password, 2FA & sessions' },
     { id: 'notifications' as TabId, label: 'Notifications', icon: Bell, desc: 'Email, push & in-app alerts' },
     { id: 'privacy' as TabId, label: 'Privacy', icon: Globe, desc: 'Visibility, online status & permissions' },
-    { id: 'payout' as TabId, label: 'Payout Methods', icon: DollarSign, desc: 'UPI, bank accounts & PayPal' },
+    { id: 'payout' as TabId, label: 'Payout Methods', icon: IndianRupee, desc: 'UPI, bank accounts & PayPal' },
     { id: 'deletion' as TabId, label: 'Delete Account', icon: Trash2, desc: 'Permanent account removal' },
   ];
 
@@ -1644,7 +1644,7 @@ export function ProfessionalProfilePage() {
             <>
               <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-emerald-600" /> Payout Methods
+                  <IndianRupee className="w-5 h-5 text-emerald-600" /> Payout Methods
                 </h2>
                 {payoutMethodsLoading && (
                   <div className="flex items-center justify-center py-8 mb-6"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /><span className="ml-3 text-sm text-slate-500">Loading...</span></div>
@@ -1684,7 +1684,7 @@ export function ProfessionalProfilePage() {
                   </div>
                 ) : !payoutMethodsLoading ? (
                   <div className="text-center py-8 text-slate-500 mb-6">
-                    <DollarSign className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <IndianRupee className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                     <p className="font-medium">No payout methods added yet</p>
                     <p className="text-sm">Add a payout method to receive payments</p>
                   </div>
@@ -1744,7 +1744,7 @@ export function ProfessionalProfilePage() {
                       <div className="flex gap-2">
                         <button onClick={() => setShowAddPayout(false)} className="flex-1 px-4 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
                         <button onClick={handleAddPayout} disabled={addingPayout} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50">
-                          {addingPayout ? <Loader2 className="w-5 h-5 animate-spin" /> : <DollarSign className="w-5 h-5" />}
+                          {addingPayout ? <Loader2 className="w-5 h-5 animate-spin" /> : <IndianRupee className="w-5 h-5" />}
                           {addingPayout ? 'Adding...' : 'Add Method'}
                         </button>
                       </div>
@@ -1753,7 +1753,7 @@ export function ProfessionalProfilePage() {
                 ) : (
                   <button onClick={() => setShowAddPayout(true)} disabled={payoutMethodsLoading}
                     className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 hover:text-emerald-600 hover:border-emerald-300 transition-all w-full justify-center disabled:opacity-50">
-                    <DollarSign className="w-5 h-5" /> Add Payout Method
+                    <IndianRupee className="w-5 h-5" /> Add Payout Method
                   </button>
                 )}
               </div>
@@ -1763,7 +1763,7 @@ export function ProfessionalProfilePage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <DollarSign className="w-4 h-4 text-green-600" />
+                      <IndianRupee className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Quick Payouts</h4>

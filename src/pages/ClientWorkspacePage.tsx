@@ -138,7 +138,7 @@ export function ClientWorkspacePage() {
   const refreshContract = useCallback(async (contractId: string) => {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, freelancer:freelancer_id(id, name, avatar), project:project_id(id, title)')
+      .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar), project:projects!contracts_project_id_fkey(id, title)')
       .eq('id', contractId)
       .single()
     if (!error && data) {
@@ -152,7 +152,7 @@ export function ClientWorkspacePage() {
     const fetchContracts = async () => {
       const { data: contractsData, error: contractsError } = await supabase
         .from('contracts')
-        .select('*, freelancer:freelancer_id(id, name, avatar), project:project_id(id, title)')
+        .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar), project:projects!contracts_project_id_fkey(id, title)')
         .eq('client_id', user.id)
         .in('status', ['pending', 'active', 'in_progress', 'disputed'])
         .order('created_at', { ascending: false })
@@ -178,7 +178,7 @@ export function ClientWorkspacePage() {
     if (!selectedContract || !user) return
     const { data, error } = await supabase
       .from('messages')
-      .select('*, sender:sender_id(id, name, avatar)')
+      .select('*, sender:profiles!messages_sender_id_fkey(id, name, avatar)')
       .eq('contract_id', selectedContract.id)
       .order('created_at', { ascending: true })
     if (!error && data) {

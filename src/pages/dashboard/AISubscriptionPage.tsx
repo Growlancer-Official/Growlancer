@@ -499,7 +499,7 @@ export function AISubscriptionPage() {
               <tr>
                 <th className="text-left p-4 text-xs font-bold uppercase tracking-widest text-slate-500">Feature</th>
                 <th className="text-center p-4 text-xs font-bold uppercase tracking-widest text-slate-500">Free</th>
-                <th className="text-center p-4 text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50/50">Pro $10/mo</th>
+                <th className="text-center p-4 text-xs font-bold uppercase tracking-widest text-emerald-600 bg-emerald-50/50">Pro ₹499/mo</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

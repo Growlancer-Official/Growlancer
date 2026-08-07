@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle, DollarSign, FileText, Loader2, Plus, Tag, X } from 'lucide-react';
+import { ArrowRight, CheckCircle, IndianRupee, FileText, Loader2, Plus, Tag, X } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { contestService, CONTEST_CATEGORIES } from '../lib/contests';
@@ -164,7 +164,7 @@ export function ClientContestCreatePage() {
         {/* Prize & Timeline */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-emerald-600" />
+            <IndianRupee className="w-5 h-5 text-emerald-600" />
             Prizes & Timeline
           </h2>
 

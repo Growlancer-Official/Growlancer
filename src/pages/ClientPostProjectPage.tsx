@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { ArrowRight, Briefcase, CheckCircle, DollarSign, Sparkles, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryPicker } from '../components/CategoryPicker';
@@ -280,7 +280,7 @@ export function ClientPostProjectPage() {
         {/* Budget */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-emerald-600" />
+            <IndianRupee className="w-5 h-5 text-emerald-600" />
             Budget
           </h2>
 

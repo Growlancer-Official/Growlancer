@@ -156,14 +156,7 @@ export function validateBudget(amount: number): {
     return { isValid: false, error: 'Budget must be greater than 0' };
   }
 
-  if (amount < 50) {
-    return { isValid: false, error: 'Minimum project budget is $50' };
-  }
-
-  if (amount > 100000) {
-    return { isValid: false, error: 'Maximum project budget is $100,000' };
-  }
-
+  // Budget is flexible — clients can set any amount they like (INR).
   return { isValid: true };
 }
 

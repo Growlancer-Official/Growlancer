@@ -7,7 +7,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
-  CircleDollarSign,
+  IndianRupee,
   Clock,
   CreditCard,
   ExternalLink,
@@ -1115,7 +1115,7 @@ export function WalletPage() {
                             />
                             <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
                               {method.type === 'paypal' ? (
-                                <CircleDollarSign className="w-5 h-5 text-blue-600" />
+                                <IndianRupee className="w-5 h-5 text-blue-600" />
                               ) : method.type === 'upi' ? (
                                 <Smartphone className="w-5 h-5 text-emerald-600" />
                               ) : (
@@ -1324,7 +1324,7 @@ export function WalletPage() {
                       }`}
                     >
                       {method.type === 'paypal' ? (
-                        <CircleDollarSign className="w-6 h-6 text-blue-600" />
+                        <IndianRupee className="w-6 h-6 text-blue-600" />
                       ) : method.type === 'upi' ? (
                         <Smartphone className="w-6 h-6 text-emerald-600" />
                       ) : (
@@ -1468,7 +1468,7 @@ export function WalletPage() {
                     }`}
                     title="PayPal withdrawals are coming soon"
                   >
-                    <CircleDollarSign className="w-5 h-5" />
+                    <IndianRupee className="w-5 h-5" />
                     PayPal
                     <span className="text-[9px] font-bold text-amber-500">Soon</span>
                   </button>

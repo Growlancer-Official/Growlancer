@@ -7,7 +7,6 @@ import { AlertCircle,
   Banknote,
   CheckCircle,
   ChevronRight,
-  CircleDollarSign,
   IndianRupee,
   ListChecks,
   Loader2,
@@ -463,7 +462,7 @@ export function EscrowPayPalPayment({
           <div className="flex items-center justify-between gap-3 p-4 bg-slate-50 border border-dashed border-slate-300 rounded-lg">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 bg-slate-200 rounded-lg flex items-center justify-center">
-                <CircleDollarSign className="w-5 h-5 text-slate-500" />
+                <IndianRupee className="w-5 h-5 text-slate-500" />
               </div>
               <div>
                 <p className="text-sm font-medium text-slate-600">PayPal</p>

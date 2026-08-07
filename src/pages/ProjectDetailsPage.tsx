@@ -10,7 +10,7 @@ import {
   CheckCircle,
   CheckCircle2,
   Clock,
-  DollarSign,
+  IndianRupee,
   Edit3,
   ExternalLink,
   RefreshCw,
@@ -394,7 +394,7 @@ export function ProjectDetailsPage() {
               </div>
               <div className="space-y-3 text-sm text-slate-700">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-500" />
+                  <IndianRupee className="w-4 h-4 text-emerald-500" />
                   <span>{`Budget ₹${project.budget_min.toLocaleString('en-IN')} - ₹${project.budget_max.toLocaleString('en-IN')}`}</span>
                 </div>
                 <div className="flex items-center gap-2">

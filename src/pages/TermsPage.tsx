@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { formatLegalLastUpdatedLine } from '@/lib/legalLastUpdated';
-import { AlertOctagon, ArrowLeft, BookOpen, ChevronRight, DollarSign, FileCode, Gavel, HelpCircle, Lock, Scale, Shield, ShieldCheck, Cpu,  } from 'lucide-react';
+import { AlertOctagon, ArrowLeft, BookOpen, ChevronRight, IndianRupee, FileCode, Gavel, HelpCircle, Lock, Scale, Shield, ShieldCheck, Cpu,  } from 'lucide-react';
 
 interface Section {
   id: string;
@@ -56,7 +56,7 @@ const termsSections: Section[] = [
     {
       id: 'fees',
       title: '3. Growlancer 5% Platform Fees',
-      icon: DollarSign,
+      icon: IndianRupee,
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-4">

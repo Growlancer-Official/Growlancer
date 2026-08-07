@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import {
-  BarChart3, TrendingUp, Users, DollarSign, Briefcase, Handshake,
+  BarChart3, TrendingUp, Users, IndianRupee, Briefcase, Handshake,
   Loader2, RefreshCw, ArrowUpRight, ArrowDownRight, Activity
 } from 'lucide-react';
 import { adminQuery } from '../../lib/adminDataProxy';
@@ -104,7 +104,7 @@ export function AdminReportsPage() {
     { label: 'Total Users', value: formatCompactNumber(metrics.totalUsers), sub: `${formatCompactNumber(metrics.freelancers)} freelancers · ${formatCompactNumber(metrics.clients)} clients`, change: `+${metrics.userGrowth}%`, up: metrics.userGrowth >= 0, icon: Users, color: 'text-blue-400' },
     { label: 'Active Projects', value: formatCompactNumber(metrics.projects), change: `${metrics.newUsersMonth} new this month`, color: 'text-emerald-400', icon: Briefcase },
     { label: 'Live Contracts', value: formatCompactNumber(metrics.contracts), sub: `${metrics.disputes} disputes pending`, change: metrics.disputes > 0 ? `${metrics.disputes} need attention` : '0 disputes', up: metrics.disputes === 0, icon: Handshake, color: metrics.disputes > 0 ? 'text-red-400' : 'text-emerald-400' },
-    { label: 'Platform GMV', value: formatCurrency(metrics.gmv), change: `${metrics.gmvGrowth >= 0 ? '+' : ''}${metrics.gmvGrowth}%`, up: metrics.gmvGrowth >= 0, icon: DollarSign, color: 'text-emerald-400' },
+    { label: 'Platform GMV', value: formatCurrency(metrics.gmv), change: `${metrics.gmvGrowth >= 0 ? '+' : ''}${metrics.gmvGrowth}%`, up: metrics.gmvGrowth >= 0, icon: IndianRupee, color: 'text-emerald-400' },
     { label: 'Revenue (Fees)', value: formatCurrency(metrics.fees), icon: BarChart3, color: 'text-emerald-400' },
     { label: 'Conversion', value: `${metrics.contracts > 0 ? Math.round((metrics.contracts / metrics.projects) * 100) : 0}%`, sub: 'Projects → Contracts', icon: TrendingUp, color: 'text-blue-400' },
   ];

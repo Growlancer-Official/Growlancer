@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Award, Briefcase, Calendar, CheckCircle, ChevronRight, Clock, DollarSign, Image, Loader2, MapPin, MessageSquare, Share2, Star, Users,  } from 'lucide-react';
+import { Award, Briefcase, Calendar, CheckCircle, ChevronRight, Clock, IndianRupee, Image, Loader2, MapPin, MessageSquare, Share2, Star, Users,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { portfolioService } from '../lib/portfolio';
 import { reviewService } from '../lib/reviews';
@@ -158,7 +158,7 @@ export function PublicFreelancerProfilePage() {
                 )}
                 {profile.hourly_rate && (
                   <span className="flex items-center gap-1">
-                    <DollarSign className="w-4 h-4" />
+                    <IndianRupee className="w-4 h-4" />
                     {profile.hourly_rate}/hr
                   </span>
                 )}
