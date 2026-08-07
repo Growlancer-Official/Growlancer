@@ -13,7 +13,7 @@ declare global {
 }
 
 export interface RazorpayOrderRequest {
-  order_type: 'contract_escrow' | 'subscription' | 'service_purchase';
+  order_type: 'contract_escrow' | 'subscription' | 'service_purchase' | 'card_verification';
   amount: number;
   currency?: string;
   description?: string;
@@ -74,6 +74,10 @@ export interface RazorpayCheckoutOptions {
   notes?: Record<string, any>;
   theme?: {
     color?: string;
+  };
+  /** Ask Razorpay to tokenize the card during checkout (card.save = true) */
+  card?: {
+    save?: boolean;
   };
   handler: (response: RazorpayPaymentData) => void;
   modal?: {

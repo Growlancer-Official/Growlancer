@@ -1,10 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels, clearSupabaseAuthStorage } from '../lib/supabase';
-import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
+import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import { notificationPreferencesService } from '../lib/notificationPreferences';
 import { avatarPackService } from '../lib/avatarPack';
-import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
+import { formatCurrency } from '../utils/date';
 import { inviteService, type UserInvitation } from '../lib/inviteService';
 import { ReauthDialog, isReauthValid, markReauthVerified } from '../components/ReauthDialog';
 import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
@@ -16,6 +16,7 @@ import {
   Building2,
   Camera,
   Check,
+  CheckCircle,
   Copy,
   CreditCard,
   Eye,
@@ -28,6 +29,7 @@ import {
   MapPin,
   Plus,
   QrCode,
+  Receipt,
   RefreshCw,
   Save,
   Send,
@@ -40,6 +42,40 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
+
+// ── Billing helpers ─────────────────────────────────────────────────────────
+interface BillingOrder {
+  id: string;
+  razorpay_order_id: string;
+  razorpay_payment_id?: string | null;
+  order_type: string;
+  amount: number;
+  currency: string;
+  status: string;
+  description?: string | null;
+  created_at: string;
+}
+
+function orderTypeLabel(type: string): string {
+  switch (type) {
+    case 'contract_escrow': return 'Escrow Funding';
+    case 'subscription': return 'Subscription';
+    case 'service_purchase': return 'Service Purchase';
+    case 'card_verification': return 'Card Verification';
+    default:
+      return type
+        .split('_')
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+  }
+}
+
+const orderStatusStyles: Record<string, string> = {
+  created: 'bg-slate-100 text-slate-600',
+  captured: 'bg-emerald-100 text-emerald-700',
+  failed: 'bg-red-100 text-red-600',
+  refunded: 'bg-amber-100 text-amber-700',
+};
 
 export function ClientSettingsPage() {
   const { user } = useAuth();
@@ -178,11 +214,12 @@ export function ClientSettingsPage() {
   };
 
   // ── Billing / Payment Methods state ──
-  const [paymentMethods, setPaymentMethods] = useState<ClientPaymentMethod[]>([]);
+  const [savedCards, setSavedCards] = useState<SavedPaymentCard[]>([]);
+  const [billingOrders, setBillingOrders] = useState<BillingOrder[]>([]);
   const [billingLoading, setBillingLoading] = useState(false);
-  const [billingSaving, setBillingSaving] = useState(false);
-  const [showAddPayment, setShowAddPayment] = useState(false);
-  const [newPaymentType, setNewPaymentType] = useState<'card' | 'paypal' | 'bank_transfer'>('paypal');
+  const [addingCard, setAddingCard] = useState(false);
+  const [deleteCardConfirmId, setDeleteCardConfirmId] = useState<string | null>(null);
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
 
   // ── Company Logo state ──
   const [companyLogo, setCompanyLogo] = useState<string | null>(null);
@@ -234,14 +271,6 @@ export function ClientSettingsPage() {
   const [deletionReason, setDeletionReason] = useState('');
   const [deletionConfirm, setDeletionConfirm] = useState('');
   const [deletionStep, setDeletionStep] = useState<'initial' | 'confirm' | 'processing'>('initial');
-  const [newPaypalEmail, setNewPaypalEmail] = useState('');
-  const [newCardLastFour, setNewCardLastFour] = useState('');
-  const [newCardBrand, setNewCardBrand] = useState('');
-  const [newCardExpiry, setNewCardExpiry] = useState('');
-  const [newBankName, setNewBankName] = useState('');
-  const [newBankAccountName, setNewBankAccountName] = useState('');
-  const [newBankAccountLastFour, setNewBankAccountLastFour] = useState('');
-  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const fetchClientProfile = useCallback(async () => {
     if (!user?.id) return;
@@ -541,7 +570,7 @@ export function ClientSettingsPage() {
     } else if (pendingAction === 'disable2fa') {
       await performDisable2FA();
     } else if (pendingAction === 'deletePayment' && pendingPaymentMethodId) {
-      await performDeletePayment(pendingPaymentMethodId);
+      await performDeleteSavedCard(pendingPaymentMethodId);
     }
     setPendingAction(null);
     setPendingPaymentMethodId(null);
@@ -756,110 +785,154 @@ export function ClientSettingsPage() {
   };
 
   // ── Billing / Payment Methods Handlers ──
-  const fetchPaymentMethods = useCallback(async () => {
+  const fetchSavedCards = useCallback(async () => {
     if (!user?.id) return;
-    setBillingLoading(true);
     try {
-      const result = await clientPaymentMethodsService.getPaymentMethods();
-      if (result.success && result.methods) {
-        setPaymentMethods(result.methods);
-      }
-    } catch (err) {
-      console.error('Error fetching payment methods:', err);
-    } finally {
-      setBillingLoading(false);
-    }
+      const cards = await razorpayService.getSavedCards();
+      setSavedCards(cards);
+    } catch { /* card fetch is best-effort */ }
   }, [user?.id]);
 
-  // Fetch payment methods when billing tab is active
-  useEffect(() => {
-    if (activeTab === 'billing') {
-      fetchPaymentMethods();
-    }
-  }, [activeTab, fetchPaymentMethods]);
+  const fetchBillingOrders = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from('razorpay_orders')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (!error && data) {
+        setBillingOrders(data as BillingOrder[]);
+      }
+    } catch { /* order fetch is best-effort */ }
+  }, [user?.id]);
 
-  const handleAddPaymentMethod = async () => {
-    setBillingSaving(true);
+  // Load billing data + keep it real-time while the billing tab is active
+  useEffect(() => {
+    if (activeTab !== 'billing' || !user?.id) return;
+
+    setBillingLoading(true);
+    void Promise.all([fetchSavedCards(), fetchBillingOrders()]).finally(() => setBillingLoading(false));
+
+    const cardsChannel = realtimeChannels.savedPaymentCards(`client-billing-cards-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'saved_payment_cards', filter: `user_id=eq.${user.id}` },
+        () => { void fetchSavedCards(); }
+      )
+      .subscribe();
+
+    const ordersChannel = realtimeChannels.razorpayOrders(`client-billing-orders-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'razorpay_orders', filter: `user_id=eq.${user.id}` },
+        () => { void fetchBillingOrders(); }
+      )
+      .subscribe();
+
+    return () => {
+      cardsChannel.unsubscribe();
+      ordersChannel.unsubscribe();
+    };
+  }, [activeTab, user?.id, fetchSavedCards, fetchBillingOrders]);
+
+  // Add a card via Razorpay tokenization — a ₹1 verification order is created
+  // server-side (the amount is never trusted from the client), the card is
+  // tokenized inside the checkout, and the ₹1 is auto-refunded afterwards.
+  const handleAddCard = async () => {
+    if (!user) return;
+    setAddingCard(true);
     setErrorMessage(null);
     try {
-      const data: any = { type: newPaymentType, is_default: paymentMethods.length === 0 };
-      if (newPaymentType === 'paypal') {
-        data.paypal_email = newPaypalEmail;
-      } else if (newPaymentType === 'card') {
-        data.card_last_four = newCardLastFour;
-        data.card_brand = newCardBrand;
-        data.card_expiry = newCardExpiry;
-      } else if (newPaymentType === 'bank_transfer') {
-        data.account_holder_name = newBankAccountName;
-        data.account_number_last_four = newBankAccountLastFour;
-        data.bank_name = newBankName;
-      }
-      const result = await clientPaymentMethodsService.addPaymentMethod(data);
-      if (result.success) {
-        setSuccessMessage('Payment method added successfully!');
-        setTimeout(() => setSuccessMessage(null), 3000);
-        setShowAddPayment(false);
-        resetNewPaymentForm();
-        await fetchPaymentMethods();
-      } else {
-        setErrorMessage(result.error || 'Failed to add payment method');
-      }
+      const { order, razorpay_key_id, currency } = await razorpayService.createOrder({
+        order_type: 'card_verification',
+        amount: 1,
+        currency: 'INR',
+        description: 'Card verification for one-click payments',
+      });
+
+      await razorpayService.openCheckout({
+        key: razorpay_key_id,
+        amount: 100, // ₹1 in paise
+        currency,
+        name: 'Growlancer',
+        description: 'Card verification — ₹1 will be refunded',
+        order_id: order.razorpay_order_id,
+        prefill: { name: user.name || '', email: user.email || '' },
+        theme: { color: '#059669' },
+        card: { save: true },
+        handler: async (response) => {
+          // Server-side signature verification
+          await razorpayService.verifyPayment(response);
+
+          // Store the tokenized card (Razorpay returns card details in the handler)
+          const card = (response as any).card;
+          if (card?.id && card?.last4) {
+            try {
+              await razorpayService.saveCard({
+                razorpay_payment_id: response.razorpay_payment_id,
+                card_id: card.id,
+                card_last_four: card.last4,
+                card_type: card.type || null,
+                card_network: card.network || null,
+                card_expiry_month: card.expiry_month?.toString() || null,
+                card_expiry_year: card.expiry_year?.toString() || null,
+                card_holder_name: card.name || null,
+              });
+            } catch { /* card saving is best-effort */ }
+          }
+
+          // Auto-refund the ₹1 verification charge (best-effort)
+          try {
+            await razorpayService.refundPayment(response.razorpay_payment_id, 1);
+          } catch { /* refund is best-effort */ }
+
+          setSuccessMessage('Card added — ₹1 verification charge refunded.');
+          setTimeout(() => setSuccessMessage(null), 4000);
+          await fetchSavedCards();
+          await fetchBillingOrders();
+        },
+        modal: {
+          ondismiss: () => { setAddingCard(false); },
+          confirm_close: true,
+        },
+      });
     } catch (err) {
-      console.error('Error adding payment method:', err);
-      setErrorMessage('Failed to add payment method. Please try again.');
+      const msg = err instanceof Error ? err.message : 'Failed to add card.';
+      // Dismissing the Razorpay modal is a deliberate cancel — not an error.
+      if (!msg.toLowerCase().includes('cancelled') && !msg.toLowerCase().includes('dismiss')) {
+        setErrorMessage(msg);
+      }
     } finally {
-      setBillingSaving(false);
+      setAddingCard(false);
     }
   };
 
-  const resetNewPaymentForm = () => {
-    setNewPaypalEmail('');
-    setNewCardLastFour('');
-    setNewCardBrand('');
-    setNewCardExpiry('');
-    setNewBankName('');
-    setNewBankAccountName('');
-    setNewBankAccountLastFour('');
-    setNewPaymentType('paypal');
-  };
-
-  const handleSetDefaultPayment = async (methodId: string) => {
-    try {
-      const result = await clientPaymentMethodsService.setDefaultPaymentMethod(methodId);
-      if (result.success) {
-        await fetchPaymentMethods();
-      } else {
-        setErrorMessage(result.error || 'Failed to set default');
-      }
-    } catch (err) {
-      console.error('Error setting default payment method:', err);
-    }
-  };
-
-  const handleDeletePayment = async (methodId: string) => {
-    // 🛡️ Reauthentication gate — removing a payment method is a sensitive action
+  const handleDeleteSavedCard = async (cardId: string) => {
+    // 🛡️ Reauthentication gate — removing a saved card is a sensitive action
     if (!isReauthValid()) {
-      setPendingPaymentMethodId(methodId);
+      setPendingPaymentMethodId(cardId);
       setPendingAction('deletePayment');
       setReauthOpen(true);
       return;
     }
-    await performDeletePayment(methodId);
+    await performDeleteSavedCard(cardId);
   };
 
-  const performDeletePayment = async (methodId: string) => {
+  const performDeleteSavedCard = async (cardId: string) => {
+    setDeletingCardId(cardId);
     try {
-      const result = await clientPaymentMethodsService.deletePaymentMethod(methodId);
-      if (result.success) {
-        setSuccessMessage('Payment method removed.');
-        setTimeout(() => setSuccessMessage(null), 3000);
-        setDeleteConfirmId(null);
-        await fetchPaymentMethods();
-      } else {
-        setErrorMessage(result.error || 'Failed to delete payment method');
-      }
+      await razorpayService.deleteSavedCard(cardId);
+      setSuccessMessage('Saved card removed.');
+      setTimeout(() => setSuccessMessage(null), 3000);
+      setDeleteCardConfirmId(null);
+      await fetchSavedCards();
     } catch (err) {
-      console.error('Error deleting payment method:', err);
+      console.error('Error removing saved card:', err);
+      setErrorMessage('Failed to remove saved card.');
+    } finally {
+      setDeletingCardId(null);
     }
   };
 
@@ -1612,45 +1685,57 @@ export function ClientSettingsPage() {
                   <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
                     <CreditCard className="w-5 h-5 text-emerald-600" /> Payment Methods
                   </h2>
-                  {!showAddPayment && (
-                    <button onClick={() => setShowAddPayment(true)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all">
-                      <Plus className="w-4 h-4" /> Add Method
-                    </button>
-                  )}
+                  <button
+                    onClick={handleAddCard}
+                    disabled={addingCard}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    {addingCard ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                    {addingCard ? 'Adding...' : 'Add Card'}
+                  </button>
                 </div>
 
                 {billingLoading ? (
                   <div className="flex items-center justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /></div>
-                ) : paymentMethods.length > 0 ? (
-                  <div className="space-y-3">
-                    {paymentMethods.map((method) => (
-                      <div key={method.id} className="flex items-center gap-4 p-4 border border-slate-200 rounded-xl hover:border-slate-300 transition-all">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
-                          {method.type === 'paypal' ? <Mail className="w-5 h-5 text-blue-600" /> : method.type === 'card' ? <CreditCard className="w-5 h-5 text-slate-600" /> : <Building2 className="w-5 h-5 text-slate-600" />}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-slate-900 capitalize">
-                            {method.type === 'paypal' ? 'PayPal' : method.type === 'card' ? `${method.card_brand || 'Card'} ****${method.card_last_four || ''}` : `${method.bank_name || 'Bank'} ****${method.account_number_last_four || ''}`}
-                          </p>
-                          <p className="text-sm text-slate-500 truncate">
-                            {method.type === 'paypal' ? method.paypal_email : method.type === 'card' ? `Expires ${method.card_expiry || 'N/A'}` : method.account_holder_name || ''}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {method.is_default ? (
-                            <span className="flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg"><Star className="w-3 h-3 fill-amber-500" /> Default</span>
-                          ) : (
-                            <button onClick={() => handleSetDefaultPayment(method.id)} className="p-2 text-slate-400 hover:text-amber-500 transition-colors" title="Set as default"><Star className="w-4 h-4" /></button>
-                          )}
-                          {deleteConfirmId === method.id ? (
+                ) : savedCards.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {savedCards.map((card) => (
+                      <div key={card.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <CreditCard className="w-5 h-5 text-emerald-600" />
+                            <div>
+                              <span className="font-medium text-slate-900 text-sm">
+                                {card.card_network || 'Card'} •••• {card.card_last_four}
+                              </span>
+                              <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium uppercase">
+                                {card.card_type || 'Card'}
+                              </span>
+                            </div>
+                          </div>
+                          {deleteCardConfirmId === card.card_id ? (
                             <div className="flex items-center gap-1">
-                              <button onClick={() => handleDeletePayment(method.id)} className="p-2 text-red-500 hover:text-red-700 transition-colors" title="Confirm delete"><Check className="w-4 h-4" /></button>
-                              <button onClick={() => setDeleteConfirmId(null)} className="p-2 text-slate-400 hover:text-slate-600 transition-colors" title="Cancel"><X className="w-4 h-4" /></button>
+                              <button onClick={() => handleDeleteSavedCard(card.card_id)} disabled={deletingCardId === card.card_id} className="p-1.5 text-red-500 hover:text-red-700 transition-colors" title="Confirm remove">
+                                {deletingCardId === card.card_id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                              </button>
+                              <button onClick={() => setDeleteCardConfirmId(null)} className="p-1.5 text-slate-400 hover:text-slate-600 transition-colors" title="Cancel"><X className="w-4 h-4" /></button>
                             </div>
                           ) : (
-                            <button onClick={() => setDeleteConfirmId(method.id)} className="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Remove"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => setDeleteCardConfirmId(card.card_id)} className="p-1.5 text-slate-400 hover:text-red-500 transition-colors" title="Remove saved card"><Trash2 className="w-4 h-4" /></button>
                           )}
+                        </div>
+                        <div className="text-xs text-slate-500 space-y-0.5">
+                          {card.card_expiry_month && card.card_expiry_year && (
+                            <p>Expires {card.card_expiry_month}/{card.card_expiry_year}</p>
+                          )}
+                          {card.card_holder_name && <p>{card.card_holder_name}</p>}
+                          {card.last_used_at && (
+                            <p>Last used {new Date(card.last_used_at).toLocaleDateString()}</p>
+                          )}
+                        </div>
+                        <div className="mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
+                          <p className="text-[10px] text-emerald-700 font-medium flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" /> Tokenized via Razorpay — one-click payments enabled
+                          </p>
                         </div>
                       </div>
                     ))}
@@ -1658,77 +1743,63 @@ export function ClientSettingsPage() {
                 ) : (
                   <div className="text-center py-8 text-slate-500">
                     <CreditCard className="w-10 h-10 mx-auto mb-3 text-slate-300" />
-                    <p>No payment methods added yet.</p>
-                    <p className="text-sm">Click "Add Method" to add your first payment method.</p>
+                    <p>No saved cards yet.</p>
+                    <p className="text-sm mt-1">Add a card for fast, one-click escrow payments.</p>
                   </div>
                 )}
               </div>
 
-              {showAddPayment && (
-                <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                  <h3 className="font-display text-base font-bold text-slate-900 mb-4">Add Payment Method</h3>
-                  <div className="flex gap-2 mb-6">
-                    {(['paypal', 'card', 'bank_transfer'] as const).map((type) => (
-                      <button key={type} onClick={() => setNewPaymentType(type)}
-                        className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-all ${newPaymentType === type ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
-                        {type === 'paypal' ? 'PayPal' : type === 'card' ? 'Card' : 'Bank Transfer'}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="space-y-4">
-                    {newPaymentType === 'paypal' && (
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">PayPal Email</label>
-                        <div className="relative">
-                          <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                          <input type="email" value={newPaypalEmail} onChange={(e) => setNewPaypalEmail(e.target.value)} placeholder="your-paypal@example.com"
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-                        </div>
-                      </div>
-                    )}
-                    {newPaymentType === 'card' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Card Brand</label>
-                          <select value={newCardBrand} onChange={(e) => setNewCardBrand(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
-                            <option value="">Select brand</option><option value="Visa">Visa</option><option value="Mastercard">Mastercard</option><option value="Amex">American Express</option><option value="Discover">Discover</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Last 4 Digits</label>
-                          <input type="text" value={newCardLastFour} onChange={(e) => setNewCardLastFour(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="1234" maxLength={4} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Expiry Date</label>
-                          <input type="text" value={newCardExpiry} onChange={(e) => setNewCardExpiry(e.target.value)} placeholder="MM/YY" maxLength={5} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-                        </div>
-                      </div>
-                    )}
-                    {newPaymentType === 'bank_transfer' && (
-                      <div className="space-y-4">
-                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Bank Name</label><input type="text" value={newBankName} onChange={(e) => setNewBankName(e.target.value)} placeholder="e.g., Wells Fargo" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" /></div>
-                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Account Holder Name</label><input type="text" value={newBankAccountName} onChange={(e) => setNewBankAccountName(e.target.value)} placeholder="Full name on account" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" /></div>
-                        <div><label className="block text-sm font-medium text-slate-700 mb-2">Last 4 Digits</label><input type="text" value={newBankAccountLastFour} onChange={(e) => setNewBankAccountLastFour(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="1234" maxLength={4} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" /></div>
-                      </div>
-                    )}
-                    <div className="flex gap-3 pt-2">
-                      <button onClick={handleAddPaymentMethod} disabled={billingSaving}
-                        className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
-                        {billingSaving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Plus className="w-5 h-5" /> Add Payment Method</>}
-                      </button>
-                      <button onClick={() => { setShowAddPayment(false); resetNewPaymentForm(); }} className="px-6 py-3 text-slate-600 font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition-all">Cancel</button>
-                    </div>
-                  </div>
+              {/* PayPal — coming soon (payment methods are Razorpay-tokenized cards above) */}
+              <div className="p-4 rounded-xl border border-dashed border-slate-200 flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                  <Mail className="w-4 h-4 text-blue-500" />
                 </div>
-              )}
+                <div className="flex-1">
+                  <p className="font-medium text-slate-700 text-sm flex items-center gap-2">
+                    PayPal <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold uppercase">Coming Soon</span>
+                  </p>
+                  <p className="text-xs text-slate-400">International payments will be available soon.</p>
+                </div>
+              </div>
 
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
                 <h3 className="font-display text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-emerald-600" /> Billing History
+                  <Receipt className="w-5 h-5 text-emerald-600" /> Billing History
                 </h3>
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
-                  <p className="text-slate-600 text-sm">Your transaction history and invoices will appear here.</p>
-                </div>
+                {billingLoading ? (
+                  <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-emerald-600" /></div>
+                ) : billingOrders.length > 0 ? (
+                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                    {billingOrders.map((order) => (
+                      <div key={order.id} className="flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
+                        <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                          {order.order_type === 'contract_escrow'
+                            ? <Shield className="w-4 h-4 text-emerald-600" />
+                            : <CreditCard className="w-4 h-4 text-emerald-600" />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-slate-900 text-sm truncate">{orderTypeLabel(order.order_type)}</p>
+                          <p className="text-xs text-slate-500 truncate">
+                            {order.description || 'Razorpay payment'} ·{' '}
+                            {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-semibold text-slate-900 text-sm">{formatCurrency(order.amount)}</p>
+                          <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${orderStatusStyles[order.status] || orderStatusStyles.created}`}>
+                            {order.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-slate-500">
+                    <Receipt className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+                    <p>No payments yet.</p>
+                    <p className="text-sm mt-1">Your escrow and subscription payments will appear here in real time.</p>
+                  </div>
+                )}
               </div>
 
               {/* Billing Tips — fills blank space */}

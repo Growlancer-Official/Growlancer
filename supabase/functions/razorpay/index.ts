@@ -211,7 +211,7 @@ serve(async req => {
         } = data;
 
         const validOrderType = typeof order_type === 'string' ? order_type.trim() : '';
-        if (!['contract_escrow', 'subscription', 'service_purchase'].includes(validOrderType)) {
+        if (!['contract_escrow', 'subscription', 'service_purchase', 'card_verification'].includes(validOrderType)) {
           throw new Error('Invalid order_type');
         }
 
@@ -274,6 +274,12 @@ serve(async req => {
             throw new Error('Service not found or inactive');
           }
           serverAmount = Number(service.price) || 0;
+        } else if (validOrderType === 'card_verification') {
+          // ₹1 authorization used purely to tokenize a card for one-click future
+          // payments (Settings → Billing → Add Card). The amount is fixed
+          // server-side and the charge is auto-refunded right after the token is
+          // stored. No contract/subscription/service involvement.
+          serverAmount = 1;
         }
 
         const validAmount = serverAmount;

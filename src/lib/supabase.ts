@@ -239,6 +239,7 @@ export const realtimeChannels = {
   reviews: (scope?: string) => supabase.channel(nextChannelName('reviews', scope)),
   paypalOrders: (scope?: string) => supabase.channel(nextChannelName('paypal_orders', scope)),
   razorpayOrders: (scope?: string) => supabase.channel(nextChannelName('razorpay_orders', scope)),
+  savedPaymentCards: (scope?: string) => supabase.channel(nextChannelName('saved_payment_cards', scope)),
   waitlist: (scope?: string) => supabase.channel(nextChannelName('waitlist', scope)),
   referrals: (scope?: string) => supabase.channel(nextChannelName('referrals', scope)),
   referralStats: (scope?: string) => supabase.channel(nextChannelName('referral_stats', scope)),
