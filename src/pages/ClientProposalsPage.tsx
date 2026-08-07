@@ -30,11 +30,11 @@ interface Proposal {
       freelancer_profiles?: {
         rating?: number;
         hourly_rate?: number;
-        completed_projects?: number;
+        completion_rate?: number;
       } | {
         rating?: number;
         hourly_rate?: number;
-        completed_projects?: number;
+        completion_rate?: number;
       }[];
     };
   }
@@ -153,7 +153,7 @@ export function ClientProposalsPage() {
               name, 
               avatar, 
               deleted_at,
-              freelancer_profiles(rating, hourly_rate, completed_projects)
+              freelancer_profiles(rating, hourly_rate, completion_rate)
             )
           `)
         .in('project_id', projectIds)
@@ -356,7 +356,7 @@ export function ClientProposalsPage() {
                       <div className="flex items-center gap-1">
                         <DollarSign className="w-4 h-4" />
                         <span>
-                          ${(() => {
+                          ₹{(() => {
                             const fp = Array.isArray(proposal.freelancer?.freelancer_profiles) 
                               ? proposal.freelancer.freelancer_profiles[0] 
                               : proposal.freelancer?.freelancer_profiles;
@@ -390,7 +390,7 @@ export function ClientProposalsPage() {
                     <span className="font-medium">Project:</span> {proposal.project.title}
                   </p>
                   <p className="text-sm text-slate-600">
-                    <span className="font-medium">Budget:</span> ${proposal.project.budget_min?.toLocaleString()} - ${proposal.project.budget_max?.toLocaleString()}
+                    <span className="font-medium">Budget:</span> ₹{proposal.project.budget_min?.toLocaleString()} - ₹{proposal.project.budget_max?.toLocaleString()}
                   </p>
                 </div>
               )}
