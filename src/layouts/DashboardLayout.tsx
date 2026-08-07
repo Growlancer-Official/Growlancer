@@ -94,7 +94,6 @@ const accountLinks: SidebarLink[] = [
 
 const supportLinks: SidebarLink[] = [
   { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },
-  { id: 'tickets', path: '/dashboard/tickets', icon: Bot, label: 'AI Support' },
 ];
 export function DashboardLayout() {
   const location = useLocation();

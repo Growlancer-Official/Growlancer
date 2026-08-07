@@ -402,6 +402,18 @@ export const contractsService = {
   // Create contract from accepted proposal
   async createFromProposal(proposalId: string, clientId: string): Promise<{ success: boolean; data?: Contract; error?: string }> {
     try {
+      // ── Idempotency: never create a second contract for the same proposal ──
+      const { data: existingContract } = await supabase
+        .from('contracts')
+        .select('*')
+        .eq('proposal_id', proposalId)
+        .maybeSingle();
+      if (existingContract) {
+        // Repair stale state so the winning proposal reads as hired
+        await supabase.from('proposals').update({ status: 'hired' }).eq('id', proposalId);
+        return { success: true, data: existingContract as unknown as Contract };
+      }
+
       // Get proposal details
       const { data: proposal, error: proposalError } = await supabase
         .from('proposals')

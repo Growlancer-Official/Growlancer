@@ -98,7 +98,7 @@ const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVer
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
 const SkillTestPage = lazy(() => import('@pages/dashboard/SkillTestPage').then(m => ({ default: m.SkillTestPage })));
 const TimeTrackingPage = lazy(() => import('@pages/dashboard/TimeTrackingPage').then(m => ({ default: m.TimeTrackingPage })));
-const SupportTicketsPage = lazy(() => import('@pages/dashboard/SupportTicketsPage').then(m => ({ default: m.SupportTicketsPage })));
+
 
 // Dashboard Pages - Client
 const ClientDashboardPage = lazy(() => import('../pages/ClientDashboard').then(module => ({ default: module.default })));
@@ -117,7 +117,7 @@ const ClientReviewsPage = lazy(() => import('@pages/ClientReviewsPage').then(m =
 const ClientContestsPage = lazy(() => import('@pages/ClientContestsPage').then(m => ({ default: m.ClientContestsPage })));
 const ClientContestCreatePage = lazy(() => import('@pages/ClientContestCreatePage').then(m => ({ default: m.ClientContestCreatePage })));
 const ClientReferralsPage = lazy(() => import('@pages/ClientReferralsPage').then(m => ({ default: m.ClientReferralsPage })));
-const ClientSupportTicketsPage = lazy(() => import('@pages/ClientSupportTicketsPage').then(m => ({ default: m.ClientSupportTicketsPage })));
+
 
 // Dashboard Pages - Admin
 const AdminDashboard = lazy(() => import('@pages/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
@@ -263,7 +263,7 @@ function App() {
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />
                 <Route path="time-tracking" element={<TimeTrackingPage />} />
-                <Route path="tickets" element={<SupportTicketsPage />} />
+                <Route path="tickets" element={<Navigate to="/dashboard/ai-assistant" replace />} />
               </Route>
 
               {/* Client Dashboard Routes - Protected */}
@@ -297,7 +297,7 @@ function App() {
                 <Route path="reviews" element={<ClientReviewsPage />} />
                 <Route path="contests" element={<ClientContestsPage />} />
                 <Route path="contests/create" element={<ClientContestCreatePage />} />
-                <Route path="tickets" element={<ClientSupportTicketsPage />} />
+                <Route path="tickets" element={<Navigate to="/client/ai-assistant" replace />} />
               </Route>
 
               {/* Admin Dashboard Routes - Protected by Supabase Auth */}

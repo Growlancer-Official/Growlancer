@@ -91,7 +91,7 @@ export function ContractsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [activeTab, setActiveTab] = useState<'active' | 'completed' | 'all'>('active');
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
   const [selectedContract, setSelectedContract] = useState<ContractWithDetails | null>(null);
   const pageSize = 20;
   const pageRef = useRef(0);
@@ -402,8 +402,21 @@ export function ContractsPage() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — workflow order: All → Active → Completed */}
       <div className="flex items-center gap-2 border-b border-slate-200">
+        <button
+          onClick={() => setActiveTab('all')}
+          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+            activeTab === 'all'
+              ? 'text-emerald-600'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          All
+          {activeTab === 'all' && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600"></span>
+          )}
+        </button>
         <button
           onClick={() => setActiveTab('active')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
@@ -437,19 +450,6 @@ export function ContractsPage() {
             </span>
           )}
           {activeTab === 'completed' && (
-            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600"></span>
-          )}
-        </button>
-        <button
-          onClick={() => setActiveTab('all')}
-          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
-            activeTab === 'all'
-              ? 'text-emerald-600'
-              : 'text-slate-500 hover:text-slate-700'
-          }`}
-        >
-          All
-          {activeTab === 'all' && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600"></span>
           )}
         </button>

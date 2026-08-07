@@ -382,10 +382,10 @@ export function EscrowPayPalPayment({
       : `Escrow payment for: ${projectTitle}`;
 
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-lg">
-        <div className="flex items-center gap-3 mb-6">
-          <Shield className="w-6 h-6 text-emerald-600" />
-          <h2 className="text-xl font-bold text-slate-900">Secure Payment</h2>
+      <div className="bg-white rounded-2xl p-5 shadow-lg">
+        <div className="flex items-center gap-2.5 mb-4">
+          <Shield className="w-5 h-5 text-emerald-600" />
+          <h2 className="text-lg font-bold text-slate-900">Secure Payment</h2>
         </div>
 
         {/* Milestone indicator in payment step */}

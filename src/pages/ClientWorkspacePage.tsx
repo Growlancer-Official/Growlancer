@@ -1443,12 +1443,12 @@ export function ClientWorkspacePage() {
         </div>
       )}
 
-      {/* Fund Escrow Modal */}
+      {/* Fund Escrow Modal — compact & responsive */}
       {showFundEscrow && selectedContract && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
-              <h3 className="text-lg font-semibold text-slate-900">Fund Escrow</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Fund Escrow</h3>
               <button
                 onClick={() => setShowFundEscrow(false)}
                 className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
@@ -1456,7 +1456,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-6">
+            <div className="p-4 sm:p-5">
               <p className="text-sm text-slate-500 mb-4">
                 Fund the escrow account for{' '}
                 <span className="font-semibold text-slate-900">

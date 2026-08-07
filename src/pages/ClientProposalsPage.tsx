@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { hireFreelancerFromProposal, rejectProposal } from '../lib/workflowService';
-import { CheckCircle, Clock, DollarSign, ExternalLink, Eye, FileText, MoreVertical, Plus, Star, User, XCircle } from 'lucide-react';
+import { CheckCircle, Clock, ExternalLink, Eye, FileText, IndianRupee, MoreVertical, Plus, Star, User, XCircle } from 'lucide-react';
 import { useToast } from '../components/Toast';
 
 interface Proposal {
@@ -374,7 +374,7 @@ export function ClientProposalsPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <DollarSign className="w-4 h-4" />
+                        <IndianRupee className="w-4 h-4" />
                         <span>
                           ₹{(() => {
                             const fp = Array.isArray(proposal.freelancer?.freelancer_profiles) 
@@ -410,7 +410,7 @@ export function ClientProposalsPage() {
                     <span className="font-medium">Project:</span> {proposal.project.title}
                   </p>
                   <p className="text-sm text-slate-600">
-                    <span className="font-medium">Budget:</span> ₹{proposal.project.budget_min?.toLocaleString()} - ₹{proposal.project.budget_max?.toLocaleString()}
+                    <span className="font-medium">Budget:</span> ₹{proposal.project.budget_min?.toLocaleString('en-IN')} - ₹{proposal.project.budget_max?.toLocaleString('en-IN')}
                   </p>
                 </div>
               )}
@@ -421,8 +421,8 @@ export function ClientProposalsPage() {
 
               <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" />
-                  <span className="font-bold text-slate-900">₹{(proposal.bid_amount ?? proposal.proposed_rate ?? 0).toLocaleString()}</span>
+                  <IndianRupee className="w-4 h-4" />
+                  <span className="font-bold text-slate-900">₹{(proposal.bid_amount ?? proposal.proposed_rate ?? 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
