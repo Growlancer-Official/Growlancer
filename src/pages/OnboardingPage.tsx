@@ -1322,7 +1322,7 @@ export function OnboardingPage() {
                         <div>
                           <h3 className="font-bold text-lg text-slate-900">{freelancerForm.title || 'Your Title'}</h3>
                           <p className="text-sm text-slate-500">
-                            {freelancerForm.hourly_rate > 0 ? `$${freelancerForm.hourly_rate}/hr` : 'Rate not set'} 
+                            {freelancerForm.hourly_rate > 0 ? `₹${freelancerForm.hourly_rate}/hr` : 'Rate not set'} 
                             {freelancerForm.experience > 0 ? ` · ${freelancerForm.experience} years exp` : ''}
                           </p>
                         </div>

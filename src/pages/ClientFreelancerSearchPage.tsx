@@ -296,7 +296,7 @@ export function ClientFreelancerSearchPage() {
               )}
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <span className="flex items-center gap-1 text-xs text-slate-500">{f.location && <><MapPin className="w-3 h-3" />{f.location}</>}</span>
-                {f.hourly_rate && <span className="text-lg font-bold text-emerald-600">${f.hourly_rate}<span className="text-xs text-slate-400 font-normal">/hr</span></span>}
+                {f.hourly_rate && <span className="text-lg font-bold text-emerald-600">₹{f.hourly_rate}<span className="text-xs text-slate-400 font-normal">/hr</span></span>}
               </div>
             </div>
           ))}

@@ -297,6 +297,7 @@ export type RpcName =
   | 'verify_credential_by_token'
   | 'raise_contract_dispute'
   | 'create_contract_with_escrow'
+  | 'accept_invite_create_contract'
   | 'process_referral'
   | 'update_user_country'
   // Refund & Dispute Resolution System
@@ -337,6 +338,8 @@ export const dbFunctions = {
     p_amount: number;
     p_client_id: string;
   }) => supabase.rpc('create_contract_with_escrow', params),
+  acceptInviteCreateContract: (inviteId: string) =>
+    callRpc('accept_invite_create_contract', { p_invite_id: inviteId }),
   fundEscrow: (contractId: string, clientId: string) =>
     supabase.rpc('fund_escrow', {
       p_contract_id: contractId,

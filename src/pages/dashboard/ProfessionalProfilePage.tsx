@@ -1093,7 +1093,7 @@ export function ProfessionalProfilePage() {
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Professional Info</h3>
                       <div className="space-y-3">
                         <div><span className="text-xs text-slate-400">Title</span><p className="font-medium">{formData.title || 'Not set'}</p></div>
-                        <div><span className="text-xs text-slate-400">Hourly Rate</span><p className="font-medium">{formData.hourly_rate ? `$${formData.hourly_rate}/hr` : 'Not set'}</p></div>
+                        <div><span className="text-xs text-slate-400">Hourly Rate</span><p className="font-medium">{formData.hourly_rate ? `₹${formData.hourly_rate}/hr` : 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Experience</span><p className="font-medium">{formData.experience ? `${formData.experience} years` : 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Location</span><p className="font-medium">{formData.location || 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Portfolio</span><p className="font-medium">{formData.portfolio_url ? <a href={formData.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">{formData.portfolio_url}</a> : 'Not set'}</p></div>

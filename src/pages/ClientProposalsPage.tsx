@@ -402,7 +402,7 @@ export function ClientProposalsPage() {
               <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
                 <div className="flex items-center gap-2">
                   <DollarSign className="w-4 h-4" />
-                  <span className="font-bold text-slate-900">${(proposal.bid_amount ?? proposal.proposed_rate ?? 0).toLocaleString()}</span>
+                  <span className="font-bold text-slate-900">₹{(proposal.bid_amount ?? proposal.proposed_rate ?? 0).toLocaleString()}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />

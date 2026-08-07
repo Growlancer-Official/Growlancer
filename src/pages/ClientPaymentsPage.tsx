@@ -314,7 +314,7 @@ export function ClientPaymentsPage() {
   };
 
   const formatAmount = (amount: number, type: string) => {
-    return `${type === 'credit' ? '+' : '-'}$${Math.abs(amount).toLocaleString()}`;
+    return `${type === 'credit' ? '+' : '-'}₹${Math.abs(amount).toLocaleString()}`;
   };
 
   const formatInvoiceAmount = (amount: number) =>

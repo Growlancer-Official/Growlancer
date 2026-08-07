@@ -172,46 +172,17 @@ export function InvitesPage() {
   const handleAcceptInvite = async (inviteId: string) => {
     setProcessingInvite(inviteId);
     try {
-      // Get the invite with project details
-      const { data: invite } = await supabase
-        .from('invites')
-        .select('*, projects!inner(id, client_id, title, budget_min, budget_max)')
-        .eq('id', inviteId)
-        .single();
-
-      if (!invite) throw new Error('Invite not found');
-
-      // Accept the invite
-      const { error: acceptError } = await supabase
-        .from('invites')
-        .update({ status: 'accepted', updated_at: new Date().toISOString() })
-        .eq('id', inviteId);
-
-      if (acceptError) throw acceptError;
-
-      // Auto-create a contract so the project can proceed
-      const bidAmount = Number(invite.projects.budget_max) || 500;
-      const platformFee = Math.round(bidAmount * 0.05);
-
-      const { error: contractError } = await supabase.from('contracts').insert({
-        project_id: invite.project_id,
-        freelancer_id: user!.id,
-        client_id: invite.projects.client_id,
-        amount: bidAmount,
-        platform_fee: platformFee,
-        freelancer_amount: bidAmount - platformFee,
-        status: 'pending',
+      // ⚙️ Server-side RPC: validates ownership/status/expiry, computes the
+      // amount from the project budget, creates the contract + workspace and
+      // flips invite + project status atomically (SECURITY DEFINER — direct
+      // inserts into contracts are RLS-blocked for freelancers).
+      const { error: rpcError } = await supabase.rpc('accept_invite_create_contract', {
+        p_invite_id: inviteId,
       });
 
-      if (!contractError) {
-        // Update project status to in_progress so it shows as active
-        await supabase
-          .from('projects')
-          .update({ status: 'in_progress', updated_at: new Date().toISOString() })
-          .eq('id', invite.projects.id);
-      } else {
-        toast.error('Contract Error', 'Failed to create contract from invite.');
-        // Still mark invite as accepted — contract can be created manually
+      if (rpcError) {
+        toast.error('Contract Error', rpcError.message || 'Failed to create contract from invite.');
+        throw rpcError;
       }
 
       // Update local state

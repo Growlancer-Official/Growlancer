@@ -151,7 +151,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
     <div className="p-4 bg-slate-50 rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-slate-700">Escrow Funding Progress</span>
-        <span className="text-sm font-bold text-slate-900">${funded.toFixed(0)} / ${total.toFixed(0)}</span>
+        <span className="text-sm font-bold text-slate-900">₹{funded.toFixed(0)} / ${total.toFixed(0)}</span>
       </div>
       <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
         <div
@@ -163,7 +163,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
       </div>
       <div className="flex justify-between text-xs text-slate-500">
         <span>{percent}% funded</span>
-        {remaining > 0 && <span>${remaining.toFixed(2)} remaining</span>}
+        {remaining > 0 && <span>₹{remaining.toFixed(2)} remaining</span>}
       </div>
     </div>
   );
@@ -326,7 +326,7 @@ export function EscrowPayPalPayment({
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Payment Successful!</h2>
         <p className="text-slate-600 mb-4">
-          Your escrow payment of <span className="font-semibold">${totalAmount.toFixed(2)}</span> has been received.
+          Your escrow payment of <span className="font-semibold">₹{totalAmount.toFixed(2)}</span> has been received.
         </p>
         {milestones.length > 0 && (
           <p className="text-sm text-slate-500 mb-6">
@@ -483,23 +483,23 @@ export function EscrowPayPalPayment({
                 return (
                   <div key={idx} className="flex justify-between text-slate-600">
                     <span>{ms?.title || `Milestone ${idx + 1}`}</span>
-                    <span>${msAmount.toFixed(2)}</span>
+                    <span>₹{msAmount.toFixed(2)}</span>
                   </div>
                 );
               })
             ) : (
               <div className="flex justify-between text-slate-600">
                 <span>Project Amount</span>
-                <span>${fundingAmount.toFixed(2)}</span>
+                <span>₹{fundingAmount.toFixed(2)}</span>
               </div>
             )}
             <div className="flex justify-between text-slate-600">
               <span>Platform Fee ({feePercentage}%)</span>
-              <span>${platformFee.toFixed(2)}</span>
+              <span>₹{platformFee.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total</span>
-              <span>${totalAmount.toFixed(2)}</span>
+              <span>₹{totalAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -544,15 +544,15 @@ export function EscrowPayPalPayment({
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Funding Amount</span>
-              <span className="font-semibold text-slate-900">${fundingAmount.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900">₹{fundingAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Platform Fee ({feePercentage}%)</span>
-              <span>${platformFee.toFixed(2)}</span>
+              <span>₹{platformFee.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total to Pay</span>
-              <span>${totalAmount.toFixed(2)}</span>
+              <span>₹{totalAmount.toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -610,21 +610,21 @@ export function EscrowPayPalPayment({
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Project Amount</span>
-            <span className="font-medium text-slate-900">${amount.toFixed(2)}</span>
+            <span className="font-medium text-slate-900">₹{amount.toFixed(2)}</span>
           </div>
           {selectedMilestones.size > 0 && (
             <div className="flex justify-between text-slate-600">
               <span>Funding Amount (Selected Milestones)</span>
-              <span className="font-medium text-slate-900">${fundingAmount.toFixed(2)}</span>
+              <span className="font-medium text-slate-900">₹{fundingAmount.toFixed(2)}</span>
             </div>
           )}
           <div className="flex justify-between text-slate-600">
             <span>Platform Fee ({feePercentage}%)</span>
-            <span className="font-medium text-slate-900">${platformFee.toFixed(2)}</span>
+            <span className="font-medium text-slate-900">₹{platformFee.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-semibold text-slate-900 pt-3 border-t border-slate-200 text-lg">
             <span>Total to Pay</span>
-            <span>${totalAmount.toFixed(2)}</span>
+            <span>₹{totalAmount.toFixed(2)}</span>
           </div>
         </div>
       </div>

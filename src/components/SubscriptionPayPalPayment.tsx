@@ -229,7 +229,7 @@ export function SubscriptionPayPalPayment({
         <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
           <h3 className="font-semibold text-amber-900 mb-1">{planName} Plan</h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-amber-600">${planPrice.toFixed(2)}</span>
+            <span className="text-3xl font-bold text-amber-600">₹{planPrice.toFixed(2)}</span>
             <span className="text-amber-700">/month</span>
           </div>
         </div>

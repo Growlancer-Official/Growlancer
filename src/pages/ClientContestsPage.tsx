@@ -127,7 +127,7 @@ export function ClientContestsPage() {
             </div>
             <span className="text-sm text-slate-500 font-medium">Total Prizes</span>
           </div>
-          <p className="text-2xl font-extrabold text-slate-900">${stats.totalPrize.toLocaleString()}</p>
+          <p className="text-2xl font-extrabold text-slate-900">₹{stats.totalPrize.toLocaleString()}</p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100">

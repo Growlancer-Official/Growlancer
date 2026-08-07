@@ -230,18 +230,18 @@ export function ContestDetailPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-emerald-100">🥇 1st Place</span>
-                    <span className="font-extrabold text-xl">${contest.prize_amount.toLocaleString()}</span>
+                    <span className="font-extrabold text-xl">₹{contest.prize_amount.toLocaleString()}</span>
                   </div>
                   {contest.second_prize > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-emerald-100">🥈 2nd Place</span>
-                      <span className="font-bold">${contest.second_prize.toLocaleString()}</span>
+                      <span className="font-bold">₹{contest.second_prize.toLocaleString()}</span>
                     </div>
                   )}
                   {contest.third_prize > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-emerald-100">🥉 3rd Place</span>
-                      <span className="font-bold">${contest.third_prize.toLocaleString()}</span>
+                      <span className="font-bold">₹{contest.third_prize.toLocaleString()}</span>
                     </div>
                   )}
                 </div>

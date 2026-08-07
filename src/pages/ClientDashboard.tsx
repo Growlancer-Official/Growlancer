@@ -162,7 +162,7 @@ export default function ClientDashboard() {
     },
     { 
       label: 'Total Spent', 
-      value: `$${stats.totalSpent.toLocaleString()}`, 
+      value: `₹${stats.totalSpent.toLocaleString()}`, 
       icon: DollarSign, 
       color: 'bg-orange-50 text-orange-600' 
     },
@@ -249,7 +249,7 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm text-slate-500">
-                      Budget: ${project.budget_min}-${project.budget_max}
+                      Budget: ₹{project.budget_min?.toLocaleString()}-₹{project.budget_max?.toLocaleString()}
                     </span>
                     <span className="text-xs text-slate-400">
                       {new Date(project.created_at).toLocaleDateString()}
@@ -312,7 +312,7 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm font-medium text-slate-900">
-                      ${Number(contract.amount).toLocaleString()}
+                      ₹{Number(contract.amount).toLocaleString()}
                     </span>
                     {contract.escrow_funded ? (
                       <span className="flex items-center gap-1 text-xs text-emerald-600">
