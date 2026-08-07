@@ -268,7 +268,7 @@ export function DisputeResolutionPage() {
             {contractDetail && (
               <span className="inline-flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg text-slate-600">
                 <User className="w-4 h-4 text-slate-400" />
-                Contract: ${(contractDetail as any).amount || 0}
+                Contract: ₹{Number((contractDetail as any).amount || 0).toLocaleString('en-IN')}
               </span>
             )}
             {contractDetail && (

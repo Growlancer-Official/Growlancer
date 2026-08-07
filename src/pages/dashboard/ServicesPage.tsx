@@ -4,8 +4,8 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
-  DollarSign,
   Eye,
+  IndianRupee,
   Layers,
   Package,
   Plus,
@@ -332,9 +332,9 @@ export function ServicesPage() {
 
                 <div className="flex items-center gap-4 mb-4 text-sm text-slate-500">
                   <div className="flex items-center gap-1">
-                    <DollarSign className="w-4 h-4" />
+                    <IndianRupee className="w-4 h-4" />
                     <span className="font-semibold text-slate-900">
-                      ${service.price}
+                      ₹{service.price}
                       {service.price_type === 'hourly' && '/hr'}
                     </span>
                   </div>

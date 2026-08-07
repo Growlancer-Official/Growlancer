@@ -371,7 +371,7 @@ export function ProposalsPage() {
                       <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                         <p className="text-xs text-emerald-600 mb-1 font-medium">Your Rate</p>
                         <p className="text-lg font-bold text-slate-900">
-                          ${proposal.proposed_rate?.toLocaleString() || 'N/A'}
+                          ₹{proposal.proposed_rate?.toLocaleString('en-IN') || 'N/A'}
                           <span className="text-xs text-slate-500 font-normal ml-1">
                             /{proposal.rate_type === 'hourly' ? 'hr' : 'project'}
                           </span>

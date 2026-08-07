@@ -87,7 +87,7 @@ export function ContestsPage() {
             </div>
             <div className="text-center">
               <p className="text-3xl font-extrabold text-emerald-600">
-                ${contests.reduce((sum, c) => sum + c.prize_amount, 0).toLocaleString()}
+                ₹{contests.reduce((sum, c) => sum + c.prize_amount, 0).toLocaleString('en-IN')}
               </p>
               <p className="text-sm text-slate-500 font-medium">Total Prizes</p>
             </div>

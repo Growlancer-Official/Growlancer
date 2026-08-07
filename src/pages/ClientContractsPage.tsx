@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
-import { AlertCircle, Calendar, Clock, DollarSign, FileText, Handshake, Laptop, User, Users,  } from 'lucide-react';
+import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
 
 interface Contract {
   id: string;
@@ -249,9 +249,9 @@ export function ClientContractsPage() {
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
                   <div className="flex items-center gap-2 text-slate-600">
-                    <DollarSign className="w-4 h-4" />
+                    <IndianRupee className="w-4 h-4" />
                     <span className="font-medium text-slate-900">
-                      ${Number(contract.amount).toLocaleString()}
+                      ₹{Number(contract.amount).toLocaleString('en-IN')}
                     </span>
                   </div>
                   {contract.start_date && (
@@ -270,7 +270,7 @@ export function ClientContractsPage() {
                     <div className="flex items-center gap-2 text-slate-600">
                       <FileText className="w-4 h-4" />
                       <span>
-                        Escrow: ${escrow.amount.toLocaleString()} ({escrow.status})
+                        Escrow: ₹{escrow.amount.toLocaleString('en-IN')} ({escrow.status})
                       </span>
                     </div>
                   )}
@@ -288,7 +288,7 @@ export function ClientContractsPage() {
                     to="/client/payments"
                     className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50"
                   >
-                    <DollarSign className="w-4 h-4" />
+                    <IndianRupee className="w-4 h-4" />
                     Payments
                   </Link>
                   {(contract.status === 'active' || contract.status === 'in_progress') && (

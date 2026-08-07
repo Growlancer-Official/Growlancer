@@ -5,7 +5,7 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
 import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
-import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, DollarSign, Download, FileText, Filter, Loader2, Plus, PlusCircle, Shield, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, Download, FileText, Filter, IndianRupee, Loader2, Plus, PlusCircle, Shield, Trash2 } from 'lucide-react';
 import { formatCurrency } from '../utils/date';
 
 interface Transaction {
@@ -309,7 +309,7 @@ export function ClientPaymentsPage() {
       case 'deposit':
         return <ArrowDownLeft className="w-4 h-4" />;
       default:
-        return <DollarSign className="w-4 h-4" />;
+        return <IndianRupee className="w-4 h-4" />;
     }
   };
 
@@ -375,7 +375,7 @@ export function ClientPaymentsPage() {
               Total Spent
             </h3>
             <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <DollarSign className="w-5 h-5" />
+              <IndianRupee className="w-5 h-5" />
             </div>
           </div>
           <p className="text-3xl font-bold tracking-tight">
@@ -570,7 +570,7 @@ export function ClientPaymentsPage() {
                     {method.type === 'card' ? (
                       <CreditCard className="w-5 h-5 text-blue-600" />
                     ) : method.type === 'paypal' ? (
-                      <DollarSign className="w-5 h-5 text-blue-500" />
+                      <IndianRupee className="w-5 h-5 text-blue-500" />
                     ) : (
                       <Building2 className="w-5 h-5 text-green-600" />
                     )}
