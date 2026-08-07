@@ -70,7 +70,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         timestamp: new Date(),
       },
     ]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -219,7 +218,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       // ⚠️ Usage is recorded SERVER-SIDE by the ai-assistant edge function (for
       // non-Pro users). Do NOT insert another usage_logs row here — that would
       // double-count free users and make them hit their monthly limit 2× fast.
-      setUsageLimit((prev) => ({ ...prev, used: prev.used + 1 }));
 
     } catch (error: any) {
       if (error.name === 'AbortError') return; // User cancelled

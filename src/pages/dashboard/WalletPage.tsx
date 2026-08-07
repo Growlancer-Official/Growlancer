@@ -480,7 +480,7 @@ export function WalletPage() {
     try {
       const result = await withdrawalService.addPayoutMethod({
         type: newMethodType,
-        email: newMethodType === 'paypal' ? newMethodEmail : null,
+        email: (newMethodType as 'upi' | 'bank' | 'paypal') === 'paypal' ? newMethodEmail : null,
         account_holder_name: newMethodType === 'bank' ? newMethodAccountHolder : null,
         account_number: newMethodType === 'bank' ? newMethodAccountNumber : null,
         routing_number: newMethodType === 'bank' ? newMethodRoutingNumber || null : null,
@@ -1057,7 +1057,7 @@ export function WalletPage() {
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
-                        $
+                        ₹
                       </span>
                       <input
                         type="number"

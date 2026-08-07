@@ -1,0 +1,17 @@
+-- ═══════════════════════════════════════════════════════════════════════
+-- HISTORY RECONCILIATION STUB — version 20261001000000
+--
+-- The remote (production) database has this version recorded in
+-- supabase_migrations.schema_migrations because it was applied directly via
+-- `supabase db query --file` during the (now-reverted) Cashfree migration
+-- experiment. The Cashfree tables it created were subsequently dropped /
+-- superseded by 20261003000000_restore_razorpay.sql, which re-established
+-- the Razorpay architecture.
+--
+-- This local stub exists ONLY so that `supabase db push` sees a history that
+-- is in sync with the remote (the CLI errors with "Remote migration versions
+-- not found in local migrations directory" otherwise). Because the version is
+-- already recorded as applied, this file is never executed by `db push`.
+--
+-- It intentionally contains no DDL.
+SELECT 1;

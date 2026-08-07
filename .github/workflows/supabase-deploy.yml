@@ -45,9 +45,19 @@ jobs:
         with:
           version: latest
 
+      - name: Verify required secrets
+        shell: bash
+        run: |
+          : "${SUPABASE_ACCESS_TOKEN:?SUPABASE_ACCESS_TOKEN secret is NOT set - add it in GitHub repo Settings -> Secrets and variables -> Actions (create a token at supabase.com/dashboard -> Account -> Access Tokens)}"
+          : "${SUPABASE_PROJECT_REF:?SUPABASE_PROJECT_REF secret is NOT set - add it (value: zttwsjehcgaicziqyxpq)}"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+
       - name: Deploy all edge functions
         # NOTE: no `--all` flag in this CLI version — omitting the function name deploys all.
-        run: supabase functions deploy --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"
+        # `--use-api` bundles server-side (no Docker on the runner) — faster and more reliable in CI.
+        run: supabase functions deploy --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}" --use-api
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
@@ -62,6 +72,17 @@ jobs:
         uses: supabase/setup-cli@v1
         with:
           version: latest
+
+      - name: Verify required secrets
+        shell: bash
+        run: |
+          : "${SUPABASE_ACCESS_TOKEN:?SUPABASE_ACCESS_TOKEN secret is NOT set - add it in GitHub repo Settings -> Secrets and variables -> Actions (create a token at supabase.com/dashboard -> Account -> Access Tokens)}"
+          : "${SUPABASE_PROJECT_REF:?SUPABASE_PROJECT_REF secret is NOT set - add it (value: zttwsjehcgaicziqyxpq)}"
+          : "${SUPABASE_DB_PASSWORD:?SUPABASE_DB_PASSWORD secret is NOT set - required to connect to the production database}"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 
       - name: Link project
         run: supabase link --project-ref "${{ secrets.SUPABASE_PROJECT_REF }}"

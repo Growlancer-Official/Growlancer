@@ -4,7 +4,7 @@ import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Load
 import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { supabase, dbFunctions } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
 
 type InviteWithDetails = Tables<'invites'> & {
@@ -176,9 +176,7 @@ export function InvitesPage() {
       // amount from the project budget, creates the contract + workspace and
       // flips invite + project status atomically (SECURITY DEFINER — direct
       // inserts into contracts are RLS-blocked for freelancers).
-      const { error: rpcError } = await supabase.rpc('accept_invite_create_contract', {
-        p_invite_id: inviteId,
-      });
+      const { error: rpcError } = await dbFunctions.acceptInviteCreateContract(inviteId);
 
       if (rpcError) {
         toast.error('Contract Error', rpcError.message || 'Failed to create contract from invite.');

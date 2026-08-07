@@ -1,0 +1,15 @@
+-- ═══════════════════════════════════════════════════════════════════════
+-- HISTORY RECONCILIATION STUB — version 20261002000000
+--
+-- Same reconciliation as 20261001000000: this version exists on the remote
+-- (production) database in supabase_migrations.schema_migrations but was never
+-- present as a local file, which made `supabase db push` fail with
+-- "Remote migration versions not found in local migrations directory".
+--
+-- The USD→INR escrow fixes it contained are already live in production and
+-- were folded into later migrations (20261003000000_restore_razorpay.sql).
+-- Because the version is already recorded as applied, this file is never
+-- executed by `db push`.
+--
+-- It intentionally contains no DDL.
+SELECT 1;

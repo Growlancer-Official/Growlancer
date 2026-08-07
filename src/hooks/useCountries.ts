@@ -26,14 +26,15 @@ export function useCountries(): UseCountriesReturn {
   const fetchAll = useCallback(async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('countries')
+      // `countries` is not yet in the generated Database types — cast the
+      // builder so the live table stays usable (same pattern as useIndustries).
+      const { data, error } = await (supabase.from as any)('countries')
         .select('id, name, code')
         .eq('is_active', true)
         .order('name', { ascending: true });
 
       if (!error && data) {
-        setCountries((data as Country[]).sort((a, b) => a.name.localeCompare(b.name)));
+        setCountries((data as unknown as Country[]).sort((a, b) => a.name.localeCompare(b.name)));
       } else if (error) {
         console.warn('Countries query failed:', error.message);
       }

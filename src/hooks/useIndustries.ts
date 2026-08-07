@@ -35,8 +35,9 @@ export function useIndustries(): UseIndustriesReturn {
       setLoading(true);
       setError(null);
 
-      const { data, error: err } = await supabase
-        .from('industries')
+      // `industries` is not yet in the generated Database types — cast the
+      // builder so the live table stays usable (same pattern as useCountries).
+      const { data, error: err } = await (supabase.from as any)('industries')
         .select('id, name, slug, icon, display_order')
         .eq('is_active', true)
         .order('display_order', { ascending: true })
@@ -58,7 +59,7 @@ export function useIndustries(): UseIndustriesReturn {
           )
         );
       } else if (data) {
-        const raw = data as Industry[];
+        const raw = data as unknown as Industry[];
         raw.sort((a, b) => a.name.localeCompare(b.name));
         setIndustries(raw);
       }

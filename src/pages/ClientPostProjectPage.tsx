@@ -56,7 +56,7 @@ export function ClientPostProjectPage() {
             skills_required: skillNames,
             deadline: data.deadline ? data.deadline.slice(0, 10) : '',
             category: data.category || '',
-            industry: data.industry || '',
+            industry: (data as any).industry || '',
             experience_level: (data.experience_level as 'entry' | 'intermediate' | 'expert') || 'intermediate',
             visibility: (data.visibility as 'public' | 'private' | 'invite_only') || 'public',
           });
@@ -144,7 +144,7 @@ export function ClientPostProjectPage() {
         // UPDATE existing project
         result = await supabase
           .from('projects')
-          .update({ ...projectData, updated_at: new Date().toISOString() })
+          .update({ ...projectData, updated_at: new Date().toISOString() } as any)
           .eq('id', editProjectId)
           .select()
           .single();
@@ -152,7 +152,7 @@ export function ClientPostProjectPage() {
         // INSERT new project
         result = await supabase
           .from('projects')
-          .insert(projectData)
+          .insert(projectData as any)
           .select()
           .single();
       }
