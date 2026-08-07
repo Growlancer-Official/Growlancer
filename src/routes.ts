@@ -78,7 +78,7 @@ export const ROUTES = {
     SETTINGS: '/client/settings',
     VERIFICATION: '/client/verification',
     REFERRALS: '/client/referrals',
-    AI_SUBSCRIPTION: '/client/ai-subscription',
+    // Clients are 100% free — AI_SUBSCRIPTION removed (redirects to AI assistant)
     AI_ASSISTANT: '/client/ai-assistant',
     TICKETS: '/client/tickets',
     REVIEWS: '/client/reviews',

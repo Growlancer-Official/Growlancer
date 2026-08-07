@@ -458,10 +458,10 @@ export function OverviewPage() {
                 Let our AI find the perfect freelancers for your projects based on skills, experience, and reviews.
               </p>
               <Link
-                to="/client/ai-subscription"
+                to="/client/ai-assistant"
                 className="inline-block bg-white text-emerald-600 px-4 py-2 rounded-lg font-medium hover:bg-emerald-50 hover:scale-105 active:scale-95 transition-all duration-200"
               >
-                Upgrade to AI Plus
+                Chat with AI — Free
               </Link>
             </div>
           )}

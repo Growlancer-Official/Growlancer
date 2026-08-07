@@ -3,6 +3,11 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
+// ─── OmniRoute LLM gateway (OpenAI-compatible) — AI semantic match boost ────
+const OMNIROUTE_BASE_URL = (Deno.env.get('OMNIROUTE_BASE_URL') || 'http://localhost:20128/v1').replace(/\/+$/, '');
+const OMNIROUTE_API_KEY = Deno.env.get('OMNIROUTE_API_KEY') || '';
+const OMNIROUTE_MODEL = Deno.env.get('OMNIROUTE_MODEL') || 'auto';
+
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
@@ -22,15 +27,18 @@ function getCorsHeaders(origin: string | null) {
 
 interface Project {
   id: string;
+  title: string;
   category: string;
   skills_required: string[];
   budget_min: number;
   budget_max: number;
   experience_level: string;
+  description?: string;
 }
 
-interface Freelancer {
+interface FreelancerCandidate {
   id: string;
+  name: string;
   skills: string[];
   categories: string[];
   hourly_rate: number;
@@ -38,6 +46,7 @@ interface Freelancer {
   experience_years: number;
   completion_rate: number;
   reputation_score: number;
+  bio?: string;
 }
 
 interface MatchResult {
@@ -50,25 +59,25 @@ interface MatchResult {
   availability_score: number;
   completion_score: number;
   category_score: number;
+  ai_score: number | null;
+  match_reason: string | null;
 }
 
 // Rate limiting - DB-backed (uses service role client)
 const ROUTE = 'ai-matching';
-const RATE_LIMIT = 30;
+const RATE_LIMIT = 60;
 const RATE_WINDOW_MS = 60000;
 
 async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
   const now = new Date();
   const windowStart = new Date(now.getTime() - RATE_WINDOW_MS);
 
-  // Best-effort cleanup of expired rate limit records
   try {
     await supabaseClient.rpc('cleanup_expired_rate_limits');
   } catch {
     // Non-critical; cleanup also runs via cron
   }
 
-  // Count existing requests in the current window
   const { count, error } = await supabaseClient
     .from('rate_limits')
     .select('*', { count: 'exact', head: true })
@@ -85,12 +94,112 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
     return false;
   }
 
-  // Record this request
   await supabaseClient
     .from('rate_limits')
     .insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
 
   return true;
+}
+
+/**
+ * AI semantic scoring pass via OmniRoute.
+ * Asks the LLM to evaluate the top deterministic candidates against the
+ * project and return refined scores + a one-line reason. Best-effort: if the
+ * gateway is unreachable (e.g. local gateway offline), returns null and the
+ * deterministic scores are used as-is — matching ALWAYS works.
+ */
+async function omniRouteSemanticBoost(
+  project: Project,
+  candidates: FreelancerCandidate[]
+): Promise<Map<string, { ai_score: number; reason: string }> | null> {
+  if (!OMNIROUTE_API_KEY || candidates.length === 0) return null;
+
+  const candidatePayload = candidates.map((c) => ({
+    id: c.id.slice(0, 8),
+    name: c.name || 'Freelancer',
+    skills: c.skills || [],
+    categories: c.categories || [],
+    hourly_rate: c.hourly_rate || 0,
+    experience_years: c.experience_years || 0,
+    completion_rate: c.completion_rate || 100,
+    bio: c.bio ? c.bio.slice(0, 200) : '',
+  }));
+
+  const systemPrompt = `You are Growlancer's AI matchmaking engine. Given a project and a list of freelancer candidates, score how well each candidate fits the project from 0-100 and give a short one-line reason.
+
+Respond with STRICT JSON ONLY — an object of the form:
+{"<candidate_id>": {"score": <0-100 integer>, "reason": "<one short line>"}}
+
+Rules:
+- Score primarily on skill overlap, domain relevance, and experience fit.
+- Consider budget compatibility (candidate hourly_rate vs project budget).
+- Never invent skills. Use only what is provided.
+- Keep reasons under 12 words, professional and specific.`;
+
+  const userPrompt = `PROJECT:
+Title: ${project.title || ''}
+Category: ${project.category || ''}
+Skills required: ${(project.skills_required || []).join(', ')}
+Budget range: ₹${project.budget_min || 0} - ₹${project.budget_max || 0}
+Experience level: ${project.experience_level || 'intermediate'}
+Description: ${project.description ? project.description.slice(0, 300) : ''}
+
+CANDIDATES (JSON):
+${JSON.stringify(candidatePayload)}`;
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 9000); // 9s hard cap
+
+    const response = await fetch(`${OMNIROUTE_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OMNIROUTE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: OMNIROUTE_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.3,
+        max_tokens: 1500,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!response.ok) {
+      console.error('[ai-matching] OmniRoute semantic pass failed:', response.status);
+      return null;
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    if (!content) return null;
+
+    // Extract the JSON object (strip markdown fences if present)
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const resultMap = new Map<string, { ai_score: number; reason: string }>();
+    for (const [key, value] of Object.entries(parsed)) {
+      const v = value as { score?: number; reason?: string };
+      if (typeof v?.score === 'number') {
+        resultMap.set(key, {
+          ai_score: Math.max(0, Math.min(100, Math.round(v.score))),
+          reason: String(v.reason || '').slice(0, 120),
+        });
+      }
+    }
+    return resultMap;
+  } catch (err) {
+    console.error('[ai-matching] OmniRoute semantic pass error (falling back to deterministic):', err?.message || err);
+    return null;
+  }
 }
 
 Deno.serve(async (req: Request) => {
@@ -111,8 +220,7 @@ Deno.serve(async (req: Request) => {
   );
 
   try {
-    // 🔒 Require an authenticated user — never leave a service-role function
-    // callable by anyone with the anon key (dead code today, but still a footgun).
+    // 🔒 Require an authenticated user
     const { data: authData } = await supabaseAnon.auth.getUser();
     if (!authData?.user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -130,7 +238,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Rate limit check (use project_id as identifier since there's no authenticated user)
+    // Rate limit check
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = project_id || clientIP;
     const allowed = await checkRateLimit(supabase, identifier);
@@ -141,10 +249,10 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Fetch project details matching DB schema columns perfectly
+    // Fetch project details
     const { data: project, error: projectError } = await supabase
       .from('projects')
-      .select('id, category, skills_required, budget_min, budget_max, experience_level')
+      .select('id, title, category, skills_required, budget_min, budget_max, experience_level, description')
       .eq('id', project_id)
       .single();
 
@@ -155,12 +263,13 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Fetch all freelancers with nested schema columns matching database constraints perfectly
-    // Exclude soft-deleted profiles (deleted_at IS NULL)
+    // Fetch all freelancers (exclude soft-deleted)
     const { data: freelancers, error: freelancersError } = await supabase
       .from('profiles')
       .select(`
         id,
+        name,
+        bio,
         freelancer_profiles (
           skills,
           hourly_rate,
@@ -179,7 +288,6 @@ Deno.serve(async (req: Request) => {
       .select('freelancer_id, category')
       .eq('status', 'active');
 
-    // Build a map of freelancer_id -> categories
     const freelancerCategoryMap = new Map<string, Set<string>>();
     if (allServices) {
       for (const svc of allServices) {
@@ -198,7 +306,8 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Calculate match scores for each freelancer
+    // ─── PASS 1: deterministic scores (fast, always works) ─────────────────
+    const candidates: FreelancerCandidate[] = [];
     const matches: MatchResult[] = [];
 
     for (const freelancer of freelancers || []) {
@@ -206,8 +315,10 @@ Deno.serve(async (req: Request) => {
       if (!fProfile) continue;
 
       const freelancerCategories = freelancerCategoryMap.get(freelancer.id) || new Set();
-      const freelancerData: Freelancer = {
+      const freelancerData: FreelancerCandidate = {
         id: freelancer.id,
+        name: freelancer.name || 'Freelancer',
+        bio: freelancer.bio || '',
         skills: Array.isArray(fProfile.skills) ? fProfile.skills : [],
         categories: Array.from(freelancerCategories),
         hourly_rate: Number(fProfile.hourly_rate) || 0,
@@ -218,29 +329,54 @@ Deno.serve(async (req: Request) => {
       };
 
       const score = calculateMatchScore(project as Project, freelancerData);
-      
-      // Strict matching: freelancer must have a decent score and must match both skills AND category (designation)
+
+      // Strict matching: decent score + skills AND category overlap
       if (score.match_score >= 40 && score.skill_score > 0 && score.category_score > 0) {
         matches.push(score);
+        candidates.push(freelancerData);
       }
     }
 
     // Sort by match score descending
     matches.sort((a, b) => b.match_score - a.match_score);
 
-    // Clear existing matches for this project
+    // ─── PASS 2: OmniRoute AI semantic boost (top 25, best-effort) ─────────
+    const topDeterministic = matches.slice(0, 25);
+    const topCandidates = candidates.slice(0, 25);
+    let aiBoost: Map<string, { ai_score: number; reason: string }> | null = null;
+
+    if (topDeterministic.length > 0) {
+      aiBoost = await omniRouteSemanticBoost(project as Project, topCandidates);
+    }
+
+    const finalMatches: MatchResult[] = topDeterministic.map((m) => {
+      const shortId = m.freelancer_id.slice(0, 8);
+      const boost = aiBoost?.get(shortId);
+
+      // Blend: 60% deterministic + 40% AI semantic (when available)
+      let matchScore = m.match_score;
+      let aiScore: number | null = null;
+      let reason: string | null = null;
+
+      if (boost) {
+        aiScore = boost.ai_score;
+        matchScore = Math.min(100, Math.round(m.match_score * 0.6 + boost.ai_score * 0.4));
+        reason = boost.reason || null;
+      }
+
+      return { ...m, match_score: matchScore, ai_score: aiScore, match_reason: reason };
+    });
+
+    // ─── Persist matches (replaces old ones for this project) ───────────────
     await supabase
       .from('ai_matches')
       .delete()
       .eq('project_id', project_id);
 
-    // Insert new matches (top 10)
-    const topMatches = matches.slice(0, 10);
-    
-    if (topMatches.length > 0) {
+    if (finalMatches.length > 0) {
       const { error: insertError } = await supabase
         .from('ai_matches')
-        .insert(topMatches);
+        .insert(finalMatches);
 
       if (insertError) {
         console.error('Failed to insert AI matches:', insertError);
@@ -250,8 +386,9 @@ Deno.serve(async (req: Request) => {
 
     return new Response(JSON.stringify({
       success: true,
-      matches: topMatches,
+      matches: finalMatches,
       total_analyzed: freelancers?.length || 0,
+      ai_enhanced: aiBoost !== null,
     }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -267,8 +404,8 @@ Deno.serve(async (req: Request) => {
   }
 });
 
-function calculateMatchScore(project: Project, freelancer: Freelancer): MatchResult {
-  // 1. CATEGORY MATCH (10 points) — freelancer has services in the project's category
+function calculateMatchScore(project: Project, freelancer: FreelancerCandidate): MatchResult {
+  // 1. CATEGORY MATCH (10 points)
   const categoryMatch = freelancer.categories.some(c => {
     const cleanCat = c.toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanProjCat = (project.category || '').toLowerCase().replace(/[^a-z0-9]/g, '');
@@ -276,7 +413,7 @@ function calculateMatchScore(project: Project, freelancer: Freelancer): MatchRes
   });
   const categoryScore = categoryMatch ? 10 : 0;
 
-  // 2. SKILL MATCH (35 points) — reduced to make room for category
+  // 2. SKILL MATCH (35 points)
   const skillScore = calculateSkillScore(project.skills_required, freelancer.skills);
 
   // 3. EXPERIENCE (20 points)
@@ -288,7 +425,7 @@ function calculateMatchScore(project: Project, freelancer: Freelancer): MatchRes
   // 5. AVAILABILITY (10 points)
   const availabilityScore = freelancer.availability ? 10 : 0;
 
-  // 6. COMPLETION & REPUTATION (5 points) — reduced to make room for category
+  // 6. COMPLETION & REPUTATION (5 points)
   const completionScore = ((freelancer.completion_rate + freelancer.reputation_score) / 200) * 5;
 
   const totalScore = categoryScore + skillScore + experienceScore + budgetScore + availabilityScore + completionScore;
@@ -303,6 +440,8 @@ function calculateMatchScore(project: Project, freelancer: Freelancer): MatchRes
     availability_score: Math.round(availabilityScore),
     completion_score: Math.round(completionScore),
     category_score: Math.round(categoryScore),
+    ai_score: null,
+    match_reason: null,
   };
 }
 

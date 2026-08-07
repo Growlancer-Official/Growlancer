@@ -11,6 +11,8 @@ export interface AIMatch {
   availability_score: number;
   completion_score: number;
   category_score: number;
+  ai_score: number | null;
+  match_reason: string | null;
   created_at: string;
 }
 
@@ -199,7 +201,9 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
           budget_score: budgetScore,
           availability_score: availabilityScore,
           completion_score: 100,
-          category_score: categoryScore
+          category_score: categoryScore,
+          ai_score: null,
+          match_reason: null
         });
       }
     }
@@ -235,10 +239,45 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
 }
 
 export const aiMatchingService = {
-  // Generate AI matches for a project — uses direct skill-based matching (no edge function)
+  /**
+   * Generate AI matches for a project.
+   * 1. Calls the ai-matching edge function (deterministic scoring + OmniRoute
+   *    AI semantic boost, server-side, real-time numbers).
+   * 2. Falls back to the client-side category/skill engine if the edge call
+   *    fails (offline, gateway down, etc.) so matching ALWAYS works.
+   */
   async generateMatches(projectId: string): Promise<{ success: boolean; matches?: AIMatch[]; error?: string }> {
-    // Direct call to client-side fallback — reliable, skill-based matching
-    return await runSkillBasedMatching(projectId);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        return { success: false, error: 'Not authenticated' };
+      }
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-matching`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ project_id: projectId }),
+        }
+      );
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (response.ok && payload?.success) {
+        return { success: true, matches: (payload.matches || []) as AIMatch[] };
+      }
+
+      // Fall back to the client-side engine
+      console.warn('[aiMatching] Edge function failed, using client fallback:', payload?.error);
+      return await runSkillBasedMatching(projectId);
+    } catch (err: any) {
+      console.warn('[aiMatching] Edge function error, using client fallback:', err?.message);
+      return await runSkillBasedMatching(projectId);
+    }
   },
 
   // Get AI matches for a project with freelancer profiles

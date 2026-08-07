@@ -1,14 +1,19 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-if (!GEMINI_API_KEY) {
-  console.error('GEMINI_API_KEY environment variable is not set');
+// ─── OmniRoute LLM gateway (OpenAI-compatible) ──────────────────────────────
+// Base URL + key from secrets ONLY — never exposed to the frontend.
+const OMNIROUTE_BASE_URL = (Deno.env.get('OMNIROUTE_BASE_URL') || 'http://localhost:20128/v1').replace(/\/+$/, '');
+const OMNIROUTE_API_KEY = Deno.env.get('OMNIROUTE_API_KEY') || '';
+const OMNIROUTE_MODEL = Deno.env.get('OMNIROUTE_MODEL') || 'auto';
+
+if (!OMNIROUTE_API_KEY) {
+  console.error('OMNIROUTE_API_KEY environment variable is not set');
 }
 
-// Rate limiting — every call costs a Gemini credit, so unthrottled loops are
-// a direct cost-abuse vector. DB-backed via rate_limits table.
+// Rate limiting — every call costs a credit on the gateway, so unthrottled
+// loops are a direct cost-abuse vector. DB-backed via rate_limits table.
 const ROUTE = 'ai-ticket-responder';
-const RATE_LIMIT = 10;
+const RATE_LIMIT = 20;
 const RATE_WINDOW_MS = 60000;
 
 async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
@@ -63,7 +68,7 @@ interface TicketData {
 
 const CATEGORY_PROMPTS: Record<string, string> = {
   general: 'Provide helpful general assistance and guidance about using the Growlancer platform.',
-  billing: 'Address billing concerns, payment issues, or subscription questions. Explain how payments, escrow, and subscriptions work on Growlancer.',
+  billing: 'Address billing concerns, payment issues, or subscription questions. Explain how payments, escrow, and the 5% platform commission work on Growlancer.',
   account: 'Help with account-related issues such as login problems, profile setup, verification, and account settings.',
   technical: 'Provide technical support for platform features, troubleshooting steps, and guidance on using Growlancer tools and functionalities.',
   dispute: 'Explain the dispute resolution process on Growlancer, how to open a dispute, what information is needed, and how disputes are resolved.',
@@ -78,10 +83,10 @@ const PRIORITY_RESPONSES: Record<string, string> = {
   urgent: 'We recognize the urgency of your request. Here is priority assistance and steps we are taking to resolve this quickly.',
 };
 
-async function generateAIReponse(ticket: TicketData): Promise<string | null> {
-  // Fail fast if Gemini API key is not configured
-  if (!GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is not set. Cannot generate AI response.');
+async function generateAIResponse(ticket: TicketData): Promise<string | null> {
+  // Fail fast if the gateway key is not configured
+  if (!OMNIROUTE_API_KEY) {
+    console.error('OMNIROUTE_API_KEY is not set. Cannot generate AI response.');
     return null;
   }
 
@@ -113,37 +118,31 @@ ${categoryGuidance}`;
   const userMessage = `Subject: ${ticket.subject}\n\nDescription: ${ticket.description}\n\nPriority: ${ticket.priority}\n\n${priorityResponse}`;
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              role: 'user',
-              parts: [{ text: userMessage }],
-            },
-          ],
-          systemInstruction: {
-            parts: [{ text: systemPrompt }],
-          },
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 800,
-          },
-        }),
-      }
-    );
+    const response = await fetch(`${OMNIROUTE_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${OMNIROUTE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: OMNIROUTE_MODEL,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMessage },
+        ],
+        temperature: 0.7,
+        max_tokens: 800,
+      }),
+    });
 
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Gemini API error:', data);
+      console.error('OmniRoute API error:', data?.error || data);
       return null;
     }
 
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    return data.choices?.[0]?.message?.content || null;
   } catch (error) {
     console.error('Error generating AI response:', error);
     return null;
@@ -179,7 +178,7 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Rate limit check (per authenticated user — Gemini cost abuse guard)
+    // Rate limit check (per authenticated user — gateway cost abuse guard)
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = user.id || clientIP;
     const allowed = await checkRateLimit(supabase, identifier);
@@ -213,7 +212,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Generate AI response
-    const aiResponse = await generateAIReponse({
+    const aiResponse = await generateAIResponse({
       ticket_id,
       user_id,
       user_role: body.user_role || 'freelancer',

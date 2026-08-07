@@ -2,11 +2,15 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
-// Fail loudly if the Gemini key is missing — never silently degrade
-if (!GEMINI_API_KEY) {
-  console.error('GEMINI_API_KEY is not configured in environment variables');
+// ─── OmniRoute LLM gateway (OpenAI-compatible) ──────────────────────────────
+// Base URL + key are read from secrets ONLY — never exposed to the frontend.
+const OMNIROUTE_BASE_URL = (Deno.env.get('OMNIROUTE_BASE_URL') || 'http://localhost:20128/v1').replace(/\/+$/, '');
+const OMNIROUTE_API_KEY = Deno.env.get('OMNIROUTE_API_KEY') || '';
+const OMNIROUTE_MODEL = Deno.env.get('OMNIROUTE_MODEL') || 'auto';
+
+if (!OMNIROUTE_API_KEY) {
+  console.error('OMNIROUTE_API_KEY is not configured in environment variables');
 }
 
 const ALLOWED_ORIGINS = [
@@ -48,13 +52,10 @@ interface ChatRequest {
   };
 }
 
-// Rate limiting
+// Rate limiting (abuse guard — not a monetization limit)
 const ROUTE = 'ai-assistant';
-const RATE_LIMIT = 30;
+const RATE_LIMIT = 60;
 const RATE_WINDOW_MS = 60000;
-
-// Free plan message limit per month
-const FREE_MESSAGE_LIMIT = 10;
 
 async function checkRateLimit(
   supabaseClient: any,
@@ -86,93 +87,26 @@ async function checkRateLimit(
   return true;
 }
 
-async function checkMessageLimit(
-  supabaseClient: any,
-  userId: string
-): Promise<{ allowed: boolean; isPro: boolean; used: number; limit: number }> {
-  // Check subscription
-  const { data: subscription } = await supabaseClient
-    .from('subscriptions')
-    .select('plan_id, status')
-    .eq('user_id', userId)
-    .in('status', ['active', 'trial'])
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  let isPro = false;
-  let messagesLimit = FREE_MESSAGE_LIMIT;
-
-  if (subscription?.plan_id) {
-    const { data: plan } = await supabaseClient
-      .from('subscription_plans')
-      .select('ai_messages_limit, ai_priority, name, price')
-      .eq('id', subscription.plan_id)
-      .single();
-
-    if (plan) {
-      messagesLimit = plan.ai_messages_limit ?? FREE_MESSAGE_LIMIT;
-      isPro = plan.ai_priority || (plan.price ?? 0) > 0;
-    }
-  }
-
-  if (isPro || messagesLimit >= 1000) {
-    return { allowed: true, isPro: true, used: 0, limit: messagesLimit };
-  }
-
-  // Count usage this month
-  const startOfMonth = new Date();
-  startOfMonth.setDate(1);
-  startOfMonth.setHours(0, 0, 0, 0);
-
-  const { data: usageData } = await supabaseClient
-    .from('usage_logs')
-    .select('usage_count')
-    .eq('user_id', userId)
-    .eq('feature_type', 'ai_chat')
-    .gte('created_at', startOfMonth.toISOString());
-
-  const totalUsage = usageData?.reduce((sum: number, log: any) => sum + (log.usage_count || 0), 0) || 0;
-
-  return {
-    allowed: totalUsage < messagesLimit,
-    isPro: false,
-    used: totalUsage,
-    limit: messagesLimit,
-  };
+/**
+ * Growlancer earns ONLY a 5% platform commission on contracts.
+ * AI assistant, chat and dedicated support are FREE for everyone —
+ * no subscription gating, no monthly message caps.
+ */
+async function checkMessageLimit(): Promise<{ allowed: boolean; isPro: boolean; used: number; limit: number }> {
+  return { allowed: true, isPro: true, used: 0, limit: 0 };
 }
 
-function convertToGeminiMessages(
+/** OpenAI-compatible message conversion for the OmniRoute gateway. */
+function convertToOpenAIMessages(
   messages: ChatMessage[],
   systemPrompt: string
-): { contents: any[]; systemInstruction: any } {
-  // Gemini uses 'user' and 'model' roles (not 'assistant')
-  const contents: any[] = [];
-  let lastRole = '';
-
+): ChatMessage[] {
+  const openAIMessages: ChatMessage[] = [{ role: 'system', content: systemPrompt }];
   for (const msg of messages) {
     if (msg.role === 'system') continue;
-
-    const geminiRole = msg.role === 'assistant' ? 'model' : 'user';
-
-    // Merge consecutive same-role messages
-    if (geminiRole === lastRole && contents.length > 0) {
-      contents[contents.length - 1].parts.push({ text: msg.content });
-    } else {
-      contents.push({
-        role: geminiRole,
-        parts: [{ text: msg.content }],
-      });
-      lastRole = geminiRole;
-    }
+    openAIMessages.push({ role: msg.role === 'assistant' ? 'assistant' : 'user', content: msg.content });
   }
-
-  return {
-    contents,
-    systemInstruction: {
-      parts: [{ text: systemPrompt }],
-    },
-  };
+  return openAIMessages;
 }
 
 function sanitizeInput(input: string): string {
@@ -189,7 +123,7 @@ function sanitizeInput(input: string): string {
     sanitized = sanitized.replace(pattern, '[FILTERED]');
   }
 
-  return sanitized.substring(0, 4000);
+  return sanitized.substring(0, 8000);
 }
 
 function buildSystemPrompt(
@@ -204,7 +138,7 @@ function buildSystemPrompt(
 3. **Tone**: Professional, helpful, and encouraging.
 4. **Line-by-line**: Present information in digestible chunks. Use short paragraphs separated by blank lines.
 5. **Honesty**: If you don't know something, say so. Don't make up information.
-6. **Platform**: GROWLANCER connects freelancers with clients using AI-powered matching.`;
+6. **Platform**: GROWLANCER connects freelancers with clients using AI-powered matching. The platform charges clients ZERO subscription fees — only a 5% commission on completed contracts. All AI features are free and unlimited.`;
 
   if (role === 'freelancer') {
     const ticketContext = context?.ticket_category
@@ -212,37 +146,10 @@ function buildSystemPrompt(
       : '';
 
     const freelancerContext = context
-      ? `\n## User Profile\n- Skills: ${context.skills?.join(', ') || 'Not specified'}\n- Hourly Rate: $${context.hourly_rate || 'Not specified'}/hr`
+      ? `\n## User Profile\n- Skills: ${context.skills?.join(', ') || 'Not specified'}\n- Hourly Rate: ₹${context.hourly_rate || 'Not specified'}/hr`
       : '';
 
-    return `${basePrompt}
-\n${freelancerContext}
-${ticketContext}
-
-## Your Role: Freelancer Assistant
-You help freelancers with:
-### 📋 Projects & Proposals
-- Finding projects that match their skills
-- Writing compelling proposals and cover letters
-- Suggesting appropriate rates based on market data
-
-### 📈 Profile Optimization
-- Improving their profile to attract more clients
-- Highlighting skills and experience effectively
-- Portfolio presentation tips
-
-### 💡 Best Practices
-- Client communication strategies
-- Time management and productivity
-- Building long-term client relationships
-- Escrow and payment processes
-
-### 🎯 Support
-- Answer questions about platform features
-- Help with technical issues
-- Guide through dispute resolution
-
-Remember: Be concise but thorough. Offer actionable advice.`;
+    return `${basePrompt}\n\n${freelancerContext}\n${ticketContext}\n\n## Your Role: Freelancer Assistant\nYou help freelancers with:\n### 📋 Projects & Proposals\n- Finding projects that match their skills\n- Writing compelling proposals and cover letters\n- Suggesting appropriate rates based on market data\n\n### 📈 Profile Optimization\n- Improving their profile to attract more clients\n- Highlighting skills and experience effectively\n- Portfolio presentation tips\n\n### 💡 Best Practices\n- Client communication strategies\n- Time management and productivity\n- Building long-term client relationships\n- Escrow and payment processes\n\n### 🎯 Support\n- Answer questions about platform features\n- Help with technical issues\n- Guide through dispute resolution\n\nRemember: Be concise but thorough. Offer actionable advice.`;
   } else {
     const ticketContext = context?.ticket_category
       ? `\n## Support Ticket Context\nThis user has an active support ticket:\n- Category: ${context.ticket_category}\n- Priority: ${context.ticket_priority || 'Normal'}\n- Subject: ${context.ticket_subject || 'N/A'}\n- Description: ${context.ticket_description || 'N/A'}\n\nPlease address their ticket-related concerns first before providing general assistance.`
@@ -252,34 +159,33 @@ Remember: Be concise but thorough. Offer actionable advice.`;
       ? `\n## User Profile\n- Recent Projects: ${context.recent_projects?.length || 0}\n- Active Contracts: ${context.active_contracts || 0}`
       : '';
 
-    return `${basePrompt}
-\n${clientContext}
-${ticketContext}
-
-## Your Role: Client Assistant
-You help clients with:
-### 📝 Project Management
-- Writing clear and professional project descriptions
-- Setting appropriate budgets for different work types
-- Defining clear project scopes and milestones
-
-### 👥 Hiring & Proposals
-- Evaluating freelancer proposals effectively
-- Conducting interviews and making hiring decisions
-- Understanding AI match scores and recommendations
-
-### 🤝 Contract Management
-- Managing milestones and deliverables
-- Escrow funding and payment processes
-- Effective communication with freelancers
-
-### 💡 Best Practices
-- Building long-term relationships with top freelancers
-- Giving constructive feedback and reviews
-- Resolving disputes professionally
-
-Remember: Be concise but thorough. Offer actionable advice.`;
+    return `${basePrompt}\n\n${clientContext}\n${ticketContext}\n\n## Your Role: Client Assistant\nYou help clients with:\n### 📝 Project Management\n- Writing clear and professional project descriptions\n- Setting appropriate budgets for different work types\n- Defining clear project scopes and milestones\n\n### 👥 Hiring & Proposals\n- Evaluating freelancer proposals effectively\n- Conducting interviews and making hiring decisions\n- Understanding AI match scores and recommendations\n\n### 🤝 Contract Management\n- Managing milestones and deliverables\n- Escrow funding and payment processes\n- Effective communication with freelancers\n\n### 💡 Best Practices\n- Building long-term relationships with top freelancers\n- Giving constructive feedback and reviews\n- Resolving disputes professionally\n\nRemember: Be concise but thorough. Offer actionable advice.`;
   }
+}
+
+/** Call the OmniRoute gateway (OpenAI-compatible). */
+async function callOmniRoute(
+  messages: ChatMessage[],
+  options: { stream?: boolean; maxTokens?: number } = {}
+): Promise<Response> {
+  const body: Record<string, unknown> = {
+    model: OMNIROUTE_MODEL,
+    messages,
+    temperature: 0.7,
+    max_tokens: options.maxTokens ?? 1024,
+    top_p: 0.95,
+  };
+  if (options.stream) {
+    body.stream = true;
+  }
+  return await fetch(`${OMNIROUTE_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${OMNIROUTE_API_KEY}`,
+    },
+    body: JSON.stringify(body),
+  });
 }
 
 Deno.serve(async (req: Request) => {
@@ -291,8 +197,8 @@ Deno.serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Fail closed: refuse requests when the Gemini key is not configured
-  if (!GEMINI_API_KEY) {
+  // Fail closed: refuse requests when the OmniRoute key is not configured
+  if (!OMNIROUTE_API_KEY) {
     return new Response(JSON.stringify({ error: 'AI service is not configured' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -301,9 +207,6 @@ Deno.serve(async (req: Request) => {
 
   try {
     // ─── AUTHENTICATION (JWT required) ───
-    // The user identity MUST come from the verified JWT, never from the
-    // request body — otherwise anyone could impersonate any user_id to
-    // exhaust another user's AI quota (or use the AI at the platform's cost).
     const anonClient = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY') ?? '', {
       global: { headers: { Authorization: req.headers.get('Authorization') ?? '' } },
       auth: { autoRefreshToken: false, persistSession: false },
@@ -343,23 +246,10 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Check message limit (free vs pro)
-    const { allowed, isPro, used, limit } = await checkMessageLimit(supabase, user_id);
-    if (!allowed) {
-      return new Response(
-        JSON.stringify({
-          error: 'limit_reached',
-          message: `You've used ${used} of ${limit} free AI messages this month. Upgrade to Pro for unlimited access.`,
-          usage: { used, limit, isPro },
-        }),
-        {
-          status: 403,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        }
-      );
-    }
+    // AI is FREE + UNLIMITED for everyone (no subscription gate)
+    const { isPro } = await checkMessageLimit();
 
-    // Rate limit check (per authenticated user)
+    // Rate limit check (per authenticated user — abuse guard)
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = user_id || clientIP;
     const rateAllowed = await checkRateLimit(supabase, identifier);
@@ -383,62 +273,28 @@ Deno.serve(async (req: Request) => {
     // Build system prompt
     const systemPrompt = buildSystemPrompt(user_role, context);
 
-    // Convert to Gemini format
-    const { contents, systemInstruction } = convertToGeminiMessages(
+    // Convert to OpenAI-compatible format for the OmniRoute gateway
+    const openAIMessages = convertToOpenAIMessages(
       sanitizedMessages.slice(-10),
       systemPrompt
     );
 
-    // Prepare Gemini API payload
-    const geminiPayload: any = {
-      contents,
-      systemInstruction,
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 1024,
-        topP: 0.95,
-        topK: 40,
-      },
-      safetySettings: [
-        { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-      ],
-    };
-
     if (prefersStreaming) {
       // === STREAMING RESPONSE ===
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`;
+      const omniResponse = await callOmniRoute(openAIMessages, { stream: true });
 
-      const geminiResponse = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(geminiPayload),
-      });
-
-      if (!geminiResponse.ok) {
-        const errText = await geminiResponse.text();
-        return new Response(JSON.stringify({ error: `Gemini API error: ${errText}` }), {
+      if (!omniResponse.ok) {
+        const errText = await omniResponse.text();
+        return new Response(JSON.stringify({ error: `AI gateway error: ${errText.slice(0, 300)}` }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      // Log usage for non-Pro users
-      if (!isPro) {
-        await supabase.from('usage_logs').insert({
-          user_id,
-          feature_type: 'ai_chat',
-          usage_count: 1,
-          metadata: { role: user_role, context: context?.ticket_category || 'general' },
-        });
-      }
-
-      // Stream the Gemini response back to the client
+      // Stream the OmniRoute SSE response back to the client
       const stream = new ReadableStream({
         async start(controller) {
-          const reader = geminiResponse.body?.getReader();
+          const reader = omniResponse.body?.getReader();
           if (!reader) {
             controller.close();
             return;
@@ -454,32 +310,23 @@ Deno.serve(async (req: Request) => {
 
               buffer += decoder.decode(value, { stream: true });
 
-              // Parse SSE events from Gemini
+              // Parse SSE events (data: {...} or data: [DONE])
               const lines = buffer.split('\n');
-              buffer = lines.pop() || ''; // Keep incomplete line in buffer
+              buffer = lines.pop() || '';
 
               for (const line of lines) {
-                if (line.startsWith('data: ')) {
-                  const jsonStr = line.slice(6).trim();
-                  if (!jsonStr || jsonStr === '[DONE]') continue;
+                if (!line.startsWith('data:')) continue;
+                const jsonStr = line.slice(5).trim();
+                if (!jsonStr || jsonStr === '[DONE]') continue;
 
-                  try {
-                    const parsed = JSON.parse(jsonStr);
-                    const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                    if (text) {
-                      controller.enqueue(new TextEncoder().encode(JSON.stringify({ text }) + '\n'));
-                    }
-
-                    // Check for safety ratings
-                    const finishReason = parsed.candidates?.[0]?.finishReason;
-                    if (finishReason && finishReason !== 'STOP' && finishReason !== 'MAX_TOKENS') {
-                      controller.enqueue(
-                        new TextEncoder().encode(JSON.stringify({ warning: `Response stopped: ${finishReason}` }) + '\n')
-                      );
-                    }
-                  } catch {
-                    // Skip malformed JSON
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const text = parsed.choices?.[0]?.delta?.content || '';
+                  if (text) {
+                    controller.enqueue(new TextEncoder().encode(JSON.stringify({ text }) + '\n'));
                   }
+                } catch {
+                  // Skip malformed JSON
                 }
               }
             }
@@ -503,19 +350,13 @@ Deno.serve(async (req: Request) => {
       });
     } else {
       // === NON-STREAMING RESPONSE ===
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+      const omniResponse = await callOmniRoute(openAIMessages, { stream: false });
 
-      const geminiResponse = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(geminiPayload),
-      });
+      const data = await omniResponse.json().catch(() => ({}));
 
-      const data = await geminiResponse.json();
-
-      if (!geminiResponse.ok) {
+      if (!omniResponse.ok) {
         return new Response(
-          JSON.stringify({ error: data.error?.message || 'Gemini API error' }),
+          JSON.stringify({ error: data?.error?.message || 'AI gateway error' }),
           {
             status: 500,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -524,23 +365,14 @@ Deno.serve(async (req: Request) => {
       }
 
       const assistantMessage =
-        data.candidates?.[0]?.content?.parts?.[0]?.text || 'I apologize, but I could not generate a response. Please try again.';
-
-      // Log usage for non-Pro users
-      if (!isPro) {
-        await supabase.from('usage_logs').insert({
-          user_id,
-          feature_type: 'ai_chat',
-          usage_count: 1,
-          metadata: { role: user_role, context: context?.ticket_category || 'general' },
-        });
-      }
+        data.choices?.[0]?.message?.content ||
+        'I apologize, but I could not generate a response. Please try again.';
 
       return new Response(
         JSON.stringify({
           success: true,
           message: assistantMessage,
-          usage: { used: used + 1, limit, isPro },
+          usage: { used: 0, limit: 0, isPro },
         }),
         {
           status: 200,

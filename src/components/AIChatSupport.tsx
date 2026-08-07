@@ -7,13 +7,11 @@ import {
   Bot,
   Check,
   Copy,
-  Crown,
   Globe,
-  Lock,
+  Infinity as InfinityIcon,
   Send,
   Sparkles,
   User,
-  Zap,
   Headphones,
   Loader2,
 } from 'lucide-react';
@@ -45,8 +43,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [usageLimit, setUsageLimit] = useState({ used: 0, limit: 10, isPro: false });
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const toast = useToast();
   const [escalating, setEscalating] = useState(false);
@@ -54,46 +50,8 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchUsage = async () => {
-      try {
-        const { data: subscription } = await supabase
-          .from('subscriptions')
-          .select(`
-            plan_id,
-            status,
-            subscription_plans (
-              ai_messages_limit,
-              ai_priority
-            )
-          `)
-          .eq('user_id', user.id)
-          .eq('status', 'active')
-          .single();
-
-        const { data: usage } = await supabase
-          .from('usage_logs')
-          .select('usage_count')
-          .eq('user_id', user.id)
-          .eq('feature_type', 'ai_chat')
-          .gte('created_at', new Date(new Date().setDate(new Date().getDate() - 30)).toISOString());
-
-        const totalUsage = (usage as Array<{ usage_count: number | null }> | null)?.reduce((sum, log) => sum + (log.usage_count || 0), 0) || 0;
-        const plan = (subscription as Record<string, any>)?.subscription_plans as Record<string, any> | null;
-        const limit = plan?.ai_messages_limit || 10;
-        const isPro = plan?.ai_priority || false;
-
-        setUsageLimit({ used: totalUsage, limit, isPro });
-      } catch (error) {
-        console.error('Error fetching usage:', error);
-        toast.error('Error', 'Failed to load subscription data. If this persists, contact support.');
-      }
-    };
-
-    fetchUsage();
-  }, [user, toast]);
+  // AI chat is FREE + UNLIMITED for everyone on Growlancer — no subscription
+  // gating, no monthly message caps. The platform earns only a 5% commission.
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -157,10 +115,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        if (data.error === 'limit_reached') {
-          setShowUpgrade(true);
-          throw new Error(data.message || 'Usage limit reached');
-        }
         throw new Error(data.error || 'Failed to get AI response');
       }
 
@@ -268,11 +222,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
   const handleSend = async () => {
     if (!input.trim() || loading) return;
-
-    if (usageLimit.used >= usageLimit.limit && !usageLimit.isPro) {
-      setShowUpgrade(true);
-      return;
-    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -405,17 +354,10 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             <div>
               <h3 className="font-bold text-slate-900">{title}</h3>
               <p className="text-xs text-slate-500">
-                {usageLimit.isPro ? (
-                  <span className="flex items-center gap-1 text-emerald-600">
-                    <Crown className="w-3 h-3" />
-                    Pro Plan — Unlimited
-                  </span>
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <Zap className="w-3 h-3" />
-                    {usageLimit.used}/{usageLimit.limit} messages this month
-                  </span>
-                )}
+                <span className="flex items-center gap-1 text-emerald-600 font-semibold">
+                  <InfinityIcon className="w-3 h-3" />
+                  Unlimited — Free for everyone
+                </span>
                 <span className="mx-2 text-slate-300">·</span>
                 <span className="flex items-center gap-1">
                   <Globe className="w-3 h-3" />
@@ -424,14 +366,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
               </p>
             </div>
           </div>
-          {usageLimit.used >= usageLimit.limit && !usageLimit.isPro && (
-            <button
-              onClick={() => setShowUpgrade(true)}
-              className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition-colors"
-            >
-              Upgrade
-            </button>
-          )}
         </div>
       </div>
 
@@ -525,25 +459,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
       {/* Input */}
       <div className="p-4 border-t border-slate-100 bg-slate-50">
-        {showUpgrade && (
-          <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-xl">
-            <div className="flex items-start gap-3">
-              <Lock className="w-5 h-5 text-orange-600 mt-0.5" />
-              <div className="flex-1">
-                <h4 className="font-semibold text-slate-900 text-sm">Usage limit reached</h4>
-                <p className="text-xs text-slate-600 mt-1">
-                  You've used {usageLimit.used} of {usageLimit.limit} free messages. Upgrade to Pro for unlimited AI conversations.
-                </p>
-                <button
-                  onClick={() => window.location.href = context === 'client' ? '/client/ai-subscription' : '/dashboard/ai-subscription'}
-                  className="mt-2 px-3 py-1.5 bg-orange-600 text-white text-xs font-bold rounded-lg hover:bg-orange-700 transition-colors"
-                >
-                  View Plans
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
         {/* Escalate to Human */}
         {!escalated && messages.length >= 2 && (
           <div className="mb-3">
@@ -569,11 +484,11 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             onKeyDown={handleKeyPress}
             placeholder="Ask me anything in any language..."
             className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
-            disabled={loading || (usageLimit.used >= usageLimit.limit && !usageLimit.isPro)}
+            disabled={loading}
           />
           <button
             onClick={handleSend}
-            disabled={loading || !input.trim() || (usageLimit.used >= usageLimit.limit && !usageLimit.isPro)}
+            disabled={loading || !input.trim()}
             className="px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />

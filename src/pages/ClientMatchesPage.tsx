@@ -362,7 +362,20 @@ export function ClientMatchesPage() {
                   <Sparkles className="w-4 h-4" />
                   {match.match_score}% Match
                 </div>
+                {match.ai_score != null && (
+                  <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-200 rounded-full px-2 py-0.5">
+                    AI Score {match.ai_score}
+                  </span>
+                )}
               </div>
+
+              {/* AI Match Reason */}
+              {match.match_reason && (
+                <p className="mb-4 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
+                  <span className="font-semibold text-slate-600">Why matched: </span>
+                  {match.match_reason}
+                </p>
+              )}
 
               {/* Freelancer Info */}
               <div className="flex items-center gap-3 mb-4">
@@ -389,7 +402,7 @@ export function ClientMatchesPage() {
               <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
                   <DollarSign className="w-4 h-4" />
-                  <span>${match.freelancer.hourly_rate || 0}/hr</span>
+                  <span>₹{match.freelancer.hourly_rate || 0}/hr</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-600">
                   <MapPin className="w-4 h-4" />

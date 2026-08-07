@@ -17,7 +17,6 @@ import {
   LogOut,
   Home,
   Bot,
-  Crown,
   Laptop,
   Shield,
   Menu,
@@ -87,7 +86,6 @@ const accountLinks: SidebarLink[] = [
   { id: 'payments', path: '/client/payments', icon: CreditCard, label: 'Payments' },
   { id: 'settings', path: '/client/settings', icon: Settings, label: 'Settings' },
   { id: 'verification', path: '/client/verification', icon: Shield, label: 'Verification' },
-  { id: 'ai-subscription', path: '/client/ai-subscription', icon: Crown, label: 'AI Subscription' },
   { id: 'tickets', path: '/client/tickets', icon: Bot, label: 'AI Support' },
 ];
 

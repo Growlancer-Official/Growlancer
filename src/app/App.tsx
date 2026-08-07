@@ -109,7 +109,6 @@ const ClientProposalsPage = lazy(() => import('@pages/ClientProposalsPage').then
 const ClientContractsPage = lazy(() => import('@pages/ClientContractsPage').then(m => ({ default: m.ClientContractsPage })));
 const ClientWorkspacePage = lazy(() => import('@pages/ClientWorkspacePage').then(m => ({ default: m.ClientWorkspacePage })));
 const ClientPostProjectPage = lazy(() => import('@pages/ClientPostProjectPage').then(m => ({ default: m.ClientPostProjectPage })));
-const ClientAISubscriptionPage = lazy(() => import('@pages/ClientAISubscriptionPage').then(m => ({ default: m.ClientAISubscriptionPage })));
 const ClientAIAssistantPage = lazy(() => import('@pages/ClientAIAssistantPage').then(m => ({ default: m.ClientAIAssistantPage })));
 const ClientPaymentsPage = lazy(() => import('@pages/ClientPaymentsPage').then(m => ({ default: m.ClientPaymentsPage })));
 const ClientSettingsPage = lazy(() => import('@pages/ClientSettingsPage_NEW').then(m => ({ default: m.ClientSettingsPage })));
@@ -289,7 +288,8 @@ function App() {
                 <Route path="settings" element={<ClientSettingsPage />} />
                 <Route path="verification" element={<IdentityVerificationPage />} />
                 <Route path="referrals" element={<ClientReferralsPage />} />
-                <Route path="ai-subscription" element={<ClientAISubscriptionPage />} />
+                {/* Clients are 100% free — no subscription. Old links redirect to the free AI assistant. */}
+                <Route path="ai-subscription" element={<Navigate to="/client/ai-assistant" replace />} />
                 <Route path="ai-assistant" element={<ClientAIAssistantPage />} />
                 <Route path="find-talent" element={<ClientFreelancerSearchPage />} />
                 <Route path="reviews" element={<ClientReviewsPage />} />
