@@ -232,7 +232,7 @@ export const refundService = {
   async getDisputeMessages(disputeId: string): Promise<DisputeMessage[]> {
     const { data, error } = await supabase
       .from('dispute_messages' as any)
-      .select('*, sender:sender_id(id, full_name, name)')
+      .select('*, sender:sender_id(id, name)')
       .eq('dispute_id', disputeId)
       .order('created_at', { ascending: true });
     if (error) return [];
@@ -383,7 +383,7 @@ export const refundService = {
   async getInternalNotes(disputeId: string): Promise<DisputeInternalNote[]> {
     const { data, error } = await supabase
       .from('dispute_internal_notes' as any)
-      .select('*, admin:admin_id(id, full_name, name)')
+      .select('*, admin:admin_id(id, name)')
       .eq('dispute_id', disputeId)
       .order('created_at', { ascending: true });
     if (error) return [];

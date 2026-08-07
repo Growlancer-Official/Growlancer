@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Award, Bell, BellOff, Briefcase, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, Plus, Search, Star, Trash2 } from 'lucide-react';
+import { Award, Bell, BellOff, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, Plus, Search, Star, Trash2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -10,10 +10,9 @@ import { CategoriesSection } from '../components/CategoriesSection';
 interface FreelancerResult {
   id: string;
   user_id: string;
-  full_name: string | null;
-  avatar: string | null;
-  location: string | null;
   title: string | null;
+  bio: string | null;
+  location: string | null;
   hourly_rate: number | null;
   experience: string | null;
   skills: string[];
@@ -21,8 +20,9 @@ interface FreelancerResult {
   availability: boolean | null;
   rating: number | null;
   total_reviews: number | null;
-  total_projects: number | null;
+  completion_rate: number | null;
   seller_level: string | null;
+  profile: { name: string | null; avatar: string | null } | null;
 }
 
 interface SavedSearch {
@@ -56,7 +56,7 @@ export function ClientFreelancerSearchPage() {
     try {
       let query = supabase
         .from('freelancer_profiles')
-        .select('id, user_id, full_name, avatar, location, title, hourly_rate, experience, skills, languages, availability, rating, total_reviews, total_projects, seller_level')
+        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)')
         .not('user_id', 'is', null);
 
       if (minRate) query = query.gte('hourly_rate', Number(minRate));
@@ -77,8 +77,9 @@ export function ClientFreelancerSearchPage() {
       if (searchQuery) {
         const q = searchQuery.toLowerCase();
         results = results.filter((f) =>
-          f.full_name?.toLowerCase().includes(q) ||
           f.title?.toLowerCase().includes(q) ||
+          f.bio?.toLowerCase().includes(q) ||
+          f.profile?.name?.toLowerCase().includes(q) ||
           f.skills?.some((s) => s.toLowerCase().includes(q))
         );
       }
@@ -273,11 +274,11 @@ export function ClientFreelancerSearchPage() {
             <div key={f.id} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all">
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                  {f.avatar ? <img src={f.avatar} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">{(f.full_name || 'U')[0]}</div>}
+                  {f.profile?.avatar ? <img src={f.profile.avatar} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">{(f.profile?.name || f.title || 'U')[0]}</div>}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 truncate">{f.full_name || 'Freelancer'}</h3>
+                    <h3 className="font-bold text-slate-900 truncate">{f.profile?.name || f.title || 'Freelancer'}</h3>
                     {f.availability && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />Available</span>}
                   </div>
                   {f.title && <p className="text-sm text-slate-500 truncate">{f.title}</p>}
@@ -286,7 +287,7 @@ export function ClientFreelancerSearchPage() {
               {f.seller_level && <div className="mb-2">{getSellerLevelBadge(f.seller_level)}</div>}
               <div className="flex items-center gap-3 text-sm mb-3">
                 {f.rating && f.rating > 0 ? <span className="flex items-center gap-1 font-semibold"><Star className="w-4 h-4 text-amber-400 fill-amber-400" />{f.rating.toFixed(1)}<span className="text-slate-400 font-normal">({f.total_reviews || 0})</span></span> : <span className="text-slate-400 text-xs">New</span>}
-                {f.total_projects && f.total_projects > 0 && <span className="flex items-center gap-1 text-slate-500"><Briefcase className="w-3.5 h-3.5" />{f.total_projects}</span>}
+                {f.completion_rate != null && <span className="flex items-center gap-1 text-slate-500"><span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />{f.completion_rate}% completion</span>}
               </div>
               {f.skills && f.skills.length > 0 && (
                 <div className="flex flex-wrap gap-1 mb-3">

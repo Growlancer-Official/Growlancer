@@ -25,7 +25,31 @@ function escapeHtml(str: string): string {
 }
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(amount);
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(amount);
+}
+
+function buildSupportTicketHtml(name: string, ticketId: string, ticketSubject?: string): string {
+  const safeName = escapeHtml(name || 'there')
+  const safeSubject = escapeHtml(ticketSubject || 'AI Chat Escalation')
+  const shortId = ticketId ? escapeHtml(String(ticketId).slice(0, 8).toUpperCase()) : '—'
+  return baseEmailHtml(
+    'Support Request Received',
+    `
+    <p style="margin:0 0 16px;color:#334155;">Hi ${safeName},</p>
+    <p style="margin:0 0 16px;color:#334155;">
+      Your request <strong>${safeSubject}</strong> has been received by the Growlancer support team.
+    </p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 16px;">
+      <p style="margin:0 0 4px;color:#475569;font-size:13px;">Ticket ID</p>
+      <p style="margin:0;font-weight:700;color:#0f172a;font-size:15px;">${shortId}</p>
+    </div>
+    <p style="margin:0 0 16px;color:#334155;">
+      Our support team typically reviews and responds within <strong>24 hours</strong>. If you don't hear from us,
+      check your spam folder or reply to this email.
+    </p>
+    <p style="margin:0;color:#64748b;font-size:13px;">— Growlancer Support Team</p>
+    `
+  )
 }
 
 const ALLOWED_ORIGINS = [
@@ -52,9 +76,41 @@ async function sendNotificationEmail(
   subject: string,
   htmlContent: string
 ): Promise<boolean> {
-  // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[email-notifications] Email sending disabled (Brevo removed):', subject, '→', to)
-  return false
+  // Real transactional email via Resend when RESEND_API_KEY is configured.
+  // Falls back to a logged no-op (email_sent: false) when the key is missing so
+  // callers never fail hard — just set the secret to enable delivery.
+  const apiKey = Deno.env.get('RESEND_API_KEY')
+  if (!apiKey) {
+    console.log('[email-notifications] RESEND_API_KEY not set — email not sent:', subject, '→', to)
+    return false
+  }
+  const from = Deno.env.get('EMAIL_FROM') ?? 'Growlancer <no-reply@growlancer.vercel.app>'
+  const replyTo = Deno.env.get('EMAIL_REPLY_TO')
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from,
+        to: [to],
+        subject,
+        html: htmlContent,
+        ...(replyTo ? { reply_to: replyTo } : {}),
+      }),
+    })
+    if (!res.ok) {
+      console.error('[email-notifications] Resend error', res.status, await res.text())
+      return false
+    }
+    console.log('[email-notifications] Email sent via Resend:', subject, '→', to)
+    return true
+  } catch (err) {
+    console.error('[email-notifications] Resend exception:', err)
+    return false
+  }
 }
 
 function baseEmailHtml(title: string, bodyHtml: string): string {
@@ -487,6 +543,11 @@ Deno.serve(async (req) => {
       case 'account_suspended': {
         subject = 'Account Suspended ⚠️'
         htmlContent = buildAccountSuspendedHtml(recipient_name, data.reason)
+        break
+      }
+      case 'support_ticket_created': {
+        subject = `We received your support request${data.ticket_id ? ` #${String(data.ticket_id).slice(0, 8)}` : ''} ✅`
+        htmlContent = buildSupportTicketHtml(recipient_name, data.ticket_id, data.subject)
         break
       }
       default: {

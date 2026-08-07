@@ -167,9 +167,15 @@ const subscriptionService = {
         subscriptionData.expiry_date = expiryDate.toISOString();
       }
 
+      // Legacy `plan` flag (free/pro) expected by older code + the CHECK constraint.
+      subscriptionData.plan = (plan.price ?? 0) > 0 ? 'pro' : 'free';
+
+      // Upsert keyed on (user_id, plan_id) — the table enforces UNIQUE(user_id, plan_id),
+      // so a plain INSERT fails if the user previously subscribed to this plan
+      // (e.g. a cancelled/expired trial row still exists). Upsert restores it atomically.
       const { data, error } = await supabase
         .from('subscriptions')
-        .insert(subscriptionData)
+        .upsert(subscriptionData, { onConflict: 'user_id,plan_id' })
         .select('*, subscription_plans(*)')
         .single();
 

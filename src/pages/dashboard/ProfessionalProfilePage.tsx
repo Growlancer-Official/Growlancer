@@ -156,6 +156,28 @@ export function ProfessionalProfilePage() {
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const [copied, setCopied] = useState(false);
   const [activeSessions] = useState(1);
+  // Real device session info (OS • Browser • Timezone) — computed once, client-side.
+  const [sessionInfo] = useState(() => {
+    if (typeof navigator === 'undefined') return 'Web Browser • UTC';
+    const ua = navigator.userAgent;
+    let os = 'Web';
+    if (/Windows/.test(ua)) os = 'Windows';
+    else if (/Mac OS X|Macintosh/.test(ua)) os = 'macOS';
+    else if (/Android/.test(ua)) os = 'Android';
+    else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
+    else if (/Linux/.test(ua)) os = 'Linux';
+    let browser = 'Browser';
+    if (/Edg\//.test(ua)) browser = 'Edge';
+    else if (/Chrome\//.test(ua)) browser = 'Chrome';
+    else if (/Firefox\//.test(ua)) browser = 'Firefox';
+    else if (/Safari\//.test(ua)) browser = 'Safari';
+    else if (/OPR\//.test(ua)) browser = 'Opera';
+    const tz =
+      typeof Intl !== 'undefined' && Intl.DateTimeFormat().resolvedOptions().timeZone
+        ? Intl.DateTimeFormat().resolvedOptions().timeZone
+        : 'UTC';
+    return `${os} • ${browser} • ${tz}`;
+  });
 
   // ── Notification preferences state ──
   const [notifications, setNotifications] = useState({
@@ -798,7 +820,7 @@ export function ProfessionalProfilePage() {
     { id: 'security' as TabId, label: 'Security', icon: Shield, desc: 'Password, 2FA & sessions' },
     { id: 'notifications' as TabId, label: 'Notifications', icon: Bell, desc: 'Email, push & in-app alerts' },
     { id: 'privacy' as TabId, label: 'Privacy', icon: Globe, desc: 'Visibility, online status & permissions' },
-    { id: 'payout' as TabId, label: 'Payout Methods', icon: DollarSign, desc: 'PayPal & bank accounts' },
+    { id: 'payout' as TabId, label: 'Payout Methods', icon: DollarSign, desc: 'UPI, bank accounts & PayPal' },
     { id: 'deletion' as TabId, label: 'Delete Account', icon: Trash2, desc: 'Permanent account removal' },
   ];
 
@@ -1439,7 +1461,7 @@ export function ProfessionalProfilePage() {
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                   <div className="flex items-center gap-3">
                     <Monitor className="w-5 h-5 text-slate-400" />
-                    <div><p className="font-medium text-slate-900">Current Session</p><p className="text-sm text-slate-500">Windows • Globe • {Intl.DateTimeFormat().resolvedOptions().timeZone}</p></div>
+                    <div><p className="font-medium text-slate-900">Current Session</p><p className="text-sm text-slate-500">{sessionInfo}</p></div>
                   </div>
                   <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> Active now</span>
                 </div>
@@ -1638,11 +1660,11 @@ export function ProfessionalProfilePage() {
                     {payoutMethods.map(method => (
                       <div key={method.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                         <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${method.type === 'paypal' ? 'bg-blue-100' : 'bg-green-100'}`}>
-                            {method.type === 'paypal' ? <span className="text-blue-600 font-bold text-sm">P</span> : <Briefcase className="w-5 h-5 text-green-600" />}
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${method.type === 'paypal' ? 'bg-blue-100' : method.type === 'upi' ? 'bg-violet-100' : 'bg-green-100'}`}>
+                            {method.type === 'paypal' ? <span className="text-blue-600 font-bold text-sm">P</span> : method.type === 'upi' ? <span className="text-violet-600 font-bold text-sm">U</span> : <Briefcase className="w-5 h-5 text-green-600" />}
                           </div>
-                          <div><p className="font-medium text-slate-900">{method.type === 'paypal' ? 'PayPal' : `Bank — ${method.bank_name || ''}`}</p>
-                          <p className="text-sm text-slate-500">{method.type === 'paypal' ? method.email : `${method.account_holder_name || ''} ••••${method.account_number?.slice(-4) || ''}`}</p></div>
+                          <div><p className="font-medium text-slate-900">{method.type === 'paypal' ? 'PayPal' : method.type === 'upi' ? `UPI — ${method.upi_id || ''}` : `Bank — ${method.bank_name || ''}`}</p>
+                          <p className="text-sm text-slate-500">{method.type === 'paypal' ? method.email : method.type === 'upi' ? method.upi_id : `${method.account_holder_name || ''} ••••${method.account_number?.slice(-4) || ''}`}</p></div>
                         </div>
                         <div className="flex items-center gap-2">
                           {method.is_default && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-medium">Default</span>}

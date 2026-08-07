@@ -35,7 +35,7 @@ interface PortfolioItem {
 
 interface ReviewData {
   id: string;
-  reviewer: { full_name: string | null; avatar: string | null };
+  reviewer: { name: string | null; avatar: string | null };
   communication_rating: number;
   quality_rating: number;
   timeliness_rating: number;
@@ -303,12 +303,12 @@ export function PublicFreelancerProfilePage() {
                         {review.reviewer?.avatar ? (
                           <img src={review.reviewer.avatar} alt="" className="w-full h-full rounded-full object-cover" />
                         ) : (
-                          (review.reviewer?.full_name || 'U')[0]
+                          (review.reviewer?.name || 'U')[0]
                         )}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-slate-900">{review.reviewer?.full_name || 'Anonymous'}</p>
+                          <p className="font-medium text-slate-900">{review.reviewer?.name || 'Anonymous'}</p>
                           <span className="text-xs text-slate-400">
                             {new Date(review.created_at).toLocaleDateString()}
                           </span>

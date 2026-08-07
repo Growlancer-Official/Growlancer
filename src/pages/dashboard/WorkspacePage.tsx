@@ -137,7 +137,7 @@ export function WorkspacePage() {
             escrow:escrow(id, amount, status)
           `)
           .eq('freelancer_id', user.id)
-          .in('status', ['active', 'in_progress', 'disputed'])
+          .in('status', ['pending', 'active', 'in_progress', 'disputed'])
           .order('created_at', { ascending: false });
 
         if (error) throw error;

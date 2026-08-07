@@ -14,6 +14,7 @@ import {
   User,
   Headphones,
   Loader2,
+  Mail,
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -47,6 +48,8 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const toast = useToast();
   const [escalating, setEscalating] = useState(false);
   const [escalated, setEscalated] = useState(false);
+  const [verifyCta, setVerifyCta] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -239,11 +242,55 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     setLoading(false);
   };
 
+  // ── Resend the email verification link ──
+  const handleResendVerification = async () => {
+    if (!user?.email || resendingVerification) return;
+    setResendingVerification(true);
+    try {
+      const { error } = await supabase.auth.resend({ type: 'signup', email: user.email });
+      if (error) throw error;
+      toast.success('Verification Email Sent', 'Check your inbox (and spam folder) for the verification link.');
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: `📧 **Verification email sent to ${user.email}.** Open the link in your inbox to verify, then come back and tap **Escalate to a Human** again — our team responds within 24 hours.`,
+        timestamp: new Date(),
+      }]);
+    } catch (err) {
+      console.error('Failed to resend verification:', err);
+      toast.error('Failed', 'Could not resend the verification email. Please try again.');
+    } finally {
+      setResendingVerification(false);
+    }
+  };
+
   // ── Escalate to human ──
   const handleEscalate = async () => {
     if (!user || escalating) return;
     setEscalating(true);
     try {
+      // ── Email-verified gate ──
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) {
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `⚠️ **Your session expired.** Please log in again and retry the escalation — your chat history is safe and nothing was lost.`,
+          timestamp: new Date(),
+        }]);
+        return;
+      }
+      if (!authUser.email_confirmed_at) {
+        setVerifyCta(true);
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `⚠️ **Email verification required.** To keep your account secure, please verify your email address before escalating to support. Tap **Verify Email & Resend Link** below — we'll send the verification link to ${authUser?.email || 'your inbox'} right away. Once verified, escalate again and our team will respond within 24 hours.`,
+          timestamp: new Date(),
+        }]);
+        return;
+      }
+
       // Create a support ticket with the chat transcript
       const transcript = messages.map(m => `[${m.role}] ${m.content}`).join('\n\n');
       const result = await ticketService.create({
@@ -473,6 +520,22 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                 <Headphones className="w-4 h-4" />
               )}
               {escalating ? 'Escalating...' : 'Escalate to a Human'}
+            </button>
+          </div>
+        )}
+        {verifyCta && !escalated && (
+          <div className="mb-3">
+            <button
+              onClick={handleResendVerification}
+              disabled={resendingVerification}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-amber-300 bg-amber-50 rounded-xl text-xs font-medium text-amber-800 hover:bg-amber-100 transition-all disabled:opacity-50"
+            >
+              {resendingVerification ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Mail className="w-4 h-4" />
+              )}
+              {resendingVerification ? 'Sending...' : 'Verify Email & Resend Link'}
             </button>
           </div>
         )}

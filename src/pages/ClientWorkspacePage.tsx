@@ -62,8 +62,8 @@ interface Contract {
   freeze_reason?: string | null
   freelancer?: {
     id: string
-    full_name: string
-    avatar_url: string | null
+    name: string | null
+    avatar: string | null
   }
   project?: {
     id: string
@@ -79,8 +79,8 @@ interface Message {
   created_at: string
   sender?: {
     id: string
-    full_name: string
-    avatar_url: string | null
+    name: string | null
+    avatar: string | null
   }
 }
 
@@ -139,7 +139,7 @@ export function ClientWorkspacePage() {
   const refreshContract = useCallback(async (contractId: string) => {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, freelancer:freelancer_id(id, full_name, avatar_url), project:project_id(id, title)')
+      .select('*, freelancer:freelancer_id(id, name, avatar), project:project_id(id, title)')
       .eq('id', contractId)
       .single()
     if (!error && data) {
@@ -153,7 +153,7 @@ export function ClientWorkspacePage() {
     const fetchContracts = async () => {
       const { data: contractsData, error: contractsError } = await supabase
         .from('contracts')
-        .select('*, freelancer:freelancer_id(id, full_name, avatar_url), project:project_id(id, title)')
+        .select('*, freelancer:freelancer_id(id, name, avatar), project:project_id(id, title)')
         .eq('client_id', user.id)
         .in('status', ['pending', 'active', 'in_progress', 'disputed'])
         .order('created_at', { ascending: false })
@@ -179,7 +179,7 @@ export function ClientWorkspacePage() {
     if (!selectedContract || !user) return
     const { data, error } = await supabase
       .from('messages')
-      .select('*, sender:sender_id(id, full_name, avatar_url)')
+      .select('*, sender:sender_id(id, name, avatar)')
       .eq('contract_id', selectedContract.id)
       .order('created_at', { ascending: true })
     if (!error && data) {
@@ -621,7 +621,7 @@ export function ClientWorkspacePage() {
                 </div>
                 <div className="flex items-center mt-2 text-sm text-slate-500">
                   <span className="truncate">
-                    {contract.freelancer?.full_name || 'Unknown Freelancer'}
+                    {contract.freelancer?.name || 'Unknown Freelancer'}
                   </span>
                   <span className="mx-2">•</span>
                   <span>{formatCurrency(contract.escrow_amount)}</span>
@@ -645,7 +645,7 @@ export function ClientWorkspacePage() {
                     <p className="text-sm text-slate-500 mt-1">
                       Working with{' '}
                       <span className="font-medium text-slate-700">
-                        {selectedContract.freelancer?.full_name || 'Freelancer'}
+                        {selectedContract.freelancer?.name || 'Freelancer'}
                       </span>
                     </p>
                   </div>
@@ -730,7 +730,7 @@ export function ClientWorkspacePage() {
                             >
                               {msg.sender_id !== user?.id && (
                                 <p className="text-xs font-medium text-slate-500 mb-1">
-                                  {msg.sender?.full_name || 'Unknown'}
+                                  {msg.sender?.name || 'Unknown'}
                                 </p>
                               )}
                               <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -1414,14 +1414,14 @@ export function ClientWorkspacePage() {
                 </span>{' '}
                 to begin working with{' '}
                 <span className="font-semibold text-slate-900">
-                  {selectedContract.freelancer?.full_name || 'the freelancer'}
+                  {selectedContract.freelancer?.name || 'the freelancer'}
                 </span>
                 . Funds are securely held and only released upon your approval.
               </p>
               <EscrowPayPalPayment
                 contractId={selectedContract.id}
                 amount={selectedContract.escrow_amount}
-                freelancerName={selectedContract.freelancer?.full_name || 'the freelancer'}
+                freelancerName={selectedContract.freelancer?.name || 'the freelancer'}
                 projectTitle={selectedContract.project?.title || 'Project'}
                 onSuccess={() => {
                   setShowFundEscrow(false)
