@@ -82,7 +82,9 @@ export function MainLayout() {
                 className="h-9 w-9 rounded-xl"
               />
               <div className="leading-tight">
-                <div className="font-semibold tracking-tight text-[15px] sm:text-base font-display">Growlancer</div>
+                <div className="font-semibold tracking-tight text-[15px] sm:text-base font-display flex items-center gap-1.5">Growlancer
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 ring-1 ring-amber-200 text-[9px] font-bold uppercase tracking-wide">Beta</span>
+                </div>
                 <div className="text-xs text-slate-500 -mt-0.5">AI freelancing marketplace</div>
               </div>
             </Link>

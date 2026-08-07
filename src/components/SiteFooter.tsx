@@ -100,25 +100,48 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
             {/* Trust & Payment Badges */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Payment Methods */}
-              <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl ring-1 ring-slate-200">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payments</span>
-                {/* PayPal */}
-                <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PayPal">
-                  <path fill="#003087" d="M7.016 19.198h-4.2a.562.562 0 0 1-.555-.65L5.093.584A.692.692 0 0 1 5.776 0h7.222c3.417 0 5.904 2.488 5.846 5.5-.006.25-.027.5-.066.747A6.794 6.794 0 0 1 12.071 12H8.743a.69.69 0 0 0-.682.583l-.325 2.056-.013.083-.692 4.39-.015.087z"/>
-                  <path fill="#009cde" d="M19.79 6.142c-.01.087-.01.175-.023.261a7.76 7.76 0 0 1-7.695 6.598H9.007l-.283 1.795-.013.083-.692 4.39-.134.843-.014.088H6.86l-.497 3.15a.562.562 0 0 0 .555.65h3.612c.34 0 .63-.249.683-.585l.952-6.031a.692.692 0 0 1 .683-.584h2.126a6.793 6.793 0 0 0 6.707-5.752c.306-1.95-.466-3.744-1.89-4.906z"/>
-                </svg>
-                <span className="text-slate-300 text-xs">|</span>
-                {/* Razorpay */}
-                <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Razorpay">
-                  <defs>
-                    <linearGradient id="rzp-grad2" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#3395FF"/>
-                      <stop offset="100%" stopColor="#1A5CFF"/>
-                    </linearGradient>
-                  </defs>
-                  <path fill="url(#rzp-grad2)" fillRule="evenodd" d="M22.436 0l-11.91 7.773-1.174 4.276 6.625-4.297L11.65 24h4.391l6.395-24zM14.26 10.098L3.389 17.166 1.564 24h9.008l3.688-13.902Z"/>
-                </svg>
-                <span className="text-[10px] text-slate-400">Secure</span>
+              <div className="flex flex-col items-center gap-2">
+                <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl ring-1 ring-slate-200 flex-wrap justify-center">
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payments</span>
+                  {/* Razorpay (primary) */}
+                  <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Razorpay">
+                    <defs>
+                      <linearGradient id="rzp-grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#3395FF"/>
+                        <stop offset="100%" stopColor="#1A5CFF"/>
+                      </linearGradient>
+                    </defs>
+                    <path fill="url(#rzp-grad2)" fillRule="evenodd" d="M22.436 0l-11.91 7.773-1.174 4.276 6.625-4.297L11.65 24h4.391l6.395-24zM14.26 10.098L3.389 17.166 1.564 24h9.008l3.688-13.902Z"/>
+                  </svg>
+                  {/* PayPal — Coming Soon */}
+                  <div className="relative shrink-0">
+                    <svg className="h-5 w-5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PayPal">
+                      <path fill="#003087" d="M7.016 19.198h-4.2a.562.562 0 0 1-.555-.65L5.093.584A.692.692 0 0 1 5.776 0h7.222c3.417 0 5.904 2.488 5.846 5.5-.006.25-.027.5-.066.747A6.794 6.794 0 0 1 12.071 12H8.743a.69.69 0 0 0-.682.583l-.325 2.056-.013.083-.692 4.39-.015.087z"/>
+                      <path fill="#009cde" d="M19.79 6.142c-.01.087-.01.175-.023.261a7.76 7.76 0 0 1-7.695 6.598H9.007l-.283 1.795-.013.083-.692 4.39-.134.843-.014.088H6.86l-.497 3.15a.562.562 0 0 0 .555.65h3.612c.34 0 .63-.249.683-.585l.952-6.031a.692.692 0 0 1 .683-.584h2.126a6.793 6.793 0 0 0 6.707-5.752c.306-1.95-.466-3.744-1.89-4.906z"/>
+                    </svg>
+                    <span className="absolute -top-1.5 -right-3.5 text-[8px] font-bold uppercase tracking-wide text-amber-700 bg-amber-100 ring-1 ring-amber-200 rounded px-1 py-px">Upcoming</span>
+                  </div>
+                  {/* UPI */}
+                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 rounded px-1.5 py-0.5">UPI</span>
+                  {/* Visa */}
+                  <span className="text-[10px] font-black italic text-blue-800">VISA</span>
+                  {/* Mastercard */}
+                  <svg className="h-4 w-7 shrink-0" viewBox="0 0 24 16" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mastercard">
+                    <rect width="24" height="16" rx="3" fill="#fff"/>
+                    <circle cx="9" cy="8" r="5" fill="#EB001B"/>
+                    <circle cx="15" cy="8" r="5" fill="#F79E1B"/>
+                    <path d="M12 4.2a5 5 0 0 1 0 7.6 5 5 0 0 1 0-7.6z" fill="#FF5F00"/>
+                  </svg>
+                  {/* RuPay */}
+                  <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 ring-1 ring-purple-200 rounded px-1.5 py-0.5">RuPay</span>
+                  {/* American Express */}
+                  <span className="text-[10px] font-bold text-blue-900">AMEX</span>
+                  {/* Net Banking */}
+                  <span className="text-[10px] font-medium text-slate-600">Net Banking</span>
+                  <span className="text-slate-300 text-xs">|</span>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-slate-500"><ShieldCheck className="w-3 h-3 text-emerald-600" /> SSL Secured</span>
+                </div>
+                <span className="text-[10px] text-slate-400">All payments are protected by Razorpay escrow</span>
               </div>
 
               {/* CTA Buttons */}
