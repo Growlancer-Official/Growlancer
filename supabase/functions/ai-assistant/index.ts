@@ -302,6 +302,7 @@ Deno.serve(async (req: Request) => {
 
           const decoder = new TextDecoder();
           let buffer = '';
+          let modelSent = false;
 
           try {
             while (true) {
@@ -324,6 +325,11 @@ Deno.serve(async (req: Request) => {
                   const text = parsed.choices?.[0]?.delta?.content || '';
                   if (text) {
                     controller.enqueue(new TextEncoder().encode(JSON.stringify({ text }) + '\n'));
+                  }
+                  // Relay the actual model name once (frontend shows it in real time)
+                  if (!modelSent && parsed.model) {
+                    modelSent = true;
+                    controller.enqueue(new TextEncoder().encode(JSON.stringify({ model: parsed.model }) + '\n'));
                   }
                 } catch {
                   // Skip malformed JSON

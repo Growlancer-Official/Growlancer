@@ -275,6 +275,41 @@ export function DashboardLayout() {
     };
   }, [user]);
 
+  // Keep sidebar badges fresh in REAL TIME — refetch on window focus + every 45s
+  // (belt-and-braces on top of the realtime channels above).
+  useEffect(() => {
+    if (!user) return;
+    const refreshBadges = async () => {
+      try {
+        const [invitesRes, proposalsRes, contractsRes] = await Promise.all([
+          supabase.from('invites').select('id', { count: 'exact' }).eq('freelancer_id', user.id).eq('status', 'pending'),
+          supabase.from('proposals').select('id', { count: 'exact' }).eq('freelancer_id', user.id).eq('status', 'pending'),
+          supabase.from('contracts').select('id', { count: 'exact' }).eq('freelancer_id', user.id).in('status', ['active', 'pending']),
+        ]);
+        setBadgeCounts({
+          invites: invitesRes.count || 0,
+          proposals: proposalsRes.count || 0,
+          contracts: contractsRes.count || 0,
+        });
+        const { count: matchCount } = await supabase
+          .from('ai_matches')
+          .select('id', { count: 'exact', head: true })
+          .eq('freelancer_id', user.id)
+          .gte('match_score', 70);
+        setNewMatchCount(matchCount ?? 0);
+      } catch {
+        // Badge refresh failed silently — realtime channels still cover it
+      }
+    };
+    const onFocus = () => { void refreshBadges(); };
+    window.addEventListener('focus', onFocus);
+    const interval = window.setInterval(() => { void refreshBadges(); }, 45000);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      window.clearInterval(interval);
+    };
+  }, [user]);
+
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
       {/* Mobile Drawer Overlay */}

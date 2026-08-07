@@ -11,10 +11,12 @@ import { razorpayService, type RazorpayOrderRequest, type RazorpayPaymentData } 
 
 /** Currency-aware formatting (Razorpay supports INR, USD, etc.). */
 function formatMoney(amount: number, currency: string): string {
+  // Guard against NaN/undefined so the UI never renders ₹NaN.
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
   try {
-    return new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(amount);
+    return new Intl.NumberFormat('en-IN', { style: 'currency', currency }).format(safeAmount);
   } catch {
-    return `${amount.toFixed(2)} ${currency}`;
+    return `${safeAmount.toFixed(2)} ${currency}`;
   }
 }
 

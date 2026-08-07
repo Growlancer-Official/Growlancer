@@ -310,11 +310,11 @@ export const proposalsService = {
     return result;
   },
 
-  // Client: Accept proposal
+  // Client: Accept & hire proposal — status becomes 'hired'
   async accept(proposalId: string): Promise<boolean> {
     const { error } = await supabase
       .from('proposals')
-      .update({ status: 'accepted' })
+      .update({ status: 'hired' })
       .eq('id', proposalId);
 
     return !error;
@@ -437,8 +437,8 @@ export const contractsService = {
 
       if (error) throw error;
 
-      // Update proposal status
-      await supabase.from('proposals').update({ status: 'accepted' }).eq('id', proposalId);
+      // Update proposal status to hired (marketplace: hired = contract created)
+      await supabase.from('proposals').update({ status: 'hired' }).eq('id', proposalId);
 
       // Update project status
       await supabase.from('projects').update({ status: 'in_progress' }).eq('id', proposal.project_id);

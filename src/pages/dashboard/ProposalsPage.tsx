@@ -20,7 +20,7 @@ export function ProposalsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'rejected'>('pending');
+  const [activeTab, setActiveTab] = useState<'pending' | 'accepted' | 'hired' | 'rejected'>('pending');
   const [withdrawingProposal, setWithdrawingProposal] = useState<string | null>(null);
   const [withdrawConfirm, setWithdrawConfirm] = useState<string | null>(null);
   const pageSize = 20;
@@ -134,6 +134,7 @@ export function ProposalsPage() {
 
   const pendingCount = proposals.filter((p) => p.status === 'pending').length;
   const acceptedCount = proposals.filter((p) => p.status === 'accepted').length;
+  const hiredCount = proposals.filter((p) => p.status === 'hired').length;
   const rejectedCount = proposals.filter((p) => p.status === 'rejected').length;
 
   const getStatusBadge = (status: string) => {
@@ -150,6 +151,13 @@ export function ProposalsPage() {
           <span className="flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full">
             <CheckCircle2 className="w-3 h-3" />
             Accepted
+          </span>
+        );
+      case 'hired':
+        return (
+          <span className="flex items-center gap-1 px-3 py-1 bg-emerald-600 text-white text-sm font-medium rounded-full">
+            <CheckCircle2 className="w-3 h-3" />
+            Hired
           </span>
         );
       case 'rejected':
@@ -271,6 +279,24 @@ export function ProposalsPage() {
             </span>
           )}
           {activeTab === 'accepted' && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600"></span>
+          )}
+        </button>
+        <button
+          onClick={() => setActiveTab('hired')}
+          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+            activeTab === 'hired'
+              ? 'text-emerald-600'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Hired
+          {hiredCount > 0 && (
+            <span className="ml-2 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full">
+              {hiredCount}
+            </span>
+          )}
+          {activeTab === 'hired' && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600"></span>
           )}
         </button>

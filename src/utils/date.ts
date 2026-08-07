@@ -147,12 +147,14 @@ export function addDays(date: Date | string | number, days: number): Date {
  * @returns Formatted currency string
  */
 export function formatCurrency(amount: number, currency = 'INR'): string {
+  // Guard against NaN/undefined so the UI never renders ₹NaN.
+  const safeAmount = Number.isFinite(amount) ? amount : 0;
   return new Intl.NumberFormat('en-IN', {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(safeAmount);
 }
 
 /**

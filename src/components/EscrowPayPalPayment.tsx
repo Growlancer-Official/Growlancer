@@ -8,7 +8,7 @@ import { AlertCircle,
   CheckCircle,
   ChevronRight,
   CircleDollarSign,
-  DollarSign,
+  IndianRupee,
   ListChecks,
   Loader2,
   Shield } from 'lucide-react';
@@ -124,7 +124,7 @@ function MilestoneStepIndicator({
               {/* Amount and status */}
               <div className="text-right flex-shrink-0">
                 <p className="text-sm font-semibold text-slate-900">
-                  ${Number(milestone.amount || 0).toFixed(2)}
+                  ₹{Number(milestone.amount || 0).toFixed(2)}
                 </p>
                 <span className={`text-xs font-medium capitalize ${
                   isCompleted ? 'text-emerald-600' : isDisputed ? 'text-red-600' : 'text-slate-400'
@@ -151,7 +151,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
     <div className="p-4 bg-slate-50 rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-slate-700">Escrow Funding Progress</span>
-        <span className="text-sm font-bold text-slate-900">₹{funded.toFixed(0)} / ${total.toFixed(0)}</span>
+        <span className="text-sm font-bold text-slate-900">₹{funded.toFixed(0)} / ₹{total.toFixed(0)}</span>
       </div>
       <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
         <div
@@ -648,7 +648,7 @@ export function EscrowPayPalPayment({
             </>
           ) : (
             <>
-              <DollarSign className="w-5 h-5" />
+              <IndianRupee className="w-5 h-5" />
               Proceed to Payment
             </>
           )}

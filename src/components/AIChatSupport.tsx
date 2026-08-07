@@ -8,7 +8,6 @@ import {
   Check,
   Copy,
   Globe,
-  Infinity as InfinityIcon,
   Send,
   Sparkles,
   User,
@@ -45,6 +44,9 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [streamingContent, setStreamingContent] = useState('');
+  // Real-time model name — defaults to the configured model, updates live from
+  // the AI stream (the edge function relays the actual model on first chunk).
+  const [modelName, setModelName] = useState(() => (import.meta.env.VITE_OMNIROUTE_MODEL as string | undefined) || 'Growlancer AI');
   const toast = useToast();
   const [escalating, setEscalating] = useState(false);
   const [escalated, setEscalated] = useState(false);
@@ -53,8 +55,23 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // AI chat is FREE + UNLIMITED for everyone on Growlancer — no subscription
-  // gating, no monthly message caps. The platform earns only a 5% commission.
+  // Real-time greeting with the user's name based on their local time of day
+  useEffect(() => {
+    if (!user) return;
+    const hour = new Date().getHours();
+    const part =
+      hour < 5 ? 'Good night' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : hour < 21 ? 'Good evening' : 'Good night';
+    const name = user.name || user.email?.split('@')[0] || 'there';
+    setMessages([
+      {
+        id: `greeting-${Date.now()}`,
+        role: 'assistant',
+        content: `${part}, ${name}! 👋 I'm your Growlancer AI assistant. I'm online and ready — ask me anything, in any language.`,
+        timestamp: new Date(),
+      },
+    ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -153,10 +170,11 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
             const jsonStr = line.slice(6).trim();
-            if (!jsonStr) continue;
-
-            try {
-              const parsed = JSON.parse(jsonStr);
+            if (!jsonStr) continue;              try {
+                const parsed = JSON.parse(jsonStr);
+              if (parsed.model) {
+                setModelName(parsed.model);
+              }
               if (parsed.text) {
                 fullContent += parsed.text;
                 setStreamingContent(fullContent);
@@ -207,7 +225,10 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       if (error.name === 'AbortError') return; // User cancelled
       console.error('Error getting AI response:', error);
       toast.error('AI Error', 'Failed to get response. Please try again.');
-      const errMsg = error.message || 'Something went wrong';
+      let errMsg = error.message || 'Something went wrong';
+      if (/localhost|connection refused|econnrefused|fetch failed|temporarily unavailable/i.test(errMsg)) {
+        errMsg = 'The AI service is temporarily unavailable. Please try again in a few moments.';
+      }
       setMessages((prev) => [
         ...prev,
         {
@@ -402,8 +423,8 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
               <h3 className="font-bold text-slate-900">{title}</h3>
               <p className="text-xs text-slate-500">
                 <span className="flex items-center gap-1 text-emerald-600 font-semibold">
-                  <InfinityIcon className="w-3 h-3" />
-                  Unlimited — Free for everyone
+                  <Sparkles className="w-3 h-3" />
+                  {modelName}
                 </span>
                 <span className="mx-2 text-slate-300">·</span>
                 <span className="flex items-center gap-1">

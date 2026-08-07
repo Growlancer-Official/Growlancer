@@ -75,13 +75,23 @@ function ProposalMenu({
       {open && (
         <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white rounded-xl border border-slate-200 shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1">
           <Link
-            to={`/client/proposals?freelancer=${freelancerId}`}
+            to={`/freelancer/${freelancerId}`}
             className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             onClick={() => setOpen(false)}
           >
             <ExternalLink className="w-4 h-4 text-slate-400" />
             <span>View Freelancer Profile</span>
           </Link>
+
+          {status === 'hired' && (
+            <>
+              <div className="h-px bg-slate-100 my-1.5 mx-3" />
+              <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-700 font-medium">
+                <CheckCircle className="w-4 h-4" />
+                <span>Hired — contract created</span>
+              </div>
+            </>
+          )}
 
           {status === 'pending' && (
             <>
@@ -212,6 +222,7 @@ export function ClientProposalsPage() {
       case 'pending':
         return 'bg-yellow-100 text-yellow-700';
       case 'accepted':
+      case 'hired':
         return 'bg-emerald-100 text-emerald-700';
       case 'rejected':
         return 'bg-red-100 text-red-700';
@@ -330,17 +341,26 @@ export function ClientProposalsPage() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
-                    {proposal.freelancer?.avatar ? (
-                      <img src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
-                    ) : (
-                      <User className="w-6 h-6 text-slate-400" />
-                    )}
-                  </div>
+                  <Link
+                    to={`/freelancer/${proposal.freelancer_id}`}
+                    title="View freelancer profile"
+                    className="shrink-0"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-emerald-400 transition-all">
+                      {proposal.freelancer?.avatar ? (
+                        <img src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
+                      ) : (
+                        <User className="w-6 h-6 text-slate-400" />
+                      )}
+                    </div>
+                  </Link>
                   <div>
-                    <h3 className="font-display font-bold text-slate-900">
+                    <Link
+                      to={`/freelancer/${proposal.freelancer_id}`}
+                      className="font-display font-bold text-slate-900 hover:text-emerald-600 transition-colors"
+                    >
                       {proposal.freelancer?.name || 'Unknown Freelancer'}
-                    </h3>
+                    </Link>
                     <div className="flex items-center gap-3 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
