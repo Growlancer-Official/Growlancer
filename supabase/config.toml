@@ -421,3 +421,11 @@ enabled = true
 # declarative_schema_path = "./database"
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
+
+# ── Edge Function overrides ──────────────────────────────────────
+# Razorpay's webhook is a server-to-server callback (no Supabase JWT), so JWT
+# verification MUST be disabled for it — otherwise every Razorpay webhook call
+# is rejected with 401 UNAUTHORIZED_NO_AUTH_HEADER. All other functions keep
+# the default verify_jwt = true (they are called from the app with a JWT).
+[functions.razorpay-webhook]
+verify_jwt = false
