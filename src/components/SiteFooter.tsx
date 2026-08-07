@@ -132,10 +132,6 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                     <circle cx="15" cy="8" r="5" fill="#F79E1B"/>
                     <path d="M12 4.2a5 5 0 0 1 0 7.6 5 5 0 0 1 0-7.6z" fill="#FF5F00"/>
                   </svg>
-                  {/* RuPay */}
-                  <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 ring-1 ring-purple-200 rounded px-1.5 py-0.5">RuPay</span>
-                  {/* American Express */}
-                  <span className="text-[10px] font-bold text-blue-900">AMEX</span>
                   {/* Net Banking */}
                   <span className="text-[10px] font-medium text-slate-600">Net Banking</span>
                   <span className="text-slate-300 text-xs">|</span>
