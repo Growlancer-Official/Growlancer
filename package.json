@@ -13,7 +13,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts,tsx --fix",
-    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\""
+    "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
+    "deploy:backend": "bash scripts/deploy-backend.sh"
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.8",
