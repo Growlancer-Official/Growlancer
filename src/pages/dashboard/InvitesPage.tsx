@@ -5,7 +5,7 @@ import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, dbFunctions } from '../../lib/supabase';
-import { safeFormatDate } from '../../utils/date';
+import { safeFormatDate, safeNumber } from '../../utils/date';
 import type { Tables } from '../../types/supabase';
 
 type InviteWithDetails = Tables<'invites'> & {
@@ -434,8 +434,8 @@ export function InvitesPage() {
                       <div className="flex items-center gap-6 text-sm">
                         <span className="flex items-center gap-1 text-slate-600">
                           <Wallet className="w-4 h-4 text-slate-400" />
-                          ₹{invite.projects.budget_min?.toLocaleString()} - ₹{
-                            invite.projects.budget_max?.toLocaleString()
+                          ₹{safeNumber(invite.projects.budget_min).toLocaleString()} - ₹{
+                            safeNumber(invite.projects.budget_max).toLocaleString()
                           }
                         </span>
                         <span className="flex items-center gap-1 text-slate-600">

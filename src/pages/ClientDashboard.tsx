@@ -8,6 +8,7 @@ import {
   proposalsService,
 } from '../lib/dataService';
 import { notificationService } from '../lib/notifications';
+import { safeFormatDate, safeNumber } from '../utils/date';
 
 interface ClientStats {
   activeProjects: number;
@@ -162,7 +163,7 @@ export default function ClientDashboard() {
     },
     { 
       label: 'Total Spent', 
-      value: `₹${stats.totalSpent.toLocaleString()}`, 
+      value: `₹${safeNumber(stats.totalSpent).toLocaleString()}`, 
       icon: IndianRupee, 
       color: 'bg-orange-50 text-orange-600' 
     },
@@ -249,10 +250,10 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm text-slate-500">
-                      Budget: ₹{project.budget_min?.toLocaleString()}-₹{project.budget_max?.toLocaleString()}
+                      Budget: ₹{safeNumber(project.budget_min).toLocaleString()}-₹{safeNumber(project.budget_max).toLocaleString()}
                     </span>
                     <span className="text-xs text-slate-400">
-                      {new Date(project.created_at).toLocaleDateString()}
+                      {safeFormatDate(project.created_at)}
                     </span>
                   </div>
                 </Link>
@@ -298,7 +299,7 @@ export default function ClientDashboard() {
                         {contract.projects?.title || 'Project'}
                       </h4>
                       <p className="text-sm text-slate-500 mt-1">
-                        Freelancer: {contract.profiles?.name || 'Unknown'}
+                        Freelancer: {contract.freelancer_profile?.name || 'Unknown'}
                       </p>
                     </div>
                     <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${
@@ -312,7 +313,7 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm font-medium text-slate-900">
-                      ₹{Number(contract.amount).toLocaleString()}
+                      ₹{safeNumber(contract.amount).toLocaleString()}
                     </span>
                     {contract.escrow_funded ? (
                       <span className="flex items-center gap-1 text-xs text-emerald-600">

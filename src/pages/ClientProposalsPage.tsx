@@ -410,7 +410,7 @@ export function ClientProposalsPage() {
                     <span className="font-medium">Project:</span> {proposal.project.title}
                   </p>
                   <p className="text-sm text-slate-600">
-                    <span className="font-medium">Budget:</span> ₹{proposal.project.budget_min?.toLocaleString('en-IN')} - ₹{proposal.project.budget_max?.toLocaleString('en-IN')}
+                    <span className="font-medium">Budget:</span> ₹{proposal.project.budget_min?.toLocaleString('en-IN') ?? '—'} - ₹{proposal.project.budget_max?.toLocaleString('en-IN') ?? '—'}
                   </p>
                 </div>
               )}

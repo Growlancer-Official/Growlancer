@@ -31,6 +31,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { withdrawalService, type Withdrawal, type PayoutMethod } from '../../lib/withdrawal';
 import { PLATFORM_CONFIG } from '../../lib/config';
+import { safeFormatDate } from '../../utils/date';
 
 // ────────────────────────────────────────
 // Types
@@ -796,14 +797,10 @@ export function WalletPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-slate-900">
-                        Withdrawal — {w.method === 'paypal' ? 'PayPal' : w.method}
+                        Withdrawal — {w.method === 'paypal' ? 'PayPal' : w.method === 'razorpay_payout' ? 'Bank / UPI' : w.method}
                       </p>
                       <p className="text-xs text-slate-500">
-                        {new Date(w.created_at).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
+                        {safeFormatDate(w.created_at, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                     <div className="text-right">
@@ -902,13 +899,7 @@ export function WalletPage() {
                     {filteredTransactions.map((tx) => (
                       <tr key={tx.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 text-slate-600 whitespace-nowrap">
-                          {tx.created_at
-                            ? new Date(tx.created_at).toLocaleDateString(undefined, {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                              })
-                            : '—'}
+                          {safeFormatDate(tx.created_at, { year: 'numeric', month: 'short', day: 'numeric' }) || '—'}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
@@ -1357,7 +1348,7 @@ export function WalletPage() {
                           : `${maskAccount(method.account_number)} — ${method.account_holder_name || ''}`}
                       </p>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        Added {new Date(method.created_at).toLocaleDateString()}
+                        Added {safeFormatDate(method.created_at)}
                       </p>
                     </div>
 
@@ -1642,7 +1633,7 @@ export function WalletPage() {
                     <div className="min-w-0">
                       <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>
                       <p className="text-xs text-slate-500 truncate">{inv.project_title || 'Contract work'}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{new Date(inv.issued_at).toLocaleDateString()}</p>
+                      <p className="text-[10px] text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 flex-shrink-0">

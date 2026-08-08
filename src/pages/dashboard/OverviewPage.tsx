@@ -453,7 +453,7 @@ export function OverviewPage() {
                           <p className="text-emerald-100 text-sm mt-1 line-clamp-1">{project.description}</p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold">₹{project.budget_min?.toLocaleString()}-₹{project.budget_max?.toLocaleString()}</p>
+                          <p className="font-semibold">₹{safeNumber(project.budget_min).toLocaleString()}-₹{safeNumber(project.budget_max).toLocaleString()}</p>
                           <p className="text-emerald-100 text-xs">{project.experience_level}</p>
                         </div>
                       </div>

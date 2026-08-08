@@ -6,7 +6,7 @@ import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
 import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
 import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, Download, FileText, Filter, IndianRupee, Loader2, Plus, PlusCircle, Shield, Trash2 } from 'lucide-react';
-import { formatCurrency } from '../utils/date';
+import { formatCurrency, safeFormatDate, safeNumber } from '../utils/date';
 
 interface Transaction {
   id: string;
@@ -314,7 +314,7 @@ export function ClientPaymentsPage() {
   };
 
   const formatAmount = (amount: number, type: string) => {
-    return `${type === 'credit' ? '+' : '-'}₹${Math.abs(amount).toLocaleString()}`;
+    return `${type === 'credit' ? '+' : '-'}₹${safeNumber(Math.abs(amount)).toLocaleString()}`;
   };
 
   const formatInvoiceAmount = (amount: number) =>
@@ -488,7 +488,7 @@ export function ClientPaymentsPage() {
                   )}
                   {card.card_holder_name && <p>{card.card_holder_name}</p>}
                   {card.last_used_at && (
-                    <p>Last used {new Date(card.last_used_at).toLocaleDateString()}</p>
+                    <p>Last used {safeFormatDate(card.last_used_at)}</p>
                   )}
                   <p>Used {card.used_count} time{card.used_count !== 1 ? 's' : ''}</p>
                 </div>
@@ -920,7 +920,7 @@ export function ClientPaymentsPage() {
                     <td className="px-6 py-4 text-sm text-slate-600">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        {new Date(transaction.created_at).toLocaleDateString()}
+                        {safeFormatDate(transaction.created_at)}
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -974,7 +974,7 @@ export function ClientPaymentsPage() {
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>
                     <p className="text-xs text-slate-500 truncate">{inv.project_title || 'Contract work'}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{new Date(inv.issued_at).toLocaleDateString()}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 flex-shrink-0">
