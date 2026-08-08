@@ -23,12 +23,14 @@ interface ServiceData {
   image_url?: string | null;
   freelancer?: {
     id: string;
-    full_name: string | null;
+    name: string | null;
     avatar: string | null;
-    title: string | null;
-    hourly_rate: number | null;
-    location: string | null;
-    skills: string[];
+    professional?: {
+      title: string | null;
+      hourly_rate: number | null;
+      location: string | null;
+      skills: string[];
+    } | null;
     average_rating?: number;
     total_reviews?: number;
   };
@@ -52,14 +54,11 @@ export function ServiceDetailPage() {
           .from('services')
           .select(`
             *,
-            freelancer:freelancer_id (
+            freelancer:profiles!services_freelancer_id_fkey (
               id,
-              full_name,
+              name,
               avatar,
-              title,
-              hourly_rate,
-              location,
-              skills
+              professional:freelancer_profiles(title, hourly_rate, location, skills)
             )
           `)
           .eq('id', serviceId)
@@ -273,13 +272,13 @@ export function ServiceDetailPage() {
                     {service.freelancer.avatar ? (
                       <img src={service.freelancer.avatar} alt="" className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      (service.freelancer.full_name || 'U')[0]
+                      (service.freelancer.name || 'U')[0]
                     )}
                   </div>
                   <div>
-                    <p className="font-semibold text-slate-900">{service.freelancer.full_name || 'Freelancer'}</p>
-                    {service.freelancer.title && (
-                      <p className="text-xs text-slate-500">{service.freelancer.title}</p>
+                    <p className="font-semibold text-slate-900">{service.freelancer.name || 'Freelancer'}</p>
+                    {service.freelancer.professional?.title && (
+                      <p className="text-xs text-slate-500">{service.freelancer.professional.title}</p>
                     )}
                   </div>
                 </div>
@@ -293,7 +292,7 @@ export function ServiceDetailPage() {
                 )}
 
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {(service.freelancer.skills || []).slice(0, 4).map((skill) => (
+                  {(service.freelancer.professional?.skills || []).slice(0, 4).map((skill) => (
                     <span key={skill} className="px-2 py-0.5 bg-slate-50 text-slate-600 text-xs rounded-md">
                       {skill}
                     </span>
