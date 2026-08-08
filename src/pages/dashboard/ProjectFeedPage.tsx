@@ -206,10 +206,23 @@ export function ProjectFeedPage() {
   const [appliedProjects, setAppliedProjects] = useState<Set<string>>(new Set());
   const toast = useToast();
 
+  // Declined projects are stored PER USER (shared-device safe): user A's
+  // declines must never hide projects from user B. A legacy global key is
+  // migrated once into the current user's own key.
+  const declinedStorageKey = () => `gw_declined_projects_${user?.id || 'anon'}`;
   const [declinedProjects, setDeclinedProjects] = useState<Set<string>>(() => {
     try {
-      const stored = localStorage.getItem('gw_declined_projects');
-      return stored ? new Set(JSON.parse(stored)) : new Set();
+      const key = declinedStorageKey();
+      const stored = localStorage.getItem(key);
+      if (stored) return new Set(JSON.parse(stored));
+      if (user?.id) {
+        const legacy = localStorage.getItem('gw_declined_projects');
+        if (legacy) {
+          localStorage.setItem(`gw_declined_projects_${user.id}`, legacy);
+          return new Set(JSON.parse(legacy));
+        }
+      }
+      return new Set();
     } catch {
       return new Set();
     }
@@ -252,10 +265,7 @@ export function ProjectFeedPage() {
           .eq('freelancer_id', user.id)
           .order('match_score', { ascending: false });
 
-        if (error) {
-          toast.error('Error', 'Failed to load matches.');
-          throw error;
-        }
+        if (error) throw error;
 
         const rawMatches = (matchesData as unknown as MatchWithProject[]) || [];
         // Filter out declined projects; show all category-first matches.
@@ -532,7 +542,9 @@ export function ProjectFeedPage() {
       const newDeclined = new Set(declinedProjects);
       newDeclined.add(projectIdFromMatch);
       setDeclinedProjects(newDeclined);
-      localStorage.setItem('gw_declined_projects', JSON.stringify([...newDeclined]));
+      if (user?.id) {
+        localStorage.setItem(`gw_declined_projects_${user.id}`, JSON.stringify([...newDeclined]));
+      }
 
       // Optionally delete from DB
       await supabase

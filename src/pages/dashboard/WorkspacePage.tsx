@@ -166,16 +166,12 @@ export function WorkspacePage() {
       }
     };
 
-    const timeoutId = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-      }
-    }, 3000);
+    const timeoutId = setTimeout(() => setLoading(false), 3000);
 
     fetchData();
 
     return () => clearTimeout(timeoutId);
-  }, [user, contractId, loading, toast]);
+  }, [user, contractId]);
 
   const fetchSharedTasks = useCallback(async () => {
     if (!selectedContract) return;

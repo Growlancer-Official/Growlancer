@@ -50,10 +50,7 @@ export function InvitesPage() {
           .eq('freelancer_id', user.id)
           .order('created_at', { ascending: false });
 
-        if (error) {
-          toast.error('Error', 'Failed to load invites.');
-          throw error;
-        }
+        if (error) throw error;
 
         if (data) {
           // Filter out invites from deleted clients
@@ -71,11 +68,7 @@ export function InvitesPage() {
     };
 
     // Add timeout to prevent infinite loading - reduced to 3 seconds for faster UX
-    const timeoutId = setTimeout(() => {
-      if (loading) {
-        setLoading(false);
-      }
-    }, 3000);
+    const timeoutId = setTimeout(() => setLoading(false), 3000);
 
     fetchInvites();
 
@@ -168,7 +161,7 @@ export function InvitesPage() {
       invitesChannel.unsubscribe();
       profilesChannel.unsubscribe();
     };
-  }, [user, loading, toast]);
+  }, [user]);
 
   const handleAcceptInvite = async (inviteId: string) => {
     setProcessingInvite(inviteId);

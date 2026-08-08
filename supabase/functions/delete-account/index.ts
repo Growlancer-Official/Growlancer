@@ -17,6 +17,50 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
+// Storage objects cannot be deleted from SQL (Supabase blocks direct DML on
+// storage.objects), so the delete-account flow removes them via the Storage
+// API — best-effort, and never blocks the actual account deletion.
+const USER_FOLDER_BUCKETS = [
+  'avatars',
+  'profile-pictures',
+  'company-logos',
+  'portfolio-images',
+  'verification-documents',
+  'certificate_documents',
+  'internship_documents',
+  'internship_resumes',
+  'videos',
+];
+
+async function removeStoragePrefix(adminClient: any, bucket: string, prefix: string): Promise<void> {
+  try {
+    // Files inside the `{userId}/` folder
+    const { data: files, error } = await adminClient.storage.from(bucket).list(prefix, { limit: 1000 });
+    if (!error && Array.isArray(files)) {
+      const paths = files
+        .filter((f: any) => f && f.name && f.metadata !== null) // files only, skip folder entries
+        .map((f: any) => `${prefix}/${f.name}`);
+      if (paths.length > 0) {
+        await adminClient.storage.from(bucket).remove(paths);
+      }
+    }
+    // Root-level files keyed by the user id (e.g. `{userId}.png`) live OUTSIDE
+    // the `{userId}/` folder — list the bucket root and remove those as well.
+    const { data: rootFiles, error: rootError } = await adminClient.storage.from(bucket).list('', { limit: 1000 });
+    if (!rootError && Array.isArray(rootFiles)) {
+      const rootPaths = rootFiles
+        .filter((f: any) => f && f.name && f.metadata !== null)
+        .map((f: any) => f.name as string)
+        .filter((name: string) => name.startsWith(`${prefix}.`) || name.startsWith(`${prefix}_`));
+      if (rootPaths.length > 0) {
+        await adminClient.storage.from(bucket).remove(rootPaths);
+      }
+    }
+  } catch {
+    // best-effort — never block the account deletion
+  }
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -56,7 +100,32 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    // 4. Call the SQL function that hard-deletes everything
+    // 4. Best-effort Storage cleanup — gather contract/dispute ids FIRST
+    //    (the RPC deletes those rows), then remove the object files.
+    try {
+      const { data: contracts } = await adminClient
+        .from('contracts')
+        .select('id')
+        .or(`freelancer_id.eq.${user.id},client_id.eq.${user.id}`);
+      const { data: disputes } = await adminClient
+        .from('disputes')
+        .select('id')
+        .or(`freelancer_id.eq.${user.id},client_id.eq.${user.id}`);
+
+      for (const bucket of USER_FOLDER_BUCKETS) {
+        await removeStoragePrefix(adminClient, bucket, user.id);
+      }
+      for (const c of (contracts ?? [])) {
+        await removeStoragePrefix(adminClient, 'contract-files', c.id);
+      }
+      for (const d of (disputes ?? [])) {
+        await removeStoragePrefix(adminClient, 'dispute-evidence', d.id);
+      }
+    } catch (err) {
+      console.error('[delete-account] Storage cleanup failed (non-fatal):', err);
+    }
+
+    // 5. Call the SQL function that hard-deletes everything
     const { data, error } = await adminClient.rpc('delete_user_all_data', {
       p_user_id: user.id,
     });
