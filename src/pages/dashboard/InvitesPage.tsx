@@ -161,7 +161,7 @@ export function InvitesPage() {
       invitesChannel.unsubscribe();
       profilesChannel.unsubscribe();
     };
-  }, [user]);
+  }, [user, toast]);
 
   const handleAcceptInvite = async (inviteId: string) => {
     setProcessingInvite(inviteId);

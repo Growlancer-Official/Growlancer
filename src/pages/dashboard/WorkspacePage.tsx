@@ -171,7 +171,7 @@ export function WorkspacePage() {
     fetchData();
 
     return () => clearTimeout(timeoutId);
-  }, [user, contractId]);
+  }, [user, contractId, toast]);
 
   const fetchSharedTasks = useCallback(async () => {
     if (!selectedContract) return;
