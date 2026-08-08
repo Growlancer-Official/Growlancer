@@ -109,3 +109,17 @@ export async function adminInsert(table: string, data: Record<string, any>): Pro
   if (error) throw error;
   return (result as any)?.data;
 }
+
+/**
+ * Run the orphan-data purge (wipes ALL data of profiles whose auth.users row
+ * is gone). Returns { success, result } where result is the purge report.
+ */
+export async function adminPurgeOrphans(): Promise<{ success: boolean; result?: any; error?: string }> {
+  const { data: result, error } = await supabase.functions.invoke(FN, {
+    method: 'POST',
+    body: { action: 'purge_orphans' },
+  });
+
+  if (error) throw error;
+  return result as { success: boolean; result?: any; error?: string };
+}

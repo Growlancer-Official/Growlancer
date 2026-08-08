@@ -27,6 +27,7 @@ const ALLOWED_TABLES = [
   'review_replies', 'ai_matches', 'opportunity_events',
   'workspaces', 'workspace_members', 'team_invitations',
   'milestones', 'workspace_activity_logs', 'fraud_events',
+  'deletion_failures',
 ];
 
 // Rate limiting for failed admin auth: max 10 failed attempts per IP per 15 minutes
@@ -476,6 +477,27 @@ Deno.serve(async (req) => {
       if (!session) {
         return new Response(JSON.stringify({ error: 'Unauthorized: Admin session required' }), {
           status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
+    // ─── POST: purge_orphans (ADMIN) ─────────────────────────────
+    // Runs purge_orphan_user_data() — wipes ALL data for any profile whose
+    // auth.users row is gone (deleted while a deletion was incomplete).
+    if (req.method === 'POST' && action === 'purge_orphans') {
+      try {
+        const { data: result, error: rpcError } = await supabaseClient.rpc('purge_orphan_user_data')
+        if (rpcError) {
+          return new Response(JSON.stringify({ success: false, error: rpcError.message }), {
+            status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+        return new Response(JSON.stringify({ success: true, result }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      } catch (err) {
+        return new Response(JSON.stringify({ success: false, error: String(err) }), {
+          status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
     }

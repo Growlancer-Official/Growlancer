@@ -134,6 +134,7 @@ const AdminCertificatesPage = lazy(() => import('@pages/admin/AdminCertificatesP
 const AdminIdentityVerificationPage = lazy(() => import('@pages/admin/AdminIdentityVerificationPage').then(m => ({ default: m.AdminIdentityVerificationPage })));
 const AdminSupportTicketsPage = lazy(() => import('@pages/admin/AdminSupportTicketsPage').then(m => ({ default: m.AdminSupportTicketsPage })));
 const AdminWaitlistPage = lazy(() => import('@pages/admin/AdminWaitlistPage').then(m => ({ default: m.AdminWaitlistPage })));
+const AdminDataIsolationPage = lazy(() => import('@pages/admin/AdminDataIsolationPage').then(m => ({ default: m.AdminDataIsolationPage })));
 
 // Onboarding
 const OnboardingPage = lazy(() => import('@pages/OnboardingPage').then(m => ({ default: m.OnboardingPage })));
@@ -323,6 +324,7 @@ function App() {
                 <Route path="identity-verification" element={<AdminIdentityVerificationPage />} />
                 <Route path="support-tickets" element={<AdminSupportTicketsPage />} />
                 <Route path="waitlist" element={<AdminWaitlistPage />} />
+                <Route path="data-isolation" element={<AdminDataIsolationPage />} />
               </Route>
 
               {/* Waitlist Route (public, no layout) */}
