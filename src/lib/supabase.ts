@@ -159,7 +159,8 @@ export type TableName =
   | 'workspace_activity_logs'
   | 'opportunity_events'
   | 'team_invitations'
-  | 'fraud_events';
+  | 'fraud_events'
+  | 'user_reports';
 
 /**
  * Safe typed table reference.

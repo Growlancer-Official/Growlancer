@@ -31,6 +31,7 @@ import { PricingPage } from '@pages/PricingPage';
 import { AboutPage } from '@pages/AboutPage';
 import { PhilosophyPage } from '@pages/PhilosophyPage';
 import { ContactPage } from '@pages/ContactPage';
+import { ReportFeedbackPage } from '@pages/ReportFeedbackPage';
 import { InternshipsPage } from '@pages/InternshipsPage';
 import { HelpCenterPage } from '@pages/HelpCenterPage';
 import { SafetyPage } from '@pages/SafetyPage';
@@ -133,6 +134,7 @@ const AdminInternshipsPage = lazy(() => import('@pages/admin/AdminInternshipsPag
 const AdminCertificatesPage = lazy(() => import('@pages/admin/AdminCertificatesPage').then(m => ({ default: m.AdminCertificatesPage })));
 const AdminIdentityVerificationPage = lazy(() => import('@pages/admin/AdminIdentityVerificationPage').then(m => ({ default: m.AdminIdentityVerificationPage })));
 const AdminSupportTicketsPage = lazy(() => import('@pages/admin/AdminSupportTicketsPage').then(m => ({ default: m.AdminSupportTicketsPage })));
+const AdminUserReportsPage = lazy(() => import('@pages/admin/AdminUserReportsPage').then(m => ({ default: m.AdminUserReportsPage })));
 const AdminWaitlistPage = lazy(() => import('@pages/admin/AdminWaitlistPage').then(m => ({ default: m.AdminWaitlistPage })));
 const AdminDataIsolationPage = lazy(() => import('@pages/admin/AdminDataIsolationPage').then(m => ({ default: m.AdminDataIsolationPage })));
 
@@ -170,6 +172,7 @@ function App() {
                 <Route path="internships" element={<InternshipsPage />} />
                 <Route path="careers" element={<InternshipsPage />} />
                 <Route path="contact" element={<ContactPage />} />
+                <Route path="report" element={<ReportFeedbackPage />} />
                 <Route path="help-center" element={<HelpCenterPage />} />
                 <Route path="safety" element={<SafetyPage />} />
                 <Route path="guidelines" element={<GuidelinesPage />} />
@@ -323,6 +326,7 @@ function App() {
                 <Route path="certificates" element={<AdminCertificatesPage />} />
                 <Route path="identity-verification" element={<AdminIdentityVerificationPage />} />
                 <Route path="support-tickets" element={<AdminSupportTicketsPage />} />
+                <Route path="user-reports" element={<AdminUserReportsPage />} />
                 <Route path="waitlist" element={<AdminWaitlistPage />} />
                 <Route path="data-isolation" element={<AdminDataIsolationPage />} />
               </Route>

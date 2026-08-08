@@ -22,7 +22,7 @@ const ALLOWED_TABLES = [
   'user_deletion_requests', 'user_mfa_settings', 'recovery_codes',
   'notification_preferences', 'payout_methods',
   'wallets', 'portfolio_items', 'disputes',
-  'waitlist', 'countries', 'industries',
+  'waitlist', 'countries', 'industries', 'user_reports',
   'saved_searches', 'time_entries', 'connects_transactions',
   'review_replies', 'ai_matches', 'opportunity_events',
   'workspaces', 'workspace_members', 'team_invitations',

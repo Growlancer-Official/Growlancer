@@ -73,6 +73,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <li><Link to="/guidelines" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Guidelines</Link></li>
               <li><Link to="/status" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Platform Status</Link></li>
               <li><Link to="/help-center" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Help Center</Link></li>
+              <li><Link to="/report" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Report a Bug / Feedback</Link></li>
             </ul>
           </div>
 
