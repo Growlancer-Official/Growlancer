@@ -294,7 +294,7 @@ export const aiMatchingService = {
         .from('ai_matches')
         .select(`
           *,
-          freelancer:freelancer_id (
+          freelancer:profiles!ai_matches_freelancer_id_fkey (
             id,
             name,
             avatar,
@@ -380,7 +380,7 @@ export const aiMatchingService = {
             category,
             status,
             created_at,
-            client:profiles (
+            client:profiles!projects_client_id_fkey (
               id,
               name,
               avatar

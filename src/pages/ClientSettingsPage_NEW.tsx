@@ -101,6 +101,11 @@ export function ClientSettingsPage() {
     email: '',
   });
 
+  // ── Edit Profile (name) state ──
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [savingName, setSavingName] = useState(false);
+
   // ── Change Email state ──
   const [newEmail, setNewEmail] = useState('');
   const [changeEmailLoading, setChangeEmailLoading] = useState(false);
@@ -487,6 +492,49 @@ export function ClientSettingsPage() {
         : 'Failed to send email confirmation. Please try again.');
     } finally {
       setChangeEmailLoading(false);
+    }
+  };
+
+  // ── Edit Profile (name) handler ──
+  const startEditName = () => {
+    setNameDraft(accountData.name || '');
+    setErrorMessage(null);
+    setEditingName(true);
+  };
+
+  const cancelEditName = () => {
+    setEditingName(false);
+    setNameDraft('');
+    setErrorMessage(null);
+  };
+
+  const handleSaveName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = nameDraft.trim();
+    if (!trimmed) {
+      setErrorMessage('Name cannot be empty.');
+      return;
+    }
+    setSavingName(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ name: trimmed, updated_at: new Date().toISOString() } as any)
+        .eq('id', user?.id);
+      if (error) throw error;
+      setAccountData((prev) => ({ ...prev, name: trimmed }));
+      setEditingName(false);
+      setNameDraft('');
+      // AuthContext listens to profiles realtime updates, so the header syncs automatically.
+      setSuccessMessage('Profile name updated!');
+      setTimeout(() => setSuccessMessage(null), 3000);
+    } catch (err) {
+      console.error('Error saving name:', err);
+      setErrorMessage('Failed to update name. Please try again.');
+    } finally {
+      setSavingName(false);
     }
   };
 
@@ -1194,7 +1242,45 @@ export function ClientSettingsPage() {
                       <User className="w-5 h-5 text-slate-400" />
                       <div>
                         <p className="text-sm text-slate-500">Full Name</p>
-                        <p className="font-medium text-slate-900">{accountData.name}</p>
+                        {editingName ? (
+                          <form onSubmit={handleSaveName} className="mt-1 flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={nameDraft}
+                              onChange={(e) => setNameDraft(e.target.value)}
+                              autoFocus
+                              maxLength={60}
+                              className="w-full sm:w-64 min-w-0 px-3 py-2 rounded-lg border border-emerald-300 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm font-medium text-slate-900"
+                            />
+                            <button
+                              type="submit"
+                              disabled={savingName}
+                              className="inline-flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                            >
+                              {savingName ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEditName}
+                              className="inline-flex items-center gap-1 px-3 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-300 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              Cancel
+                            </button>
+                          </form>
+                        ) : (
+                          <p className="font-medium text-slate-900 flex flex-wrap items-center gap-2">
+                            {accountData.name || '—'}
+                            <button
+                              type="button"
+                              onClick={startEditName}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                            >
+                              <User className="w-3 h-3" /> Edit Profile
+                            </button>
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
