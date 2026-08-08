@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, Wallet,  } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, X } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, realtimeChannels } from '../../lib/supabase';
@@ -94,6 +94,7 @@ export function ContractsPage() {
   const [hasMore, setHasMore] = useState(true);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
   const [selectedContract, setSelectedContract] = useState<ContractWithDetails | null>(null);
+  const [escrowModalContract, setEscrowModalContract] = useState<ContractWithDetails | null>(null);
   const pageSize = 20;
   const pageRef = useRef(0);
 
@@ -269,6 +270,36 @@ export function ContractsPage() {
     (sum, state) => sum + (state.balance?.heldAmount || 0),
     0
   );
+
+  const getStatusLabel = (status: string): string => {
+    switch (status) {
+      case 'active':
+      case 'in_progress':
+        return 'In Progress';
+      case 'submitted':
+        return 'Submitted';
+      case 'revision_requested':
+        return 'Revision Requested';
+      case 'approved':
+        return 'Approved';
+      case 'completed':
+        return 'Completed';
+      case 'cancelled':
+        return 'Cancelled';
+      case 'refunded':
+        return 'Refunded';
+      case 'disputed':
+        return 'Disputed';
+      case 'closed':
+        return 'Closed';
+      case 'draft':
+        return 'Draft';
+      case 'pending':
+        return 'Pending';
+      default:
+        return status || 'Pending';
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -516,7 +547,7 @@ export function ContractsPage() {
                       </div>
                       <div className="p-3 bg-purple-50 rounded-xl">
                         <p className="text-xs text-purple-600 mb-1">Status</p>
-                        <p className="text-lg font-bold text-purple-700 capitalize">{contract.status}</p>
+                        <p className="text-lg font-bold text-purple-700 capitalize">{getStatusLabel(contract.status || '')}</p>
                       </div>
                       {/* Escrow Balance Indicator */}
                       <div className={`p-3 rounded-xl ${
@@ -660,7 +691,9 @@ export function ContractsPage() {
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-slate-600 font-medium">Escrow Summary</span>
                           <span className="text-xs text-slate-400">
-                            {balance.fundedMilestoneCount} of {balance.milestoneCount} milestones funded
+                            {balance.milestoneCount > 0
+                              ? `${balance.fundedMilestoneCount} of ${balance.milestoneCount} milestones funded`
+                              : 'Full contract escrow'}
                           </span>
                         </div>
                         <div className="grid grid-cols-3 gap-3 mt-2">
@@ -697,14 +730,16 @@ export function ContractsPage() {
                         <FileText className="w-4 h-4" />
                         View Contract
                       </button>
-                      <Link
-                        to={`/dashboard/wallet?contract=${contract.id}`}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEscrowModalContract(contract);
+                        }}
                         className="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
-                        onClick={(e) => e.stopPropagation()}
                       >
-                        <Wallet className="w-4 h-4" />
+                        <Shield className="w-4 h-4" />
                         Escrow Details
-                      </Link>
+                      </button>
                     </div>
                   </div>
 
@@ -824,6 +859,187 @@ export function ContractsPage() {
           </div>
         </div>
       )}
+
+      {/* Escrow Details Modal */}
+      {escrowModalContract && (() => {
+        const ec = escrowModalContract;
+        const escrowState = escrowBalances[ec.id];
+        const balance = escrowState?.balance;
+        const escrowMilestones = milestones(ec.milestones);
+        const totalAmount = balance?.totalAmount ?? ec.amount ?? 0;
+        const funded = balance?.fundedAmount ?? 0;
+        const held = balance?.heldAmount ?? 0;
+        const released = balance?.releasedAmount ?? 0;
+        const fundedPct = totalAmount > 0 ? Math.round((funded / totalAmount) * 100) : 0;
+        const releasedPct = totalAmount > 0 ? Math.round((released / totalAmount) * 100) : 0;
+        const feePct = ec.amount > 0 ? Math.round(((ec.amount - (ec.freelancer_amount || 0)) / ec.amount) * 100) : 0;
+        const earnPct = Math.max(0, 100 - feePct);
+
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            onClick={() => setEscrowModalContract(null)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="p-6 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-t-2xl">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-white">Escrow Details</h3>
+                      <p className="text-sm text-emerald-100">{ec.project?.title || 'Contract'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setEscrowModalContract(null)}
+                    className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {/* Contract breakdown */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                  <div className="p-4 bg-slate-50 rounded-xl">
+                    <p className="text-xs text-slate-500 mb-1">Contract Value</p>
+                    <p className="text-lg font-bold text-slate-900">{formatCurrency(ec.amount)}</p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 rounded-xl">
+                    <p className="text-xs text-emerald-600 mb-1">Your Earnings ({earnPct}%)</p>
+                    <p className="text-lg font-bold text-emerald-700">{formatCurrency(ec.freelancer_amount)}</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-xl">
+                    <p className="text-xs text-blue-600 mb-1">Platform Fee ({feePct}%)</p>
+                    <p className="text-lg font-bold text-blue-700">{formatCurrency(ec.platform_fee)}</p>
+                  </div>
+                </div>
+
+                {/* Escrow status + funding progress */}
+                <div className="mb-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-medium text-slate-700">Escrow Status</p>
+                    <EscrowStatusBadge balance={balance} />
+                  </div>
+
+                  <div className="mb-2">
+                    <div className="flex items-center justify-between text-sm mb-1.5">
+                      <span className="font-medium text-slate-700">Funding Progress</span>
+                      <span className="font-bold text-emerald-600">{fundedPct}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-2.5">
+                      <div
+                        className="h-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
+                        style={{ width: `${fundedPct}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between mt-1 text-[11px] text-slate-400">
+                      <span>{formatCurrency(funded)} funded</span>
+                      <span>{formatCurrency(totalAmount)} contract value</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm mb-1.5 mt-4">
+                    <span className="font-medium text-slate-700">Release Progress</span>
+                    <span className="font-bold text-blue-600">{releasedPct}%</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2.5">
+                    <div
+                      className="h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
+                      style={{ width: `${releasedPct}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Funded / Held / Released */}
+                <div className="grid grid-cols-3 gap-3 mb-5">
+                  <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
+                    <p className="text-xs text-emerald-600 font-medium mb-1">Funded</p>
+                    <p className="text-lg font-bold text-emerald-700">{formatCurrency(funded)}</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                    <p className="text-xs text-blue-600 font-medium mb-1">Held in Escrow</p>
+                    <p className="text-lg font-bold text-blue-700">{formatCurrency(held)}</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl">
+                    <p className="text-xs text-purple-600 font-medium mb-1">Released</p>
+                    <p className="text-lg font-bold text-purple-700">{formatCurrency(released)}</p>
+                  </div>
+                </div>
+
+                {/* Milestones breakdown */}
+                <p className="text-sm font-medium text-slate-700 mb-2">Milestone Breakdown</p>
+                {escrowMilestones.length > 0 ? (
+                  <div className="space-y-2 mb-5">
+                    {escrowMilestones.map((m, idx) => {
+                      const mStatus = String(m.status || 'pending').toLowerCase();
+                      const isReleased = ['completed', 'approved', 'released', 'paid'].includes(mStatus);
+                      const isDisputed = mStatus === 'disputed';
+                      return (
+                        <div
+                          key={idx}
+                          className={`flex items-center justify-between p-3 rounded-xl border ${
+                            isReleased
+                              ? 'bg-emerald-50 border-emerald-100'
+                              : isDisputed
+                              ? 'bg-red-50 border-red-100'
+                              : 'bg-slate-50 border-slate-100'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                                isReleased
+                                  ? 'bg-emerald-500 text-white'
+                                  : isDisputed
+                                  ? 'bg-red-500 text-white'
+                                  : 'bg-slate-300 text-white'
+                              }`}
+                            >
+                              {isReleased ? (
+                                <CheckCircle2 className="w-4 h-4" />
+                              ) : isDisputed ? (
+                                <AlertTriangle className="w-3.5 h-3.5" />
+                              ) : (
+                                idx + 1
+                              )}
+                            </span>
+                            <div>
+                              <p className="text-sm font-medium text-slate-800">{m.title || `Milestone ${idx + 1}`}</p>
+                              <p className="text-xs text-slate-500 capitalize">{mStatus.replace('_', ' ')}</p>
+                            </div>
+                          </div>
+                          <span className="text-sm font-bold text-slate-900">{formatCurrency(m.amount || 0)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-sm text-slate-500 text-center py-4 bg-slate-50 rounded-xl mb-5">
+                    This contract has no milestones — the full amount is protected as a single escrow.
+                  </div>
+                )}
+
+                {/* Safety note */}
+                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                  <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    Funds are held securely in Growlancer Escrow protection and are released to your
+                    wallet only after the client approves the work. Escrow keeps payments safe for both sides.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
