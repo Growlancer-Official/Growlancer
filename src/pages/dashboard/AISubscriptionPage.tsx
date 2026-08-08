@@ -1,24 +1,29 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   ArrowRight,
   BarChart3,
   Check,
   Clock,
+  CreditCard,
   Crown,
+  IndianRupee,
   Loader2,
   MessageSquare,
   RefreshCw,
   Shield,
   Sparkles,
   TrendingUp,
+  Wallet,
   X,
   Zap,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { ProBadge } from '../../components/ProBadge';
+import { SubscriptionPayPalPayment } from '../../components/SubscriptionPayPalPayment';
+import { withdrawalService } from '../../lib/withdrawal';
 import {
   subscriptionService,
   type AIPlan,
@@ -39,7 +44,6 @@ const FEATURE_COMPARISON = [
 ];
 
 export function AISubscriptionPage() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [plans, setPlans] = useState<AIPlan[]>([]);
   const [currentSubscription, setCurrentSubscription] = useState<SubscriptionWithPlan | null>(null);
@@ -56,6 +60,11 @@ export function AISubscriptionPage() {
     onConfirm: () => Promise<void>;
   } | null>(null);
   const toast = useToast();
+  const [manageOpen, setManageOpen] = useState(false);
+  const [manageSubscription, setManageSubscription] = useState<SubscriptionWithPlan | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [showPayment, setShowPayment] = useState(false);
+  const [walletPaying, setWalletPaying] = useState(false);
 
   const fetchData = async () => {
     if (!user) return;
@@ -64,6 +73,19 @@ export function AISubscriptionPage() {
         subscriptionService.getPlans('freelancer'),
         subscriptionService.getCurrentSubscription(user.id),
       ]);
+
+      // Fetch wallet balance for the Pay-with-Wallet option
+      const balResult = await withdrawalService.getWalletBalance();
+      if (balResult.success && balResult.balance) {
+        setWalletBalance(Number(balResult.balance.balance) || 0);
+      }
+
+      // Latest subscription (ANY status) for the Manage panel so renew works
+      // for past_due / cancelled rows, not just active / trial.
+      const latestSub = await subscriptionService.getLatestSubscription(user.id);
+      if (latestSub.success) {
+        setManageSubscription(latestSub.subscription ?? null);
+      }
 
       if (plansResult.success && plansResult.plans) {
         setPlans(plansResult.plans);
@@ -146,6 +168,61 @@ export function AISubscriptionPage() {
     });
   };
 
+  /** Pay for the selected plan with the Growlancer wallet (server-validated). */
+  const handleWalletPay = async (planId: string) => {
+    if (!user) return;
+    const plan = plans.find((p) => p.id === planId);
+    if (!plan) return;
+    setWalletPaying(true);
+    try {
+      // Fresh balance check BEFORE mutating anything, so an insufficient wallet
+      // never cancels an existing subscription (subscribeToPlan cancels first).
+      const freshBal = await withdrawalService.getWalletBalance();
+      const balance = freshBal.success && freshBal.balance ? Number(freshBal.balance.balance) || 0 : 0;
+      if (balance < plan.price) {
+        toast.error('Insufficient balance', `Wallet balance ₹${balance.toLocaleString('en-IN')} is less than ₹${plan.price.toLocaleString('en-IN')}. Add funds or pay with Razorpay.`);
+        return;
+      }
+      setWalletBalance(balance);
+
+      // Create (or restore) the subscription row, then pay from wallet
+      const result = await subscriptionService.subscribeToPlan(user.id, planId);
+      if (result.success && result.subscription) {
+        const pay = await subscriptionService.payWithWallet(result.subscription.id);
+        if (pay.success) {
+          toast.success('Paid', 'Pro activated — paid from wallet balance.');
+          setShowPayment(false);
+          setManageOpen(false);
+          await fetchData();
+        } else {
+          toast.error('Failed', pay.error || 'Wallet payment failed.');
+        }
+      } else {
+        toast.error('Failed', result.error || 'Failed to start subscription.');
+      }
+    } catch {
+      toast.error('Failed', 'Unexpected error while paying with wallet.');
+    } finally {
+      setWalletPaying(false);
+    }
+  };
+
+  /** Re-enable auto-renewal for a cancelled / past-due subscription. */
+  const handleRenew = async () => {
+    if (!currentSubscription?.id || !user) return;
+    const result = await subscriptionService.renewSubscription(currentSubscription.id, user.id);
+    if (result.success) {
+      toast.success('Renewed', 'Auto-renewal re-enabled.');
+      const subResult = await subscriptionService.getCurrentSubscription(user.id);
+      if (subResult.success) setCurrentSubscription(subResult.subscription ?? null);
+    } else {
+      toast.error('Failed', result.error || 'Failed to renew subscription.');
+    }
+  };
+
+  const formatDate = (d?: string | null) =>
+    d ? new Date(d).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+
   if (loading) {
     return <LoadingSkeleton variant="full-page" />;
   }
@@ -166,7 +243,10 @@ export function AISubscriptionPage() {
     <div className="max-w-6xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">Freelancer Subscription</h1>
+        <h1 className="font-display text-3xl font-bold text-slate-900 mb-2 flex items-center gap-2.5">
+          Freelancer Subscription
+          {isPro && <ProBadge size="md" showLabel />}
+        </h1>
         <p className="text-slate-500">Choose the plan that fits your freelance career. Upgrade anytime.</p>
       </div>
 
@@ -200,7 +280,7 @@ export function AISubscriptionPage() {
               </div>
             </div>
             <button
-              onClick={() => navigate('/dashboard/settings')}
+              onClick={() => setManageOpen(true)}
               className="px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Manage
@@ -229,12 +309,20 @@ export function AISubscriptionPage() {
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleCancel}
-              className="px-4 py-2 bg-white text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors border border-red-200 text-sm"
-            >
-              Cancel
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setManageOpen(true)}
+                className="px-4 py-2 bg-white text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-colors border border-emerald-200 text-sm"
+              >
+                Manage
+              </button>
+              <button
+                onClick={handleCancel}
+                className="px-4 py-2 bg-white text-red-600 font-bold rounded-xl hover:bg-red-50 transition-colors border border-red-200 text-sm"
+              >
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -395,6 +483,38 @@ export function AISubscriptionPage() {
                 </>
               )}
             </button>
+
+            {/* Quick payment options when not yet Pro */}
+            {!isPro && (
+              <div className="mt-3 space-y-2">
+                <button
+                  onClick={() => handleWalletPay(proPlan.id)}
+                  disabled={walletPaying || (walletBalance !== null && walletBalance < proPlan.price)}
+                  className="w-full py-2.5 rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 font-bold text-xs hover:bg-emerald-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {walletPaying ? (
+                    <>
+                      <Loader2 className="animate-spin w-4 h-4" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Wallet className="w-4 h-4" />
+                      Pay with Wallet
+                      {walletBalance !== null && ` — ₹${walletBalance.toLocaleString('en-IN')}`}
+                      {walletBalance !== null && walletBalance < proPlan.price ? ' (insufficient)' : ''}
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowPayment(true)}
+                  className="w-full py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 font-bold text-xs hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  Pay with Razorpay (UPI / Card / NetBanking)
+                </button>
+              </div>
+            )}
 
             {/* Trust badges */}
             <div className="mt-4 flex items-center justify-center gap-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
@@ -591,6 +711,132 @@ export function AISubscriptionPage() {
           variant={confirmDialog.variant}
           confirmLabel={confirmDialog.confirmLabel}
         />
+      )}
+
+      {/* Subscription Management Panel */}
+      {manageOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100">
+              <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
+                <Crown className="w-5 h-5 text-amber-600" />
+                Manage Subscription
+              </h2>
+              <button
+                onClick={() => setManageOpen(false)}
+                className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+                aria-label="Close manage panel"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              {(manageSubscription ?? currentSubscription) ? (
+                <>
+                  <div className="p-4 bg-slate-50 rounded-xl space-y-2.5 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Plan</span>
+                      <span className="font-semibold text-slate-900 flex items-center gap-1.5">
+                        {(manageSubscription ?? currentSubscription).subscription_plans?.name || 'Pro'}
+                        {isPro && <ProBadge size="xs" />}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Status</span>
+                      <span className="font-semibold capitalize text-slate-900">{(manageSubscription ?? currentSubscription).status}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">
+                        {(manageSubscription ?? currentSubscription).cancel_at_period_end ? 'Renewal' : 'Renews / ends'}
+                      </span>
+                      <span className={`font-semibold ${(manageSubscription ?? currentSubscription).cancel_at_period_end ? 'text-amber-600' : 'text-slate-900'}`}>
+                        {(manageSubscription ?? currentSubscription).cancel_at_period_end
+                          ? 'Cancels at period end'
+                          : formatDate((manageSubscription ?? currentSubscription).subscription_end_date || (manageSubscription ?? currentSubscription).trial_end_date)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Payment method</span>
+                      <span className="font-semibold capitalize text-slate-900">
+                        {(manageSubscription ?? currentSubscription).payment_provider || 'Trial / Free'}
+                      </span>
+                    </div>
+                    {walletBalance !== null && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Wallet balance</span>
+                        <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                          <IndianRupee className="w-3.5 h-3.5" />
+                          {walletBalance.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {(manageSubscription ?? currentSubscription).cancel_at_period_end ||
+                    (manageSubscription ?? currentSubscription).status === 'past_due' ||
+                    (manageSubscription ?? currentSubscription).status === 'cancelled' ? (
+                      <button
+                        onClick={handleRenew}
+                        className="py-3 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 transition-colors"
+                      >
+                        Renew Now
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleCancel}
+                        className="py-3 rounded-xl bg-red-50 text-red-600 font-bold text-sm hover:bg-red-100 transition-colors"
+                      >
+                        Cancel Subscription
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setShowPayment(true)}
+                      className="py-3 rounded-xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-colors"
+                    >
+                      Payment Options
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    {(manageSubscription ?? currentSubscription).cancel_at_period_end
+                      ? 'Your Pro access continues until the end of your billing period, then you will be downgraded to the Free plan. You can renew anytime.'
+                      : 'Cancel anytime — you keep Pro access until the end of your billing period. Renew or change payment anytime.'}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm text-slate-500">No subscription found. Choose a plan to get started.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment modal — Razorpay external checkout */}
+      {showPayment && proPlan && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="relative w-full max-w-lg">
+            <button
+              type="button"
+              onClick={() => setShowPayment(false)}
+              className="absolute -top-10 right-0 text-white hover:text-slate-200 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <SubscriptionPayPalPayment
+              planId={proPlan.id}
+              planName={proPlan.name}
+              planPrice={proPlan.price}
+              role="freelancer"
+              trialDays={proPlan.trial_days}
+              onSuccess={() => {
+                setShowPayment(false);
+                void fetchData();
+              }}
+              onCancel={() => setShowPayment(false)}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

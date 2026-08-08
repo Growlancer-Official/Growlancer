@@ -13,6 +13,8 @@ import { EmailVerificationBanner } from '../../components/EmailVerificationBanne
 import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, RefreshCw, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { CategoryPicker } from '../../components/CategoryPicker';
+import { ProBadge } from '../../components/ProBadge';
+import { useProStatus } from '../../hooks/useProStatus';
 import type { Tables } from '../../types/supabase';
 import type { PayoutMethod } from '../../lib/withdrawal';
 
@@ -40,6 +42,7 @@ function getErrorMessage(err: unknown): string {
 
 export function ProfessionalProfilePage() {
   const { user, updateUser } = useAuth();
+  const { isPro } = useProStatus();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('profile');
@@ -899,7 +902,10 @@ export function ProfessionalProfilePage() {
                 </button>
               )}
             </div>
-            <h2 className="font-display text-lg font-bold text-slate-900 mb-0.5">{formData.name || 'Your Name'}</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900 mb-0.5 flex items-center justify-center gap-2">
+              {formData.name || 'Your Name'}
+              {isPro && <ProBadge size="xs" />}
+            </h2>
             <p className="text-sm text-slate-500 mb-1">{formData.title || 'Freelancer'}</p>
             <p className="text-xs text-slate-400 mb-4">{profile?.role === 'freelancer' ? 'Freelancer Account' : 'User Account'}</p>
 

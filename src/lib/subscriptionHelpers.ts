@@ -195,6 +195,33 @@ const subscriptionService = {
   },
 
   /**
+   * Get the user's LATEST subscription row regardless of status
+   * (active / trial / past_due / cancelled / expired). Used by the
+   * manage/renew UI so a cancelled subscription can be renewed.
+   */
+  async getLatestSubscription(userId: string): Promise<{
+    success: boolean;
+    subscription?: SubscriptionWithPlan | null;
+    error?: string;
+  }> {
+    try {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*, subscription_plans(*)')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      return { success: true, subscription: (data as AnyRecord) as SubscriptionWithPlan | null };
+    } catch (error) {
+      console.error('Error fetching latest subscription:', error);
+      return { success: false, error: 'Failed to fetch subscription.' };
+    }
+  },
+
+  /**
    * Cancel a subscription (set cancel_at_period_end).
    */
   async cancelSubscription(
@@ -213,6 +240,61 @@ const subscriptionService = {
     } catch (error) {
       console.error('Error cancelling subscription:', error);
       return { success: false, error: 'Failed to cancel subscription.' };
+    }
+  },
+
+  /**
+   * Renew a cancelled/past_due subscription (re-enable auto-renewal).
+   * Payment (wallet or Razorpay) then extends the period.
+   */
+  async renewSubscription(
+    subscriptionId: string,
+    userId: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { error } = await supabase
+        .from('subscriptions')
+        .update({ cancel_at_period_end: false })
+        .eq('id', subscriptionId)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      return { success: true };
+    } catch (error) {
+      console.error('Error renewing subscription:', error);
+      return { success: false, error: 'Failed to renew subscription.' };
+    }
+  },
+
+  /**
+   * Pay for a subscription using the Growlancer wallet balance.
+   * All financial validation happens server-side (razorpay edge function,
+   * action `wallet_subscription_pay`): server-side plan price, wallet
+   * balance check, atomic deduction, subscription activation + audit log.
+   */
+  async payWithWallet(
+    subscriptionId: string
+  ): Promise<{ success: boolean; subscription?: SubscriptionWithPlan; error?: string }> {
+    try {
+      const { data, error } = await supabase.functions.invoke('razorpay', {
+        body: {
+          action: 'wallet_subscription_pay',
+          data: { subscription_id: subscriptionId },
+        },
+      });
+
+      if (error) throw error;
+      if (!data?.success) {
+        throw new Error(data?.error || 'Wallet payment failed');
+      }
+
+      return { success: true, subscription: data.subscription as SubscriptionWithPlan };
+    } catch (error) {
+      console.error('Error paying with wallet:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Wallet payment failed.',
+      };
     }
   },
 

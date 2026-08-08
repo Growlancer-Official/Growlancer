@@ -350,6 +350,50 @@ serve(async req => {
         break;
       }
 
+      // ─── WALLET SUBSCRIPTION PAY ──────────────────────
+      // Pay for a Pro subscription using the Growlancer wallet. Every amount is
+      // recomputed server-side from the plan (never trusted from the client).
+      // The whole financial operation runs inside ONE SECURITY DEFINER
+      // transaction (pay_subscription_with_wallet): ownership check → plan
+      // price → locked balance check → atomic deduction → ledger entry →
+      // subscription activation → is_pro sync. No multi-step race conditions.
+      case 'wallet_subscription_pay': {
+        const { subscription_id } = data;
+        if (!subscription_id) throw new Error('subscription_id is required for wallet_subscription_pay');
+
+        const { data: pay, error: payErr } = await supabaseClient
+          .rpc('pay_subscription_with_wallet', { p_subscription_id: subscription_id })
+          .single();
+
+        if (payErr) throw new Error(`Wallet payment failed: ${payErr.message}`);
+        if (!pay?.success) {
+          throw new Error(pay?.error || 'Wallet payment failed');
+        }
+
+        // Load the refreshed subscription to return to the client
+        const { data: updatedSub, error: subErr } = await supabaseClient
+          .from('subscriptions')
+          .select('*, subscription_plans(*)')
+          .eq('id', subscription_id)
+          .single();
+        if (subErr || !updatedSub) throw new Error('Failed to load subscription after payment');
+
+        // Financial audit trail
+        await insertAuditLog(supabaseAdmin, {
+          action: 'subscription_wallet_paid',
+          entity_type: 'subscription',
+          entity_id: subscription_id,
+          user_id: user.id,
+          amount: Number(pay.amount) || 0,
+          currency: 'INR',
+          metadata: { plan_id: updatedSub.plan_id, method: 'wallet', balance: pay.balance },
+          ip_address: req.headers.get('x-forwarded-for') || null,
+        });
+
+        result = { success: true, subscription: updatedSub, balance: pay.balance };
+        break;
+      }
+
       // ─── VERIFY PAYMENT ──────────────────────────────
       case 'verify_payment': {
         const {

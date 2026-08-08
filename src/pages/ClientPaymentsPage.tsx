@@ -359,7 +359,7 @@ export function ClientPaymentsPage() {
           <p className="text-slate-500 mt-1">Manage your transactions and payment methods</p>
         </div>
         <Link
-          to="/client/contracts"
+          to="/client/workspace?fund=1"
           className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
         >
           <Plus className="w-5 h-5" />

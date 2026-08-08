@@ -34,6 +34,8 @@ import { DashboardFallback } from '../components/LoadingSkeleton';
 import { messagesService } from '../lib/messages';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
+import { ProBadge } from '../components/ProBadge';
+import { useProStatus } from '../hooks/useProStatus';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -108,6 +110,7 @@ export function DashboardLayout() {
   const [newMatchCount, setNewMatchCount] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadMessages, setUnreadMessages] = useState(0);
+  const { isPro } = useProStatus();
 
   const safeUnsubscribe = (channel: { unsubscribe?: () => void } | null | undefined) => {
     if (channel?.unsubscribe) {
@@ -380,6 +383,9 @@ export function DashboardLayout() {
                   >
                     <link.icon className="w-5 h-5" />
                     <span className="font-medium">{link.label}</span>
+                    {link.id === 'ai-subscription' && isPro && (
+                      <ProBadge size="xs" className="ml-1" />
+                    )}
                     {badgeCount && (
                       <span className="ml-auto bg-orange-500 text-white text-[10px] px-2 py-0.5 rounded-full">
                         {badgeCount}
@@ -510,6 +516,9 @@ export function DashboardLayout() {
                   >
                     <link.icon className="w-5 h-5" />
                     <span className="font-medium">{link.label}</span>
+                    {link.id === 'ai-subscription' && isPro && (
+                      <ProBadge size="xs" className="ml-1" />
+                    )}
                     {badgeCount && (
                       <span className="ml-auto bg-orange-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
                         {badgeCount}
@@ -655,7 +664,10 @@ export function DashboardLayout() {
                 </div>
               )}
               <div className="text-left hidden lg:block">
-                <p className="text-sm font-bold leading-tight">{user?.name || 'User'}</p>
+                <p className="text-sm font-bold leading-tight flex items-center gap-1.5">
+                  {user?.name || 'User'}
+                  {isPro && <ProBadge size="xs" />}
+                </p>
                 <div className="flex items-center gap-1">
                   <p className="text-[10px] text-slate-500 font-medium tracking-wide">{getRatingBadge()}</p>
                   {userProfile && userProfile.rating > 0 && (

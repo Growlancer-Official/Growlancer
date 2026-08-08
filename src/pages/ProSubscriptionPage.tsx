@@ -4,6 +4,7 @@ import { ArrowRight, Award, BarChart3, Check, CheckCircle, CreditCard, Crown, Ey
 import { useAuth } from '../context/AuthContext';
 import { safeFormatDate } from '../utils/date';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
+import { ProBadge } from '../components/ProBadge';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
 import {
@@ -93,6 +94,22 @@ export function ProSubscriptionPage() {
     setShowCancelConfirm(false);
   };
 
+  const handleRenew = async () => {
+    if (!subscription?.id || !user) return;
+    setCancelling(true);
+
+    const result = await subscriptionService.renewSubscription(subscription.id, user.id);
+    if (result.success) {
+      toast.success('Subscription renewed — auto-renewal re-enabled.');
+      const subResult = await subscriptionService.getCurrentSubscription(user.id);
+      if (subResult.success) setSubscription(subResult.subscription ?? null);
+    } else {
+      toast.error(result.error || 'Failed to renew subscription.');
+    }
+
+    setCancelling(false);
+  };
+
   const refreshSubscription = async () => {
     if (!user) return;
     const result = await subscriptionService.getCurrentSubscription(user.id);
@@ -167,9 +184,10 @@ export function ProSubscriptionPage() {
               <div className="mt-8 mx-auto max-w-md p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3">
                 <CheckCircle className="text-emerald-600 text-2xl w-6 h-6 flex-shrink-0" />
                 <div className="text-left">
-                  <p className="text-emerald-900 font-bold text-sm">
+                  <p className="text-emerald-900 font-bold text-sm flex items-center gap-2">
                     You are on{' '}
                     {subscription.subscription_plans?.name || 'Pro'} plan
+                    <ProBadge size="xs" />
                   </p>
                   <p className="text-emerald-700 text-xs">
                     {subscription.cancel_at_period_end
@@ -320,19 +338,27 @@ export function ProSubscriptionPage() {
                   {/* Action Button */}
                   {isCurrentPlan ? (
                     <div className="space-y-2">
-                      <button
-                        onClick={() => setShowCancelConfirm(true)}
-                        disabled={subscription?.cancel_at_period_end === true}
-                        className={`w-full py-3 rounded-2xl font-bold transition-all text-sm ${
-                          subscription?.cancel_at_period_end
-                            ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                        }`}
-                      >
-                        {subscription?.cancel_at_period_end
-                          ? 'Cancelling at Period End'
-                          : 'Cancel Subscription'}
-                      </button>
+                      {subscription?.cancel_at_period_end ? (
+                        <>
+                          <button
+                            onClick={() => void handleRenew()}
+                            disabled={cancelling}
+                            className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all text-sm disabled:opacity-50"
+                          >
+                            {cancelling ? 'Renewing...' : 'Renew Now'}
+                          </button>
+                          <p className="text-[11px] text-amber-600 text-center font-medium">
+                            Your Pro ends at period end — renew to keep it active.
+                          </p>
+                        </>
+                      ) : (
+                        <button
+                          onClick={() => setShowCancelConfirm(true)}
+                          className="w-full py-3 rounded-2xl font-bold transition-all text-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
+                        >
+                          Cancel Subscription
+                        </button>
+                      )}
                     </div>
                   ) : isFree ? (
                     <button

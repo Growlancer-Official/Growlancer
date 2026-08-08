@@ -164,16 +164,35 @@ export function ClientWorkspacePage() {
           const found = contractsData.find((c: any) => c.id === contractId)
           if (found) setSelectedContract(found as unknown as Contract)
         } else if (contractsData.length > 0) {
-          setSelectedContract(contractsData[0] as unknown as Contract)
-          if (contractsData[0]?.id !== contractId) {
-            window.history.replaceState(null, '', `/client/workspace/${contractsData[0].id}`)
+          // When arriving via ?fund=1 (Fund Escrow deep-link), prefer the first
+          // contract that still needs funding so the payment modal never opens
+          // for an already-funded contract.
+          const preferUnfunded = searchParams.get('fund') === '1'
+          const target = preferUnfunded
+            ? (contractsData.find((c: any) => c.escrow_funded === false) || contractsData[0])
+            : contractsData[0]
+          setSelectedContract(target as unknown as Contract)
+          if (target?.id !== contractId) {
+            window.history.replaceState(null, '', `/client/workspace/${target.id}`)
           }
+        }
+
+        // Direct fund-escrow entry: ?fund=1 auto-opens the payment modal once
+        // a contract is selected (used by 'Fund Escrow' buttons on Contracts /
+        // Payments pages). The param is cleaned so a refresh doesn't re-open it.
+        if (searchParams.get('fund') === '1') {
+          setShowFundEscrow(true)
+          const url = new URL(window.location.href)
+          url.searchParams.delete('fund')
+          window.history.replaceState(null, '', url.toString())
         }
       }
       setLoading(false)
     }
     void fetchContracts()
-  }, [user, contractId])
+    // searchParams is read inside for the ?fund=1 deep-link; the effect is
+    // idempotent so re-runs after the param is cleaned are safe.
+  }, [user, contractId, searchParams])
 
   const fetchMessages = useCallback(async () => {
     if (!selectedContract || !user) return

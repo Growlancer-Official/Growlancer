@@ -14,6 +14,8 @@ import {
   transactionsService,
 } from '../../lib/dataService';
 import { notificationService } from '../../lib/notifications';
+import { ProBadge } from '../../components/ProBadge';
+import { useProStatus } from '../../hooks/useProStatus';
 
 interface DashboardStats {
   activeContracts: number;
@@ -57,6 +59,7 @@ function resolvePartyName(row: any, key: string, fallback: string): string {
 
 export function OverviewPage() {
   const { user, role } = useAuth();
+  const { isPro } = useProStatus();
   const [stats, setStats] = useState<DashboardStats>({
     activeContracts: 0,
     pendingProposals: 0,
@@ -382,8 +385,9 @@ export function OverviewPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5 flex-wrap">
           Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
+          {isFreelancer && isPro && <ProBadge size="md" showLabel />}
         </h1>
         <p className="text-slate-500 text-sm sm:text-base mt-1">
           {isFreelancer

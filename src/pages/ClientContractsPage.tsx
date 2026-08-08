@@ -284,6 +284,15 @@ export function ClientContractsPage() {
                     <Laptop className="w-4 h-4" />
                     Open Workspace
                   </Link>
+                  {!escrow && (
+                    <Link
+                      to={`/client/workspace?contract=${contract.id}&fund=1`}
+                      className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 font-semibold rounded-lg border border-emerald-200 hover:bg-emerald-100"
+                    >
+                      <IndianRupee className="w-4 h-4" />
+                      Fund Escrow
+                    </Link>
+                  )}
                   <Link
                     to="/client/payments"
                     className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50"

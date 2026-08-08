@@ -5,6 +5,11 @@ import { supabase } from '../lib/supabase';
 import { portfolioService } from '../lib/portfolio';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
+import { ProBadge } from '../components/ProBadge';
+import {
+  isProSubscription,
+  subscriptionService,
+} from '../lib/subscriptionHelpers';
 
 interface FreelancerProfile {
   id: string;
@@ -56,6 +61,7 @@ export function PublicFreelancerProfilePage() {
   const [loading, setLoading] = useState(true);
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<'portfolio' | 'reviews' | 'about'>('portfolio');
+  const [isProFreelancer, setIsProFreelancer] = useState(false);
 
   useEffect(() => {
     if (!freelancerId) return;
@@ -96,6 +102,11 @@ export function PublicFreelancerProfilePage() {
 
         // Fetch portfolio + reviews keyed by the freelancer's USER id
         const userKey = profileData.user_id || freelancerId;
+
+        // PRO badge — does this freelancer hold an active/trial Pro subscription?
+        const subRes = await subscriptionService.getCurrentSubscription(userKey);
+        setIsProFreelancer(isProSubscription(subRes.subscription));
+
         const portfolioItems = await portfolioService.getByUser(userKey);
         setPortfolio(portfolioItems as unknown as PortfolioItem[]);
 
@@ -167,7 +178,10 @@ export function PublicFreelancerProfilePage() {
 
             {/* Info */}
             <div className="text-center sm:text-left flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold">{profile.full_name || 'Freelancer'}</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap">
+                {profile.full_name || 'Freelancer'}
+                {isProFreelancer && <ProBadge size="md" showLabel />}
+              </h1>
               {profile.title && (
                 <p className="text-lg text-white/80 mt-1">{profile.title}</p>
               )}

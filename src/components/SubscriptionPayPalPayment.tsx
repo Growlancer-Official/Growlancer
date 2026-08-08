@@ -1,13 +1,15 @@
 // Subscription Payment with PayPal Integration
 // This component allows users to upgrade to Pro subscription using PayPal
 
-import { useState } from 'react';
-import { Crown, CheckCircle, AlertCircle, Loader2, Calendar, CreditCard, IndianRupee } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Crown, CheckCircle, AlertCircle, Loader2, Calendar, CreditCard, IndianRupee, Wallet } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { PayPalCheckout } from './PayPalCheckout';
 import { RazorpayCheckout } from './RazorpayCheckout';
 import { PAYMENTS_CONFIG } from '../lib/payments';
 import { supabase } from '../lib/supabase';
+import { subscriptionService } from '../lib/subscriptionHelpers';
+import { withdrawalService } from '../lib/withdrawal';
 
 interface SubscriptionPayPalPaymentProps {
   planId: string;
@@ -33,6 +35,56 @@ export function SubscriptionPayPalPayment({
   const [error, setError] = useState<string | null>(null);
   const [isCreatingSubscription, setIsCreatingSubscription] = useState(false);
   const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [walletPaying, setWalletPaying] = useState(false);
+
+  // Load wallet balance so the user can pay for Pro from their wallet
+  useEffect(() => {
+    let mounted = true;
+    void withdrawalService
+      .getWalletBalance()
+      .then((res) => {
+        if (mounted && res.success && res.balance) {
+          setWalletBalance(Number(res.balance.balance) || 0);
+        }
+      })
+      .catch(() => { /* wallet fetch failed silently — external payment still works */ });
+    return () => { mounted = false; };
+  }, []);
+
+  const handleWalletPay = async () => {
+    if (!user || !planId) return;
+    setWalletPaying(true);
+    try {
+      // Fresh balance check BEFORE mutating the subscription, so an insufficient
+      // wallet never cancels an existing active/trial row (subscribeToPlan
+      // cancels first — only proceed once we know the wallet covers the price).
+      const freshBal = await withdrawalService.getWalletBalance();
+      const balance = freshBal.success && freshBal.balance ? Number(freshBal.balance.balance) || 0 : 0;
+      if (balance < planPrice) {
+        setWalletBalance(balance);
+        throw new Error(`Insufficient wallet balance. Required: ₹${planPrice.toLocaleString('en-IN')}, Available: ₹${balance.toLocaleString('en-IN')}`);
+      }
+      setWalletBalance(balance);
+
+      // Create (or restore) the subscription row, then pay from the wallet
+      const result = await subscriptionService.subscribeToPlan(user.id, planId);
+      if (!result.success || !result.subscription) {
+        throw new Error(result.error || 'Failed to create subscription');
+      }
+      const pay = await subscriptionService.payWithWallet(result.subscription.id);
+      if (!pay.success) {
+        throw new Error(pay.error || 'Wallet payment failed');
+      }
+      setStep('success');
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Wallet payment failed');
+      setStep('error');
+    } finally {
+      setWalletPaying(false);
+    }
+  };
 
   const handleProceedToPayment = async () => {
     setIsCreatingSubscription(true);
@@ -288,6 +340,41 @@ export function SubscriptionPayPalPayment({
             )}
           </ul>
         </div>
+      </div>
+
+      {/* Pay from Growlancer Wallet */}
+      <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-4">
+        <div className="flex items-center gap-2 text-blue-700 mb-1">
+          <Wallet className="w-4 h-4" />
+          <span className="font-semibold">Pay from Growlancer Wallet</span>
+        </div>
+        <p className="text-sm text-blue-600 mb-3">
+          {walletBalance !== null
+            ? `Available balance: ₹${walletBalance.toLocaleString('en-IN')}`
+            : 'Loading wallet balance...'}
+        </p>
+        <button
+          onClick={handleWalletPay}
+          disabled={walletPaying || (walletBalance !== null && walletBalance < planPrice)}
+          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+        >
+          {walletPaying ? (
+            <>
+              <Loader2 className="w-5 h-5 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            <>
+              <Wallet className="w-5 h-5" />
+              Pay ₹{planPrice.toLocaleString('en-IN')} from Wallet
+            </>
+          )}
+        </button>
+        {walletBalance !== null && walletBalance < planPrice && (
+          <p className="text-xs text-amber-600 mt-2">
+            Insufficient balance — add funds to your wallet or pay with Razorpay below.
+          </p>
+        )}
       </div>
 
       <div className="flex gap-3">
