@@ -171,7 +171,38 @@ serve(async req => {
     // Cron-triggered internal actions: authenticated by CRON_SECRET, not a user JWT.
     // These are never callable from the browser (the secret is server-side only).
     let isCron = false;
-    if (action === 'execute_refund') {
+    if (action === 'test_auth') {
+      // Diagnostics only: reports whether the configured Razorpay credentials
+      // authenticate. Response is stripped to a minimal status — the raw
+      // Razorpay payload is NEVER echoed (prevents leaking order metadata to
+      // callers). Rate-limited like every other user action.
+      const identifier = user?.id || req.headers.get('x-forwarded-for') || 'unknown';
+      if (!(await checkRateLimit(supabaseClient, identifier))) {
+        return new Response(JSON.stringify({ error: 'Too many requests' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const testResult = await (async () => {
+        try {
+          await razorpayFetch('/orders?count=1');
+          return {
+            ok: true,
+            key_id_prefix: (RAZORPAY_KEY_ID || '').slice(0, 8),
+            key_id_mode: (RAZORPAY_KEY_ID || '').startsWith('rzp_live_') ? 'live' : (RAZORPAY_KEY_ID || '').startsWith('rzp_test_') ? 'test' : 'unknown',
+          };
+        } catch (e) {
+          return {
+            ok: false,
+            key_id_prefix: (RAZORPAY_KEY_ID || '').slice(0, 8),
+            key_id_mode: (RAZORPAY_KEY_ID || '').startsWith('rzp_live_') ? 'live' : (RAZORPAY_KEY_ID || '').startsWith('rzp_test_') ? 'test' : 'unknown',
+            error: e instanceof Error ? e.message : 'Unknown error',
+          };
+        }
+      })();
+      return new Response(JSON.stringify({ success: true, data: testResult }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } else if (action === 'execute_refund') {
       const authHeader = req.headers.get('Authorization') || '';
       const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
       if (!CRON_SECRET || bearer !== CRON_SECRET) {
