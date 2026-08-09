@@ -76,6 +76,16 @@ export function RazorpayCheckout({
           contact: userInfo?.contact || '',
         },
         theme: { color: themeColor },
+        // Explicitly enable all payment methods (cards, UPI, net banking,
+        // wallets, EMI) — without this the checkout only shows the methods
+        // enabled in the Razorpay dashboard, which can hide UPI/cards.
+        method: {
+          card: true,
+          upi: true,
+          netbanking: true,
+          wallet: true,
+          emi: true,
+        },
         ...(saveCard ? { card: { save: true } } : {}),
         handler: async (response: RazorpayPaymentData) => {
           // 3. Verify payment on backend

@@ -79,6 +79,16 @@ export interface RazorpayCheckoutOptions {
   card?: {
     save?: boolean;
   };
+  /** Explicitly enable which payment methods the checkout shows (cards, UPI,
+   *  net banking, wallets, EMI). Without this Razorpay only shows methods
+   *  enabled in the dashboard — passing it guarantees the full set. */
+  method?: {
+    card?: boolean;
+    upi?: boolean;
+    netbanking?: boolean;
+    wallet?: boolean;
+    emi?: boolean;
+  };
   handler: (response: RazorpayPaymentData) => void;
   modal?: {
     ondismiss?: () => void;
