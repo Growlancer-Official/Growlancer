@@ -21,7 +21,7 @@ import {
   Shield,
   Menu,
   X,
-  MessageSquare,
+  Bell,
   Star,
   Trophy,
 } from 'lucide-react';
@@ -29,7 +29,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { ClientDashboardFallback } from '../components/LoadingSkeleton';
-import { messagesService } from '../lib/messages';
+import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 
@@ -68,7 +68,7 @@ const sidebarGroups: SidebarGroup[] = [
   {
     label: 'COMMUNICATION',
     links: [
-      { id: 'inbox', path: '/client/inbox', icon: MessageSquare, label: 'Inbox' },
+      { id: 'notifications', path: '/client/notifications', icon: Bell, label: 'Notifications' },
       { id: 'ai-assistant', path: '/client/ai-assistant', icon: Bot, label: 'AI Assistant' },
     ],
   },
@@ -93,7 +93,7 @@ export function ClientDashboardLayout() {
   const { logout, user } = useAuth();
   const currentPath = location.pathname;
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({
     invites: 0,
     proposals: 0,
@@ -121,11 +121,11 @@ export function ClientDashboardLayout() {
       return;
     }
 
-    // Fetch unread message count
+    // Fetch unread notification count
     const fetchUnreadCount = async () => {
       try {
-        const count = await messagesService.getUnreadCount(user.id);
-        setUnreadMessages(count);
+        const data = await notificationService.getByUser(user.id, { unreadOnly: true, limit: 1, forceRefetch: true });
+        setUnreadNotifications(data.unread_count);
       } catch {
         // Unread count fetch failed silently
       }
@@ -160,8 +160,8 @@ export function ClientDashboardLayout() {
     fetchUnreadCount();
     fetchBadgeCounts();
 
-    // Subscribe to new messages for real-time inbox badge updates
-    const messagesSub = messagesService.subscribeToMessages(user.id, () => {
+    // Subscribe to notifications for real-time badge updates
+    const notifSub = notificationService.subscribe(user.id, () => {
       fetchUnreadCount();
     });
 
@@ -213,7 +213,7 @@ export function ClientDashboardLayout() {
       .subscribe();
 
     return () => {
-      safeUnsubscribe(messagesSub);
+      safeUnsubscribe(notifSub);
       safeUnsubscribe(profilesChannel);
       safeUnsubscribe(invitesChannel);
       safeUnsubscribe(proposalsChannel);
@@ -265,8 +265,8 @@ export function ClientDashboardLayout() {
                 {group.links.map((link) => {
                   const getBadgeCount = () => {
                     switch (link.id) {
-                      case 'inbox':
-                        return unreadMessages > 0 ? unreadMessages : null;
+                      case 'notifications':
+                        return unreadNotifications > 0 ? unreadNotifications : null;
                       case 'invites':
                         return badgeCounts.invites > 0 ? badgeCounts.invites : null;
                       case 'proposals':
@@ -295,7 +295,7 @@ export function ClientDashboardLayout() {
                       <span className="font-medium">{link.label}</span>
                       {badgeCount && (
                         <span className={`ml-auto text-white text-[10px] min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center font-bold ${
-                          link.id === 'inbox' ? 'bg-blue-500' : 'bg-orange-500'
+                          link.id === 'notifications' ? 'bg-blue-500' : 'bg-orange-500'
                         }`}>
                           {badgeCount}
                         </span>
@@ -391,8 +391,8 @@ export function ClientDashboardLayout() {
               {group.links.map((link) => {
                 const getBadgeCount = () => {
                   switch (link.id) {
-                    case 'inbox':
-                      return unreadMessages > 0 ? unreadMessages : null;
+                    case 'notifications':
+                      return unreadNotifications > 0 ? unreadNotifications : null;
                     case 'invites':
                       return badgeCounts.invites > 0 ? badgeCounts.invites : null;
                     case 'proposals':
@@ -420,7 +420,7 @@ export function ClientDashboardLayout() {
                     <span className="font-medium">{link.label}</span>
                     {badgeCount && (
                       <span className={`ml-auto text-white text-[10px] min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center font-bold ${
-                        link.id === 'inbox' ? 'bg-blue-500' : 'bg-orange-500'
+                        link.id === 'notifications' ? 'bg-blue-500' : 'bg-orange-500'
                       }`}>
                         {badgeCount}
                       </span>

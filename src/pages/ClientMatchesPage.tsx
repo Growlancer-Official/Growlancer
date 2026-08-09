@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { inviteFreelancerToProject } from '../lib/workflowService';
 import { CheckCircle2, IndianRupee, MapPin, RefreshCw, Send, Sparkles, Star, User, XCircle, Plus, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { ProBadge } from '../components/ProBadge';
 
 export function ClientMatchesPage() {
   const { user } = useAuth();
@@ -387,8 +388,9 @@ export function ClientMatchesPage() {
                   )}
                 </div>
                 <div>
-                  <h3 className="font-display font-bold text-slate-900">
+                  <h3 className="font-display font-bold text-slate-900 flex items-center gap-1.5">
                     {match.freelancer.name || 'Unknown'}
+                    {match.freelancer.is_pro && <ProBadge size="xs" />}
                   </h3>
                   <div className="flex items-center gap-1 text-sm text-slate-500">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />

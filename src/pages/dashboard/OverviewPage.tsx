@@ -633,7 +633,7 @@ export function OverviewPage() {
                 : 'Stay informed about proposals and contract updates.'}
             </p>
             <Link
-              to={isFreelancer ? '/dashboard/inbox' : '/client/contracts'}
+              to={isFreelancer ? '/dashboard/notifications' : '/client/contracts'}
               className="block mt-4 text-emerald-600 font-medium text-sm hover:underline"
             >
               View Details →

@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { invitesService } from '../lib/dataService';
 import { Calendar, Clock, MailCheck, MoreVertical, Plus, RefreshCw, Send, X } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { ProBadge } from '../components/ProBadge';
 
 interface Invite {
   id: string;
@@ -23,6 +24,7 @@ interface Invite {
     name: string;
     avatar?: string;
     email?: string;
+    is_pro?: boolean;
   };  }
 
 /* ── Dropdown menu for each invite card ── */
@@ -245,8 +247,9 @@ export function ClientInvitesPage() {
                       )}
                     </div>
                     <div>
-                      <h3 className="font-display font-bold text-slate-900">
+                      <h3 className="font-display font-bold text-slate-900 flex items-center gap-1.5">
                         {invite.freelancer?.name || 'Unknown Freelancer'}
+                        {invite.freelancer?.is_pro && <ProBadge size="xs" />}
                       </h3>
                       <p className="text-sm text-slate-500">{invite.freelancer?.email}</p>
                     </div>

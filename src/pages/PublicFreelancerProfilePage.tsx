@@ -1,11 +1,34 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Award, Briefcase, Calendar, CheckCircle, ChevronRight, Clock, IndianRupee, Image, Loader2, MapPin, MessageSquare, Share2, Star, Users,  } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import {
+  Award,
+  BadgeCheck,
+  Briefcase,
+  Calendar,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  Eye,
+  ExternalLink,
+  Image as ImageIcon,
+  IndianRupee,
+  Loader2,
+  MapPin,
+  MessageSquare,
+  Package,
+  Share2,
+  Star,
+  Users,
+  X,
+} from 'lucide-react';
+import { supabase, realtimeChannels } from '../lib/supabase';
 import { portfolioService } from '../lib/portfolio';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
+import { invitesService } from '../lib/dataService';
+import { useAuth } from '../context/AuthContext';
+import { formatCurrency } from '../utils/date';
 import {
   isProSubscription,
   subscriptionService,
@@ -51,17 +74,87 @@ interface ReviewData {
   created_at: string;
 }
 
+interface FreelancerService {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  image_url: string | null;
+  price: number;
+  delivery_days: number | null;
+  revisions: number | null;
+  tags: string[];
+  active: boolean;
+}
+
+const formatExperience = (experience: string | null | undefined): string => {
+  if (!experience) return 'N/A';
+  const trimmed = experience.trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const n = parseFloat(trimmed);
+    return `${n}${n === 1 ? ' yr' : ' yrs'}`;
+  }
+  return trimmed;
+};
+
 export function PublicFreelancerProfilePage() {
   const { freelancerId } = useParams<{ freelancerId: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [profile, setProfile] = useState<FreelancerProfile | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioItem[]>([]);
+  const [services, setServices] = useState<FreelancerService[]>([]);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [averageRating, setAverageRating] = useState(0);
   const [totalReviews, setTotalReviews] = useState(0);
+  const [profileViews, setProfileViews] = useState(0);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<'portfolio' | 'reviews' | 'about'>('portfolio');
+  const [activeTab, setActiveTab] = useState<'services' | 'portfolio' | 'reviews' | 'about'>('services');
   const [isProFreelancer, setIsProFreelancer] = useState(false);
+
+  // Contact (client invite) modal state
+  const [contactOpen, setContactOpen] = useState(false);
+  const [clientProjects, setClientProjects] = useState<{ id: string; title: string }[]>([]);
+  const [selectedProject, setSelectedProject] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [sendingInvite, setSendingInvite] = useState(false);
+
+  const profileKey = profile?.user_id || freelancerId || null;  // Load the running view count on every visit + record one view per session
+  useEffect(() => {
+    if (!profileKey || !profile) return;
+
+    const loadCount = async () => {
+      try {
+        const { data: total } = await (supabase.rpc as any)('get_profile_views', {
+          p_user_id: profileKey,
+        });
+        if (typeof total === 'number') setProfileViews(total);
+      } catch {
+        // Count read failed silently — counter stays 0
+      }
+    };
+    void loadCount();
+
+    // Skip recording views of your own profile
+    if (user?.id === profile.user_id) return;
+
+    const sessionKey = `gw_profile_view:${profileKey}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+
+    const record = async () => {
+      try {
+        const { data: total } = await (supabase.rpc as any)('record_profile_view', {
+          p_user_id: profileKey,
+        });
+        if (typeof total === 'number') setProfileViews(total);
+        sessionStorage.setItem(sessionKey, '1');
+      } catch (error) {
+        console.error('Error recording profile view:', error);
+      }
+    };
+    void record();
+  }, [profileKey, profile, user?.id]);
 
   useEffect(() => {
     if (!freelancerId) return;
@@ -81,7 +174,6 @@ export function PublicFreelancerProfilePage() {
 
         let profileData = byUser;
         if (!profileData && byUserErr && byUserErr.code !== 'PGRST116') {
-          // unexpected error on user_id query
           throw byUserErr;
         }
         if (!profileData) {
@@ -100,20 +192,29 @@ export function PublicFreelancerProfilePage() {
         }
         setProfile(profileData as unknown as FreelancerProfile);
 
-        // Fetch portfolio + reviews keyed by the freelancer's USER id
+        // Fetch portfolio + reviews + services keyed by the freelancer's USER id
         const userKey = profileData.user_id || freelancerId;
 
         // PRO badge — does this freelancer hold an active/trial Pro subscription?
         const subRes = await subscriptionService.getCurrentSubscription(userKey);
         setIsProFreelancer(isProSubscription(subRes.subscription));
 
-        const portfolioItems = await portfolioService.getByUser(userKey);
-        setPortfolio(portfolioItems as unknown as PortfolioItem[]);
+        const [portfolioItems, reviewsResult, servicesResult] = await Promise.all([
+          portfolioService.getByUser(userKey),
+          reviewService.getUserReviews(userKey),
+          supabase
+            .from('services')
+            .select('id, title, description, category, image_url, price, delivery_days, revisions, tags, active')
+            .eq('freelancer_id', userKey)
+            .eq('active', true)
+            .order('created_at', { ascending: false }),
+        ]);
 
-        const reviewsResult = await reviewService.getUserReviews(userKey);
+        setPortfolio(portfolioItems as unknown as PortfolioItem[]);
         setReviews(reviewsResult.reviews as unknown as ReviewData[]);
         setAverageRating(reviewsResult.average_rating);
         setTotalReviews(reviewsResult.total_reviews);
+        setServices((servicesResult.data || []) as unknown as FreelancerService[]);
       } catch (err) {
         toast.error('Error', 'Failed to load freelancer profile.');
       } finally {
@@ -123,6 +224,108 @@ export function PublicFreelancerProfilePage() {
 
     fetchProfile();
   }, [freelancerId, toast]);
+
+  // Real-time services sync (services are the freelancer's live offerings)
+  useEffect(() => {
+    if (!profileKey) return;
+
+    let channel: { unsubscribe?: () => void } | null = null;
+    try {
+      channel = realtimeChannels.services(`public-profile-${profileKey}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'services',
+          filter: `freelancer_id=eq.${profileKey}`,
+        }, (payload) => {
+          const record = payload.new as { active?: boolean; id?: string } | null;
+          if (payload.eventType === 'INSERT' && record?.active) {
+            setServices(prev => [record as unknown as FreelancerService, ...prev]);
+          } else if (payload.eventType === 'UPDATE' && record) {
+            if (record.active) {
+              setServices(prev => {
+                const exists = prev.some(s => s.id === record.id);
+                return exists
+                  ? prev.map(s => (s.id === record.id ? (record as unknown as FreelancerService) : s))
+                  : [record as unknown as FreelancerService, ...prev];
+              });
+            } else {
+              setServices(prev => prev.filter(s => s.id !== record.id));
+            }
+          } else if (payload.eventType === 'DELETE') {
+            setServices(prev => prev.filter(s => s.id !== (payload.old as { id?: string } | null)?.id));
+          }
+        })
+        .subscribe();
+    } catch (error) {
+      console.error('Error subscribing to services:', error);
+    }
+
+    return () => {
+      if (channel?.unsubscribe) {
+        try { channel.unsubscribe(); } catch { /* ignore */ }
+      }
+    };
+  }, [profileKey]);
+
+  // Load client projects for the invite (Contact) flow
+  const openContact = useCallback(() => {
+    if (!user) {
+      toast.info('Login required', 'Please log in as a client to contact freelancers.');
+      navigate('/login');
+      return;
+    }
+    if (user.role === 'client') {
+      void (async () => {
+        const { data } = await supabase
+          .from('projects')
+          .select('id, title')
+          .eq('client_id', user.id)
+          .order('created_at', { ascending: false });
+        setClientProjects((data || []).map(p => ({ id: p.id as string, title: p.title as string })));
+        setSelectedProject((data && data[0]?.id) || '');
+        setContactOpen(true);
+      })();
+    } else {
+      toast.info('Invite only', 'Clients can invite freelancers from a posted project.');
+    }
+  }, [user, navigate, toast]);
+
+  const handleSendInvite = async () => {
+    if (!user || !profileKey || !selectedProject) return;
+    setSendingInvite(true);
+    try {
+      const ok = await invitesService.create(user.id, selectedProject, profileKey, inviteMessage.trim() || undefined);
+      if (ok) {
+        toast.success('Invite sent!', `${profile?.full_name || 'Freelancer'} has been invited to your project.`);
+        setContactOpen(false);
+        setInviteMessage('');
+      } else {
+        toast.error('Failed', 'Could not send the invite. Please try again.');
+      }
+    } finally {
+      setSendingInvite(false);
+    }
+  };
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: `${profile?.full_name || 'Freelancer'} on Growlancer`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied!', 'Profile link copied to clipboard.');
+      }
+    } catch {
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success('Link copied!', 'Profile link copied to clipboard.');
+      } catch {
+        toast.error('Share failed', 'Could not share the profile link.');
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -159,26 +362,50 @@ export function PublicFreelancerProfilePage() {
     </div>
   );
 
+  const heroStats = [
+    { icon: Package, label: 'Services', value: String(services.length) },
+    { icon: Briefcase, label: 'Experience', value: formatExperience(profile.experience) },
+    { icon: CheckCircle, label: 'Skills', value: String(profile.skills?.length || 0) },
+    { icon: Award, label: 'Certifications', value: String(profile.certifications?.length || 0) },
+    { icon: Users, label: 'Languages', value: String(profile.languages?.length || 0) },
+  ];
+
   return (
     <div className="min-h-screen bg-cream">
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="relative bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white overflow-hidden">
+        {/* Decorative glow */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -left-16 w-80 h-80 bg-teal-300/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar */}
-            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-white/20 ring-4 ring-white/30 flex-shrink-0">
-              {profile.avatar ? (
-                <img src={profile.avatar} alt={profile.full_name || ''} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-3xl font-bold text-white/60">
+            <div className="relative flex-shrink-0">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-white/20 ring-4 ring-white/30 shadow-xl">
+                {/* Letter fallback always behind the image */}
+                <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-white/60">
                   {(profile.full_name || 'U')[0]}
+                </div>
+                {profile.avatar && (
+                  <img
+                    src={profile.avatar}
+                    alt={profile.full_name || ''}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
+                )}
+              </div>
+              {isProFreelancer && (
+                <div className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-lg">
+                  <BadgeCheck className="w-6 h-6 text-blue-600" />
                 </div>
               )}
             </div>
 
             {/* Info */}
             <div className="text-center sm:text-left flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap">
+              <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
                 {profile.full_name || 'Freelancer'}
                 {isProFreelancer && <ProBadge size="md" showLabel />}
               </h1>
@@ -193,7 +420,7 @@ export function PublicFreelancerProfilePage() {
                   </span>
                 )}
                 {profile.hourly_rate && (
-                  <span className="flex items-center gap-1">
+                  <span className="flex items-center gap-1 font-medium text-white/90">
                     <IndianRupee className="w-4 h-4" />
                     {profile.hourly_rate}/hr
                   </span>
@@ -208,6 +435,10 @@ export function PublicFreelancerProfilePage() {
                   <Calendar className="w-4 h-4" />
                   Member since {new Date(profile.created_at).getFullYear()}
                 </span>
+                <span className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  {profileViews.toLocaleString('en-IN')} profile views
+                </span>
               </div>
 
               {totalReviews > 0 && (
@@ -220,28 +451,31 @@ export function PublicFreelancerProfilePage() {
             </div>
 
             {/* CTA Buttons */}
-            <div className="flex gap-2">
-              <button className="flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-700 rounded-xl hover:bg-emerald-50 transition-colors font-medium shadow-sm">
+            <div className="flex gap-2.5">
+              <button
+                onClick={openContact}
+                className="flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-700 rounded-xl hover:bg-emerald-50 transition-colors font-semibold shadow-sm"
+              >
                 <MessageSquare className="w-4 h-4" />
                 Contact
               </button>
-              <button className="p-2.5 bg-white/20 rounded-xl hover:bg-white/30 transition-colors">
+              <button
+                onClick={handleShare}
+                className="p-2.5 bg-white/20 rounded-xl hover:bg-white/30 transition-colors"
+                title="Share profile"
+                aria-label="Share profile"
+              >
                 <Share2 className="w-5 h-5" />
               </button>
             </div>
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-8">
-            {[
-              { icon: Briefcase, label: 'Experience', value: profile.experience || 'N/A' },
-              { icon: CheckCircle, label: 'Skills', value: String(profile.skills?.length || 0) },
-              { icon: Award, label: 'Certifications', value: String(profile.certifications?.length || 0) },
-              { icon: Users, label: 'Languages', value: String(profile.languages?.length || 0) },
-            ].map((stat, idx) => (
-              <div key={idx} className="bg-white/10 rounded-xl p-4 text-center backdrop-blur-sm">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-8">
+            {heroStats.map((stat, idx) => (
+              <div key={idx} className="bg-white/10 rounded-xl p-4 text-center backdrop-blur-sm border border-white/10 hover:bg-white/15 transition-colors">
                 <stat.icon className="w-5 h-5 mx-auto mb-1.5 opacity-80" />
-                <p className="text-lg font-semibold">{stat.value}</p>
+                <p className="text-lg font-bold">{stat.value}</p>
                 <p className="text-xs text-white/60">{stat.label}</p>
               </div>
             ))}
@@ -252,8 +486,9 @@ export function PublicFreelancerProfilePage() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-slate-200 mb-8">
+        <div className="flex gap-0 border-b border-slate-200 mb-8 overflow-x-auto">
           {[
+            { id: 'services' as const, label: 'Services', count: services.length },
             { id: 'portfolio' as const, label: 'Portfolio', count: portfolio.length },
             { id: 'reviews' as const, label: 'Reviews', count: totalReviews },
             { id: 'about' as const, label: 'About' },
@@ -261,7 +496,7 @@ export function PublicFreelancerProfilePage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-5 py-3 text-sm font-medium border-b-2 transition-colors ${
+              className={`px-5 py-3 text-sm font-semibold border-b-2 whitespace-nowrap transition-colors ${
                 activeTab === tab.id
                   ? 'border-emerald-600 text-emerald-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700'
@@ -269,7 +504,9 @@ export function PublicFreelancerProfilePage() {
             >
               {tab.label}
               {tab.count !== undefined && (
-                <span className="ml-2 text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
+                <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${
+                  activeTab === tab.id ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'
+                }`}>
                   {tab.count}
                 </span>
               )}
@@ -278,11 +515,84 @@ export function PublicFreelancerProfilePage() {
         </div>
 
         {/* Tab Content */}
+        {activeTab === 'services' && (
+          <div>
+            {services.length === 0 ? (
+              <div className="text-center py-16">
+                <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500">No services offered yet</p>
+                <p className="text-xs text-slate-400 mt-1">This freelancer hasn't published any services</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {services.map((service) => (
+                  <Link
+                    key={service.id}
+                    to={`/services/${service.id}`}
+                    className="group bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                  >
+                    {service.image_url && (
+                      <div className="aspect-video bg-slate-50 overflow-hidden">
+                        <img
+                          src={service.image_url}
+                          alt={service.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      </div>
+                    )}
+                    <div className="p-5">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="p-2.5 rounded-xl bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
+                          <Package className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        {service.category && (
+                          <span className="px-2.5 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                            {service.category}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-bold text-slate-900 mt-3 group-hover:text-emerald-700 transition-colors line-clamp-2">
+                        {service.title}
+                      </h3>
+                      {service.description && (
+                        <p className="text-sm text-slate-500 mt-1.5 line-clamp-2">{service.description}</p>
+                      )}
+                      <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
+                        <div>
+                          <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">From</p>
+                          <p className="font-bold text-emerald-700 text-lg">{formatCurrency(Number(service.price))}</p>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          {service.delivery_days ? (
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {service.delivery_days} days
+                            </span>
+                          ) : null}
+                          {service.revisions ? (
+                            <span className="flex items-center gap-1">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              {service.revisions} rev
+                            </span>
+                          ) : null}
+                          <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'portfolio' && (
           <div>
             {portfolio.length === 0 ? (
               <div className="text-center py-16">
-                <Image className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <ImageIcon className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500">No portfolio items yet</p>
               </div>
             ) : (
@@ -297,7 +607,7 @@ export function PublicFreelancerProfilePage() {
                         <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                          <Image className="w-10 h-10 text-slate-300" />
+                          <ImageIcon className="w-10 h-10 text-slate-300" />
                         </div>
                       )}
                     </div>
@@ -444,6 +754,95 @@ export function PublicFreelancerProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Contact Modal (client invite flow) */}
+      {contactOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setContactOpen(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
+                  {profile.avatar ? (
+                    <img src={profile.avatar} alt={profile.full_name || ''} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-lg font-bold text-slate-400">{(profile.full_name || 'U')[0]}</span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 flex items-center gap-1.5">
+                    Contact {profile.full_name || 'Freelancer'}
+                    {isProFreelancer && <ProBadge size="xs" />}
+                  </h3>
+                  <p className="text-xs text-slate-500">Send a project invitation</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setContactOpen(false)}
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {clientProjects.length === 0 ? (
+              <div className="text-center py-6">
+                <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-600 mb-4">
+                  You need an active project to invite {profile.full_name || 'this freelancer'}. Post a project first.
+                </p>
+                <Link
+                  to="/client/post"
+                  onClick={() => setContactOpen(false)}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+                >
+                  Post a Project
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Select project</label>
+                  <select
+                    value={selectedProject}
+                    onChange={(e) => setSelectedProject(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/30 outline-none transition-all"
+                  >
+                    {clientProjects.map((p) => (
+                      <option key={p.id} value={p.id}>{p.title}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">
+                    Message <span className="text-slate-400 font-normal">(optional)</span>
+                  </label>
+                  <textarea
+                    value={inviteMessage}
+                    onChange={(e) => setInviteMessage(e.target.value)}
+                    rows={3}
+                    placeholder={`Tell ${profile.full_name || 'them'} about your project...`}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/30 outline-none transition-all resize-none"
+                  />
+                </div>
+                <button
+                  onClick={handleSendInvite}
+                  disabled={sendingInvite || !selectedProject}
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {sendingInvite ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <MessageSquare className="w-4 h-4" />
+                  )}
+                  Send Invite
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -21,6 +21,7 @@ export interface AIMatchWithProfile extends AIMatch {
     id: string;
     name: string;
     avatar: string;
+    is_pro?: boolean;
     categories: string[];
     skills: string[];
     hourly_rate: number;
@@ -298,6 +299,7 @@ export const aiMatchingService = {
             id,
             name,
             avatar,
+            is_pro,
             freelancer_profiles (
               categories,
               skills,

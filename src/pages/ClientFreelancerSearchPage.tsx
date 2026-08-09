@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 import { getSellerLevelBadgeProps } from '../lib/sellerLevels';
 import { CategoriesSection } from '../components/CategoriesSection';
+import { ProBadge } from '../components/ProBadge';
 
 interface FreelancerResult {
   id: string;
@@ -22,7 +23,7 @@ interface FreelancerResult {
   total_reviews: number | null;
   completion_rate: number | null;
   seller_level: string | null;
-  profile: { name: string | null; avatar: string | null } | null;
+  profile: { name: string | null; avatar: string | null; is_pro?: boolean } | null;
 }
 
 interface SavedSearch {
@@ -56,7 +57,7 @@ export function ClientFreelancerSearchPage() {
     try {
       let query = supabase
         .from('freelancer_profiles')
-        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)')
+        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)')
         .not('user_id', 'is', null);
 
       if (minRate) query = query.gte('hourly_rate', Number(minRate));
@@ -278,7 +279,10 @@ export function ClientFreelancerSearchPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-bold text-slate-900 truncate">{f.profile?.name || f.title || 'Freelancer'}</h3>
+                    <h3 className="font-bold text-slate-900 truncate flex items-center gap-1.5">
+                      {f.profile?.name || f.title || 'Freelancer'}
+                      {f.profile?.is_pro && <ProBadge size="xs" />}
+                    </h3>
                     {f.availability && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />Available</span>}
                   </div>
                   {f.title && <p className="text-sm text-slate-500 truncate">{f.title}</p>}

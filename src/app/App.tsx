@@ -93,7 +93,7 @@ const AISubscriptionPage = lazy(() => import('@pages/dashboard/AISubscriptionPag
 const AIAssistantPage = lazy(() => import('@pages/dashboard/AIAssistantPage').then(m => ({ default: m.AIAssistantPage })));
 const PortfolioPage = lazy(() => import('@pages/dashboard/PortfolioPage').then(m => ({ default: m.PortfolioPage })));
 const AnalyticsPage = lazy(() => import('@pages/dashboard/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
-const InboxPage = lazy(() => import('@pages/dashboard/InboxPage').then(m => ({ default: m.InboxPage })));
+const NotificationsCenterPage = lazy(() => import('@pages/dashboard/NotificationsCenterPage').then(m => ({ default: m.NotificationsCenterPage })));
 const DisputeResolutionPage = lazy(() => import('@pages/dashboard/DisputeResolutionPage').then(m => ({ default: m.DisputeResolutionPage })));
 const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVerificationPage').then(m => ({ default: m.IdentityVerificationPage })));
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
@@ -261,7 +261,9 @@ function App() {
                 <Route path="services/create" element={<CreateServicePage />} />
                 <Route path="portfolio" element={<PortfolioPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
-                <Route path="inbox" element={<InboxPage />} />
+                <Route path="notifications" element={<NotificationsCenterPage />} />
+                {/* Old Inbox links redirect to the Notifications Center */}
+                <Route path="inbox" element={<Navigate to="notifications" replace />} />
                 <Route path="disputes" element={<DisputeResolutionPage />} />
                 <Route path="identity-verification" element={<IdentityVerificationPage />} />
                 <Route path="certifications" element={<SkillCertificationsPage />} />
@@ -289,7 +291,9 @@ function App() {
                 <Route path="workspace" element={<ClientWorkspacePage />} />
                 {/* Direct contract workspace URLs (e.g. /client/workspace/:id) — must not 404 on refresh */}
                 <Route path="workspace/:contractId" element={<ClientWorkspacePage />} />
-                <Route path="inbox" element={<InboxPage />} />
+                <Route path="notifications" element={<NotificationsCenterPage />} />
+                {/* Old Inbox links redirect to the Notifications Center */}
+                <Route path="inbox" element={<Navigate to="notifications" replace />} />
                 <Route path="payments" element={<ClientPaymentsPage />} />
                 <Route path="settings" element={<ClientSettingsPage />} />
                 <Route path="verification" element={<IdentityVerificationPage />} />

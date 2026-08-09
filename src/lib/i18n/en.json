@@ -74,6 +74,7 @@
     "contracts": "Contracts",
     "messages": "Messages",
     "inbox": "Inbox",
+    "notifications": "Notifications",
     "wallet": "Wallet",
     "payments": "Payments",
     "services": "Services",

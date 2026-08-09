@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
+import { ProBadge } from '../components/ProBadge';
 
 interface Contract {
   id: string;
@@ -16,7 +17,7 @@ interface Contract {
   end_date?: string | null;
   created_at: string | null;
   project?: { id: string; title: string } | null;
-  freelancer?: { id: string; name: string; avatar?: string | null } | null;
+  freelancer?: { id: string; name: string; avatar?: string | null; is_pro?: boolean } | null;
   escrow?: { id: string; amount: number; status: string }[] | { id: string; amount: number; status: string } | null;
 }
 
@@ -58,7 +59,7 @@ export function ClientContractsPage() {
       .select(`
         *,
         project:projects(id, title),
-        freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar),
+        freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, is_pro),
         escrow(id, amount, status)
       `)
       .eq('client_id', user.id)
@@ -231,7 +232,10 @@ export function ClientContractsPage() {
                     </div>
                     <div>
                       <h3 className="font-display font-bold text-slate-900">
-                        {contract.freelancer?.name || 'Unknown Freelancer'}
+                        <span className="flex items-center gap-1.5">
+                          {contract.freelancer?.name || 'Unknown Freelancer'}
+                          {contract.freelancer?.is_pro && <ProBadge size="xs" />}
+                        </span>
                       </h3>
                       {contract.project && (
                         <p className="text-sm text-slate-500">{contract.project.title}</p>

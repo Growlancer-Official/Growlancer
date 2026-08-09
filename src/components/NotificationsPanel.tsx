@@ -294,7 +294,7 @@ export function NotificationsPanel() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 mt-3 ml-13 flex-wrap">
+        <div className="flex items-center gap-2 mt-3 ml-14 flex-wrap">
           {/* Mark as read */}
           {!notification.read && (
             <button

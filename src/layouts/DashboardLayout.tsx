@@ -20,7 +20,7 @@ import {
   X,
   BarChart3,
   Image,
-  MessageSquare,
+  Bell,
   Scale,
   Shield,
   Crown,
@@ -31,7 +31,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { DashboardFallback } from '../components/LoadingSkeleton';
-import { messagesService } from '../lib/messages';
+import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
@@ -72,7 +72,7 @@ const sidebarGroups: SidebarGroup[] = [
   {
     label: 'COMMUNICATION',
     links: [
-      { id: 'inbox', path: '/dashboard/inbox', icon: MessageSquare, label: 'Inbox' },
+      { id: 'notifications', path: '/dashboard/notifications', icon: Bell, label: 'Notifications' },
       { id: 'ai-assistant', path: '/dashboard/ai-assistant', icon: Bot, label: 'AI Assistant' },
     ],
   },
@@ -109,7 +109,7 @@ export function DashboardLayout() {
   const [userProfile, setUserProfile] = useState<{ name: string; avatar: string | null; rating: number; total_reviews: number } | null>(null);
   const [newMatchCount, setNewMatchCount] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [unreadMessages, setUnreadMessages] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const { isPro } = useProStatus();
 
   const safeUnsubscribe = (channel: { unsubscribe?: () => void } | null | undefined) => {
@@ -195,8 +195,8 @@ export function DashboardLayout() {
 
     const fetchUnreadCount = async () => {
       try {
-        const count = await messagesService.getUnreadCount(user.id);
-        setUnreadMessages(count);
+        const data = await notificationService.getByUser(user.id, { unreadOnly: true, limit: 1, forceRefetch: true });
+        setUnreadNotifications(data.unread_count);
       } catch {
         // Unread count fetch failed silently
       }
@@ -206,8 +206,8 @@ export function DashboardLayout() {
     fetchBadgeCounts();
     fetchUnreadCount();
 
-    // Subscribe to new messages for real-time inbox badge updates
-    const messagesSub = messagesService.subscribeToMessages(user.id, () => {
+    // Subscribe to notifications for real-time badge updates
+    const notifSub = notificationService.subscribe(user.id, () => {
       fetchUnreadCount();
     });
 
@@ -273,7 +273,7 @@ export function DashboardLayout() {
       safeUnsubscribe(invitesChannel);
       safeUnsubscribe(proposalsChannel);
       safeUnsubscribe(contractsChannel);
-      safeUnsubscribe(messagesSub);
+      safeUnsubscribe(notifSub);
     };
   }, [user]);
 
@@ -355,8 +355,8 @@ export function DashboardLayout() {
               {group.links.map((link) => {
                 const getBadgeCount = () => {
                   switch (link.id) {
-                    case 'inbox':
-                      return unreadMessages > 0 ? unreadMessages : null;
+                    case 'notifications':
+                      return unreadNotifications > 0 ? unreadNotifications : null;
                     case 'invites':
                       return badgeCounts.invites > 0 ? badgeCounts.invites : null;
                     case 'proposals':
@@ -489,8 +489,8 @@ export function DashboardLayout() {
               {group.links.map((link) => {
                 const getBadgeCount = () => {
                   switch (link.id) {
-                    case 'inbox':
-                      return unreadMessages > 0 ? unreadMessages : null;
+                    case 'notifications':
+                      return unreadNotifications > 0 ? unreadNotifications : null;
                     case 'invites':
                       return badgeCounts.invites > 0 ? badgeCounts.invites : null;
                     case 'proposals':

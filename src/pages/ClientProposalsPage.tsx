@@ -5,6 +5,7 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { hireFreelancerFromProposal, rejectProposal } from '../lib/workflowService';
 import { CheckCircle, Clock, ExternalLink, Eye, FileText, IndianRupee, MoreVertical, Plus, Star, User, XCircle } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { ProBadge } from '../components/ProBadge';
 
 interface Proposal {
   id: string;
@@ -26,6 +27,7 @@ interface Proposal {
       id: string;
       name: string;
       avatar?: string;
+      is_pro?: boolean;
       deleted_at?: string | null;
       freelancer_profiles?: {
         rating?: number;
@@ -162,6 +164,7 @@ export function ClientProposalsPage() {
               id, 
               name, 
               avatar, 
+              is_pro,
               deleted_at,
               freelancer_profiles(rating, hourly_rate, completion_rate)
             )
@@ -360,6 +363,7 @@ export function ClientProposalsPage() {
                       className="font-display font-bold text-slate-900 hover:text-emerald-600 transition-colors"
                     >
                       {proposal.freelancer?.name || 'Unknown Freelancer'}
+                      {proposal.freelancer?.is_pro && <ProBadge size="xs" className="ml-1.5" />}
                     </Link>
                     <div className="flex items-center gap-3 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
