@@ -225,6 +225,24 @@ function nextChannelName(base: string, scope?: string) {
   return `${base}:${scope || 'global'}:${channelCounter}`;
 }
 
+/**
+ * Generate a UNIQUE realtime channel name.
+ *
+ * ⚠️ WHY THIS EXISTS (critical):
+ * supabase-js returns the EXISTING channel object when you call
+ * `supabase.channel(name)` with a name that was already created. If that
+ * channel is already subscribed, calling `.on('postgres_changes', ...)` on
+ * it again throws: "cannot add postgres_changes callbacks ... after
+ * subscribe()" — which crashes the whole page via the ErrorBoundary.
+ * Multiple components (e.g. useProStatus in DashboardLayout + OverviewPage)
+ * subscribing with the SAME static name triggers this bug. Always use
+ * `uniqueChannelName()` so every subscriber gets its own channel.
+ */
+export function uniqueChannelName(base: string, scope?: string): string {
+  channelCounter += 1;
+  return `${base}:${scope || 'global'}:${channelCounter}:${Date.now().toString(36)}`;
+}
+
 export const realtimeChannels = {
   projects: (scope?: string) => supabase.channel(nextChannelName('projects', scope)),
   projectMatches: (scope?: string) => supabase.channel(nextChannelName('project_matches', scope)),

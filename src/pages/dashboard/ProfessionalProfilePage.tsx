@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
-import { supabase, clearSupabaseAuthStorage } from '../../lib/supabase';
+import { supabase, clearSupabaseAuthStorage, uniqueChannelName } from '../../lib/supabase';
 import { CacheManager } from '../../lib/services/cacheManager';
 import { avatarUploadService } from '../../lib/avatarUpload';
 import { notificationPreferencesService } from '../../lib/notificationPreferences';
@@ -319,7 +319,7 @@ export function ProfessionalProfilePage() {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel('professional-profile-changes')
+      .channel(uniqueChannelName('professional-profile-changes', user.id))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` }, (payload: { new: Record<string, unknown> }) => {
         if (payload.new) {
           const newProfile = payload.new as Profile;

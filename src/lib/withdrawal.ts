@@ -2,7 +2,7 @@
 // Handles withdrawal requests and wallet/payout method operations
 // PayPal-only withdrawal method
 
-import { supabase, dbFunctions } from './supabase';
+import { supabase, dbFunctions, uniqueChannelName } from './supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -220,7 +220,7 @@ export const withdrawalService = {
   /** Subscribe to real-time withdrawal updates */
   subscribeToWithdrawals(userId: string, callback: (withdrawal: Withdrawal) => void) {
     const channel = supabase
-      .channel('withdrawals-updates')
+      .channel(uniqueChannelName('withdrawals-updates', userId))
       .on(
         'postgres_changes',
         {

@@ -1,6 +1,6 @@
 // Dispute Resolution Service  
 // Pure data-access layer for disputes table
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 import type { Tables } from '../types/supabase';
 import { emailNotificationService } from './emailNotificationService';
 
@@ -245,7 +245,7 @@ export const disputeService = {
    */
   subscribe(disputeId: string, callback: (dispute: DisputeCase) => void) {
     const channel = supabase
-      .channel(`dispute-detail-${disputeId}`)
+      .channel(uniqueChannelName('dispute-detail', disputeId))
       .on(
         'postgres_changes',
         {
@@ -269,7 +269,7 @@ export const disputeService = {
    */
   subscribeUserDisputes(userId: string, callback: () => void) {
     const channel = supabase
-      .channel(`user-disputes-${userId}`)
+      .channel(uniqueChannelName('user-disputes', userId))
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'disputes',
         filter: `client_id=eq.${userId}`,

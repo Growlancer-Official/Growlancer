@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 import { sendAdminNotification } from './emailNotificationService';
 
 export type TicketCategory = 'general' | 'billing' | 'account' | 'technical' | 'dispute' | 'feature_request' | 'other';
@@ -208,7 +208,7 @@ const ticketService = {
    */
   subscribeToTickets(userId: string, callback: () => void) {
     const channel = supabase
-      .channel(`support-tickets-${userId}`)
+      .channel(uniqueChannelName('support-tickets', userId))
       .on(
         'postgres_changes',
         {

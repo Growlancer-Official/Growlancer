@@ -376,7 +376,7 @@ export function WorkspacePage() {
     });
 
     return () => {
-      void fileChannel.unsubscribe();
+      void supabase.removeChannel(fileChannel);
     };
   }, [selectedContract]);
 

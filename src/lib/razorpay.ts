@@ -1,7 +1,7 @@
 // Razorpay Service for frontend integration
 // Handles creating orders, verifying payments, and managing Razorpay transactions
 
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 
 const RAZORPAY_EDGE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/razorpay`;
 
@@ -262,7 +262,7 @@ class RazorpayService {
    */
   subscribeToOrderUpdates(orderId: string, callback: (order: RazorpayOrder) => void) {
     const channel = supabase
-      .channel(`razorpay_order_${orderId}`)
+      .channel(uniqueChannelName('razorpay_order', orderId))
       .on(
         'postgres_changes',
         {
@@ -277,7 +277,7 @@ class RazorpayService {
       )
       .subscribe();
 
-    return { unsubscribe: () => channel.unsubscribe() };
+    return { unsubscribe: () => supabase.removeChannel(channel) };
   }
 }
 

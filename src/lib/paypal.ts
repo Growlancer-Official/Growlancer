@@ -1,7 +1,7 @@
 // PayPal Service for frontend integration
 // Handles creating, capturing, and managing PayPal orders
 
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 
 const PAYPAL_EDGE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/paypal`;
 
@@ -123,7 +123,7 @@ class PayPalService {
    */
   subscribeToOrderUpdates(orderId: string, callback: (order: PayPalOrder) => void) {
     const channel = supabase
-      .channel(`paypal_order_${orderId}`)
+      .channel(uniqueChannelName('paypal_order', orderId))
       .on(
         'postgres_changes',
         {
@@ -139,7 +139,7 @@ class PayPalService {
       .subscribe();
 
     return {
-      unsubscribe: () => channel.unsubscribe(),
+      unsubscribe: () => supabase.removeChannel(channel),
     };
   }
 

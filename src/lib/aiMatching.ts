@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 
 export interface AIMatch {
   id: string;
@@ -438,7 +438,7 @@ export const aiMatchingService = {
     callback: (matches: AIMatch[]) => void
   ) {
     const channel = supabase
-      .channel('ai-matches-updates')
+      .channel(uniqueChannelName('ai-matches-updates', projectId))
       .on(
         'postgres_changes',
         {

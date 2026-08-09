@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase, uniqueChannelName } from '@/lib/supabase';
 
 const METRICS_URL = '/platform-metrics.json';
 const POLL_MS = 60_000;
@@ -129,7 +129,7 @@ export function useAboutPageMetrics() {
     document.addEventListener('visibilitychange', onVisible);
 
     const channel = supabase
-      .channel('about-page-profile-count')
+      .channel(uniqueChannelName('about-page-profile-count'))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'profiles' },

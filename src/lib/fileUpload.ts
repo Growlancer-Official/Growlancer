@@ -1,7 +1,7 @@
 // File Upload Service
 // Handles file uploads to the backend edge function
 
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
@@ -138,7 +138,7 @@ export const fileUploadService = {
     callback: () => void
   ) {
     const channel = supabase
-      .channel(`contract-files-updates-${contractId}`)
+      .channel(uniqueChannelName('contract-files-updates', contractId))
       .on(
         'postgres_changes',
         {

@@ -1,5 +1,5 @@
 import type { Tables } from '../types/supabase';
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -369,8 +369,12 @@ const subscriptionService = {
    * Start a realtime channel to listen for subscription changes.
    */
   subscribeToChanges(userId: string, callback: () => void) {
+    // uniqueChannelName() is REQUIRED: useProStatus() is mounted in multiple
+    // components (DashboardLayout + OverviewPage + Pro pages) — a static name
+    // makes supabase-js return the already-subscribed channel, and adding
+    // .on() after subscribe() throws and crashes the dashboard.
     const channel = supabase
-      .channel(`subscription-changes-${userId}`)
+      .channel(uniqueChannelName('subscription-changes', userId))
       .on(
         'postgres_changes',
         {
@@ -386,7 +390,7 @@ const subscriptionService = {
       .subscribe();
 
     return () => {
-      void channel.unsubscribe();
+      void supabase.removeChannel(channel);
     };
   },
 };

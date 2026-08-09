@@ -4,7 +4,7 @@ import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Load
 import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
-import { supabase, dbFunctions } from '../../lib/supabase';
+import { supabase, dbFunctions, uniqueChannelName } from '../../lib/supabase';
 import { safeFormatDate, safeNumber } from '../../utils/date';
 import type { Tables } from '../../types/supabase';
 
@@ -74,7 +74,7 @@ export function InvitesPage() {
 
     // Set up real-time subscription for invites
     const invitesChannel = supabase
-      .channel('invites-changes')
+      .channel(uniqueChannelName('invites-changes'))
       .on(
         'postgres_changes',
         {
@@ -126,7 +126,7 @@ export function InvitesPage() {
 
     // Real-time subscription for profile/avatar changes
     const profilesChannel = supabase
-      .channel('profiles-avatar-changes')
+      .channel(uniqueChannelName('profiles-avatar-changes'))
       .on(
         'postgres_changes',
         {

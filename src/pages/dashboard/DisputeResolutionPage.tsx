@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { disputeService } from '../../lib/disputeService';
 import type { DisputeCase } from '../../lib/disputeService';
+import { supabase } from '../../lib/supabase';
 
 /* ------------------------------------------------------------------ */
 /*  Status helpers                                                     */
@@ -133,7 +134,7 @@ export function DisputeResolutionPage() {
     const listChannel = disputeService.subscribeUserDisputes
       ? disputeService.subscribeUserDisputes(user.id, fetchDisputes)
       : null;
-    return () => { listChannel?.unsubscribe(); };
+    return () => { if (listChannel) supabase.removeChannel(listChannel); };
   }, [fetchDisputes, user]);
 
   /* select dispute & load detail */
@@ -196,7 +197,7 @@ export function DisputeResolutionPage() {
       setMessages(rawMessages as DisputeMessage[]);
     });
     return () => {
-      channel.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [selectedDispute]);
 

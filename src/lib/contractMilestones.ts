@@ -1,5 +1,5 @@
 /** Helpers for contract amount, escrow shape, milestone progress, and milestone CRUD in workspace UIs. */
-import { supabase } from './supabase';
+import { supabase, uniqueChannelName } from './supabase';
 import type { Tables } from '../types/supabase';
 
 // ─── Existing types ──────────────────────────────────────────────────────────
@@ -436,7 +436,7 @@ export const milestoneService = {
     contractId: string,
     callback: () => void
   ): { unsubscribe: () => void } {
-    const channel = supabase.channel(`contract-milestones-${contractId}`)
+    const channel = supabase.channel(uniqueChannelName('contract-milestones', contractId))
       .on(
         'postgres_changes',
         {
