@@ -26,6 +26,7 @@ import { portfolioService } from '../lib/portfolio';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
+import { VerifiedBadge } from '../components/VerifiedBadge';
 import { invitesService } from '../lib/dataService';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/date';
@@ -51,6 +52,8 @@ interface FreelancerProfile {
   created_at: string;
   // Name + avatar + pro flag live on `profiles`, not `freelancer_profiles`
   profile?: { name: string | null; avatar: string | null; is_pro?: boolean } | null;
+  // KYC status lives on `freelancer_profiles` (the `*` select) — 'verified' shows the green badge
+  verification_status?: string | null;
 }
 
 interface PortfolioItem {
@@ -452,6 +455,7 @@ export function PublicFreelancerProfilePage() {
             <div className="text-center sm:text-left flex-1">
               <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
                 {displayName}
+                {profile.verification_status === 'verified' && <VerifiedBadge size="sm" />}
                 {isProFreelancer && <ProBadge size="md" showLabel />}
               </h1>
               {profile.title && (

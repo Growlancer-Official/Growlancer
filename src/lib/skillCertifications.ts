@@ -185,3 +185,163 @@ export const skillCertificationService = {
     };
   },
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Skill Test Attempts — anti-cheat & cooldown enforcement
+// -----------------------------------------------------------------------------
+// Rules enforced by the SkillTestPage + this service:
+//   • Failed test        → retry allowed after 24 hours
+//   • Cheating violation (copy/paste or tab-switch) → 3 strikes = 7-day ban
+//   • Repeated cheating  → permanent ban (no further attempts, ever)
+// =============================================================================
+
+export interface SkillTestAttempt {
+  id: string;
+  user_id: string;
+  test_id: string;
+  status: 'in_progress' | 'passed' | 'failed' | 'cheating';
+  violations: number;
+  blocked_until: string | null;
+  permanently_blocked: boolean;
+  cheating_count: number;
+  started_at: string;
+  finished_at: string | null;
+  updated_at: string;
+}
+
+export const MAX_VIOLATIONS_BEFORE_BAN = 3;
+export const FAIL_COOLDOWN_MS = 24 * 60 * 60 * 1000;      // 24 hours
+const CHEAT_BAN_MS = 7 * 24 * 60 * 60 * 1000;              // 7 days
+
+export const skillTestAttemptService = {
+  /**
+   * Whether the user may start (or continue) this test right now.
+   * Returns the blocking reason when not allowed.
+   */
+  async getEligibility(
+    userId: string,
+    testId: string
+  ): Promise<{ allowed: boolean; attempt: SkillTestAttempt | null; message?: string }> {
+    const { data, error } = await supabase
+      .from('skill_test_attempts' as any)
+      .select('*')
+      .eq('user_id', userId)
+      .eq('test_id', testId)
+      .maybeSingle();
+
+    if (error || !data) return { allowed: true, attempt: null };
+    const attempt = data as unknown as SkillTestAttempt;
+
+    if (attempt.permanently_blocked) {
+      return {
+        allowed: false,
+        attempt,
+        message:
+          'This test is permanently locked for your account due to repeated policy violations (copy-paste / tab-switching). Contact support if you believe this is a mistake.',
+      };
+    }
+    if (attempt.status === 'passed') {
+      return {
+        allowed: false,
+        attempt,
+        message:
+          'You have already passed this assessment — your badge is live on your profile. Retakes of passed tests are not allowed.',
+      };
+    }
+    if (attempt.blocked_until && new Date(attempt.blocked_until).getTime() > Date.now()) {
+      const msLeft = new Date(attempt.blocked_until).getTime() - Date.now();
+      const hours = Math.ceil(msLeft / 3600000);
+      const when =
+        hours >= 24 ? `${Math.round(hours / 24)} day${hours >= 48 ? 's' : ''}` : `${hours} hour${hours > 1 ? 's' : ''}`;
+      const reason =
+        attempt.status === 'cheating'
+          ? 'A policy violation (copy-paste or tab-switching) was detected'
+          : 'You did not pass the test';
+      return { allowed: false, attempt, message: `${reason}. You can try again in ${when}.` };
+    }
+    return { allowed: true, attempt };
+  },
+
+  /** Mark an attempt as in-progress (fresh start after cooldown). */
+  async startAttempt(userId: string, testId: string) {
+    return supabase
+      .from('skill_test_attempts' as any)
+      .upsert(
+        {
+          user_id: userId,
+          test_id: testId,
+          status: 'in_progress',
+          violations: 0,
+          blocked_until: null,
+          permanently_blocked: false,
+          started_at: new Date().toISOString(),
+        },
+        { onConflict: 'user_id,test_id' }
+      );
+  },
+
+  /**
+   * Register a cheating violation (copy/paste, tab-switch, window blur).
+   * After MAX_VIOLATIONS_BEFORE_BAN strikes the attempt is banned for 7 days.
+   */
+  async recordViolation(
+    userId: string,
+    testId: string
+  ): Promise<{ banned: boolean; permanent: boolean; violations: number }> {
+    const { data } = await supabase
+      .from('skill_test_attempts' as any)
+      .select('violations, permanently_blocked')
+      .eq('user_id', userId)
+      .eq('test_id', testId)
+      .maybeSingle();
+    const attempt = data as unknown as {
+      violations: number;
+      permanently_blocked: boolean;
+      cheating_count: number;
+    } | null;
+
+    if (attempt?.permanently_blocked) return { banned: true, permanent: true, violations: attempt.violations ?? 0 };
+
+    const current = attempt?.violations ?? 0;
+    const violations = current + 1;
+
+    if (violations >= MAX_VIOLATIONS_BEFORE_BAN) {
+      // Cumulative cheating bans across attempts: 2nd cheating episode = PERMANENT ban
+      const cheatingCount = (attempt?.cheating_count ?? 0) + 1;
+      const permanent = cheatingCount >= 2;
+      await supabase
+        .from('skill_test_attempts' as any)
+        .update({
+          violations,
+          status: 'cheating',
+          blocked_until: permanent ? null : new Date(Date.now() + CHEAT_BAN_MS).toISOString(),
+          permanently_blocked: permanent,
+          cheating_count: cheatingCount,
+          finished_at: new Date().toISOString(),
+        })
+        .eq('user_id', userId)
+        .eq('test_id', testId);
+      return { banned: true, permanent, violations };
+    }
+
+    await supabase
+      .from('skill_test_attempts' as any)
+      .update({ violations, updated_at: new Date().toISOString() })
+      .eq('user_id', userId)
+      .eq('test_id', testId);
+    return { banned: false, permanent: false, violations };
+  },
+
+  /** Record the final result — fail → 24h cooldown, pass → cleared. */
+  async completeAttempt(userId: string, testId: string, passed: boolean) {
+    return supabase
+      .from('skill_test_attempts' as any)
+      .update({
+        status: passed ? 'passed' : 'failed',
+        finished_at: new Date().toISOString(),
+        blocked_until: passed ? null : new Date(Date.now() + FAIL_COOLDOWN_MS).toISOString(),
+      })
+      .eq('user_id', userId)
+      .eq('test_id', testId);
+  },
+};

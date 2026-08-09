@@ -387,8 +387,46 @@ Deno.serve(async (req) => {
         }
 
       } catch (payoutError: any) {
-        // ── FAILURE → Rollback ──
         const errorMsg = payoutError?.message || 'Payout API call failed'
+
+        // ── CONFIG / NOT-READY errors → QUEUE, don't hard-fail ──────────────
+        // RazorpayX may not be enabled on the account yet ("The requested URL
+        // was not found on the server" = /v1/payouts 404) or credentials may be
+        // missing. Instead of failing the whole withdrawal, keep it 'pending'
+        // with funds held — the financial cron (process_stale_withdrawals)
+        // retries it automatically once the payout service is configured. The
+        // freelancer sees a clean "Withdrawal queued" instead of a raw error.
+        const configLike = /url was not found|not found on the server|invalid account|account.*not.*exist|payouts.*not.*enabled|not configured|invalid.*credential|missing.*credential|unauthorized|payment processing is not enabled/i.test(errorMsg)
+        if (configLike) {
+          await supabaseClient.from('withdrawals').update({
+            status: 'pending',
+            failure_reason: `Queued — payout service not configured yet. ${errorMsg}`,
+            updated_at: new Date().toISOString(),
+          }).eq('id', withdrawal.id)
+
+          // Keep the transaction pending (funds stay held in the wallet).
+          await supabaseClient.from('transactions').update({
+            status: 'pending',
+            description: `Withdrawal queued (${wdMethod}) — awaiting payout service`,
+          }).eq('metadata->>withdrawal_id', withdrawal.id)
+
+          return new Response(JSON.stringify({
+            success: true,
+            payout_completed: false,
+            queued: true,
+            withdrawal: {
+              id: withdrawal.id,
+              amount: withdrawal.amount,
+              fee: withdrawal.fee,
+              net_amount: withdrawal.net_amount,
+              status: 'pending',
+              method: withdrawal.method,
+            },
+            message: 'Withdrawal queued. Your funds are safely held — the payout will be processed as soon as the payout service is configured.',
+          }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+        }
+
+        // ── REAL FAILURE → Rollback ──
         await rollbackWithdrawal(supabaseClient, withdrawal.id, user.id, amount, errorMsg)
         
         // Send failure notification email (fire-and-forget)

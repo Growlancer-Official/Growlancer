@@ -225,8 +225,8 @@ Deno.serve(async (req) => {
           .from('reviews')
           .select(`
             *,
-            reviewer:profiles(id, name, avatar),
-            reviewee:profiles(id, name, avatar)
+            reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar),
+            reviewee:profiles!reviews_reviewee_id_fkey(id, name, avatar)
           `)
           .eq('contract_id', contractId)
 
@@ -242,8 +242,8 @@ Deno.serve(async (req) => {
           .from('reviews')
           .select(`
             *,
-            reviewer:profiles(id, name, avatar),
-            contract:contracts(id, project:projects(title))
+            reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar),
+            contract:contracts!reviews_contract_id_fkey(id, project:projects(title))
           `)
           .eq('reviewee_id', revieweeId)
           .order('created_at', { ascending: false })

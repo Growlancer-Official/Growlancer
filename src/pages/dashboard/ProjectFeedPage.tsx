@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Wallet, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
@@ -208,6 +208,51 @@ export function ProjectFeedPage() {
   // the working state (Contract Active / Completed) instead of "Apply Now".
   const [contractInfoMap, setContractInfoMap] = useState<Map<string, { contractId: string; status: string }>>(new Map());
   const toast = useToast();
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const applyProjectId = searchParams.get('apply');
+
+  // Deep-link apply flow: /dashboard/feed?apply=<projectId> (from public project
+  // detail pages) auto-opens the proposal modal for that project once matches
+  // load. Falls back to fetching the project directly when it isn't in the feed.
+  useEffect(() => {
+    const applyId = searchParams.get('apply');
+    if (!applyId) return;
+    if (loading || matches.length === 0) return;
+    const match = matches.find((m) => m.project_id === applyId) || null;
+    if (match) {
+      setSelectedMatch(match);
+      setProposalModalOpen(true);
+    } else {
+      const loadProject = async () => {
+        const { data } = await supabase
+          .from('projects')
+          .select('*, client:profiles!projects_client_id_fkey(id, name, avatar)')
+          .eq('id', applyId)
+          .maybeSingle();
+        if (data) {
+          setSelectedMatch({
+            id: `apply-${applyId}`,
+            freelancer_id: user?.id || '',
+            project_id: applyId,
+            match_score: 0,
+            skill_score: null,
+            experience_score: null,
+            budget_score: null,
+            availability_score: null,
+            completion_score: null,
+            created_at: new Date().toISOString(),
+            project: data as unknown as NonNullable<MatchWithProject['project']>,
+          });
+          setProposalModalOpen(true);
+        }
+      };
+      void loadProject();
+    }
+    // Clear ?apply so a manual refresh doesn't re-open the modal.
+    setSearchParams({}, { replace: true });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [applyProjectId, loading, matches]);
 
   // Declined projects are stored PER USER (shared-device safe): user A's
   // declines must never hide projects from user B. A legacy global key is
@@ -563,11 +608,16 @@ export function ProjectFeedPage() {
       // Update local state
       setAppliedProjects(prev => new Set(prev).add(selectedMatch.project_id));
 
-      setProposalSuccess('Application submitted successfully!');
       setProposalModalOpen(false);
+      setProposalSuccess('Application submitted successfully!');
+      toast.success(
+        'Application Submitted',
+        `Your proposal for "${selectedMatch.project?.title || 'the project'}" has been sent to the client. You can track it in My Proposals.`
+      );
 
-      // Clear success message after 3 seconds
-      setTimeout(() => setProposalSuccess(null), 3000);
+      // Take the freelancer to "My Proposals" — landing on the feed after
+      // submitting felt like a dead end. Now they see their live proposal.
+      navigate('/dashboard/proposals');
     } catch (error) {
       toast.error('Error', 'Failed to submit application. Please try again.');
     } finally {

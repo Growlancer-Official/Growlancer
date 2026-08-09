@@ -13,9 +13,10 @@ export const GEMINI_BASE_URL = (
 
 export const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY') || '';
 
-/** Default model. `gemini-2.5-flash` answers fast (instant replies for the
- *  AI assistant / support chat). Env override allowed for A/B testing. */
-export const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.5-flash';
+/** Default model. `gemini-2.0-flash` is the fast, stable, widely-available
+ *  model (gemini-2.5-flash was retired for new keys — Google returns 404 for
+ *  it). Env override allowed for A/B testing. */
+export const GEMINI_MODEL = Deno.env.get('GEMINI_MODEL') || 'gemini-2.0-flash';
 
 export interface GeminiMessage {
   role: 'system' | 'user' | 'assistant';

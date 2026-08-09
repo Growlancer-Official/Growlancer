@@ -142,7 +142,6 @@ export function IdentityVerificationPage() {
       const result = await identityVerificationService.submit(user.id, formData);
       if (result.success && result.verification) {
         setVerification(result.verification);
-        setVerificationStatus('pending');
         setShowForm(false);
         setFormData({
           document_type: 'passport',
@@ -150,7 +149,12 @@ export function IdentityVerificationPage() {
           document_url: '',
           document_number: '',
           expiry_date: '',
+          full_name: '',
+          date_of_birth: '',
         });
+        // The backend auto-verifies valid documents instantly — fetch the real
+        // status (the realtime subscription also flips it live).
+        await fetchStatus();
       } else {
         setError(result.error || 'Failed to submit verification');
       }
@@ -225,11 +229,42 @@ export function IdentityVerificationPage() {
               onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
             >
+              <option value="aadhaar">Aadhaar Card (India)</option>
+              <option value="pan">PAN Card (India)</option>
               <option value="passport">Passport</option>
               <option value="drivers_license">Driver's License</option>
               <option value="national_id">National ID Card</option>
               <option value="other">Other Government ID</option>
             </select>
+          </div>
+
+          {/* Full Name */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Full Name (as on document) <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.full_name || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
+              placeholder="e.g., Rahul Sharma"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+            />
+          </div>
+
+          {/* Date of Birth */}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Date of Birth <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              required
+              value={formData.date_of_birth || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, date_of_birth: e.target.value }))}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+            />
           </div>
 
           {/* Secure File Upload */}
@@ -336,13 +371,17 @@ export function IdentityVerificationPage() {
 
           {/* Document Number */}
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Document Number (optional)</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Document Number <span className="text-red-500">*</span>
+              <span className="ml-2 text-xs font-normal text-slate-400">(auto-verified against its format)</span>
+            </label>
             <input
               type="text"
+              required
               value={formData.document_number || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, document_number: e.target.value }))}
-              placeholder="e.g., Passport number or ID number"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              onChange={(e) => setFormData((prev) => ({ ...prev, document_number: e.target.value.toUpperCase() }))}
+              placeholder="e.g., XXXXXXXXXXXX"
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
             />
           </div>
 
@@ -414,9 +453,18 @@ export function IdentityVerificationPage() {
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h2>
         <p className="text-slate-500 mb-6">
-          Your identity documents are being reviewed by our team. This usually takes 1-2 business days.
+          Your documents are being <span className="font-semibold text-slate-700">auto-verified</span> against standard
+          formats. This usually completes within <span className="font-semibold text-amber-700">10-20 minutes</span>.
           Your status updates here in real time — no refresh needed.
         </p>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-6 flex items-start gap-2 text-left">
+          <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+          <p className="text-xs text-blue-700 leading-relaxed">
+            If your document number doesn't match the expected format, your submission goes to a
+            manual review and you'll be notified by email. Your documents are stored securely and
+            never shared without your consent.
+          </p>
+        </div>
 
         {/* Status Stepper */}
         <div className="flex items-center justify-center gap-0 mb-6">
@@ -522,11 +570,33 @@ export function IdentityVerificationPage() {
               onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
             >
+              <option value="aadhaar">Aadhaar Card (India)</option>
+              <option value="pan">PAN Card (India)</option>
               <option value="passport">Passport</option>
               <option value="drivers_license">Driver's License</option>
               <option value="national_id">National ID Card</option>
               <option value="other">Other Government ID</option>
             </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Full Name (as on document)</label>
+            <input
+              type="text"
+              value={formData.full_name || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
+            <input
+              type="date"
+              value={formData.date_of_birth || ''}
+              onChange={(e) => setFormData((prev) => ({ ...prev, date_of_birth: e.target.value }))}
+              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+            />
           </div>
 
           <div>

@@ -484,8 +484,10 @@ export function AISubscriptionPage() {
               )}
             </button>
 
-            {/* Quick payment options when not yet Pro */}
-            {!isPro && (
+            {/* Quick payment options ONLY after the free trial has ended (or
+                no trial available). New freelancers see "Start Free Trial" only,
+                so the wallet/Razorpay buttons don't clutter the trial stage. */}
+            {!isPro && !isTrialActive && (
               <div className="mt-3 space-y-2">
                 <button
                   onClick={() => handleWalletPay(proPlan.id)}
@@ -686,19 +688,6 @@ export function AISubscriptionPage() {
           </div>
         </div>
       </div>
-
-      {/* Confirm Modal */}
-      {confirmDialog && (
-        <ConfirmModal
-          isOpen={confirmDialog.isOpen}
-          onClose={() => setConfirmDialog(null)}
-          onConfirm={confirmDialog.onConfirm}
-          title={confirmDialog.title}
-          message={confirmDialog.message}
-          variant={confirmDialog.variant}
-          confirmLabel={confirmDialog.confirmLabel}
-        />
-      )}
 
       {/* Confirm Modal */}
       {confirmDialog && (

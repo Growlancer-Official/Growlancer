@@ -16,7 +16,7 @@ import {
 import { notificationService } from '../../lib/notifications';
 import { ProBadge } from '../../components/ProBadge';
 import { useProStatus } from '../../hooks/useProStatus';
-import { ACTIVE_STATUSES } from '../../lib/contractStatuses';
+import { ACTIVE_STATUSES, PENDING_STATUSES } from '../../lib/contractStatuses';
 import { getSellerLevelInfo, getSellerLevelProgress, type SellerLevel } from '../../lib/sellerLevels';
 
 interface DashboardStats {
@@ -246,8 +246,14 @@ export function OverviewPage() {
           notificationService.getByUser(user.id),
         ]);
 
+        // Only genuinely in-progress work counts as "active" — pending contracts
+        // (not yet started) are NOT active, which previously made the overview
+        // show "Active Contract" while the contracts page showed it as pending.
         const activeContracts = Array.isArray(contractsData)
-          ? contractsData.filter(c => ACTIVE_STATUSES.includes(c.status || '') || c.status === 'pending').length
+          ? contractsData.filter(c => ACTIVE_STATUSES.includes(c.status || '')).length
+          : 0;
+        const pendingContracts = Array.isArray(contractsData)
+          ? contractsData.filter(c => PENDING_STATUSES.includes(c.status || '')).length
           : 0;
         const totalSpent = Array.isArray(contractsData)
           ? contractsData
@@ -263,7 +269,7 @@ export function OverviewPage() {
           activeContracts,
           pendingProposals,
           newMatches: pendingProposals,
-          pendingInvites: 0,
+          pendingInvites: pendingContracts,
           totalEarnings: totalSpent,
           monthlyEarnings: 0,
           profileViews: 0,
@@ -414,10 +420,16 @@ export function OverviewPage() {
       ]
     : [
         {
-          label: 'Active Projects',
-          value: stats.activeContracts, // reused as activeProjects count
-          change: stats.activeContracts > 0 ? 'Open for proposals' : 'Post a new project',
+          label: 'Active Contracts',
+          value: stats.activeContracts,
+          change: stats.activeContracts > 0 ? 'In progress right now' : 'No active contracts',
           changeType: stats.activeContracts > 0 ? 'positive' : 'neutral',
+        },
+        {
+          label: 'Pending Contracts',
+          value: stats.pendingInvites, // reused as pending-contracts count
+          change: stats.pendingInvites > 0 ? 'Awaiting freelancer start' : 'No pending contracts',
+          changeType: stats.pendingInvites > 0 ? 'positive' : 'neutral',
         },
         {
           label: 'Pending Proposals',

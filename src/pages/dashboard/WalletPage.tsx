@@ -591,6 +591,17 @@ export function WalletPage() {
   const netAmount = parseFloat(withdrawAmount || '0') * (1 - WITHDRAWAL_FEE_RATE);
   const feeAmount = parseFloat(withdrawAmount || '0') * WITHDRAWAL_FEE_RATE;
 
+  // The payout method actually selected — used in the review step so the
+  // confirmation shows EXACTLY what the freelancer chose (UPI vs Bank vs PayPal).
+  const selectedWithdrawMethod = payoutMethods.find((m) => m.id === selectedMethodId) || null;
+  const selectedMethodLabel = selectedWithdrawMethod
+    ? selectedWithdrawMethod.type === 'paypal'
+      ? `PayPal — ${maskEmail(selectedWithdrawMethod.email)}`
+      : selectedWithdrawMethod.type === 'upi'
+      ? `UPI — ${selectedWithdrawMethod.upi_id || 'UPI ID'}`
+      : `Bank Transfer — ${selectedWithdrawMethod.bank_name || 'Bank'} (${maskAccount(selectedWithdrawMethod.account_number)})`
+    : '';
+
   // Filter transactions by status
   const filteredTransactions =
     txFilterStatus === 'all'
@@ -1253,9 +1264,7 @@ export function WalletPage() {
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-600">Payout Method</span>
                         <span className="font-medium text-slate-900">
-                          {payoutMethods.find((m) => m.id === selectedMethodId)?.type === 'paypal'
-                            ? 'PayPal'
-                            : 'Bank Transfer'}
+                          {selectedMethodLabel || 'Select a method'}
                         </span>
                       </div>
                     </div>

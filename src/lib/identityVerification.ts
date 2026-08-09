@@ -4,11 +4,13 @@ import { supabase, realtimeChannels } from './supabase';
 export type IdentityVerification = Record<string, any> & { id: string; user_id: string; status: string; document_type?: string; document_url?: string; created_at?: string; };
 
 export interface VerificationUpload {
-  document_type: 'passport' | 'drivers_license' | 'national_id' | 'other';
+  document_type: 'passport' | 'drivers_license' | 'national_id' | 'aadhaar' | 'pan' | 'other';
   document_file?: File; // Secure file upload instead of URL
   document_url?: string; // Fallback for URL-based uploads
   document_number?: string;
   expiry_date?: string;
+  full_name?: string;
+  date_of_birth?: string;
 }
 
 export const identityVerificationService = {
@@ -148,6 +150,8 @@ export const identityVerificationService = {
           document_url: documentUrl,
           document_number: upload.document_number || null,
           expiry_date: upload.expiry_date || null,
+          full_name: upload.full_name || null,
+          date_of_birth: upload.date_of_birth || null,
           status: 'pending',
           verified_at: null,
           rejection_reason: null,

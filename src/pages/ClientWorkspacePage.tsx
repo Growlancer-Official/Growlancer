@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/Toast'
 import { supabase, dbFunctions } from '../lib/supabase'
@@ -13,6 +13,7 @@ import {
 } from '../lib/contractMilestones'
 import {
   AlertCircle,
+  AlertTriangle,
   Briefcase,
   Check,
   CheckCircle2,
@@ -101,6 +102,7 @@ type ActiveTab = 'chat' | 'canvas' | 'milestones'
 export function ClientWorkspacePage() {
   const { user } = useAuth()
   const toast = useToast()
+  const navigate = useNavigate()
   const { contractId: routeContractId } = useParams<{ contractId: string }>()
   const [searchParams] = useSearchParams()
   const contractId = searchParams.get('contract') || searchParams.get('contractId') || routeContractId || undefined
@@ -738,22 +740,71 @@ export function ClientWorkspacePage() {
                 </div>
 
                 {/* Platform Policy — protect both sides */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4">
-                  <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
-                    <div className="text-xs text-blue-800 space-y-1.5">
-                      <p className="font-bold text-blue-900">Growlancer Payment & Release Policy</p>
-                      <p>
-                        • Release the escrow <span className="font-semibold">only after you receive and approve the complete work</span>.
-                        Review every deliverable before releasing — once released, funds go to the freelancer.
+                <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm mt-4">
+                  <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-5 py-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+                      <Shield className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
+                      <p className="text-[11px] text-blue-200">Everything stays on the platform — payments are always protected</p>
+                    </div>
+                  </div>
+                  <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2">
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        <span className="font-bold text-slate-900">Release escrow only after approving work.</span> Review every
+                        deliverable before releasing — once released, funds go to the freelancer.
                       </p>
-                      <p>
-                        • <span className="font-semibold">Never pay outside Growlancer.</span> All payments must happen through Growlancer Escrow.
-                        Freelancers asking for outside payments are violating our policy — report them and they can be
-                        <span className="font-semibold"> suspended or permanently banned</span>.
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        <span className="font-bold text-slate-900">You cannot pay freelancers outside Growlancer.</span> All payments
+                        must happen through Growlancer Escrow. Paying outside the platform is a violation of our policy.
                       </p>
-                      <p>
-                        • Need a change? Use the dispute/revision flow in the workspace instead of sending money directly.
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        <span className="font-bold text-slate-900">Freelancer asks for outside payment? Report them.</span>
+                        Freelancers requesting off-platform payments can be{' '}
+                        <span className="font-bold text-red-600">suspended or permanently banned</span>. Your money stays protected.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        <span className="font-bold text-slate-900">Refunds.</span> If work is not delivered or you are not satisfied,
+                        raise a <span className="font-medium">refund request / dispute</span> from this workspace. Escrowed funds are
+                        refunded to you in full when the freelancer accepts or when our team rules in your favour.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <FileText className="w-3.5 h-3.5 text-amber-600" />
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        <span className="font-bold text-slate-900">Need changes?</span> Use the dispute / revision flow in the
+                        workspace instead of sending money directly. Off-platform transactions are not covered by escrow protection.
+                      </p>
+                    </div>
+                    <div className="flex items-start gap-2.5">
+                      <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+                        <Shield className="w-3.5 h-3.5 text-slate-600" />
+                      </div>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        <span className="font-bold text-slate-900">Legal.</span> All payments, refunds and disputes are governed by
+                        Growlancer's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
                       </p>
                     </div>
                   </div>
@@ -1565,7 +1616,12 @@ export function ClientWorkspacePage() {
           revieweeName={(selectedContract.freelancer as any)?.name || 'Freelancer'}
           projectTitle={(selectedContract.project as any)?.title}
           onClose={() => setReviewModalOpen(false)}
-          onSubmitted={() => setReviewedContractIds(prev => new Set(prev).add(selectedContract.id))}
+          onSubmitted={() => {
+            setReviewedContractIds(prev => new Set(prev).add(selectedContract.id))
+            toast.success('Review Submitted', 'Thank you! Your review has been published and the contract is now in your history.')
+            // After review, the workspace closes — only the contract history remains.
+            navigate('/client/contracts')
+          }}
         />
       )}
     </div>

@@ -35,7 +35,10 @@ import {
   Send,
   Shield,
   Star,
+  Landmark,
+  Smartphone,
   Timer,
+  Wallet,
   Trash2,
   User,
   UserPlus,
@@ -1830,9 +1833,45 @@ export function ClientSettingsPage() {
                   <div className="text-center py-8 text-slate-500">
                     <CreditCard className="w-10 h-10 mx-auto mb-3 text-slate-300" />
                     <p>No saved cards yet.</p>
-                    <p className="text-sm mt-1">Add a card for fast, one-click escrow payments.</p>
+                    <p className="text-sm mt-1">Add a card for fast, one-click escrow payments — or pay anytime with UPI / Net Banking at checkout.</p>
                   </div>
                 )}
+              </div>
+
+              {/* Other payment methods — UPI / Net Banking / Wallets at Razorpay checkout */}
+              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+                <h3 className="font-display text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                  <Wallet className="w-5 h-5 text-emerald-600" /> Other Payment Methods
+                </h3>
+                <p className="text-xs text-slate-500 mb-4">
+                  Choose any of these when you fund escrow or pay at checkout — powered by Razorpay. No setup needed.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Smartphone className="w-4 h-4 text-emerald-600" />
+                      <span className="font-medium text-slate-900 text-sm">UPI</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">GPay, PhonePe, Paytm & all UPI apps. Instant, zero-fee for you.</p>
+                    <span className="inline-flex mt-2 items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Available at checkout</span>
+                  </div>
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Landmark className="w-4 h-4 text-emerald-600" />
+                      <span className="font-medium text-slate-900 text-sm">Net Banking</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">All major Indian banks — HDFC, SBI, ICICI, Axis & more.</p>
+                    <span className="inline-flex mt-2 items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Available at checkout</span>
+                  </div>
+                  <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <Wallet className="w-4 h-4 text-emerald-600" />
+                      <span className="font-medium text-slate-900 text-sm">Wallets</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 leading-relaxed">Paytm Wallet, Amazon Pay, Mobikwik & other prepaid wallets.</p>
+                    <span className="inline-flex mt-2 items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Available at checkout</span>
+                  </div>
+                </div>
               </div>
 
               {/* PayPal — coming soon (payment methods are Razorpay-tokenized cards above) */}

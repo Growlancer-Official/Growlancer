@@ -59,31 +59,67 @@ function MilestoneProgressBar({ milestones }: { milestones: MilestoneItem[] }) {
   );
 }
 
-/** Displays escrow funding status badge. */
+/** Funding badge wrapped with an explanatory hover tooltip so freelancers &
+ * clients instantly understand what each escrow state means. */
+function FundingTooltip({ label, icon, classes, tooltip }: {
+  label: string;
+  icon: React.ReactNode;
+  classes: string;
+  tooltip: string;
+}) {
+  return (
+    <span className="relative inline-flex group">
+      <span
+        className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs font-medium rounded-full cursor-help ${classes}`}
+      >
+        {icon}
+        {label}
+      </span>
+      {/* Hover tooltip */}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 z-50 opacity-0 group-hover:opacity-100 transition-opacity duration-150"
+      >
+        <span className="block bg-slate-900 text-white text-[11px] leading-relaxed rounded-xl px-3.5 py-2.5 shadow-xl">
+          {tooltip}
+        </span>
+        <span className="block w-0 h-0 mx-auto border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-slate-900" />
+      </span>
+    </span>
+  );
+}
+
+/** Displays escrow funding status badge with an explanatory hover tooltip. */
 function EscrowStatusBadge({ balance }: { balance: EscrowState['balance'] | undefined }) {
   if (!balance) return null;
 
   if (balance.isFullyFunded) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">
-        <Shield className="w-3 h-3" />
-        Fully Funded
-      </span>
+      <FundingTooltip
+        label="Fully Funded"
+        icon={<Shield className="w-3 h-3" />}
+        classes="bg-emerald-100 text-emerald-700"
+        tooltip="The client has deposited the FULL contract amount into escrow. This money is protected by Growlancer and is released to you only after the client approves your completed work."
+      />
     );
   }
   if (balance.isPartiallyFunded || balance.fundedAmount > 0) {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
-        <AlertTriangle className="w-3 h-3" />
-        Partially Funded
-      </span>
+      <FundingTooltip
+        label="Partially Funded"
+        icon={<AlertTriangle className="w-3 h-3" />}
+        classes="bg-amber-100 text-amber-700"
+        tooltip="The client has deposited PART of the contract amount into escrow. The funded part is protected, but the remaining amount is not yet covered — remind the client to fund the rest before you deliver final work."
+      />
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-full">
-      <IndianRupee className="w-3 h-3" />
-      Not Funded
-    </span>
+    <FundingTooltip
+        label="Not Funded"
+        icon={<IndianRupee className="w-3 h-3" />}
+        classes="bg-slate-100 text-slate-500"
+        tooltip="The client has not deposited any money into escrow yet. You are not required to start working before escrow is funded — once the client funds it, the payment is protected on both sides."
+      />
   );
 }
 
@@ -98,6 +134,7 @@ export function ContractsPage() {
   const userTouchedFilter = useRef(false);
   const [selectedContract, setSelectedContract] = useState<ContractWithDetails | null>(null);
   const [escrowModalContract, setEscrowModalContract] = useState<ContractWithDetails | null>(null);
+  const [contractModalContract, setContractModalContract] = useState<ContractWithDetails | null>(null);
   const pageSize = 20;
   const pageRef = useRef(0);
 
@@ -762,14 +799,16 @@ export function ContractsPage() {
                         <Briefcase className="w-4 h-4" />
                         Workspace
                       </Link>
-                      <Link
-                        to={`/dashboard/workspace?contract=${contract.id}`}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setContractModalContract(contract);
+                        }}
                         className="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
-                        onClick={(e) => e.stopPropagation()}
                       >
                         <FileText className="w-4 h-4" />
                         View Contract
-                      </Link>
+                      </button>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -903,6 +942,182 @@ export function ContractsPage() {
           </div>
         </div>
       )}
+
+      {/* Contract Details Modal — real-time view of the contract without
+          leaving the page. Workspace stays reserved for actual collaboration. */}
+      {contractModalContract && (() => {
+        const cc = contractModalContract;
+        const cBalance = escrowBalances[cc.id]?.balance;
+        const cMilestones = milestones(cc.milestones);
+        const feePct = cc.amount > 0 ? Math.round(((cc.amount - (cc.freelancer_amount || 0)) / cc.amount) * 100) : 0;
+
+        return (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+            onClick={() => setContractModalContract(null)}
+          >
+            <div
+              className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="p-6 bg-gradient-to-r from-slate-800 to-slate-900 rounded-t-2xl">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center">
+                      <FileText className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-display text-lg font-bold text-white">Contract Details</h3>
+                      <p className="text-sm text-slate-300">{cc.project?.title || 'Contract'}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setContractModalContract(null)}
+                    className="w-8 h-8 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white transition-colors shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-6 space-y-5">
+                {/* Status + Parties */}
+                <div className="flex flex-wrap items-center gap-3">
+                  {getStatusBadge(cc.status || 'active')}
+                  {cBalance && <EscrowStatusBadge balance={cBalance} />}
+                  <span className="text-sm text-slate-500">
+                    Client: <span className="font-semibold text-slate-800">{cc.profiles?.name || '—'}</span>
+                  </span>
+                </div>
+
+                {/* Money breakdown */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="p-4 bg-slate-50 rounded-xl">
+                    <p className="text-xs text-slate-500 mb-1">Contract Value</p>
+                    <p className="text-lg font-bold text-slate-900">{formatCurrency(cc.amount)}</p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 rounded-xl">
+                    <p className="text-xs text-emerald-600 mb-1">Your Earnings ({100 - feePct}%)</p>
+                    <p className="text-lg font-bold text-emerald-700">{formatCurrency(cc.freelancer_amount)}</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 rounded-xl">
+                    <p className="text-xs text-blue-600 mb-1">Platform Fee ({feePct}%)</p>
+                    <p className="text-lg font-bold text-blue-700">{formatCurrency(cc.platform_fee)}</p>
+                  </div>
+                </div>
+
+                {/* Escrow summary */}
+                {cBalance && (
+                  <div className="p-4 bg-slate-50 rounded-xl">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-slate-700">Escrow Summary</p>
+                      <span className="text-xs text-slate-400">
+                        {cBalance.milestoneCount > 0
+                          ? `${cBalance.fundedMilestoneCount} of ${cBalance.milestoneCount} milestones funded`
+                          : 'Full contract escrow'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <p className="text-xs text-slate-500">Funded</p>
+                        <p className="text-sm font-bold text-emerald-700">{formatCurrency(cBalance.fundedAmount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">Held</p>
+                        <p className="text-sm font-bold text-slate-900">{formatCurrency(cBalance.heldAmount)}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">Released</p>
+                        <p className="text-sm font-bold text-blue-700">{formatCurrency(cBalance.releasedAmount)}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Timeline */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <p className="text-xs text-slate-500 mb-0.5">Created</p>
+                    <p className="font-medium text-slate-800">{safeFormatDate(cc.created_at) || '—'}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <p className="text-xs text-slate-500 mb-0.5">Started</p>
+                    <p className="font-medium text-slate-800">{safeFormatDate(cc.start_date) || '—'}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl">
+                    <p className="text-xs text-slate-500 mb-0.5">Deadline / Ends</p>
+                    <p className="font-medium text-slate-800">{safeFormatDate(cc.end_date) || '—'}</p>
+                  </div>
+                </div>
+
+                {/* Milestones */}
+                {cMilestones.length > 0 && (
+                  <div>
+                    <p className="text-sm font-medium text-slate-700 mb-2">Milestones ({cMilestones.length})</p>
+                    <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
+                      {cMilestones.map((m, idx) => {
+                        const mStatus = String(m.status || 'pending').toLowerCase();
+                        const isDone = ['completed', 'approved', 'released', 'paid'].includes(mStatus);
+                        return (
+                          <div
+                            key={idx}
+                            className={`flex items-center justify-between p-3 rounded-xl border ${
+                              isDone ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                  isDone ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-white'
+                                }`}
+                              >
+                                {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : idx + 1}
+                              </span>
+                              <span className="text-sm text-slate-700">{m.title || `Milestone ${idx + 1}`}</span>
+                            </div>
+                            <span className="text-sm font-bold text-slate-900">{formatCurrency(m.amount || 0)}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* CTA */}
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <Link
+                    to={`/dashboard/workspace?contract=${cc.id}`}
+                    className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Briefcase className="w-4 h-4" />
+                    Open Workspace
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setContractModalContract(null);
+                      setEscrowModalContract(cc);
+                    }}
+                    className="flex-1 py-3 border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Shield className="w-4 h-4" />
+                    Escrow Details
+                  </button>
+                </div>
+
+                {/* Safety note */}
+                <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                  <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                  <p className="text-xs text-blue-700 leading-relaxed">
+                    This contract is protected by Growlancer Escrow. Funds are only released after the
+                    client approves your completed work — payments never go outside the platform.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Escrow Details Modal */}
       {escrowModalContract && (() => {

@@ -30,6 +30,9 @@ alter table public.user_reports enable row level security;
 
 -- Anyone (authenticated or guest) may submit a report. When authenticated, the
 -- user_id is forced to the caller so reports can never be spoofed as another user.
+-- (Drop-first makes this migration idempotent so `supabase db push --include-all`
+-- can apply it even when the policies were already created out-of-band.)
+drop policy if exists "user_reports_insert_anyone" on public.user_reports;
 create policy "user_reports_insert_anyone" on public.user_reports
   for insert to authenticated, anon
   with check (
@@ -39,12 +42,14 @@ create policy "user_reports_insert_anyone" on public.user_reports
   );
 
 -- Users can read their own reports (track status over time).
+drop policy if exists "user_reports_select_own" on public.user_reports;
 create policy "user_reports_select_own" on public.user_reports
   for select to authenticated
   using (user_id = auth.uid());
 
 -- Admins can read and update all reports (admin-data edge function uses
 -- service_role and bypasses RLS, but keep a direct path for the dashboard).
+drop policy if exists "user_reports_admin_all" on public.user_reports;
 create policy "user_reports_admin_all" on public.user_reports
   for all to authenticated
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true))

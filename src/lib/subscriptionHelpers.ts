@@ -188,9 +188,19 @@ const subscriptionService = {
         .eq('id', userId);
 
       return { success: true, subscription: data as unknown as SubscriptionWithPlan };
-    } catch (error) {
+    } catch (error: any) {
+      // Surface the REAL server message (e.g. the trial guard trigger's
+      // "A free trial has already been used for this email address" or
+      // "Please verify your email address before starting a free trial")
+      // instead of a generic failure — that's why trials seemed to "not activate".
       console.error('Error subscribing to plan:', error);
-      return { success: false, error: 'Failed to subscribe to plan.' };
+      const serverMessage = error?.message || '';
+      return {
+        success: false,
+        error: serverMessage && !/failed to fetch|networkerror|load failed/i.test(serverMessage)
+          ? serverMessage
+          : 'Failed to subscribe to plan. Please try again.'
+      };
     }
   },
 

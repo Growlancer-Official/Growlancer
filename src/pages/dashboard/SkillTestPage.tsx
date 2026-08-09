@@ -14,7 +14,9 @@ import { useAuth } from '../../context/AuthContext';
 import {
   AVAILABLE_SKILL_TESTS,
   CERTIFICATION_LEVELS,
+  MAX_VIOLATIONS_BEFORE_BAN,
   skillCertificationService,
+  skillTestAttemptService,
   type SkillTest,
 } from '../../lib/skillCertifications';
 
@@ -180,7 +182,7 @@ function getQuestionsForTest(testId: string): Question[] {
   ];
 }
 
-type TestPhase = 'intro' | 'taking' | 'grading' | 'complete';
+type TestPhase = 'intro' | 'taking' | 'grading' | 'complete' | 'blocked';
 
 export function SkillTestPage() {
   const { testId } = useParams<{ testId: string }>();
@@ -195,6 +197,12 @@ export function SkillTestPage() {
   const [score, setScore] = useState(0);
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [eligibilityLoaded, setEligibilityLoaded] = useState(false);
+  const [eligibilityAllowed, setEligibilityAllowed] = useState(true);
+  const [blockedMsg, setBlockedMsg] = useState<string | null>(null);
+  const [violationCount, setViolationCount] = useState(0);
+  const [showViolationWarning, setShowViolationWarning] = useState(false);
+  const [cooldownNotice, setCooldownNotice] = useState<string | null>(null);
 
   useEffect(() => {
     if (!testId) return;
@@ -209,6 +217,61 @@ export function SkillTestPage() {
       setError('Test not found');
     }
   }, [testId]);
+
+  // Anti-cheat: enforce eligibility (24h retry after fail, 7d ban on cheating,
+  // permanent ban on repeated cheating) before the user can start.
+  useEffect(() => {
+    if (!test || !user || !testId) return;
+    (async () => {
+      const res = await skillTestAttemptService.getEligibility(user.id, testId);
+      setEligibilityLoaded(true);
+      setEligibilityAllowed(res.allowed);
+      setViolationCount(res.attempt?.violations ?? 0);
+      if (!res.allowed && res.message) setBlockedMsg(res.message);
+    })();
+  }, [test, user, testId]);
+
+  // Anti-cheat: while the test is live, block copy/paste and detect tab-switch
+  // or window blur. Every violation is recorded server-side; after 3 strikes
+  // the attempt is banned for 7 days.
+  useEffect(() => {
+    if (phase !== 'taking') return;
+    let lastViolationAt = 0;
+    const record = async (_source: 'copy' | 'paste' | 'cut' | 'tab-switch' | 'blur') => {
+      const now = Date.now();
+      if (now - lastViolationAt < 4000) return; // debounce rapid-fire events
+      lastViolationAt = now;
+      if (!user || !testId) return;
+      const res = await skillTestAttemptService.recordViolation(user.id, testId);
+      setViolationCount(res.violations);
+      if (res.banned) {
+        setBlockedMsg(
+          res.permanent
+            ? 'Test auto-submitted: repeated policy violations (copy-paste / tab-switching) across multiple attempts. This test is now PERMANENTLY locked for your account.'
+            : `Test auto-submitted: ${MAX_VIOLATIONS_BEFORE_BAN} policy violations detected (copy-paste / tab-switching). You are banned from this test for 7 days.`
+        );
+        setPhase('blocked');
+      } else {
+        setShowViolationWarning(true);
+      }
+    };
+    const onCopy = (e: ClipboardEvent) => { e.preventDefault(); void record('copy'); };
+    const onCut = (e: ClipboardEvent) => { e.preventDefault(); void record('cut'); };
+    const onPaste = (e: ClipboardEvent) => { e.preventDefault(); void record('paste'); };
+    // Only visibilitychange (true tab-switch) counts as a violation — window blur
+    // would false-positive on DevTools / OS notifications.
+    const onVisibility = () => { if (document.hidden) void record('tab-switch'); };
+    document.addEventListener('copy', onCopy);
+    document.addEventListener('cut', onCut);
+    document.addEventListener('paste', onPaste);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      document.removeEventListener('copy', onCopy);
+      document.removeEventListener('cut', onCut);
+      document.removeEventListener('paste', onPaste);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [phase, user, testId]);
 
   // Timer countdown
   useEffect(() => {
@@ -232,7 +295,13 @@ export function SkillTestPage() {
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
-  const handleStart = () => setPhase('taking');
+  const handleStart = async () => {
+    if (!user || !testId) return;
+    await skillTestAttemptService.startAttempt(user.id, testId);
+    setViolationCount(0);
+    setShowViolationWarning(false);
+    setPhase('taking');
+  };
 
   const handleAnswer = (index: number) => {
     const newAnswers = [...answers];
@@ -264,6 +333,14 @@ const handleSubmit = async () => {
     const finalScore = Math.round((correct / questions.length) * 100);
     setScore(finalScore);
     setPhase('complete');
+
+    // Anti-cheat: register the attempt outcome (fail → 24h cooldown)
+    if (test && user && testId) {
+      await skillTestAttemptService.completeAttempt(user.id, testId, finalScore >= test.passing_score);
+      if (finalScore < test.passing_score) {
+        setCooldownNotice('You can retry this test after 24 hours.');
+      }
+    }
 
     // Record result if passed
     if (test && user && finalScore >= test.passing_score) {
@@ -316,8 +393,54 @@ const handleSubmit = async () => {
         Back to Certifications
       </button>
 
+      {/* Blocked Phase (anti-cheat / cooldown) */}
+      {phase === 'blocked' && (
+        <div className="bg-white rounded-2xl border border-red-200 p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-6">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Test Blocked</h1>
+          <p className="text-slate-600 mb-6 max-w-md mx-auto">
+            {blockedMsg || 'You are not eligible to take this test right now.'}
+          </p>
+          <div className="flex justify-center gap-3">
+            <button
+              onClick={() => navigate('/dashboard/certifications')}
+              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+            >
+              Back to Certifications
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Intro Phase */}
-      {phase === 'intro' && (
+      {phase === 'intro' && !eligibilityLoaded && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+          <Loader2 className="w-10 h-10 animate-spin text-emerald-600 mx-auto" />
+          <p className="text-slate-500 mt-4">Checking test eligibility…</p>
+        </div>
+      )}
+
+      {/* Intro Phase — blocked by eligibility */}
+      {phase === 'intro' && eligibilityLoaded && !eligibilityAllowed && (
+        <div className="bg-white rounded-2xl border border-red-200 p-8 text-center">
+          <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-6">
+            <XCircle className="w-8 h-8 text-red-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">Test Not Available</h1>
+          <p className="text-slate-600 mb-6 max-w-md mx-auto">{blockedMsg}</p>
+          <button
+            onClick={() => navigate('/dashboard/certifications')}
+            className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+          >
+            Back to Certifications
+          </button>
+        </div>
+      )}
+
+      {/* Intro Phase */}
+      {phase === 'intro' && eligibilityLoaded && eligibilityAllowed && (
         <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
           <div className={`w-16 h-16 rounded-2xl ${levelInfo.bgColor} flex items-center justify-center mx-auto mb-6`}>
             <Award className={`w-8 h-8 ${levelInfo.color}`} />
@@ -341,6 +464,20 @@ const handleSubmit = async () => {
           <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-6`}>
             {levelInfo.icon} {levelInfo.label}
           </div>
+
+          {/* Anti-cheat policy notice */}
+          <div className="max-w-md mx-auto mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-left">
+            <p className="text-xs font-semibold text-amber-800 flex items-center gap-1.5 mb-1.5">
+              <AlertCircle className="w-4 h-4 flex-shrink-0" /> Test Integrity Rules
+            </p>
+            <ul className="text-[11px] text-amber-700 space-y-1 leading-relaxed">
+              <li>• Copy-paste and tab-switching are <b>prohibited</b>. This test is under observation.</li>
+              <li>• {MAX_VIOLATIONS_BEFORE_BAN} violations → automatic fail + <b>7-day ban</b>.</li>
+              <li>• Failed test → retry allowed after <b>24 hours</b>.</li>
+              <li>• Repeated cheating → <b>permanent ban</b> from this test.</li>
+            </ul>
+          </div>
+
           <button onClick={handleStart} className="w-full max-w-xs py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors">
             Start Test
           </button>
@@ -350,6 +487,25 @@ const handleSubmit = async () => {
       {/* Taking Phase */}
       {phase === 'taking' && (
         <div className="bg-white rounded-2xl border border-slate-200 p-8">
+          {/* Anti-cheat observation banner */}
+          <div className={`mb-6 flex items-start gap-2.5 p-3 rounded-xl border ${showViolationWarning ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'} transition-colors`}>
+            {showViolationWarning ? (
+              <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+            )}
+            <div className="text-[11px] leading-relaxed">
+              {showViolationWarning ? (
+                <p className="text-red-700 font-semibold">
+                  Violation recorded ({violationCount}/{MAX_VIOLATIONS_BEFORE_BAN}). Copy-paste & tab-switching are prohibited. {MAX_VIOLATIONS_BEFORE_BAN} violations = 7-day ban.
+                </p>
+              ) : (
+                <p className="text-amber-700 font-medium">
+                  🔒 Test under observation. Copy-paste & tab-switching are prohibited — {MAX_VIOLATIONS_BEFORE_BAN} violations will auto-fail this test and ban you for 7 days.
+                </p>
+              )}
+            </div>
+          </div>
           {/* Progress & Timer */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
@@ -448,6 +604,13 @@ const handleSubmit = async () => {
               ? `You passed the ${test.skill} assessment!`
               : `You scored ${score}%, but needed ${test.passing_score}% to pass.`}
           </p>
+          {!passed && cooldownNotice && (
+            <div className="max-w-sm mx-auto mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <p className="text-xs text-amber-700 font-medium flex items-center justify-center gap-1.5">
+                <Clock className="w-4 h-4 flex-shrink-0" /> {cooldownNotice}
+              </p>
+            </div>
+          )}
           <div className="flex items-center justify-center gap-2 mb-8">
             <span className="text-4xl font-bold text-slate-900">{score}%</span>
             <span className="text-slate-400">Score</span>
@@ -465,7 +628,7 @@ const handleSubmit = async () => {
             >
               Back to Certifications
             </button>
-            {!passed && (
+            {!passed && !cooldownNotice && (
               <button
                 onClick={() => {
                   setPhase('intro');

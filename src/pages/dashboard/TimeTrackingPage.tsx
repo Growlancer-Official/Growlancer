@@ -69,14 +69,14 @@ export function TimeTrackingPage() {
 
     const { data, error } = await supabase
       .from('contracts')
-      .select('id, status, amount, rate_type')
+      .select('id, status, amount, rate_type, project:projects(title)')
       .eq('freelancer_id', user.id)
       .in('status', ['active', 'in_progress']);
 
     if (!error && data) {
       const formatted = (data as any[]).map((c: any) => ({
         id: c.id,
-        title: `#${c.id.slice(0, 8)}`,
+        title: c.project?.title || `#${c.id.slice(0, 8)}`,
         status: c.status,
         amount: Number(c.amount) || 0,
         rate_type: c.rate_type || 'hourly',
@@ -87,6 +87,26 @@ export function TimeTrackingPage() {
       }
     }
   }, [user, activeContract]);
+
+  // Real-time contract updates — new hourly contracts appear instantly, and
+  // the contract list stays in sync while the workflow moves.
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('tracking-contracts')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contracts',
+          filter: `freelancer_id=eq.${user.id}`,
+        },
+        () => { void fetchContracts(); }
+      )
+      .subscribe();
+    return () => { void channel.unsubscribe(); };
+  }, [user, fetchContracts]);
 
   const fetchTimeEntries = useCallback(async () => {
     if (!user || !activeContract) return;
