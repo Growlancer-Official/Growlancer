@@ -16,6 +16,8 @@ import {
 import { notificationService } from '../../lib/notifications';
 import { ProBadge } from '../../components/ProBadge';
 import { useProStatus } from '../../hooks/useProStatus';
+import { ACTIVE_STATUSES } from '../../lib/contractStatuses';
+import { getSellerLevelInfo, getSellerLevelProgress, type SellerLevel } from '../../lib/sellerLevels';
 
 interface DashboardStats {
   activeContracts: number;
@@ -74,6 +76,13 @@ export function OverviewPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Seller position (level) — recomputed server-side when contracts complete
+  const [sellerInfo, setSellerInfo] = useState<{
+    level: SellerLevel;
+    rating: number;
+    completionRate: number;
+    completedProjects: number;
+  }>({ level: 'new', rating: 0, completionRate: 100, completedProjects: 0 });
 
   /** Fetch all dashboard data with forceRefetch=true to bypass cache */
   const fetchDashboardData = useCallback(async () => {
@@ -102,6 +111,7 @@ export function OverviewPage() {
           earningsData,
           profileResult,
           profileViewsResult,
+          matchCountResult,
         ] = await Promise.all([
           contractsService.getByUser(user.id, 'freelancer', true),
           proposalsService.getByFreelancer(user.id, true),
@@ -111,7 +121,7 @@ export function OverviewPage() {
           transactionsService.getEarningsSummary(user.id),
           supabase
             .from('freelancer_profiles')
-            .select('skills')
+            .select('skills, seller_level, rating, completion_rate')
             .eq('user_id', user.id)
             .maybeSingle(),
           // Profile views live in usage_logs (feature='profile_view') — the
@@ -122,14 +132,33 @@ export function OverviewPage() {
             .select('id', { count: 'exact', head: true })
             .eq('user_id', user.id)
             .eq('feature', 'profile_view'),
+          // Real AI match count (was: proposals + invites — never updated live).
+          // Same >= 40 threshold the feed uses, so the number matches the feed.
+          supabase
+            .from('ai_matches')
+            .select('id', { count: 'exact', head: true })
+            .eq('freelancer_id', user.id)
+            .gte('match_score', 40),
         ]);
 
         const profileData = profileResult?.data as Record<string, unknown> | null;
         const profileViews = profileViewsResult?.count ?? 0;
+        const matchesCount = matchCountResult?.count ?? 0;
+
+        // Seller position (level) — server-computed, shown live here
+        const sellerLevelRaw = (profileData?.seller_level as string | null | undefined) || 'new';
+        const sellerLevel = (
+          ['top_rated_plus', 'top_rated', 'rising_talent', 'level_1', 'new'].includes(sellerLevelRaw)
+            ? sellerLevelRaw
+            : 'new'
+        ) as SellerLevel;
+        const completedProjects = Array.isArray(contractsData)
+          ? contractsData.filter(c => c.status === 'completed').length
+          : 0;
 
         // Calculate stats
         const activeContracts = Array.isArray(contractsData)
-          ? contractsData.filter(c => c.status === 'active' || c.status === 'in_progress').length
+          ? contractsData.filter(c => ACTIVE_STATUSES.includes(c.status || '')).length
           : 0;
         const pendingProposals = Array.isArray(proposalsData)
           ? proposalsData.filter(p => p.status === 'pending').length
@@ -191,12 +220,19 @@ export function OverviewPage() {
         setStats({
           activeContracts,
           pendingProposals,
-          newMatches: pendingProposals + pendingInvites,
+          newMatches: matchesCount,
           pendingInvites,
           totalEarnings: earningsData.total,
           monthlyEarnings: earningsData.monthly,
           profileViews,
           unreadNotifications,
+        });
+
+        setSellerInfo({
+          level: sellerLevel,
+          rating: Number(profileData?.rating) || 0,
+          completionRate: Number(profileData?.completion_rate) || 100,
+          completedProjects,
         });
 
         setActivities(recentActivities);
@@ -211,7 +247,7 @@ export function OverviewPage() {
         ]);
 
         const activeContracts = Array.isArray(contractsData)
-          ? contractsData.filter(c => c.status === 'active' || c.status === 'pending').length
+          ? contractsData.filter(c => ACTIVE_STATUSES.includes(c.status || '') || c.status === 'pending').length
           : 0;
         const totalSpent = Array.isArray(contractsData)
           ? contractsData
@@ -276,6 +312,24 @@ export function OverviewPage() {
         const txSub = transactionsService.subscribe(user.id, fetchDashboardData);
         const notifSub = notificationService.subscribe(user.id, fetchDashboardData);
         const inviteSub = invitesService.subscribeFreelancer(user.id, fetchDashboardData);
+        // Live AI matches count — new match → number updates instantly
+        const matchSub = supabase
+          .channel(`overview-matches-${user.id}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'ai_matches', filter: `freelancer_id=eq.${user.id}` },
+            () => { fetchDashboardData(); }
+          )
+          .subscribe();
+        // Live seller position — level bump (contract completed) shows instantly
+        const levelSub = supabase
+          .channel(`overview-level-${user.id}`)
+          .on(
+            'postgres_changes',
+            { event: 'UPDATE', schema: 'public', table: 'freelancer_profiles', filter: `user_id=eq.${user.id}` },
+            () => { fetchDashboardData(); }
+          )
+          .subscribe();
 
         return () => {
           contractSub.unsubscribe();
@@ -283,6 +337,8 @@ export function OverviewPage() {
           txSub.unsubscribe();
           notifSub.unsubscribe();
           inviteSub.unsubscribe();
+          matchSub.unsubscribe();
+          levelSub.unsubscribe();
         };
       } else if (role === 'client') {
         const contractSub = contractsService.subscribe(user.id, 'client', fetchDashboardData);
@@ -338,10 +394,10 @@ export function OverviewPage() {
           changeType: 'neutral',
         },
         {
-          label: 'Invites Received',
-          value: stats.pendingInvites,
-          change: stats.pendingInvites > 0 ? 'Respond in Invites' : 'No pending invites',
-          changeType: stats.pendingInvites > 0 ? 'positive' : 'neutral',
+          label: 'AI Matches',
+          value: stats.newMatches,
+          change: stats.newMatches > 0 ? 'Fresh matches, live' : 'Update skills to get matched',
+          changeType: stats.newMatches > 0 ? 'positive' : 'neutral',
         },
         {
           label: 'Earnings (INR)',
@@ -618,6 +674,54 @@ export function OverviewPage() {
               )}
             </div>
           </div>
+
+          {/* Seller Level / Position — updates live when contracts complete */}
+          {isFreelancer && (() => {
+            const levelInfo = getSellerLevelInfo(sellerInfo.level);
+            const nextInfo = levelInfo.nextLevel ? getSellerLevelInfo(levelInfo.nextLevel) : null;
+            const progress = getSellerLevelProgress({
+              rating: sellerInfo.rating,
+              totalProjects: sellerInfo.completedProjects,
+              completionRate: sellerInfo.completionRate,
+            });
+            return (
+              <div className="bg-white rounded-2xl p-6 border border-slate-100">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-slate-900">Your Position</h3>
+                  <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${levelInfo.bgColor} ${levelInfo.color} ${levelInfo.borderColor}`}>
+                    {levelInfo.label}
+                  </span>
+                </div>
+                <p className="text-sm text-slate-500">{levelInfo.description}</p>
+                {nextInfo ? (
+                  <>
+                    <div className="mt-4">
+                      <div className="flex justify-between text-xs mb-1.5">
+                        <span className="font-medium text-slate-600">Progress to {nextInfo.label}</span>
+                        <span className="font-bold text-emerald-600">{progress.percent}%</span>
+                      </div>
+                      <div className="w-full bg-slate-100 rounded-full h-2">
+                        <div
+                          className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
+                          style={{ width: `${progress.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                    <ul className="mt-4 space-y-1.5">
+                      {levelInfo.nextRequirements.map((req) => (
+                        <li key={req} className="text-xs text-slate-500 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                          {req}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : (
+                  <p className="text-xs text-emerald-600 mt-3 font-medium">🎉 Highest level achieved!</p>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Notifications */}
           <div className="bg-white rounded-2xl p-6 border border-slate-100">

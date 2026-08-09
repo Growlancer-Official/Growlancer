@@ -36,6 +36,7 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { useProStatus } from '../hooks/useProStatus';
+import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -106,7 +107,7 @@ export function DashboardLayout() {
     proposals: 0,
     contracts: 0,
   });
-  const [userProfile, setUserProfile] = useState<{ name: string; avatar: string | null; rating: number; total_reviews: number } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ name: string; avatar: string | null; rating: number; total_reviews: number; seller_level?: string | null } | null>(null);
   const [newMatchCount, setNewMatchCount] = useState(0);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
@@ -129,7 +130,13 @@ export function DashboardLayout() {
   };
 
   const getRatingBadge = () => {
-    if (!userProfile || userProfile.rating === 0) return 'New Freelancer';
+    if (!userProfile) return 'New Freelancer';
+    // Prefer the server-computed seller level (changes with completed work)
+    const level = userProfile.seller_level || 'new';
+    if (['top_rated_plus', 'top_rated', 'rising_talent', 'level_1'].includes(level)) {
+      return getSellerLevelInfo(level as SellerLevel).label;
+    }
+    if (userProfile.rating === 0) return 'New Freelancer';
     if (userProfile.rating >= 4.8) return 'Top-Rated Plus';
     if (userProfile.rating >= 4.5) return 'Top-Rated';
     if (userProfile.rating >= 4.0) return 'Rising Talent';
@@ -155,11 +162,18 @@ export function DashboardLayout() {
           .single();
         
         if (data) {
+          // Seller position is server-computed on contract completion
+          const { data: flData } = await supabase
+            .from('freelancer_profiles')
+            .select('seller_level')
+            .eq('user_id', user.id)
+            .maybeSingle();
           setUserProfile({
             name: data.name,
             avatar: data.avatar,
             rating: 0,
-            total_reviews: 0
+            total_reviews: 0,
+            seller_level: (flData as { seller_level?: string | null } | null)?.seller_level || 'new'
           });
         }
       } catch {
@@ -230,12 +244,13 @@ export function DashboardLayout() {
             payload.new.rating !== payload.old.rating ||
             payload.new.total_reviews !== payload.old.total_reviews
           ) {
-            setUserProfile({
+            setUserProfile(prev => ({
               name: payload.new.name,
               avatar: payload.new.avatar,
               rating: payload.new.rating || 0,
               total_reviews: payload.new.total_reviews || 0,
-            });
+              seller_level: prev?.seller_level || 'new',
+            }));
           }
         }
       )
@@ -268,11 +283,36 @@ export function DashboardLayout() {
       }, () => fetchBadgeCounts())
       .subscribe();
 
+    // Real-time seller level — header badge updates the instant a contract
+    // completes (recompute_seller_level trigger writes freelancer_profiles)
+    const sellerLevelChannel = supabase
+      .channel(`layout-seller-level-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'freelancer_profiles', filter: `user_id=eq.${user.id}` },
+        async () => {
+          const { data: flData } = await supabase
+            .from('freelancer_profiles')
+            .select('seller_level')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          if (flData) {
+            setUserProfile(prev =>
+              prev
+                ? { ...prev, seller_level: (flData as { seller_level?: string | null }).seller_level || 'new' }
+                : prev
+            );
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       safeUnsubscribe(profilesChannel);
       safeUnsubscribe(invitesChannel);
       safeUnsubscribe(proposalsChannel);
       safeUnsubscribe(contractsChannel);
+      safeUnsubscribe(sellerLevelChannel);
       safeUnsubscribe(notifSub);
     };
   }, [user]);
