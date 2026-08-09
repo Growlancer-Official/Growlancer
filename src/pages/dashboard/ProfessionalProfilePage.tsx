@@ -999,7 +999,7 @@ export function ProfessionalProfilePage() {
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Hourly Rate (₹/hr)</label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
                           <input type="number" step="0.01" min="0" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: parseFloat(e.target.value) || 0 })}
                             className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="50" />
                         </div>
