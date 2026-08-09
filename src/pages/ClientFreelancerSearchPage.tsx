@@ -15,7 +15,7 @@ interface FreelancerResult {
   bio: string | null;
   location: string | null;
   hourly_rate: number | null;
-  experience: string | null;
+  experience: string | number | null;
   skills: string[];
   languages: string[];
   availability: boolean | null;

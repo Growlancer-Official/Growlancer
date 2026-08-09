@@ -308,7 +308,8 @@ export const aiMatchingService = {
               bio,
               location,
               experience,
-              rating
+              rating,
+              total_reviews
             )
           )
         `)
@@ -347,10 +348,10 @@ export const aiMatchingService = {
             location: fp.location || 'Remote',
             freelancer_profiles: {
               experience_years: fp.experience || 0,
-              completion_rate: 100,
-              total_projects: fp.total_projects || 0,
+              completion_rate: fp.completion_rate ?? 0,
+              total_projects: 0,
               rating: fp.rating ?? 0,
-              reviews_count: fp.reviews_count ?? 0
+              reviews_count: fp.total_reviews ?? 0
             }
           }
         };
