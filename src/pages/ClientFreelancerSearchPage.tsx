@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Award, Bell, BellOff, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, Plus, Search, Star, Trash2 } from 'lucide-react';
+import { Award, Bell, BellOff, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, MessageSquare, Plus, Search, Star, Trash2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -7,6 +7,9 @@ import { useCategories } from '../hooks/useCategories';
 import { getSellerLevelBadgeProps } from '../lib/sellerLevels';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { ProBadge } from '../components/ProBadge';
+import { VerifiedBadge } from '../components/VerifiedBadge';
+import { invitesService } from '../lib/dataService';
+import { useNavigate } from 'react-router-dom';
 import { safeLower } from '../utils/date';
 
 interface FreelancerResult {
@@ -24,6 +27,7 @@ interface FreelancerResult {
   total_reviews: number | null;
   completion_rate: number | null;
   seller_level: string | null;
+  verification_status: string | null;
   profile: { name: string | null; avatar: string | null; is_pro?: boolean } | null;
 }
 
@@ -44,7 +48,7 @@ export function ClientFreelancerSearchPage() {
   const [minRate, setMinRate] = useState('');
   const [maxRate, setMaxRate] = useState('');
   const [availabilityOnly, setAvailabilityOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<'rating' | 'rate_low' | 'rate_high'>('rating');
+  const [sortBy, setSortBy] = useState<'relevance' | 'rating' | 'rate_low' | 'rate_high'>('relevance');
   const [showCategories, setShowCategories] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const { flatNames: categories } = useCategories();
@@ -52,13 +56,61 @@ export function ClientFreelancerSearchPage() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [saveName, setSaveName] = useState('');
   const toast = useToast();
+  const navigate = useNavigate();
+
+  // ── Contact (invite) modal state ──
+  const [contactFreelancer, setContactFreelancer] = useState<FreelancerResult | null>(null);
+  const [clientProjects, setClientProjects] = useState<{ id: string; title: string }[]>([]);
+  const [selectedProject, setSelectedProject] = useState('');
+  const [inviteMessage, setInviteMessage] = useState('');
+  const [sendingInvite, setSendingInvite] = useState(false);
+  const [contactLoadingProjects, setContactLoadingProjects] = useState(false);
+
+  const openContact = async (f: FreelancerResult) => {
+    if (!user) {
+      toast.info('Sign in required', 'Please sign in as a client to contact freelancers.');
+      return;
+    }
+    setContactFreelancer(f);
+    setSelectedProject('');
+    setInviteMessage('');
+    setContactLoadingProjects(true);
+    try {
+      const { data } = await supabase
+        .from('projects')
+        .select('id, title')
+        .eq('client_id', user.id)
+        .order('created_at', { ascending: false });
+      setClientProjects((data || []).map(p => ({ id: p.id as string, title: p.title as string })));
+      setSelectedProject((data && data[0]?.id) || '');
+    } finally {
+      setContactLoadingProjects(false);
+    }
+  };
+
+  const handleSendInvite = async () => {
+    if (!user || !contactFreelancer || !selectedProject) return;
+    setSendingInvite(true);
+    try {
+      const ok = await invitesService.create(user.id, selectedProject, contactFreelancer.user_id, inviteMessage.trim() || undefined);
+      if (ok) {
+        toast.success('Invite sent!', `${contactFreelancer.profile?.name || 'Freelancer'} has been invited to your project.`);
+        setContactFreelancer(null);
+        setInviteMessage('');
+      } else {
+        toast.error('Failed', 'Could not send the invite. Please try again.');
+      }
+    } finally {
+      setSendingInvite(false);
+    }
+  };
 
   const fetchFreelancers = useCallback(async () => {
     setLoading(true);
     try {
       let query = supabase
         .from('freelancer_profiles')
-        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)')
+        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, verification_status, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)')
         .not('user_id', 'is', null);
 
       if (minRate) query = query.gte('hourly_rate', Number(minRate));
@@ -66,6 +118,11 @@ export function ClientFreelancerSearchPage() {
       if (availabilityOnly) query = query.eq('availability', true);
 
       switch (sortBy) {
+        case 'relevance':
+          // Fair, skills-relevant matching: verified freelancers first, then best rated
+          query = query.order('verification_status', { ascending: false, nullsFirst: true });
+          query = query.order('rating', { ascending: false, nullsFirst: false });
+          break;
         case 'rating': query = query.order('rating', { ascending: false, nullsFirst: false }); break;
         case 'rate_low': query = query.order('hourly_rate', { ascending: true, nullsFirst: true }); break;
         case 'rate_high': query = query.order('hourly_rate', { ascending: false, nullsFirst: false }); break;
@@ -255,6 +312,7 @@ export function ClientFreelancerSearchPage() {
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-500">{loading ? 'Searching...' : `${freelancers.length} freelancer${freelancers.length !== 1 ? 's' : ''} found`}</p>
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+          <option value="relevance">Best Match (Verified First)</option>
           <option value="rating">Best Rating</option>
           <option value="rate_low">Rate: Low to High</option>
           <option value="rate_high">Rate: High to Low</option>
@@ -283,6 +341,7 @@ export function ClientFreelancerSearchPage() {
                     <h3 className="font-bold text-slate-900 truncate flex items-center gap-1.5">
                       {f.profile?.name || f.title || 'Freelancer'}
                       {f.profile?.is_pro && <ProBadge size="xs" />}
+                      {f.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                     </h3>
                     {f.availability && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />Available</span>}
                   </div>
@@ -304,8 +363,78 @@ export function ClientFreelancerSearchPage() {
                 <span className="flex items-center gap-1 text-xs text-slate-500">{f.location && <><MapPin className="w-3 h-3" />{f.location}</>}</span>
                 {f.hourly_rate && <span className="text-lg font-bold text-emerald-600">₹{f.hourly_rate}<span className="text-xs text-slate-400 font-normal">/hr</span></span>}
               </div>
+              <div className="flex items-center gap-2 mt-4">
+                <button
+                  onClick={() => navigate(`/freelancer/${f.user_id}`)}
+                  className="flex-1 px-3 py-2 text-xs font-medium border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+                >
+                  View Profile
+                </button>
+                <button
+                  onClick={() => void openContact(f)}
+                  className="flex-1 px-3 py-2 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-1.5"
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  Contact
+                </button>
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Contact (Invite) Modal */}
+      {contactFreelancer && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setContactFreelancer(null)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 mb-1">Contact {contactFreelancer.profile?.name || 'Freelancer'}</h3>
+            <p className="text-sm text-slate-500 mb-4">Send a project invite — they'll respond in real time.</p>
+
+            {contactLoadingProjects ? (
+              <div className="py-8 flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+              </div>
+            ) : clientProjects.length === 0 ? (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 mb-4">
+                You need a posted project to invite a freelancer.{' '}
+                <button onClick={() => navigate('/client/post-project')} className="font-semibold underline">Post a project</button> first.
+              </div>
+            ) : (
+              <>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Project</label>
+                <select
+                  value={selectedProject}
+                  onChange={(e) => setSelectedProject(e.target.value)}
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  {clientProjects.map((p) => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
+                </select>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Message (optional)</label>
+                <textarea
+                  value={inviteMessage}
+                  onChange={(e) => setInviteMessage(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  placeholder="Why do you want to work with them?"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                />
+              </>
+            )}
+
+            <div className="flex gap-3">
+              <button onClick={() => setContactFreelancer(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>
+              <button
+                onClick={handleSendInvite}
+                disabled={!selectedProject || sendingInvite || contactLoadingProjects}
+                className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {sendingInvite ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
+                Send Invite
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

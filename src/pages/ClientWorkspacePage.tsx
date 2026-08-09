@@ -30,13 +30,17 @@ import {
   Plus,
   RotateCcw,
   Send,
+  Shield,
   ShieldCheck,
   Snowflake,
+  Star,
   Trash2,
   Upload,
   X,
 } from 'lucide-react'
 import { refundService, type RefundRequest, type RefundHistoryEvent } from '../lib/refundService'
+import { VerifiedBadge } from '../components/VerifiedBadge'
+import { ReviewModal } from '../components/ReviewModal'
 
 interface Contract {
   id: string
@@ -103,6 +107,8 @@ export function ClientWorkspacePage() {
   const [contracts, setContracts] = useState<Contract[]>([])
   const [selectedContract, setSelectedContract] = useState<Contract | null>(null)
   const [loading, setLoading] = useState(true)
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  const [reviewedContractIds, setReviewedContractIds] = useState<Set<string>>(new Set())
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [sendingMessage, setSendingMessage] = useState(false)
@@ -139,7 +145,7 @@ export function ClientWorkspacePage() {
   const refreshContract = useCallback(async (contractId: string) => {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar), project:projects!contracts_project_id_fkey(id, title)')
+      .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, verification_status), project:projects!contracts_project_id_fkey(id, title)')
       .eq('id', contractId)
       .single()
     if (!error && data) {
@@ -153,9 +159,9 @@ export function ClientWorkspacePage() {
     const fetchContracts = async () => {
       const { data: contractsData, error: contractsError } = await supabase
         .from('contracts')
-        .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar), project:projects!contracts_project_id_fkey(id, title)')
+        .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, verification_status), project:projects!contracts_project_id_fkey(id, title)')
         .eq('client_id', user.id)
-        .in('status', ['pending', 'active', 'in_progress', 'disputed'])
+        .in('status', ['pending', 'active', 'in_progress', 'disputed', 'completed'])
         .order('created_at', { ascending: false })
 
       if (!contractsError && contractsData) {
@@ -680,9 +686,27 @@ export function ClientWorkspacePage() {
                       <span className="font-medium text-slate-700">
                         {selectedContract.freelancer?.name || 'Freelancer'}
                       </span>
+                      {(selectedContract.freelancer as any)?.verification_status === 'verified' && (
+                        <VerifiedBadge size="xs" className="ml-1.5" />
+                      )}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
+                    {selectedContract.status === 'completed' &&
+                      (reviewedContractIds.has(selectedContract.id) ? (
+                        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium">
+                          <Check className="h-4 w-4 mr-1.5" />
+                          Review Submitted
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setReviewModalOpen(true)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
+                        >
+                          <Star className="h-4 w-4 mr-1.5" />
+                          Leave Review
+                        </button>
+                      ))}
                     {needsFunding && (
                       <button
                         onClick={() => setShowFundEscrow(true)}
@@ -710,6 +734,28 @@ export function ClientWorkspacePage() {
                         Refund {activeRefund.status.replace('_', ' ')}
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Platform Policy — protect both sides */}
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mt-4">
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+                    <div className="text-xs text-blue-800 space-y-1.5">
+                      <p className="font-bold text-blue-900">Growlancer Payment & Release Policy</p>
+                      <p>
+                        • Release the escrow <span className="font-semibold">only after you receive and approve the complete work</span>.
+                        Review every deliverable before releasing — once released, funds go to the freelancer.
+                      </p>
+                      <p>
+                        • <span className="font-semibold">Never pay outside Growlancer.</span> All payments must happen through Growlancer Escrow.
+                        Freelancers asking for outside payments are violating our policy — report them and they can be
+                        <span className="font-semibold"> suspended or permanently banned</span>.
+                      </p>
+                      <p>
+                        • Need a change? Use the dispute/revision flow in the workspace instead of sending money directly.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -1473,17 +1519,18 @@ export function ClientWorkspacePage() {
       {showFundEscrow && selectedContract && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 sticky top-0 bg-white z-10">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900">Fund Escrow</h3>
               <button
                 onClick={() => setShowFundEscrow(false)}
-                className="p-1 hover:bg-slate-100 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+                aria-label="Close"
               >
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-4 sm:p-5">
-              <p className="text-sm text-slate-500 mb-4">
+            <div className="px-4 sm:px-5 pt-4">
+              <p className="text-sm text-slate-500 mb-3">
                 Fund the escrow account for{' '}
                 <span className="font-semibold text-slate-900">
                   {formatCurrency(selectedContract.amount)}
@@ -1494,20 +1541,32 @@ export function ClientWorkspacePage() {
                 </span>
                 . Funds are securely held and only released upon your approval.
               </p>
-              <EscrowPayPalPayment
-                contractId={selectedContract.id}
-                amount={selectedContract.amount}
-                freelancerName={selectedContract.freelancer?.name || 'the freelancer'}
-                projectTitle={selectedContract.project?.title || 'Project'}
-                onSuccess={() => {
-                  setShowFundEscrow(false)
-                  void refreshContract(selectedContract.id)
-                }}
-                onCancel={() => setShowFundEscrow(false)}
-              />
             </div>
+            <EscrowPayPalPayment
+              contractId={selectedContract.id}
+              amount={selectedContract.amount}
+              freelancerName={selectedContract.freelancer?.name || 'the freelancer'}
+              projectTitle={selectedContract.project?.title || 'Project'}
+              onSuccess={() => {
+                setShowFundEscrow(false)
+                void refreshContract(selectedContract.id)
+              }}
+              onCancel={() => setShowFundEscrow(false)}
+            />
           </div>
         </div>
+      )}
+
+      {/* Leave Review Modal — after contract completion */}
+      {reviewModalOpen && selectedContract && (
+        <ReviewModal
+          contractId={selectedContract.id}
+          revieweeId={selectedContract.freelancer_id}
+          revieweeName={(selectedContract.freelancer as any)?.name || 'Freelancer'}
+          projectTitle={(selectedContract.project as any)?.title}
+          onClose={() => setReviewModalOpen(false)}
+          onSubmitted={() => setReviewedContractIds(prev => new Set(prev).add(selectedContract.id))}
+        />
       )}
     </div>
   )

@@ -22,7 +22,9 @@ import {
   RotateCcw,
   Save,
   Send,
+  Shield,
   ShieldCheck,
+  Star,
   Trash2,
   Upload,
   XCircle,
@@ -36,6 +38,8 @@ import { supabase, realtimeChannels } from '../../lib/supabase';
 import { refundService, type RefundRequest } from '../../lib/refundService';
 import { fileUploadService, type ContractFile } from '../../lib/fileUpload';
 import { normalizeEscrow } from '../../lib/contractMilestones';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
+import { ReviewModal } from '../../components/ReviewModal';
 import type { Tables } from '../../types/supabase';
 
 type ContractWithDetails = Tables<'contracts'> & {
@@ -87,6 +91,8 @@ export function WorkspacePage() {
 
   // Symmetrical Tab State
   const [activeTab, setActiveTab] = useState<'chat' | 'canvas' | 'milestones'>('chat');
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewedContractIds, setReviewedContractIds] = useState<Set<string>>(new Set());
 
   // Co-Working Canvas States
   const [taskInput, setTaskInput] = useState('');
@@ -138,7 +144,7 @@ export function WorkspacePage() {
             escrow:escrow(id, amount, status)
           `)
           .eq('freelancer_id', user.id)
-          .in('status', ['pending', 'active', 'in_progress', 'disputed'])
+          .in('status', ['pending', 'active', 'in_progress', 'disputed', 'completed'])
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -784,7 +790,38 @@ export function WorkspacePage() {
             <h1 className="font-display text-2xl font-bold text-slate-900">Collaboration Workspace</h1>
             <p className="text-sm text-slate-500">
               Co-working with <span className="font-semibold text-slate-700">{selectedContract?.client?.name}</span>
+              {(selectedContract?.client as any)?.verification_status === 'verified' && (
+                <VerifiedBadge size="xs" className="ml-1.5" />
+              )}
+              {(() => {
+                const esc = normalizeEscrow((selectedContract as any)?.escrow);
+                return esc && esc.status === 'funded' ? (
+                  <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">
+                    <ShieldCheck className="w-3 h-3" />
+                    Verified Payment
+                  </span>
+                ) : null;
+              })()}
             </p>
+          </div>
+        </div>
+
+        {/* Platform Policy — protect both sides */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <Shield className="w-5 h-5 text-blue-600 mt-0.5 shrink-0" />
+            <div className="text-xs text-blue-800 space-y-1.5">
+              <p className="font-bold text-blue-900">Growlancer Payment & Safety Policy</p>
+              <p>
+                • All payments are protected through Growlancer Escrow — funds release only after the client approves your complete work.
+              </p>
+              <p>
+                • <span className="font-semibold">Never accept payments outside Growlancer.</span> If a client asks you to work or pay outside the platform, do not agree — report them immediately.
+              </p>
+              <p>
+                • Clients found paying outside the platform or attempting fraud can be <span className="font-semibold">suspended or permanently banned</span>, and your protected earnings stay safe.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -826,6 +863,23 @@ export function WorkspacePage() {
             <span>Milestones & Escrow</span>
           </button>
         </div>
+
+        {/* Leave Review — after completion */}
+        {selectedContract?.status === 'completed' &&
+          (reviewedContractIds.has(selectedContract.id) ? (
+            <span className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium">
+              <Check className="w-4 h-4" />
+              Review Submitted
+            </span>
+          ) : (
+            <button
+              onClick={() => setReviewModalOpen(true)}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
+            >
+              <Star className="w-4 h-4" />
+              Leave Review
+            </button>
+          ))}
 
         {/* Contract Selector */}
         {contracts.length > 1 && (
@@ -1521,6 +1575,21 @@ export function WorkspacePage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Leave Review Modal — after contract completion */}
+      {reviewModalOpen && selectedContract && (
+        <ReviewModal
+          contractId={selectedContract.id}
+          revieweeId={selectedContract.client_id}
+          revieweeName={selectedContract.client?.name || 'Client'}
+          projectTitle={selectedContract.project?.title}
+          onClose={() => setReviewModalOpen(false)}
+          onSubmitted={() => {
+            setReviewedContractIds(prev => new Set(prev).add(selectedContract.id));
+            void refreshContract(selectedContract.id);
+          }}
+        />
       )}
     </div>
   );

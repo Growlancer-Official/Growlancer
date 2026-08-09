@@ -9,6 +9,7 @@ import {
   Check,
   ChevronDown,
   Clock,
+  Copy,
   Filter,
   Inbox,
   Loader2,
@@ -44,6 +45,7 @@ export function NotificationsCenterPage() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [animateItem, setAnimateItem] = useState<string | null>(null);
+  const [copiedRef, setCopiedRef] = useState<string | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
 
@@ -260,7 +262,29 @@ export function NotificationsCenterPage() {
                   {notificationService.getNotificationTypeLabel(notification.type)}
                 </span>
               )}
+              <span className="inline-flex items-center gap-1 text-[10px] text-slate-400 bg-slate-50 border border-slate-200 px-2 py-0.5 rounded-full font-mono">
+                Ref: {notification.id.slice(0, 8).toUpperCase()}
+                <button
+                  onClick={() => {
+                    void navigator.clipboard.writeText(notification.id);
+                    setCopiedRef(notification.id);
+                    setTimeout(() => setCopiedRef(prev => prev === notification.id ? null : prev), 1500);
+                  }}
+                  className="text-slate-400 hover:text-emerald-600 transition-colors"
+                  title="Copy reference ID — use this when contacting support"
+                >
+                  {copiedRef === notification.id ? (
+                    <Check className="w-3 h-3 text-emerald-500" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
+                </button>
+              </span>
             </div>
+            <p className="text-[10px] text-slate-300 mt-1.5 flex items-center gap-1">
+              <span className="w-1 h-1 bg-slate-300 rounded-full" />
+              Keep this reference ID — quote it when contacting support for faster help
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 mt-3 ml-14 flex-wrap">

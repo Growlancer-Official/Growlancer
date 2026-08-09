@@ -269,6 +269,41 @@ export function PublicFreelancerProfilePage() {
     };
   }, [profileKey]);
 
+  // Real-time reviews sync — new reviews appear instantly without refresh
+  useEffect(() => {
+    if (!profileKey) return;
+
+    const loadReviews = async () => {
+      try {
+        const result = await reviewService.getUserReviews(profileKey);
+        setReviews(result.reviews as unknown as ReviewData[]);
+        setAverageRating(result.average_rating);
+        setTotalReviews(result.total_reviews);
+      } catch { /* keep last data */ }
+    };
+
+    let channel: { unsubscribe?: () => void } | null = null;
+    try {
+      channel = supabase
+        .channel(`public-profile-reviews-${profileKey}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'reviews',
+          filter: `reviewee_id=eq.${profileKey}`,
+        }, () => { void loadReviews(); })
+        .subscribe();
+    } catch (error) {
+      console.error('Error subscribing to reviews:', error);
+    }
+
+    return () => {
+      if (channel?.unsubscribe) {
+        try { channel.unsubscribe(); } catch { /* ignore */ }
+      }
+    };
+  }, [profileKey]);
+
   // Load client projects for the invite (Contact) flow
   const openContact = useCallback(() => {
     if (!user) {

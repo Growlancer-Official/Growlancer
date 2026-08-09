@@ -671,9 +671,10 @@ export function ProSubscriptionPage() {
             <button
               type="button"
               onClick={() => setShowPayPal(false)}
-              className="absolute -top-10 right-0 text-white hover:text-slate-200"
+              className="absolute top-3 right-3 z-20 p-2 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors"
+              aria-label="Close"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </button>
             <SubscriptionPayPalPayment
               planId={selectedPlan.id}
