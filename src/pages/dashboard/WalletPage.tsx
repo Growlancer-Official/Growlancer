@@ -390,6 +390,32 @@ export function WalletPage() {
     };
   }, [user, fetchOverview]);
 
+  // ── Real-time subscription to payout methods — an added/updated method
+  // reflects instantly (what the freelancer set is what shows). ──
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('wallet-payout-methods-live')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'payout_methods',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          void fetchPayoutMethods();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [user, fetchPayoutMethods]);
+
   // =============================================
   // Withdraw form handlers
   // =============================================

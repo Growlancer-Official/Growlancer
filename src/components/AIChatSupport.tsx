@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { ticketService } from '../lib/supportTicketService';
@@ -61,7 +61,14 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   // ── Chat persistence ──
   // Chat history is saved per-user in localStorage so it survives page
   // refreshes and browser restarts. On first visit we show a time-based greeting.
-  const CHAT_STORAGE_KEY = (uid: string) => `growlancer_ai_chat_v1_${uid}`;
+  //
+  // KEY ISOLATION: AI Assistant and AI Support are DIFFERENT chats and must
+  // never share history. The key includes both the role (freelancer/client)
+  // and the mode (assistant vs support) so the two never cross-contaminate.
+  const chatMode = ticketContext ? 'support' : 'assistant';
+  // Stable per-render key factory — deps are only the context/mode, so the
+  // key never changes identity mid-chat and hooks deps stay clean.
+  const CHAT_STORAGE_KEY = useCallback((uid: string) => `growlancer_ai_chat_v2_${context}_${chatMode}_${uid}`, [context, chatMode]);
 
   useEffect(() => {
     if (!user) return;
@@ -95,7 +102,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         timestamp: new Date(),
       },
     ]);
-  }, [user]);
+  }, [user, context, chatMode, CHAT_STORAGE_KEY]);
 
   // Persist chat history so it survives refreshes. When the chat is emptied
   // (e.g. every message deleted via selection), the saved key is removed so the
@@ -111,7 +118,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     } catch {
       // storage unavailable — non-critical
     }
-  }, [messages, user]);
+  }, [messages, user, context, chatMode, CHAT_STORAGE_KEY]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
