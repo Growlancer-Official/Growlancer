@@ -70,6 +70,9 @@ export function RazorpayCheckout({
         name: 'Growlancer',
         description: orderData.description || 'Growlancer Payment',
         order_id: order.razorpay_order_id,
+        // Razorpay Checkout Config (dashboard → Settings → Checkout Configurations)
+        // controls which payment methods show (UPI/cards/net banking/EMI).
+        config_id: import.meta.env.VITE_RAZORPAY_CONFIG_ID || undefined,
         prefill: {
           name: userInfo?.name || '',
           email: userInfo?.email || '',

@@ -66,6 +66,10 @@ export interface RazorpayCheckoutOptions {
   name: string;
   description: string;
   order_id: string;
+  /** Load a pre-configured Checkout Configuration from the Razorpay dashboard
+   *  (Settings → Checkout Configurations). Controls which payment methods
+   *  (UPI / cards / net banking) are enabled — created in the dashboard. */
+  config_id?: string;
   prefill?: {
     name?: string;
     email?: string;
