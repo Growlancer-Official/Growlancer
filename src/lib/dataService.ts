@@ -451,6 +451,20 @@ export const contractsService = {
 
       if (error) throw error;
 
+      // Create escrow shell record — matches create_contract_with_escrow RPC so the
+      // freelancer always sees an escrow row (never a missing one → fake "Not Funded").
+      const escrowShell = await supabase.from('escrow').insert({
+        contract_id: data.id,
+        client_id: clientId,
+        freelancer_id: proposal.freelancer_id,
+        amount: bidAmount,
+        status: 'pending',
+      });
+      if (escrowShell.error) {
+        // Non-fatal: admin_fund_escrow lazily creates the row if it is missing
+        console.error('Failed to create escrow shell:', escrowShell.error.message);
+      }
+
       // Update proposal status to hired (marketplace: hired = contract created)
       await supabase.from('proposals').update({ status: 'hired' }).eq('id', proposalId);
 
@@ -513,10 +527,7 @@ export const contractsService = {
       const freelancerProf = c.freelancer_profile as { deleted_at?: string | null } | null;
       const clientProf = c.client_profile as { deleted_at?: string | null } | null;
       return (freelancerProf && !freelancerProf.deleted_at) && (clientProf && !clientProf.deleted_at);
-    }).map(c => ({
-      ...c,
-      escrow_funded: c.status !== 'pending'
-    })) as unknown as Contract[];
+    }) as unknown as Contract[];
     CacheManager.set(cacheKey, result);
     return result;
   },
@@ -593,22 +604,39 @@ export const escrowService = {
 
       if (!contract) return false;
 
-      // Create escrow record
-      const { error } = await supabase.from('escrow').insert({
-        contract_id: contractId,
-        client_id: contract.client_id,
-        freelancer_id: contract.freelancer_id,
-        amount,
-        status: 'funded',
-        funded_at: new Date().toISOString(),
-      });
+      // Create or update the escrow record — a shell row (status 'pending')
+      // already exists for contracts created via the standard hire flow, so
+      // never INSERT a duplicate; flip it to funded instead.
+      const { data: existing } = await supabase
+        .from('escrow')
+        .select('id')
+        .eq('contract_id', contractId)
+        .limit(1)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existing) {
+        const { error } = await supabase
+          .from('escrow')
+          .update({ status: 'funded', funded_at: new Date().toISOString() })
+          .eq('contract_id', contractId);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from('escrow').insert({
+          contract_id: contractId,
+          client_id: contract.client_id,
+          freelancer_id: contract.freelancer_id,
+          amount,
+          status: 'funded',
+          funded_at: new Date().toISOString(),
+        });
+        if (error) throw error;
+      }
 
-      // Update contract status
+      // Update contract status + escrow_funded flag (keeps UI and reality in sync)
       await supabase
         .from('contracts')
-        .update({ status: 'active' })
+        // escrow_funded is missing from the stale generated types → cast (codebase convention)
+        .update({ status: 'active', escrow_funded: true } as any)
         .eq('id', contractId);
 
       // Update project status

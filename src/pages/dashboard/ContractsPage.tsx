@@ -723,13 +723,14 @@ export function ContractsPage() {
                         <Briefcase className="w-4 h-4" />
                         Workspace
                       </Link>
-                      <button
+                      <Link
+                        to={`/dashboard/workspace?contract=${contract.id}`}
                         className="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <FileText className="w-4 h-4" />
                         View Contract
-                      </button>
+                      </Link>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
