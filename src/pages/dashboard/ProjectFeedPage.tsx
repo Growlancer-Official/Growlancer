@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Wallet, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
-import { safeNumber } from '../../utils/date';
+import { safeLower, safeNumber } from '../../utils/date';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
@@ -285,9 +285,9 @@ export function ProjectFeedPage() {
         // a neutral heuristic score — real AI scores replace them as soon as
         // the ai-matching engine writes a match for this freelancer.
         const freelancerSkillSet = new Set(
-          (Array.isArray(profileData?.skills) ? profileData.skills : []).map(
-            (s: string) => s.toLowerCase().trim()
-          )
+          (Array.isArray(profileData?.skills) ? profileData.skills : [])
+            .map((s: unknown) => safeLower(s))
+            .filter((s: string) => s !== '')
         );
         const alreadyMatched = new Set(realMatches.map(m => m.project_id));
         let syntheticMatches: MatchWithProject[] = [];
@@ -305,8 +305,8 @@ export function ProjectFeedPage() {
               const clientProf = pr.client;
               if (!clientProf || clientProf.deleted_at || !clientProf.name) return false;
               const required = Array.isArray(pr.skills_required) ? pr.skills_required : [];
-              return required.some((skill: string) =>
-                freelancerSkillSet.has(skill.toLowerCase().trim())
+              return required.some((skill: unknown) =>
+                freelancerSkillSet.has(safeLower(skill))
               );
             })
             .map((pr: any) => ({
@@ -473,9 +473,11 @@ export function ProjectFeedPage() {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (match) =>
-          match.project?.title?.toLowerCase().includes(query) ||
-          match.project?.description?.toLowerCase().includes(query) ||
-          match.project?.skills_required?.some((skill) => skill.toLowerCase().includes(query))
+          safeLower(match.project?.title).includes(query) ||
+          safeLower(match.project?.description).includes(query) ||
+          (match.project?.skills_required?.some((skill) =>
+            safeLower(skill).includes(query)
+          ) ?? false)
       );
     }
 

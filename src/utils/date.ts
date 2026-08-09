@@ -63,6 +63,27 @@ export function safeNumber(value: unknown, fallback = 0): number {
 }
 
 /**
+ * Coerce an unknown value to a string — never throws.
+ * Numbers/booleans are converted; null/undefined/objects become ''.
+ * Prevents `.toLowerCase()/.trim()` crashes on non-string DB values
+ * (skills_required, tags, titles, etc. can legally be numbers in text[]).
+ */
+export function safeString(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return '';
+}
+
+/**
+ * Lowercase + trim a value safely — never throws, returns '' for nulls.
+ * The single safest way to compare DB text values in filters/matches.
+ */
+export function safeLower(value: unknown): string {
+  return safeString(value).toLowerCase().trim();
+}
+
+/**
  * Format a date to a readable string
  * @param date - Date to format
  * @returns Formatted date string

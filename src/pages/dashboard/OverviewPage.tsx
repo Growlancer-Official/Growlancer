@@ -4,7 +4,7 @@ import { ArrowRight, Briefcase, CreditCard, FileText, Handshake, MessageSquare, 
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { safeFormatDate, safeNumber } from '../../utils/date';
+import { safeFormatDate, safeLower, safeNumber } from '../../utils/date';
 import { CacheManager } from '../../lib/services/cacheManager';
 import {
   projectsService,
@@ -150,8 +150,10 @@ export function OverviewPage() {
           ? projectsData.filter((project: any) => {
               const required = Array.isArray(project.skills_required) ? project.skills_required : [];
               if (freelancerSkills.length === 0) return false;
-              return required.some((skill: string) =>
-                freelancerSkills.some((fs: string) => fs.toLowerCase().trim() === skill.toLowerCase().trim())
+              return required.some((skill: unknown) =>
+                freelancerSkills.some((fs: unknown) =>
+                  safeLower(fs) !== '' && safeLower(fs) === safeLower(skill)
+                )
               );
             })
           : [];

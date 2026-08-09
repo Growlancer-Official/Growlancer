@@ -7,6 +7,7 @@ import { useCategories } from '../hooks/useCategories';
 import { getSellerLevelBadgeProps } from '../lib/sellerLevels';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { ProBadge } from '../components/ProBadge';
+import { safeLower } from '../utils/date';
 
 interface FreelancerResult {
   id: string;
@@ -76,19 +77,19 @@ export function ClientFreelancerSearchPage() {
       let results = (data || []) as unknown as FreelancerResult[];
 
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+        const q = safeLower(searchQuery);
         results = results.filter((f) =>
-          f.title?.toLowerCase().includes(q) ||
-          f.bio?.toLowerCase().includes(q) ||
-          f.profile?.name?.toLowerCase().includes(q) ||
-          f.skills?.some((s) => s.toLowerCase().includes(q))
+          safeLower(f.title).includes(q) ||
+          safeLower(f.bio).includes(q) ||
+          safeLower(f.profile?.name).includes(q) ||
+          (f.skills?.some((s) => safeLower(s).includes(q)) ?? false)
         );
       }
 
       if (selectedCategory !== 'All') {
         results = results.filter((f) =>
-          f.skills?.some((s) => s.toLowerCase().includes(selectedCategory.toLowerCase())) ||
-          f.title?.toLowerCase().includes(selectedCategory.toLowerCase())
+          (f.skills?.some((s) => safeLower(s).includes(safeLower(selectedCategory))) ?? false) ||
+          safeLower(f.title).includes(safeLower(selectedCategory))
         );
       }
 

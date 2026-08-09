@@ -4,6 +4,7 @@ import { Clock, Eye, Filter, Grid3X3, List, Loader2, Package, Search, ShoppingCa
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 import { useToast } from '../components/Toast';
+import { safeLower } from '../utils/date';
 
 interface ServiceResult {
   id: string;
@@ -81,13 +82,13 @@ export function ServicesCatalogPage() {
       let results = (data || []) as unknown as ServiceResult[];
 
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+        const q = safeLower(searchQuery);
         results = results.filter(
           (s) =>
-            s.title.toLowerCase().includes(q) ||
-            s.description.toLowerCase().includes(q) ||
-            s.category?.toLowerCase().includes(q) ||
-            s.tags?.some((t) => t.toLowerCase().includes(q))
+            safeLower(s.title).includes(q) ||
+            safeLower(s.description).includes(q) ||
+            safeLower(s.category).includes(q) ||
+            (s.tags?.some((t) => safeLower(t).includes(q)) ?? false)
         );
       }
 

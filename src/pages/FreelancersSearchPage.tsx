@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { useToast } from '../components/Toast';
+import { safeLower } from '../utils/date';
 
 interface FreelancerResult {
   id: string;
@@ -94,25 +95,25 @@ export function FreelancersSearchPage() {
 
       // Client-side filters for text search, category, and skills
       if (searchQuery) {
-        const q = searchQuery.toLowerCase();
+        const q = safeLower(searchQuery);
         results = results.filter(
           (f) =>
-            f.bio?.toLowerCase().includes(q) ||
-            f.skills?.some((s) => s.toLowerCase().includes(q))
+            safeLower(f.bio).includes(q) ||
+            (f.skills?.some((s) => safeLower(s).includes(q)) ?? false)
         );
       }
 
       if (selectedCategory && selectedCategory !== 'All') {
         results = results.filter((f) =>
-          f.skills?.some((s) => s.toLowerCase().includes(selectedCategory.toLowerCase())) ||
-          f.bio?.toLowerCase().includes(selectedCategory.toLowerCase())
+          (f.skills?.some((s) => safeLower(s).includes(safeLower(selectedCategory))) ?? false) ||
+          safeLower(f.bio).includes(safeLower(selectedCategory))
         );
       }
 
       if (selectedSkills.length > 0) {
         results = results.filter((f) =>
           selectedSkills.every((skill) =>
-            f.skills?.some((s) => s.toLowerCase().includes(skill.toLowerCase()))
+            (f.skills?.some((s) => safeLower(s).includes(safeLower(skill))) ?? false)
           )
         );
       }

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { safeLower } from '../../utils/date';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -123,8 +124,8 @@ export function ServicesPage() {
 
   const filteredServices = services.filter(service => {
     const matchesSearch =
-      service.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      service.description.toLowerCase().includes(searchTerm.toLowerCase());
+      safeLower(service.title).includes(safeLower(searchTerm)) ||
+      safeLower(service.description).includes(safeLower(searchTerm));
     const matchesStatus =
       filterStatus === 'all' || service.status === filterStatus;
     const matchesCategory =

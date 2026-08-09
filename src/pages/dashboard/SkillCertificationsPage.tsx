@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { realtimeChannels } from '../../lib/supabase';
 import { skillCertificationService, CERTIFICATION_LEVELS, type SkillCertification, type SkillTest } from '../../lib/skillCertifications';
+import { safeLower } from '../../utils/date';
 
 export function SkillCertificationsPage() {
   const { user } = useAuth();
@@ -35,7 +36,9 @@ export function SkillCertificationsPage() {
     // Filter tests to only show those matching user's actual skills
     const filteredTests = userSkills.length > 0
       ? availableTests.filter(t =>
-          userSkills.some(s => t.skill.toLowerCase().includes(s.toLowerCase()) || s.toLowerCase().includes(t.skill.toLowerCase()))
+          userSkills.some((s: unknown) =>
+            safeLower(t.skill).includes(safeLower(s)) || safeLower(s).includes(safeLower(t.skill))
+          )
         )
       : availableTests;
 
@@ -60,16 +63,16 @@ export function SkillCertificationsPage() {
   }, [user, fetchData]);
 
   const filteredTests = tests.filter((t) =>
-    t.skill.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.category.toLowerCase().includes(searchQuery.toLowerCase())
+    safeLower(t.skill).includes(safeLower(searchQuery)) ||
+    safeLower(t.category).includes(safeLower(searchQuery))
   );
 
   const filteredCerts = certifications.filter((c) =>
-    c.skill.toLowerCase().includes(searchQuery.toLowerCase())
+    safeLower(c.skill).includes(safeLower(searchQuery))
   );
 
-  const getSkillIcon = (skill: string) => {
-    const s = skill.toLowerCase();
+  const getSkillIcon = (skill: unknown) => {
+    const s = safeLower(skill);
     if (s.includes('react') || s.includes('javascript') || s.includes('typescript') || s.includes('html') || s.includes('css')) return Code;
     if (s.includes('design') || s.includes('ui') || s.includes('ux') || s.includes('figma')) return Palette;
     if (s.includes('node') || s.includes('python') || s.includes('java') || s.includes('go') || s.includes('rust')) return Server;

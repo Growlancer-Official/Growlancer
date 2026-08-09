@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown, Clock, IndianRupee, Filter, Loader2, Search, Sparkles, Trophy, Users,  } from 'lucide-react';
 import { contestService, type Contest, CONTEST_CATEGORIES, getTimeRemaining } from '../lib/contests';
+import { safeLower } from '../utils/date';
 
 type ContestType = 'all' | 'design' | 'development' | 'writing' | 'marketing' | 'other';
 
@@ -26,8 +27,8 @@ export function ContestsPage() {
 
   const filteredContests = contests.filter((contest) => {
     const matchesSearch = searchQuery === '' || 
-      contest.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contest.description.toLowerCase().includes(searchQuery.toLowerCase());
+      safeLower(contest.title).includes(safeLower(searchQuery)) ||
+      safeLower(contest.description).includes(safeLower(searchQuery));
     
     const matchesCategory = selectedCategory === 'all' || contest.category === selectedCategory;
     const matchesType = selectedType === 'all' || contest.contest_type === selectedType;
