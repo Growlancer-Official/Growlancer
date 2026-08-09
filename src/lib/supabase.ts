@@ -160,7 +160,8 @@ export type TableName =
   | 'opportunity_events'
   | 'team_invitations'
   | 'fraud_events'
-  | 'user_reports';
+  | 'user_reports'
+  | 'client_errors';
 
 /**
  * Safe typed table reference.
