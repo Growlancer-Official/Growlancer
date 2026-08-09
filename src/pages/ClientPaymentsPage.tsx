@@ -846,16 +846,18 @@ export function ClientPaymentsPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">Method Type</label>
                 <select
                   value={newPaymentMethod.type}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    // PayPal is Coming Soon — never allow saving a PayPal reference
+                    if (e.target.value === 'paypal') return;
                     setNewPaymentMethod({
                       ...newPaymentMethod,
                       type: e.target.value as 'card' | 'paypal' | 'bank_transfer',
-                    })
-                  }
+                    });
+                  }}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                 >
                   <option value="card">Credit / Debit Card</option>
-                  <option value="paypal">PayPal</option>
+                  <option value="paypal" disabled>PayPal (Coming Soon)</option>
                   <option value="bank_transfer">Bank Account</option>
                 </select>
               </div>

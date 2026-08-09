@@ -30,7 +30,7 @@ export function AboutPage() {
       ],
       [{ text: 'await workspace.mountScratchpad({ focusLock: true });' }],
       [
-        { text: 'await workspace.escrow.verifyPayPalFunding();', className: 'text-amber-500' },
+        { text: 'await workspace.escrow.verifyFunding();', className: 'text-amber-500' },
         { text: `  // ${escrow} secured`, className: 'text-slate-400' },
       ],
       [

@@ -68,7 +68,7 @@ const termsSections: Section[] = [
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Client Fee</span>
                 <h4 className="text-3xl font-black text-slate-900 mt-1">5%</h4>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  Calculated and applied to the total project contract at checkout. Covers secure PayPal escrow processing, workspace creation, and dispute mediation rights.
+                  Calculated and applied to the total project contract at checkout. Covers secure escrow processing, workspace creation, and dispute mediation rights.
                 </p>
               </div>
             </div>

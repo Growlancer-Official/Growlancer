@@ -290,7 +290,7 @@ function WhyDifferentSection() {
     {
       icon: ShieldCheck,
       title: 'Escrow-First Trust',
-      desc: 'Every contract is protected by PayPal escrow. Funds release only when milestones are approved — safety for both sides.',
+      desc: 'Every contract is protected by secure escrow. Funds release only when milestones are approved — safety for both sides.',
       gradient: 'from-blue-500/10 to-blue-600/5',
       iconBg: 'bg-blue-100 text-blue-600',
       border: 'hover:border-blue-200',
@@ -542,7 +542,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
               {[
                 { icon: Flag, title: 'Milestones', desc: 'Break work into clear deliverables with approvals.' },
-                { icon: Lock, title: 'Escrow', desc: 'PayPal escrow helps both sides move forward confidently.' },
+                { icon: Lock, title: 'Escrow', desc: 'Secure escrow helps both sides move forward confidently.' },
                 { icon: MessageSquareText, title: 'Feedback loop', desc: 'Comments and revisions stay tied to the work.' },
                 { icon: Activity, title: 'Status clarity', desc: 'Track progress with simple, consistent states.' },
               ].map(({ icon: Icon, title, desc }) => (
@@ -650,7 +650,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
 function FeaturesSection() {
   const features = [
     { icon: Sparkles, title: 'AI Matching', desc: 'Ranked recommendations with explainable fit signals — built to reduce noise.', color: 'emerald' },
-    { icon: ShieldCheck, title: 'Escrow Payments', desc: 'PayPal escrow + milestone structure so both sides know what happens next.', color: 'orange' },
+    { icon: ShieldCheck, title: 'Escrow Payments', desc: 'Secure escrow + milestone structure so both sides know what happens next.', color: 'orange' },
     { icon: FolderKanban, title: 'Workspace', desc: 'Keep scope, files, feedback, and approvals connected to the project.', color: 'slate' },
     { icon: Users, title: 'Collaboration', desc: 'Invite stakeholders, set expectations, and move decisions forward quickly.', color: 'emerald' },
   ];
@@ -781,7 +781,7 @@ function TrustSection() {
           <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { icon: Eye, title: 'Transparency', desc: 'See fit reasons and key signals behind each recommendation.', bg: 'bg-slate-50 ring-slate-200 text-slate-600' },
-              { icon: LockKeyhole, title: 'Escrow safety', desc: 'Milestones + PayPal escrow support a safer payment flow.', bg: 'bg-emerald-50 ring-emerald-100 text-emerald-600' },
+              { icon: LockKeyhole, title: 'Escrow safety', desc: 'Milestones + secure escrow support a safer payment flow.', bg: 'bg-emerald-50 ring-emerald-100 text-emerald-600' },
               { icon: ClipboardCheck, title: 'Workflow control', desc: 'Scope and delivery stay structured, reducing misalignment.', bg: 'bg-orange-50 ring-orange-100 text-orange-600' },
             ].map(({ icon: Icon, title, desc, bg }) => (
               <div key={title} className={`${CARD_CLASS} p-6 hover:shadow-md transition-all duration-200 group`}>

@@ -71,9 +71,9 @@ export function StatusPage() {
         color: 'text-emerald-500',
       });
       rows.push({
-        name: 'PayPal / escrow',
-        status: 'Configure for production',
-        detail: 'Requires PayPal credentials on Edge Functions before go-live',
+        name: 'PayPal (International payments)',
+        status: 'Coming Soon',
+        detail: 'International payments via PayPal will be enabled after launch. Razorpay handles all current payments in INR.',
         icon: Clock,
         color: 'text-amber-500',
       });

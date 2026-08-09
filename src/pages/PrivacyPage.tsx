@@ -70,7 +70,7 @@ const privacySections: Section[] = [
           </p>
           <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
             <li><strong>AI-Driven Matchmaking:</strong> Our Postgres semantic algorithms parse freelancer skill tags and client project descriptions. The matches are updated dynamically without exposing private contact credentials, preventing preemptive system circumvention.</li>
-            <li><strong>Escrow Transactions:</strong> Verified billing identifiers coordinate directly with the secure PayPal sandbox and live escrow virtual pools.</li>
+            <li><strong>Escrow Transactions:</strong> Verified billing identifiers coordinate directly with secure escrow pools through our payment processor.</li>
             <li><strong>Service Notifications:</strong> Critical updates (funding of milestone, new task card creation, chat ping, or dispute raise) trigger instant client/freelancer notification loops.</li>
           </ul>
         </>

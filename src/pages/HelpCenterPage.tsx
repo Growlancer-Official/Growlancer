@@ -80,7 +80,7 @@ export function HelpCenterPage() {
     { name: 'All', icon: LifeBuoy, desc: 'Browse all helpful topics' },
     { name: 'Getting Started', icon: BookOpen, desc: 'Onboarding and basic platform setup' },
     { name: 'Project Management', icon: FileText, desc: 'Canvases, workspaces, and matching' },
-    { name: 'Payments & Escrow', icon: CreditCard, desc: 'PayPal escrow protection and releases' },
+    { name: 'Payments & Escrow', icon: CreditCard, desc: 'Secure escrow protection and releases' },
     { name: 'For Freelancers', icon: Users, desc: 'Bidding, proposals, and success guidelines' },
   ];
 
