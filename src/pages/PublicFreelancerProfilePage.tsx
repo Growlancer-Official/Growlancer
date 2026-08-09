@@ -49,8 +49,8 @@ interface FreelancerProfile {
   portfolio_url: string | null;
   availability: boolean | string | null;
   created_at: string;
-  // Name + avatar live on `profiles`, not `freelancer_profiles`
-  profile?: { name: string | null; avatar: string | null } | null;
+  // Name + avatar + pro flag live on `profiles`, not `freelancer_profiles`
+  profile?: { name: string | null; avatar: string | null; is_pro?: boolean } | null;
 }
 
 interface PortfolioItem {
@@ -167,7 +167,7 @@ export function PublicFreelancerProfilePage() {
         // throws "Profile Not Found". Fall back to id for old-style links.
         const { data: byUser, error: byUserErr } = await supabase
           .from('freelancer_profiles')
-          .select('*, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)')
+          .select('*, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)')
           .eq('user_id', freelancerId)
           .maybeSingle();
 
@@ -178,7 +178,7 @@ export function PublicFreelancerProfilePage() {
         if (!profileData) {
           const { data: byId, error: byIdErr } = await supabase
             .from('freelancer_profiles')
-            .select('*, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)')
+            .select('*, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)')
             .eq('id', freelancerId)
             .maybeSingle();
           if (byIdErr && byIdErr.code !== 'PGRST116') throw byIdErr;
@@ -194,9 +194,11 @@ export function PublicFreelancerProfilePage() {
         // Fetch portfolio + reviews + services keyed by the freelancer's USER id
         const userKey = profileData.user_id || freelancerId;
 
-        // PRO badge — does this freelancer hold an active/trial Pro subscription?
+        // PRO badge — active/trial subscription OR the profiles.is_pro flag
+        // (flag is what the rest of the platform renders from, so keep both in sync)
         const subRes = await subscriptionService.getCurrentSubscription(userKey);
-        setIsProFreelancer(isProSubscription(subRes.subscription));
+        const profileIsPro = Boolean((profileData as unknown as FreelancerProfile).profile?.is_pro);
+        setIsProFreelancer(isProSubscription(subRes.subscription) || profileIsPro);
 
         const [portfolioItems, reviewsResult, servicesResult] = await Promise.all([
           portfolioService.getByUser(userKey),
