@@ -613,8 +613,8 @@ export function AISubscriptionPage() {
           <BarChart3 className="w-5 h-5 text-emerald-600" />
           Free vs Pro — Full Comparison
         </h2>
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-          <table className="w-full">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table className="w-full min-w-[560px]">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th className="text-left p-4 text-xs font-bold uppercase tracking-widest text-slate-500">Feature</th>
@@ -715,8 +715,8 @@ export function AISubscriptionPage() {
 
       {/* Subscription Management Panel */}
       {manageOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-2xl my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between p-5 border-b border-slate-100">
               <h2 className="font-bold text-lg text-slate-900 flex items-center gap-2">
                 <Crown className="w-5 h-5 text-amber-600" />
@@ -814,8 +814,8 @@ export function AISubscriptionPage() {
 
       {/* Payment modal — Razorpay external checkout */}
       {showPayment && proPlan && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="relative w-full max-w-lg">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="relative w-full max-w-lg my-auto">
             <button
               type="button"
               onClick={() => setShowPayment(false)}

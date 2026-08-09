@@ -72,13 +72,13 @@ export function ConfirmModal({
   const isLoading = loading || internalLoading;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
         onClick={isLoading ? undefined : onClose}
       />
       <div
-        className="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in border border-slate-100"
+        className="relative bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full my-auto max-h-[calc(100vh-2rem)] overflow-y-auto shadow-2xl animate-scale-in border border-slate-100"
       >
         <button
           onClick={isLoading ? undefined : onClose}

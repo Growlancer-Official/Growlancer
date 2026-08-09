@@ -683,7 +683,7 @@ export function DashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 p-8 max-w-7xl mx-auto w-full pb-24 sm:pb-16">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full pb-24 sm:pb-16">
           <Suspense fallback={<DashboardFallback />}>
             <Outlet />
           </Suspense>

@@ -141,7 +141,7 @@ export function SubscriptionPayPalPayment({
 
   if (step === 'success') {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-lg text-center">
+      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg text-center max-h-[calc(100vh-2rem)] overflow-y-auto">
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-8 h-8 text-emerald-600" />
         </div>
@@ -163,7 +163,7 @@ export function SubscriptionPayPalPayment({
 
   if (step === 'error') {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-lg">
+      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
         <div className="flex items-center gap-3 text-red-600 mb-4">
           <AlertCircle className="w-6 h-6" />
           <h2 className="text-xl font-bold">Payment Failed</h2>
@@ -181,7 +181,7 @@ export function SubscriptionPayPalPayment({
 
   if (step === 'payment') {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow-lg">
+      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
         <div className="flex items-center gap-3 mb-6">
           <Crown className="w-6 h-6 text-amber-600" />
           <h2 className="text-xl font-bold text-slate-900">Upgrade to Pro</h2>
@@ -271,7 +271,7 @@ export function SubscriptionPayPalPayment({
   }
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-lg">
+    <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
       <div className="flex items-center gap-3 mb-6">
         <Crown className="w-6 h-6 text-amber-600" />
         <h2 className="text-xl font-bold text-slate-900">Upgrade to Pro</h2>

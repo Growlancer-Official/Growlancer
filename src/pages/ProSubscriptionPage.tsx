@@ -479,8 +479,8 @@ export function ProSubscriptionPage() {
             <h2 className="font-display text-3xl font-extrabold text-center mb-16">
               Compare Plans
             </h2>
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
-              <table className="w-full border-collapse text-left">
+            <div className="bg-white rounded-3xl border border-slate-200 overflow-x-auto shadow-sm">
+              <table className="w-full min-w-[640px] border-collapse text-left">
                 <thead className="bg-slate-50">
                   <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-widest text-slate-400">
                     <th className="p-6">Feature</th>
@@ -666,8 +666,8 @@ export function ProSubscriptionPage() {
 
       {/* PayPal Modal */}
       {showPayPal && selectedPlan && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="relative w-full max-w-lg">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="relative w-full max-w-lg my-auto">
             <button
               type="button"
               onClick={() => setShowPayPal(false)}
