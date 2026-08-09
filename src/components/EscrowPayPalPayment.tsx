@@ -16,6 +16,7 @@ import { PayPalCheckout } from './PayPalCheckout';
 import { RazorpayCheckout } from './RazorpayCheckout';
 import { PAYMENTS_CONFIG } from '../lib/payments';
 import { supabase } from '../lib/supabase';
+import { withdrawalService } from '../lib/withdrawal';
 import { PLATFORM_CONFIG, calculatePlatformFee, calculateTotalWithFee } from '../lib/config';
 import { milestoneService, getMilestoneProgress } from '../lib/contractMilestones';
 import type { MilestoneItem } from '../lib/contractMilestones';
@@ -188,6 +189,11 @@ export function EscrowPayPalPayment({
   const [selectedMilestones, setSelectedMilestones] = useState<Set<number>>(new Set());
   const [milestones, setMilestones] = useState<MilestoneItem[]>(propMilestones || []);
 
+  // Wallet funding — pay escrow from the client's wallet balance
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [payingFromWallet, setPayingFromWallet] = useState(false);
+
   // Load milestones from contract if not provided via props
   useEffect(() => {
     if (!propMilestones || propMilestones.length === 0) {
@@ -199,6 +205,43 @@ export function EscrowPayPalPayment({
       });
     }
   }, [contractId, propMilestones]);
+
+  // Load the client's wallet balance (to offer Pay-from-Wallet)
+  const loadWalletBalance = () => {
+    setWalletLoading(true);
+    withdrawalService.getWalletBalance().then((result) => {
+      if (result.success && result.balance) {
+        setWalletBalance(Number(result.balance.balance) || 0);
+      } else {
+        setWalletBalance(0);
+      }
+    }).catch(() => setWalletBalance(0)).finally(() => setWalletLoading(false));
+  };
+
+  useEffect(() => { loadWalletBalance(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  /** Fund the escrow directly from the client's wallet (atomic server RPC). */
+  const handlePayFromWallet = async () => {
+    setPayingFromWallet(true);
+    setError(null);
+    try {
+      const { data, error: rpcError } = await (supabase.rpc as any)('fund_escrow_from_wallet', {
+        p_contract_id: contractId,
+        p_milestone_indices: selectedMilestones.size > 0 ? Array.from(selectedMilestones) : null,
+      });
+      if (rpcError) throw new Error(rpcError.message);
+      if (data && data.success === false) throw new Error(data.error || 'Wallet payment failed');
+
+      setWalletBalance(Number(data?.balance) || 0);
+      setStep('success');
+      onSuccess?.();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Wallet payment failed');
+      setStep('error');
+    } finally {
+      setPayingFromWallet(false);
+    }
+  };
 
   // Calculate the total amount to fund based on selected milestones
   const calculateFundingAmount = (): number => {
@@ -269,6 +312,7 @@ export function EscrowPayPalPayment({
 
   const handlePayPalSuccess = async (_orderId: string, _details: unknown) => {
     setStep('processing');
+    loadWalletBalance(); // keep the Pay-from-Wallet balance fresh after a card payment
 
     try {
       // Verify payment with backend - check escrow was created
@@ -322,8 +366,8 @@ export function EscrowPayPalPayment({
     const newFundedCount = selectedMilestones.size;
     const totalFundedCount = releasedMilestones.length + newFundedCount;
 
-    return (
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg text-center max-h-[calc(100vh-2rem)] overflow-y-auto">
+  return (
+    <div className="p-5 sm:p-6 text-center">
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle className="w-8 h-8 text-emerald-600" />
         </div>
@@ -358,7 +402,7 @@ export function EscrowPayPalPayment({
   // ──── ERROR STEP ──────────────────────────────────────────────────────────
   if (step === 'error') {
     return (
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <div className="p-5 sm:p-6">
         <div className="flex items-center gap-3 text-red-600 mb-4">
           <AlertCircle className="w-6 h-6" />
           <h2 className="text-xl font-bold">Payment Failed</h2>
@@ -381,7 +425,7 @@ export function EscrowPayPalPayment({
       : `Escrow payment for: ${projectTitle}`;
 
     return (
-      <div className="bg-white rounded-2xl p-5 shadow-lg">
+      <div className="p-5 sm:p-6">
         <div className="flex items-center gap-2.5 mb-4">
           <Shield className="w-5 h-5 text-emerald-600" />
           <h2 className="text-lg font-bold text-slate-900">Secure Payment</h2>
@@ -398,6 +442,61 @@ export function EscrowPayPalPayment({
             </p>
           </div>
         )}
+
+        {/* Wallet — pay escrow directly from the client's wallet balance */}
+        <div className={`mb-4 p-4 rounded-xl border transition-colors ${
+          walletBalance !== null && walletBalance >= totalAmount
+            ? 'border-emerald-300 bg-emerald-50'
+            : 'border-slate-200 bg-slate-50'
+        }`}>
+          <div className="flex items-center justify-between gap-3 mb-2">
+            <div className="flex items-center gap-2">
+              <Banknote className={`w-5 h-5 ${walletBalance !== null && walletBalance >= totalAmount ? 'text-emerald-600' : 'text-slate-400'}`} />
+              <span className="font-semibold text-slate-800">Pay from Wallet</span>
+            </div>
+            <span className="text-sm font-medium text-slate-600">
+              Balance:{' '}
+              <span className={walletBalance !== null && walletBalance >= totalAmount ? 'text-emerald-700 font-bold' : 'text-slate-500'}>
+                {walletLoading ? '…' : `₹${(walletBalance ?? 0).toLocaleString('en-IN')}`}
+              </span>
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mb-3">
+            {walletBalance !== null && walletBalance >= totalAmount
+              ? 'You have enough balance to fund this escrow instantly — no card needed.'
+              : walletBalance !== null && walletBalance > 0
+              ? `Add ₹${(totalAmount - walletBalance).toLocaleString('en-IN')} more to fund from wallet, or pay with a card below.`
+              : 'Add funds to your wallet, or pay securely with a card below.'}
+          </p>
+          <button
+            onClick={handlePayFromWallet}
+            disabled={payingFromWallet || walletBalance === null || walletBalance < totalAmount}
+            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {payingFromWallet ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Processing wallet payment...
+              </>
+            ) : walletBalance !== null && walletBalance < totalAmount ? (
+              <>
+                <Banknote className="w-4 h-4" />
+                Insufficient Balance
+              </>
+            ) : (
+              <>
+                <Banknote className="w-4 h-4" />
+                Fund Escrow with Wallet — ₹{totalAmount.toLocaleString('en-IN')}
+              </>
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex-1 h-px bg-slate-200" />
+          <span className="text-xs text-slate-400 uppercase tracking-wider">or pay with card</span>
+          <div className="flex-1 h-px bg-slate-200" />
+        </div>
 
         {/* Primary: Razorpay — server recomputes the amount + platform fee */}
         <RazorpayCheckout
@@ -516,7 +615,7 @@ export function EscrowPayPalPayment({
   // ──── SELECT MILESTONES STEP ──────────────────────────────────────────────
   if (step === 'select_milestones' && milestones.length > 0) {
     return (
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <div className="p-5 sm:p-6">
         <div className="flex items-center gap-3 mb-6">
           <ListChecks className="w-6 h-6 text-emerald-600" />
           <h2 className="text-xl font-bold text-slate-900">Select Milestones to Fund</h2>
@@ -581,7 +680,7 @@ export function EscrowPayPalPayment({
 
   // ──── REVIEW STEP (default) ──────────────────────────────────────────────
   return (
-    <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
+    <div className="p-5 sm:p-6">
       <div className="flex items-center gap-3 mb-6">
         <Shield className="w-6 h-6 text-emerald-600" />
         <h2 className="text-xl font-bold text-slate-900">

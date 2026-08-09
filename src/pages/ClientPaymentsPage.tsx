@@ -5,8 +5,10 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { clientPaymentMethodsService } from '../lib/clientPaymentMethods';
 import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
-import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, Download, FileText, Filter, IndianRupee, Loader2, Plus, PlusCircle, Shield, Trash2 } from 'lucide-react';
+import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, Download, FileText, Filter, IndianRupee, Loader2, Plus, PlusCircle, Shield, Trash2, Wallet, X } from 'lucide-react';
 import { formatCurrency, safeFormatDate, safeNumber } from '../utils/date';
+import { withdrawalService } from '../lib/withdrawal';
+import { RazorpayCheckout } from '../components/RazorpayCheckout';
 
 interface Transaction {
   id: string;
@@ -61,6 +63,14 @@ export function ClientPaymentsPage() {
   // Auto-generated invoices (on escrow release)
   const [invoices, setInvoices] = useState<any[]>([]);
   const [invoicesLoading, setInvoicesLoading] = useState(false);
+
+  // Wallet — client can add funds (test funds) to fund escrow from wallet
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletLoading, setWalletLoading] = useState(false);
+  const [showAddFunds, setShowAddFunds] = useState(false);
+  const [addFundsAmount, setAddFundsAmount] = useState('1000');
+  const [addFundsError, setAddFundsError] = useState<string | null>(null);
+  const [topupSuccess, setTopupSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -150,10 +160,34 @@ export function ClientPaymentsPage() {
     }
   }, []);
 
+  /** Fetch the client's wallet balance (used to fund escrow). */
+  const fetchWallet = useCallback(async () => {
+    if (!user?.id) return;
+    setWalletLoading(true);
+    try {
+      const result = await withdrawalService.getWalletBalance();
+      if (result.success && result.balance) {
+        setWalletBalance(Number(result.balance.balance) || 0);
+      }
+    } catch {
+      // Wallet fetch is non-critical — escrow can still be funded directly
+    } finally {
+      setWalletLoading(false);
+    }
+  }, [user?.id]);
+
   useEffect(() => {
     fetchTransactions();
     void fetchPaymentMethods();
     void fetchSavedCards();
+    void fetchWallet();
+
+    // Keep wallet balance fresh when a top-up lands (realtime + refresh)
+    const walletChannel = supabase
+      .channel(`client-wallet-${user?.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wallets', filter: `user_id=eq.${user?.id}` }, () => void fetchWallet())
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'transactions', filter: `user_id=eq.${user?.id}` }, () => void fetchWallet())
+      .subscribe();
 
     const subscription = realtimeChannels.transactions(`client-payments-${user?.id}`)
       .on(
@@ -188,8 +222,9 @@ export function ClientPaymentsPage() {
     return () => {
       subscription.unsubscribe();
       void paypalSub.unsubscribe();
+      void supabase.removeChannel(walletChannel);
     };
-  }, [user?.id, fetchTransactions, fetchPaymentMethods, fetchSavedCards]);
+  }, [user?.id, fetchTransactions, fetchPaymentMethods, fetchSavedCards, fetchWallet]);
 
   const handleAddPaymentMethod = async () => {
     if (!user?.id) return;
@@ -356,7 +391,7 @@ export function ClientPaymentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Payments</h1>
-          <p className="text-slate-500 mt-1">Manage your transactions and payment methods</p>
+          <p className="text-slate-500 mt-1">Manage your transactions, wallet, and payment methods</p>
         </div>
         <Link
           to="/client/workspace?fund=1"
@@ -366,6 +401,151 @@ export function ClientPaymentsPage() {
           Fund Escrow
         </Link>
       </div>
+
+      {/* Wallet — add funds to test the escrow workflow */}
+      <div className="bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-600/20 relative overflow-hidden">
+        <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full" />
+        <div className="absolute right-10 bottom-4 w-6 h-6 bg-white/10 rounded-full" />
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6 relative">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+              <Wallet className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <p className="text-emerald-100 text-xs font-medium uppercase tracking-widest">Wallet Balance</p>
+              <div className="flex items-center gap-3">
+                <p className="text-3xl font-bold mt-1">
+                  {walletLoading ? (
+                    <Loader2 className="w-6 h-6 animate-spin text-emerald-100 inline" />
+                  ) : (
+                    formatCurrency(walletBalance)
+                  )}
+                </p>
+                <span className="text-[11px] bg-white/20 px-2 py-0.5 rounded-full font-medium">INR</span>
+              </div>
+              <p className="text-emerald-100/90 text-sm mt-1">
+                Use your wallet to fund escrow — no card needed each time
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => {
+                setAddFundsError(null);
+                setTopupSuccess(null);
+                setShowAddFunds(true);
+              }}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-md"
+            >
+              <PlusCircle className="w-5 h-5" />
+              Add Funds
+            </button>
+            <a
+              href="#wallet-txn"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/15 hover:bg-white/25 text-white font-semibold rounded-xl transition-all"
+            >
+              <ArrowDownLeft className="w-5 h-5" />
+              Wallet Activity
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Add Funds Modal */}
+      {showAddFunds && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
+            onClick={() => setShowAddFunds(false)}
+          />
+          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 pb-0">
+              <h2 className="font-display text-xl font-bold text-slate-900">Add Funds to Wallet</h2>
+              <button
+                onClick={() => setShowAddFunds(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-slate-500 mb-4">
+                Add money to your Growlancer wallet, then fund escrow instantly from it.
+              </p>
+
+              {addFundsError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                  <p className="text-sm text-red-700">{addFundsError}</p>
+                </div>
+              )}
+              {topupSuccess && (
+                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                  <p className="text-sm text-emerald-700">{topupSuccess}</p>
+                </div>
+              )}
+
+              <label className="block text-sm font-medium text-slate-700 mb-2">Amount (₹)</label>
+              <div className="relative mb-1.5">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
+                <input
+                  type="number"
+                  min={50}
+                  max={100000}
+                  value={addFundsAmount}
+                  onChange={(e) => setAddFundsAmount(e.target.value)}
+                  className="w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  placeholder="1000"
+                />
+              </div>
+              <div className="flex items-center gap-2 mb-5">
+                {[500, 1000, 2500, 5000, 10000].map((amt) => (
+                  <button
+                    key={amt}
+                    type="button"
+                    onClick={() => setAddFundsAmount(String(amt))}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      Number(addFundsAmount) === amt
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-slate-200 text-slate-600 hover:border-slate-300'
+                    }`}
+                  >
+                    ₹{amt.toLocaleString('en-IN')}
+                  </button>
+                ))}
+              </div>
+
+              <RazorpayCheckout
+                orderData={{
+                  order_type: 'wallet_topup',
+                  amount: Number(addFundsAmount) || 0,
+                  currency: 'INR',
+                  description: 'Growlancer wallet top-up',
+                }}
+                onSuccess={() => {
+                  setTopupSuccess('Funds added! Your wallet has been credited.');
+                  setShowAddFunds(false);
+                  void fetchWallet();
+                  void fetchTransactions();
+                }}
+                onError={(e) => {
+                  setAddFundsError(e.message || 'Payment failed. Please try again.');
+                }}
+                buttonText={`Pay ₹${(Number(addFundsAmount) || 0).toLocaleString('en-IN')} with Razorpay`}
+                userInfo={{ name: (user as any)?.user_metadata?.name, email: user?.email }}
+              />
+
+              <div className="mt-4 p-3 bg-slate-50 rounded-xl">
+                <p className="text-xs text-slate-500 flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
+                  Payments are processed securely by Razorpay. Wallet funds never expire and can be used to fund escrow on any contract.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -825,7 +1005,7 @@ export function ClientPaymentsPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-4 border-b border-slate-200">
+      <div id="wallet-txn" className="flex items-center gap-4 border-b border-slate-200">
         {(['all', 'credit', 'debit'] as const).map((f) => (
           <button
             key={f}

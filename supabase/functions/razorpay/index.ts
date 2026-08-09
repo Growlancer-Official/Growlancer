@@ -242,7 +242,7 @@ serve(async req => {
         } = data;
 
         const validOrderType = typeof order_type === 'string' ? order_type.trim() : '';
-        if (!['contract_escrow', 'subscription', 'service_purchase', 'card_verification'].includes(validOrderType)) {
+        if (!['contract_escrow', 'subscription', 'service_purchase', 'card_verification', 'wallet_topup'].includes(validOrderType)) {
           throw new Error('Invalid order_type');
         }
 
@@ -311,6 +311,16 @@ serve(async req => {
           // server-side and the charge is auto-refunded right after the token is
           // stored. No contract/subscription/service involvement.
           serverAmount = 1;
+        } else if (validOrderType === 'wallet_topup') {
+          // Client adds funds to their Growlancer wallet (used to fund escrow
+          // or pay for Pro). The amount is client-chosen but validated strictly
+          // server-side: positive number, bounded to a sane range so nobody
+          // can mint wallet credit for free or create absurd orders.
+          const requested = Number(data.amount ?? data.amount_inr ?? 0);
+          if (!Number.isFinite(requested) || requested < 50 || requested > 100000) {
+            throw new Error('Amount must be between ₹50 and ₹1,00,000');
+          }
+          serverAmount = Math.round(requested * 100) / 100;
         }
 
         const validAmount = serverAmount;
@@ -557,6 +567,37 @@ serve(async req => {
             .from('subscriptions')
             .update({ status: 'active', subscription_start_date: new Date().toISOString() })
             .eq('id', updatedOrder.subscription_id);
+        }
+
+        // Wallet top-up: credit the user's wallet with the paid amount. This
+        // is idempotent — the order can only reach this branch once (guarded
+        // by the status='captured' check above), so a retried verify can never
+        // double-credit the wallet.
+        if (updatedOrder.order_type === 'wallet_topup') {
+          const { data: credit, error: creditErr } = await supabaseAdmin.rpc('update_wallet_balance', {
+            p_user_id: user.id,
+            p_amount: Number(updatedOrder.amount) || 0,
+          });
+          if (creditErr) throw new Error(`Failed to credit wallet: ${creditErr.message}`);
+
+          await supabaseAdmin.from('transactions').insert({
+            user_id: user.id,
+            amount: Number(updatedOrder.amount) || 0,
+            type: 'credit',
+            source: 'deposit',
+            status: 'completed',
+            description: 'Wallet top-up via Razorpay',
+            currency: updatedOrder.currency || 'INR',
+            metadata: { razorpay_order_id: updatedOrder.razorpay_order_id, razorpay_payment_id },
+          });
+
+          await notify(
+            supabaseAdmin, user.id, 'payment',
+            'Wallet topped up',
+            `₹${Number(updatedOrder.amount).toLocaleString('en-IN')} added to your wallet.`,
+            '/dashboard/wallet',
+            { razorpay_order_id: updatedOrder.razorpay_order_id }
+          );
         }
 
         // Financial audit trail

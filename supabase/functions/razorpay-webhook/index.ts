@@ -336,6 +336,38 @@ serve(async (req) => {
           .eq('id', dbOrder.subscription_id);
       }
 
+      // Wallet top-ups: credit the user's wallet. Idempotent — this block only
+      // runs on the FIRST capture of the order (the already_processed branch
+      // above returns early on any duplicate), so a replay or a later client
+      // verify can never double-credit the wallet.
+      if (dbOrder.order_type === 'wallet_topup') {
+        const { error: creditErr } = await supabaseAdmin.rpc('update_wallet_balance', {
+          p_user_id: dbOrder.user_id,
+          p_amount: Number(dbOrder.amount) || 0,
+        });
+        if (creditErr) {
+          console.error('[razorpay-webhook] wallet credit failed:', creditErr.message);
+        } else {
+          await supabaseAdmin.from('transactions').insert({
+            user_id: dbOrder.user_id,
+            amount: Number(dbOrder.amount) || 0,
+            type: 'credit',
+            source: 'deposit',
+            status: 'completed',
+            description: 'Wallet top-up via Razorpay',
+            currency: dbOrder.currency || 'INR',
+            metadata: { razorpay_order_id: dbOrder.razorpay_order_id, razorpay_payment_id: paymentId },
+          });
+          await notify(
+            supabaseAdmin, dbOrder.user_id, 'payment',
+            'Wallet topped up',
+            `₹${Number(dbOrder.amount).toLocaleString('en-IN')} added to your wallet.`,
+            '/dashboard/wallet',
+            { razorpay_order_id: dbOrder.razorpay_order_id }
+          );
+        }
+      }
+
       await insertAuditLog(supabaseAdmin, {
         action: 'payment_captured',
         entity_type: 'razorpay_order',

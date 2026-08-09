@@ -13,7 +13,7 @@ declare global {
 }
 
 export interface RazorpayOrderRequest {
-  order_type: 'contract_escrow' | 'subscription' | 'service_purchase' | 'card_verification';
+  order_type: 'contract_escrow' | 'subscription' | 'service_purchase' | 'card_verification' | 'wallet_topup';
   amount: number;
   currency?: string;
   description?: string;
