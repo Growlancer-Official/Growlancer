@@ -37,20 +37,20 @@ import {
 interface FreelancerProfile {
   id: string;
   user_id: string;
-  full_name: string | null;
-  avatar: string | null;
   location: string | null;
   title: string | null;
   bio: string | null;
   hourly_rate: number | null;
-  experience: string | null;
+  experience: string | number | null;
   skills: string[];
   languages: string[];
-  education: string[];
+  education: string[] | string | null;
   certifications: string[];
   portfolio_url: string | null;
-  availability: string | null;
+  availability: boolean | string | null;
   created_at: string;
+  // Name + avatar live on `profiles`, not `freelancer_profiles`
+  profile?: { name: string | null; avatar: string | null } | null;
 }
 
 interface PortfolioItem {
@@ -87,14 +87,13 @@ interface FreelancerService {
   active: boolean;
 }
 
-const formatExperience = (experience: string | null | undefined): string => {
-  if (!experience) return 'N/A';
-  const trimmed = experience.trim();
-  if (/^\d+(\.\d+)?$/.test(trimmed)) {
-    const n = parseFloat(trimmed);
+const formatExperience = (experience: string | number | null | undefined): string => {
+  if (experience === null || experience === undefined || experience === '') return 'N/A';
+  const n = typeof experience === 'number' ? experience : Number(experience);
+  if (!isNaN(n)) {
     return `${n}${n === 1 ? ' yr' : ' yrs'}`;
   }
-  return trimmed;
+  return String(experience).trim() || 'N/A';
 };
 
 export function PublicFreelancerProfilePage() {
@@ -168,7 +167,7 @@ export function PublicFreelancerProfilePage() {
         // throws "Profile Not Found". Fall back to id for old-style links.
         const { data: byUser, error: byUserErr } = await supabase
           .from('freelancer_profiles')
-          .select('*')
+          .select('*, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)')
           .eq('user_id', freelancerId)
           .maybeSingle();
 
@@ -179,7 +178,7 @@ export function PublicFreelancerProfilePage() {
         if (!profileData) {
           const { data: byId, error: byIdErr } = await supabase
             .from('freelancer_profiles')
-            .select('*')
+            .select('*, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)')
             .eq('id', freelancerId)
             .maybeSingle();
           if (byIdErr && byIdErr.code !== 'PGRST116') throw byIdErr;
@@ -297,7 +296,7 @@ export function PublicFreelancerProfilePage() {
     try {
       const ok = await invitesService.create(user.id, selectedProject, profileKey, inviteMessage.trim() || undefined);
       if (ok) {
-        toast.success('Invite sent!', `${profile?.full_name || 'Freelancer'} has been invited to your project.`);
+        toast.success('Invite sent!', `${profile?.profile?.name || 'Freelancer'} has been invited to your project.`);
         setContactOpen(false);
         setInviteMessage('');
       } else {
@@ -312,7 +311,7 @@ export function PublicFreelancerProfilePage() {
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `${profile?.full_name || 'Freelancer'} on Growlancer`, url });
+        await navigator.share({ title: `${profile?.profile?.name || 'Freelancer'} on Growlancer`, url });
       } else {
         await navigator.clipboard.writeText(url);
         toast.success('Link copied!', 'Profile link copied to clipboard.');
@@ -348,6 +347,15 @@ export function PublicFreelancerProfilePage() {
   }
 
   const formatRating = (rating: number) => rating.toFixed(1);
+
+  // Name + avatar come from the joined `profiles` row (not freelancer_profiles)
+  const displayName = profile.profile?.name || 'Freelancer';
+  const avatarUrl = profile.profile?.avatar || null;
+  const initial = (profile.profile?.name || 'U')[0];
+  const availabilityLabel =
+    typeof profile.availability === 'boolean'
+      ? (profile.availability ? 'Available' : 'Unavailable')
+      : (profile.availability ? String(profile.availability) : null);
 
   const RatingStars = ({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) => (
     <div className={`flex gap-0.5 ${size === 'md' ? 'text-lg' : 'text-sm'}`}>
@@ -385,12 +393,12 @@ export function PublicFreelancerProfilePage() {
               <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-white/20 ring-4 ring-white/30 shadow-xl">
                 {/* Letter fallback always behind the image */}
                 <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-white/60">
-                  {(profile.full_name || 'U')[0]}
+                  {initial}
                 </div>
-                {profile.avatar && (
+                {avatarUrl && (
                   <img
-                    src={profile.avatar}
-                    alt={profile.full_name || ''}
+                    src={avatarUrl}
+                    alt={displayName}
                     className="absolute inset-0 w-full h-full object-cover"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
@@ -406,7 +414,7 @@ export function PublicFreelancerProfilePage() {
             {/* Info */}
             <div className="text-center sm:text-left flex-1">
               <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
-                {profile.full_name || 'Freelancer'}
+                {displayName}
                 {isProFreelancer && <ProBadge size="md" showLabel />}
               </h1>
               {profile.title && (
@@ -425,10 +433,10 @@ export function PublicFreelancerProfilePage() {
                     {profile.hourly_rate}/hr
                   </span>
                 )}
-                {profile.availability && (
+                {availabilityLabel && (
                   <span className="flex items-center gap-1">
                     <Clock className="w-4 h-4" />
-                    {profile.availability}
+                    {availabilityLabel}
                   </span>
                 )}
                 <span className="flex items-center gap-1">
@@ -719,18 +727,22 @@ export function PublicFreelancerProfilePage() {
               </div>
             )}
 
-            {/* Education */}
-            {profile.education && profile.education.length > 0 && (
+            {/* Education — can be an array or a single text string in the DB */}
+            {profile.education && (Array.isArray(profile.education) ? profile.education.length > 0 : profile.education.trim()) && (
               <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">Education</h2>
-                <ul className="space-y-2">
-                  {profile.education.map((edu, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-slate-600">
-                      <ChevronRight className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
-                      {edu}
-                    </li>
-                  ))}
-                </ul>
+                {Array.isArray(profile.education) ? (
+                  <ul className="space-y-2">
+                    {profile.education.map((edu, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-slate-600">
+                        <ChevronRight className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                        {edu}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-slate-600 whitespace-pre-wrap">{profile.education}</p>
+                )}
               </div>
             )}
 
@@ -763,15 +775,15 @@ export function PublicFreelancerProfilePage() {
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
-                  {profile.avatar ? (
-                    <img src={profile.avatar} alt={profile.full_name || ''} className="w-full h-full object-cover" />
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-lg font-bold text-slate-400">{(profile.full_name || 'U')[0]}</span>
+                    <span className="text-lg font-bold text-slate-400">{initial}</span>
                   )}
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 flex items-center gap-1.5">
-                    Contact {profile.full_name || 'Freelancer'}
+                    Contact {displayName}
                     {isProFreelancer && <ProBadge size="xs" />}
                   </h3>
                   <p className="text-xs text-slate-500">Send a project invitation</p>
@@ -790,7 +802,7 @@ export function PublicFreelancerProfilePage() {
               <div className="text-center py-6">
                 <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                 <p className="text-sm text-slate-600 mb-4">
-                  You need an active project to invite {profile.full_name || 'this freelancer'}. Post a project first.
+                  You need an active project to invite {displayName}. Post a project first.
                 </p>
                 <Link
                   to="/client/post"
@@ -822,7 +834,7 @@ export function PublicFreelancerProfilePage() {
                     value={inviteMessage}
                     onChange={(e) => setInviteMessage(e.target.value)}
                     rows={3}
-                    placeholder={`Tell ${profile.full_name || 'them'} about your project...`}
+                    placeholder={`Tell ${displayName} about your project...`}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border-0 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500/30 outline-none transition-all resize-none"
                   />
                 </div>
