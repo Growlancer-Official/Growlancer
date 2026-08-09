@@ -204,6 +204,9 @@ export function ProjectFeedPage() {
   const [freelancerRate, setFreelancerRate] = useState<number | null>(null);
   const [hasProfile, setHasProfile] = useState<boolean>(true);
   const [appliedProjects, setAppliedProjects] = useState<Set<string>>(new Set());
+  // project_id → { contractId, status }: projects with existing work must show
+  // the working state (Contract Active / Completed) instead of "Apply Now".
+  const [contractInfoMap, setContractInfoMap] = useState<Map<string, { contractId: string; status: string }>>(new Map());
   const toast = useToast();
 
   // Declined projects are stored PER USER (shared-device safe): user A's
@@ -227,6 +230,21 @@ export function ProjectFeedPage() {
       return new Set();
     }
   });
+
+  // Rebuild the project_id → contract map (shared by initial load + realtime)
+  const refreshContractInfo = async () => {
+    const { data: contracts } = await supabase
+      .from('contracts')
+      .select('id, project_id, status')
+      .eq('freelancer_id', user?.id || '');
+    if (!contracts) return;
+    const map = new Map<string, { contractId: string; status: string }>();
+    contracts.forEach((c: any) => {
+      if (!c.project_id || map.has(c.project_id)) return;
+      map.set(c.project_id, { contractId: c.id, status: c.status });
+    });
+    setContractInfoMap(map);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -337,6 +355,11 @@ export function ProjectFeedPage() {
         if (proposals) {
           setAppliedProjects(new Set(proposals.map(p => p.project_id)));
         }
+
+        // Projects with active work must show "Contract Active" instead of
+        // "Apply Now" (invite-hired projects have NO proposals row, so
+        // appliedProjects alone would miss them).
+        await refreshContractInfo();
 
         setLoading(false);
       } catch (error) {
@@ -457,10 +480,24 @@ export function ProjectFeedPage() {
       )
       .subscribe();
 
+    // Real-time subscription for contracts — instantly flip the card to
+    // "Contract Active" when an invite/proposal turns into a contract
+    const contractsChannel = supabase
+      .channel('feed-contracts-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'contracts', filter: `freelancer_id=eq.${user.id}` },
+        () => {
+          refreshContractInfo();
+        }
+      )
+      .subscribe();
+
     return () => {
       clearTimeout(timeoutId);
       matchesChannel.unsubscribe();
       profilesChannel.unsubscribe();
+      contractsChannel.unsubscribe();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -759,29 +796,69 @@ export function ProjectFeedPage() {
 
                 {/* Actions */}
                 <div className="flex flex-col gap-2">
-                  {appliedProjects.has(match.project_id) ? (
+                  {(() => {
+                    const ci = contractInfoMap.get(match.project_id);
+                    if (ci) {
+                      const terminal =
+                        ci.status === 'completed' ||
+                        ci.status === 'cancelled' ||
+                        ci.status === 'rejected';
+                      if (terminal) {
+                        const label =
+                          ci.status === 'completed'
+                            ? 'Completed'
+                            : ci.status === 'cancelled'
+                              ? 'Cancelled'
+                              : 'Closed';
+                        return (
+                          <button
+                            disabled
+                            className="px-6 py-2.5 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                          >
+                            <CheckCircle2 className="w-4 h-4" />
+                            {label}
+                          </button>
+                        );
+                      }
+                      return (
+                        <Link
+                          to={`/dashboard/workspace?contract=${ci.contractId}`}
+                          className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                        >
+                          <Briefcase className="w-4 h-4" />
+                          {ci.status === 'pending' ? 'View Contract' : 'Contract Active'}
+                        </Link>
+                      );
+                    }
+                    if (appliedProjects.has(match.project_id)) {
+                      return (
+                        <button
+                          disabled
+                          className="px-6 py-2.5 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                          Applied
+                        </button>
+                      );
+                    }
+                    return (
+                      <button
+                        onClick={() => handleApply(match)}
+                        className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                      >
+                        Apply Now
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    );
+                  })()}
+                  {!contractInfoMap.has(match.project_id) && (
                     <button
-                      disabled
-                      className="px-6 py-2.5 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                      onClick={() => handleDecline(match.id, match.project_id)}
+                      className="px-6 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
                     >
-                      <CheckCircle2 className="w-4 h-4" />
-                      Applied
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => handleApply(match)}
-                      className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
-                    >
-                      Apply Now
-                      <ArrowRight className="w-4 h-4" />
+                      Not Interested
                     </button>
                   )}
-                  <button
-                    onClick={() => handleDecline(match.id, match.project_id)}
-                    className="px-6 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
-                  >
-                    Not Interested
-                  </button>
                 </div>
               </div>
             </div>
