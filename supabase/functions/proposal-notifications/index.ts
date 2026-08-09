@@ -5,8 +5,9 @@
 // Also creates in-app notifications for the freelancer.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendEmail } from '../_shared/resend.ts'
 
-// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
+// Transactional email via Resend (shared helper).
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -37,16 +38,15 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Email Sender (disabled — Brevo removed) ─────────────────────────────────
+// ─── Email Sender (Resend) ─────────────────────────────────────────────────
 async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string
 ): Promise<boolean> {
-  // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[proposal-notifications] Email sending disabled (Brevo removed):', subject, '→', to)
-  return false
+  void toName;
+  return sendEmail({ to, subject, html: htmlContent })
 }
 
 function baseEmailHtml(title: string, bodyHtml: string): string {

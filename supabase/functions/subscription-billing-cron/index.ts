@@ -4,11 +4,12 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
+import { sendEmail } from '../_shared/resend.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
+// Transactional email via Resend (shared helper).
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
@@ -16,15 +17,14 @@ function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-async function sendEmail(params: {
+async function sendBillingEmail(params: {
   to: string;
   toName: string;
   subject: string;
   htmlBody: string;
 }): Promise<boolean> {
-  // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[subscription-billing-cron] Email sending disabled (Brevo removed):', params.subject)
-  return false
+  void params.toName;
+  return sendEmail({ to: params.to, subject: params.subject, html: params.htmlBody })
 }
 
 serve(async () => {
@@ -57,7 +57,7 @@ serve(async () => {
               .update({ status: 'cancelled', updated_at: now })
               .eq('id', sub.id);
 
-            await sendEmail({
+            await sendBillingEmail({
               to: userEmail,
               toName: userName,
               subject: `Your ${planName} trial has ended`,
@@ -79,7 +79,7 @@ serve(async () => {
             })
             .eq('id', sub.id);
 
-          await sendEmail({
+          await sendBillingEmail({
             to: userEmail,
             toName: userName,
             subject: `Your ${planName} trial has ended — action required`,
@@ -114,7 +114,7 @@ serve(async () => {
         const userName = (sub.profiles as any)?.name || 'User';
         const planName = (sub.subscription_plans as any)?.name || 'Pro';
 
-        await sendEmail({
+        await sendBillingEmail({
           to: userEmail,
           toName: userName,
           subject: `Your ${planName} trial ends in 2 days`,
@@ -153,7 +153,7 @@ serve(async () => {
             .update({ status: 'cancelled', ended_at: now, updated_at: now })
             .eq('id', sub.id);
 
-          await sendEmail({
+          await sendBillingEmail({
             to: userEmail,
             toName: userName,
             subject: `Your ${planName} subscription has ended`,
@@ -164,7 +164,7 @@ serve(async () => {
           results.push(`Sub expired (cancelled): ${sub.id}`);
         } else {
           // Send renewal notice
-          await sendEmail({
+          await sendBillingEmail({
             to: userEmail,
             toName: userName,
             subject: `Your ${planName} subscription is renewing`,

@@ -4,6 +4,7 @@
 //   2) Emailed to the company inbox (growlancer.own@gmail.com) via Resend when
 //      RESEND_API_KEY is configured (graceful no-op fallback otherwise)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendEmail } from '../_shared/resend.ts'
 
 const REPORT_EMAIL = Deno.env.get('REPORT_EMAIL') ?? 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
@@ -49,12 +50,6 @@ async function sendReportEmail(payload: {
   browserInfo: string;
   userId: string | null;
 }): Promise<boolean> {
-  const apiKey = Deno.env.get('RESEND_API_KEY')
-  if (!apiKey) {
-    console.log('[submit-report] RESEND_API_KEY not set — email not sent, report stored:', payload.reportId)
-    return false
-  }
-
   const typeLabels: Record<string, string> = {
     bug: '🐛 Bug Report',
     feature: '✨ Feature Request',
@@ -98,32 +93,13 @@ async function sendReportEmail(payload: {
   </div>
 </body></html>`;
 
-  const from = Deno.env.get('EMAIL_FROM') ?? 'Growlancer <no-reply@growlancer.vercel.app>'
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to: [REPORT_EMAIL],
-        reply_to: payload.email || undefined,
-        subject,
-        html,
-      }),
-    })
-    if (!res.ok) {
-      console.error('[submit-report] Resend error', res.status, await res.text())
-      return false
-    }
-    console.log('[submit-report] Report email sent:', subject, '→', REPORT_EMAIL)
-    return true
-  } catch (err) {
-    console.error('[submit-report] Resend exception:', err)
-    return false
-  }
+  // Send via the shared Resend helper (subject-only logging, never PII).
+  return sendEmail({
+    to: REPORT_EMAIL,
+    subject,
+    html,
+    ...(payload.email ? { replyTo: payload.email } : {}),
+  });
 }
 
 // ─── Handler ─────────────────────────────────────────────────────────────────

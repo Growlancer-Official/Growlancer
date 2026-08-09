@@ -2,6 +2,7 @@
 // Public actions: verify_certificate, verify_certificate_code, send_welcome_email
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendEmail } from '../_shared/resend.ts'
 
 // ─── Configuration ──────────────────────────────────────────────────
 
@@ -102,19 +103,24 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// ─── Email sender (disabled — Brevo removed) ──────────────────────────────
+// ─── Email sender (Resend) ────────────────────────────────────────────────
 async function sendNotificationEmail(
   subject: string,
   htmlContent: string,
   to: { email: string; name: string },
   attachments?: { url: string; name: string }[],
 ): Promise<{ success: boolean; status: number; text: string }> {
-  // Email sending disabled — Brevo completely removed. Return success:true so
-  // fire-and-forget callers (welcome/admin/certificate emails) complete with 200
-  // instead of surfacing fake 500 failures — no email is actually sent.
-  // Log the subject only — never the recipient address (PII).
-  console.log('[admin-data] Email sending disabled (Brevo removed):', subject);
-  return { success: true, status: 200, text: 'Email sending disabled (Brevo removed)' };
+  const sent = await sendEmail({
+    to: to.email,
+    subject,
+    html: htmlContent,
+    ...(attachments && attachments.length > 0
+      ? { attachments: attachments.map((a) => ({ path: a.url, name: a.name, filename: a.name })) }
+      : {}),
+  });
+  return sent
+    ? { success: true, status: 200, text: 'Email sent' }
+    : { success: false, status: 502, text: 'Email delivery failed (Resend not configured or API error)' };
 }
 
 // ─── Shared Email Template Wrapper ───────────────────────────────────────
@@ -695,9 +701,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ─── POST: test_brevo (removed) — Brevo has been completely removed ──
-    if (req.method === 'POST' && action === 'test_brevo') {
-      return new Response(JSON.stringify({ success: false, error: 'Brevo has been completely removed from Growlancer. Email delivery uses Supabase Auth built-in sender.' }), {
+    // ─── POST: test_email — sends a live Resend test email ──
+    if (req.method === 'POST' && action === 'test_email') {
+      const testTo = body?.to || 'admin@growlancer.com'
+      const sent = await sendNotificationEmail('Growlancer Test Email ✅', '<p>This is a test email from Growlancer via Resend.</p>', { email: testTo, name: 'Test' })
+      return new Response(JSON.stringify({ success: sent, error: sent ? undefined : 'Email delivery failed (Resend not configured or API error)' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

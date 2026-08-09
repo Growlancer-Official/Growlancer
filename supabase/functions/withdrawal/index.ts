@@ -34,24 +34,24 @@ function getCorsHeaders(origin: string | null) {
   }
 }
 
-// ─── Email Notification Helper ────────────────────────────────────────────────
+// ─── Email Notification Helper (Resend) ──────────────────────────────────────
+import { sendEmail } from '../_shared/resend.ts';
 
-// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(amount);
 }
 
-/** Send a transactional email — disabled (Brevo completely removed) */
+/** Send a transactional email via Resend (no-op + logged when key missing). */
 async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string
 ): Promise<void> {
-  // Log the subject only — never the recipient address (PII).
-  console.log('[withdrawal] Email sending disabled (Brevo removed):', subject);
+  void toName;
+  await sendEmail({ to, subject, html: htmlContent });
 }
 
 function buildWithdrawalEmail(name: string, amount: number, netAmount: number, method: string, status: 'completed' | 'failed', reason?: string): string {

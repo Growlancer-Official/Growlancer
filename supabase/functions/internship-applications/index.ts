@@ -6,8 +6,9 @@
 //   3) Status change emails (shortlisted, interview, selected, rejected)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendEmail } from '../_shared/resend.ts'
 
-// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
+// Transactional email via Resend (shared helper).
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -104,7 +105,7 @@ function getFileNameFromUrl(url: string | null | undefined, fallback: string): s
   }
 }
 
-// ─── Email Sender (disabled — Brevo removed) ─────────────────────────────────
+// ─── Email Sender (Resend) ─────────────────────────────────────────────────
 async function sendNotificationEmail(
   to: string,
   toName: string,
@@ -112,9 +113,15 @@ async function sendNotificationEmail(
   htmlContent: string,
   attachments?: Attachment[]
 ): Promise<boolean> {
-  // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[internship-applications] Email sending disabled (Brevo removed):', subject)
-  return false
+  void toName;
+  return sendEmail({
+    to,
+    subject,
+    html: htmlContent,
+    ...(attachments && attachments.length > 0
+      ? { attachments: attachments.map((a) => ({ path: a.url, name: a.name, filename: a.name })) }
+      : {}),
+  })
 }
 
 // ─── Email Templates ────────────────────────────────────────────────────────

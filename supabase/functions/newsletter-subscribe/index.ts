@@ -5,8 +5,9 @@
 //   3) Newsletter contact record
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { sendEmail } from '../_shared/resend.ts'
 
-// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
+// Transactional email via Resend (shared helper).
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
@@ -36,22 +37,21 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Email helper (disabled — Brevo removed) ────────────────────────────────
+// ─── Email helper (Resend) ────────────────────────────────────────────────
 async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string,
 ): Promise<boolean> {
-  // Email sending disabled — Brevo completely removed. Returns false (not sent).
-  console.log('[newsletter] Email sending disabled (Brevo removed):', subject)
-  return false
+  void toName;
+  return sendEmail({ to, subject, html: htmlContent })
 }
 
 // ─── Add contact to newsletter list ─────────────────────────────────────────
 async function syncNewsletterContact(email: string, name: string): Promise<string | null> {
-  // Brevo contact sync disabled — Brevo completely removed.
-  console.log('[newsletter] Brevo contact sync disabled (removed):', email)
+  // Contact sync disabled — the newsletter list lives in the DB only.
+  console.log('[newsletter] Newsletter contact sync skipped (DB-only list):', email)
   return null
 }
 

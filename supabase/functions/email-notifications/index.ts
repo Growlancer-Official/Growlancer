@@ -11,7 +11,8 @@
 //
 // Reuses the same branded template pattern from proposal-notifications
 
-// Email service removed (Brevo) — Growlancer uses Supabase Auth built-in sender for verification emails.
+import { sendEmail } from '../_shared/resend.ts';
+
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
@@ -69,48 +70,17 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Email Sender (disabled — Brevo removed) ─────────────────────────────────
+// ─── Email Sender (Resend) ────────────────────────────────────────────────
+// Real transactional email via the shared Resend helper. Falls back to a
+// logged no-op (email_sent: false) when RESEND_API_KEY is missing.
 async function sendNotificationEmail(
   to: string,
   toName: string,
   subject: string,
   htmlContent: string
 ): Promise<boolean> {
-  // Real transactional email via Resend when RESEND_API_KEY is configured.
-  // Falls back to a logged no-op (email_sent: false) when the key is missing so
-  // callers never fail hard — just set the secret to enable delivery.
-  const apiKey = Deno.env.get('RESEND_API_KEY')
-  if (!apiKey) {
-    console.log('[email-notifications] RESEND_API_KEY not set — email not sent:', subject, '→', to)
-    return false
-  }
-  const from = Deno.env.get('EMAIL_FROM') ?? 'Growlancer <no-reply@growlancer.vercel.app>'
-  const replyTo = Deno.env.get('EMAIL_REPLY_TO')
-  try {
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from,
-        to: [to],
-        subject,
-        html: htmlContent,
-        ...(replyTo ? { reply_to: replyTo } : {}),
-      }),
-    })
-    if (!res.ok) {
-      console.error('[email-notifications] Resend error', res.status, await res.text())
-      return false
-    }
-    console.log('[email-notifications] Email sent via Resend:', subject, '→', to)
-    return true
-  } catch (err) {
-    console.error('[email-notifications] Resend exception:', err)
-    return false
-  }
+  void toName; // reserved for future personalization
+  return sendEmail({ to, subject, html: htmlContent });
 }
 
 function baseEmailHtml(title: string, bodyHtml: string): string {
