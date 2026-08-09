@@ -8,6 +8,7 @@ import type { Tables } from '../../types/supabase';
 import { milestoneService, getMilestoneProgress } from '../../lib/contractMilestones';
 import { safeFormatDate } from '../../utils/date';
 import type { MilestoneItem } from '../../lib/contractMilestones';
+import { ACTIVE_STATUSES, PENDING_STATUSES } from '../../lib/contractStatuses';
 
 type ContractWithDetails = Tables<'contracts'> & {
   project?: Tables<'projects'> | null;
@@ -92,7 +93,9 @@ export function ContractsPage() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all');
+  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'pending' | 'completed'>('all');
+  // Once the user clicks a tab, stop auto-flipping (auto-select only until then)
+  const userTouchedFilter = useRef(false);
   const [selectedContract, setSelectedContract] = useState<ContractWithDetails | null>(null);
   const [escrowModalContract, setEscrowModalContract] = useState<ContractWithDetails | null>(null);
   const pageSize = 20;
@@ -254,13 +257,31 @@ export function ContractsPage() {
 
   const filteredContracts = contracts.filter((c) => {
     if (activeTab === 'all') return true;
-    if (activeTab === 'active') return ['active', 'in_progress'].includes(c.status || '');
+    if (activeTab === 'active') return ACTIVE_STATUSES.includes(c.status || '');
+    if (activeTab === 'pending') return PENDING_STATUSES.includes(c.status || '');
     if (activeTab === 'completed') return c.status === 'completed';
     return true;
   });
 
-  const activeCount = contracts.filter((c) => ['active', 'in_progress'].includes(c.status || '')).length;
+  const activeCount = contracts.filter((c) => ACTIVE_STATUSES.includes(c.status || '')).length;
+  const pendingCount = contracts.filter((c) => PENDING_STATUSES.includes(c.status || '')).length;
   const completedCount = contracts.filter((c) => c.status === 'completed').length;
+
+  // Auto-select the tab that matches the user's current state — Active → Pending →
+  // Completed → All — until they manually pick one. Re-runs on realtime updates so
+  // the user always lands on (and follows) the workflow stage they are in.
+  useEffect(() => {
+    if (userTouchedFilter.current) return;
+    if (contracts.some((c) => ACTIVE_STATUSES.includes(c.status || ''))) {
+      setActiveTab('active');
+    } else if (contracts.some((c) => PENDING_STATUSES.includes(c.status || ''))) {
+      setActiveTab('pending');
+    } else if (contracts.some((c) => c.status === 'completed')) {
+      setActiveTab('completed');
+    } else {
+      setActiveTab('all');
+    }
+  }, [contracts]);
 
   const totalEarnings = contracts
     .filter((c) => ['active', 'completed'].includes(c.status || ''))
@@ -434,10 +455,10 @@ export function ContractsPage() {
         </div>
       </div>
 
-      {/* Tabs — workflow order: All → Active → Completed */}
+      {/* Tabs — workflow order: All → Active → Pending → Completed */}
       <div className="flex items-center gap-2 border-b border-slate-200">
         <button
-          onClick={() => setActiveTab('all')}
+          onClick={() => { userTouchedFilter.current = true; setActiveTab('all'); }}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'all'
               ? 'text-emerald-600'
@@ -450,7 +471,7 @@ export function ContractsPage() {
           )}
         </button>
         <button
-          onClick={() => setActiveTab('active')}
+          onClick={() => { userTouchedFilter.current = true; setActiveTab('active'); }}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'active'
               ? 'text-emerald-600'
@@ -468,7 +489,25 @@ export function ContractsPage() {
           )}
         </button>
         <button
-          onClick={() => setActiveTab('completed')}
+          onClick={() => { userTouchedFilter.current = true; setActiveTab('pending'); }}
+          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+            activeTab === 'pending'
+              ? 'text-emerald-600'
+              : 'text-slate-500 hover:text-slate-700'
+          }`}
+        >
+          Pending
+          {pendingCount > 0 && (
+            <span className="ml-2 px-2 py-0.5 bg-amber-500 text-white text-xs rounded-full">
+              {pendingCount}
+            </span>
+          )}
+          {activeTab === 'pending' && (
+            <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600"></span>
+          )}
+        </button>
+        <button
+          onClick={() => { userTouchedFilter.current = true; setActiveTab('completed'); }}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'completed'
               ? 'text-emerald-600'
@@ -774,6 +813,8 @@ export function ContractsPage() {
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
             {activeTab === 'active'
               ? 'No active contracts'
+              : activeTab === 'pending'
+              ? 'No pending contracts'
               : activeTab === 'completed'
               ? 'No completed contracts yet'
               : 'No contracts'}
@@ -781,6 +822,8 @@ export function ContractsPage() {
           <p className="text-slate-500 max-w-md mx-auto mb-6">
             {activeTab === 'active'
               ? 'You have no active contracts. Submit proposals to get hired!'
+              : activeTab === 'pending'
+              ? 'Pending contracts will appear here once a client hires you.'
               : activeTab === 'completed'
               ? 'Your completed contracts will appear here. Keep up the good work!'
               : 'Start your freelance journey by submitting proposals to projects.'}

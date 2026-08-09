@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
+import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
 import { ProBadge } from '../components/ProBadge';
 
@@ -39,6 +40,8 @@ export function ClientContractsPage() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'pending'>('all');
+  // Once the user clicks a tab, stop auto-flipping (auto-select only until then)
+  const userTouchedFilter = useRef(false);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const pageSize = 20;
@@ -114,11 +117,27 @@ export function ClientContractsPage() {
 
   const filteredContracts = contracts.filter((c) => {
     if (filter === 'all') return true;
-    if (filter === 'active') return c.status === 'active' || c.status === 'in_progress';
+    if (filter === 'active') return ACTIVE_STATUSES.includes(c.status || '');
     if (filter === 'completed') return c.status === 'completed';
-    if (filter === 'pending') return c.status === 'pending' || c.status === 'draft';
+    if (filter === 'pending') return PENDING_STATUSES.includes(c.status || '');
     return true;
   });
+
+  // Auto-select the tab that matches the user's current state — Active → Pending →
+  // Completed → All — until they manually pick one. Re-runs on realtime refetches
+  // so the user always lands on (and follows) the workflow stage they are in.
+  useEffect(() => {
+    if (userTouchedFilter.current) return;
+    if (contracts.some((c) => ACTIVE_STATUSES.includes(c.status || ''))) {
+      setFilter('active');
+    } else if (contracts.some((c) => PENDING_STATUSES.includes(c.status || ''))) {
+      setFilter('pending');
+    } else if (contracts.some((c) => c.status === 'completed')) {
+      setFilter('completed');
+    } else {
+      setFilter('all');
+    }
+  }, [contracts]);
 
   const getStatusColor = (status: string | null) => {
     switch (status) {
@@ -161,7 +180,7 @@ export function ClientContractsPage() {
           <button
             key={f}
             type="button"
-            onClick={() => setFilter(f)}
+            onClick={() => { userTouchedFilter.current = true; setFilter(f); }}
             className={`px-4 py-2 font-medium transition-colors ${
               filter === f
                 ? 'text-emerald-600 border-b-2 border-emerald-600'
