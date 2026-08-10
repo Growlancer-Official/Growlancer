@@ -100,6 +100,7 @@ export function ClientDashboardLayout() {
     proposals: 0,
     contracts: 0,
   });
+  const [clientStats, setClientStats] = useState<{ rating: number; total_reviews: number } | null>(null);
 
   const safeUnsubscribe = (channel: { unsubscribe?: () => void } | null | undefined) => {
     if (channel?.unsubscribe) {
@@ -161,6 +162,24 @@ export function ClientDashboardLayout() {
     fetchUnreadCount();
     fetchBadgeCounts();
 
+    // Fetch client rating + review count (profiles.rating is refreshed by the review trigger)
+    const loadClientStats = async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('rating, total_reviews')
+          .eq('id', user.id)
+          .single();
+        setClientStats({
+          rating: Number(data?.rating) || 0,
+          total_reviews: Number(data?.total_reviews) || 0,
+        });
+      } catch {
+        // Rating fetch failed silently
+      }
+    };
+    void loadClientStats();
+
     // Subscribe to notifications for real-time badge updates
     const notifSub = notificationService.subscribe(user.id, () => {
       fetchUnreadCount();
@@ -177,11 +196,13 @@ export function ClientDashboardLayout() {
           filter: `id=eq.${user.id}`
         },
         (payload: { new: Record<string, unknown>; old: Record<string, unknown> }) => {
-          if (payload.new.avatar !== payload.old.avatar ||
-              payload.new.name !== payload.old.name ||
-              payload.new.rating !== payload.old.rating ||
+          if (payload.new.rating !== payload.old.rating ||
               payload.new.total_reviews !== payload.old.total_reviews) {
-            // Profile changed — could update UI here if needed
+            // Real-time rating sync — review trigger refreshed profiles.rating
+            setClientStats({
+              rating: Number(payload.new.rating) || 0,
+              total_reviews: Number(payload.new.total_reviews) || 0,
+            });
           }
         }
       )
@@ -548,6 +569,13 @@ export function ClientDashboardLayout() {
                   <span className="truncate">{user?.name || 'Client'}</span>
                   {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
                 </p>
+                {clientStats && clientStats.rating > 0 && (
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <span className="text-[10px] text-emerald-600">★</span>
+                    <span className="text-[10px] text-slate-500 font-medium">{clientStats.rating.toFixed(1)}</span>
+                    <span className="text-[10px] text-slate-400">({clientStats.total_reviews})</span>
+                  </div>
+                )}
               </div>
             </button>
           </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Loader2, Mail, MessageSquare, User, Wallet, XCircle } from 'lucide-react';
+import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Loader2, Mail, MessageSquare, Star, User, Wallet, XCircle } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
@@ -47,7 +47,7 @@ export function InvitesPage() {
           .select(`
             *,
             projects!inner(title, description, budget_min, budget_max, skills_required, client_id, experience_level),
-            profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status)
+            profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status, rating, total_reviews)
           `)
           .eq('freelancer_id', user.id)
           .order('created_at', { ascending: false });
@@ -94,7 +94,7 @@ export function InvitesPage() {
                 .select(`
                   *,
                   projects!inner(title, description, budget_min, budget_max, skills_required, client_id, experience_level),
-                  profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status)
+                  profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status, rating, total_reviews)
                 `)
                 .eq('id', payload.new.id)
                 .single();
@@ -427,6 +427,13 @@ export function InvitesPage() {
                           Invited by <span className="font-medium text-slate-700 flex items-center gap-1">
                             {invite.profiles?.name}
                             {invite.profiles?.verification_status === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
+                            {(invite.profiles as any)?.rating && Number((invite.profiles as any).rating) > 0 && (
+                              <span className="flex items-center gap-1 text-xs">
+                                <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                                <span className="font-semibold text-slate-700">{Number((invite.profiles as any).rating).toFixed(1)}</span>
+                                <span className="text-slate-400">({(invite.profiles as any).total_reviews || 0})</span>
+                              </span>
+                            )}
                           </span>
                         </span>
                         <span className="flex items-center gap-1">

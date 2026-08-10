@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, CheckCircle2, ChevronDown, Clock, FileText, Loader2, MessageSquare, User, XCircle,  } from 'lucide-react';
+import { ArrowRight, Calendar, CheckCircle2, ChevronDown, Clock, FileText, Loader2, MessageSquare, Star, User, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
@@ -43,7 +43,7 @@ export function ProposalsPage() {
           *,
           project:projects(
             *,
-            client:profiles!projects_client_id_fkey(id, name, email, avatar, deleted_at, verification_status)
+            client:profiles!projects_client_id_fkey(id, name, email, avatar, deleted_at, verification_status, rating, total_reviews)
           )
         `)
         .eq('freelancer_id', user.id)
@@ -352,6 +352,13 @@ export function ProposalsPage() {
                         Client: <span className="font-medium text-slate-700 flex items-center gap-1">
                           {proposal.project?.client?.name || 'Client'}
                           {(proposal.project?.client as any)?.verification_status === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
+                          {(proposal.project?.client as any)?.rating && Number((proposal.project?.client as any).rating) > 0 && (
+                            <span className="flex items-center gap-1 text-xs">
+                              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                              <span className="font-semibold text-slate-700">{Number((proposal.project?.client as any).rating).toFixed(1)}</span>
+                              <span className="text-slate-400">({(proposal.project?.client as any).total_reviews || 0})</span>
+                            </span>
+                          )}
                         </span>
                       </span>
                       <span className="flex items-center gap-1">

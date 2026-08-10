@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
-import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Wallet, X, Zap } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Star, Wallet, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { safeLower, safeNumber } from '../../utils/date';
 import { Pagination } from '../../components/Pagination';
@@ -227,7 +227,7 @@ export function ProjectFeedPage() {
       const loadProject = async () => {
         const { data } = await supabase
           .from('projects')
-          .select('*, client:profiles!projects_client_id_fkey(id, name, avatar)')
+          .select('*, client:profiles!projects_client_id_fkey(id, name, avatar, rating, total_reviews)')
           .eq('id', applyId)
           .maybeSingle();
         if (data) {
@@ -322,7 +322,7 @@ export function ProjectFeedPage() {
             *,
             project:projects(
               *,
-              client:profiles(id, name, avatar)
+              client:profiles(id, name, avatar, rating, total_reviews)
             )
           `)
           .eq('freelancer_id', user.id)
@@ -441,7 +441,7 @@ export function ProjectFeedPage() {
                   *,
                   project:projects(
                     *,
-                    client:profiles(id, name, avatar)
+                    client:profiles(id, name, avatar, rating, total_reviews)
                   )
                 `)
                 .eq('id', payload.new.id)
@@ -524,6 +524,27 @@ export function ProjectFeedPage() {
                       }
                     }
                   : match
+              )
+            );
+          }
+          // Real-time client rating sync — the review trigger refreshes profiles.rating
+          if (payload.new.rating !== payload.old.rating || payload.new.total_reviews !== payload.old.total_reviews) {
+            const patchClient = (c: { id?: string; [k: string]: unknown } | null | undefined) =>
+              c && c.id === payload.new.id
+                ? { ...c, rating: payload.new.rating, total_reviews: payload.new.total_reviews }
+                : c;
+            setMatches(prev =>
+              prev.map(m =>
+                m.project.client?.id === payload.new.id
+                  ? { ...m, project: { ...m.project, client: patchClient(m.project.client) as never } }
+                  : m
+              )
+            );
+            setFilteredMatches(prev =>
+              prev.map(m =>
+                m.project.client?.id === payload.new.id
+                  ? { ...m, project: { ...m.project, client: patchClient(m.project.client) as never } }
+                  : m
               )
             );
           }
@@ -845,8 +866,13 @@ export function ProjectFeedPage() {
                     <span className="font-medium text-slate-700">
                       {match.project.client?.name || 'Client'}
                     </span>
-                    {/* Show real client metric or nothing — no fake rating */}
-                  
+                    {(match.project.client as any)?.rating && Number((match.project.client as any).rating) > 0 && (
+                      <span className="flex items-center gap-1">
+                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <span className="font-semibold text-slate-700">{Number((match.project.client as any).rating).toFixed(1)}</span>
+                        <span className="text-slate-400">({(match.project.client as any).total_reviews || 0})</span>
+                      </span>
+                    )}
                   </div>
                 </div>
 
