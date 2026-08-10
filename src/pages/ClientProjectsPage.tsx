@@ -195,7 +195,12 @@ export function ClientProjectsPage() {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setProjects((prev) => [payload.new as Project, ...prev]);
+            // Dedup by id — realtime can deliver the same INSERT twice;
+            // never render duplicate projects.
+            const incoming = payload.new as Project;
+            setProjects((prev) =>
+              prev.some((p) => p.id === incoming.id) ? prev : [incoming, ...prev]
+            );
           } else if (payload.eventType === 'UPDATE') {
             setProjects((prev) =>
               prev.map((p) => (p.id === payload.new.id ? (payload.new as Project) : p))

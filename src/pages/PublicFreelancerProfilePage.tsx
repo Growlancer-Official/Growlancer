@@ -244,7 +244,13 @@ export function PublicFreelancerProfilePage() {
         }, (payload) => {
           const record = payload.new as { active?: boolean; id?: string } | null;
           if (payload.eventType === 'INSERT' && record?.active) {
-            setServices(prev => [record as unknown as FreelancerService, ...prev]);
+            // Dedup by id — realtime can deliver the same INSERT twice;
+            // never render duplicate services on the public profile.
+            setServices(prev =>
+              prev.some(s => s.id === record.id)
+                ? prev
+                : [record as unknown as FreelancerService, ...prev]
+            );
           } else if (payload.eventType === 'UPDATE' && record) {
             if (record.active) {
               setServices(prev => {

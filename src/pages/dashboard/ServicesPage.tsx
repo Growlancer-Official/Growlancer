@@ -77,7 +77,14 @@ export function ServicesPage() {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setServices(prev => [payload.new as Tables<'services'>, ...prev]);
+            // Dedup by id — realtime can deliver the same INSERT twice (StrictMode
+            // double-mount creates two subscriptions); never render duplicates.
+            const incoming = payload.new as Tables<'services'>;
+            setServices(prev =>
+              prev.some(s => s.id === incoming.id)
+                ? prev
+                : [incoming, ...prev]
+            );
           } else if (payload.eventType === 'UPDATE') {
             setServices(prev =>
               prev.map(s => (s.id === payload.new.id ? payload.new as Tables<'services'> : s))

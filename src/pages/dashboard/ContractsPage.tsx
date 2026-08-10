@@ -270,7 +270,14 @@ export function ContractsPage() {
               .single()
               .then(({ data }) => {
                 if (data) {
-                  setContracts(prev => [data as unknown as ContractWithDetails, ...prev]);
+                  // Dedup by id — realtime can deliver the same INSERT twice;
+                  // never render duplicate contracts.
+                  const incoming = data as unknown as ContractWithDetails;
+                  setContracts(prev =>
+                    prev.some(c => c.id === incoming.id)
+                      ? prev
+                      : [incoming, ...prev]
+                  );
                   milestoneService.getEscrowBalance(payload.new.id).then((result) => {
                     if (result.success && result.balance) {
                       setEscrowBalances(prev => ({

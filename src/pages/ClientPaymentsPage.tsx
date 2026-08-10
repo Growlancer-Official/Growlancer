@@ -200,7 +200,12 @@ export function ClientPaymentsPage() {
         },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            setTransactions((prev) => [payload.new as Transaction, ...prev]);
+            // Dedup by id — realtime can deliver the same INSERT twice;
+            // never render duplicate transactions.
+            const incoming = payload.new as Transaction;
+            setTransactions((prev) =>
+              prev.some((t) => t.id === incoming.id) ? prev : [incoming, ...prev]
+            );
           } else if (payload.eventType === 'UPDATE') {
             setTransactions((prev) =>
               prev.map((t) => (t.id === payload.new.id ? (payload.new as Transaction) : t))

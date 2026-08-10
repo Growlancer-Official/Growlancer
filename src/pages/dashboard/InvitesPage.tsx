@@ -104,7 +104,13 @@ export function InvitesPage() {
                 const clientProf = inviteData.profiles as { deleted_at?: string | null } | null;
                 // Only add the invite if the client is not deleted
                 if (clientProf && !clientProf.deleted_at) {
-                  setInvites(prev => [inviteData, ...prev]);
+                  // Dedup by id — realtime can deliver the same INSERT twice;
+                  // never render duplicate invites.
+                  setInvites(prev =>
+                    prev.some(inv => inv.id === inviteData.id)
+                      ? prev
+                      : [inviteData, ...prev]
+                  );
                   setNewInviteAlert(`New invite from ${inviteData.profiles?.name}`);
                   setTimeout(() => setNewInviteAlert(null), 5000);
                 }

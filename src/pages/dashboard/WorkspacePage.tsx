@@ -300,7 +300,12 @@ export function WorkspacePage() {
         if (data) {
           const reversed = (data as unknown as Message[]).reverse();
           if (loadMore) {
-            setMessages(prev => [...reversed, ...prev]);
+            // Dedup by id — realtime may have already delivered some of these
+            // messages; never render duplicates when paging back.
+            setMessages(prev => {
+              const known = new Set(prev.map(m => m.id));
+              return [...reversed.filter(m => !known.has(m.id)), ...prev];
+            });
           } else {
             setMessages(reversed);
           }
@@ -339,7 +344,12 @@ export function WorkspacePage() {
             .single();
 
           if (newMessage) {
-            setMessages(prev => [...prev, newMessage as unknown as Message]);
+            // Dedup by id — realtime can deliver the same INSERT twice;
+            // never append the same message twice.
+            const msg = newMessage as unknown as Message;
+            setMessages(prev =>
+              prev.some(m => m.id === msg.id) ? prev : [...prev, msg]
+            );
           }
         }
       )

@@ -449,8 +449,14 @@ export function ProjectFeedPage() {
               
               if (data && (data as any).project) {
                 const matchData = data as unknown as MatchWithProject;
-                setMatches(prev => [matchData, ...prev]);
-                setFilteredMatches(prev => [matchData, ...prev]);
+                // Dedup by id — realtime can deliver the same INSERT twice;
+                // never render duplicate matches.
+                setMatches(prev =>
+                  prev.some(m => m.id === matchData.id) ? prev : [matchData, ...prev]
+                );
+                setFilteredMatches(prev =>
+                  prev.some(m => m.id === matchData.id) ? prev : [matchData, ...prev]
+                );
                 setNewMatchAlert(`New match: ${matchData.project.title}`);
                 setTimeout(() => setNewMatchAlert(null), 5000);
               }
