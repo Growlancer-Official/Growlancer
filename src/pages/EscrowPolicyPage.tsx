@@ -7,19 +7,19 @@ export function EscrowPolicyPage() {
       icon: Lock,
       title: '1. Secure Funding Lock',
       description: 'The client deposits the milestone amount into the virtual escrow pool. Freelancers receive instant dashboard alerts confirming that funds are secured before any building begins.',
-      color: 'from-emerald-500 to-emerald-650'
+      color: 'from-emerald-500 to-emerald-600'
     },
     {
       icon: Clock,
       title: '2. Synchronized Building',
       description: 'The freelancer works on the milestones using the live Synced Canvas. Progress is tracked via live task boards, making deliverables fully transparent.',
-      color: 'from-indigo-500 to-indigo-650'
+      color: 'from-indigo-500 to-indigo-600'
     },
     {
       icon: CheckCircle,
       title: '3. Verification & Release',
       description: 'Once deliverables are submitted, the client reviews them. Approving the milestone releases escrow funds directly into the freelancer\'s Wallet balance.',
-      color: 'from-pink-500 to-pink-650'
+      color: 'from-pink-500 to-pink-600'
     },
   ];
 
@@ -108,7 +108,7 @@ export function EscrowPolicyPage() {
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex h-11 px-5 items-center justify-center font-bold bg-indigo-850 text-white border border-indigo-500/30 rounded-xl hover:bg-indigo-900 transition-colors text-xs"
+                className="inline-flex h-11 px-5 items-center justify-center font-bold bg-indigo-800 text-white border border-indigo-500/30 rounded-xl hover:bg-indigo-900 transition-colors text-xs"
               >
                 Contact Resolution Desk
                 <ArrowRight className="w-4 h-4 ml-1.5" />

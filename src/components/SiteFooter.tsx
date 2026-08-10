@@ -61,7 +61,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <li><Link to="/philosophy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Philosophy</Link></li>
               <li><Link to="/contact" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Contact</Link></li>
               <li><Link to="/careers" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Careers</Link></li>
-              <li><Link to="/help-center" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Help Center</Link></li>
+              <li><Link to="/freelancers" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Find Freelancers</Link></li>
             </ul>
           </div>
 
@@ -84,6 +84,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <li><Link to="/terms" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Terms of Service</Link></li>
               <li><Link to="/privacy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Privacy Policy</Link></li>
               <li><Link to="/escrow-policy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Escrow Policy</Link></li>
+              <li><Link to="/refund-policy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Refund Policy</Link></li>
               <li><Link to="/cookies" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Cookie Policy</Link></li>
             </ul>
           </div>

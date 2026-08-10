@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { identityVerificationService, documentNeedsBack, KYC_MAX_ATTEMPTS, getRemainingKycAttempts, isKycBlocked, formatKycCooldown, getKycBlockedMsLeft, type VerificationUpload } from '../../lib/identityVerification';
 import { supabase } from '../../lib/supabase';
@@ -29,8 +30,14 @@ export function IdentityVerificationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Consent — user must explicitly agree before documents are submitted.
+  const [consentAgreed, setConsentAgreed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backFileInputRef = useRef<HTMLInputElement>(null);
+
+  // This page is shared by BOTH dashboards: /dashboard/identity-verification
+  // (freelancer) and /client/verification (client). Keep the copy role-aware.
+  const isClient = user?.role === 'client';
 
   // Form state — supports FRONT + BACK images per document type
   const [formData, setFormData] = useState<VerificationUpload>({
@@ -200,6 +207,11 @@ export function IdentityVerificationPage() {
     e.preventDefault();
     if (!user) return;
 
+    if (!consentAgreed) {
+      setError('Please agree to the consent terms before submitting your documents.');
+      return;
+    }
+
     if (!formData.document_file && !formData.document_url.trim()) {
       setError('Please upload a document or provide a document URL');
       return;
@@ -220,6 +232,7 @@ export function IdentityVerificationPage() {
       if (result.success && result.verification) {
         setVerification(result.verification);
         setShowForm(false);
+        setConsentAgreed(false);
         setFormData({
           document_type: 'passport',
           document_file: undefined,
@@ -265,7 +278,7 @@ export function IdentityVerificationPage() {
           <div>
             <h3 className="font-semibold text-amber-900 mb-1">Identity Verification Required</h3>
             <p className="text-sm text-amber-700">
-              Verify your identity to build trust with clients, unlock higher earning limits, and access premium features.
+              Verify your identity to build trust with {isClient ? 'freelancers' : 'clients'}, unlock higher earning limits, and access premium features.
               Your information is securely stored and never shared without your consent.
             </p>
           </div>
@@ -544,6 +557,26 @@ export function IdentityVerificationPage() {
             />
           </div>
 
+          {/* Consent */}
+          <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+            <input
+              type="checkbox"
+              checked={consentAgreed}
+              onChange={(e) => {
+                setConsentAgreed(e.target.checked);
+                if (e.target.checked) setError(null);
+              }}
+              className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
+            />
+            <span className="text-xs text-slate-600 leading-relaxed">
+              <span className="font-semibold text-slate-800">I agree</span> to share my identity documents with Growlancer for
+              verification purposes only. I understand my documents are stored securely, used solely to verify my
+              identity and build trust on the platform, and are never shared with third parties without my consent.
+              I may delete my account and data at any time.{' '}
+              <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>
+            </span>
+          </label>
+
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
@@ -554,7 +587,7 @@ export function IdentityVerificationPage() {
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
-              disabled={submitting}
+              disabled={submitting || !consentAgreed}
               className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? (
@@ -822,6 +855,24 @@ export function IdentityVerificationPage() {
               />
             </div>
 
+            {/* Consent */}
+            <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+              <input
+                type="checkbox"
+                checked={consentAgreed}
+                onChange={(e) => {
+                  setConsentAgreed(e.target.checked);
+                  if (e.target.checked) setError(null);
+                }}
+                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
+              />
+              <span className="text-xs text-slate-600 leading-relaxed">
+                <span className="font-semibold text-slate-800">I agree</span> to share my identity documents with Growlancer for
+                verification purposes only. My documents are stored securely and never shared without my consent.{' '}
+                <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>
+              </span>
+            </label>
+
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
@@ -832,7 +883,7 @@ export function IdentityVerificationPage() {
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="submit"
-                disabled={submitting}
+                disabled={submitting || !consentAgreed}
                 className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
@@ -849,7 +900,7 @@ export function IdentityVerificationPage() {
               </button>
               <button
                 type="button"
-                onClick={() => { setShowForm(false); setError(null); }}
+                onClick={() => { setShowForm(false); setError(null); setConsentAgreed(false); }}
                 className="px-4 py-2.5 text-slate-600 hover:text-slate-800 transition-colors font-medium"
               >
                 Cancel

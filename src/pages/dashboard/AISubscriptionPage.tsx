@@ -252,7 +252,7 @@ export function AISubscriptionPage() {
       <div className="mb-6">
         <h1 className="font-display text-3xl font-bold text-slate-900 mb-2 flex items-center gap-2.5">
           Freelancer Subscription
-          {isPro && <ProBadge size="md" showLabel />}
+          {isPro && <ProBadge size="md" />}
         </h1>
         <p className="text-slate-500">Choose the plan that fits your freelance career. Upgrade anytime.</p>
       </div>

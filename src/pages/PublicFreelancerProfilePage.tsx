@@ -456,7 +456,7 @@ export function PublicFreelancerProfilePage() {
               <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
                 {displayName}
                 {profile.verification_status === 'verified' && <VerifiedBadge size="sm" />}
-                {isProFreelancer && <ProBadge size="md" showLabel />}
+                {isProFreelancer && <ProBadge size="md" />}
               </h1>
               {profile.title && (
                 <p className="text-lg text-white/80 mt-1">{profile.title}</p>

@@ -459,7 +459,7 @@ export function OverviewPage() {
         <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5 flex-wrap">
           Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
           {user?.verificationStatus === 'verified' && <VerifiedBadge size="sm" />}
-          {isFreelancer && isPro && <ProBadge size="md" showLabel />}
+          {isFreelancer && isPro && <ProBadge size="md" />}
         </h1>
         <p className="text-slate-500 text-sm sm:text-base mt-1">
           {isFreelancer

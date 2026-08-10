@@ -14,14 +14,14 @@ export function SafetyPage() {
       icon: Lock,
       title: 'Asset Locker Freeze',
       description: 'Shared design files, code bundle deposits, and documents are securely versioned in our Asset Locker. In the event of a coordination dispute, files are automatically locked to prevent tampering.',
-      color: 'from-indigo-500 to-indigo-650',
+      color: 'from-indigo-500 to-indigo-600',
       badge: 'Assets'
     },
     {
       icon: UserCheck,
       title: 'Talent Verification API',
       description: 'We authenticate freelancer credentials via GitHub or PenTool API scopes where available. This is designed to help confirm that portfolio links represent verified work and to reduce unverified claims.',
-      color: 'from-pink-500 to-pink-650',
+      color: 'from-pink-500 to-pink-600',
       badge: 'Identity'
     },
     {
@@ -112,7 +112,7 @@ export function SafetyPage() {
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex h-12 px-6 items-center justify-center font-bold bg-emerald-850 hover:bg-emerald-900 text-white rounded-xl transition-colors border border-emerald-500/20 text-sm shrink-0"
+                className="inline-flex h-12 px-6 items-center justify-center font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl transition-colors border border-emerald-500/20 text-sm shrink-0"
               >
                 Ask AI Assistant
                 <ArrowRight className="w-4 h-4 ml-1" />

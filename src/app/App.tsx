@@ -40,6 +40,7 @@ import { StatusPage } from '@pages/StatusPage';
 import { TermsPage } from '@pages/TermsPage';
 import { PrivacyPage } from '@pages/PrivacyPage';
 import { EscrowPolicyPage } from '@pages/EscrowPolicyPage';
+import { RefundPolicyPage } from '@pages/RefundPolicyPage';
 import { CookiesPage } from '@pages/CookiesPage';
 
 // Auth-adjacent (stay lazy — only visited via email/auth links, not crawlable)
@@ -180,6 +181,7 @@ function App() {
                 <Route path="terms" element={<TermsPage />} />
                 <Route path="privacy" element={<PrivacyPage />} />
                 <Route path="escrow-policy" element={<EscrowPolicyPage />} />
+                <Route path="refund-policy" element={<RefundPolicyPage />} />
                 <Route path="cookies" element={<CookiesPage />} />
                 <Route path="projects/:projectId" element={<ProjectDetailsPage />} />
                 <Route path="payment/:outcome" element={<PaymentCallbackPage />} />

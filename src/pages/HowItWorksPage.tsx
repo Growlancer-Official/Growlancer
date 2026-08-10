@@ -16,7 +16,7 @@ export function HowItWorksPage() {
       icon: Cpu,
       title: '2. Get AI Matches',
       description: 'Our matching algorithm analyzes verified freelancer capabilities, rates, availability and recommends the top 3 instant fits.',
-      color: 'from-emerald-500 to-teal-650'
+      color: 'from-emerald-500 to-teal-600'
     },
     {
       icon: Lock,
@@ -28,7 +28,7 @@ export function HowItWorksPage() {
       icon: Handshake,
       title: '4. Synced Canvas Co-working',
       description: 'Use the shared Kanban board, focus-locked scratchpad, live code rooms, and instant messenger to align without switching apps.',
-      color: 'from-indigo-500 to-indigo-650'
+      color: 'from-indigo-500 to-indigo-600'
     }
   ];
 
@@ -37,13 +37,13 @@ export function HowItWorksPage() {
       icon: Briefcase,
       title: '1. Build Onboarding Profile',
       description: 'Fill in your skill tags, rate ranges, and link your verified GitHub or PenTool portfolios to feed our matching algorithm.',
-      color: 'from-purple-500 to-purple-650'
+      color: 'from-purple-500 to-purple-600'
     },
     {
       icon: Sparkles,
       title: '2. Receive Direct Invites',
       description: 'Skip typing long covers letters. Vetted matches place you directly onto client dashboards for immediate hire invites.',
-      color: 'from-emerald-500 to-teal-650'
+      color: 'from-emerald-500 to-teal-600'
     },
     {
       icon: Lock,
@@ -55,7 +55,7 @@ export function HowItWorksPage() {
       icon: Handshake,
       title: '4. Deliver & Instant Release',
       description: 'Complete milestones on the synced canvas. Payments are credited directly to your Wallet as soon as milestones approve.',
-      color: 'from-indigo-500 to-indigo-650'
+      color: 'from-indigo-500 to-indigo-600'
     }
   ];
 

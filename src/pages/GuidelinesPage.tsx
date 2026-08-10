@@ -64,7 +64,7 @@ export function GuidelinesPage() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/50 shadow-sm space-y-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 flex-shrink-0">
-                <CheckCircle className="w-6 h-6 text-emerald-650" />
+                <CheckCircle className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
                 <h3 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Do's</h3>
@@ -75,7 +75,7 @@ export function GuidelinesPage() {
             <ul className="space-y-4">
               {dos.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-650 shrink-0 mt-0.5" />
+                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <p className="text-xs text-slate-600 leading-relaxed font-semibold">{item}</p>
                 </li>
               ))}
@@ -86,7 +86,7 @@ export function GuidelinesPage() {
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/50 shadow-sm space-y-6">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center border border-red-100 flex-shrink-0">
-                <XCircle className="w-6 h-6 text-red-650" />
+                <XCircle className="w-6 h-6 text-red-600" />
               </div>
               <div>
                 <h3 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Don'ts</h3>
@@ -140,7 +140,7 @@ export function GuidelinesPage() {
               </Link>
               <Link
                 to="/help-center"
-                className="inline-flex h-12 px-6 items-center justify-center font-bold bg-emerald-850 hover:bg-emerald-900 text-white rounded-xl transition-colors border border-emerald-500/20 text-sm shrink-0"
+                className="inline-flex h-12 px-6 items-center justify-center font-bold bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl transition-colors border border-emerald-500/20 text-sm shrink-0"
               >
                 Browse Guidelines FAQs
                 <ArrowRight className="w-4 h-4 ml-1" />
