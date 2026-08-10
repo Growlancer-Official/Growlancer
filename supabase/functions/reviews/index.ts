@@ -273,11 +273,35 @@ Deno.serve(async (req) => {
 
     if (method === 'PATCH') {
       // Update review
-      const { review_id, ...updateData } = await req.json()
+      const { review_id, ...requestData } = await req.json()
 
       if (!review_id) {
         return new Response(
           JSON.stringify({ error: 'Review ID is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // Whitelist updatable fields — NEVER allow changing the parties or
+      // contract (would break the reputation trigger's reviewee lookup).
+      const allowedFields = [
+        'rating',
+        'communication_rating',
+        'quality_rating',
+        'timeliness_rating',
+        'professionalism_rating',
+        'comment',
+        'would_hire_again',
+      ]
+      const updateData: Record<string, unknown> = {}
+      for (const key of allowedFields) {
+        if (requestData[key] !== undefined) {
+          updateData[key] = requestData[key]
+        }
+      }
+      if (Object.keys(updateData).length === 0) {
+        return new Response(
+          JSON.stringify({ error: 'No updatable fields provided' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }

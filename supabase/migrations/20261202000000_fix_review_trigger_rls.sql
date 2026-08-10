@@ -163,3 +163,13 @@ BEGIN
   RETURN v_reputation_score;
 END;
 $function$;
+
+-- Defense in depth: these functions exist ONLY for the trigger chain. Block
+-- direct invocation by anon/authenticated (otherwise they would be callable
+-- as SECURITY DEFINER via PostgREST RPC, letting any user force reputation
+-- recomputation). Trigger functions are invoked by the trigger mechanism —
+-- EXECUTE privilege is checked at CREATE TRIGGER time, so revoking it here
+-- does NOT break review submission.
+REVOKE EXECUTE ON FUNCTION public.calculate_weighted_rating(uuid) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.update_reputation_score(uuid) FROM anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trigger_update_reputation() FROM anon, authenticated;
