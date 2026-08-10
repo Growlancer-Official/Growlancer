@@ -1,7 +1,53 @@
 // Identity Verification Service
 // Pure data-access layer for identity_verifications table with secure file uploads
 import { supabase, realtimeChannels } from './supabase';
-export type IdentityVerification = Record<string, any> & { id: string; user_id: string; status: string; document_type?: string; document_url?: string; created_at?: string; };
+export type IdentityVerification = Record<string, any> & {
+  id: string;
+  user_id: string;
+  status: string;
+  document_type?: string;
+  document_url?: string;
+  created_at?: string;
+  rejection_count?: number;
+  blocked_until?: string | null;
+};
+
+/** Max KYC resubmit attempts before the 24-hour cooldown kicks in. */
+export const KYC_MAX_ATTEMPTS = 3;
+
+/**
+ * How many resubmit attempts the user has left (0 when blocked/cooldown active).
+ */
+export function getRemainingKycAttempts(v: IdentityVerification | null | undefined): number {
+  if (!v) return KYC_MAX_ATTEMPTS;
+  const count = Number(v.rejection_count) || 0;
+  return Math.max(0, KYC_MAX_ATTEMPTS - count);
+}
+
+/**
+ * True while the user is locked out (3 failed attempts → 24-hour block).
+ */
+export function isKycBlocked(v: IdentityVerification | null | undefined): boolean {
+  if (!v?.blocked_until) return false;
+  return new Date(v.blocked_until).getTime() > Date.now();
+}
+
+/**
+ * Milliseconds remaining in the 24-hour cooldown (0 when not blocked / expired).
+ */
+export function getKycBlockedMsLeft(v: IdentityVerification | null | undefined): number {
+  if (!isKycBlocked(v)) return 0;
+  return Math.max(0, new Date(v!.blocked_until as string).getTime() - Date.now());
+}
+
+/** Human-readable cooldown label, e.g. "23h 45m" — live-updates from the page. */
+export function formatKycCooldown(msLeft: number): string {
+  if (msLeft <= 0) return '0m';
+  const totalMin = Math.ceil(msLeft / 60000);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
+}
 
 export interface VerificationUpload {
   document_type: 'passport' | 'drivers_license' | 'national_id' | 'aadhaar' | 'pan' | 'other';
@@ -114,7 +160,7 @@ export const identityVerificationService = {
    */
   async getStatus(userId: string): Promise<{
     verification: IdentityVerification | null;
-    status: 'none' | 'pending' | 'verified' | 'rejected';
+    status: 'none' | 'pending' | 'verified' | 'rejected' | 'blocked';
   }> {
     try {
       const { data, error } = await supabase
@@ -130,9 +176,14 @@ export const identityVerificationService = {
       if (!data) return { verification: null, status: 'none' };
 
       const dataAny = data as any;
+      // Blocked = latest attempt rejected AND cooldown still active
+      let resolvedStatus: 'pending' | 'verified' | 'rejected' | 'blocked' = dataAny.status as 'pending' | 'verified' | 'rejected';
+      if (resolvedStatus === 'rejected' && isKycBlocked(dataAny as IdentityVerification)) {
+        resolvedStatus = 'blocked';
+      }
       return {
         verification: dataAny as IdentityVerification,
-        status: dataAny.status as 'pending' | 'verified' | 'rejected',
+        status: resolvedStatus,
       };
     } catch (error) {
       console.error('Error fetching verification status:', error);
@@ -195,6 +246,8 @@ export const identityVerificationService = {
           status: 'pending',
           verified_at: null,
           rejection_reason: null,
+          rejection_count: 0,
+          blocked_until: null,
         })
         .select()
         .single();

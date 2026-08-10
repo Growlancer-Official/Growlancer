@@ -42,7 +42,7 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
     return false;
   }
 
-  const fromRaw = Deno.env.get('EMAIL_FROM') ?? 'Growlancer <no-reply@growlancer.vercel.app>';
+  const fromRaw = Deno.env.get('EMAIL_FROM') ?? 'Growlancer <noreplygrowlancer@gmail.com>';
   const replyTo = opts.replyTo ?? Deno.env.get('EMAIL_REPLY_TO');
 
   // Parse "Name <email>" into Brevo's { name, email } shape.

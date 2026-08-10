@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { identityVerificationService, documentNeedsBack, type VerificationUpload } from '../../lib/identityVerification';
+import { identityVerificationService, documentNeedsBack, KYC_MAX_ATTEMPTS, getRemainingKycAttempts, isKycBlocked, formatKycCooldown, getKycBlockedMsLeft, type VerificationUpload } from '../../lib/identityVerification';
 import { supabase } from '../../lib/supabase';
 import type { IdentityVerification } from '../../lib/identityVerification';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
@@ -22,7 +22,8 @@ type PageStatus = 'loading' | 'idle';
 export function IdentityVerificationPage() {
   const { user } = useAuth();
   const [pageStatus, setPageStatus] = useState<PageStatus>('loading');
-  const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected'>('none');
+  const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected' | 'blocked'>('none');
+  const [blockedMsLeft, setBlockedMsLeft] = useState(0);
   const [verification, setVerification] = useState<IdentityVerification | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -44,6 +45,16 @@ export function IdentityVerificationPage() {
   // Per-side drag state so the two upload zones highlight independently
   const [dragSide, setDragSide] = useState<'front' | 'back' | null>(null);
 
+  // 🚫 Blocked-state live countdown — state lives at the top level (hooks
+  // must not be called inside render functions). Synced from blockedMsLeft
+  // and ticks down every second; auto-refreshes when the cooldown expires.
+  const [blockedDisplayMs, setBlockedDisplayMs] = useState(0);
+
+  // Sync the display countdown whenever the source blockedMsLeft changes.
+  useEffect(() => {
+    setBlockedDisplayMs(blockedMsLeft);
+  }, [blockedMsLeft]);
+
   const fetchStatus = useCallback(async () => {
     if (!user) return;
     try {
@@ -51,6 +62,9 @@ export function IdentityVerificationPage() {
       const result = await identityVerificationService.getStatus(user.id);
       setVerification(result.verification);
       setVerificationStatus(result.status);
+      if (result.status === 'blocked' && result.verification) {
+        setBlockedMsLeft(getKycBlockedMsLeft(result.verification));
+      }
     } catch {
       console.error('Failed to fetch verification status');
       setError('Failed to load verification status. Please refresh the page.');
@@ -63,6 +77,20 @@ export function IdentityVerificationPage() {
     fetchStatus();
   }, [fetchStatus]);
 
+  // Tick the countdown once per second while the user is blocked.
+  useEffect(() => {
+    if (verificationStatus !== 'blocked' || blockedDisplayMs <= 0) return;
+    const t = setInterval(() => {
+      const left = Math.max(0, blockedDisplayMs - 1000);
+      setBlockedDisplayMs(left);
+      if (left <= 0) {
+        clearInterval(t);
+        fetchStatus(); // Auto-refresh when cooldown expires
+      }
+    }, 1000);
+    return () => clearInterval(t);
+  }, [verificationStatus, blockedDisplayMs, fetchStatus]);
+
   // Realtime subscription for status changes — pending → verified flip arrives
   // live (≈10 min after submit). On the verified flip we also send the approval
   // email once (fire-and-forget) so the user gets notified in-app + by email.
@@ -71,8 +99,12 @@ export function IdentityVerificationPage() {
     if (!user) return;
 
     const channel = identityVerificationService.subscribe(user.id, (updated) => {
+      const isBlocked = isKycBlocked(updated);
       setVerification(updated);
-      setVerificationStatus(updated.status as 'pending' | 'verified' | 'rejected');
+      setVerificationStatus(isBlocked ? 'blocked' : (updated.status as 'pending' | 'verified' | 'rejected'));
+      if (isBlocked) {
+        setBlockedMsLeft(getKycBlockedMsLeft(updated));
+      }
 
       // 🔔 Email once when the backend auto-verifies (idempotent per row).
       if (
@@ -214,6 +246,7 @@ export function IdentityVerificationPage() {
   };
 
   const handleResubmit = () => {
+    if (isKycBlocked(verification)) return;
     setShowForm(true);
     setVerificationStatus('none');
     setVerification(null);
@@ -644,159 +677,224 @@ export function IdentityVerificationPage() {
     </div>
   );
 
-  const renderRejectedState = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
-        <div className="p-3 bg-red-100 rounded-2xl w-fit mx-auto mb-4">
-          <XCircle className="w-8 h-8 text-red-600" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Rejected</h2>
-        <p className="text-slate-500 mb-6">
-          Your identity verification was not approved. Please review the reason below and resubmit.
-        </p>
-        {verification?.rejection_reason && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-6">
-            <div className="flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason</p>
-                <p className="text-sm text-red-700">{verification.rejection_reason}</p>
+  const renderRejectedState = () => {
+    const attemptsLeft = getRemainingKycAttempts(verification);
+    // After the 24h cooldown has EXPIRED (blocked_until in the past), the user
+    // can resubmit again — a new submission starts a fresh attempt cycle.
+    const blockExpired =
+      !!verification?.blocked_until && !isKycBlocked(verification);
+    const canResubmit = attemptsLeft > 0 || blockExpired;
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+          <div className="p-3 bg-red-100 rounded-2xl w-fit mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Rejected</h2>
+          <p className="text-slate-500 mb-4">
+            Your identity verification was not approved. Please review the reason below and resubmit.
+          </p>
+
+          {/* Attempts remaining badge */}
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+              attemptsLeft <= 1 ? 'bg-red-100 text-red-700' :
+              attemptsLeft <= 2 ? 'bg-amber-100 text-amber-700' :
+              'bg-slate-100 text-slate-700'
+            }`}>
+              {attemptsLeft} of {KYC_MAX_ATTEMPTS} attempts remaining
+            </span>
+          </div>
+
+          {verification?.rejection_reason && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-6">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason</p>
+                  <p className="text-sm text-red-700">{verification.rejection_reason}</p>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-        <button
-          onClick={handleResubmit}
-          className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
-        >
-          <RefreshCw className="w-4 h-4" />
-          Resubmit Verification
-        </button>
-      </div>
+          )}
 
-      {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
-          <h3 className="text-lg font-semibold text-slate-900">Resubmit Your Documents</h3>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Document Type</label>
-            <select
-              value={formData.document_type}
-              onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+          {canResubmit ? (
+            <button
+              onClick={handleResubmit}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
             >
-              <option value="aadhaar">Aadhaar Card (India)</option>
-              <option value="pan">PAN Card (India)</option>
-              <option value="passport">Passport</option>
-              <option value="drivers_license">Driver's License</option>
-              <option value="national_id">National ID Card</option>
-              <option value="other">Other Government ID</option>
-            </select>
-          </div>
+              <RefreshCw className="w-4 h-4" />
+              {blockExpired ? 'Submit New Verification' : `Resubmit Verification (${attemptsLeft} left)`}
+            </button>
+          ) : (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+              <p className="text-sm font-medium text-amber-800">
+                No attempts remaining. You will be able to try again after the cooldown period.
+              </p>
+            </div>
+          )}
+        </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Full Name (as on document)</label>
-            <input
-              type="text"
-              value={formData.full_name || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-          </div>
+        {showForm && canResubmit && (
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+            <h3 className="text-lg font-semibold text-slate-900">Resubmit Your Documents</h3>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
-            <input
-              type="date"
-              value={formData.date_of_birth || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, date_of_birth: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Document Image URL (Front side)</label>
-            <input
-              type="url"
-              value={formData.document_url}
-              onChange={(e) => setFormData((prev) => ({ ...prev, document_url: e.target.value }))}
-              placeholder="https://example.com/my-document.jpg"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              required
-            />
-          </div>
-
-          {documentNeedsBack(formData.document_type) && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Document Image URL (Back side)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Document Type</label>
+              <select
+                value={formData.document_type}
+                onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+              >
+                <option value="aadhaar">Aadhaar Card (India)</option>
+                <option value="pan">PAN Card (India)</option>
+                <option value="passport">Passport</option>
+                <option value="drivers_license">Driver's License</option>
+                <option value="national_id">National ID Card</option>
+                <option value="other">Other Government ID</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Full Name (as on document)</label>
+              <input
+                type="text"
+                value={formData.full_name || ''}
+                onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
+              <input
+                type="date"
+                value={formData.date_of_birth || ''}
+                onChange={(e) => setFormData((prev) => ({ ...prev, date_of_birth: e.target.value }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Document Image URL (Front side)</label>
               <input
                 type="url"
-                value={formData.document_url_back}
-                onChange={(e) => setFormData((prev) => ({ ...prev, document_url_back: e.target.value }))}
-                placeholder="https://example.com/my-document-back.jpg"
+                value={formData.document_url}
+                onChange={(e) => setFormData((prev) => ({ ...prev, document_url: e.target.value }))}
+                placeholder="https://example.com/my-document.jpg"
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                 required
               />
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Document Number (optional)</label>
-            <input
-              type="text"
-              value={formData.document_number || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, document_number: e.target.value }))}
-              placeholder="e.g., Passport number or ID number"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-          </div>
+            {documentNeedsBack(formData.document_type) && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Document Image URL (Back side)</label>
+                <input
+                  type="url"
+                  value={formData.document_url_back}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, document_url_back: e.target.value }))}
+                  placeholder="https://example.com/my-document-back.jpg"
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                  required
+                />
+              </div>
+            )}
 
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Expiry Date (optional)</label>
-            <input
-              type="date"
-              value={formData.expiry_date || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, expiry_date: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-          </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Document Number (optional)</label>
+              <input
+                type="text"
+                value={formData.document_number || ''}
+                onChange={(e) => setFormData((prev) => ({ ...prev, document_number: e.target.value }))}
+                placeholder="e.g., Passport number or ID number"
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              />
             </div>
-          )}
 
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  Submit Verification
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setShowForm(false); setError(null); }}
-              className="px-4 py-2.5 text-slate-600 hover:text-slate-800 transition-colors font-medium"
-            >
-              Cancel
-            </button>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Expiry Date (optional)</label>
+              <input
+                type="date"
+                value={formData.expiry_date || ''}
+                onChange={(e) => setFormData((prev) => ({ ...prev, expiry_date: e.target.value }))}
+                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              />
+            </div>
+
+            {error && (
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    Submit Verification
+                  </>
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowForm(false); setError(null); }}
+                className="px-4 py-2.5 text-slate-600 hover:text-slate-800 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    );
+  };
+
+  // 🚫 Blocked state — 24-hour cooldown with live countdown
+  const renderBlockedState = () => (
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+        <div className="p-3 bg-red-100 rounded-2xl w-fit mx-auto mb-4">
+          <Clock className="w-8 h-8 text-red-600" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Temporarily Blocked</h2>
+        <p className="text-slate-500 mb-6">
+          You have used all {KYC_MAX_ATTEMPTS} verification attempts. To protect your account security,
+          you can try again after the cooldown period ends.
+        </p>
+
+        {/* Live countdown */}
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+          <p className="text-sm font-medium text-amber-800 mb-2">Cooldown Remaining</p>
+          <p className="text-3xl font-bold text-amber-900 font-mono">
+            {formatKycCooldown(blockedDisplayMs)}
+          </p>
+        </div>
+
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
+          <div className="flex items-start gap-2">
+            <Shield className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-blue-800 mb-1">Why was I blocked?</p>
+              <p className="text-xs text-blue-700 leading-relaxed">
+                Multiple verification attempts with document numbers that don't match the expected format.
+                This is a security measure to prevent misuse. After the cooldown, you can submit a new
+                verification with the correct document details.
+              </p>
+            </div>
           </div>
-        </form>
-      )}
-    </div>
+        </div>
+      </div>
   );
 
   // Loading state
@@ -847,6 +945,7 @@ export function IdentityVerificationPage() {
       {verificationStatus === 'pending' && renderPendingState()}
       {verificationStatus === 'verified' && renderVerifiedState()}
       {verificationStatus === 'rejected' && renderRejectedState()}
+      {verificationStatus === 'blocked' && renderBlockedState()}
     </div>
   );
 }
