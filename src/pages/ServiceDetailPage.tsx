@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Shield, ShoppingCart, Star, Tag,  } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Shield, ShoppingCart, Star, Tag } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
+import { VerifiedBadge } from '../components/VerifiedBadge';
+import { ProBadge } from '../components/ProBadge';
+import { razorpayService } from '../lib/razorpay';
+import { useAuth } from '../context/AuthContext';
 
 interface ServiceData {
   id: string;
@@ -25,6 +29,8 @@ interface ServiceData {
     id: string;
     name: string | null;
     avatar: string | null;
+    is_pro?: boolean | null;
+    verification_status?: string | null;
     professional?: {
       title: string | null;
       hourly_rate: number | null;
@@ -38,6 +44,8 @@ interface ServiceData {
 
 export function ServiceDetailPage() {
   const { serviceId } = useParams<{ serviceId: string }>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [service, setService] = useState<ServiceData | null>(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
@@ -58,6 +66,8 @@ export function ServiceDetailPage() {
               id,
               name,
               avatar,
+              is_pro,
+              verification_status,
               professional:freelancer_profiles(title, hourly_rate, location, skills)
             )
           `)
@@ -114,10 +124,65 @@ export function ServiceDetailPage() {
     ? service.price_package[selectedPackage]?.price || service.price
     : service.price;
 
-  const handleAddToCart = () => {
+  // Real checkout — creates a Razorpay service_purchase order (server-side
+  // amount recomputed from the services table, never trusts the client) and
+  // opens the Razorpay checkout modal. On success the payment is verified
+  // via signature and the user is confirmed.
+  const handleContinueToOrder = async () => {
+    if (!user) {
+      toast.info('Login required', 'Please log in to place an order.');
+      navigate('/login');
+      return;
+    }
+    if (!service) return;
+
     setAddingToCart(true);
-    // In a real implementation, this would add to cart/checkout
-    setTimeout(() => setAddingToCart(false), 1000);
+    try {
+      const { order, razorpay_key_id, amount, currency } = await razorpayService.createOrder({
+        order_type: 'service_purchase',
+        amount: currentPrice,
+        currency: 'INR',
+        description: `Service: ${service.title}`,
+        metadata: { service_id: service.id, service_title: service.title },
+      });
+
+      await razorpayService.openCheckout({
+        key: razorpay_key_id,
+        amount: Math.round(amount * 100), // paise
+        currency,
+        name: 'Growlancer',
+        description: `Service: ${service.title}`,
+        order_id: order.razorpay_order_id,
+        config_id: import.meta.env.VITE_RAZORPAY_CONFIG_ID || undefined,
+        prefill: {
+          name: user.name || '',
+          email: user.email || '',
+        },
+        theme: { color: '#059669' },
+        method: {
+          card: true,
+          upi: true,
+          netbanking: true,
+          wallet: true,
+          emi: true,
+        },
+        handler: async (response) => {
+          await razorpayService.verifyPayment(response);
+          toast.success(
+            'Order Placed!',
+            `Payment for "${service.title}" received. The freelancer will start your order.`
+          );
+          setAddingToCart(false);
+        },
+        modal: {
+          ondismiss: () => setAddingToCart(false),
+        },
+      });
+    } catch (err) {
+      console.error('Order failed:', err);
+      toast.error('Order Failed', err instanceof Error ? err.message : 'Could not start payment.');
+      setAddingToCart(false);
+    }
   };
 
   return (
@@ -228,7 +293,7 @@ export function ServiceDetailPage() {
           {/* Sidebar */}
           <div className="space-y-6">
             {/* Price Card */}
-            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm sticky top-24">
+            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
               <div className="text-center">
                 <p className="text-3xl font-bold text-slate-900">{formatCurrency(currentPrice)}</p>
                 <p className="text-sm text-slate-500 mt-1">
@@ -237,16 +302,16 @@ export function ServiceDetailPage() {
               </div>
 
               <button
-                onClick={handleAddToCart}
+                onClick={handleContinueToOrder}
                 disabled={addingToCart}
-                className="w-full mt-5 flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="w-full mt-5 flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold shadow-lg shadow-emerald-600/25"
               >
                 {addingToCart ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <ShoppingCart className="w-4 h-4" />
                 )}
-                {addingToCart ? 'Adding...' : 'Continue to Order'}
+                {addingToCart ? 'Processing...' : 'Continue to Order'}
               </button>
 
               <div className="mt-4 space-y-2 text-sm text-slate-500">
@@ -275,8 +340,12 @@ export function ServiceDetailPage() {
                       (service.freelancer.name || 'U')[0]
                     )}
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-900">{service.freelancer.name || 'Freelancer'}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                      {service.freelancer.name || 'Freelancer'}
+                      {service.freelancer.verification_status === 'verified' && <VerifiedBadge size="xs" />}
+                      {service.freelancer.is_pro && <ProBadge size="xs" />}
+                    </p>
                     {service.freelancer.professional?.title && (
                       <p className="text-xs text-slate-500">{service.freelancer.professional.title}</p>
                     )}
@@ -299,10 +368,10 @@ export function ServiceDetailPage() {
                   ))}
                 </div>
 
-                <div className="mt-3 flex items-center gap-2 text-xs text-slate-400">
-                  <MessageSquare className="w-3 h-3" />
+                <div className="mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all shadow-md shadow-emerald-600/20">
+                  <MessageSquare className="w-4 h-4" />
                   Contact Me
-                  <ChevronRight className="w-3 h-3 ml-auto" />
+                  <ChevronRight className="w-4 h-4" />
                 </div>
               </Link>
             )}
