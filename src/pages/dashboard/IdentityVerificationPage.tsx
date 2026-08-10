@@ -229,7 +229,95 @@ export function IdentityVerificationPage() {
     setError(null);
 
     try {
-      const result = await identityVerificationService.submit(user.id, formData);
+      // ── STEP 1: Upload the document image(s) ──
+      // Need BOTH: signed URL (for AI vision check) + storage path (for DB)
+      let imageSignedUrl = formData.document_url;
+      let imageStoragePath = formData.document_url;
+      let backSignedUrl = formData.document_url_back || null;
+      let backStoragePath = formData.document_url_back || null;
+
+      if (formData.document_file) {
+        const uploadResult = await identityVerificationService.uploadVerificationDocument(formData.document_file, user.id);
+        if (!uploadResult.success) {
+          setError(uploadResult.error || 'Failed to upload document');
+          return;
+        }
+        imageSignedUrl = uploadResult.url || '';
+        imageStoragePath = uploadResult.path || uploadResult.url || '';
+      }
+
+      if (formData.document_file_back) {
+        const uploadBack = await identityVerificationService.uploadVerificationDocument(formData.document_file_back, user.id);
+        if (!uploadBack.success) {
+          setError(uploadBack.error || 'Failed to upload document back side');
+          return;
+        }
+        backSignedUrl = uploadBack.url || null;
+        backStoragePath = uploadBack.path || uploadBack.url || null;
+      }
+
+      if (!imageSignedUrl) {
+        setError('Could not upload document. Please try again.');
+        return;
+      }
+
+      // ── STEP 2: AI Vision Verification — check clarity + extract + match ──
+      setError(null);
+      const aiResult = await identityVerificationService.verifyDocumentWithAI(
+        imageSignedUrl,
+        backSignedUrl,
+        {
+          full_name: formData.full_name || '',
+          date_of_birth: formData.date_of_birth || '',
+          document_number: formData.document_number || '',
+          document_type: formData.document_type,
+        }
+      );
+
+      if (!aiResult.success) {
+        setError(aiResult.error || 'AI verification failed. Please try again.');
+        return;
+      }
+
+      // ── Handle AI verification result ──
+      if (aiResult.verification_result === 'unclear_image') {
+        // Image quality issue — ask user to upload a clearer image
+        const clarityMsg = aiResult.clarity_issue
+          ? `The uploaded image is not clear enough: ${aiResult.clarity_issue}. Please upload a clearer image of your document.`
+          : 'The uploaded image is not clear enough. Please take a clearer photo and upload again.';
+        setError(clarityMsg);
+        return;
+      }
+
+      if (aiResult.verification_result === 'rejected') {
+        // Details don't match — show specific mismatches
+        const mismatches: string[] = [];
+        if (aiResult.name_match === false) mismatches.push(`Name (extracted: ${aiResult.extracted_name || 'N/A'})`);
+        if (aiResult.dob_match === false) mismatches.push(`Date of Birth (extracted: ${aiResult.extracted_dob || 'N/A'})`);
+        if (aiResult.number_match === false) mismatches.push(`Document Number (extracted: ${aiResult.extracted_number || 'N/A'})`);
+        const mismatchDetail = mismatches.length > 0
+          ? ` Mismatch in: ${mismatches.join(', ')}.`
+          : ' The details you entered do not match the document.';
+        setError(`Document verification failed.${mismatchDetail} Please verify your details and try again.`);
+        return;
+      }
+
+      // ── STEP 3: AI verified — insert as pre-verified with storage PATH (not signed URL) ──
+      const result = await identityVerificationService.submit(user.id, {
+        ...formData,
+        document_url: imageStoragePath,
+        document_url_back: backStoragePath || '',
+        document_file: undefined,
+        document_file_back: undefined,
+      }, {
+        verifiedByAI: true,
+        aiResult: {
+          name_match: aiResult.name_match || false,
+          dob_match: aiResult.dob_match || false,
+          number_match: aiResult.number_match || false,
+        },
+      });
+
       if (result.success && result.verification) {
         setVerification(result.verification);
         setShowForm(false);
@@ -245,8 +333,7 @@ export function IdentityVerificationPage() {
           full_name: '',
           date_of_birth: '',
         });
-        // The backend auto-verifies valid documents instantly — fetch the real
-        // status (the realtime subscription also flips it live).
+        // Re-fetch status to update the UI immediately
         await fetchStatus();
       } else {
         setError(result.error || 'Failed to submit verification');
