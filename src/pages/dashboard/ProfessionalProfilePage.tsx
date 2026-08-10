@@ -8,7 +8,8 @@ import { notificationPreferencesService } from '../../lib/notificationPreference
 import { withdrawalService } from '../../lib/withdrawal';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { ReauthDialog, isReauthValid, markReauthVerified } from '../../components/ReauthDialog';
+import { ReauthDialog } from '../../components/ReauthDialog';
+import { isReauthValid, markReauthVerified } from '../../lib/reauth';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
 import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, RefreshCw, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';

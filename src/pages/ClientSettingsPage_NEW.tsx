@@ -6,7 +6,8 @@ import { notificationPreferencesService } from '../lib/notificationPreferences';
 import { avatarPackService } from '../lib/avatarPack';
 import { formatCurrency } from '../utils/date';
 import { inviteService, type UserInvitation } from '../lib/inviteService';
-import { ReauthDialog, isReauthValid, markReauthVerified } from '../components/ReauthDialog';
+import { ReauthDialog } from '../components/ReauthDialog';
+import { isReauthValid, markReauthVerified } from '../lib/reauth';
 import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 import { IndustrySelect } from '../components/IndustrySelect';
 import {

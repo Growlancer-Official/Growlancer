@@ -3,58 +3,7 @@ import { Lock, Mail, Loader2, ShieldCheck, AlertCircle, X, KeyRound } from 'luci
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-// ═══════════════════════════════════════════════════════════════
-// Reauthentication — verify identity before sensitive actions
-// (change email, change password, delete account, withdrawals, etc.)
-//
-// Flow: sensitive action → ask for password OR send OTP → verify →
-// grant a short-lived 10-minute window → run the requested action.
-// ═══════════════════════════════════════════════════════════════
-
-const REAUTH_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
-const REAUTH_KEY = 'growlancer_reauth_verified_at';
-const OTP_ATTEMPT_LIMIT = 5;
-const OTP_RESEND_COOLDOWN_S = 30;
-
-/** True if a reauthentication is still valid (within the 10-minute window). */
-export function isReauthValid(): boolean {
-  try {
-    const stored = Number(localStorage.getItem(REAUTH_KEY) || 0);
-    return stored > 0 && Date.now() - stored < REAUTH_WINDOW_MS;
-  } catch {
-    return false;
-  }
-}
-
-/** Mark identity as verified (used after a successful reauth). */
-export function markReauthVerified(): void {
-  try {
-    localStorage.setItem(REAUTH_KEY, String(Date.now()));
-  } catch {
-    // ignore
-  }
-}
-
-/** Clear the reauth window (e.g. after sign-out). */
-export function clearReauth(): void {
-  try {
-    localStorage.removeItem(REAUTH_KEY);
-  } catch {
-    // ignore
-  }
-}
-
-/** Time (ms) remaining in the current reauth window, or 0. */
-export function getReauthRemainingMs(): number {
-  try {
-    const stored = Number(localStorage.getItem(REAUTH_KEY) || 0);
-    if (!stored) return 0;
-    const remaining = stored + REAUTH_WINDOW_MS - Date.now();
-    return remaining > 0 ? remaining : 0;
-  } catch {
-    return 0;
-  }
-}
+import { isReauthValid, markReauthVerified, getReauthRemainingMs, OTP_ATTEMPT_LIMIT, OTP_RESEND_COOLDOWN_S } from '../lib/reauth';
 
 type Mode = 'password' | 'otp';
 type Phase = 'form' | 'verifying' | 'success' | 'error';
