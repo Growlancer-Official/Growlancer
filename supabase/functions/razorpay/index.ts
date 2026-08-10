@@ -569,6 +569,30 @@ serve(async req => {
             .eq('id', updatedOrder.subscription_id);
         }
 
+        // Service purchase: bump the service's live order count so the
+        // freelancer's dashboard reflects real demand. Idempotent — this branch
+        // only runs on the FIRST capture (guarded by the status='captured'
+        // check above), so a retried verify can never double-count an order.
+        if (updatedOrder.order_type === 'service_purchase') {
+          const serviceId = updatedOrder.metadata?.service_id || data?.service_id;
+          if (serviceId) {
+            const { error: ordErr } = await supabaseAdmin.rpc('increment_service_orders', {
+              p_service_id: serviceId,
+            });
+            if (ordErr) {
+              console.error('[razorpay] increment_service_orders failed:', ordErr.message);
+            } else {
+              await notify(
+                supabaseAdmin, updatedOrder.user_id, 'payment',
+                'Order placed',
+                `Your payment for the service was successful. The freelancer has been notified.`,
+                '/services',
+                { service_id: serviceId }
+              );
+            }
+          }
+        }
+
         // Wallet top-up: credit the user's wallet with the paid amount. This
         // is idempotent — the order can only reach this branch once (guarded
         // by the status='captured' check above), so a retried verify can never

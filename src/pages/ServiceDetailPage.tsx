@@ -97,6 +97,29 @@ export function ServiceDetailPage() {
     fetchService();
   }, [serviceId, toast]);
 
+  // Record a service view (once per session, never for the owner) so the
+  // freelancer's dashboard shows a real-time view count.
+  useEffect(() => {
+    if (!serviceId || !service) return;
+    // Skip counting the owner's own visits
+    if (user?.id && service.freelancer_id === user.id) return;
+
+    const sessionKey = `gw_service_view:${serviceId}`;
+    if (sessionStorage.getItem(sessionKey)) return;
+
+    const record = async () => {
+      try {
+        await (supabase.rpc as any)('record_service_view', {
+          p_service_id: serviceId,
+        });
+        sessionStorage.setItem(sessionKey, '1');
+      } catch (error) {
+        console.error('Error recording service view:', error);
+      }
+    };
+    void record();
+  }, [serviceId, service, user?.id]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-cream">

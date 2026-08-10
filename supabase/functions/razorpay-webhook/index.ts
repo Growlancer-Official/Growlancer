@@ -336,6 +336,23 @@ serve(async (req) => {
           .eq('id', dbOrder.subscription_id);
       }
 
+      // Service purchase: bump the service's live order count so the
+      // freelancer's dashboard reflects real demand. Idempotent — this block
+      // only runs on the FIRST capture of the order (the already_processed
+      // branch above returns early on any duplicate), so a replay or a later
+      // client verify can never double-count an order.
+      if (dbOrder.order_type === 'service_purchase') {
+        const serviceId = dbOrder.metadata?.service_id;
+        if (serviceId) {
+          const { error: ordErr } = await supabaseAdmin.rpc('increment_service_orders', {
+            p_service_id: serviceId,
+          });
+          if (ordErr) {
+            console.error('[razorpay-webhook] increment_service_orders failed:', ordErr.message);
+          }
+        }
+      }
+
       // Wallet top-ups: credit the user's wallet. Idempotent — this block only
       // runs on the FIRST capture of the order (the already_processed branch
       // above returns early on any duplicate), so a replay or a later client
