@@ -818,57 +818,6 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        {/* Platform Policy — protect both sides */}
-        <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm">
-          <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-5 py-4 flex items-center gap-3">
-            <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-              <Shield className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="font-bold text-white text-sm">Growlancer Payment & Safety Policy</p>
-              <p className="text-[11px] text-blue-200">Your earnings and work are always protected</p>
-            </div>
-          </div>
-          <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2">
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                <Shield className="w-3.5 h-3.5 text-emerald-600" />
-              </div>
-              <p className="text-xs text-slate-700 leading-relaxed">
-                <span className="font-bold text-slate-900">Escrow Protection.</span> All payments are held in
-                Growlancer Escrow — funds release to your wallet only after the client approves your complete work.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
-              </div>
-              <p className="text-xs text-slate-700 leading-relaxed">
-                <span className="font-bold text-slate-900">Never work outside Growlancer.</span> If a client asks you
-                to work or pay outside the platform, refuse and report them immediately.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
-                <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
-              </div>
-              <p className="text-xs text-slate-700 leading-relaxed">
-                <span className="font-bold text-slate-900">Fraud = Ban.</span> Clients caught paying outside the
-                platform or attempting fraud can be <span className="font-bold text-red-600">suspended or permanently banned</span>.
-              </p>
-            </div>
-            <div className="flex items-start gap-2.5">
-              <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-              </div>
-              <p className="text-xs text-slate-700 leading-relaxed">
-                <span className="font-bold text-slate-900">Disputes.</span> Have an issue? Raise a dispute or
-                refund request from this workspace — our support team resolves it fairly, in real time.
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Dynamic Nav Tabs */}
         <div className="flex items-center bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/50 self-start lg:self-center">
           <button
@@ -947,6 +896,77 @@ export function WorkspacePage() {
             ))}
           </select>
         )}
+      </div>
+
+      {/* Platform Policy — protect both sides (full-width, client-consistent design) */}
+      <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm">
+        <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-5 py-4 flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
+            <p className="text-[11px] text-blue-200">Your earnings and work are always protected — everything stays on the platform</p>
+          </div>
+        </div>
+        <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+              <Shield className="w-3.5 h-3.5 text-emerald-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Escrow Protection.</span> All payments are held in
+              Growlancer Escrow — funds release to your wallet only after the client approves your complete work.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Never work outside Growlancer.</span> If a client asks you
+              to work or pay outside the platform, refuse and report them immediately.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Fraud = Ban.</span> Clients caught paying outside the
+              platform or attempting fraud can be{' '}
+              <span className="font-bold text-red-600">suspended or permanently banned</span>.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Disputes.</span> Have an issue? Raise a dispute or
+              refund request from this workspace — our support team resolves it fairly, in real time.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Client offers outside payment? Report them.</span>
+              Freelancers who accept off-platform payments also risk{' '}
+              <span className="font-bold text-red-600">suspension or permanent ban</span>. Report it from this workspace.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+              <FileText className="w-3.5 h-3.5 text-slate-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Legal.</span> All payments, refunds and disputes are governed by
+              Growlancer's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
+            </p>
+          </div>
+        </div>
       </div>
 
       {selectedContract && (
