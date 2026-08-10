@@ -24,21 +24,20 @@ export function ReferralsPage() {
   const [page, setPage] = useState(1);
   const pageSize = 5;
   const referralCode = user?.referralCode || '…';
-  const { referralStats, referrals, leaders, loading, referralLink } = useReferralsData(
+  const { referralStats, referrals, leaders, loading } = useReferralsData(
     user?.id,
     user?.referralCode,
     user?.role
   );
 
   const handleCopy = () => {
-    const text = referralLink || referralCode;
+    // 📋 Copy ONLY the referral code — never the full link
+    const text = referralCode;
     if (!text || text === '…') return;
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
-
-  const userEntry = leaders.find(l => l.isYou);
 
   const validRefs = referralStats?.valid_referrals || 0;
   
@@ -403,18 +402,8 @@ export function ReferralsPage() {
               </div>
             ))}
 
-            {/* User's position — drawn from DB via useReferralsData */}
-            {userEntry && (
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-orange-50 ring-1 ring-orange-200 mt-4">
-                <div className="flex items-center gap-3">
-                  <span className="h-6 w-6 rounded-full bg-orange-500 text-white text-[10px] font-bold flex items-center justify-center">
-                    {userEntry.rank}
-                  </span>
-                  <span className="text-sm font-bold">You</span>
-                </div>
-                <span className="text-xs font-bold text-orange-600">{userEntry.refs} Ref</span>
-              </div>
-            )}
+            {/* The user's own row is already part of `leaders` (shown with their
+                real name + isYou highlight) — no duplicate "You" card. */}
           </div>
 
           <button className="w-full mt-8 py-3 bg-slate-50 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all">

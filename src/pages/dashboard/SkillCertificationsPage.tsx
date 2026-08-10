@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { Award, BarChart3, BrainCircuit, CheckCircle2, Code, Lock, Palette, Search, Server, Sparkles, TrendingUp,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
 import { realtimeChannels } from '../../lib/supabase';
 import { skillCertificationService, CERTIFICATION_LEVELS, type SkillCertification, type SkillTest } from '../../lib/skillCertifications';
 import { safeLower } from '../../utils/date';
@@ -19,31 +18,15 @@ export function SkillCertificationsPage() {
   const fetchData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    // Fetch user's actual skills from their freelancer profile
-    const { data: fp } = await supabase
-      .from('freelancer_profiles')
-      .select('skills')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    const userSkills: string[] = (fp as { skills?: string[] } | null)?.skills || [];
-
+    // Show the FULL catalog of skill assessments — every skill has its test
+    // available in real time (already-earned ones appear locked/passed).
     const [certs, availableTests] = await Promise.all([
       skillCertificationService.getUserCertifications(user.id),
       skillCertificationService.getAvailableTests(user.id),
     ]);
 
-    // Filter tests to only show those matching user's actual skills
-    const filteredTests = userSkills.length > 0
-      ? availableTests.filter(t =>
-          userSkills.some((s: unknown) =>
-            safeLower(t.skill).includes(safeLower(s)) || safeLower(s).includes(safeLower(t.skill))
-          )
-        )
-      : availableTests;
-
     setCertifications(certs);
-    setTests(filteredTests);
+    setTests(availableTests);
     setLoading(false);
   }, [user]);
 
@@ -127,10 +110,10 @@ export function SkillCertificationsPage() {
         </button>
       </div>
 
-      {/* User Skills Badge */}
+      {/* All assessments note */}
       <div className="flex items-center gap-2 text-sm text-slate-500">
         <Sparkles className="w-4 h-4 text-emerald-500" />
-        <span>Showing tests for your profile skills. <Link to="/dashboard/profile" className="text-emerald-600 hover:underline font-medium">Update your skills</Link> to see more relevant tests.</span>
+        <span>All skill assessments are available — pick any to earn a verified badge, in real time.</span>
       </div>
 
       {/* Search */}

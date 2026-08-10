@@ -21,7 +21,8 @@ export function ClientReferralsPage() {
   const myRank = leaders.find((l) => l.isYou)?.rank;
 
   const handleCopy = () => {
-    const text = referralLink || referralCode;
+    // 📋 Copy ONLY the referral code — never the full link
+    const text = referralCode;
     if (!text || text === '…') return;
     navigator.clipboard.writeText(text);
     setCopied(true);

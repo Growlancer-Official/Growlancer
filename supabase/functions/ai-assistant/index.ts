@@ -4,7 +4,7 @@ import { AI_API_KEY, callAI } from '../_shared/ai.ts';
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// ─── Bytez AI — OpenAI-compatible endpoint ───────────────────────────────────
+// ─── OpenRouter AI — OpenAI-compatible endpoint ─────────────────────────────
 // Base URL + key are read from secrets ONLY — never exposed to the frontend.
 if (!AI_API_KEY) {
   console.error('AI_API_KEY is not configured in environment variables');

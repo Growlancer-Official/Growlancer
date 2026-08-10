@@ -160,7 +160,12 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
       onClose();
       setIsLoading(false);
       if (result.needsVerification) {
-        // 📧 Real email verification is ON — guide user to their inbox
+        // 📧 Real email verification is ON — guide user to their inbox.
+        // Keep the credentials in sessionStorage (same tab, cleared after use)
+        // so the "I've verified, continue" button can auto-sign-in even when
+        // the confirmation happened in a new tab (no local session here).
+        sessionStorage.setItem('gw_signup_email', normalizedEmail);
+        if (password) sessionStorage.setItem('gw_signup_password', password);
         setTimeout(() => {
           navigate(`/auth/verify-email?email=${encodeURIComponent(normalizedEmail)}`, { replace: true });
         }, 100);

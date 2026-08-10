@@ -1,7 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { AI_API_KEY, AI_MODEL, AI_BASE_URL } from '../_shared/ai.ts';
 
-// ─── Bytez AI — OpenAI-compatible endpoint ───────────────────────────────────
+// ─── OpenRouter AI — OpenAI-compatible endpoint ─────────────────────────────
 // Base URL + key from secrets ONLY — never exposed to the frontend.
 if (!AI_API_KEY) {
   console.error('AI_API_KEY environment variable is not set');

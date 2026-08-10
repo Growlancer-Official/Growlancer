@@ -68,11 +68,15 @@ interface PortfolioItem {
 interface ReviewData {
   id: string;
   reviewer: { name: string | null; avatar: string | null };
+  // The reviews table stores the overall score in `rating` (there is NO
+  // `overall_rating` column) — reading the wrong field made every star render
+  // white (NaN). Sub-ratings are separate columns.
+  rating: number;
+  overall_rating?: number;
   communication_rating: number;
   quality_rating: number;
   timeliness_rating: number;
   professionalism_rating: number;
-  overall_rating: number;
   review_text: string | null;
   created_at: string;
 }
@@ -403,18 +407,22 @@ export function PublicFreelancerProfilePage() {
       ? (profile.availability ? 'Available' : 'Unavailable')
       : (profile.availability ? String(profile.availability) : null);
 
-  const RatingStars = ({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) => (
-    <div className={`flex gap-0.5 ${size === 'md' ? 'text-lg' : 'text-sm'}`}>
-      {[1, 2, 3, 4, 5].map((star) => (
-        <Star
-          key={star}
-          className={`${
-            star <= Math.round(rating) ? 'text-amber-400 fill-amber-400' : 'text-slate-200'
-          } ${size === 'md' ? 'w-5 h-5' : 'w-4 h-4'}`}
-        />
-      ))}
-    </div>
-  );
+  const RatingStars = ({ rating, size = 'sm' }: { rating: number; size?: 'sm' | 'md' }) => {
+    // Defensive — a missing/NaN rating must not blank the stars to white
+    const safeRating = Number(rating) || 0;
+    return (
+      <div className={`flex gap-0.5 ${size === 'md' ? 'text-lg' : 'text-sm'}`}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`${
+              star <= Math.round(safeRating) ? 'text-amber-400 fill-amber-400' : 'text-slate-300'
+            } ${size === 'md' ? 'w-5 h-5' : 'w-4 h-4'}`}
+          />
+        ))}
+      </div>
+    );
+  };
 
   const heroStats = [
     { icon: Package, label: 'Services', value: String(services.length) },
@@ -714,7 +722,7 @@ export function PublicFreelancerProfilePage() {
                             {new Date(review.created_at).toLocaleDateString()}
                           </span>
                         </div>
-                        <RatingStars rating={review.overall_rating} size="sm" />
+                        <RatingStars rating={review.rating ?? review.overall_rating ?? 0} size="sm" />
                         {review.review_text && (
                           <p className="text-sm text-slate-600 mt-2">{review.review_text}</p>
                         )}

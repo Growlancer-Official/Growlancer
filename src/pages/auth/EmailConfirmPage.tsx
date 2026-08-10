@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { fetchUserProfile, createUserProfile } from '../../lib/services/authService';
-import { redirectAfterAuth } from '../../lib/authAction';
 
 type ConfirmStatus = 'processing' | 'success' | 'error';
 
@@ -92,33 +90,12 @@ export function EmailConfirmPage() {
         if (cancelled) return;
 
         setStatus('success');
-        setMessage('Email verified! Setting up your account...');
-
-        // ── 4. Fetch profile and route to the correct destination ──
-        let profile = null;
-        for (let i = 0; i < 5; i++) {
-          profile = session.user.id ? await fetchUserProfile(session.user.id) : null;
-          if (profile) break;
-          await new Promise(r => setTimeout(r, 600));
-        }
-        // If no profile yet, create one from the confirmed auth user metadata
-        // (email signup already created it via AuthContext — this is a safety net).
-        if (!profile && session.user.id) {
-          const name =
-            session.user.user_metadata?.name ||
-            session.user.email?.split('@')[0] ||
-            'User';
-          const metaRole = session.user.user_metadata?.role;
-          const role = metaRole === 'client' ? 'client' : 'freelancer';
-          profile = await createUserProfile(session.user.id, session.user.email || '', name, role);
-        }
-
-        if (cancelled) return;
-
-        // Full-page redirect (shared logic) — avoids ProtectedRoute bounce-back race.
-        setTimeout(() => {
-          if (!cancelled) redirectAfterAuth(profile);
-        }, 1800);
+        // ✅ Confirm tab shows a plain success screen ONLY — no redirect to the
+        // homepage/onboarding. The user continues in the ORIGINAL tab via the
+        // "I've verified, continue" button (or the real-time listener).
+        setMessage(
+          'Your email has been verified. You can now close this window and continue in the original tab.'
+        );
       } catch (err) {
         if (!cancelled) {
           setStatus('error');
@@ -171,9 +148,25 @@ export function EmailConfirmPage() {
                 </div>
               </div>
               <h2 className="font-display text-xl font-bold text-slate-900 mb-2">
-                Email confirmed! 🎉
+                Email verified ✓
               </h2>
-              <p className="text-sm text-slate-500">{message}</p>
+              <p className="text-sm text-slate-500 mb-6">{message}</p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <button
+                  onClick={() => {
+                    try { window.close(); } catch { /* ignore */ }
+                  }}
+                  className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+                >
+                  Close this window
+                </button>
+                <button
+                  onClick={() => navigate('/?modal=login', { replace: true })}
+                  className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-200 hover:bg-slate-50 transition-colors"
+                >
+                  Go to login
+                </button>
+              </div>
             </div>
           )}
 

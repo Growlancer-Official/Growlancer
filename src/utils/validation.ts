@@ -43,7 +43,10 @@ export function validateEmail(email: string): {
   }
 
   if (isDisposableEmail(email)) {
-    return { isValid: false, error: 'Please use a permanent email address. Disposable emails are not allowed.' };
+    return {
+      isValid: false,
+      error: 'This format is not acceptable. Disposable / temporary email addresses are not allowed — please use a permanent email address.',
+    };
   }
 
   return { isValid: true };

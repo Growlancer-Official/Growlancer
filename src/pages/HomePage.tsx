@@ -1,13 +1,13 @@
-import React, { useState, startTransition } from 'react';
+import React, { useState, startTransition, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../routes';
 import { 
   Activity, AlertCircle, ArrowRight, BadgeCheck, BarChart3, 
   BriefcaseBusiness, CalendarCheck, CheckCircle2, CheckSquare, 
   ClipboardCheck, ClipboardList, Clock3, Cpu, Eye, Flag, 
-  FolderKanban, GitCompare, Handshake, Layers,
+  FolderKanban, GitCompare, Handshake, IndianRupee, Layers,
   Loader2, Lock, LockKeyhole, MessageSquareText, MessagesSquare,
-  Receipt, ScanText, ShieldCheck, Sparkles, Target, Timer,
+  Package, Receipt, ScanText, ShieldCheck, Sparkles, Target, Timer,
   Users, Wallet, Wand2, X, Zap,
 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
@@ -645,6 +645,187 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
 }
 
 // ═══════════════════════════════════════════════════════════════
+// Live Services Section (Browse Services)
+// Shows freshly published freelancer services in real time — freelancer
+// name, price and how long ago the service was listed.
+// ═══════════════════════════════════════════════════════════════
+interface LiveService {
+  id: string;
+  title: string;
+  category: string | null;
+  image_url: string | null;
+  price: number;
+  created_at: string;
+  freelancer?: { name: string | null; avatar: string | null } | null;
+}
+
+function timeAgo(iso: string): string {
+  const s = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (s < 60) return 'just now';
+  const m = Math.floor(s / 60);
+  if (m < 60) return `${m} min ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h} hr${h > 1 ? 's' : ''} ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d} day${d > 1 ? 's' : ''} ago`;
+  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function LiveServicesSection() {
+  const [services, setServices] = useState<LiveService[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        const { data } = await supabase
+          .from('services')
+          .select('id, title, category, image_url, price, created_at, freelancer:profiles!services_freelancer_id_fkey(name, avatar)')
+          .eq('active', true)
+          .order('created_at', { ascending: false })
+          .limit(8);
+        if (mounted && data) setServices(data as unknown as LiveService[]);
+      } catch {
+        // keep last data
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    void load();
+
+    // 🔴 Real-time — a new service appears on the homepage the moment it is
+    // published; deletions drop off instantly too.
+    const channel = supabase
+      .channel('homepage-live-services')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'services', filter: 'active=eq.true' },
+        () => void load()
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'services' },
+        () => void load()
+      )
+      .subscribe();
+
+    return () => {
+      mounted = false;
+      void channel.unsubscribe();
+    };
+  }, []);
+
+  return (
+    <section className={SECTION_PADDING}>
+      <div className={CONTAINER}>
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-4 mb-8 lg:mb-10">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              Browse Services
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
+              Fresh services, listed live
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
+              Freelancers publish their offerings in real time — see who is live right now.
+            </p>
+          </div>
+          <Link
+            to={ROUTES.SERVICES}
+            className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
+          >
+            Browse All Services
+            <ArrowRight className="ml-2 w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className={`${CARD_CLASS} animate-pulse`}>
+                <div className="aspect-video bg-slate-100" />
+                <div className="p-4 space-y-2">
+                  <div className="h-3.5 bg-slate-100 rounded w-3/4" />
+                  <div className="h-3 bg-slate-100 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : services.length === 0 ? (
+          <div className={`${CARD_CLASS} p-10 text-center`}>
+            <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <p className="text-slate-500 text-sm">No services published yet — be the first to list one!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+            {services.map((service) => (
+              <Link
+                key={service.id}
+                to={`/services/${service.id}`}
+                className={`${CARD_CLASS} group overflow-hidden hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200`}
+              >
+                {service.image_url ? (
+                  <div className="aspect-video bg-slate-50 overflow-hidden">
+                    {/* object-contain + padding → the FULL uploaded image shows,
+                        never cropped/cut (matches the "full size" requirement) */}
+                    <img
+                      src={service.image_url}
+                      alt={service.title}
+                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-video bg-gradient-to-br from-emerald-50 to-slate-50 flex items-center justify-center">
+                    <Package className="w-8 h-8 text-emerald-200" />
+                  </div>
+                )}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                      {service.title}
+                    </h3>
+                    <span className="flex items-center gap-0.5 font-bold text-emerald-700 text-sm shrink-0">
+                      <IndianRupee className="w-3.5 h-3.5" />
+                      {Number(service.price).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                    <span className="flex items-center gap-1.5 min-w-0">
+                      {service.freelancer?.avatar ? (
+                        <img src={service.freelancer.avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
+                      ) : (
+                        <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 text-[10px] font-bold flex items-center justify-center">
+                          {(service.freelancer?.name || 'F')[0]}
+                        </span>
+                      )}
+                      <span className="text-xs text-slate-500 font-medium truncate">
+                        {service.freelancer?.name || 'Freelancer'}
+                      </span>
+                    </span>
+                    <span className="flex items-center gap-1 text-[11px] text-slate-400 shrink-0">
+                      <Clock3 className="w-3 h-3" />
+                      {timeAgo(service.created_at)}
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // Features Section
 // ═══════════════════════════════════════════════════════════════
 function FeaturesSection() {
@@ -1012,6 +1193,7 @@ export function HomePage() {
       <FreelancerSection onOpenSignup={handleOpenSignup} />
       <ClientSection onOpenSignup={handleOpenSignup} />
       <CategoriesSection onOpenSignup={handleOpenSignup} />
+      <LiveServicesSection />
       <FeaturesSection />
       <PricingSection />
       <TrustSection />

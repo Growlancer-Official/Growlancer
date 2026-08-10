@@ -71,28 +71,31 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
       if (statsData) setReferralStats(statsData);
       setReferrals(referralsData || []);
 
-      const mapped: ReferralLeader[] = (board || [])
-        .filter((row) => {
-          const profile = row.profiles as { name?: string; avatar?: string | null; deleted_at?: string | null; role?: string } | null;
-          // Skip orphaned rows (hard-deleted profile — row removed), soft-deleted users (deleted_at set),
-          // and profiles without a valid name (orphaned from auth deletion)
-          if (!profile) return false;
-          if (profile.deleted_at) return false;
-          if (!profile.name || profile.name.trim() === '') return false;
-          // If a role filter is provided, only show users with the same role
-          if (userRole && profile.role && profile.role !== userRole) return false;
-          return true;
-        })
-        .map((row, index) => {
-          const profile = row.profiles as { name?: string; avatar?: string | null; role?: string } | null;
-          return {
-            rank: index + 1,
-            name: profile?.name || 'Member',
-            refs: row.total_referrals ?? 0,
-            avatar: profile?.avatar ?? null,
-            isYou: row.user_id === userId,
-          };
-        });
+      // The user's OWN row is always kept — even when profile.role differs
+      // from the current sidebar role — so their name shows once (no duplicate
+      // "You" entry). Other rows must have a live profile with a name, and
+      // match the role filter when one is active.
+      const visibleRows = (board || []).filter((row) => {
+        const profile = row.profiles as { name?: string; avatar?: string | null; deleted_at?: string | null; role?: string } | null;
+        if (row.user_id === userId) return true; // always keep yourself
+        if (!profile) return false;
+        if (profile.deleted_at) return false;
+        if (!profile.name || profile.name.trim() === '') return false;
+        // If a role filter is provided, only show users with the same role
+        if (userRole && profile.role && profile.role !== userRole) return false;
+        return true;
+      });
+
+      const mapped: ReferralLeader[] = visibleRows.map((row, index) => {
+        const profile = row.profiles as { name?: string; avatar?: string | null; role?: string } | null;
+        return {
+          rank: index + 1,
+          name: profile?.name || 'Member',
+          refs: row.total_referrals ?? 0,
+          avatar: profile?.avatar ?? null,
+          isYou: row.user_id === userId,
+        };
+      });
 
       if (!mapped.some((l) => l.isYou) && statsData) {
         const yourRefs = statsData.total_referrals ?? referralsData?.length ?? 0;

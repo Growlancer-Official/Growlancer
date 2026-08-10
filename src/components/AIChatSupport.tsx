@@ -89,16 +89,14 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         // corrupted history — fall through to greeting
       }
     }
-    // Real-time greeting with the user's name based on their local time of day
-    const hour = new Date().getHours();
-    const part =
-      hour < 5 ? 'Good night' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : hour < 21 ? 'Good evening' : 'Good night';
+    // ONE friendly welcome message on first visit — no time-of-day greetings
     const name = user.name || user.email?.split('@')[0] || 'there';
+    const assistantLabel = chatMode === 'support' ? 'AI support assistant' : 'AI assistant';
     setMessages([
       {
         id: `greeting-${Date.now()}`,
         role: 'assistant',
-        content: `${part}, ${name}! 👋 I'm your Growlancer AI assistant. I'm online and ready — ask me anything, in any language.`,
+        content: `Hi ${name}! 👋 I'm your Growlancer ${assistantLabel}. How can I help you today?`,
         timestamp: new Date(),
       },
     ]);

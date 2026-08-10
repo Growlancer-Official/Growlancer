@@ -5,7 +5,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { fetchUserProfile } from '../../lib/services/authService';
+import { fetchUserProfile, createUserProfile } from '../../lib/services/authService';
 import { redirectAfterAuth } from '../../lib/authAction';
 
 export function VerifyEmailPage() {
@@ -56,9 +56,73 @@ export function VerifyEmailPage() {
         profile = await fetchUserProfile(userId).catch(() => null);
       }
     }
+    if (!profile) {
+      // Safety net — if the profile was never created (e.g. signup hiccup),
+      // create a minimal one from the confirmed auth user metadata so the
+      // user is never stuck at an empty redirect.
+      const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
+      const u = userData?.user;
+      if (u?.id) {
+        const name = u.user_metadata?.name || u.email?.split('@')[0] || 'User';
+        const role = u.user_metadata?.role === 'client' ? 'client' : 'freelancer';
+        profile = await createUserProfile(u.id, u.email || '', name, role).catch(() => null);
+      }
+    }
     redirectAfterAuth(profile, isOAuthMode);
     return true;
   }, [isOAuthMode]);
+
+  /**
+   * Server-side truth check: is this email confirmed in auth.users?
+   * Needed because the confirmation may have happened in ANOTHER tab/browser —
+   * this tab has no local session, so getUser() would wrongly report
+   * "email not verified". When confirmed, auto-signs in with the credentials
+   * stored at signup time (same device/tab) so the user continues seamlessly.
+   */
+  const checkServerConfirmed = useCallback(async (emailToCheck: string): Promise<boolean> => {
+    try {
+      const confirmed = await (supabase.rpc as any)('is_email_confirmed', {
+        p_email: emailToCheck,
+      });
+      if (confirmed !== true) return false;
+
+      // Auto sign-in with the credentials saved by the signup form (this device/tab)
+      const storedEmail = sessionStorage.getItem('gw_signup_email');
+      const storedPassword = sessionStorage.getItem('gw_signup_password');
+      if (storedEmail && storedPassword && storedEmail.toLowerCase() === emailToCheck.toLowerCase()) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: storedEmail,
+          password: storedPassword,
+        });
+        if (!signInError && signInData.session?.user?.email_confirmed_at) {
+          sessionStorage.removeItem('gw_signup_email');
+          sessionStorage.removeItem('gw_signup_password');
+          return true;
+        }
+      }
+
+      // Verified, but no way to auto-login on this device → guide to login once
+      if (!redirectedRef.current) {
+        redirectedRef.current = true;
+        setResendMessage('Your email is verified! Please log in to continue.');
+        setTimeout(() => {
+          navigate('/?modal=login&email=' + encodeURIComponent(emailToCheck), { replace: true });
+        }, 1400);
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }, [navigate]);
+
+  // 🔒 Clear the temporarily-stored signup credentials when this page unmounts
+  // (they are only meant to bridge the confirm-in-new-tab gap).
+  useEffect(() => {
+    return () => {
+      sessionStorage.removeItem('gw_signup_email');
+      sessionStorage.removeItem('gw_signup_password');
+    };
+  }, []);
 
   // Auto-detect email provider
   const getEmailProviderUrl = (e: string): string => {
@@ -114,6 +178,12 @@ export function VerifyEmailPage() {
         if (cancelled) return;
         if (data?.user?.email_confirmed_at) {
           void confirmAndGo();
+        } else {
+          // No local session — confirmation may have happened in another tab/browser
+          const serverConfirmed = await checkServerConfirmed(email);
+          if (!cancelled && serverConfirmed) {
+            void confirmAndGo();
+          }
         }
       } catch {
         // Silently retry
@@ -144,6 +214,14 @@ export function VerifyEmailPage() {
           if (data?.user?.email_confirmed_at) {
             clearInterval(interval);
             void confirmAndGo();
+          } else {
+            // cross-tab / cross-browser fallback — ask the database directly
+            checkServerConfirmed(email).then((ok) => {
+              if (!cancelled && ok) {
+                clearInterval(interval);
+                void confirmAndGo();
+              }
+            }).catch(() => {});
           }
         }).catch(() => {});
       }
@@ -154,7 +232,7 @@ export function VerifyEmailPage() {
       authListener?.subscription.unsubscribe();
       clearInterval(interval);
     };
-  }, [email, goToAppDestination]);
+  }, [email, goToAppDestination, checkServerConfirmed]);
 
   const handleResendEmail = async () => {
     setResending(true);
@@ -187,14 +265,29 @@ export function VerifyEmailPage() {
 
   const handleManualCheck = async () => {
     setVerifying(true);
+    setResendMessage(null);
     try {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user?.email_confirmed_at) {
+      // 1) Local session (same-tab confirm or cross-tab sync already delivered)
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData.session?.user?.email_confirmed_at) {
         setVerified(true);
         setTimeout(() => {
           void goToAppDestination();
         }, 900);
-      } else {
+        return;
+      }
+      // 2) Server-side truth — the email may be verified even though THIS tab
+      //    has no session (confirmation happened in a new tab/browser).
+      const serverConfirmed = await checkServerConfirmed(email);
+      if (serverConfirmed) {
+        // checkServerConfirmed auto-signed-in when credentials were available
+        setVerified(true);
+        setTimeout(() => {
+          void goToAppDestination();
+        }, 900);
+        return;
+      }
+      if (!resendMessage) {
         setResendMessage('Email not yet verified. Check your inbox and click the verification link.');
       }
     } catch {
