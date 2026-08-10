@@ -1,10 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { GEMINI_API_KEY, GEMINI_MODEL, GEMINI_BASE_URL } from '../_shared/gemini.ts';
+import { AI_API_KEY, AI_MODEL, AI_BASE_URL } from '../_shared/ai.ts';
 
-// ─── Gemini (Google AI) — OpenAI-compatible endpoint ────────────────────────
+// ─── Bytez AI — OpenAI-compatible endpoint ───────────────────────────────────
 // Base URL + key from secrets ONLY — never exposed to the frontend.
-if (!GEMINI_API_KEY) {
-  console.error('GEMINI_API_KEY environment variable is not set');
+if (!AI_API_KEY) {
+  console.error('AI_API_KEY environment variable is not set');
 }
 
 // Rate limiting — every call costs a credit on the gateway, so unthrottled
@@ -82,8 +82,8 @@ const PRIORITY_RESPONSES: Record<string, string> = {
 
 async function generateAIResponse(ticket: TicketData): Promise<string | null> {
   // Fail fast if the gateway key is not configured
-  if (!GEMINI_API_KEY) {
-    console.error('GEMINI_API_KEY is not set. Cannot generate AI response.');
+  if (!AI_API_KEY) {
+    console.error('AI_API_KEY is not set. Cannot generate AI response.');
     return null;
   }
 
@@ -115,14 +115,14 @@ ${categoryGuidance}`;
   const userMessage = `Subject: ${ticket.subject}\n\nDescription: ${ticket.description}\n\nPriority: ${ticket.priority}\n\n${priorityResponse}`;
 
   try {
-    const response = await fetch(`${GEMINI_BASE_URL}/chat/completions`, {
+    const response = await fetch(`${AI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${GEMINI_API_KEY}`,
+        Authorization: `Bearer ${AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: GEMINI_MODEL,
+        model: AI_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userMessage },
@@ -135,7 +135,7 @@ ${categoryGuidance}`;
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('Gemini API error:', data?.error || data);
+      console.error('AI API error:', data?.error || data);
       return null;
     }
 

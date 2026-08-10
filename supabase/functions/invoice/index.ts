@@ -96,18 +96,26 @@ Deno.serve(async (req) => {
 <title>Invoice ${esc(invoice.invoice_number)} — Growlancer</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
-  body { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #f1f5f9; color: #0f172a; padding: 40px 16px; }
-  .sheet { max-width: 760px; margin: 0 auto; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(15,23,42,.08); }
-  .head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 40px 40px 24px; border-bottom: 1px solid #e2e8f0; }
-  .brand { font-size: 22px; font-weight: 800; letter-spacing: -.5px; }
-  .brand span { color: #059669; }
-  .inv-no { font-size: 13px; color: #64748b; margin-top: 4px; }
-  .body { padding: 32px 40px; }
-  .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+  @page { size: A4; margin: 0; }
+  body { font-family: -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background: #eef2f7; color: #0f172a; padding: 32px 12px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sheet { max-width: 780px; margin: 0 auto; background: #fff; border-radius: 14px; overflow: hidden; box-shadow: 0 10px 36px rgba(15,23,42,.10); }
+  /* Brand header band */
+  .head { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 36px 40px 22px; color: #fff; }
+  .head::before { content: ''; position: absolute; inset: 0; background: linear-gradient(120deg, #0f172a 0%, #14532d 60%, #059669 100%); }
+  .head > * { position: relative; z-index: 1; }
+  .brand { font-size: 24px; font-weight: 800; letter-spacing: -.5px; }
+  .brand span { color: #34d399; }
+  .brand-tag { font-size: 11px; color: #a7f3d0; opacity: .85; margin-top: 2px; letter-spacing: .02em; }
+  .inv-block { text-align: right; }
+  .inv-label { font-size: 10px; text-transform: uppercase; letter-spacing: .14em; color: #a7f3d0; }
+  .inv-no { font-size: 18px; font-weight: 800; margin-top: 2px; }
+  .inv-date { font-size: 11px; color: #d1fae5; opacity: .9; margin-top: 4px; }
+  .body { padding: 28px 40px 32px; }
+  .meta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 28px; }
   .meta h4 { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; margin-bottom: 6px; }
   .meta p { font-size: 14px; font-weight: 600; color: #0f172a; }
   .meta small { display: block; font-size: 12px; color: #64748b; font-weight: 400; margin-top: 2px; }
-  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 22px; }
   th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; }
   td { padding: 12px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
   td.num, th.num { text-align: right; }
@@ -115,9 +123,12 @@ Deno.serve(async (req) => {
   .totals .row { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 14px; color: #475569; }
   .totals .row.total { border-top: 2px solid #059669; margin-top: 8px; padding-top: 14px; font-weight: 800; font-size: 17px; color: #0f172a; }
   .totals .row.fee { color: #059669; font-weight: 600; }
-  .foot { padding: 20px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .foot { padding: 18px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0; font-size: 11px; color: #64748b; }
+  .foot .row1 { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .foot .row2 { margin-top: 8px; padding-top: 10px; border-top: 1px dashed #e2e8f0; text-align: center; font-size: 10px; color: #94a3b8; }
   .print-btn { position: fixed; bottom: 24px; right: 24px; background: #059669; color: #fff; border: 0; padding: 12px 22px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: pointer; box-shadow: 0 8px 20px rgba(5,150,105,.35); }
-  @media print { body { background: #fff; padding: 0; } .sheet { box-shadow: none; border-radius: 0; } .print-btn { display: none; } }
+  .print-btn:hover { background: #047857; }
+  @media print { body { background: #fff; padding: 0; } .sheet { box-shadow: none; border-radius: 0; max-width: 100%; } .print-btn { display: none; } .head { padding: 28px 34px 18px; } .body { padding: 24px 34px 26px; } .foot { padding: 14px 34px; } }
 </style>
 </head>
 <body>
@@ -126,9 +137,14 @@ Deno.serve(async (req) => {
     <div class="head">
       <div>
         <div class="brand">Grow<span>lancer</span></div>
-        <div class="inv-no">Invoice ${esc(invoice.invoice_number)}</div>
+        <div class="brand-tag">AI-Powered Freelancing Marketplace · India-First</div>
       </div>
-      ${statusBadge}
+      <div class="inv-block">
+        <div class="inv-label">Invoice</div>
+        <div class="inv-no">${esc(invoice.invoice_number)}</div>
+        <div class="inv-date">Generated ${esc(new Date().toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true }))}</div>
+        <div style="margin-top:10px;display:inline-flex">${statusBadge}</div>
+      </div>
     </div>
     <div class="body">
       <div class="meta">
@@ -166,8 +182,13 @@ Deno.serve(async (req) => {
       </div>
     </div>
     <div class="foot">
-      <span>Growlancer — AI-Powered Freelancing Marketplace</span>
-      <span>Invoice ${esc(invoice.invoice_number)} · ${esc(new Date(invoice.issued_at).getFullYear())}</span>
+      <div class="row1">
+        <span><strong>Growlancer</strong> — AI-Powered Freelancing Marketplace</span>
+        <span>Invoice ${esc(invoice.invoice_number)} · ${esc(new Date(invoice.issued_at).getFullYear())}</span>
+      </div>
+      <div class="row2">
+        Payments are protected by escrow. Platform fee 5% · UPI · Cards · Net Banking · Razorpay Secured
+      </div>
     </div>
   </div>
 </body>

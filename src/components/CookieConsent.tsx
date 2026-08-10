@@ -227,25 +227,25 @@ export function CookieConsent() {
                   </div>
                 </div>
 
-                {/* Right: Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 shrink-0">
+                {/* Right: Buttons — always side-by-side (Accept | Customize | Reject) */}
+                <div className="flex flex-row items-center flex-wrap justify-end gap-2 sm:gap-3 shrink-0">
                   <button
                     onClick={handleOpenCustomize}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
                   >
                     <Settings className="w-3.5 h-3.5" />
                     Customize
                   </button>
                   <button
                     onClick={handleRejectAll}
-                    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
                   >
                     <X className="w-3.5 h-3.5" />
                     Reject All
                   </button>
                   <button
                     onClick={handleAcceptAll}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
+                    className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
                   >
                     <Check className="w-3.5 h-3.5" />
                     Accept All

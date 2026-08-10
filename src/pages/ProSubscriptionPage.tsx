@@ -25,9 +25,12 @@ export function ProSubscriptionPage() {
   const [showPayPal, setShowPayPal] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [billingInterval, setBillingInterval] = useState<'month' | 'year'>('month');
-  const [upgrading, _setUpgrading] = useState<string | null>(null);
+  const [upgrading, setUpgrading] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  // One free trial per user — fresh freelancers see ONLY "Start Free Trial";
+  // after the trial is used, the same CTA becomes "Upgrade" (wallet/Razorpay).
+  const [trialUsed, setTrialUsed] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -53,6 +56,7 @@ export function ProSubscriptionPage() {
         if (subResult.success) {
           setSubscription(subResult.subscription ?? null);
         }
+        setTrialUsed(await subscriptionService.hasUsedFreeTrial(user.id));
         setLoading(false);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -71,8 +75,28 @@ export function ProSubscriptionPage() {
 
   const isPro = isProSubscription(subscription);
 
-  const handleUpgrade = (planId: string) => {
+  const handleUpgrade = (planId: string, startTrial = false) => {
     setSelectedPlanId(planId);
+    if (startTrial) {
+      // Fresh freelancer — start the free trial directly (no payment needed)
+      void (async () => {
+        if (!user) return;
+        setUpgrading(planId);
+        try {
+          const result = await subscriptionService.subscribeToPlan(user.id, planId);
+          if (result.success) {
+            toast.success('Trial started', 'Your free Pro trial is now active. Enjoy Pro features!');
+            setSubscription(result.subscription ?? null);
+            setTrialUsed(true);
+          } else {
+            toast.error('Failed', result.error || 'Failed to start free trial.');
+          }
+        } finally {
+          setUpgrading(null);
+        }
+      })();
+      return;
+    }
     setShowPayPal(true);
   };
 
@@ -366,6 +390,28 @@ export function ProSubscriptionPage() {
                       className="w-full py-3 rounded-2xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed text-sm"
                     >
                       Current Plan
+                    </button>
+                  ) : plan.trial_days > 0 && !trialUsed ? (
+                    <button
+                      onClick={() => handleUpgrade(plan.id, true)}
+                      disabled={upgrading === plan.id}
+                      className={`w-full py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm ${
+                        isPopular
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
+                          : 'bg-slate-900 hover:bg-slate-800 text-white'
+                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                    >
+                      {upgrading === plan.id ? (
+                        <>
+                          <Loader2 className="animate-spin w-4 h-4" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          Start Free Trial
+                          <ArrowRight className="w-4 h-4" />
+                        </>
+                      )}
                     </button>
                   ) : (
                     <button

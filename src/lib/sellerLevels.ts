@@ -157,7 +157,9 @@ export function getSellerLevelProgress(metrics: {
 
   if (!info.nextLevel) return { percent: 100, nextLevel: null };
 
-  // Calculate rough progress based on the most constraining factor
+  // Thresholds per target level. Zero means "not a factor" for that level
+  // (e.g. level_1 only requires 1 completed project — rating/completion are
+  // not gating factors there, so dividing by 0 previously produced NaN%).
   const nextThresholds: Record<SellerLevel, { rating: number; projects: number; completion: number }> = {
     level_1: { rating: 0, projects: 1, completion: 0 },
     rising_talent: { rating: 4.0, projects: 5, completion: 80 },
@@ -167,12 +169,41 @@ export function getSellerLevelProgress(metrics: {
   };
 
   const target = nextThresholds[info.nextLevel!];
-  const ratingProgress = Math.min(metrics.rating / target.rating, 1) * 33;
-  const projectProgress = Math.min(metrics.totalProjects / target.projects, 1) * 33;
-  const completionProgress = Math.min(metrics.completionRate / target.completion, 1) * 34;
 
+  // Sanitize inputs (defensive: never NaN/Infinity from bad data)
+  const safeRating = Number.isFinite(metrics.rating) ? Math.max(0, metrics.rating) : 0;
+  const safeProjects = Number.isFinite(metrics.totalProjects) ? Math.max(0, metrics.totalProjects) : 0;
+  const safeCompletion = Number.isFinite(metrics.completionRate) ? Math.max(0, metrics.completionRate) : 0;
+
+  // Build weighted factors only for thresholds that actually gate this level
+  const factors: { value: number; target: number; weight: number }[] = [];
+  let totalWeight = 0;
+  if (target.rating > 0) {
+    factors.push({ value: safeRating, target: target.rating, weight: 33 });
+    totalWeight += 33;
+  }
+  if (target.projects > 0) {
+    factors.push({ value: safeProjects, target: target.projects, weight: 33 });
+    totalWeight += 33;
+  }
+  if (target.completion > 0) {
+    factors.push({ value: safeCompletion, target: target.completion, weight: 34 });
+    totalWeight += 34;
+  }
+
+  if (totalWeight === 0) {
+    return { percent: 0, nextLevel: info.nextLevel };
+  }
+
+  const weighted = factors.reduce(
+    (acc, f) => acc + Math.min(f.value / f.target, 1) * f.weight,
+    0
+  );
+
+  // Scale weighted sum back to 0-100 when some factors were skipped
+  const percent = Math.min(99, Math.round((weighted / totalWeight) * 100));
   return {
-    percent: Math.round(Math.min(ratingProgress + projectProgress + completionProgress, 99)),
+    percent: Number.isFinite(percent) ? percent : 0,
     nextLevel: info.nextLevel,
   };
 }

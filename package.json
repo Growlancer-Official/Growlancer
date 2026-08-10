@@ -17,12 +17,10 @@
     "deploy:backend": "bash scripts/deploy-backend.sh"
   },
   "dependencies": {
-    "@ai-sdk/google": "^4.0.8",
     "@sentry/react": "^10.52.0",
     "@supabase/supabase-js": "^2.39.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
-    "ai": "^7.0.15",
     "clsx": "^2.1.0",
     "compression": "^1.8.1",
     "express": "^4.22.2",

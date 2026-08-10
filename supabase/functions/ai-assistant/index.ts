@@ -1,13 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
-import { GEMINI_API_KEY, callGemini } from '../_shared/gemini.ts';
+import { AI_API_KEY, callAI } from '../_shared/ai.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-// ─── Gemini (Google AI) — OpenAI-compatible endpoint ────────────────────────
+// ─── Bytez AI — OpenAI-compatible endpoint ───────────────────────────────────
 // Base URL + key are read from secrets ONLY — never exposed to the frontend.
-if (!GEMINI_API_KEY) {
-  console.error('GEMINI_API_KEY is not configured in environment variables');
+if (!AI_API_KEY) {
+  console.error('AI_API_KEY is not configured in environment variables');
 }
 
 const ALLOWED_ORIGINS = [
@@ -93,7 +93,7 @@ async function checkMessageLimit(): Promise<{ allowed: boolean; isPro: boolean; 
   return { allowed: true, isPro: true, used: 0, limit: 0 };
 }
 
-/** OpenAI-compatible message conversion for the Gemini endpoint. */
+/** OpenAI-compatible message conversion for the AI endpoint. */
 function convertToOpenAIMessages(
   messages: ChatMessage[],
   systemPrompt: string
@@ -171,8 +171,8 @@ Deno.serve(async (req: Request) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
-  // Fail closed: refuse requests when the Gemini key is not configured
-  if (!GEMINI_API_KEY) {
+  // Fail closed: refuse requests when the AI key is not configured
+  if (!AI_API_KEY) {
     return new Response(JSON.stringify({ error: 'AI service is not configured' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -247,7 +247,7 @@ Deno.serve(async (req: Request) => {
     // Build system prompt
     const systemPrompt = buildSystemPrompt(user_role, context);
 
-    // Convert to OpenAI-compatible format for the Gemini endpoint
+    // Convert to OpenAI-compatible format for the AI endpoint
     const openAIMessages = convertToOpenAIMessages(
       sanitizedMessages.slice(-10),
       systemPrompt
@@ -255,20 +255,20 @@ Deno.serve(async (req: Request) => {
 
     if (prefersStreaming) {
       // === STREAMING RESPONSE ===
-      const geminiResponse = await callGemini(openAIMessages, { stream: true });
+      const aiResponse = await callAI(openAIMessages, { stream: true });
 
-      if (!geminiResponse.ok) {
-        const errText = await geminiResponse.text();
+      if (!aiResponse.ok) {
+        const errText = await aiResponse.text();
         return new Response(JSON.stringify({ error: `AI gateway error: ${errText.slice(0, 300)}` }), {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 
-      // Stream the Gemini SSE response back to the client
+      // Stream the AI SSE response back to the client
       const stream = new ReadableStream({
         async start(controller) {
-          const reader = geminiResponse.body?.getReader();
+          const reader = aiResponse.body?.getReader();
           if (!reader) {
             controller.close();
             return;
@@ -338,11 +338,11 @@ Deno.serve(async (req: Request) => {
       });
     } else {
       // === NON-STREAMING RESPONSE ===
-      const geminiResponse = await callGemini(openAIMessages, { stream: false });
+      const aiResponse = await callAI(openAIMessages, { stream: false });
 
-      const data = await geminiResponse.json().catch(() => ({}));
+      const data = await aiResponse.json().catch(() => ({}));
 
-      if (!geminiResponse.ok) {
+      if (!aiResponse.ok) {
         return new Response(
           JSON.stringify({ error: data?.error?.message || 'AI gateway error' }),
           {

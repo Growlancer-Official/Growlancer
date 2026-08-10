@@ -111,8 +111,32 @@ const subscriptionService = {
   },
 
   /**
-   * Subscribe to a plan. If the plan has trial_days > 0, starts a trial.
-   * Otherwise creates an active subscription (for paid plans, payment should be handled separately).
+   * True when this user has EVER started a free trial (any plan, any status).
+   * The DB guard `enforce_subscription_trial_guard` enforces "one free trial per
+   * email, ever" — the UI uses this to hide the trial button and show only
+   * paid options (wallet / Razorpay) for users who already used their trial.
+   */
+  async hasUsedFreeTrial(userId: string): Promise<boolean> {
+    try {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .not('trial_start_date', 'is', null)
+        .limit(1)
+        .maybeSingle();
+
+      if (error) return false;
+      return !!data;
+    } catch {
+      return false;
+    }
+  },
+
+  /**
+   * Subscribe to a plan. If the plan has trial_days > 0 AND the user has never
+   * used a free trial before, starts a trial. Otherwise creates an active
+   * subscription (for paid plans, payment should be handled separately).
    */
   async subscribeToPlan(
     userId: string,
@@ -130,9 +154,15 @@ const subscriptionService = {
 
       if (planError || !plan) throw planError || new Error('Plan not found');
 
+      // One free trial per user, ever — after that, always a PAID subscription.
+      // This prevents the DB guard from rejecting the insert with
+      // "A free trial has already been used for this email address."
+      const alreadyUsedTrial = await this.hasUsedFreeTrial(userId);
+
       const now = new Date();
       const trialDays = plan.trial_days || 0;
-      const isTrial = trialDays > 0;
+      // Never start a trial if the user already used theirs
+      const isTrial = trialDays > 0 && !alreadyUsedTrial;
 
       // Cancel any existing active/trial subscriptions
       await supabase
@@ -148,7 +178,12 @@ const subscriptionService = {
         start_date: now.toISOString(),
         trial_start_date: isTrial ? now.toISOString() : null,
         trial_end_date: isTrial
-          ? new Date(now.getTime() + trialDays * 86400000).toISOString()
+          // 60s margin: the DB guard rejects trial_end_date > now() + trial_days.
+          // DB now() runs a few ms AFTER the client's `now`, so a full
+          // trialDays*24h window can occasionally exceed the guard by a hair
+          // and raise "Trial period exceeds the allowed X days". Trimming 60s
+          // makes the window always fit — while remaining a full trial day.
+          ? new Date(now.getTime() + trialDays * 86400000 - 60000).toISOString()
           : null,
         payment_provider: paymentProvider || null,
         payment_subscription_id: paymentSubscriptionId || null,

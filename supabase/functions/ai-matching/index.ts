@@ -1,5 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
-import { GEMINI_API_KEY, GEMINI_MODEL, GEMINI_BASE_URL } from '../_shared/gemini.ts';
+import { AI_API_KEY, AI_MODEL, AI_BASE_URL } from '../_shared/ai.ts';
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -98,17 +98,17 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
 }
 
 /**
- * AI semantic scoring pass via Gemini.
+ * AI semantic scoring pass via the AI gateway.
  * Asks the LLM to evaluate the top deterministic candidates against the
  * project and return refined scores + a one-line reason. Best-effort: if the
  * gateway is unreachable, returns null and the deterministic scores are used
  * as-is — matching ALWAYS works.
  */
-async function geminiSemanticBoost(
+async function aiSemanticBoost(
   project: Project,
   candidates: FreelancerCandidate[]
 ): Promise<Map<string, { ai_score: number; reason: string }> | null> {
-  if (!GEMINI_API_KEY || candidates.length === 0) return null;
+  if (!AI_API_KEY || candidates.length === 0) return null;
 
   const candidatePayload = candidates.map((c) => ({
     id: c.id.slice(0, 8),
@@ -147,14 +147,14 @@ ${JSON.stringify(candidatePayload)}`;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 9000); // 9s hard cap
 
-    const response = await fetch(`${GEMINI_BASE_URL}/chat/completions`, {
+    const response = await fetch(`${AI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${GEMINI_API_KEY}`,
+        Authorization: `Bearer ${AI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: GEMINI_MODEL,
+        model: AI_MODEL,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
@@ -168,7 +168,7 @@ ${JSON.stringify(candidatePayload)}`;
     clearTimeout(timeout);
 
     if (!response.ok) {
-      console.error('[ai-matching] Gemini semantic pass failed:', response.status);
+      console.error('[ai-matching] AI semantic pass failed:', response.status);
       return null;
     }
 
@@ -193,7 +193,7 @@ ${JSON.stringify(candidatePayload)}`;
     }
     return resultMap;
   } catch (err) {
-    console.error('[ai-matching] Gemini semantic pass error (falling back to deterministic):', err?.message || err);
+    console.error('[ai-matching] AI semantic pass error (falling back to deterministic):', err?.message || err);
     return null;
   }
 }
@@ -353,13 +353,13 @@ Deno.serve(async (req: Request) => {
     // Sort by match score descending
     matches.sort((a, b) => b.match_score - a.match_score);
 
-    // ─── PASS 2: Gemini AI semantic boost (top 25, best-effort) ─────────
+    // ─── PASS 2: AI semantic boost (top 25, best-effort) ────────────────
     const topDeterministic = matches.slice(0, 25);
     const topCandidates = candidates.slice(0, 25);
     let aiBoost: Map<string, { ai_score: number; reason: string }> | null = null;
 
     if (topDeterministic.length > 0) {
-      aiBoost = await geminiSemanticBoost(project as Project, topCandidates);
+      aiBoost = await aiSemanticBoost(project as Project, topCandidates);
     }
 
     const finalMatches: MatchResult[] = topDeterministic.map((m) => {

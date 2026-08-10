@@ -65,6 +65,9 @@ export function AISubscriptionPage() {
   const [walletBalance, setWalletBalance] = useState<number | null>(null);
   const [showPayment, setShowPayment] = useState(false);
   const [walletPaying, setWalletPaying] = useState(false);
+  // True once the user has USED their one free trial — after that only paid
+  // options (wallet / Razorpay) are offered; a fresh user only sees the trial.
+  const [trialUsed, setTrialUsed] = useState(false);
 
   const fetchData = async () => {
     if (!user) return;
@@ -86,6 +89,10 @@ export function AISubscriptionPage() {
       if (latestSub.success) {
         setManageSubscription(latestSub.subscription ?? null);
       }
+
+      // Whether the one-time free trial has already been used (gates the UI:
+      // fresh users see ONLY "Start Free Trial", returning users see payments)
+      setTrialUsed(await subscriptionService.hasUsedFreeTrial(user.id));
 
       if (plansResult.success && plansResult.plans) {
         setPlans(plansResult.plans);
@@ -454,7 +461,13 @@ export function AISubscriptionPage() {
             </div>
 
             <button
-              onClick={() => isPro ? handleCancel() : handleSubscribe(proPlan.id)}
+              onClick={() =>
+                isPro
+                  ? handleCancel()
+                  : proPlan.trial_days > 0 && !trialUsed && !isTrialActive
+                  ? handleSubscribe(proPlan.id)
+                  : setShowPayment(true)
+              }
               disabled={upgrading === proPlan.id}
               className={`w-full py-3 font-bold rounded-xl transition-all text-sm flex items-center justify-center gap-2 ${
                 isPro
@@ -471,7 +484,7 @@ export function AISubscriptionPage() {
                 'Cancel Subscription'
               ) : isTrialActive ? (
                 'Upgrade to Pro'
-              ) : proPlan.trial_days > 0 ? (
+              ) : proPlan.trial_days > 0 && !trialUsed ? (
                 <>
                   Start Free Trial
                   <ArrowRight className="w-4 h-4" />
@@ -484,10 +497,11 @@ export function AISubscriptionPage() {
               )}
             </button>
 
-            {/* Quick payment options ONLY after the free trial has ended (or
-                no trial available). New freelancers see "Start Free Trial" only,
-                so the wallet/Razorpay buttons don't clutter the trial stage. */}
-            {!isPro && !isTrialActive && (
+            {/* Quick payment options ONLY after the free trial has ended / been
+                used (or the plan offers no trial at all). A NEW freelancer who
+                has never used a trial sees ONLY "Start Free Trial" — the
+                wallet/Razorpay buttons appear only once the trial is gone. */}
+            {!isPro && !isTrialActive && (trialUsed || (proPlan.trial_days ?? 0) <= 0) && (
               <div className="mt-3 space-y-2">
                 <button
                   onClick={() => handleWalletPay(proPlan.id)}

@@ -5,12 +5,25 @@ export type IdentityVerification = Record<string, any> & { id: string; user_id: 
 
 export interface VerificationUpload {
   document_type: 'passport' | 'drivers_license' | 'national_id' | 'aadhaar' | 'pan' | 'other';
-  document_file?: File; // Secure file upload instead of URL
-  document_url?: string; // Fallback for URL-based uploads
+  document_file?: File; // FRONT image — secure file upload instead of URL
+  document_url?: string; // Fallback for URL-based uploads (front)
+  document_file_back?: File; // BACK image (Aadhaar / Passport / DL / National ID)
+  document_url_back?: string; // Fallback for URL-based uploads (back)
   document_number?: string;
   expiry_date?: string;
   full_name?: string;
   date_of_birth?: string;
+}
+
+/**
+ * Which document types require a BACK-side image?
+ * Aadhaar, Passport, Driver's License and National ID carry printed info on
+ * both sides; PAN and other IDs are single-sided (front only).
+ */
+export function documentNeedsBack(
+  type: VerificationUpload['document_type']
+): boolean {
+  return ['aadhaar', 'passport', 'drivers_license', 'national_id'].includes(type);
 }
 
 export const identityVerificationService = {
@@ -128,8 +141,9 @@ export const identityVerificationService = {
   ): Promise<{ success: boolean; verification?: IdentityVerification; error?: string }> {
     try {
       let documentUrl = upload.document_url;
+      let documentUrlBack = upload.document_url_back || null;
 
-      // If a file is provided, upload it securely
+      // FRONT image — secure file upload when a file is provided
       if (upload.document_file) {
         const uploadResult = await this.uploadVerificationDocument(upload.document_file, userId);
         if (!uploadResult.success) {
@@ -138,8 +152,22 @@ export const identityVerificationService = {
         documentUrl = uploadResult.url;
       }
 
+      // BACK image (Aadhaar / Passport / DL / National ID)
+      if (upload.document_file_back) {
+        const uploadBack = await this.uploadVerificationDocument(upload.document_file_back, userId);
+        if (!uploadBack.success) {
+          return { success: false, error: uploadBack.error || 'Failed to upload document back side' };
+        }
+        documentUrlBack = uploadBack.url;
+      }
+
       if (!documentUrl) {
         return { success: false, error: 'Document URL or file is required' };
+      }
+
+      // A document type that requires a back image must actually have one
+      if (documentNeedsBack(upload.document_type) && !documentUrlBack) {
+        return { success: false, error: 'Please upload the back side of your document.' };
       }
 
       const { data, error } = await supabase
@@ -148,6 +176,7 @@ export const identityVerificationService = {
           user_id: userId,
           document_type: upload.document_type,
           document_url: documentUrl,
+          document_url_back: documentUrlBack,
           document_number: upload.document_number || null,
           expiry_date: upload.expiry_date || null,
           full_name: upload.full_name || null,

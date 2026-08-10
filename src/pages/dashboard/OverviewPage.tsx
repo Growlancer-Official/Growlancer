@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Briefcase, CreditCard, FileText, Handshake, MessageSquare, Plus, Sparkles, Users, Wallet, Zap,  } from 'lucide-react';
+import { ArrowRight, Briefcase, Check, CreditCard, FileText, Handshake, MessageSquare, Plus, Sparkles, Users, Wallet, Zap,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -696,6 +696,23 @@ export function OverviewPage() {
               totalProjects: sellerInfo.completedProjects,
               completionRate: sellerInfo.completionRate,
             });
+            // Requirement checklist with live met/unmet state
+            const levelReqs: { label: string; met: boolean }[] = nextInfo
+              ? nextInfo.nextRequirements.map((req) => {
+                  const reqLower = req.toLowerCase();
+                  const isRating = reqLower.includes('rating');
+                  const isProjects = reqLower.includes('project') || reqLower.includes('completed');
+                  const isCompletion = reqLower.includes('completion');
+                  const met = isRating
+                    ? sellerInfo.rating >= parseFloat(reqLower.match(/\d+(?:\.\d+)?/)?.[0] || '99')
+                    : isProjects
+                    ? sellerInfo.completedProjects >= parseInt(reqLower.match(/\d+/)?.[0] || '99')
+                    : isCompletion
+                    ? sellerInfo.completionRate >= parseFloat(reqLower.match(/\d+(?:\.\d+)?/)?.[0] || '99')
+                    : false;
+                  return { label: req, met };
+                })
+              : [];
             return (
               <div className="bg-white rounded-2xl p-6 border border-slate-100">
                 <div className="flex items-center justify-between mb-3">
@@ -705,25 +722,48 @@ export function OverviewPage() {
                   </span>
                 </div>
                 <p className="text-sm text-slate-500">{levelInfo.description}</p>
+
+                {/* Live performance metrics */}
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 text-center">
+                    <p className="text-base font-bold text-slate-900">{sellerInfo.completedProjects}</p>
+                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Completed</p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 text-center">
+                    <p className="text-base font-bold text-slate-900">{sellerInfo.rating.toFixed(1)}</p>
+                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Rating</p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 text-center">
+                    <p className="text-base font-bold text-slate-900">{sellerInfo.completionRate}%</p>
+                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Completion</p>
+                  </div>
+                </div>
+
                 {nextInfo ? (
                   <>
                     <div className="mt-4">
                       <div className="flex justify-between text-xs mb-1.5">
                         <span className="font-medium text-slate-600">Progress to {nextInfo.label}</span>
-                        <span className="font-bold text-emerald-600">{progress.percent}%</span>
+                        <span className="font-bold text-emerald-600">{Number.isFinite(progress.percent) ? progress.percent : 0}%</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2">
+                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                         <div
-                          className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-500"
-                          style={{ width: `${progress.percent}%` }}
+                          className="h-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-700"
+                          style={{ width: `${Number.isFinite(progress.percent) ? Math.min(100, progress.percent) : 0}%` }}
                         />
                       </div>
                     </div>
                     <ul className="mt-4 space-y-1.5">
-                      {levelInfo.nextRequirements.map((req) => (
-                        <li key={req} className="text-xs text-slate-500 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                          {req}
+                      {levelReqs.map((req) => (
+                        <li key={req.label} className="text-xs flex items-center gap-2">
+                          <span
+                            className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${
+                              req.met ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-slate-400'
+                            }`}
+                          >
+                            {req.met ? <Check className="w-2.5 h-2.5" /> : <span className="w-1.5 h-1.5 rounded-full bg-current" />}
+                          </span>
+                          <span className={req.met ? 'text-slate-700 font-medium' : 'text-slate-500'}>{req.label}</span>
                         </li>
                       ))}
                     </ul>

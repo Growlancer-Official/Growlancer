@@ -66,6 +66,10 @@ function DocumentPreviewModal({
   const [urlError, setUrlError] = useState<string | null>(null);
   const [isImgLoaded, setIsImgLoaded] = useState(false);
   const [imgError, setImgError] = useState(false);
+  // BACK-side image (Aadhaar / Passport / DL / National ID)
+  const [signedBackUrl, setSignedBackUrl] = useState<string | null>(null);
+  const [loadingBack, setLoadingBack] = useState(false);
+  const [backError, setBackError] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadDocument() {
@@ -101,7 +105,28 @@ function DocumentPreviewModal({
       setLoadingUrl(false);
     }
     loadDocument();
-  }, [verification.document_url]);
+
+    // BACK side (if present) — async IIFE so the effect callback stays sync
+    void (async () => {
+      const backDocUrl = verification.document_url_back || '';
+      if (!backDocUrl) return;
+      setLoadingBack(true);
+      setBackError(null);
+      if (backDocUrl.includes('verification-docs/') || backDocUrl.startsWith('verification-docs/')) {
+        const filePath = backDocUrl.includes('verification-docs/')
+          ? backDocUrl.substring(backDocUrl.indexOf('verification-docs/'))
+          : backDocUrl;
+        const result = await identityVerificationService.getSignedDocumentUrl(filePath, 600);
+        if (result.success && result.url) setSignedBackUrl(result.url);
+        else setBackError(result.error || 'Failed to generate signed URL for back side.');
+      } else if (backDocUrl.startsWith('http://') || backDocUrl.startsWith('https://')) {
+        setSignedBackUrl(backDocUrl);
+      } else {
+        setBackError('Invalid back document path.');
+      }
+      setLoadingBack(false);
+    })();
+  }, [verification.document_url, verification.document_url_back]);
 
   const isImage = signedUrl?.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i);
   const isPdf = signedUrl?.match(/\.pdf$/i);
@@ -199,6 +224,41 @@ function DocumentPreviewModal({
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <AlertCircle className="w-8 h-8 text-slate-500 mb-3" />
               <p className="text-sm text-slate-400">No document available</p>
+            </div>
+          )}
+
+          {/* BACK-side image (two-sided documents) */}
+          {verification.document_url_back && (
+            <div className="mt-4">
+              <div className="flex items-center gap-2 mb-3">
+                <FileText className="w-4 h-4 text-emerald-400" />
+                <h4 className="text-xs font-bold text-white">Back Side</h4>
+                {backError && <span className="text-[10px] text-red-400">{backError}</span>}
+              </div>
+              {loadingBack ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-6 h-6 animate-spin text-emerald-400" />
+                </div>
+              ) : signedBackUrl && signedBackUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i) ? (
+                <img
+                  src={signedBackUrl}
+                  alt="Verification Document Back"
+                  className="w-full rounded-xl"
+                  style={{ maxHeight: '70vh', objectFit: 'contain' }}
+                />
+              ) : signedBackUrl ? (
+                <a
+                  href={signedBackUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 text-emerald-400 rounded-xl text-sm font-bold hover:bg-emerald-500/20 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Open Back Document
+                </a>
+              ) : (
+                <p className="text-xs text-slate-500">Back side unavailable.</p>
+              )}
             </div>
           )}
 
