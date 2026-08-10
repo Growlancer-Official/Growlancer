@@ -69,7 +69,7 @@ function extractStoragePath(url: string): string | null {
   if (url.startsWith('verification-documents/')) {
     return url.substring('verification-documents/'.length) || null;
   }
-  if (url.includes('verification-docs/') || url.includes('/verification-docs/')) {
+  if (url.includes('verification-docs/')) {
     return url.split('?')[0];
   }
   return null;

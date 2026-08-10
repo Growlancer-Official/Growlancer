@@ -50,12 +50,14 @@ export const identityVerificationService = {
   },
 
   /**
-   * Upload verification document securely to Supabase Storage
+   * Upload verification document securely to Supabase Storage.
+   * Returns BOTH the storage path (persisted in the DB — never expires) and a
+   * short-lived signed URL for immediate preview.
    */
   async uploadVerificationDocument(
     file: File,
     userId: string
-  ): Promise<{ success: boolean; url?: string; error?: string }> {
+  ): Promise<{ success: boolean; url?: string; path?: string; error?: string }> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -87,17 +89,19 @@ export const identityVerificationService = {
         return { success: false, error: uploadError.message };
       }
 
-      // Generate a signed URL instead of public URL (security: bucket is private)
+      // Generate a signed URL for immediate preview (bucket is private)
       const { data: signedData, error: signedError } = await supabase
         .storage
         .from('verification-documents')
-        .createSignedUrl(filePath, 300); // 5 minute expiry
+        .createSignedUrl(filePath, 300); // 5 minute expiry — preview only
 
       if (signedError || !signedData?.signedUrl) {
         return { success: false, error: signedError?.message || 'Failed to generate signed URL' };
       }
 
-      return { success: true, url: signedData.signedUrl };
+      // Return the raw storage path too — the DB stores the PATH (never expires),
+      // and admins re-sign it on demand via createSignedUrl.
+      return { success: true, url: signedData.signedUrl, path: filePath };
     } catch (error) {
       console.error('Document upload error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Upload failed';
@@ -148,13 +152,15 @@ export const identityVerificationService = {
       let documentUrl = upload.document_url;
       let documentUrlBack = upload.document_url_back || null;
 
-      // FRONT image — secure file upload when a file is provided
+      // FRONT image — secure file upload when a file is provided.
+      // Store the raw storage PATH in the DB (never expires); admins re-sign it
+      // on demand. Signed URLs are only used for the immediate upload preview.
       if (upload.document_file) {
         const uploadResult = await this.uploadVerificationDocument(upload.document_file, userId);
         if (!uploadResult.success) {
           return { success: false, error: uploadResult.error || 'Failed to upload document' };
         }
-        documentUrl = uploadResult.url;
+        documentUrl = uploadResult.path || uploadResult.url;
       }
 
       // BACK image (Aadhaar / Passport / DL / National ID)
@@ -163,7 +169,7 @@ export const identityVerificationService = {
         if (!uploadBack.success) {
           return { success: false, error: uploadBack.error || 'Failed to upload document back side' };
         }
-        documentUrlBack = uploadBack.url;
+        documentUrlBack = uploadBack.path || uploadBack.url;
       }
 
       if (!documentUrl) {
