@@ -6,9 +6,9 @@
 //   3) Status change emails (shortlisted, interview, selected, rejected)
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { sendEmail } from '../_shared/resend.ts'
+import { sendEmail } from '../_shared/brevo.ts'
 
-// Transactional email via Resend (shared helper).
+// Transactional email via Brevo (shared helper).
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -105,7 +105,7 @@ function getFileNameFromUrl(url: string | null | undefined, fallback: string): s
   }
 }
 
-// ─── Email Sender (Resend) ─────────────────────────────────────────────────
+// ─── Email Sender (Brevo) ─────────────────────────────────────────────────
 async function sendNotificationEmail(
   to: string,
   toName: string,

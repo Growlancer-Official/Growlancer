@@ -5,9 +5,9 @@
 // Also creates in-app notifications for the freelancer.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { sendEmail } from '../_shared/resend.ts'
+import { sendEmail } from '../_shared/brevo.ts'
 
-// Transactional email via Resend (shared helper).
+// Transactional email via Brevo (shared helper).
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -38,7 +38,7 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Email Sender (Resend) ─────────────────────────────────────────────────
+// ─── Email Sender (Brevo) ─────────────────────────────────────────────────
 async function sendNotificationEmail(
   to: string,
   toName: string,

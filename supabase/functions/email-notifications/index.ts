@@ -11,7 +11,7 @@
 //
 // Reuses the same branded template pattern from proposal-notifications
 
-import { sendEmail } from '../_shared/resend.ts';
+import { sendEmail } from '../_shared/brevo.ts';
 
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -70,9 +70,9 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Email Sender (Resend) ────────────────────────────────────────────────
-// Real transactional email via the shared Resend helper. Falls back to a
-// logged no-op (email_sent: false) when RESEND_API_KEY is missing.
+// ─── Email Sender (Brevo) ────────────────────────────────────────────────
+// Real transactional email via the shared Brevo helper. Falls back to a
+// logged no-op (email_sent: false) when BREVO_API_KEY is missing.
 async function sendNotificationEmail(
   to: string,
   toName: string,

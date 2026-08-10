@@ -34,8 +34,8 @@ function getCorsHeaders(origin: string | null) {
   }
 }
 
-// ─── Email Notification Helper (Resend) ──────────────────────────────────────
-import { sendEmail } from '../_shared/resend.ts';
+// ─── Email Notification Helper (Brevo) ──────────────────────────────────────
+import { sendEmail } from '../_shared/brevo.ts';
 
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
@@ -43,7 +43,7 @@ function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(amount);
 }
 
-/** Send a transactional email via Resend (no-op + logged when key missing). */
+/** Send a transactional email via Brevo (no-op + logged when key missing). */
 async function sendNotificationEmail(
   to: string,
   toName: string,

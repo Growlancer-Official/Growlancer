@@ -2,7 +2,7 @@
 // Public actions: verify_certificate, verify_certificate_code, send_welcome_email
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { sendEmail } from '../_shared/resend.ts'
+import { sendEmail } from '../_shared/brevo.ts'
 
 // ─── Configuration ──────────────────────────────────────────────────
 
@@ -103,7 +103,7 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// ─── Email sender (Resend) ────────────────────────────────────────────────
+// ─── Email sender (Brevo) ────────────────────────────────────────────────
 async function sendNotificationEmail(
   subject: string,
   htmlContent: string,
@@ -120,7 +120,7 @@ async function sendNotificationEmail(
   });
   return sent
     ? { success: true, status: 200, text: 'Email sent' }
-    : { success: false, status: 502, text: 'Email delivery failed (Resend not configured or API error)' };
+    : { success: false, status: 502, text: 'Email delivery failed (Brevo not configured or API error)' };
 }
 
 // ─── Shared Email Template Wrapper ───────────────────────────────────────
@@ -701,11 +701,11 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ─── POST: test_email — sends a live Resend test email ──
+    // ─── POST: test_email — sends a live Brevo test email ──
     if (req.method === 'POST' && action === 'test_email') {
       const testTo = body?.to || 'admin@growlancer.com'
-      const sent = await sendNotificationEmail('Growlancer Test Email ✅', '<p>This is a test email from Growlancer via Resend.</p>', { email: testTo, name: 'Test' })
-      return new Response(JSON.stringify({ success: sent, error: sent ? undefined : 'Email delivery failed (Resend not configured or API error)' }), {
+      const sent = await sendNotificationEmail('Growlancer Test Email ✅', '<p>This is a test email from Growlancer via Brevo.</p>', { email: testTo, name: 'Test' })
+      return new Response(JSON.stringify({ success: sent, error: sent ? undefined : 'Email delivery failed (Brevo not configured or API error)' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

@@ -5,9 +5,9 @@
 //   3) Newsletter contact record
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { sendEmail } from '../_shared/resend.ts'
+import { sendEmail } from '../_shared/brevo.ts'
 
-// Transactional email via Resend (shared helper).
+// Transactional email via Brevo (shared helper).
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
@@ -37,7 +37,7 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Email helper (Resend) ────────────────────────────────────────────────
+// ─── Email helper (Brevo) ────────────────────────────────────────────────
 async function sendNotificationEmail(
   to: string,
   toName: string,

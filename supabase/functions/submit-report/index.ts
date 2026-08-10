@@ -1,10 +1,10 @@
 // Submit Report / Feedback Edge Function
 // Users report bugs, request features, or share feedback. Each report is:
 //   1) Stored in public.user_reports (service role — RLS still guards the table)
-//   2) Emailed to the company inbox (growlancer.own@gmail.com) via Resend when
-//      RESEND_API_KEY is configured (graceful no-op fallback otherwise)
+//   2) Emailed to the company inbox (growlancer.own@gmail.com) via Brevo when
+//      BREVO_API_KEY is configured (graceful no-op fallback otherwise)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { sendEmail } from '../_shared/resend.ts'
+import { sendEmail } from '../_shared/brevo.ts'
 
 const REPORT_EMAIL = Deno.env.get('REPORT_EMAIL') ?? 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
@@ -36,7 +36,7 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
-// ─── Email Sender (Resend when configured — graceful no-op otherwise) ───────
+// ─── Email Sender (Brevo when configured — graceful no-op otherwise) ───────
 async function sendReportEmail(payload: {
   reportId: string;
   name: string;
@@ -93,7 +93,7 @@ async function sendReportEmail(payload: {
   </div>
 </body></html>`;
 
-  // Send via the shared Resend helper (subject-only logging, never PII).
+  // Send via the shared Brevo helper (subject-only logging, never PII).
   return sendEmail({
     to: REPORT_EMAIL,
     subject,
