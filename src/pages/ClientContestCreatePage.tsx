@@ -171,7 +171,7 @@ export function ClientContestCreatePage() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">1st Prize ($) *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">1st Prize (₹) *</label>
                 <input
                   type="number"
                   required
@@ -184,7 +184,7 @@ export function ClientContestCreatePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">2nd Prize ($)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">2nd Prize (₹)</label>
                 <input
                   type="number"
                   min="0"
@@ -196,7 +196,7 @@ export function ClientContestCreatePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">3rd Prize ($)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">3rd Prize (₹)</label>
                 <input
                   type="number"
                   min="0"
