@@ -243,8 +243,8 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
 export const aiMatchingService = {
   /**
    * Generate AI matches for a project.
-   * 1. Calls the ai-matching edge function (deterministic scoring + Gemini
-   *    AI semantic boost, server-side, real-time numbers).
+   * 1. Calls the ai-matching edge function (deterministic scoring + AI
+   *    semantic boost, server-side, real-time numbers).
    * 2. Falls back to the client-side category/skill engine if the edge call
    *    fails (offline, gateway down, etc.) so matching ALWAYS works.
    */

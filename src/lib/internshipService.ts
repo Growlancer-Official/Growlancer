@@ -337,7 +337,7 @@ export const internshipService = {
 
   /**
    * Submit an internship application via the edge function.
-   * Edge function handles: DB insert + Resend emails (admin + applicant).
+   * Edge function handles: DB insert + Brevo emails (admin + applicant).
    */
   async submitApplication(
     input: InternshipApplicationInput

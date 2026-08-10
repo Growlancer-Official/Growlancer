@@ -5,8 +5,8 @@ export const PLATFORM_CONFIG = {
   // Platform Fees
   fees: {
     platform_percentage: 5, // 5% platform fee (client pays on top of bid)
-    payment_processing_percentage: 2, // RazorpayX payout fee (charged to freelancer on withdrawal)
-    razorpay_payout_percentage: 2, // RazorpayX payout fee for Indian bank/UPI transfers
+    payment_processing_percentage: 2, // payout processing fee (charged to freelancer on withdrawal)
+    razorpay_payout_percentage: 2, // payout fee for Indian bank/UPI transfers
     withdrawal_fee_fixed: 0, // Free withdrawals (no additional fixed fee)
   },
   

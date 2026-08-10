@@ -7,7 +7,7 @@ const POLL_MS = 60_000;
 export type PlatformMetricsFile = {
   note?: string;
   /** Total INR moved through escrow (your internal / finance source until automated). */
-  paymentsProcessedUsd?: number | null;
+  paymentsProcessedInr?: number | null;
   /** Average satisfaction % when you have enough responses to publish. */
   avgSatisfactionPercent?: number | null;
   /** How many countries have at least one member (from your analytics). */
@@ -58,7 +58,7 @@ function buildCards(profileCount: number | null, file: PlatformMetricsFile): Abo
       ? 'Registered members (live count unavailable)'
       : 'Registered members (live)';
 
-  const pay = file.paymentsProcessedUsd;
+  const pay = file.paymentsProcessedInr;
   const paymentsValue =
     pay === null || pay === undefined ? '—' : formatInrShort(Number(pay));
   const paymentsLabel = 'Payments through escrow (INR, to date)';
@@ -91,14 +91,14 @@ const LOADING_CARDS: AboutStatCard[] = [
 /** Raw live values (not formatted) so other UI (e.g. the live code terminal) can inject real numbers. */
 export type AboutMetricsRaw = {
   members: number | null;
-  escrowUsd: number | null;
+  escrowInr: number | null;
   satisfactionPercent: number | null;
   countries: number | null;
 };
 
 const EMPTY_RAW: AboutMetricsRaw = {
   members: null,
-  escrowUsd: null,
+  escrowInr: null,
   satisfactionPercent: null,
   countries: null,
 };
@@ -113,7 +113,7 @@ export function useAboutPageMetrics() {
     setStats(buildCards(profileCount, file));
     setRaw({
       members: profileCount,
-      escrowUsd: file.paymentsProcessedUsd ?? null,
+      escrowInr: file.paymentsProcessedInr ?? null,
       satisfactionPercent: file.avgSatisfactionPercent ?? null,
       countries: file.countriesWithMembers ?? null,
     });

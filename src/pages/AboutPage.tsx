@@ -15,7 +15,7 @@ export function AboutPage() {
   // Real content — inject live platform numbers into the terminal script.
   const terminalLines = useMemo<TerminalLine[]>(() => {
     const members = raw.members != null ? raw.members.toLocaleString('en-US') : '—';
-    const escrow = raw.escrowUsd != null ? formatInrFull(raw.escrowUsd) : '₹0';
+    const escrow = raw.escrowInr != null ? formatInrFull(raw.escrowInr) : '₹0';
     const sat = raw.satisfactionPercent != null ? `${Math.round(raw.satisfactionPercent)}%` : '—';
     const countries = raw.countries != null ? raw.countries.toLocaleString('en-US') : '—';
     return [
