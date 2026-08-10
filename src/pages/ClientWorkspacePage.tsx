@@ -623,227 +623,231 @@ export function ClientWorkspacePage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Contract Sidebar */}
-      <div className="lg:grid lg:grid-cols-4 gap-0">
-        <div className="lg:col-span-1 bg-white border-r border-slate-200 lg:min-h-screen">
-          <div className="p-4 border-b border-slate-200">
-            <h2 className="text-lg font-semibold text-slate-900">Contracts</h2>
-            <p className="text-sm text-slate-500 mt-1">
-              {contracts.length} active contract{contracts.length !== 1 ? 's' : ''}
-            </p>
+    <div className="space-y-6 max-w-7xl mx-auto px-4 py-6 md:py-8">
+      {/* Top Banner / Header */}
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-2xl shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 flex-shrink-0">
+            <Briefcase className="w-6 h-6 text-white" />
           </div>
-          <div className="overflow-y-auto max-h-[calc(100vh-8rem)]">
-            {contracts.map(contract => (
-              <button
-                key={contract.id}
-                onClick={() => {
-                  setSelectedContract(contract)
-                  window.history.pushState(null, '', `/client/workspace/${contract.id}`)
-                }}
-                className={`w-full text-left p-4 border-b border-slate-200 hover:bg-slate-50 transition-colors ${
-                  selectedContract?.id === contract.id
-                    ? 'bg-emerald-50 border-l-4 border-l-emerald-500'
-                    : ''
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <p className="font-medium text-slate-900 truncate">
-                    {contract.project?.title || 'Untitled Project'}
-                  </p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    contract.status === 'active' || contract.status === 'in_progress'
-                      ? 'bg-green-100 text-green-800'
-                      : contract.status === 'disputed'
-                      ? 'bg-red-100 text-red-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {contract.status}
-                  </span>
-                </div>
-                <div className="flex items-center mt-2 text-sm text-slate-500">
-                  <span className="truncate">
-                    {contract.freelancer?.name || 'Unknown Freelancer'}
-                  </span>
-                  <span className="mx-2">•</span>
-                  <span>{formatCurrency(contract.amount)}</span>
-                </div>
-              </button>
-            ))}
+          <div>
+            <h1 className="font-display text-2xl font-bold text-slate-900">Collaboration Workspace</h1>
+            <p className="text-sm text-slate-500">
+              Working with <span className="font-semibold text-slate-700">{selectedContract?.freelancer?.name || 'Freelancer'}</span>
+              {(selectedContract?.freelancer as any)?.verification_status === 'verified' && (
+                <VerifiedBadge size="xs" className="ml-1.5" />
+              )}
+              {(selectedContract?.freelancer as any)?.is_pro && (
+                <ProBadge size="xs" className="ml-1" />
+              )}
+              {selectedContract?.escrow_funded && (
+                <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">
+                  <ShieldCheck className="w-3 h-3" />
+                  Escrow Funded
+                </span>
+              )}
+            </p>
           </div>
         </div>
 
-        {/* Main Content */}
-        <div className="lg:col-span-3">
-          {selectedContract && (
-            <>
-              {/* Header */}
-              <div className="bg-white border-b border-slate-200 px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h1 className="text-xl font-bold text-slate-900">
-                      {selectedContract.project?.title || 'Workspace'}
-                    </h1>
-                    <p className="text-sm text-slate-500 mt-1">
-                      Working with{' '}
-                      <span className="font-medium text-slate-700">
-                        {selectedContract.freelancer?.name || 'Freelancer'}
-                      </span>
-                      {(selectedContract.freelancer as any)?.verification_status === 'verified' && (
-                        <VerifiedBadge size="xs" className="ml-1.5" />
-                      )}
-                      {(selectedContract.freelancer as any)?.is_pro && (
-                        <ProBadge size="xs" className="ml-1" />
-                      )}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {selectedContract.status === 'completed' &&
-                      (reviewedContractIds.has(selectedContract.id) ? (
-                        <span className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-lg text-sm font-medium">
-                          <Check className="h-4 w-4 mr-1.5" />
-                          Review Submitted
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => setReviewModalOpen(true)}
-                          className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
-                        >
-                          <Star className="h-4 w-4 mr-1.5" />
-                          Leave Review
-                        </button>
-                      ))}
-                    {needsFunding && (
-                      <button
-                        onClick={() => setShowFundEscrow(true)}
-                        className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors text-sm font-medium"
-                      >
-                        <IndianRupee className="h-4 w-4 mr-1.5" />
-                        Fund Escrow
-                      </button>
-                    )}
-                    {isFrozen && (
-                      <div className="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm" title={selectedContract.freeze_reason || ''}>
-                        <Snowflake className="h-4 w-4 mr-1.5" />
-                        Frozen
-                      </div>
-                    )}
-                    {selectedContract.status === 'disputed' && (
-                      <div className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm">
-                        <AlertCircle className="h-4 w-4 mr-1.5" />
-                        Dispute Active
-                      </div>
-                    )}
-                    {activeRefund && (
-                      <div className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-sm">
-                        <RotateCcw className="h-4 w-4 mr-1.5" />
-                        Refund {activeRefund.status.replace('_', ' ')}
-                      </div>
-                    )}
-                  </div>
-                </div>
+        {/* Dynamic Nav Tabs */}
+        <div className="flex items-center bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/50 self-start lg:self-center">
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+              activeTab === 'chat'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <MessageSquare className="w-4 h-4" />
+            <span>Chat & Assets</span>
+          </button>
 
-                {/* Platform Policy — protect both sides */}
-                <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm mt-4">
-                  <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-5 py-4 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-                      <Shield className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
-                      <p className="text-[11px] text-blue-200">Everything stays on the platform — payments are always protected</p>
-                    </div>
-                  </div>
-                  <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2">
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        <span className="font-bold text-slate-900">Release escrow only after approving work.</span> Review every
-                        deliverable before releasing — once released, funds go to the freelancer.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        <span className="font-bold text-slate-900">You cannot pay freelancers outside Growlancer.</span> All payments
-                        must happen through Growlancer Escrow. Paying outside the platform is a violation of our policy.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        <span className="font-bold text-slate-900">Freelancer asks for outside payment? Report them.</span>
-                        Freelancers requesting off-platform payments can be{' '}
-                        <span className="font-bold text-red-600">suspended or permanently banned</span>. Your money stays protected.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        <span className="font-bold text-slate-900">Refunds.</span> If work is not delivered or you are not satisfied,
-                        raise a <span className="font-medium">refund request / dispute</span> from this workspace. Escrowed funds are
-                        refunded to you in full when the freelancer accepts or when our team rules in your favour.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <FileText className="w-3.5 h-3.5 text-amber-600" />
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        <span className="font-bold text-slate-900">Need changes?</span> Use the dispute / revision flow in the
-                        workspace instead of sending money directly. Off-platform transactions are not covered by escrow protection.
-                      </p>
-                    </div>
-                    <div className="flex items-start gap-2.5">
-                      <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
-                        <Shield className="w-3.5 h-3.5 text-slate-600" />
-                      </div>
-                      <p className="text-xs text-slate-700 leading-relaxed">
-                        <span className="font-bold text-slate-900">Legal.</span> All payments, refunds and disputes are governed by
-                        Growlancer's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+          <button
+            onClick={() => setActiveTab('canvas')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+              activeTab === 'canvas'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Laptop className="w-4 h-4" />
+            <span>Co-Working Canvas</span>
+          </button>
 
-                {/* Tab Navigation */}
-                <div className="flex items-center gap-1 mt-4 border-b border-slate-200">
-                  {([
-                    { id: 'chat', label: 'Chat & Assets', icon: MessageSquare },
-                    { id: 'canvas', label: 'Co-Working Canvas', icon: Laptop },
-                    { id: 'milestones', label: 'Milestones & Escrow', icon: ClipboardList },
-                  ] as const).map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                        activeTab === tab.id
-                          ? 'border-emerald-500 text-emerald-600'
-                          : 'border-transparent text-slate-500 hover:text-slate-700'
-                      }`}
-                    >
-                      <tab.icon className="h-4 w-4" />
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          <button
+            onClick={() => setActiveTab('milestones')}
+            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+              activeTab === 'milestones'
+                ? 'bg-white text-emerald-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <ClipboardList className="w-4 h-4" />
+            <span>Milestones & Escrow</span>
+          </button>
+        </div>
+
+        {/* Actions: review / fund escrow / status pills */}
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedContract?.status === 'completed' &&
+            (reviewedContractIds.has(selectedContract.id) ? (
+              <span className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium">
+                <Check className="w-4 h-4" />
+                Review Submitted
+              </span>
+            ) : (
+              <button
+                onClick={() => setReviewModalOpen(true)}
+                className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
+              >
+                <Star className="w-4 h-4" />
+                Leave Review
+              </button>
+            ))}
+          {needsFunding && (
+            <button
+              onClick={() => setShowFundEscrow(true)}
+              className="inline-flex items-center px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
+            >
+              <IndianRupee className="h-4 w-4 mr-1.5" />
+              Fund Escrow
+            </button>
+          )}
+          {isFrozen && (
+            <div className="inline-flex items-center px-3 py-1.5 bg-blue-50 text-blue-700 rounded-lg text-sm" title={selectedContract?.freeze_reason || ''}>
+              <Snowflake className="h-4 w-4 mr-1.5" />
+              Frozen
+            </div>
+          )}
+          {selectedContract?.status === 'disputed' && (
+            <div className="inline-flex items-center px-3 py-1.5 bg-red-50 text-red-700 rounded-lg text-sm">
+              <AlertCircle className="h-4 w-4 mr-1.5" />
+              Dispute Active
+            </div>
+          )}
+          {activeRefund && (
+            <div className="inline-flex items-center px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-sm">
+              <RotateCcw className="h-4 w-4 mr-1.5" />
+              Refund {activeRefund.status.replace('_', ' ')}
+            </div>
+          )}
+        </div>
+
+        {/* Contract Selector */}
+        {contracts.length > 1 && (
+          <select
+            value={selectedContract?.id || ''}
+            onChange={(e) => {
+              const contract = contracts.find(c => c.id === e.target.value)
+              if (contract) {
+                setSelectedContract(contract)
+                window.history.pushState(null, '', `/client/workspace/${contract.id}`)
+              }
+            }}
+            className="px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
+          >
+            {contracts.map((contract) => (
+              <option key={contract.id} value={contract.id}>
+                {contract.project?.title || 'Project'}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      {/* Platform Policy — protect both sides (full-width) */}
+      <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm">
+        <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-5 py-4 flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
+            <p className="text-[11px] text-blue-200">Everything stays on the platform — payments are always protected</p>
+          </div>
+        </div>
+        <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Escrow Protection.</span> All payments are held in
+              Growlancer Escrow — release funds to the freelancer only after you approve the complete work.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Release escrow only after approving work.</span> Review every
+              deliverable before releasing — once released, funds go to the freelancer.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">You cannot pay freelancers outside Growlancer.</span> All payments
+              must happen through Growlancer Escrow. Paying outside the platform is a violation of our policy.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Freelancer asks for outside payment? Report them.</span>
+              Freelancers requesting off-platform payments can be{' '}
+              <span className="font-bold text-red-600">suspended or permanently banned</span>. Your money stays protected.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+              <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Refunds.</span> If work is not delivered or you are not satisfied,
+              raise a <span className="font-medium">refund request / dispute</span> from this workspace. Escrowed funds are
+              refunded to you in full when the freelancer accepts or when our team rules in your favour.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+              <Shield className="w-3.5 h-3.5 text-slate-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Legal.</span> All payments, refunds and disputes are governed by
+              Growlancer's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {selectedContract && (
+        <div className="space-y-6">
+
+
 
               {/* Chat & Assets Tab */}
               {activeTab === 'chat' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {/* Messages */}
-                  <div className="lg:col-span-2 bg-white">
-                    <div className="h-[calc(100vh-16rem)] flex flex-col">
-                      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl flex items-center gap-3">
+                      <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-slate-900">Project Chat Room</h4>
+                        <p className="text-xs text-slate-500">Secure real-time correspondence with {selectedContract.freelancer?.name}</p>
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {messages.length === 0 && (
                           <div className="flex flex-col items-center justify-center h-full text-slate-400">
                             <MessageSquare className="h-12 w-12 mb-3 opacity-50" />
@@ -880,7 +884,7 @@ export function ClientWorkspacePage() {
                       </div>
 
                       {/* Message Input */}
-                      <div className="border-t border-slate-200 p-4">
+                      <div className="p-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
@@ -920,11 +924,10 @@ export function ClientWorkspacePage() {
                         </div>
                       </div>
                     </div>
-                  </div>
 
                   {/* Shared Assets */}
-                  <div className="bg-slate-50 border-l border-slate-200">
-                    <div className="p-4 border-b border-slate-200">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                           <FileText className="h-4 w-4" />
@@ -942,7 +945,7 @@ export function ClientWorkspacePage() {
                         </button>
                       </div>
                     </div>
-                    <div className="overflow-y-auto max-h-[calc(100vh-20rem)]">
+                    <div className="flex-1 overflow-y-auto">
                       {contractFiles.length === 0 ? (
                         <div className="p-4 text-center text-slate-500 text-sm">
                           <FileText className="h-8 w-8 mx-auto mb-2 opacity-50 text-slate-400" />
@@ -1001,16 +1004,16 @@ export function ClientWorkspacePage() {
 
               {/* Co-Working Canvas Tab */}
               {activeTab === 'canvas' && (
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-0">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
                   {/* Live Task Board */}
-                  <div className="lg:col-span-3 bg-white border-r border-slate-200">
-                    <div className="p-4 border-b border-slate-200">
+                  <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                         <ClipboardList className="h-4 w-4" />
                         Live Task Board
                       </h3>
                     </div>
-                    <div className="p-4 h-[calc(100vh-20rem)] overflow-y-auto">
+                    <div className="p-4 flex-1 overflow-y-auto">
                       <TasksSection
                         contractId={selectedContract.id}
                         getTasks={getTasks}
@@ -1024,8 +1027,8 @@ export function ClientWorkspacePage() {
                   </div>
 
                   {/* Collaborative Scratchpad */}
-                  <div className="lg:col-span-2 bg-slate-50">
-                    <div className="p-4 border-b border-slate-200">
+                  <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                           <FileText className="h-4 w-4" />
@@ -1058,9 +1061,9 @@ export function ClientWorkspacePage() {
 
               {/* Milestones & Escrow Tab */}
               {activeTab === 'milestones' && (
-                <div className="p-6">
+                <div className="space-y-6">
                   {/* Timeline */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">
                       Contract Timeline
                     </h3>
@@ -1098,7 +1101,7 @@ export function ClientWorkspacePage() {
                   </div>
 
                   {/* Milestones */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-6 mb-6">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-semibold text-slate-900">
                         Milestones
@@ -1160,7 +1163,7 @@ export function ClientWorkspacePage() {
                   </div>
 
                   {/* Escrow Actions */}
-                  <div className="bg-white rounded-xl border border-slate-200 p-6">
+                  <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-4">
                       Escrow & Payment
                     </h3>
@@ -1240,7 +1243,7 @@ export function ClientWorkspacePage() {
 
                   {/* Refunds & Cancellation Panel */}
                   {(refundRequests.length > 0 || selectedContract.cancellation_status === 'pending_freelancer') && (
-                    <div className="bg-white rounded-xl border border-slate-200 p-6 mt-6">
+                    <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                           <RotateCcw className="h-5 w-5 text-amber-500" />
@@ -1301,10 +1304,8 @@ export function ClientWorkspacePage() {
                   )}
                 </div>
               )}
-            </>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
 
       {/* File Upload Modal */}
       {showUploadModal && (
