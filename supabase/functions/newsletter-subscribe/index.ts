@@ -20,6 +20,34 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
+// ─── Disposable / temporary email rejection (server-side) ───────────────
+// Mirrors the auth trigger + frontend list — temp-mail is NEVER accepted
+// anywhere on the platform (prevents referral farming + spam signups).
+const DISPOSABLE_DOMAINS = new Set([
+  '0-mail.com','10minutemail.com','10minutemail.net','1secmail.com',
+  'anonbox.net','anonemail.net','binkmail.com','bouncr.com','discard.email',
+  'dispostable.com','dodgeit.com','dropmail.me','emailfake.com','emailias.com',
+  'emailnator.com','emailondeck.com','emailtemp.net','e4ward.com',
+  'fakeinbox.com','fake-mail.net','fakemail.net','getnada.com',
+  'guerrillamail.com','guerrillamail.de','guerrillamail.net','guerrillamail.org',
+  'guerrillamail.biz','guerrillamail.co.uk','inboxkitten.com','jetable.org',
+  'mail7.io','mailcatch.com','maildrop.cc','maildu.de','mailinator.com',
+  'mailinator.net','mailinator2.com','mailmetrash.com','mailnesia.com',
+  'mailtemp.net','mail.tm','mintemail.com','moakt.com','mytrashmail.com',
+  'nada.email','nightmail.com','obmails.com','rapidinbox.com','rppkn.com',
+  'sharklasers.com','shitmail.org','spam4.me','spamgourmet.com','spammotel.com',
+  'ssl-mail.com','suioe.com','temporarymail.com','tempail.com','tempinbox.com',
+  'tempr.email','temp-mail.org','temp-mail.io','temp-mails.com',
+  'tempmailaddress.com','tempmailer.com','tempmail.com','tempmail.net',
+  'tempmailo.com','throwaway.email','throwawaymail.com','trashmail.com',
+  'trashmail.de','yopmail.com','yopmail.fr','yopmail.net','yopmail.org',
+]);
+
+function isDisposableEmail(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase() || '';
+  return DISPOSABLE_DOMAINS.has(domain);
+}
+
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
@@ -125,6 +153,12 @@ Deno.serve(async (req) => {
       if (!email || !email.includes('@')) {
         return new Response(
           JSON.stringify({ error: 'Valid email is required' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+      if (isDisposableEmail(email)) {
+        return new Response(
+          JSON.stringify({ error: 'This format is not acceptable. Disposable / temporary email addresses are not allowed — please use a permanent email address.' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }

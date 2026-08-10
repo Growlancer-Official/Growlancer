@@ -14,6 +14,7 @@ import { useCategories } from '../hooks/useCategories';
 import { useCountries } from '../hooks/useCountries';
 import { CategoriesSection as CategoriesSectionComponent } from '../components/CategoriesSection';
 import { supabase } from '../lib/supabase';
+import { validateEmail } from '../utils/validation';
 
 // ═══════════════════════════════════════════════════════════════
 // Constants
@@ -998,6 +999,12 @@ function WaitlistSection() {
       setError('Please fill in your name, email, and country.');
       return;
     }
+    // 🚫 Disposable / temp emails are not acceptable anywhere on the platform
+    const emailValidation = validateEmail(email.trim().toLowerCase());
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || 'Please enter a valid email address.');
+      return;
+    }
     setIsLoading(true);
     setError('');
     
@@ -1188,12 +1195,13 @@ export function HomePage() {
   return (
     <div id="top">
       <HeroSection onOpenSignup={handleOpenSignup} />
+      {/* 🔴 Live Browse Services — right under the hero (homepage header area) */}
+      <LiveServicesSection />
       <HowItWorksSection />
       <WhyDifferentSection />
       <FreelancerSection onOpenSignup={handleOpenSignup} />
       <ClientSection onOpenSignup={handleOpenSignup} />
       <CategoriesSection onOpenSignup={handleOpenSignup} />
-      <LiveServicesSection />
       <FeaturesSection />
       <PricingSection />
       <TrustSection />
