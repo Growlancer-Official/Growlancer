@@ -227,7 +227,7 @@ export function ServiceDetailPage() {
             <img
               src={service.image_url}
               alt={service.title}
-              className="w-full h-64 sm:h-72 md:h-80 object-cover rounded-b-3xl shadow-md"
+              className="w-full h-64 sm:h-72 md:h-80 object-contain p-2 bg-slate-50 rounded-b-3xl shadow-md"
             />
           </div>
         </div>

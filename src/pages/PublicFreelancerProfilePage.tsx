@@ -591,7 +591,7 @@ export function PublicFreelancerProfilePage() {
                         <img
                           src={service.image_url}
                           alt={service.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                           onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                         />
@@ -659,7 +659,7 @@ export function PublicFreelancerProfilePage() {
                   >
                     <div className="aspect-video bg-slate-50">
                       {item.image_url ? (
-                        <img src={item.image_url} alt={item.title} className="w-full h-full object-cover" loading="lazy" />
+                        <img src={item.image_url} alt={item.title} className="w-full h-full object-contain p-2" loading="lazy" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <ImageIcon className="w-10 h-10 text-slate-300" />

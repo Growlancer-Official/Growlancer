@@ -38,25 +38,25 @@ interface UserReport {
 }
 
 const TYPE_META: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  bug: { label: 'Bug', icon: Bug, color: 'bg-red-100 text-red-700' },
-  feature: { label: 'Feature', icon: Sparkles, color: 'bg-blue-100 text-blue-700' },
-  feedback: { label: 'Feedback', icon: MessageSquareHeart, color: 'bg-emerald-100 text-emerald-700' },
+  bug: { label: 'Bug', icon: Bug, color: 'bg-red-100 text-red-400' },
+  feature: { label: 'Feature', icon: Sparkles, color: 'bg-blue-100 text-blue-400' },
+  feedback: { label: 'Feedback', icon: MessageSquareHeart, color: 'bg-emerald-100 text-emerald-400' },
   security: { label: 'Security', icon: Shield, color: 'bg-purple-100 text-purple-700' },
-  other: { label: 'Other', icon: Megaphone, color: 'bg-slate-100 text-slate-700' },
+  other: { label: 'Other', icon: Megaphone, color: 'bg-slate-800/500/10 text-slate-300' },
 };
 
 const PRIORITY_META: Record<string, { label: string; color: string }> = {
-  low: { label: 'Low', color: 'bg-slate-100 text-slate-600' },
-  medium: { label: 'Medium', color: 'bg-amber-100 text-amber-700' },
+  low: { label: 'Low', color: 'bg-slate-800/500/10 text-slate-400' },
+  medium: { label: 'Medium', color: 'bg-amber-100 text-amber-400' },
   high: { label: 'High', color: 'bg-orange-100 text-orange-700' },
-  critical: { label: 'Critical', color: 'bg-red-100 text-red-700' },
+  critical: { label: 'Critical', color: 'bg-red-100 text-red-400' },
 };
 
 const STATUS_META: Record<string, { label: string; color: string }> = {
-  new: { label: 'New', color: 'bg-blue-100 text-blue-700' },
-  reviewing: { label: 'Reviewing', color: 'bg-amber-100 text-amber-700' },
-  resolved: { label: 'Resolved', color: 'bg-emerald-100 text-emerald-700' },
-  wontfix: { label: 'Won\'t Fix', color: 'bg-slate-100 text-slate-600' },
+  new: { label: 'New', color: 'bg-blue-100 text-blue-400' },
+  reviewing: { label: 'Reviewing', color: 'bg-amber-100 text-amber-400' },
+  resolved: { label: 'Resolved', color: 'bg-emerald-100 text-emerald-400' },
+  wontfix: { label: 'Won\'t Fix', color: 'bg-slate-800/500/10 text-slate-400' },
 };
 
 const STATUS_FLOW = ['new', 'reviewing', 'resolved', 'wontfix'];
@@ -160,13 +160,13 @@ export function AdminUserReportsPage() {
             <Inbox className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">User Reports & Feedback</h1>
-            <p className="text-slate-500 text-sm">Triage bug reports, feature requests and feedback</p>
+            <h1 className="font-display text-2xl font-bold text-white">User Reports & Feedback</h1>
+            <p className="text-slate-400 text-sm">Triage bug reports, feature requests and feedback</p>
           </div>
         </div>
         <button
           onClick={() => void fetchReports()}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-800 border border-white/10 rounded-xl text-sm font-medium text-slate-300 hover:bg-white/5 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -175,34 +175,34 @@ export function AdminUserReportsPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">New</p>
-          <p className="text-2xl font-bold text-blue-600">{counts.new}</p>
+        <div className="bg-slate-800/60 rounded-2xl p-4 border border-white/10 shadow-sm">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">New</p>
+          <p className="text-2xl font-bold text-blue-400">{counts.new}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Reviewing</p>
-          <p className="text-2xl font-bold text-amber-600">{counts.reviewing}</p>
+        <div className="bg-slate-800/60 rounded-2xl p-4 border border-white/10 shadow-sm">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Reviewing</p>
+          <p className="text-2xl font-bold text-amber-400">{counts.reviewing}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Resolved</p>
-          <p className="text-2xl font-bold text-emerald-600">{counts.resolved}</p>
+        <div className="bg-slate-800/60 rounded-2xl p-4 border border-white/10 shadow-sm">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Resolved</p>
+          <p className="text-2xl font-bold text-emerald-400">{counts.resolved}</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Open Critical</p>
-          <p className="text-2xl font-bold text-red-600">{counts.critical}</p>
+        <div className="bg-slate-800/60 rounded-2xl p-4 border border-white/10 shadow-sm">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Open Critical</p>
+          <p className="text-2xl font-bold text-red-400">{counts.critical}</p>
         </div>
       </div>
 
       {/* Error */}
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">{error}</p>
+          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col md:flex-row gap-3">
+      <div className="bg-slate-800/60 rounded-2xl border border-white/10 shadow-sm p-4 flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
@@ -210,13 +210,13 @@ export function AdminUserReportsPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search title, description, name, email…"
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-white/10 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none text-sm"
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="px-3 py-2.5 rounded-xl border border-white/10 bg-slate-800/60 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
         >
           <option value="all">All Status</option>
           <option value="new">New</option>
@@ -227,7 +227,7 @@ export function AdminUserReportsPage() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="px-3 py-2.5 rounded-xl border border-white/10 bg-slate-800/60 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
         >
           <option value="all">All Types</option>
           <option value="bug">Bug</option>
@@ -239,7 +239,7 @@ export function AdminUserReportsPage() {
         <select
           value={priorityFilter}
           onChange={(e) => setPriorityFilter(e.target.value)}
-          className="px-3 py-2.5 rounded-xl border border-slate-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+          className="px-3 py-2.5 rounded-xl border border-white/10 bg-slate-800/60 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
         >
           <option value="all">All Priorities</option>
           <option value="low">Low</option>
@@ -255,10 +255,10 @@ export function AdminUserReportsPage() {
           <Loader2 className="w-8 h-8 animate-spin text-slate-400" />
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 text-center">
+        <div className="bg-slate-800/60 rounded-2xl border border-white/10 shadow-sm p-16 text-center">
           <Inbox className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-          <h3 className="font-semibold text-slate-900 mb-1">No reports found</h3>
-          <p className="text-sm text-slate-500">Reports submitted by users will appear here in real time.</p>
+          <h3 className="font-semibold text-white mb-1">No reports found</h3>
+          <p className="text-sm text-slate-400">Reports submitted by users will appear here in real time.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -270,10 +270,10 @@ export function AdminUserReportsPage() {
             const nextStatus = STATUS_FLOW[STATUS_FLOW.indexOf(report.status) + 1];
 
             return (
-              <div key={report.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div key={report.id} className="bg-slate-800/60 rounded-2xl border border-white/10 shadow-sm overflow-hidden">
                 <button
                   onClick={() => setExpandedId(expanded ? null : report.id)}
-                  className="w-full flex flex-col sm:flex-row sm:items-center gap-3 p-5 text-left hover:bg-slate-50/60 transition-colors"
+                  className="w-full flex flex-col sm:flex-row sm:items-center gap-3 p-5 text-left hover:bg-white/5 transition-colors"
                 >
                   <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${typeMeta.color}`}>
                     <typeMeta.icon className="w-5 h-5" />
@@ -287,13 +287,13 @@ export function AdminUserReportsPage() {
                         {statusMeta.label}
                       </span>
                       {report.category && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-slate-800/500/10 text-slate-400">
                           {report.category}
                         </span>
                       )}
                     </div>
-                    <p className="font-semibold text-slate-900 mt-1.5 truncate">{report.title}</p>
-                    <p className="text-xs text-slate-500 mt-0.5 truncate">
+                    <p className="font-semibold text-white mt-1.5 truncate">{report.title}</p>
+                    <p className="text-xs text-slate-400 mt-0.5 truncate">
                       {report.name || 'Guest'}{report.email ? ` · ${report.email}` : ''} · {safeFormatDate(report.created_at, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                     </p>
                   </div>
@@ -305,7 +305,7 @@ export function AdminUserReportsPage() {
                           void handleStatusChange(report, nextStatus);
                         }}
                         disabled={updatingId === report.id}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors disabled:opacity-50"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-400 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors disabled:opacity-50"
                       >
                         {updatingId === report.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
                         Mark {nextStatus}
@@ -316,14 +316,14 @@ export function AdminUserReportsPage() {
                 </button>
 
                 {expanded && (
-                  <div className="px-5 pb-5 pt-1 border-t border-slate-100">
-                    <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">{report.description}</p>
+                  <div className="px-5 pb-5 pt-1 border-t border-white/10">
+                    <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{report.description}</p>
                     {(report.page_url || report.browser_info) && (
-                      <div className="mt-4 p-4 bg-slate-50 rounded-xl text-xs space-y-2">
+                      <div className="mt-4 p-4 bg-slate-800/50 rounded-xl text-xs space-y-2">
                         {report.page_url && (
                           <p className="flex items-start gap-2">
                             <span className="text-slate-400 font-semibold w-14 shrink-0">Page</span>
-                            <a href={report.page_url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline break-all">
+                            <a href={report.page_url} target="_blank" rel="noopener noreferrer" className="text-emerald-400 hover:underline break-all">
                               {report.page_url}
                             </a>
                           </p>
@@ -331,19 +331,19 @@ export function AdminUserReportsPage() {
                         {report.browser_info && (
                           <p className="flex items-start gap-2">
                             <span className="text-slate-400 font-semibold w-14 shrink-0">Browser</span>
-                            <span className="text-slate-600 break-all">{report.browser_info}</span>
+                            <span className="text-slate-400 break-all">{report.browser_info}</span>
                           </p>
                         )}
                         {report.user_id && (
                           <p className="flex items-start gap-2">
                             <span className="text-slate-400 font-semibold w-14 shrink-0">User</span>
-                            <span className="text-slate-600 font-mono">{report.user_id}</span>
+                            <span className="text-slate-400 font-mono">{report.user_id}</span>
                           </p>
                         )}
                         {report.email && (
                           <p className="flex items-start gap-2">
                             <span className="text-slate-400 font-semibold w-14 shrink-0">Email</span>
-                            <a href={`mailto:${report.email}`} className="text-emerald-700 hover:underline break-all">
+                            <a href={`mailto:${report.email}`} className="text-emerald-400 hover:underline break-all">
                               <Mail className="w-3 h-3 inline mr-1" />
                               {report.email}
                             </a>
@@ -362,7 +362,7 @@ export function AdminUserReportsPage() {
                           className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                             report.status === s
                               ? `${STATUS_META[s].color} border-transparent`
-                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                              : 'bg-slate-800/60 border-white/10 text-slate-400 hover:bg-white/5'
                           }`}
                         >
                           {STATUS_META[s].label}

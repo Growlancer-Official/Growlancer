@@ -7,7 +7,7 @@ import { reviewService } from '../lib/reviews';
 
 interface ReviewData {
   id: string;
-  reviewer?: { full_name?: string; avatar?: string } | null;
+  reviewer?: { name?: string; avatar?: string } | null;
   communication_rating: number;
   quality_rating: number;
   timeliness_rating: number;
@@ -155,7 +155,7 @@ export function ClientReviewsPage() {
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <p className="font-semibold text-slate-900">{review.reviewer?.full_name || 'Anonymous'}</p>
+                      <p className="font-semibold text-slate-900">{review.reviewer?.name || 'Freelancer'}</p>
                       <RatingStars rating={review.overall_rating} />
                     </div>
                     <span className="text-xs text-slate-400">{new Date(review.created_at).toLocaleDateString()}</span>

@@ -218,7 +218,7 @@ export function ServicesCatalogPage() {
                   {/* Thumbnail */}
                   <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-50 relative overflow-hidden">
                     {service.image_url ? (
-                      <img src={service.image_url} alt={service.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                      <img src={service.image_url} alt={service.title} className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <Package className="w-10 h-10 text-slate-300" />
@@ -291,7 +291,7 @@ export function ServicesCatalogPage() {
                 >
                   <div className="w-48 h-36 bg-slate-100 flex-shrink-0 relative overflow-hidden">
                     {service.image_url ? (
-                      <img src={service.image_url} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" loading="lazy" />
+                      <img src={service.image_url} alt="" className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center"><Package className="w-8 h-8 text-slate-300" /></div>
                     )}
