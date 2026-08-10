@@ -203,10 +203,10 @@ Deno.serve(async (req) => {
         throw reviewError
       }
 
-      // Update freelancer profile rating
-      if (contract.freelancer_id === reviewee_id) {
-        await updateFreelancerRating(supabaseClient, reviewee_id)
-      }
+      // Freelancer rating / reputation / total_reviews are refreshed in real
+      // time by the on_review_change trigger (security definer). No direct
+      // update here — an authenticated user cannot UPDATE another user's
+      // freelancer_profiles row (RLS), which previously failed silently.
 
       return new Response(
         JSON.stringify({ review }),
@@ -305,8 +305,8 @@ Deno.serve(async (req) => {
 
       if (error) throw error
 
-      // Update freelancer profile rating if reviewee is freelancer
-      await updateFreelancerRating(supabaseClient, existingReview.reviewee_id)
+      // Rating / reputation / total_reviews refresh via the on_review_change
+      // trigger (security definer) — fires on UPDATE too.
 
       return new Response(
         JSON.stringify({ review }),
@@ -327,23 +327,4 @@ Deno.serve(async (req) => {
   }
 })
 
-async function updateFreelancerRating(supabaseClient: any, freelancerId: string) {
-  // Use the get_reputation_stats RPC as single source of truth for rating calculation
-  const { data: stats, error } = await supabaseClient
-    .rpc('get_reputation_stats', { p_freelancer_id: freelancerId })
 
-  if (error) {
-    console.error('Failed to calculate reputation stats:', error)
-    return
-  }
-
-  if (!stats || stats.length === 0) return
-
-  const averageRating = Number(stats[0].average_rating) || 0
-
-  // Update freelancer profile with RPC-computed rating
-  await supabaseClient
-    .from('freelancer_profiles')
-    .update({ rating: Math.round(averageRating * 10) / 10 })
-    .eq('user_id', freelancerId)
-}
