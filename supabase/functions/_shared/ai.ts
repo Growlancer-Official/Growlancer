@@ -15,13 +15,12 @@ export const AI_BASE_URL = (
 
 export const AI_API_KEY = Deno.env.get('AI_API_KEY') || '';
 
-/** Default chat model. Bytez open models use the `org/name` identifier format
- *  (e.g. `deepseek-ai/DeepSeek-V3`). Override via the AI_MODEL secret — set it
- *  to the exact modelId provisioned for this account in the Bytez dashboard.
+/** Default chat model. Bytez catalog IDs use the `bytez/org/name` format
+ *  (e.g. `bytez/deepseek-ai/DeepSeek-R1`). Override via the AI_MODEL secret.
  *  IMPORTANT: the model MUST be added to the Bytez account (bytez.com -> Models)
  *  or the API returns "Model does not exist or has yet to be added to the
  *  Bytez catalog". */
-export const AI_MODEL = Deno.env.get('AI_MODEL') || 'deepseek-ai/DeepSeek-V3';
+export const AI_MODEL = Deno.env.get('AI_MODEL') || 'bytez/deepseek-ai/DeepSeek-R1';
 
 export interface AIMessage {
   role: 'system' | 'user' | 'assistant';
