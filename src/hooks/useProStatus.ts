@@ -54,9 +54,32 @@ export function useProStatus(): ProStatus {
     return unsubscribe;
   }, [user, refresh]);
 
-  // Fallback: auth profile flag gives an instant initial value while the
-  // subscription query is in flight.
-  const isPro = isProSubscription(subscription) || (user?.isPro ?? false);
+  // ⏱️ Trial-expiry timer: if the page stays open and the trial end date passes,
+  // nothing fires until the daily cron flips the status. Schedule a refresh at
+  // exactly trial_end_date so the badge drops in real time, then re-check.
+  useEffect(() => {
+    if (!subscription || subscription.status !== 'trial' || !subscription.trial_end_date) return;
+    const msUntilEnd = new Date(subscription.trial_end_date).getTime() - Date.now();
+    if (msUntilEnd <= 0) {
+      // Already expired — refresh immediately (badge should be off).
+      void refresh();
+      return;
+    }
+    // Cap at ~2.1B ms (setTimeout max) for very long trials.
+    const t = setTimeout(() => void refresh(), Math.min(msUntilEnd + 1000, 2147483647));
+    return () => clearTimeout(t);
+  }, [subscription, refresh]);
+
+  // PRO badge = live subscription state ONLY.
+  // - Once a subscription row is loaded, isProSubscription() is the single
+  //   source of truth (active paid, or an unexpired trial). The DB trigger
+  //   sync_profile_pro_flag_trg also keeps profiles.is_pro honest, so the
+  //   profile flag never lingers as a stale "sticky PRO" after a trial ends.
+  // - The profile flag is only a first-render fallback while the subscription
+  //   query is still in flight (no row loaded yet).
+  const isPro = subscription
+    ? isProSubscription(subscription)
+    : (user?.isPro ?? false);
 
   return { isPro, subscription, loading, refresh };
 }

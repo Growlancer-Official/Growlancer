@@ -38,6 +38,14 @@ export function isProSubscription(
   const status = subscription.status ?? '';
   if (status !== 'active' && status !== 'trial') return false;
 
+  // A 'trial' row is PRO only while the trial end date is still in the future.
+  // This is the real-time guard — without it an expired trial (before the daily
+  // cron flips status) would keep showing the PRO badge.
+  if (status === 'trial') {
+    if (!subscription.trial_end_date) return false;
+    if (new Date(subscription.trial_end_date).getTime() <= Date.now()) return false;
+  }
+
   const plan = subscription.subscription_plans;
   if (!plan) return false;
 
