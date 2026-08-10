@@ -250,6 +250,12 @@ export const identityVerificationService = {
             .eq('id', userId);
         }
 
+        // 🔔 In-app real-time notification is created by the DB trigger
+        //    (kyc_auto_verify_trigger_fn, SECURITY DEFINER) on the status
+        //    UPDATE — inserting from here would fail notifications RLS
+        //    (user_id = auth.uid()). The trigger covers both roles and
+        //    pushes to the realtime publication automatically.
+
         // Send email notification (fire-and-forget)
         const { data: profile } = await supabase
           .from('profiles' as any)

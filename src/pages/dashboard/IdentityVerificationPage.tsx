@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { identityVerificationService, documentNeedsBack, type VerificationUpload } from '../../lib/identityVerification';
+import { supabase } from '../../lib/supabase';
 import type { IdentityVerification } from '../../lib/identityVerification';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { AlertCircle,
@@ -62,13 +63,37 @@ export function IdentityVerificationPage() {
     fetchStatus();
   }, [fetchStatus]);
 
-  // Realtime subscription for status changes
+  // Realtime subscription for status changes — pending → verified flip arrives
+  // live (≈10 min after submit). On the verified flip we also send the approval
+  // email once (fire-and-forget) so the user gets notified in-app + by email.
+  const emailedVerifiedIds = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!user) return;
 
     const channel = identityVerificationService.subscribe(user.id, (updated) => {
       setVerification(updated);
       setVerificationStatus(updated.status as 'pending' | 'verified' | 'rejected');
+
+      // 🔔 Email once when the backend auto-verifies (idempotent per row).
+      if (
+        updated.status === 'verified' &&
+        updated.id &&
+        !emailedVerifiedIds.current.has(updated.id)
+      ) {
+        emailedVerifiedIds.current.add(updated.id);
+        supabase.functions
+          .invoke('email-notifications', {
+            method: 'POST',
+            body: {
+              type: 'verification_approved',
+              data: {
+                recipient_email: user.email,
+                recipient_name: user.name || user.email?.split('@')[0] || 'User',
+              },
+            },
+          })
+          .catch((err) => console.error('[KYC] approval email failed:', err));
+      }
     });
 
     return () => {
