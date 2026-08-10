@@ -142,6 +142,7 @@ export function ContactPage() {
             <div className="h-[600px]">
               <AIChatSupport
                 context={chatContext}
+                chatMode="support"
                 title={user ? `Support Chat — ${user.name || user.email}` : '24/7 Support Chat'}
               />
             </div>

@@ -30,6 +30,12 @@ interface Message {
 interface AIChatSupportProps {
   context?: 'freelancer' | 'client';
   title?: string;
+  /** Explicit mode override — when set, this takes priority over the
+   * auto-detection that derives chatMode from ticketContext.
+   * 'assistant' → message storage key uses 'assistant'
+   * 'support'   → message storage key uses 'support'
+   * When omitted, chatMode = ticketContext ? 'support' : 'assistant'. */
+  chatMode?: 'assistant' | 'support';
   ticketContext?: {
     category?: string;
     priority?: string;
@@ -38,7 +44,7 @@ interface AIChatSupportProps {
   };
 }
 
-export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', ticketContext }: AIChatSupportProps) {
+export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', chatMode: explicitMode, ticketContext }: AIChatSupportProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -65,7 +71,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   // KEY ISOLATION: AI Assistant and AI Support are DIFFERENT chats and must
   // never share history. The key includes both the role (freelancer/client)
   // and the mode (assistant vs support) so the two never cross-contaminate.
-  const chatMode = ticketContext ? 'support' : 'assistant';
+  const chatMode = explicitMode || (ticketContext ? 'support' : 'assistant');
   // Stable per-render key factory — deps are only the context/mode, so the
   // key never changes identity mid-chat and hooks deps stay clean.
   const CHAT_STORAGE_KEY = useCallback((uid: string) => `growlancer_ai_chat_v2_${context}_${chatMode}_${uid}`, [context, chatMode]);

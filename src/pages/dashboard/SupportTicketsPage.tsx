@@ -9,6 +9,7 @@ export function SupportTicketsPage() {
       </div>
       <AIChatSupport 
         context="freelancer" 
+        chatMode="support"
         title="Freelancer AI Support"
         ticketContext={{
           category: 'general',
