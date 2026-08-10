@@ -42,9 +42,37 @@ function getTypeLabel(type?: string): string {
     passport: 'Passport',
     drivers_license: "Driver's License",
     national_id: 'National ID',
+    aadhaar: 'Aadhaar Card',
+    pan: 'PAN Card',
     other: 'Other Document',
   };
   return labels[type || ''] || type || 'Unknown';
+}
+
+/**
+ * Extract the storage object path from a signed URL or raw path.
+ * Signed URL format:  .../object/sign/verification-documents/<path>?token=...
+ * Raw path format:    <userId>/verification-docs/<file>   OR   verification-docs/<file>
+ * Keeps the FULL path (including the userId prefix) so re-signing works with
+ * the storage RLS policy that keys on the first folder being the user UUID.
+ */
+function extractStoragePath(url: string): string | null {
+  if (!url) return null;
+  // Signed URL — pull everything after the bucket marker, before the query string
+  const marker = '/object/sign/verification-documents/';
+  const idx = url.indexOf(marker);
+  if (idx !== -1) {
+    const rest = url.substring(idx + marker.length);
+    return rest.split('?')[0] || null;
+  }
+  // Raw path — already a storage path (with or without userId prefix)
+  if (url.startsWith('verification-documents/')) {
+    return url.substring('verification-documents/'.length) || null;
+  }
+  if (url.includes('verification-docs/') || url.includes('/verification-docs/')) {
+    return url.split('?')[0];
+  }
+  return null;
 }
 
 const statusColors: Record<string, string> = {
@@ -84,11 +112,9 @@ function DocumentPreviewModal({
         return;
       }
 
-      // If it's a Supabase storage path, generate a signed URL
-      if (docUrl.includes('verification-docs/') || docUrl.startsWith('verification-docs/')) {
-        const filePath = docUrl.includes('verification-docs/')
-          ? docUrl.substring(docUrl.indexOf('verification-docs/'))
-          : docUrl;
+      // If it's a Supabase storage path (signed URL or raw path), re-sign it
+      const filePath = extractStoragePath(docUrl);
+      if (filePath) {
         const result = await identityVerificationService.getSignedDocumentUrl(filePath, 600);
         if (result.success && result.url) {
           setSignedUrl(result.url);
@@ -112,11 +138,9 @@ function DocumentPreviewModal({
       if (!backDocUrl) return;
       setLoadingBack(true);
       setBackError(null);
-      if (backDocUrl.includes('verification-docs/') || backDocUrl.startsWith('verification-docs/')) {
-        const filePath = backDocUrl.includes('verification-docs/')
-          ? backDocUrl.substring(backDocUrl.indexOf('verification-docs/'))
-          : backDocUrl;
-        const result = await identityVerificationService.getSignedDocumentUrl(filePath, 600);
+      const backPath = extractStoragePath(backDocUrl);
+      if (backPath) {
+        const result = await identityVerificationService.getSignedDocumentUrl(backPath, 600);
         if (result.success && result.url) setSignedBackUrl(result.url);
         else setBackError(result.error || 'Failed to generate signed URL for back side.');
       } else if (backDocUrl.startsWith('http://') || backDocUrl.startsWith('https://')) {

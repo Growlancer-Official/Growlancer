@@ -114,6 +114,11 @@ Deno.serve(async (req) => {
 
       for (const bucket of USER_FOLDER_BUCKETS) {
         await removeStoragePrefix(adminClient, bucket, user.id);
+        // Verification docs live under `{userId}/verification-docs/` — clean
+        // that nested folder too (storage.list only sees one level deep).
+        if (bucket === 'verification-documents') {
+          await removeStoragePrefix(adminClient, bucket, `${user.id}/verification-docs`);
+        }
       }
       for (const c of (contracts ?? [])) {
         await removeStoragePrefix(adminClient, 'contract-files', c.id);

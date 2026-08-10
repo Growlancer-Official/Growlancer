@@ -66,7 +66,12 @@ export const identityVerificationService = {
       // Create a unique file name
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}_${Date.now()}.${fileExt}`;
-      const filePath = `verification-docs/${fileName}`;
+      // 🔑 The storage RLS policy for the private `verification-documents` bucket
+      // requires the FIRST path segment to be the user's UUID:
+      //   (storage.foldername(name))[1] = auth.uid()
+      // Any other first segment (e.g. `verification-docs/`) makes the INSERT
+      // fail with "new row violates row-level security policy".
+      const filePath = `${userId}/verification-docs/${fileName}`;
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase
