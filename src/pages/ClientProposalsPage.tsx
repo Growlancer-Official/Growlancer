@@ -6,6 +6,7 @@ import { hireFreelancerFromProposal, rejectProposal } from '../lib/workflowServi
 import { CheckCircle, Clock, ExternalLink, Eye, FileText, IndianRupee, MoreVertical, Plus, Star, User, XCircle } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
+import { VerifiedBadge } from '../components/VerifiedBadge';
 
 interface Proposal {
   id: string;
@@ -28,6 +29,7 @@ interface Proposal {
       name: string;
       avatar?: string;
       is_pro?: boolean;
+      verification_status?: string | null;
       deleted_at?: string | null;
       freelancer_profiles?: {
         rating?: number;
@@ -165,6 +167,7 @@ export function ClientProposalsPage() {
               name, 
               avatar, 
               is_pro,
+              verification_status,
               deleted_at,
               freelancer_profiles(rating, hourly_rate, completion_rate)
             )
@@ -362,8 +365,11 @@ export function ClientProposalsPage() {
                       to={`/freelancer/${proposal.freelancer_id}`}
                       className="font-display font-bold text-slate-900 hover:text-emerald-600 transition-colors"
                     >
-                      {proposal.freelancer?.name || 'Unknown Freelancer'}
-                      {proposal.freelancer?.is_pro && <ProBadge size="xs" className="ml-1.5" />}
+                      <span className="flex items-center gap-1.5">
+                        {proposal.freelancer?.name || 'Unknown Freelancer'}
+                        {proposal.freelancer?.verification_status === 'verified' && <VerifiedBadge size="xs" />}
+                        {proposal.freelancer?.is_pro && <ProBadge size="xs" />}
+                      </span>
                     </Link>
                     <div className="flex items-center gap-3 text-sm text-slate-500">
                       <div className="flex items-center gap-1">

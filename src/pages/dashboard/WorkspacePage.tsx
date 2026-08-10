@@ -793,7 +793,7 @@ export function WorkspacePage() {
             <p className="text-sm text-slate-500">
               Co-working with <span className="font-semibold text-slate-700">{selectedContract?.client?.name}</span>
               {(selectedContract?.client as any)?.verification_status === 'verified' && (
-                <VerifiedBadge size="xs" className="ml-1.5" />
+                <VerifiedBadge size="xs" className="ml-1.5" tone="blue" />
               )}
               {(() => {
                 const esc = normalizeEscrow((selectedContract as any)?.escrow);

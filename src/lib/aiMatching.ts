@@ -22,6 +22,7 @@ export interface AIMatchWithProfile extends AIMatch {
     name: string;
     avatar: string;
     is_pro?: boolean;
+    verification_status?: string | null;
     categories: string[];
     skills: string[];
     hourly_rate: number;
@@ -300,6 +301,7 @@ export const aiMatchingService = {
             name,
             avatar,
             is_pro,
+            verification_status,
             freelancer_profiles (
               categories,
               skills,
@@ -340,7 +342,8 @@ export const aiMatchingService = {
             id: freelancerRaw.id,
             name: freelancerRaw.name,
             avatar: freelancerRaw.avatar || '',
-            categories: fp.categories || [],
+            is_pro: freelancerRaw.is_pro || false,
+            verification_status: freelancerRaw.verification_status || undefined,
             skills: fp.skills || [],
             hourly_rate: fp.hourly_rate || 0,
             availability: fp.availability ? 'Available' : 'Unavailable',

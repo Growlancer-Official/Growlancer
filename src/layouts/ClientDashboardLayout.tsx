@@ -32,6 +32,7 @@ import { ClientDashboardFallback } from '../components/LoadingSkeleton';
 import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
+import { VerifiedBadge } from '../components/VerifiedBadge';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -543,7 +544,10 @@ export function ClientDashboardLayout() {
                 </div>
               )}
               <div className="text-left hidden lg:block">
-                <p className="text-sm font-bold leading-tight truncate max-w-[120px]">{user?.name || 'Client'}</p>
+                <p className="text-sm font-bold leading-tight truncate max-w-[120px] flex items-center gap-1.5">
+                  <span className="truncate">{user?.name || 'Client'}</span>
+                  {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
+                </p>
               </div>
             </button>
           </div>

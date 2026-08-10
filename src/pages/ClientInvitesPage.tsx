@@ -5,6 +5,7 @@ import { invitesService } from '../lib/dataService';
 import { Calendar, Clock, MailCheck, MoreVertical, Plus, RefreshCw, Send, X } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
+import { VerifiedBadge } from '../components/VerifiedBadge';
 
 interface Invite {
   id: string;
@@ -25,6 +26,7 @@ interface Invite {
     avatar?: string;
     email?: string;
     is_pro?: boolean;
+    verification_status?: string | null;
   };  }
 
 /* ── Dropdown menu for each invite card ── */
@@ -249,6 +251,7 @@ export function ClientInvitesPage() {
                     <div>
                       <h3 className="font-display font-bold text-slate-900 flex items-center gap-1.5">
                         {invite.freelancer?.name || 'Unknown Freelancer'}
+                        {invite.freelancer?.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                         {invite.freelancer?.is_pro && <ProBadge size="xs" />}
                       </h3>
                       <p className="text-sm text-slate-500">{invite.freelancer?.email}</p>

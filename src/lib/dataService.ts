@@ -762,7 +762,7 @@ export const invitesService = {
   async getByClient(clientId: string): Promise<Invite[]> {
     const { data, error } = await supabase
       .from('invites')
-      .select('*, project:projects(id, title), freelancer:profiles!invites_freelancer_id_fkey(id, name, avatar, is_pro, deleted_at)')
+      .select('*, project:projects(id, title), freelancer:profiles!invites_freelancer_id_fkey(id, name, avatar, is_pro, deleted_at, verification_status)')
       .eq('client_id', clientId)
       .order('created_at', { ascending: false });
 

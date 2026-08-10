@@ -17,6 +17,8 @@ export interface AuthUser {
   onboardingCompleted?: boolean;
   country?: string;
   phone?: string;
+  /** 'verified' when the user completed KYC — drives the verified badge everywhere. */
+  verificationStatus?: string | null;
 }
 
 export interface AuthResponse {

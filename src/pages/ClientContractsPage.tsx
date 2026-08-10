@@ -5,6 +5,7 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
 import { ProBadge } from '../components/ProBadge';
+import { VerifiedBadge } from '../components/VerifiedBadge';
 
 interface Contract {
   id: string;
@@ -18,7 +19,7 @@ interface Contract {
   end_date?: string | null;
   created_at: string | null;
   project?: { id: string; title: string } | null;
-  freelancer?: { id: string; name: string; avatar?: string | null; is_pro?: boolean } | null;
+  freelancer?: { id: string; name: string; avatar?: string | null; is_pro?: boolean; verification_status?: string | null } | null;
   escrow?: { id: string; amount: number; status: string }[] | { id: string; amount: number; status: string } | null;
 }
 
@@ -62,7 +63,7 @@ export function ClientContractsPage() {
       .select(`
         *,
         project:projects(id, title),
-        freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, is_pro),
+        freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, is_pro, verification_status),
         escrow(id, amount, status)
       `)
       .eq('client_id', user.id)
@@ -72,7 +73,7 @@ export function ClientContractsPage() {
     if (error) {
       console.error('Error fetching contracts:', error);
     } else {
-      const newContracts = (data as Contract[]) || [];
+      const newContracts = (data as unknown as Contract[]) || [];
       if (loadMore) {
         setContracts(prev => [...prev, ...newContracts]);
         pageRef.current = currentPage + 1;
@@ -253,6 +254,7 @@ export function ClientContractsPage() {
                       <h3 className="font-display font-bold text-slate-900">
                         <span className="flex items-center gap-1.5">
                           {contract.freelancer?.name || 'Unknown Freelancer'}
+                          {contract.freelancer?.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                           {contract.freelancer?.is_pro && <ProBadge size="xs" />}
                         </span>
                       </h3>

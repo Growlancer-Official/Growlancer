@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Calendar, CheckCircle2, ChevronDown, Clock, FileText, Loader2, MessageSquare, User, XCircle,  } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { realtimeChannels, tables } from '../../lib/supabase';
@@ -42,7 +43,7 @@ export function ProposalsPage() {
           *,
           project:projects(
             *,
-            client:profiles!projects_client_id_fkey(id, name, email, avatar, deleted_at)
+            client:profiles!projects_client_id_fkey(id, name, email, avatar, deleted_at, verification_status)
           )
         `)
         .eq('freelancer_id', user.id)
@@ -348,7 +349,10 @@ export function ProposalsPage() {
                     <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
-                        Client: <span className="font-medium text-slate-700">{proposal.project?.client?.name || 'Client'}</span>
+                        Client: <span className="font-medium text-slate-700 flex items-center gap-1">
+                          {proposal.project?.client?.name || 'Client'}
+                          {(proposal.project?.client as any)?.verification_status === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
+                        </span>
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />

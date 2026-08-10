@@ -41,6 +41,7 @@ import {
 } from 'lucide-react'
 import { refundService, type RefundRequest, type RefundHistoryEvent } from '../lib/refundService'
 import { VerifiedBadge } from '../components/VerifiedBadge'
+import { ProBadge } from '../components/ProBadge'
 import { ReviewModal } from '../components/ReviewModal'
 
 interface Contract {
@@ -690,6 +691,9 @@ export function ClientWorkspacePage() {
                       </span>
                       {(selectedContract.freelancer as any)?.verification_status === 'verified' && (
                         <VerifiedBadge size="xs" className="ml-1.5" />
+                      )}
+                      {(selectedContract.freelancer as any)?.is_pro && (
+                        <ProBadge size="xs" className="ml-1" />
                       )}
                     </p>
                   </div>

@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, X } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
@@ -593,7 +594,10 @@ export function ContractsPage() {
                     <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
-                        Client: <span className="font-medium text-slate-700">{contract.profiles?.name}</span>
+                        Client: <span className="font-medium text-slate-700 flex items-center gap-1">
+                          {contract.profiles?.name}
+                          {contract.profiles?.verification_status === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
+                        </span>
                       </span>
                       <span className="flex items-center gap-1">
                         <Calendar className="w-4 h-4" />
@@ -987,7 +991,10 @@ export function ContractsPage() {
                   {getStatusBadge(cc.status || 'active')}
                   {cBalance && <EscrowStatusBadge balance={cBalance} />}
                   <span className="text-sm text-slate-500">
-                    Client: <span className="font-semibold text-slate-800">{cc.profiles?.name || '—'}</span>
+                    Client: <span className="font-semibold text-slate-800 flex items-center gap-1">
+                      {cc.profiles?.name || '—'}
+                      {cc.profiles?.verification_status === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
+                    </span>
                   </span>
                 </div>
 

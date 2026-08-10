@@ -108,6 +108,7 @@ export async function fetchUserProfile(userId: string): Promise<AuthUser | null>
       onboardingCompleted: data.onboarding_completed || false,
       country: data.country || undefined,
       phone: data.phone || undefined,
+      verificationStatus: data.verification_status || undefined,
     };
   } catch {
     return null;

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Loader2, Mail, MessageSquare, User, Wallet, XCircle } from 'lucide-react';
 import { useToast } from '../../components/Toast';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, dbFunctions, uniqueChannelName } from '../../lib/supabase';
@@ -23,6 +24,7 @@ type InviteWithDetails = Tables<'invites'> & {
     name: string;
     email: string;
     avatar: string | null;
+    verification_status?: string | null;
   };
 };
 
@@ -45,7 +47,7 @@ export function InvitesPage() {
           .select(`
             *,
             projects!inner(title, description, budget_min, budget_max, skills_required, client_id, experience_level),
-            profiles!invites_client_id_fkey(name, email, avatar, deleted_at)
+            profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status)
           `)
           .eq('freelancer_id', user.id)
           .order('created_at', { ascending: false });
@@ -92,7 +94,7 @@ export function InvitesPage() {
                 .select(`
                   *,
                   projects!inner(title, description, budget_min, budget_max, skills_required, client_id, experience_level),
-                  profiles!invites_client_id_fkey(name, email, avatar, deleted_at)
+                  profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status)
                 `)
                 .eq('id', payload.new.id)
                 .single();
@@ -416,7 +418,10 @@ export function InvitesPage() {
                       <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
                         <span className="flex items-center gap-1">
                           <User className="w-4 h-4" />
-                          Invited by <span className="font-medium text-slate-700">{invite.profiles?.name}</span>
+                          Invited by <span className="font-medium text-slate-700 flex items-center gap-1">
+                            {invite.profiles?.name}
+                            {invite.profiles?.verification_status === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
+                          </span>
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />

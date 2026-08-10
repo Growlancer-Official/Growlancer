@@ -35,6 +35,7 @@ import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
+import { VerifiedBadge } from '../components/VerifiedBadge';
 import { useProStatus } from '../hooks/useProStatus';
 import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
 
@@ -706,6 +707,7 @@ export function DashboardLayout() {
               <div className="text-left hidden lg:block">
                 <p className="text-sm font-bold leading-tight flex items-center gap-1.5">
                   {user?.name || 'User'}
+                  {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" />}
                   {isPro && <ProBadge size="xs" />}
                 </p>
                 <div className="flex items-center gap-1">

@@ -2352,6 +2352,7 @@ export type Database = {
           suspended_by: string | null
           total_reviews: number | null
           updated_at: string | null
+          verification_status: string | null
         }
         Insert: {
           avatar?: string | null
@@ -2371,6 +2372,7 @@ export type Database = {
           role: string
           suspend_reason?: string | null
           suspended_at?: string | null
+          verification_status?: string | null
           suspended_by?: string | null
           total_reviews?: number | null
           updated_at?: string | null
@@ -2396,6 +2398,7 @@ export type Database = {
           suspended_by?: string | null
           total_reviews?: number | null
           updated_at?: string | null
+          verification_status?: string | null
         }
         Relationships: [
           {

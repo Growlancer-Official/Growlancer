@@ -14,6 +14,7 @@ import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2
 import { useCategories } from '../../hooks/useCategories';
 import { CategoryPicker } from '../../components/CategoryPicker';
 import { ProBadge } from '../../components/ProBadge';
+import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { useProStatus } from '../../hooks/useProStatus';
 import type { Tables } from '../../types/supabase';
 import type { PayoutMethod } from '../../lib/withdrawal';
@@ -904,6 +905,7 @@ export function ProfessionalProfilePage() {
             </div>
             <h2 className="font-display text-lg font-bold text-slate-900 mb-0.5 flex items-center justify-center gap-2">
               {formData.name || 'Your Name'}
+              {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" />}
               {isPro && <ProBadge size="xs" />}
             </h2>
             <p className="text-sm text-slate-500 mb-1">{formData.title || 'Freelancer'}</p>
