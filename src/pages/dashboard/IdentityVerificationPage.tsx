@@ -98,9 +98,10 @@ export function IdentityVerificationPage() {
     return () => clearInterval(t);
   }, [verificationStatus, blockedDisplayMs, fetchStatus]);
 
-  // Realtime subscription for status changes — pending → verified flip arrives
-  // live (≈10 min after submit). On the verified flip we also send the approval
-  // email once (fire-and-forget) so the user gets notified in-app + by email.
+  // Realtime subscription for status changes — the backend auto-verifies valid
+  // documents INSTANTLY, so the pending → verified/rejected flip arrives live.
+  // On the verified flip we also send the approval email once (fire-and-forget)
+  // so the user gets notified in-app + by email.
   const emailedVerifiedIds = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!user) return;
@@ -635,15 +636,15 @@ export function IdentityVerificationPage() {
         <h2 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h2>
         <p className="text-slate-500 mb-6">
           Your documents are being <span className="font-semibold text-slate-700">auto-verified</span> against standard
-          formats. This usually completes within <span className="font-semibold text-amber-700">10-20 minutes</span>.
-          Your status updates here in real time — no refresh needed.
+          formats. Verification completes <span className="font-semibold text-amber-700">in seconds</span> —
+          your status updates here in real time, no refresh needed.
         </p>
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-6 flex items-start gap-2 text-left">
           <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-700 leading-relaxed">
-            If your document number doesn't match the expected format, your submission goes to a
-            manual review and you'll be notified by email. Your documents are stored securely and
-            never shared without your consent.
+            If your document number doesn't match the expected format, your submission is rejected
+            instantly with a clear reason and you can resubmit (3 attempts, then a 24-hour cooldown).
+            Your documents are stored securely and never shared without your consent.
           </p>
         </div>
 
