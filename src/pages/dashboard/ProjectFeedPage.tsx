@@ -843,7 +843,7 @@ export function ProjectFeedPage() {
                   <div className="flex items-center gap-2 text-sm text-slate-500">
                     <span>Posted by</span>
                     <span className="font-medium text-slate-700">
-                      {match.project.client?.name || 'Anonymous Client'}
+                      {match.project.client?.name || 'Client'}
                     </span>
                     {/* Show real client metric or nothing — no fake rating */}
                   

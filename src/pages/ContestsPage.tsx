@@ -223,7 +223,7 @@ export function ContestsPage() {
                         {contest.client?.name?.charAt(0) || 'C'}
                       </div>
                       <span className="text-sm font-medium text-slate-700">
-                        {contest.client?.name || 'Anonymous'}
+                        {contest.client?.name || 'Client'}
                       </span>
                     </div>
                     <div className="flex items-center gap-4 text-sm">

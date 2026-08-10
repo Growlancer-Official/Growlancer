@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, X } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
@@ -138,6 +138,17 @@ export function ContractsPage() {
   const [contractModalContract, setContractModalContract] = useState<ContractWithDetails | null>(null);
   const pageSize = 20;
   const pageRef = useRef(0);
+  const [searchParams] = useSearchParams();
+
+  // Honor ?tab= from the URL (e.g. after a review submit -> land on completed history)
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'all' || tab === 'active' || tab === 'pending' || tab === 'completed') {
+      setActiveTab(tab);
+      userTouchedFilter.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Escrow balances keyed by contract ID
   const [escrowBalances, setEscrowBalances] = useState<Record<string, EscrowState>>({});

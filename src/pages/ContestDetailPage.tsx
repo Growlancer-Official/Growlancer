@@ -213,7 +213,7 @@ export function ContestDetailPage() {
                   {contest.client?.name?.charAt(0) || 'C'}
                 </div>
                 <div>
-                  <p className="font-semibold text-slate-900">{contest.client?.name || 'Anonymous'}</p>
+                  <p className="font-semibold text-slate-900">{contest.client?.name || 'Client'}</p>
                   <p className="text-sm text-slate-500">Contest Owner</p>
                 </div>
               </div>
@@ -395,7 +395,7 @@ export function ContestDetailPage() {
                           {submission.freelancer?.name?.charAt(0) || 'F'}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900">{submission.freelancer?.name || 'Anonymous'}</p>
+                          <p className="font-semibold text-slate-900">{submission.freelancer?.name || 'Freelancer'}</p>
                           <p className="text-sm text-slate-500">
                             {new Date(submission.created_at).toLocaleDateString()}
                           </p>
@@ -494,7 +494,7 @@ export function ContestDetailPage() {
                         {comment.user?.name?.charAt(0) || 'U'}
                       </div>
                       <span className="font-medium text-sm text-slate-900">
-                        {comment.user?.name || 'Anonymous'}
+                        {comment.user?.name || 'User'}
                       </span>
                       <span className="text-xs text-slate-400">
                         {new Date(comment.created_at).toLocaleDateString()}

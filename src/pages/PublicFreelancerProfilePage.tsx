@@ -709,7 +709,7 @@ export function PublicFreelancerProfilePage() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <p className="font-medium text-slate-900">{review.reviewer?.name || 'Anonymous'}</p>
+                          <p className="font-medium text-slate-900">{review.reviewer?.name || 'Client'}</p>
                           <span className="text-xs text-slate-400">
                             {new Date(review.created_at).toLocaleDateString()}
                           </span>

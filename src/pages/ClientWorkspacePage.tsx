@@ -1625,7 +1625,7 @@ export function ClientWorkspacePage() {
             setReviewedContractIds(prev => new Set(prev).add(selectedContract.id))
             toast.success('Review Submitted', 'Thank you! Your review has been published and the contract is now in your history.')
             // After review, the workspace closes — only the contract history remains.
-            navigate('/client/contracts')
+            navigate('/client/contracts?tab=completed')
           }}
         />
       )}

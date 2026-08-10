@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
@@ -47,6 +47,17 @@ export function ClientContractsPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const pageSize = 20;
   const pageRef = useRef(0);
+  const [searchParams] = useSearchParams();
+
+  // Honor ?tab= from the URL (e.g. after a review submit -> land on completed history)
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'all' || tab === 'active' || tab === 'pending' || tab === 'completed') {
+      setFilter(tab);
+      userTouchedFilter.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchContracts = useCallback(async (loadMore = false) => {
     if (!user?.id) {
