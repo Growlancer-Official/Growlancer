@@ -623,7 +623,7 @@ export function ClientWorkspacePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto px-4 py-6 md:py-8">
+    <div className="space-y-6">
       {/* Top Banner / Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-2xl shadow-sm">
         <div className="flex items-center gap-3">
