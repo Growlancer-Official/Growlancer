@@ -40,7 +40,6 @@ export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', 
       className={base}
       role="img"
       aria-label={label}
-      title={label}
     >
       <BadgeCheck className={`${sizes.icon} fill-white/20`} strokeWidth={2.5} />
       {showLabel && <span className={sizes.label}>{tone === 'blue' ? 'CLIENT' : 'VERIFIED'}</span>}

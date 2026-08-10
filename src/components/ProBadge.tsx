@@ -25,7 +25,6 @@ export function ProBadge({ size = 'sm', className = '' }: ProBadgeProps) {
       className={base}
       role="img"
       aria-label="Growlancer Pro Member"
-      title="Pro Freelancer"
     >
       <Crown className={`${sizes.icon} fill-amber-300/90 text-amber-300`} strokeWidth={2} />
       <span className="leading-none">PRO</span>
