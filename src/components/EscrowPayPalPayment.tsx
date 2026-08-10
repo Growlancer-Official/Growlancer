@@ -218,7 +218,7 @@ export function EscrowPayPalPayment({
     }).catch(() => setWalletBalance(0)).finally(() => setWalletLoading(false));
   };
 
-  useEffect(() => { loadWalletBalance(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { loadWalletBalance(); }, []);
 
   /** Fund the escrow directly from the client's wallet (atomic server RPC). */
   const handlePayFromWallet = async () => {
