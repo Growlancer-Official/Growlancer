@@ -110,12 +110,15 @@ export function hasSameBrowserAccount(currentEmail?: string): boolean {
   const account = getBrowserAccount();
   if (!account) return false;
 
-  // If the user re-types the SAME email they already registered, that's just
-  // them — not a new-account attempt. Only flag DIFFERENT emails.
-  if (currentEmail) {
-    const normalized = currentEmail.trim().toLowerCase();
-    if (normalized === account.email) return false;
-  }
+  // No email typed yet (or still incomplete) — don't warn until we can compare
+  // against the recorded account. Prevents the banner from appearing the moment
+  // the signup modal opens, before the user types anything.
+  const typed = (currentEmail ?? '').trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(typed)) return false;
+
+  // Typing the SAME email they already registered is just them — not a
+  // new-account attempt. Only flag DIFFERENT complete emails.
+  if (typed === account.email) return false;
 
   return true;
 }
