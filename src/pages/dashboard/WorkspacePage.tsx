@@ -48,6 +48,7 @@ type ContractWithDetails = Tables<'contracts'> & {
   project: Tables<'projects'>;
   client: Tables<'profiles'>;
   escrow?: { id: string; amount: number; status: string }[] | { id: string; amount: number; status: string } | null;
+  escrow_funded?: boolean | null;
   freelancer_amount?: number;
   freelancer_started_at?: string | null;
   cancellation_status?: string | null;
@@ -86,6 +87,7 @@ export function WorkspacePage() {
   const [revisionBusy, setRevisionBusy] = useState(false);
   const [startBusy, setStartBusy] = useState(false);
   const [declineBusy, setDeclineBusy] = useState(false);
+  const [deliverBusy, setDeliverBusy] = useState(false);
   const [contractFiles, setContractFiles] = useState<ContractFile[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -580,6 +582,26 @@ export function WorkspacePage() {
       toast.error(result.error || 'Failed to decline project');
     }
     setDeclineBusy(false);
+  };
+
+  /** Milestone-less (full contract) delivery — starts the auto-release timer. */
+  const handleContractDeliver = async () => {
+    if (!selectedContract) return;
+    setDeliverBusy(true);
+    const { data, error } = await supabase.rpc('mark_contract_delivered' as any, {
+      p_contract_id: selectedContract.id,
+    });
+    const result = data as { success?: boolean; error?: string; auto_release_hours?: number } | null;
+    if (error || !result?.success) {
+      toast.error('Delivery failed', result?.error || error?.message || 'Could not mark contract delivered.');
+    } else {
+      toast.success(
+        'Work delivered — auto-release timer started',
+        `The client can review and release sooner; if they don't respond within ~${result.auto_release_hours ?? 72} hours, the escrow auto-releases to your wallet.`
+      );
+      void refreshContract(selectedContract.id);
+    }
+    setDeliverBusy(false);
   };
 
   const handleMilestoneStatusChange = async (index: number, newStatus: string) => {
@@ -1680,7 +1702,35 @@ export function WorkspacePage() {
                   ) : (
                     <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl">
                       <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-                      <p className="text-xs text-slate-500">No milestones defined for this contract</p>
+                      <p className="text-xs text-slate-500">Full contract escrow — no milestones</p>
+
+                      {workStarted && selectedContract.escrow_funded && selectedContract.status !== 'disputed' && selectedContract.status !== 'completed' && (
+                        <div className="mt-4 space-y-3">
+                          {selectedContract.delivered_at ? (
+                            <div className="mx-auto max-w-sm p-3.5 bg-violet-50 border border-violet-200 rounded-xl">
+                              <p className="text-xs font-bold text-violet-800 flex items-center justify-center gap-1.5">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Delivered — auto-release active
+                              </p>
+                              <p className="text-[11px] text-violet-700 mt-1 leading-relaxed">
+                                The client can review and release sooner — if they don't respond within{' '}
+                                <strong>~{selectedContract.auto_release_hours ?? 72} hours</strong>, the escrow
+                                auto-releases to your wallet automatically. Re-deliver to refresh the timer if you
+                                share updated files.
+                              </p>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => void handleContractDeliver()}
+                              disabled={deliverBusy}
+                              className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold rounded-full bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-50 transition-all"
+                            >
+                              {deliverBusy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                              Deliver Work (starts auto-release timer)
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

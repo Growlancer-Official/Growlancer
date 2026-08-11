@@ -67,6 +67,8 @@ interface Contract {
   dispute_escalated: boolean
   dispute_resolved: boolean
   freelancer_started_at: string | null
+  delivered_at?: string | null
+  auto_release_hours?: number | null
   cancellation_status?: string
   cancellation_requested_by?: string | null
   frozen_at?: string | null
@@ -1406,9 +1408,29 @@ export function ClientWorkspacePage() {
                         </div>
                       ))}
                       {milestones.length === 0 && (
-                        <p className="text-sm text-slate-500 text-center py-4">
-                          No milestones defined for this contract.
-                        </p>
+                        <div className="text-center py-4">
+                          <p className="text-sm text-slate-500">
+                            Full contract escrow — no milestones.
+                          </p>
+                          {(selectedContract as any).delivered_at ? (
+                            <div className="mt-3 p-3.5 bg-violet-50 border border-violet-200 rounded-xl text-left">
+                              <p className="text-xs font-bold text-violet-800 flex items-center gap-1.5">
+                                <Clock className="w-3.5 h-3.5" />
+                                Delivered — review & release within {(selectedContract as any).auto_release_hours ?? 72}h
+                              </p>
+                              <p className="text-[11px] text-violet-700 mt-1 leading-relaxed">
+                                The freelancer has delivered the full project. Review the files and release the escrow when
+                                satisfied — if you don't respond within{' '}
+                                <strong>{(selectedContract as any).auto_release_hours ?? 72} hours</strong>, the payment
+                                releases to the freelancer automatically.
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-[11px] text-slate-400 mt-1">
+                              Once the freelancer delivers, you get a review window before auto-release.
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>

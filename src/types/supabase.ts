@@ -704,8 +704,10 @@ export type Database = {
       contracts: {
         Row: {
           amount: number
+          auto_release_hours: number | null
           client_id: string
           created_at: string | null
+          delivered_at: string | null
           end_date: string | null
           freelancer_amount: number
           freelancer_id: string
@@ -724,8 +726,10 @@ export type Database = {
         }
         Insert: {
           amount: number
+          auto_release_hours?: number | null
           client_id: string
           created_at?: string | null
+          delivered_at?: string | null
           end_date?: string | null
           freelancer_amount: number
           freelancer_id: string
@@ -744,8 +748,10 @@ export type Database = {
         }
         Update: {
           amount?: number
+          auto_release_hours?: number | null
           client_id?: string
           created_at?: string | null
+          delivered_at?: string | null
           end_date?: string | null
           freelancer_amount?: number
           freelancer_id?: string
