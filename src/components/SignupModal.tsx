@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   User,
@@ -17,6 +17,7 @@ import {
 import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { validateEmail, validatePassword, validateRequired, getPasswordStrength } from '../utils/validation';
+import { hasSameBrowserAccount, getSameBrowserEmail } from '../lib/browserIdentity';
 import { Modal } from './Modal';
 
 interface SignupModalProps {
@@ -53,6 +54,34 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [oauthProvider, setOauthProvider] = useState<'github' | 'linkedin' | null>(null);
   const [existingUser, setExistingUser] = useState(false);
+  // 🆕 Same-browser duplicate account detection (referral-abuse protection)
+  const [sameBrowserWarn, setSameBrowserWarn] = useState(false);
+  const [sameBrowserEmail, setSameBrowserEmail] = useState<string | null>(null);
+  // Shared-device escape hatch: dismissing the banner is an EXPLICIT
+  // acknowledgment by the user that they are a different person on a shared
+  // device — not a silent bypass. Submit only passes once acked.
+  const [sameBrowserAck, setSameBrowserAck] = useState(false);
+
+  // 🆕 Real-time same-browser check — runs when the modal opens AND on every
+  // email keystroke. If this browser already has an account with a DIFFERENT
+  // email, we show a red warning and block submission unless acknowledged.
+  const checkSameBrowser = useCallback((value?: string) => {
+    if (hasSameBrowserAccount(value)) {
+      setSameBrowserWarn(true);
+      setSameBrowserEmail(getSameBrowserEmail());
+    } else {
+      setSameBrowserWarn(false);
+      setSameBrowserEmail(null);
+      setSameBrowserAck(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSameBrowserAck(false); // fresh ack per modal open
+      checkSameBrowser(email);
+    }
+  }, [isOpen, email, checkSameBrowser]);
 
   // Sync role from initialRole when modal opens (only if explicitly provided via URL)
   useEffect(() => {
@@ -95,6 +124,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
     } else {
       setEmailError(null);
     }
+    // 🆕 Same-browser check runs via the effect on [email] — single source,
+    // avoids double-checking per keystroke.
   };
 
   // Real-time password strength
@@ -114,6 +145,16 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
     e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = name.trim();
+
+    // 🚫 Same-browser block: this browser already has a Growlancer account.
+    // Creating a second account from the same device is not allowed (referral
+    // / bonus abuse). The user must log out of the existing account instead.
+    if (sameBrowserWarn && !sameBrowserAck) {
+      setError(
+        'This browser already has a Growlancer account. One account per browser is required for platform security — please log out of the existing account first, or confirm you are a different person on a shared device.'
+      );
+      return;
+    }
 
     // ✅ Role selection validation — must explicitly choose
     if (!role) {
@@ -193,6 +234,40 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           Join thousands of professionals already using AI to ship faster.
         </p>
 
+        {/* 🚫 Same-Browser Duplicate Account Banner — BLOCKING until shared-device acknowledgment */}
+        {sameBrowserWarn && !sameBrowserAck && (
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-red-700">Account already exists on this browser</p>
+                <p className="text-[11px] text-red-600 leading-relaxed mt-0.5">
+                  {sameBrowserEmail ? (
+                    <>
+                      An account for <span className="font-semibold">{sameBrowserEmail}</span> was already
+                      created on this device. One account per browser is required — creating multiple accounts
+                      to farm bonuses or referrals is not allowed. Please{' '}
+                      <span className="font-semibold">log out of the existing account</span> and use that one,
+                      or if you are a different person on a shared device, click ✕ to confirm and continue.
+                    </>
+                  ) : (
+                    'This browser already has a Growlancer account. One account per browser is required — log out of the existing account first, or click ✕ if you are a different person on a shared device.'
+                  )}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSameBrowserAck(true)}
+                aria-label="I am a different person on this shared device"
+                title="I am a different person on this shared device — continue"
+                className="p-1 rounded-lg hover:bg-red-100 transition-colors shrink-0"
+              >
+                <X className="w-4 h-4 text-red-400 hover:text-red-600" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ⚠️ Existing Session Banner — Dismissible, NOT blocking */}
         {existingUser && (
           <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
@@ -244,7 +319,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
                 }}
                 className="w-full py-2 text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
               >
-                ← Log out &amp; create a new account
+                ← Log out of the current account
               </button>
             </div>
           </div>

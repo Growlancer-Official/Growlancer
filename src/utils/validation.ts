@@ -1,5 +1,5 @@
 // Validation Utilities for Growlancer
-import { DISPOSABLE_EMAILS } from '../routes';
+import { isDisposableEmailDomain } from '../lib/disposableEmails';
 
 /**
  * Validate email format
@@ -12,17 +12,13 @@ export function isValidEmail(email: string): boolean {
 }
 
 /**
- * Check if email is from a disposable email provider
+ * Check if email is from a disposable email provider (curated ~300 domain list,
+ * subdomain-aware). Mirrors the server-side trigger + newsletter edge function.
  * @param email - Email to check
  * @returns Boolean indicating if email is disposable
  */
 export function isDisposableEmail(email: string): boolean {
-  const domain = email.split('@')[1]?.toLowerCase();
-  if (!domain) return false;
-  
-  return DISPOSABLE_EMAILS.some(
-    (disposable) => domain === disposable || domain.endsWith(`.${disposable}`)
-  );
+  return isDisposableEmailDomain(email);
 }
 
 /**

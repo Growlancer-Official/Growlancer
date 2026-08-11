@@ -9,6 +9,7 @@ import {
 } from '../lib/services/authService';
 import { shouldRedirectToAuthCallback } from '../lib/authAction';
 import { captureError, captureInfo } from '../lib/telemetry';
+import { recordBrowserAccount } from '../lib/browserIdentity';
 import {
   recordLoginAttempt,
   resetLoginAttempts,
@@ -211,6 +212,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     userIdRef.current = user?.id ?? null;
   }, [user?.id]);
+
+  // 🆕 Same-browser account detection: record the account email + browser
+  // fingerprint whenever a real user is authenticated (login, signup, OAuth).
+  // One browser = one account — prevents referral farming. The signup form
+  // reads this marker and warns in real-time before a second account is made.
+  useEffect(() => {
+    if (user?.id && user?.email) {
+      try {
+        recordBrowserAccount(user.email, user.role, /* force */ false);
+      } catch {
+        // best-effort — never break auth over a storage marker
+      }
+    }
+  }, [user?.id, user?.email, user?.role]);
 
   const syncAuthUser = useCallback(
     async (authUser: SupabaseUser, roleHint?: UserRole) => {
