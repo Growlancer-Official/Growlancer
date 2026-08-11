@@ -485,7 +485,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
       <div className={CONTAINER}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
           {/* Left Card */}
-          <div className="lg:col-span-5 rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-6 sm:p-8">
+          <div className="lg:col-span-5 rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-6 sm:p-8 flex flex-col">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center">
                 <Timer className="text-orange-600 w-5 h-5" />
@@ -496,7 +496,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
               </div>
             </div>
 
-            <ul className="space-y-3 text-sm text-slate-600">
+            <ul className="space-y-3 text-sm text-slate-600 flex-1">
               {[
                 { bold: 'Instant AI recommendations', text: 'that fit your project constraints.' },
                 { bold: 'No spam proposals', text: '— you invite who you want to talk to.' },
