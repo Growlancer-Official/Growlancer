@@ -22,7 +22,6 @@ type InviteWithDetails = Tables<'invites'> & {
   profiles: {
     id?: string;
     name: string;
-    email: string;
     avatar: string | null;
     verification_status?: string | null;
   };
@@ -47,7 +46,7 @@ export function InvitesPage() {
           .select(`
             *,
             projects!inner(title, description, budget_min, budget_max, skills_required, client_id, experience_level),
-            profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status, rating, total_reviews)
+            profiles!invites_client_id_fkey(name, avatar, deleted_at, verification_status, rating, total_reviews)
           `)
           .eq('freelancer_id', user.id)
           .order('created_at', { ascending: false });
@@ -94,7 +93,7 @@ export function InvitesPage() {
                 .select(`
                   *,
                   projects!inner(title, description, budget_min, budget_max, skills_required, client_id, experience_level),
-                  profiles!invites_client_id_fkey(name, email, avatar, deleted_at, verification_status, rating, total_reviews)
+                  profiles!invites_client_id_fkey(name, avatar, deleted_at, verification_status, rating, total_reviews)
                 `)
                 .eq('id', payload.new.id)
                 .single();

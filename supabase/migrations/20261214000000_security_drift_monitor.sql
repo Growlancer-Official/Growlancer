@@ -173,6 +173,58 @@ BEGIN
     END IF;
   END LOOP;
 
+  -- 🔴 CRITICAL: open PUBLIC write policies on ANY table (admin_users-style
+  --    hole: roles={public} + WITH CHECK true = anyone can write)
+  FOR v_finding IN
+    SELECT tablename, policyname, cmd
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND roles::text LIKE '%{public}%'
+      AND cmd IN ('ALL', 'INSERT', 'UPDATE', 'DELETE')
+      -- sirf truly-open policies flag karo (WITH CHECK literally true, ya
+      -- qual literally true). Admin-checked policies (complex qual + NULL
+      -- with_check) false-positive nahi honge.
+      AND (
+        lower(coalesce(with_check, '')) = 'true'
+        OR (with_check IS NULL AND lower(coalesce(qual, '')) = 'true')
+      )
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM public.security_alerts
+      WHERE category = 'open_public_write'
+        AND detail LIKE '%' || v_finding.policyname || '%'
+        AND (is_resolved = false OR resolved_at > NOW() - interval '7 days')
+    ) THEN
+      INSERT INTO public.security_alerts (severity, category, detail)
+      VALUES (
+        'critical',
+        'open_public_write',
+        format('PUBLIC write policy %s on %s (cmd=%s) — koi bhi user write kar sakta hai', v_finding.policyname, v_finding.tablename, v_finding.cmd)
+      );
+      v_new := v_new + 1;
+    END IF;
+  END LOOP;
+
+  -- 🔴 CRITICAL: anon PII access on profiles (email/phone leak)
+  IF has_column_privilege('anon', 'public.profiles', 'email', 'SELECT')
+     OR (EXISTS (SELECT 1 FROM information_schema.columns
+                 WHERE table_schema='public' AND table_name='profiles' AND column_name='phone')
+         AND has_column_privilege('anon', 'public.profiles', 'phone', 'SELECT')) THEN
+    IF NOT EXISTS (
+      SELECT 1 FROM public.security_alerts
+      WHERE category = 'anon_pii_select'
+        AND (is_resolved = false OR resolved_at > NOW() - interval '7 days')
+    ) THEN
+      INSERT INTO public.security_alerts (severity, category, detail)
+      VALUES (
+        'critical',
+        'anon_pii_select',
+        'anon role can SELECT PII (email/phone) from profiles — REVOKE required'
+      );
+      v_new := v_new + 1;
+    END IF;
+  END IF;
+
   -- 📨 Real-time admin email via the CRON_SECRET-protected notify function
   IF v_new > 0 THEN
     SELECT value INTO v_cron_secret FROM public.cron_settings WHERE key = 'cron_secret';

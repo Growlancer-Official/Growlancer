@@ -280,6 +280,43 @@ if (!xssFound.length) {
   verdict('WARN', 'XSS sinks found', xssFound.slice(0, 5).join(', '));
 }
 
+// ─── [9] Open PUBLIC write policies on ANY table (admin_users-style hole) ─
+console.log('\n[9] Open write policies on any table (roles=public)');
+const openWrites = dbQuery(
+  `SELECT tablename, policyname, cmd, with_check FROM pg_policies
+   WHERE schemaname='public'
+     AND roles::text LIKE '%{public}%'
+     AND cmd IN ('ALL','INSERT','UPDATE','DELETE')
+     AND with_check IS NOT NULL
+     AND (with_check ILIKE '%true%' OR with_check IS NULL)
+   ORDER BY tablename;`
+);
+if (openWrites.length && openWrites[0].__error) {
+  verdict('WARN', 'Could not query write policies', openWrites[0].__error);
+} else if (!openWrites.length) {
+  verdict('PASS', 'No public write policies with open WITH CHECK on any table');
+} else {
+  verdict('FAIL', `${openWrites.length} PUBLIC write policies with open WITH CHECK`, openWrites.slice(0, 6).map(p => `${p.tablename}.${p.policyname}(${p.cmd})`).join(', ') + (openWrites.length > 6 ? ' …' : ''));
+}
+
+// ─── [10] anon PII access on profiles (email/phone leak) ──────────────────
+console.log('\n[10] anon PII access on profiles');
+const piiChecks = dbQuery(
+  `SELECT column_name,
+          has_column_privilege('anon', 'public.profiles', column_name, 'SELECT') AS anon_sel
+   FROM unnest(ARRAY['email','phone']) AS column_name;`
+);
+if (piiChecks.length && piiChecks[0].__error) {
+  verdict('WARN', 'Could not check PII column privileges', piiChecks[0].__error);
+} else {
+  const leaked = piiChecks.filter(c => c.anon_sel === true);
+  if (!leaked.length) {
+    verdict('PASS', 'anon cannot SELECT email/phone from profiles');
+  } else {
+    verdict('FAIL', `anon CAN SELECT: ${leaked.map(c => c.column_name).join(', ')}`, 'REVOKE SELECT FROM anon required');
+  }
+}
+
 // ─── Summary ──────────────────────────────────────────────────────────────
 console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 console.log(`  RESULT: ${PASS} PASS · ${WARN} WARN · ${FAIL} FAIL`);

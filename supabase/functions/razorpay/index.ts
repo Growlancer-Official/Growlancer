@@ -534,8 +534,8 @@ serve(async req => {
 
         if (updateError) throw new Error(`Failed to update order: ${updateError.message}`);
 
-        // Store transaction
-        await supabaseClient.from('razorpay_transactions').insert({
+        // Store transaction (service role — RLS public-insert policy dropped)
+        await supabaseAdmin.from('razorpay_transactions').insert({
           razorpay_order_id: updatedOrder.id,
           razorpay_payment_id,
           transaction_type: 'capture',
@@ -726,7 +726,7 @@ serve(async req => {
           body: JSON.stringify(refundBody),
         });
 
-        await supabaseClient.from('razorpay_transactions').insert({
+        await supabaseAdmin.from('razorpay_transactions').insert({
           razorpay_payment_id,
           razorpay_transaction_id: refundResult.id,
           transaction_type: 'refund',

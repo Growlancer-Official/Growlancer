@@ -43,7 +43,7 @@ export function ProposalsPage() {
           *,
           project:projects(
             *,
-            client:profiles!projects_client_id_fkey(id, name, email, avatar, deleted_at, verification_status, rating, total_reviews)
+            client:profiles!projects_client_id_fkey(id, name, avatar, deleted_at, verification_status, rating, total_reviews)
           )
         `)
         .eq('freelancer_id', user.id)

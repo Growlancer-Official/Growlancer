@@ -180,7 +180,7 @@ export const projectsService = {
   async getById(projectId: string): Promise<Project | null> {
     const { data, error } = await supabase
       .from('projects')
-      .select('*, profiles!projects_client_id_fkey(name, avatar, email, deleted_at)')
+      .select('*, profiles!projects_client_id_fkey(name, avatar, deleted_at)')
       .eq('id', projectId)
       .single();
 
@@ -272,7 +272,7 @@ export const proposalsService = {
   async getByProject(projectId: string): Promise<Proposal[]> {
     const { data, error } = await supabase
       .from('proposals')
-      .select('*, profiles!proposals_freelancer_id_fkey(name, avatar, email, deleted_at), freelancer_profiles(*)')
+      .select('*, profiles!proposals_freelancer_id_fkey(name, avatar, deleted_at), freelancer_profiles(*)')
       .eq('project_id', projectId)
       .order('created_at', { ascending: false });
 
