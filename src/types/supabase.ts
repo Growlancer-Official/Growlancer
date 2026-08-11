@@ -3078,6 +3078,79 @@ export type Database = {
           },
         ]
       }
+      revision_requests: {
+        Row: {
+          client_id: string
+          contract_id: string
+          created_at: string
+          freelancer_id: string
+          id: string
+          paid_at: string | null
+          per_revision_price: number
+          razorpay_order_id: string | null
+          reason: string
+          responded_at: string | null
+          revision_count: number
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          contract_id: string
+          created_at?: string
+          freelancer_id: string
+          id?: string
+          paid_at?: string | null
+          per_revision_price?: number
+          razorpay_order_id?: string | null
+          reason: string
+          responded_at?: string | null
+          revision_count?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          contract_id?: string
+          created_at?: string
+          freelancer_id?: string
+          id?: string
+          paid_at?: string | null
+          per_revision_price?: number
+          razorpay_order_id?: string | null
+          reason?: string
+          responded_at?: string | null
+          revision_count?: number
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "revision_requests_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revision_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "revision_requests_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           comment: string | null

@@ -242,7 +242,7 @@ serve(async req => {
         } = data;
 
         const validOrderType = typeof order_type === 'string' ? order_type.trim() : '';
-        if (!['contract_escrow', 'subscription', 'service_purchase', 'card_verification', 'wallet_topup'].includes(validOrderType)) {
+        if (!['contract_escrow', 'subscription', 'service_purchase', 'card_verification', 'wallet_topup', 'revision_payment'].includes(validOrderType)) {
           throw new Error('Invalid order_type');
         }
 
@@ -321,6 +321,24 @@ serve(async req => {
             throw new Error('Amount must be between ₹50 and ₹1,00,000');
           }
           serverAmount = Math.round(requested * 100) / 100;
+        } else if (validOrderType === 'revision_payment') {
+          // Client pays for EXTRA REVISIONS beyond the free included ones.
+          // The amount is the revision_requests.total_amount (set when the
+          // freelancer accepted) — never trusted from the request body.
+          const revisionRequestId = data.revision_request_id || metadata?.revision_request_id;
+          if (!revisionRequestId) throw new Error('revision_request_id is required for revision_payment');
+          const { data: revReq } = await supabaseClient
+            .from('revision_requests')
+            .select('client_id, status, total_amount, contract_id')
+            .eq('id', revisionRequestId)
+            .single();
+          if (!revReq || revReq.client_id !== user.id) {
+            throw new Error('Unauthorized: revision request not found');
+          }
+          if (revReq.status !== 'accepted') {
+            throw new Error('Revision request is not awaiting payment');
+          }
+          serverAmount = Number(revReq.total_amount) || 0;
         }
 
         const validAmount = serverAmount;
@@ -590,6 +608,21 @@ serve(async req => {
                 { service_id: serviceId }
               );
             }
+          }
+        }
+
+        // Extra revision payment: add the paid amount to the contract escrow
+        // (escrow-protected until the client approves the revised work).
+        // Idempotent — only runs on the FIRST capture (status='captured'
+        // guard above), so a retried verify can never double-credit escrow.
+        if (updatedOrder.order_type === 'revision_payment') {
+          const revisionRequestId = updatedOrder.metadata?.revision_request_id || data?.revision_request_id;
+          if (revisionRequestId) {
+            const { error: revErr } = await supabaseAdmin.rpc('mark_revision_paid', {
+              p_request_id: revisionRequestId,
+              p_razorpay_order_id: razorpay_order_id,
+            });
+            if (revErr) throw new Error(`Failed to credit revision escrow: ${revErr.message}`);
           }
         }
 

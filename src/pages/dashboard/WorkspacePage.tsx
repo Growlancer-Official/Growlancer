@@ -37,6 +37,7 @@ import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { refundService, type RefundRequest } from '../../lib/refundService';
+import { revisionService, type RevisionRequest } from '../../lib/revisionService';
 import { fileUploadService, type ContractFile } from '../../lib/fileUpload';
 import { normalizeEscrow } from '../../lib/contractMilestones';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
@@ -80,6 +81,9 @@ export function WorkspacePage() {
   const [milestones, setMilestones] = useState<Array<{ title: string; description?: string; amount: number; status: string; due_date?: string }>>([]);
   const [pendingCancellation, setPendingCancellation] = useState<RefundRequest | null>(null);
   const [cancellationBusy, setCancellationBusy] = useState(false);
+  const [pendingRevision, setPendingRevision] = useState<RevisionRequest | null>(null);
+  const [revisionPriceInput, setRevisionPriceInput] = useState('');
+  const [revisionBusy, setRevisionBusy] = useState(false);
   const [startBusy, setStartBusy] = useState(false);
   const [declineBusy, setDeclineBusy] = useState(false);
   const [contractFiles, setContractFiles] = useState<ContractFile[]>([]);
@@ -488,6 +492,50 @@ export function WorkspacePage() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [selectedContract, loadPendingCancellation]);
+
+  // ─── Extra Revisions (freelancer side) ────────────────────────
+  const loadPendingRevision = useCallback(async () => {
+    if (!selectedContract) return;
+    const reqs = await revisionService.getForContract(selectedContract.id);
+    const pending = reqs.find(r => r.status === 'pending_freelancer') || null;
+    setPendingRevision(pending);
+    // Prefill the price only when a NEW pending request appears (never clobber
+    // the freelancer's own typing — revisionPriceInput is not a dependency).
+    if (pending) {
+      setRevisionPriceInput(prev => prev === '' ? String(Number(pending.per_revision_price) || '') : prev);
+    }
+  }, [selectedContract]);
+
+  useEffect(() => {
+    if (!selectedContract) return;
+    void loadPendingRevision();
+    const sub = revisionService.subscribeToContract(selectedContract.id, () => { void loadPendingRevision(); });
+    return () => { void supabase.removeChannel(sub.channel); };
+  }, [selectedContract, loadPendingRevision]);
+
+  const handleRespondRevision = async (accept: boolean) => {
+    if (!pendingRevision) return;
+    setRevisionBusy(true);
+    const price = accept ? parseFloat(revisionPriceInput) : undefined;
+    if (accept && (!Number.isFinite(price) || (price ?? 0) <= 0)) {
+      toast.error('Invalid price', 'Enter a valid per-revision price to accept.');
+      setRevisionBusy(false);
+      return;
+    }
+    const result = await revisionService.respondToExtraRevision(pendingRevision.id, accept, price);
+    if (result.success) {
+      setPendingRevision(null);
+      setRevisionPriceInput('');
+      toast.success(
+        accept
+          ? 'Revision request accepted — the client will now pay the quoted amount through escrow'
+          : 'Revision request declined — the client has been notified'
+      );
+    } else {
+      toast.error(result.error || 'Failed to respond to revision request');
+    }
+    setRevisionBusy(false);
+  };
 
   const handleRespondCancellation = async (accept: boolean) => {
     if (!pendingCancellation) return;
@@ -1022,6 +1070,57 @@ export function WorkspacePage() {
                     Please contact support to resolve this dispute.
                   </p>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Extra Revision Request Banner */}
+          {pendingRevision && (
+            <div className="bg-blue-50/90 border border-blue-200 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-scale-in">
+              <div className="flex items-start gap-3">
+                <RotateCcw className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
+                <div>
+                  <h4 className="font-bold text-blue-900">Extra Revision Request</h4>
+                  <p className="text-xs text-blue-700 mt-1 leading-relaxed max-w-2xl">
+                    <span className="font-semibold">Client wants:</span> {pendingRevision.revision_count} extra revision{pendingRevision.revision_count > 1 ? 's' : ''}.
+                    <span className="block mt-1 font-semibold">Reason:</span> {pendingRevision.reason}
+                  </p>
+                  <label className="block mt-3 text-xs font-medium text-blue-800">
+                    Per-revision price (₹) — default from your published rate:
+                    <input
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={revisionPriceInput}
+                      onChange={(e) => setRevisionPriceInput(e.target.value)}
+                      placeholder="e.g. 500"
+                      className="mt-1 w-40 px-3 py-2 bg-white border border-blue-200 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                    />
+                  </label>
+                  {Number(revisionPriceInput) > 0 && (
+                    <p className="text-xs text-blue-700 mt-1.5 font-semibold">
+                      Client will pay ₹{((Number(revisionPriceInput) * pendingRevision.revision_count)).toLocaleString('en-IN')} through escrow
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  onClick={() => void handleRespondRevision(true)}
+                  disabled={revisionBusy}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-all text-sm font-medium"
+                >
+                  {revisionBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  Accept & Quote
+                </button>
+                <button
+                  onClick={() => void handleRespondRevision(false)}
+                  disabled={revisionBusy}
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-all text-sm font-medium"
+                >
+                  <XCircle className="w-4 h-4" />
+                  Decline
+                </button>
               </div>
             </div>
           )}

@@ -18,7 +18,10 @@ import {
   Check,
   CheckCircle2,
   ClipboardList,
+  CreditCard,
   IndianRupee,
+  Info,
+  RefreshCw,
   Download,
   FileText,
   History,
@@ -40,6 +43,8 @@ import {
   X,
 } from 'lucide-react'
 import { refundService, type RefundRequest, type RefundHistoryEvent } from '../lib/refundService'
+import { revisionService, type RevisionRequest } from '../lib/revisionService'
+import { razorpayService } from '../lib/razorpay'
 import { VerifiedBadge } from '../components/VerifiedBadge'
 import { ProBadge } from '../components/ProBadge'
 import { ReviewModal } from '../components/ReviewModal'
@@ -130,6 +135,12 @@ export function ClientWorkspacePage() {
   const [refundReason, setRefundReason] = useState('')
   const [refundDescription, setRefundDescription] = useState('')
   const [submittingRefund, setSubmittingRefund] = useState(false)
+  const [revisionRequests, setRevisionRequests] = useState<RevisionRequest[]>([])
+  const [showRevisionModal, setShowRevisionModal] = useState(false)
+  const [revisionCount, setRevisionCount] = useState('1')
+  const [revisionReason, setRevisionReason] = useState('')
+  const [submittingRevision, setSubmittingRevision] = useState(false)
+  const [payingRevision, setPayingRevision] = useState<string | null>(null)
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([])
   const [refundHistory, setRefundHistory] = useState<RefundHistoryEvent[]>([])
   const [showFundEscrow, setShowFundEscrow] = useState(false)
@@ -390,6 +401,88 @@ export function ClientWorkspacePage() {
 
     return () => { supabase.removeChannel(channel) }
   }, [selectedContract, loadRefundData])
+
+  // ─── Extra revisions (client side) ───────────────────────────────
+  const loadRevisionData = useCallback(async () => {
+    if (!selectedContract) return
+    const reqs = await revisionService.getForContract(selectedContract.id)
+    setRevisionRequests(reqs)
+  }, [selectedContract])
+
+  useEffect(() => {
+    if (!selectedContract) return
+    void loadRevisionData()
+    const sub = revisionService.subscribeToContract(selectedContract.id, () => { void loadRevisionData() })
+    return () => { void supabase.removeChannel(sub.channel) }
+  }, [selectedContract, loadRevisionData])
+
+  const activeRevision = revisionRequests.find(r => ['pending_freelancer', 'accepted', 'paid'].includes(r.status))
+
+  const handleRequestExtraRevision = async () => {
+    if (!selectedContract) return
+    const count = parseInt(revisionCount, 10)
+    if (!count || count < 1 || count > 20) {
+      toast.error('Invalid count', 'Enter a revision count between 1 and 20.')
+      return
+    }
+    if (revisionReason.trim().length < 5) {
+      toast.error('Describe the revision', 'Please describe what needs to change (min 5 characters).')
+      return
+    }
+    setSubmittingRevision(true)
+    const result = await revisionService.requestExtraRevision(selectedContract.id, count, revisionReason.trim())
+    if (result.success) {
+      setShowRevisionModal(false)
+      setRevisionCount('1')
+      setRevisionReason('')
+      void loadRevisionData()
+      toast.success('Request sent', 'The freelancer will review your extra revision request.')
+    } else {
+      toast.error(result.error || 'Failed to request extra revision')
+    }
+    setSubmittingRevision(false)
+  }
+
+  // Pay for an accepted extra revision via Razorpay (escrow-protected).
+  const handlePayRevision = async (req: RevisionRequest) => {
+    setPayingRevision(req.id)
+    try {
+      const { order, razorpay_key_id, amount, currency } = await razorpayService.createOrder({
+        order_type: 'revision_payment',
+        amount: Number(req.total_amount),
+        currency: 'INR',
+        description: `Extra revisions (${req.revision_count}) — contract #${req.contract_id.slice(0, 8)}`,
+        metadata: { revision_request_id: req.id, contract_id: req.contract_id },
+      })
+
+      await razorpayService.openCheckout({
+        key: razorpay_key_id,
+        amount: Math.round(amount * 100),
+        currency,
+        name: 'Growlancer',
+        description: `${req.revision_count} extra revision(s)`,
+        order_id: order.razorpay_order_id,
+        config_id: import.meta.env.VITE_RAZORPAY_CONFIG_ID || undefined,
+        prefill: { name: user?.name || '', email: user?.email || '' },
+        theme: { color: '#059669' },
+        method: { card: true, upi: true, netbanking: true, wallet: true, emi: true },
+        handler: async () => {
+          toast.success('Payment received', 'Extra revision funds are now held in escrow.')
+          void loadRevisionData()
+          void refreshContract(selectedContract.id)
+        },
+        modal: { ondismiss: () => setPayingRevision(null) },
+      })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Could not start payment.'
+      // A dismissed Razorpay modal is a cancellation, not a failure.
+      if (!msg.includes('cancelled by user')) {
+        toast.error('Payment Failed', msg)
+      }
+    } finally {
+      setPayingRevision(null)
+    }
+  }
 
   const handleRequestRefund = async () => {
     if (!selectedContract || !refundReason.trim()) return
@@ -1249,8 +1342,63 @@ export function ClientWorkspacePage() {
                           {activeRefund ? 'Refund In Progress' : 'Cancel Project / Request Refund'}
                         </button>
                       )}
+                      {selectedContract.status !== 'disputed' && !isFrozen && selectedContract.status !== 'completed' && !activeRevision && (
+                        <button
+                          onClick={() => setShowRevisionModal(true)}
+                          className="inline-flex items-center px-6 py-3 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors font-medium"
+                        >
+                          <RefreshCw className="h-5 w-5 mr-2" />
+                          Request Extra Revision
+                        </button>
+                      )}
                     </div>
                   </div>
+
+                  {/* Extra Revision Panel */}
+                  {revisionRequests.length > 0 && (
+                    <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                          <RefreshCw className="h-5 w-5 text-emerald-600" />
+                          <h3 className="text-lg font-semibold text-slate-900">Extra Revisions</h3>
+                        </div>
+                      </div>
+                      <div className="space-y-3">
+                        {revisionRequests.map((req) => (
+                          <div key={req.id} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-slate-900">
+                                  {req.revision_count} revision{req.revision_count > 1 ? 's' : ''} ·{' '}
+                                  <span className="text-emerald-600 font-semibold">₹{Number(req.total_amount).toLocaleString('en-IN')}</span>
+                                </p>
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-2">{req.reason}</p>
+                              </div>
+                              <div className="flex flex-col items-end gap-2 shrink-0">
+                                <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${req.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : req.status === 'accepted' ? 'bg-blue-100 text-blue-700' : req.status === 'pending_freelancer' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
+                                  {req.status === 'paid' ? 'Paid — In Escrow' : req.status === 'accepted' ? 'Accepted — Awaiting Payment' : req.status === 'pending_freelancer' ? 'Awaiting Freelancer' : 'Declined'}
+                                </span>
+                                {req.status === 'accepted' && (
+                                  <button
+                                    onClick={() => void handlePayRevision(req)}
+                                    disabled={payingRevision === req.id}
+                                    className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                                  >
+                                    {payingRevision === req.id ? (
+                                      <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                                    ) : (
+                                      <CreditCard className="h-4 w-4 mr-1.5" />
+                                    )}
+                                    Pay ₹{Number(req.total_amount).toLocaleString('en-IN')}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Refunds & Cancellation Panel */}
                   {(refundRequests.length > 0 || selectedContract.cancellation_status === 'pending_freelancer') && (
@@ -1576,6 +1724,81 @@ export function ClientWorkspacePage() {
                   <RotateCcw className="h-4 w-4 mr-1.5" />
                 )}
                 Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Request Extra Revision Modal — compact & responsive */}
+      {showRevisionModal && selectedContract && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 sticky top-0 bg-white z-10">
+              <h3 className="text-base sm:text-lg font-semibold text-slate-900">Request Extra Revision</h3>
+              <button
+                onClick={() => setShowRevisionModal(false)}
+                className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-4 sm:p-5 space-y-4">
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 sm:p-4 text-xs sm:text-sm text-emerald-800 leading-relaxed">
+                <p className="font-medium flex items-center gap-1.5">
+                  <Info className="h-4 w-4 shrink-0" />
+                  How extra revisions work
+                </p>
+                <p className="mt-1.5">
+                  Your service agreement includes free revisions. Requests beyond that are paid — the freelancer
+                  accepts your price request first, then you pay securely through escrow. Funds are only released
+                  when you approve the revised work.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Number of revisions *</label>
+                <select
+                  value={revisionCount}
+                  onChange={(e) => setRevisionCount(e.target.value)}
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                >
+                  {[1, 2, 3, 5, 10].map((n) => (
+                    <option key={n} value={n}>{n}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500 mt-1.5">
+                  The freelancer will quote a total price for these revisions based on their published extra-revision rate.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">What needs to change? *</label>
+                <textarea
+                  value={revisionReason}
+                  onChange={(e) => setRevisionReason(e.target.value)}
+                  rows={3}
+                  placeholder="Describe the changes you need (min 5 characters)..."
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none resize-none"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-slate-200">
+              <button
+                onClick={() => setShowRevisionModal(false)}
+                className="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void handleRequestExtraRevision()}
+                disabled={!revisionReason.trim() || submittingRevision}
+                className="inline-flex items-center px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
+              >
+                {submittingRevision ? (
+                  <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-1.5" />
+                )}
+                Send Request
               </button>
             </div>
           </div>

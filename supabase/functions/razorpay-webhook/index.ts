@@ -353,6 +353,38 @@ serve(async (req) => {
         }
       }
 
+      // Extra revision payment: add the paid amount to the contract escrow
+      // (escrow-protected until the client approves the revised work). Only
+      // runs on the FIRST capture — the already_processed branch above returns
+      // early on any replay, so mark_revision_paid can never double-credit.
+      if (dbOrder.order_type === 'revision_payment') {
+        const revisionRequestId = dbOrder.metadata?.revision_request_id || dbOrder.metadata?.revisionRequestId;
+        if (revisionRequestId) {
+          const { error: revErr } = await supabaseAdmin.rpc('mark_revision_paid', {
+            p_request_id: revisionRequestId,
+            p_razorpay_order_id: dbOrder.razorpay_order_id,
+          });
+          if (revErr) {
+            console.error('[razorpay-webhook] mark_revision_paid failed:', revErr.message);
+          } else {
+            const { data: revReq } = await supabaseAdmin
+              .from('revision_requests')
+              .select('contract_id, freelancer_id, total_amount, revision_count')
+              .eq('id', revisionRequestId)
+              .maybeSingle();
+            if (revReq) {
+              await notify(
+                supabaseAdmin, revReq.freelancer_id, 'payment',
+                'Extra revision payment received',
+                `The client paid ₹${Number(revReq.total_amount).toLocaleString('en-IN')} for ${revReq.revision_count} extra revision(s). Funds are held in escrow until you deliver and the client approves.`,
+                `/dashboard/workspace?contract=${revReq.contract_id}`,
+                { contract_id: revReq.contract_id, revision_request_id: revisionRequestId }
+              );
+            }
+          }
+        }
+      }
+
       // Wallet top-ups: credit the user's wallet. Idempotent — this block only
       // runs on the FIRST capture of the order (the already_processed branch
       // above returns early on any duplicate), so a replay or a later client
