@@ -1052,9 +1052,23 @@ function WaitlistSection() {
         method: 'POST',
         body: { name: name.trim(), email: email.trim(), country },
       });
-      
+
+      // Surface the real server error (e.g. disposable-email rejection) when present.
+      let serverMessage: string | null = null;
+      if (fnError && (fnError as { context?: Response }).context) {
+        try {
+          const ctx = (fnError as { context?: Response }).context;
+          if (ctx) {
+            const body = (await ctx.json()) as { error?: string };
+            serverMessage = body?.error ?? null;
+          }
+        } catch {
+          /* ignore body parse errors */
+        }
+      }
+
       if (fnError || !data?.success) {
-        setError(data?.error || 'Something went wrong. Try again.');
+        setError(serverMessage || data?.error || 'Something went wrong. Try again.');
         setIsLoading(false);
         return;
       }

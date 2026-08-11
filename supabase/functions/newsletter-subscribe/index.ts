@@ -189,8 +189,7 @@ Deno.serve(async (req) => {
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
-      email = normalizedEmail
-      if (await isDisposableEmail(supabaseClient, email)) {
+      if (await isDisposableEmail(supabaseClient, normalizedEmail)) {
         return new Response(
           JSON.stringify({ error: 'This format is not acceptable. Disposable / temporary email addresses are not allowed — please use a permanent email address.' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -207,7 +206,7 @@ Deno.serve(async (req) => {
       // section can show which country is interested.
       try {
         await supabaseClient.rpc('join_waitlist', {
-          p_email: email.toLowerCase(),
+          p_email: normalizedEmail,
           p_country: country || null,
           p_signup_source: 'homepage',
           p_name: name || null,
@@ -220,7 +219,7 @@ Deno.serve(async (req) => {
       const { data: existing } = await supabaseClient
         .from('newsletter_subscribers')
         .select('id, unsubscribed_at')
-        .eq('email', email.toLowerCase())
+        .eq('email', normalizedEmail)
         .maybeSingle()
 
       if (existing) {
@@ -241,7 +240,7 @@ Deno.serve(async (req) => {
         const { error: insertError } = await supabaseClient
           .from('newsletter_subscribers')
           .insert({
-            email: email.toLowerCase(),
+            email: normalizedEmail,
             name: name || null,
             source: 'website',
           })
@@ -256,20 +255,20 @@ Deno.serve(async (req) => {
       }
 
       // Sync to newsletter contact list
-      const contactId = await syncNewsletterContact(email.toLowerCase(), name || email.split('@')[0])
+      const contactId = await syncNewsletterContact(normalizedEmail, name || normalizedEmail.split('@')[0])
       if (contactId) {
         await supabaseClient
           .from('newsletter_subscribers')
           .update({ brevo_contact_id: contactId })
-          .eq('email', email.toLowerCase())
+          .eq('email', normalizedEmail)
       }
 
       // Send welcome email
       const welcomeSent = await sendNotificationEmail(
-        email.toLowerCase(),
-        name || email.split('@')[0],
+        normalizedEmail,
+        name || normalizedEmail.split('@')[0],
         'Welcome to Growlancer Newsletter! 🎉',
-        welcomeEmailHtml(name || email.split('@')[0], email.toLowerCase()),
+        welcomeEmailHtml(name || normalizedEmail.split('@')[0], normalizedEmail),
       )
 
       return new Response(
@@ -300,7 +299,7 @@ Deno.serve(async (req) => {
           unsubscribed_at: new Date().toISOString(),
           unsubscribed_reason: reason || null,
         })
-        .eq('email', email.toLowerCase())
+        .eq('email', normalizedEmail)
 
       return new Response(
         JSON.stringify({ success: true, message: 'Unsubscribed successfully.' }),
