@@ -8,7 +8,7 @@ import {
   proposalsService,
 } from '../lib/dataService';
 import { notificationService } from '../lib/notifications';
-import { safeFormatDate, safeNumber } from '../utils/date';
+import { formatBudgetRange, safeFormatDate, safeNumber } from '../utils/date';
 
 interface ClientStats {
   activeProjects: number;
@@ -250,7 +250,7 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm text-slate-500">
-                      Budget: ₹{safeNumber(project.budget_min).toLocaleString()}-₹{safeNumber(project.budget_max).toLocaleString()}
+                      Budget: {formatBudgetRange(project.budget_min, project.budget_max)}
                     </span>
                     <span className="text-xs text-slate-400">
                       {safeFormatDate(project.created_at)}

@@ -404,19 +404,8 @@ export const contractsService = {
   // Create contract from accepted proposal
   async createFromProposal(proposalId: string, clientId: string): Promise<{ success: boolean; data?: Contract; error?: string }> {
     try {
-      // ── Idempotency: never create a second contract for the same proposal ──
-      const { data: existingContract } = await supabase
-        .from('contracts')
-        .select('*')
-        .eq('proposal_id', proposalId)
-        .maybeSingle();
-      if (existingContract) {
-        // Repair stale state so the winning proposal reads as hired
-        await supabase.from('proposals').update({ status: 'hired' }).eq('id', proposalId);
-        return { success: true, data: existingContract as unknown as Contract };
-      }
-
-      // Get proposal details
+      // Get proposal details FIRST — needed for both idempotency checks
+      // (same proposal AND same project+freelancer) and contract construction.
       const { data: proposal, error: proposalError } = await supabase
         .from('proposals')
         .select('*, projects(*), profiles!proposals_freelancer_id_fkey(*)')
@@ -425,6 +414,42 @@ export const contractsService = {
 
       if (proposalError || !proposal) {
         return { success: false, error: 'Proposal not found' };
+      }
+
+      // ── Idempotency 1: never create a second contract for the same proposal ──
+      const { data: existingByProposal } = await supabase
+        .from('contracts')
+        .select('*')
+        .eq('proposal_id', proposalId)
+        .maybeSingle();
+
+      // ── Idempotency 2: never create a second contract for the same
+      //    project + freelancer (the freelancer may already have been hired
+      //    for this project via an invite — one hire per project).
+      const { data: existingByPair } = !existingByProposal
+        ? await supabase
+            .from('contracts')
+            .select('*')
+            .eq('project_id', proposal.project_id)
+            .eq('freelancer_id', proposal.freelancer_id)
+            .in('status', ['pending', 'active'])
+            .limit(1)
+            .maybeSingle()
+        : { data: null };
+
+      const existingContract = existingByProposal || existingByPair;
+
+      if (existingContract) {
+        // Repair stale state so the winning proposal reads as hired
+        await supabase.from('proposals').update({ status: 'hired' }).eq('id', proposalId);
+        // Sync any pending invite → accepted (one hire per project, both surfaces)
+        await supabase
+          .from('invites')
+          .update({ status: 'accepted', updated_at: new Date().toISOString() })
+          .eq('project_id', proposal.project_id)
+          .eq('freelancer_id', proposal.freelancer_id)
+          .eq('status', 'pending');
+        return { success: true, data: existingContract as unknown as Contract };
       }
 
       const bidAmount = Number(proposal.proposed_rate || 0);
@@ -467,6 +492,14 @@ export const contractsService = {
 
       // Update proposal status to hired (marketplace: hired = contract created)
       await supabase.from('proposals').update({ status: 'hired' }).eq('id', proposalId);
+
+      // Sync any pending invite → accepted (one hire per project, both surfaces)
+      await supabase
+        .from('invites')
+        .update({ status: 'accepted', updated_at: new Date().toISOString() })
+        .eq('project_id', proposal.project_id)
+        .eq('freelancer_id', proposal.freelancer_id)
+        .eq('status', 'pending');
 
       // Update project status
       await supabase.from('projects').update({ status: 'in_progress' }).eq('id', proposal.project_id);

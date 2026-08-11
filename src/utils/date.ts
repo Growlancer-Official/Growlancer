@@ -245,6 +245,23 @@ export function formatCurrency(amount: number, currency = 'INR'): string {
 }
 
 /**
+ * Format a project budget. Growlancer uses a single-budget model where
+ * budget_min === budget_max — such projects render as one amount ("₹10,000")
+ * instead of an odd "₹10,000 - ₹10,000" range. Legacy range projects still
+ * render as a range.
+ */
+export function formatBudgetRange(min?: number | null, max?: number | null): string {
+  const minN = Number(min ?? 0);
+  const maxN = Number(max ?? 0);
+  const fmt = (n: number) => `₹${n.toLocaleString('en-IN')}`;
+  if (minN > 0 && maxN > 0 && minN === maxN) return fmt(minN);
+  if (minN > 0 && maxN > 0) return `${fmt(minN)} - ${fmt(maxN)}`;
+  if (minN > 0) return fmt(minN);
+  if (maxN > 0) return fmt(maxN);
+  return '—';
+}
+
+/**
  * Calculate platform fee
  * @deprecated Use the shared helpers from src/lib/config.ts instead:
  *   - calculatePlatformFee(amount) — returns the 5% fee

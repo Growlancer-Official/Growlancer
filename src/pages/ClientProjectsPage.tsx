@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels, tables } from '../lib/supabase';
+import { formatBudgetRange } from '../utils/date';
 import { AlertTriangle, Briefcase, CheckCircle, CheckCircle2, Clock, IndianRupee, Edit3, Eye, MoreVertical, Plus, RefreshCw, X } from 'lucide-react';
 
 /* ── Dropdown menu for each project card ── */
@@ -283,9 +284,6 @@ export function ClientProjectsPage() {
     setShowReopenModal(null);
   };
 
-  const formatBudget = (min: number, max: number) => {
-    return `₹${min?.toLocaleString('en-IN')} - ₹${max?.toLocaleString('en-IN')}`;
-  };
 
   if (loading) {
     return (
@@ -388,7 +386,7 @@ export function ClientProjectsPage() {
               <div className="flex flex-wrap gap-4 text-sm text-slate-500 mb-4">
                 <div className="flex items-center gap-2">
                   <IndianRupee className="w-4 h-4" />
-                  <span>{formatBudget(project.budget_min, project.budget_max)}</span>
+                  <span>{formatBudgetRange(project.budget_min, project.budget_max)}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />

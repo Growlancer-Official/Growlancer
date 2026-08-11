@@ -22,8 +22,7 @@ export function ClientPostProjectPage() {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    budget_min: '',
-    budget_max: '',
+    budget: '',
     skills_required: [] as string[],
     deadline: '',
     category: '',
@@ -51,8 +50,9 @@ export function ClientPostProjectPage() {
           setFormData({
             title: data.title || '',
             description: data.description || '',
-            budget_min: data.budget_min?.toString() || '',
-            budget_max: data.budget_max?.toString() || '',
+            // Single-budget model: min === max (legacy projects may differ —
+            // prefer budget_max so the stored value matches what was asked).
+            budget: (data.budget_max ?? data.budget_min)?.toString() || '',
             skills_required: skillNames,
             deadline: data.deadline ? data.deadline.slice(0, 10) : '',
             category: data.category || '',
@@ -97,7 +97,7 @@ export function ClientPostProjectPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.description || !formData.budget_min || !formData.budget_max) {
+    if (!formData.title || !formData.description || !formData.budget) {
       toast.error('Validation Error', 'Please fill in all required fields');
       return;
     }
@@ -107,30 +107,32 @@ export function ClientPostProjectPage() {
       return;
     }
 
-    // Budget range validation
-    const minBudget = parseInt(formData.budget_min);
-    const maxBudget = parseInt(formData.budget_max);
-    if (isNaN(minBudget) || isNaN(maxBudget)) {
-      toast.error('Validation Error', 'Please enter valid budget amounts.');
+    // Single budget validation
+    const budget = parseInt(formData.budget);
+    if (isNaN(budget)) {
+      toast.error('Validation Error', 'Please enter a valid budget amount.');
       return;
     }
-    if (minBudget < 0 || maxBudget < 0) {
-      toast.error('Validation Error', 'Budget amounts cannot be negative.');
+    if (budget < 500) {
+      toast.error('Validation Error', 'Budget must be at least ₹500.');
       return;
     }
-    if (maxBudget < minBudget) {
-      toast.error('Validation Error', 'Minimum budget cannot be greater than maximum budget.');
+    if (budget > 100000) {
+      toast.error('Validation Error', 'Budget cannot exceed ₹1,00,000.');
       return;
     }
     setLoading(true);
 
     try {
+      // Single-budget model: min === max = the one budget the client entered.
+      // Keeping both columns in sync keeps AI matching, the invite-hire RPC and
+      // every existing budget display working without a schema change.
       const projectData = {
         client_id: user?.id,
         title: formData.title,
         description: formData.description,
-        budget_min: parseInt(formData.budget_min),
-        budget_max: parseInt(formData.budget_max),
+        budget_min: budget,
+        budget_max: budget,
         skills_required: formData.skills_required,
         deadline: formData.deadline || null,
         category: formData.category,
@@ -284,33 +286,22 @@ export function ClientPostProjectPage() {
             Budget
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Min Budget (₹) *</label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formData.budget_min}
-                onChange={(e) => setFormData({ ...formData, budget_min: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="e.g., 5000"
-              />
-              <p className="text-xs text-slate-400 mt-1.5">Set the starting amount for your project</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Max Budget (₹) *</label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formData.budget_max}
-                onChange={(e) => setFormData({ ...formData, budget_max: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="e.g., 10000"
-              />
-              <p className="text-xs text-slate-400 mt-1.5">Set a realistic range — freelancers use it to gauge scope</p>
-            </div>
+          <div className="max-w-md">
+            <label className="block text-sm font-medium text-slate-700 mb-2">Enter Your Budget (₹) *</label>
+            <input
+              type="number"
+              required
+              min="500"
+              max="100000"
+              value={formData.budget}
+              onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              placeholder="e.g., 10000"
+            />
+            <p className="text-xs text-slate-400 mt-1.5">
+              Set the budget you're willing to pay for this project (₹500 – ₹1,00,000).
+              Freelancers use it to gauge scope and submit accurate proposals.
+            </p>
           </div>
         </div>
 

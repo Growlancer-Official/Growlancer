@@ -6,7 +6,7 @@ import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, dbFunctions, uniqueChannelName } from '../../lib/supabase';
-import { safeFormatDate, safeNumber } from '../../utils/date';
+import { formatBudgetRange, safeFormatDate } from '../../utils/date';
 import type { Tables } from '../../types/supabase';
 
 type InviteWithDetails = Tables<'invites'> & {
@@ -451,9 +451,7 @@ export function InvitesPage() {
                       <div className="flex items-center gap-6 text-sm">
                         <span className="flex items-center gap-1 text-slate-600">
                           <Wallet className="w-4 h-4 text-slate-400" />
-                          ₹{safeNumber(invite.projects.budget_min).toLocaleString()} - ₹{
-                            safeNumber(invite.projects.budget_max).toLocaleString()
-                          }
+                          {formatBudgetRange(invite.projects.budget_min, invite.projects.budget_max)}
                         </span>
                         <span className="flex items-center gap-1 text-slate-600">
                           <Briefcase className="w-4 h-4 text-slate-400" />

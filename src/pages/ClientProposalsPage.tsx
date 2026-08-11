@@ -7,6 +7,7 @@ import { CheckCircle, Clock, ExternalLink, Eye, FileText, IndianRupee, MoreVerti
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
+import { formatBudgetRange } from '../utils/date';
 
 interface Proposal {
   id: string;
@@ -420,7 +421,7 @@ export function ClientProposalsPage() {
                     <span className="font-medium">Project:</span> {proposal.project.title}
                   </p>
                   <p className="text-sm text-slate-600">
-                    <span className="font-medium">Budget:</span> ₹{proposal.project.budget_min?.toLocaleString('en-IN') ?? '—'} - ₹{proposal.project.budget_max?.toLocaleString('en-IN') ?? '—'}
+                    <span className="font-medium">Budget:</span> {formatBudgetRange(proposal.project.budget_min, proposal.project.budget_max)}
                   </p>
                 </div>
               )}

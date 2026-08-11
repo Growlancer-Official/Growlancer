@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { formatBudgetRange } from '../../utils/date';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { realtimeChannels, tables } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
@@ -397,7 +398,7 @@ export function ProposalsPage() {
                       <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-xs text-slate-500 mb-1">Client Budget</p>
                         <p className="text-lg font-bold text-slate-900">
-                          ₹{proposal.project?.budget_min?.toLocaleString('en-IN') ?? '—'} - ₹{proposal.project?.budget_max?.toLocaleString('en-IN') ?? '—'}
+                          {formatBudgetRange(proposal.project?.budget_min, proposal.project?.budget_max)}
                         </p>
                       </div>
                     </div>

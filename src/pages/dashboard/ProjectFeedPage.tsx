@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Star, Wallet, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
-import { safeLower, safeNumber } from '../../utils/date';
+import { formatBudgetRange, safeLower } from '../../utils/date';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
@@ -123,7 +123,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
             
             {project.budget_min && project.budget_max && (
               <p className="text-xs text-slate-600 mt-2">
-                Client budget: ₹{safeNumber(project.budget_min).toLocaleString()} - ₹{safeNumber(project.budget_max).toLocaleString()}
+                Client budget: {formatBudgetRange(project.budget_min, project.budget_max)}
               </p>
             )}
           </div>
@@ -817,9 +817,7 @@ export function ProjectFeedPage() {
                   <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
                     <span className="flex items-center gap-1">
                       <Wallet className="w-4 h-4" />
-                      ₹{(match.project?.budget_min ?? 0).toLocaleString('en-IN')} - ₹{
-                        (match.project?.budget_max ?? 0).toLocaleString('en-IN')
-                      }
+                      {formatBudgetRange(match.project?.budget_min, match.project?.budget_max)}
                     </span>
                     <span className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />

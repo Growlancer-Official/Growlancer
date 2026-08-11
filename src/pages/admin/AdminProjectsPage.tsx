@@ -7,6 +7,7 @@ import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { formatBudgetRange } from '../../utils/date';
 
 interface AdminProject {
   id: string; title: string; description: string;
@@ -230,7 +231,7 @@ export function AdminProjectsPage() {
                       <p className="text-[10px] text-slate-500">{project.client?.email || ''}</p>
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-300">
-                      {project.budget_min ? formatCurrency(project.budget_min) : '—'} - {project.budget_max ? formatCurrency(project.budget_max) : '—'}
+                      {formatBudgetRange(project.budget_min, project.budget_max)}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${statusColors[project.status] || 'text-slate-400'}`}>
