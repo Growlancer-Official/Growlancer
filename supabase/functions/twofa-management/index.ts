@@ -270,9 +270,57 @@ Deno.serve(async (req) => {
 
       // --- Disable MFA ---
       if (actionType === 'disable') {
-        // Unenroll from Supabase Auth MFA
-        const { data: factors } = await supabaseClient.auth.mfa.listFactors()
+        const { code, recovery_code } = params
 
+        // 🔒 Re-verification gate: a valid current TOTP code (or a recovery
+        // code) must be supplied before MFA can be disabled — a stolen session
+        // cannot silently strip the account's second factor.
+        const { data: factors } = await supabaseClient.auth.mfa.listFactors()
+        const totpFactor = factors?.totp?.[0]
+
+        if (totpFactor) {
+          if (code) {
+            const { data: challengeData, error: challengeError } = await supabaseClient.auth.mfa.challenge({
+              factorId: totpFactor.id,
+            })
+            if (challengeError) {
+              return new Response(
+                JSON.stringify({ error: challengeError.message }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              )
+            }
+            const { data: verifyData, error: verifyError } = await supabaseClient.auth.mfa.verify({
+              factorId: totpFactor.id,
+              challengeId: challengeData.id,
+              code: String(code),
+            })
+            if (verifyError || !verifyData?.verified) {
+              return new Response(
+                JSON.stringify({ error: 'Invalid verification code. Please try again.' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              )
+            }
+          } else if (recovery_code) {
+            const { data: verifyData, error: verifyError } = await supabaseClient
+              .rpc('verify_recovery_code', { p_user_id: user.id, p_code: String(recovery_code) })
+            if (verifyError) {
+              throw verifyError
+            }
+            if (!verifyData?.valid) {
+              return new Response(
+                JSON.stringify({ error: 'Invalid or already used recovery code' }),
+                { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+              )
+            }
+          } else {
+            return new Response(
+              JSON.stringify({ error: 'Enter your current 6-digit code to disable 2FA' }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+          }
+        }
+
+        // Unenroll from Supabase Auth MFA
         if (factors?.totp) {
           for (const factor of factors.totp) {
             await supabaseClient.auth.mfa.unenroll({ factorId: factor.id })

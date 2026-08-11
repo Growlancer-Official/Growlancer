@@ -429,7 +429,11 @@ function DisputeResolution() {
       onConfirm: async () => {
         setActionLoading(disputeId);
         try {
-          await disputeService.adminUpdateDispute(disputeId, action, resolution);
+          // Fund movement happens server-side via the admin-only
+          // admin_decide_dispute RPC — a bare status update never moves money.
+          const decision = action === 'resolved' ? 'freelancer_release' : 'client_refund';
+          const res = await disputeService.adminDecideDispute(disputeId, decision, resolution);
+          if (!res.success) throw new Error(res.error || 'Failed to decide dispute');
           toast.success('Dispute Updated', `Dispute ${action} successfully.`);
         } catch (err) {
           console.error(err);

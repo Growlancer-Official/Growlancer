@@ -541,19 +541,38 @@ export function WorkspacePage() {
       return;
     }
 
+    const previousStatus = milestones[index]?.status;
+
     // First progress = work started (Case 1 -> Case 3 boundary)
     if (!workStarted && ['in_progress', 'completed'].includes(newStatus)) {
       void refundService.markStarted(selectedContract.id);
     }
-    
+
+    // Optimistic update for instant UI feedback
     const updatedMilestones = [...milestones];
     updatedMilestones[index] = { ...updatedMilestones[index], status: newStatus };
     setMilestones(updatedMilestones);
 
-    await supabase
-      .from('contracts')
-      .update({ milestones: updatedMilestones })
-      .eq('id', selectedContract.id);
+    // 🛡️ Server-validated via the SECURITY DEFINER mark_milestone_status RPC:
+    // the caller must be a party to the contract and the contract must not be
+    // disputed. Direct contracts.update() fails RLS (contracts has no UPDATE
+    // policy) — this RPC is the only sanctioned way to change milestone status.
+    const { data, error } = await supabase.rpc('mark_milestone_status', {
+      p_contract_id: selectedContract.id,
+      p_milestone_index: index,
+      p_status: newStatus,
+    });
+
+    const result = data as { success?: boolean; error?: string } | null;
+    if (error || !result?.success) {
+      // Roll back the optimistic update
+      const rolledBack = [...milestones];
+      if (previousStatus !== undefined) {
+        rolledBack[index] = { ...rolledBack[index], status: previousStatus };
+        setMilestones(rolledBack);
+      }
+      toast.error(result?.error || error?.message || 'Failed to update milestone');
+    }
   };
 
   // Live Task Board Handlers

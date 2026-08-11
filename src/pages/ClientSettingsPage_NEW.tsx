@@ -164,6 +164,7 @@ export function ClientSettingsPage() {
   const [qrCodeUrl, setQrCodeUrl] = useState('');
   const [twoFactorSecret, setTwoFactorSecret] = useState('');
   const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [confirmDisable2FA, setConfirmDisable2FA] = useState(false);
   const [factorId, setFactorId] = useState<string | null>(null);
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
@@ -620,7 +621,9 @@ export function ClientSettingsPage() {
     } else if (pendingAction === 'email') {
       await performEmailChange(newEmail.trim().toLowerCase());
     } else if (pendingAction === 'disable2fa') {
-      await performDisable2FA();
+      // Show the code input — 2FA disable needs the current TOTP code,
+      // which must be entered by the user (never runs with an empty code).
+      setConfirmDisable2FA(true);
     } else if (pendingAction === 'deletePayment' && pendingPaymentMethodId) {
       await performDeleteSavedCard(pendingPaymentMethodId);
     }
@@ -722,25 +725,33 @@ export function ClientSettingsPage() {
       setReauthOpen(true);
       return;
     }
-    await performDisable2FA();
+    // Ask for the current 6-digit code — verified server-side before disabling.
+    setConfirmDisable2FA(true);
   };
 
   const performDisable2FA = async () => {
+    if (!twoFactorCode || twoFactorCode.length !== 6) {
+      setErrorMessage('Please enter your current 6-digit code to disable 2FA.');
+      return;
+    }
     setTwoFactorLoading(true);
+    setErrorMessage(null);
     try {
       const { data, error } = await supabase.functions.invoke('twofa-management', {
-        body: { action: 'disable' },
+        body: { action: 'disable', code: twoFactorCode },
       });
 
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
 
       setTwoFactorEnabled(false);
+      setConfirmDisable2FA(false);
+      setTwoFactorCode('');
       setSuccessMessage('Two-factor authentication disabled.');
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       console.error('Error disabling 2FA:', error);
-      setErrorMessage('Failed to disable 2FA.');
+      setErrorMessage('Failed to disable 2FA. Enter your current authenticator code.');
     } finally {
       setTwoFactorLoading(false);
     }
@@ -1534,8 +1545,28 @@ export function ClientSettingsPage() {
                           <p className="font-medium text-emerald-800">2FA is Active</p>
                           <p className="text-sm text-emerald-600">Your account is protected by two-factor authentication</p>
                         </div>
-                        <button onClick={handleDisable2FA} disabled={twoFactorLoading}
-                          className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors">Disable</button>
+                        {!confirmDisable2FA ? (
+                          <button onClick={handleDisable2FA} disabled={twoFactorLoading}
+                            className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors">Disable</button>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <input
+                              value={twoFactorCode}
+                              onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                              placeholder="6-digit code"
+                              maxLength={6}
+                              inputMode="numeric"
+                              autoFocus
+                              className="w-28 px-3 py-2 text-sm text-center font-mono border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                            />
+                            <button onClick={() => void performDisable2FA()} disabled={twoFactorLoading}
+                              className="px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50">
+                              {twoFactorLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm'}
+                            </button>
+                            <button onClick={() => { setConfirmDisable2FA(false); setTwoFactorCode(''); }}
+                              className="px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">Cancel</button>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <button onClick={handleSetup2FA} disabled={twoFactorLoading}

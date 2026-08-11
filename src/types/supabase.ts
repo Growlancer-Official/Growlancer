@@ -5057,9 +5057,17 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: Json
       }
+      admin_decide_dispute: {
+        Args: { p_dispute_id: string; p_decision: string; p_client_amount?: number; p_note?: string }
+        Returns: Json
+      }
+      mark_milestone_status: {
+        Args: { p_contract_id: string; p_milestone_index: number; p_status: string }
+        Returns: Json
+      }
       resolve_contract_dispute: {
         Args: { p_dispute_id: string; p_resolution: string }
-        Returns: boolean
+        Returns: Json
       }
       restore_notification: {
         Args: { p_notification_id: string; p_user_id: string }

@@ -39,6 +39,13 @@ import { sendEmail } from '../_shared/brevo.ts';
 
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
+// Service-role client: transactions is a server-audited ledger (no user INSERT/
+// UPDATE RLS policies) — the withdrawal audit record must be written here.
+const supabaseAdmin = createClient(
+  Deno.env.get('SUPABASE_URL') ?? '',
+  Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+);
+
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2 }).format(amount);
 }
@@ -147,7 +154,7 @@ async function rollbackWithdrawal(supabaseClient: any, withdrawalId: string, use
   console.error(`[ROLLBACK] Withdrawal ${withdrawalId} failed: ${errorReason}`, { userId, amount });
   try { await supabaseClient.rpc('release_wallet_funds', { p_user_id: userId, p_amount: amount }); } catch (e) { console.error(`[ROLLBACK] Release wallet funds failed for ${userId}, amount=${amount}:`, e); }
   try { await supabaseClient.from('withdrawals').update({ status: 'failed', failure_reason: errorReason, updated_at: new Date().toISOString() }).eq('id', withdrawalId); } catch (e) { console.error(`[ROLLBACK] Withdrawal status update failed for ${withdrawalId}:`, e); }
-  try { await supabaseClient.from('transactions').update({ status: 'failed', description: `Withdrawal failed: ${errorReason}` }).eq('metadata->>withdrawal_id', withdrawalId); } catch { /* non-critical — transaction record is secondary */ }
+  try { await supabaseAdmin.from('transactions').update({ status: 'failed', description: `Withdrawal failed: ${errorReason}` }).eq('metadata->>withdrawal_id', withdrawalId); } catch { /* non-critical — transaction record is secondary */ }
 }
 
 // ─── Rate Limiting ───────────────────────────────────────────────────────────
@@ -284,9 +291,10 @@ Deno.serve(async (req) => {
         throw new Error(holdResult?.error || 'Failed to hold funds')
       }
 
-      // Create transaction record
+      // Create transaction record (service-role — transactions is a server-audited
+      // ledger; users have no INSERT/UPDATE policy on it)
       const txDesc = wdMethod === 'paypal' ? `Withdrawal to PayPal (${paypal_email})` : 'Withdrawal via Razorpay Payout'
-      await supabaseClient.from('transactions').insert({
+      await supabaseAdmin.from('transactions').insert({
         user_id: user.id, amount, type: 'debit', source: 'withdrawal', status: 'pending', description: txDesc,
         metadata: { withdrawal_id: withdrawal.id, method: wdMethod },
       })
@@ -336,7 +344,7 @@ Deno.serve(async (req) => {
             await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
           }
 
-          await supabaseClient.from('transactions').update({
+          await supabaseAdmin.from('transactions').update({
             status: payoutStatus === 'completed' ? 'completed' : 'pending',
             description: `Withdrawal via Razorpay Payout (${payoutResult.id})`,
           }).eq('metadata->>withdrawal_id', withdrawal.id)
@@ -380,7 +388,7 @@ Deno.serve(async (req) => {
             await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
           }
 
-          await supabaseClient.from('transactions').update({
+          await supabaseAdmin.from('transactions').update({
             status: payoutStatus === 'completed' ? 'completed' : 'pending',
             description: `Withdrawal via PayPal (${paypal_email})`,
           }).eq('metadata->>withdrawal_id', withdrawal.id)
@@ -405,7 +413,7 @@ Deno.serve(async (req) => {
           }).eq('id', withdrawal.id)
 
           // Keep the transaction pending (funds stay held in the wallet).
-          await supabaseClient.from('transactions').update({
+          await supabaseAdmin.from('transactions').update({
             status: 'pending',
             description: `Withdrawal queued (${wdMethod}) — awaiting payout service`,
           }).eq('metadata->>withdrawal_id', withdrawal.id)

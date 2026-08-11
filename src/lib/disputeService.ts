@@ -180,6 +180,34 @@ export const disputeService = {
   },
 
   /**
+   * Admin: Decide a dispute with ACTUAL fund movement.
+   * Calls the admin-only SECURITY DEFINER admin_decide_dispute RPC which
+   * validates the caller is an admin and moves escrow/wallet funds (refund
+   * to client or release to freelancer) — a bare status update never moves
+   * money.
+   */
+  async adminDecideDispute(
+    disputeId: string,
+    decision: 'client_refund' | 'freelancer_release',
+    note?: string
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data, error } = await supabase.rpc('admin_decide_dispute', {
+        p_dispute_id: disputeId,
+        p_decision: decision,
+        p_note: note || null,
+      });
+      if (error) throw error;
+      const result = data as { success?: boolean; error?: string } | null;
+      if (!result?.success) throw new Error(result?.error || 'Failed to decide dispute');
+      return { success: true };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to decide dispute';
+      return { success: false, error: msg };
+    }
+  },
+
+  /**
    * Admin: Get all disputes with optional status filter.
    */
   async getAllDisputes(status?: string): Promise<DisputeCase[]> {

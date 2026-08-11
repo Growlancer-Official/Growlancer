@@ -150,6 +150,15 @@ Deno.serve(async (req) => {
         )
       }
 
+      // Reviews are only meaningful after the work is actually done — prevents
+      // rating-bombing before completion.
+      if (contract.status !== 'completed') {
+        return new Response(
+          JSON.stringify({ error: 'You can only review a contract after it has been completed' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
       if (contract.freelancer_id !== user.id && contract.client_id !== user.id) {
         return new Response(
           JSON.stringify({ error: 'You are not part of this contract' }),
