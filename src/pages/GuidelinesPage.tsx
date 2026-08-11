@@ -4,19 +4,22 @@ import { AlertTriangle, ArrowRight, CheckCircle, Compass, XCircle,  } from 'luci
 export function GuidelinesPage() {
   const dos = [
     'Communicate clearly and professionally in the workspace',
-    'Set realistic milestone expectations and clear deadlines',
-    'Ensure all payments are locked in Virtual Escrow beforehand',
-    'Keep code updates and feedback cycles synchronized live',
+    'Set realistic milestone expectations and agreed delivery timelines',
+    'Ensure all payments are made through Growlancer Escrow — before any work begins',
+    'Review delivered work within the auto-release window (default 72h)',
     'Provide constructive, objective, and respectful reviews',
-    'Respond to messages and coordination calls in under 24 hours',
+    'Respond to messages and coordination requests promptly — ideally within 24 hours',
+    'Take Growlancer skill assessments to earn verified badges and build trust',
   ];
 
   const donts = [
-    'Attempt to bypass escrow or solicit direct external payments',
+    'Pay, or ask to be paid, outside Growlancer — no direct bank transfers, UPI, PayPal or crypto for platform projects',
+    'Attempt to bypass escrow, or exchange personal contact details before a contract is funded',
     'Share sensitive passwords or private credentials in raw text',
     'Upload malicious scripts, spam links, or unvetted bundles',
-    'Plagiarize, misrepresent experience, or buy profile credentials',
+    'Plagiarize, misrepresent experience, or use fake documents to bypass verification',
     'Coerce or harass partners during milestone negotiations',
+    'Use temporary or disposable email addresses to create accounts or exploit referrals',
     'Delete active task cards without prior workspace consensus',
   ];
 

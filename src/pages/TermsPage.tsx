@@ -112,8 +112,8 @@ const termsSections: Section[] = [
               <p className="text-slate-600 text-xs mt-1">Work progress is tracked transparently. Once the project begins, task milestones are automatically populated in the collaborative space and are updated dynamically as changes occur.</p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">C. Milestone Releases</h5>
-              <p className="text-slate-600 text-xs mt-1">Upon delivery of the milestone files or services, the Client will review. Once satisfied, the Client clicks "Release Escrow", which initiates the transfer of funds to the Freelancer's wallet balance. Releasing funds constitutes final acceptance of that milestone.</p>
+              <h5 className="font-bold text-slate-900 text-sm">C. Milestone Releases & Auto-Release</h5>
+              <p className="text-slate-600 text-xs mt-1">Upon delivery of the milestone files or services, the Client reviews the work within the review window (default 72 hours, adjustable 24 hours – 7 days). Once satisfied, the Client releases the escrow, transferring funds to the Freelancer's wallet. If the Client does not respond within the window, the payment releases automatically — funds are never held hostage by either party, and how many days the work took is irrelevant to the timer, which starts only at delivery. Releasing funds constitutes final acceptance of that milestone; a released payment is final and is not refundable except in cases of verified fraud or a clear violation of these Terms.</p>
             </div>
             <div>
               <h5 className="font-bold text-slate-900 text-sm">D. Revisions & Extra Work</h5>

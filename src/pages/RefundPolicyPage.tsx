@@ -11,9 +11,9 @@ export function RefundPolicyPage() {
     },
     {
       icon: ShieldCheck,
-      title: 'Approved Milestone / Completed Work',
+      title: 'Released Milestone / Completed Work',
       description:
-        'Once you approve a milestone or the final deliverable, escrow funds are released to the freelancer. Approved work is final and is not refundable, except in cases of verified fraud or clear violation of our Terms of Service.',
+        'Once escrow funds are released to the freelancer (by your approval or by automatic release after the review window), the payment is final and is not refundable, except in cases of verified fraud or clear violation of our Terms of Service. Delivered or approved-but-not-yet-released work stays held in escrow and can still go through the dispute process.',
     },
     {
       icon: Clock,

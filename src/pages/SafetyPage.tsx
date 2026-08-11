@@ -1,35 +1,49 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, History, Lock, ShieldCheck, UserCheck,  } from 'lucide-react';
+import { ArrowRight, History, Lock, Scale, ShieldCheck, UserCheck } from 'lucide-react';
 
 export function SafetyPage() {
   const safetyFeatures = [
     {
       icon: ShieldCheck,
-      title: 'Virtual Escrow Locks',
-      description: 'Your project funds are secured in our protected escrow pool before the freelancer begins work. Payments are only released programmatically once deliverables are approved or via AI mediation splits.',
+      title: 'Escrow Protection with Auto-Release',
+      description: 'Your project funds are secured in Growlancer Escrow before work begins. Once the freelancer delivers, you get a review window (default 72h) to approve — if you do not respond, the payment releases to the freelancer automatically, so funds are never held hostage by either party.',
       color: 'from-emerald-500 to-emerald-600',
       badge: 'Payments'
     },
     {
       icon: Lock,
       title: 'Asset Locker Freeze',
-      description: 'Shared design files, code bundle deposits, and documents are securely versioned in our Asset Locker. In the event of a coordination dispute, files are automatically locked to prevent tampering.',
+      description: 'Shared design files, code bundle deposits, and documents are securely versioned in the workspace. In the event of a coordination dispute, files and escrow are automatically frozen to prevent tampering while our team reviews the evidence.',
       color: 'from-indigo-500 to-indigo-600',
       badge: 'Assets'
     },
     {
       icon: UserCheck,
-      title: 'Talent Verification API',
-      description: 'We authenticate freelancer credentials via GitHub or PenTool API scopes where available. This is designed to help confirm that portfolio links represent verified work and to reduce unverified claims.',
+      title: 'KYC Document Verification',
+      description: 'Both clients and freelancers can verify their identity by submitting government-issued documents (e.g. Aadhaar, PAN). Our system auto-checks the details in real time and issues a verified badge next to the name — verified users are clearly marked everywhere on the platform.',
       color: 'from-pink-500 to-pink-600',
       badge: 'Identity'
     },
     {
       icon: History,
       title: 'Real-Time Audit Trails',
-      description: 'Every status change on tasks, chat histories, milestone funding, and code rooms is logged and timestamped. This gives our mediation team comprehensive audits to resolve issues fairly.',
+      description: 'Every status change on tasks, chat histories, milestone funding, deliveries and releases is logged and timestamped. Our resolution team uses these complete audits to settle disputes fairly and quickly.',
       color: 'from-amber-500 to-orange-600',
       badge: 'Auditing'
+    },
+    {
+      icon: Scale,
+      title: 'Fair Dispute Resolution',
+      description: 'If a refund or cancellation is requested after work starts, the freelancer must accept it or the case is escalated to our resolution team with escrow frozen. Fraud accusations freeze everything instantly for evidence review — genuine clients are always protected, only fraud and abuse are not.',
+      color: 'from-red-500 to-rose-600',
+      badge: 'Fairness'
+    },
+    {
+      icon: ShieldCheck,
+      title: 'Outside-Payment Protection',
+      description: 'All payments must happen through Growlancer Escrow. Paying or being asked to pay outside the platform is a policy violation — report it from your workspace and repeat violations lead to suspension or permanent ban.',
+      color: 'from-indigo-500 to-violet-600',
+      badge: 'Protection'
     },
   ];
 

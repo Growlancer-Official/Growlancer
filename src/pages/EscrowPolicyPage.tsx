@@ -6,7 +6,7 @@ export function EscrowPolicyPage() {
     {
       icon: Lock,
       title: '1. Secure Funding Lock',
-      description: 'The client deposits the milestone amount into the virtual escrow pool. Freelancers receive instant dashboard alerts confirming that funds are secured before any building begins.',
+      description: 'The client funds the full contract amount (plus the 5% platform fee) into Growlancer Escrow. Freelancers receive instant alerts confirming that funds are secured before any work begins.',
       color: 'from-emerald-500 to-emerald-600'
     },
     {
@@ -18,14 +18,20 @@ export function EscrowPolicyPage() {
     {
       icon: CheckCircle,
       title: '3. Verification & Release',
-      description: 'Once deliverables are submitted, the client reviews them. Approving the milestone releases escrow funds directly into the freelancer\'s Wallet balance.',
+      description: 'Once deliverables are submitted, the client reviews them. Releasing the work moves escrow funds directly into the freelancer\'s wallet. A released payment is final — it is not refundable except in cases of verified fraud or a clear Terms violation. Work that has been delivered or approved but not yet released remains held in escrow and can still be disputed.',
       color: 'from-pink-500 to-pink-600'
     },
     {
       icon: RefreshCcw,
       title: '4. Revisions & Review Window',
-      description: 'Services include a stated number of free revisions (shown on the service page). Clients may request extra revisions beyond the included amount, and freelancers may charge their published extra-revision rate or a mutually agreed price — always with the client\'s consent before extra work begins. Unaddressed delivered work follows our review-window escalation so no party is left hanging.',
+      description: 'Services include a stated number of free revisions (shown on the service page). Clients may request extra revisions beyond the included amount, and freelancers may charge their published extra-revision rate or a mutually agreed price — always with the client\'s consent before extra work begins.',
       color: 'from-amber-500 to-orange-600'
+    },
+    {
+      icon: Clock,
+      title: '5. Delivery-Based Auto-Release',
+      description: 'The auto-release timer starts only when the freelancer delivers the work — how many days the work took is up to you and the freelancer, never a deadline. After delivery you get a review window (default 72h, adjustable 24h–7 days). If you do not respond in time, the escrow releases to the freelancer automatically. A client can never hold a payment hostage, and a freelancer can never be paid before delivering.',
+      color: 'from-violet-500 to-purple-600'
     },
   ];
 
@@ -94,7 +100,7 @@ export function EscrowPolicyPage() {
               <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center border border-indigo-500/30">
                 <Scale className="w-5 h-5" />
               </div>
-              <h3 className="font-display text-2xl font-bold tracking-tight">AI-Mediated Dispute Arbitration</h3>
+              <h3 className="font-display text-2xl font-bold tracking-tight">Human-Reviewed Dispute Resolution</h3>
             </div>
             
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
@@ -102,7 +108,7 @@ export function EscrowPolicyPage() {
             </p>
             
             <p className="text-xs text-slate-300 leading-relaxed font-medium">
-              Our AI-assisted dispute analysis may evaluate workspace logs, chat archives, and task cards, and may propose a split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point. Escrow reduces financial risk but cannot eliminate every dispute, and human review may be required during disputes. A human dispute resolution specialist reviews available evidence before any funds are released, and final decisions depend on our platform policies and the available evidence.
+              When a dispute is raised, the escrow is frozen and no money moves while our resolution team reviews the workspace evidence — files, chat history, and the full audit trail. Both parties can communicate in the dispute thread and attach evidence. A human specialist reviews the available evidence before any funds are released, and their decision is binding. AI-assisted analysis may support the review but never makes the final call.
             </p>
             
             <div className="pt-4 flex flex-wrap gap-4">
