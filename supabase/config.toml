@@ -429,3 +429,12 @@ enabled = true
 # the default verify_jwt = true (they are called from the app with a JWT).
 [functions.razorpay-webhook]
 verify_jwt = false
+
+# Cron-triggered edge functions are called by pg_cron → pg_net with a
+# CRON_SECRET bearer token (NOT a user JWT), so JWT verification must be
+# disabled. Both enforce the CRON_SECRET check inside the function itself.
+[functions.subscription-billing-cron]
+verify_jwt = false
+
+[functions.milestone-auto-release]
+verify_jwt = false

@@ -10,9 +10,11 @@ export type MilestoneItem = {
   amount?: number;
   status?: string;
   due_date?: string;
+  delivered_at?: string | null;
+  auto_release_hours?: number | null;
 };
 
-export type MilestoneStatus = 'pending' | 'in_progress' | 'completed' | 'approved' | 'released' | 'paid' | 'disputed' | 'cancelled';
+export type MilestoneStatus = 'pending' | 'in_progress' | 'delivered' | 'completed' | 'approved' | 'released' | 'paid' | 'disputed' | 'cancelled';
 
 type EscrowRow = { id: string; amount: number; status: string };
 

@@ -78,7 +78,7 @@ export function WorkspacePage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [sendingMessage, setSendingMessage] = useState(false);
-  const [milestones, setMilestones] = useState<Array<{ title: string; description?: string; amount: number; status: string; due_date?: string }>>([]);
+  const [milestones, setMilestones] = useState<Array<{ title: string; description?: string; amount: number; status: string; due_date?: string; delivered_at?: string | null; auto_release_hours?: number | null }>>([]);
   const [pendingCancellation, setPendingCancellation] = useState<RefundRequest | null>(null);
   const [cancellationBusy, setCancellationBusy] = useState(false);
   const [pendingRevision, setPendingRevision] = useState<RevisionRequest | null>(null);
@@ -592,7 +592,7 @@ export function WorkspacePage() {
     const previousStatus = milestones[index]?.status;
 
     // First progress = work started (Case 1 -> Case 3 boundary)
-    if (!workStarted && ['in_progress', 'completed'].includes(newStatus)) {
+    if (!workStarted && ['in_progress', 'completed', 'delivered'].includes(newStatus)) {
       void refundService.markStarted(selectedContract.id);
     }
 
@@ -1595,22 +1595,23 @@ export function WorkspacePage() {
                         >
                           <div className="flex items-start gap-3">
                             <button
-                              onClick={() => handleMilestoneStatusChange(idx, milestone.status === 'completed' ? 'pending' : 'completed')}
+                              onClick={() => handleMilestoneStatusChange(idx, ['delivered', 'completed'].includes(milestone.status) ? 'pending' : 'delivered')}
                               disabled={selectedContract.status === 'disputed'}
+                              title={['delivered', 'completed'].includes(milestone.status) ? 'Mark as pending' : 'Deliver this milestone (auto-release timer starts)'}
                               className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all border ${
                                 selectedContract.status === 'disputed'
                                   ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed'
-                                  : milestone.status === 'completed'
+                                  : ['delivered', 'completed'].includes(milestone.status)
                                   ? 'bg-emerald-500 border-emerald-600 text-white'
                                   : 'bg-white border-slate-300 hover:border-emerald-500'
                               }`}
                             >
-                              {milestone.status === 'completed' && <Check className="w-3 h-3" />}
+                              {['delivered', 'completed'].includes(milestone.status) && <Check className="w-3 h-3" />}
                             </button>
                             
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between mb-0.5">
-                                <h4 className={`font-semibold text-xs ${milestone.status === 'completed' ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                                <h4 className={`font-semibold text-xs ${['delivered', 'completed'].includes(milestone.status) ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
                                   {milestone.title}
                                 </h4>
                                 <span className="font-bold text-slate-900">{formatCurrency(milestone.amount)}</span>
@@ -1620,14 +1621,22 @@ export function WorkspacePage() {
                               )}
                               <div className="flex items-center gap-3 text-[10px]">
                                 <span className={`px-2 py-0.5 rounded-md border font-medium uppercase tracking-wider ${
-                                  milestone.status === 'completed'
+                                  milestone.status === 'delivered'
+                                    ? 'bg-violet-50 border-violet-100 text-violet-700'
+                                    : milestone.status === 'completed'
                                     ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
                                     : milestone.status === 'in_progress'
                                     ? 'bg-blue-50 border-blue-100 text-blue-700'
                                     : 'bg-slate-100 border-slate-200 text-slate-600'
                                 }`}>
-                                  {milestone.status === 'completed' ? 'Completed' : milestone.status === 'in_progress' ? 'In Progress' : 'Pending'}
+                                  {milestone.status === 'delivered' ? 'Delivered' : milestone.status === 'completed' ? 'Completed' : milestone.status === 'in_progress' ? 'In Progress' : 'Pending'}
                                 </span>
+                                {milestone.status === 'delivered' && milestone.auto_release_hours && (
+                                  <span className="flex items-center gap-1 text-violet-600 font-medium">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    Auto-release in ~{milestone.auto_release_hours}h if client doesn't respond
+                                  </span>
+                                )}
                                 {milestone.due_date && (
                                   <span className="flex items-center gap-1 text-slate-400">
                                     <Calendar className="w-3.5 h-3.5" />

@@ -14,6 +14,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 interface VerifyRequest {
   image_url: string;
@@ -43,7 +44,76 @@ const AI_API_KEY = Deno.env.get('AI_API_KEY') || '';
 const VISION_MODEL = 'openai/gpt-4o-mini';
 const AI_BASE_URL = Deno.env.get('AI_BASE_URL') || 'https://openrouter.ai/api/v1';
 
-async function fetchImageAsBase64(url: string): Promise<string> {
+// Rate limiting — every call costs a credit on the AI gateway, so unthrottled
+// loops are a direct cost-abuse vector. DB-backed via rate_limits table.
+const ROUTE = 'verify-document';
+const RATE_LIMIT = 10;
+const RATE_WINDOW_MS = 60000;
+
+async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_WINDOW_MS);
+
+  try { await supabaseClient.rpc('cleanup_expired_rate_limits'); } catch { /* non-critical */ }
+
+  const { count, error } = await supabaseClient
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('identifier', identifier)
+    .eq('route', ROUTE)
+    .gte('window_start', windowStart.toISOString());
+
+  if (error) return true; // allow if table doesn't exist yet
+  if (count !== null && count >= RATE_LIMIT) return false;
+
+  await supabaseClient
+    .from('rate_limits')
+    .insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
+
+  return true;
+}
+
+// ── SSRF guard ──────────────────────────────────────────────────────────────
+// The image must come from the user's OWN private verification-documents bucket
+// on THIS Supabase project — never an arbitrary external URL (which would let a
+// caller make the edge function fetch internal/cloud-metadata endpoints).
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
+
+function isOwnStorageUrl(url: string, userId: string): boolean {
+  try {
+    const parsed = new URL(url);
+    const projectUrl = new URL(SUPABASE_URL);
+
+    // Host must match this Supabase project exactly.
+    if (parsed.hostname !== projectUrl.hostname) return false;
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+
+    // Path must go through the storage API and the verification-documents bucket.
+    const path = parsed.pathname;
+    if (!path.includes('/storage/v1/object/')) return false;
+    const bucketMatch = path.match(/\/storage\/v1\/object\/[^/]+\/([^/]+)\//);
+    if (!bucketMatch || bucketMatch[1] !== 'verification-documents') return false;
+
+    // The first path segment after the bucket must be the caller's user id
+    // (matches the bucket RLS policy: (storage.foldername(name))[1] = auth.uid()).
+    // Path forms:  /storage/v1/object/sign/{bucket}/{userId}/...  (signed)
+    //              /storage/v1/object/public/{bucket}/{userId}/... (public)
+    // So after splitting on '/', the userId is at index 3 (0=storage, 1=v1,
+    // 2=object|sign|public, 3={bucket}, 4={userId}).
+    const segments = path.split('/').filter(Boolean);
+    // segments: [storage, v1, object|sign|public, bucket, userId, verification-docs, file]
+    if (segments.length < 6) return false;
+    if (segments[3] !== 'verification-documents') return false;
+    return segments[4] === userId;
+  } catch {
+    return false;
+  }
+}
+
+async function fetchImageAsBase64(url: string, userId: string): Promise<string> {
+  if (!isOwnStorageUrl(url, userId)) {
+    throw new Error('Image URL must be from your own private verification-documents storage');
+  }
   const response = await fetch(url);
   if (!response.ok) throw new Error(`Failed to fetch image: ${response.status}`);
   const blob = await response.blob();
@@ -71,6 +141,54 @@ serve(async (req: Request) => {
   }
 
   try {
+    // ── Auth: the caller must be an authenticated Growlancer user ──────────
+    const supabase = createClient(
+      SUPABASE_URL,
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      {
+        global: {
+          headers: { Authorization: req.headers.get('Authorization') ?? '' },
+        },
+      }
+    );
+
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
+      return new Response(JSON.stringify({
+        success: false,
+        image_clear: false,
+        clarity_issue: null,
+        extracted_name: null,
+        extracted_dob: null,
+        extracted_number: null,
+        name_match: null,
+        dob_match: null,
+        number_match: null,
+        verification_result: 'rejected',
+        error: 'Unauthorized',
+      } as VerifyResponse), { status: 401, headers });
+    }
+
+    // ── Rate limit (per user — AI vision calls cost money) ────────────────
+    const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
+    const identifier = user.id || clientIP;
+    const allowed = await checkRateLimit(supabase, identifier);
+    if (!allowed) {
+      return new Response(JSON.stringify({
+        success: false,
+        image_clear: false,
+        clarity_issue: null,
+        extracted_name: null,
+        extracted_dob: null,
+        extracted_number: null,
+        name_match: null,
+        dob_match: null,
+        number_match: null,
+        verification_result: 'rejected',
+        error: 'Too many verification attempts. Please try again in a minute.',
+      } as VerifyResponse), { status: 429, headers });
+    }
+
     const body: VerifyRequest = await req.json();
     const { image_url, back_image_url, full_name, date_of_birth, document_number, document_type } = body;
 
@@ -90,8 +208,8 @@ serve(async (req: Request) => {
       } as VerifyResponse), { status: 400, headers });
     }
 
-    // Fetch the uploaded document image and convert to base64
-    const imageBase64 = await fetchImageAsBase64(image_url);
+    // Fetch the uploaded document image and convert to base64 (SSRF-guarded)
+    const imageBase64 = await fetchImageAsBase64(image_url, user.id);
 
     // Build the prompt — includes explicit JSON output format + document-specific rules
     const docLabel = document_type.replace('_', ' ').replace(/\b\w/g, (c: string) => c.toUpperCase());
@@ -151,9 +269,9 @@ Respond ONLY with a valid JSON object, nothing else:
       },
     ];
 
-    // If there's a back image, add it as a second image
+    // If there's a back image, add it as a second image (SSRF-guarded)
     if (back_image_url) {
-      const backBase64 = await fetchImageAsBase64(back_image_url);
+      const backBase64 = await fetchImageAsBase64(back_image_url, user.id);
       messages[0].content.push({
         type: 'image_url' as const,
         image_url: { url: backBase64, detail: 'high' },

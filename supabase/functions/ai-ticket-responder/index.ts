@@ -55,7 +55,6 @@ function getCorsHeaders(origin: string | null) {
 
 interface TicketData {
   ticket_id: string;
-  user_id: string;
   user_role?: 'freelancer' | 'client';
   category: string;
   priority: string;
@@ -196,11 +195,11 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const { ticket_id, user_id, category, subject, description, priority } = body;
+    const { ticket_id, category, subject, description, priority } = body;
 
-    if (!ticket_id || !user_id || !subject || !description) {
+    if (!ticket_id || !subject || !description) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: ticket_id, user_id, subject, description' }),
+        JSON.stringify({ error: 'Missing required fields: ticket_id, subject, description' }),
         {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -208,10 +207,41 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Generate AI response
+    // ── Ownership check ──────────────────────────────────────────────────────
+    // The caller's identity is ALWAYS the authenticated user.id (never trusted
+    // from the body). The AI may only respond to the caller's OWN tickets — or
+    // any ticket if the caller is an admin.
+    const { data: ticket, error: ticketError } = await supabase
+      .from('support_tickets')
+      .select('user_id')
+      .eq('id', ticket_id)
+      .maybeSingle();
+
+    if (ticketError || !ticket) {
+      return new Response(JSON.stringify({ error: 'Ticket not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { data: callerProfile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    const isAdmin = callerProfile?.role === 'admin';
+    if (ticket.user_id !== user.id && !isAdmin) {
+      return new Response(JSON.stringify({ error: 'Forbidden: this ticket does not belong to you' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Generate AI response (caller identity always comes from the session)
     const aiResponse = await generateAIResponse({
       ticket_id,
-      user_id,
+      user_id: user.id,
       user_role: body.user_role || 'freelancer',
       category: category || 'general',
       priority: priority || 'normal',

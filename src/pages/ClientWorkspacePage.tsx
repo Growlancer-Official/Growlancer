@@ -18,6 +18,7 @@ import {
   Check,
   CheckCircle2,
   ClipboardList,
+  Clock,
   CreditCard,
   IndianRupee,
   Info,
@@ -141,6 +142,8 @@ export function ClientWorkspacePage() {
   const [revisionReason, setRevisionReason] = useState('')
   const [submittingRevision, setSubmittingRevision] = useState(false)
   const [payingRevision, setPayingRevision] = useState<string | null>(null)
+  const [autoReleaseHours, setAutoReleaseHours] = useState('72')
+  const [savingAutoRelease, setSavingAutoRelease] = useState(false)
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([])
   const [refundHistory, setRefundHistory] = useState<RefundHistoryEvent[]>([])
   const [showFundEscrow, setShowFundEscrow] = useState(false)
@@ -511,6 +514,39 @@ export function ClientWorkspacePage() {
 
   const activeRefund = refundRequests.find(r => ['pending_freelancer', 'pending_admin', 'approved', 'auto_approved'].includes(r.status))
   const isFrozen = !!selectedContract?.frozen_at
+
+  // Prefill the auto-release window from the contract's current milestone setting.
+  useEffect(() => {
+    if (!selectedContract) return
+    const ms = Array.isArray((selectedContract as any).milestones) ? (selectedContract as any).milestones : []
+    const hours = ms[0]?.auto_release_hours
+    if (typeof hours === 'number' && hours >= 24 && hours <= 168) {
+      setAutoReleaseHours(String(hours))
+    }
+  }, [selectedContract])
+
+  // Auto-release window override (client). 24–168 hours.
+  const handleSetAutoReleaseHours = async () => {
+    if (!selectedContract) return
+    const hours = parseInt(autoReleaseHours, 10)
+    if (!hours || hours < 24 || hours > 168) {
+      toast.error('Invalid window', 'Auto-release window must be between 24 and 168 hours (1–7 days).')
+      return
+    }
+    setSavingAutoRelease(true)
+    const { data, error } = await supabase.rpc('set_auto_release_hours' as any, {
+      p_contract_id: selectedContract.id,
+      p_hours: hours,
+    })
+    const result = data as { success?: boolean; error?: string } | null
+    if (error || !result?.success) {
+      toast.error('Failed to update', result?.error || error?.message || 'Could not update auto-release window.')
+    } else {
+      toast.success('Auto-release window updated', `Delivered milestones will auto-release after ${hours} hours without your review.`)
+      void refreshContract(selectedContract.id)
+    }
+    setSavingAutoRelease(false)
+  }
 
   const getTasks = useCallback(async (): Promise<SharedTask[]> => {
     if (!selectedContract) return []
@@ -1220,6 +1256,38 @@ export function ClientWorkspacePage() {
                         style={{ width: `${milestoneProgress.percent}%` }}
                       />
                     </div>
+
+                    {/* Auto-release window control (client) */}
+                    <div className="mb-5 p-4 rounded-xl bg-violet-50/60 border border-violet-200">
+                      <p className="text-sm font-medium text-slate-900 flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-violet-600" />
+                        Auto-Release Window
+                      </p>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        When a milestone is delivered, the payment releases automatically after this many hours
+                        if you haven't reviewed it. Set a window that gives you enough review time.
+                      </p>
+                      <div className="flex items-center gap-2 mt-3">
+                        <input
+                          type="number"
+                          min="24"
+                          max="168"
+                          value={autoReleaseHours}
+                          onChange={(e) => setAutoReleaseHours(e.target.value)}
+                          className="w-28 px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none"
+                        />
+                        <span className="text-sm text-slate-600">hours (24–168)</span>
+                        <button
+                          onClick={() => void handleSetAutoReleaseHours()}
+                          disabled={savingAutoRelease}
+                          className="inline-flex items-center px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                        >
+                          {savingAutoRelease ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Check className="h-4 w-4 mr-1.5" />}
+                          Apply
+                        </button>
+                      </div>
+                    </div>
+
                     <div className="space-y-3">
                       {milestones.map((milestone, idx) => (
                         <div
@@ -1230,11 +1298,14 @@ export function ClientWorkspacePage() {
                             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                               milestone.status === 'completed'
                                 ? 'border-green-500 bg-green-50'
+                                : milestone.status === 'delivered'
+                                ? 'border-violet-500 bg-violet-50'
                                 : milestone.status === 'in_progress'
                                 ? 'border-amber-500 bg-amber-50'
                                 : 'border-slate-300'
                             }`}>
                               {milestone.status === 'completed' && <Check className="h-3 w-3 text-green-600" />}
+                              {milestone.status === 'delivered' && <Clock className="h-3 w-3 text-violet-600" />}
                               {milestone.status === 'in_progress' && <Play className="h-3 w-3 text-amber-600" />}
                             </div>
                             <div>
@@ -1246,6 +1317,11 @@ export function ClientWorkspacePage() {
                                   {milestone.description}
                                 </p>
                               )}
+                              {milestone.status === 'delivered' && (
+                                <p className="text-xs text-violet-700 mt-1 font-medium">
+                                  Delivered — review & release within {milestone.auto_release_hours ?? 72}h or payment releases automatically
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="text-right">
@@ -1253,7 +1329,7 @@ export function ClientWorkspacePage() {
                               {formatCurrency(milestone.amount)}
                             </p>
                             <p className="text-xs text-slate-500 capitalize">
-                              {milestone.status === 'in_progress' ? 'In Progress' : milestone.status}
+                              {milestone.status === 'in_progress' ? 'In Progress' : milestone.status === 'delivered' ? 'Delivered' : milestone.status}
                             </p>
                           </div>
                         </div>
