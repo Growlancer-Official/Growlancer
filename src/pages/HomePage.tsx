@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { useCountries } from '../hooks/useCountries';
+import { useAboutPageMetrics } from '../hooks/useAboutPageMetrics';
 import { CategoriesSection as CategoriesSectionComponent } from '../components/CategoriesSection';
 import { supabase } from '../lib/supabase';
 import { validateEmail } from '../utils/validation';
@@ -480,6 +481,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
 // Client Section
 // ═══════════════════════════════════════════════════════════════
 function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
+  const { stats: metrics } = useAboutPageMetrics();
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
@@ -496,7 +498,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
               </div>
             </div>
 
-            <ul className="space-y-3 text-sm text-slate-600 flex-1">
+            <ul className="space-y-3 text-sm text-slate-600">
               {[
                 { bold: 'Instant AI recommendations', text: 'that fit your project constraints.' },
                 { bold: 'No spam proposals', text: '— you invite who you want to talk to.' },
@@ -510,7 +512,44 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
               ))}
             </ul>
 
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            {/* Trust strip */}
+            <div className="mt-5 grid grid-cols-3 gap-2">
+              {[
+                { icon: ShieldCheck, label: 'Escrow protection' },
+                { icon: Zap, label: 'Real-time updates' },
+                { icon: BadgeCheck, label: 'KYC-verified talent' },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} className="rounded-lg bg-slate-50 ring-1 ring-slate-200/70 px-2 py-2.5 flex items-center justify-center gap-1.5">
+                  <Icon className="text-emerald-600 w-3.5 h-3.5 flex-shrink-0" />
+                  <span className="text-[11px] font-semibold text-slate-600 leading-tight">{label}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Live platform metrics — flex-1 fills the remaining card height (no blank space) */}
+            <div className="mt-4 flex-1 flex flex-col justify-center rounded-xl bg-gradient-to-br from-emerald-50 via-teal-50/60 to-white ring-1 ring-emerald-100/70 px-4 py-3.5">
+              <div className="flex items-center gap-2 mb-2.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Live platform metrics</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { value: metrics[0]?.value ?? '…', label: 'Members' },
+                  { value: metrics[1]?.value ?? '…', label: 'Escrow protected' },
+                  { value: metrics[2]?.value ?? '…', label: 'Satisfaction' },
+                ].map(({ value, label }) => (
+                  <div key={label} className="rounded-lg bg-white/90 ring-1 ring-emerald-100/70 py-2.5 px-1 text-center">
+                    <div className="text-base sm:text-lg font-bold text-slate-900 leading-none">{value}</div>
+                    <div className="text-[10px] text-slate-500 mt-1.5 leading-tight">{label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={() => onOpenSignup('client')} 
                 className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
