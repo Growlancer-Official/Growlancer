@@ -120,9 +120,12 @@ export function ServicesCatalogPage() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
+                id="service-search"
+                name="service-search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search services..."
+                autoComplete="off"
                 className="w-full pl-12 pr-4 py-3.5 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
@@ -162,6 +165,9 @@ export function ServicesCatalogPage() {
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Max Price</label>
               <input
                 type="number"
+                id="max-price"
+                name="max-price"
+                min="0"
                 value={maxPrice}
                 onChange={(e) => setMaxPrice(e.target.value)}
                 placeholder="No limit"
@@ -187,7 +193,7 @@ export function ServicesCatalogPage() {
             <p className="text-sm text-slate-500">
               {loading ? 'Searching...' : `${services.length} service${services.length !== 1 ? 's' : ''} found`}
             </p>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <select aria-label="Sort services" value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="popular">Most Popular</option>
               <option value="newest">Newest</option>
               <option value="price_low">Price: Low to High</option>
