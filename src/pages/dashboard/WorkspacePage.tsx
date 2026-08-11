@@ -982,8 +982,11 @@ export function WorkspacePage() {
               <Shield className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
-              <span className="font-bold text-slate-900">Escrow Protection.</span> All payments are held in
-              Growlancer Escrow — funds release to your wallet only after the client approves your complete work.
+              <span className="font-bold text-slate-900">Escrow Protection + Auto-Release.</span> All payments are
+              held in Growlancer Escrow. When you deliver work, the client can approve and release it — but if they
+              don't respond within the review window (default 72h), the funds{' '}
+              <span className="font-bold text-emerald-700">auto-release to your wallet automatically</span>. Your
+              payment can never be held hostage.
             </p>
           </div>
           <div className="flex items-start gap-2.5">
@@ -1570,6 +1573,31 @@ export function WorkspacePage() {
                     </div>
                   )}
                 </div>
+
+                {/* Auto-release protection — delivered milestones can never be held hostage */}
+                {milestones.length > 0 && (
+                  <div className="rounded-2xl overflow-hidden border border-violet-200 shadow-sm">
+                    <div className="bg-gradient-to-r from-violet-600 to-emerald-600 px-5 py-3.5 flex items-center gap-3">
+                      <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+                        <ShieldCheck className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <p className="font-bold text-white text-xs">Your Payment Is Protected — Auto-Release Is Active</p>
+                        <p className="text-[10px] text-violet-100">Delivered milestones release to your wallet automatically — a client can never hold your payment</p>
+                      </div>
+                    </div>
+                    <div className="bg-violet-50/70 px-5 py-3.5">
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        Once you deliver a milestone, the client can review and release it sooner — but if they don't
+                        respond within the <span className="font-bold">review window</span>, the escrow{' '}
+                        <span className="font-bold text-emerald-700">auto-releases to your wallet automatically</span>.
+                        Even if the client forgets or attempts fraud, they <span className="font-bold">cannot keep your payment</span>.
+                        Fraud and outside-platform payment attempts lead to{' '}
+                        <span className="font-bold text-red-600">suspension or permanent ban</span>.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 {/* Milestones list */}
                 <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">

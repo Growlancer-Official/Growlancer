@@ -913,7 +913,19 @@ export function ClientWorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Release escrow only after approving work.</span> Review every
-              deliverable before releasing — once released, funds go to the freelancer.
+              deliverable before releasing — once released, funds go to the freelancer. Approve only when you are fully
+              satisfied with the delivered work.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
+              <Clock className="w-3.5 h-3.5 text-violet-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Review window & auto-release.</span> Once a freelancer delivers,
+              you get a review window (default 72h, adjustable 24h–7 days) to approve. If you don't respond in time, the
+              escrow <span className="font-bold text-violet-700">auto-releases to the freelancer automatically</span> —
+              funds can never be held hostage. Review promptly or release early to keep the project moving.
             </p>
           </div>
           <div className="flex items-start gap-2.5">
@@ -922,7 +934,9 @@ export function ClientWorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">You cannot pay freelancers outside Growlancer.</span> All payments
-              must happen through Growlancer Escrow. Paying outside the platform is a violation of our policy.
+              must happen through Growlancer Escrow. Paying outside the platform is a violation of our policy — the
+              freelancer can report it, and repeat violations lead to <span className="font-bold text-red-600">suspension
+              or permanent ban</span>.
             </p>
           </div>
           <div className="flex items-start gap-2.5">
