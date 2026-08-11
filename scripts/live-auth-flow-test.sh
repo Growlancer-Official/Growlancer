@@ -18,7 +18,7 @@ echo "🌐 Backend: $SUPABASE_URL"
 echo "══════════════════════════════════════════════"
 
 TS=$(date +%s)
-EMAIL="authtest${TS}@growlancer.test"
+EMAIL="authtest${TS}@gmail.com"
 PASS="TestPass123!${TS}"
 
 echo ""
