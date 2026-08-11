@@ -72,6 +72,8 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
   // Freelancer fields
   const [title, setTitle] = useState('');
   const [hourlyRate, setHourlyRate] = useState(0);
+  // Raw text for the rate input — preserves the '.' while typing "50.5"
+  const [hourlyRateInput, setHourlyRateInput] = useState('');
   const [location, setLocation] = useState('');
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
   const [skillNames, setSkillNames] = useState<string[]>([]);
@@ -368,7 +370,16 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Hourly Rate (₹/hr)</label>
-                <input type="number" min={0} value={hourlyRate || ''} onChange={e => setHourlyRate(Math.max(0, parseInt(e.target.value) || 0))}
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={hourlyRateInput}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setHourlyRateInput(raw);
+                    setHourlyRate(Math.max(0, parseFloat(raw) || 0));
+                  }}
                   placeholder="50" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
               </div>
               <div>
@@ -509,6 +520,11 @@ export function OnboardingPage() {
 
   const [languageInput, setLanguageInput] = useState('');
   const [languageSuggestions, setLanguageSuggestions] = useState<string[]>([]);
+
+  // Raw numeric-field text (decimal-friendly editing) — typing "2." must not
+  // collapse to "2"; the parsed numbers still live in freelancerForm.
+  const [experienceInput, setExperienceInput] = useState('');
+  const [hourlyRateInput, setHourlyRateInput] = useState('');
 
   // Client form state
   const [clientForm, setClientForm] = useState<ClientForm>({
@@ -1056,24 +1072,36 @@ export function OnboardingPage() {
                           <input
                             type="number"
                             min={0}
-                            value={freelancerForm.hourly_rate || ''}
-                            onChange={(e) => setFreelancerForm({ ...freelancerForm, hourly_rate: Math.max(0, parseInt(e.target.value) || 0) })}
+                            step="0.01"
+                            value={hourlyRateInput}
+                            onChange={(e) => {
+                              const raw = e.target.value;
+                              setHourlyRateInput(raw);
+                              const parsed = raw === '' ? 0 : parseFloat(raw);
+                              setFreelancerForm({ ...freelancerForm, hourly_rate: Number.isFinite(parsed) ? Math.max(0, parsed) : 0 });
+                            }}
                             placeholder="50"
                             className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                           />
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Years of Experience</label>
-                        <input
-                          type="number"
-                          min={0}
-                          max={60}
-                          value={freelancerForm.experience || ''}
-                          onChange={(e) => setFreelancerForm({ ...freelancerForm, experience: Math.min(60, Math.max(0, parseInt(e.target.value) || 0)) })}
-                          placeholder="5"
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                        />
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Years of Experience</label>                          <input
+                            type="number"
+                            min={0}
+                            max={80}
+                            step="0.5"
+                            value={experienceInput}
+                            onChange={(e) => {
+                              // String state preserves the '.' while typing "2.5"; empty field = 0
+                              const raw = e.target.value;
+                              setExperienceInput(raw);
+                              const parsed = raw === '' ? 0 : parseFloat(raw);
+                              setFreelancerForm({ ...freelancerForm, experience: Number.isFinite(parsed) ? Math.min(80, Math.max(0, parsed)) : 0 });
+                            }}
+                            placeholder="e.g. 5 or 2.5"
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                          />
                       </div>
                     </div>
 

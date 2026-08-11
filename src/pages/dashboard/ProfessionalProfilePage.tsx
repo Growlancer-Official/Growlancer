@@ -74,6 +74,14 @@ export function ProfessionalProfilePage() {
     availability: true,
   });
 
+  // ── Raw numeric-field text (decimal-friendly editing) ──
+  // Binding the input to the parsed number re-renders on every keystroke and
+  // eats the intermediate '.' while typing "2.5" (state becomes 2 → "25").
+  // Keeping the raw string lets the user type decimals naturally; the parsed
+  // number still lives in formData for validation/save/display.
+  const [hourlyRateInput, setHourlyRateInput] = useState('');
+  const [experienceInput, setExperienceInput] = useState('');
+
   // ── Email verification state ──
   const [emailVerified, setEmailVerified] = useState(false);
   const [checkingEmailVerification, setCheckingEmailVerification] = useState(true);
@@ -291,6 +299,8 @@ export function ProfessionalProfilePage() {
           certifications: f.certifications || [],
           availability: f.availability !== false,
         });
+        setHourlyRateInput(f.hourly_rate ? String(f.hourly_rate) : '');
+        setExperienceInput(f.experience ? String(f.experience) : '');
         if (f.privacy_settings) {
           setPrivacy(prev => ({ ...prev, ...f.privacy_settings }));
         }
@@ -349,6 +359,8 @@ export function ProfessionalProfilePage() {
             portfolio_url: u.portfolio_url ?? prev.portfolio_url,
             availability: u.availability ?? prev.availability,
           }));
+          if (u.hourly_rate != null) setHourlyRateInput(String(u.hourly_rate));
+          if (u.experience != null) setExperienceInput(String(u.experience));
         }
       })
       .subscribe();
@@ -930,7 +942,7 @@ export function ProfessionalProfilePage() {
                 <p className="text-[10px] text-slate-500">Rating</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-slate-900">{freelancerProfile?.experience || 0}+</p>
+                <p className="text-lg font-bold text-slate-900">{freelancerProfile?.experience ? Number(freelancerProfile.experience) : '—'}</p>
                 <p className="text-[10px] text-slate-500">Years</p>
               </div>
               <div>
@@ -1014,14 +1026,41 @@ export function ProfessionalProfilePage() {
                         <label className="block text-sm font-medium text-slate-700 mb-2">Hourly Rate (₹/hr)</label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
-                          <input type="number" step="0.01" min="0" value={formData.hourly_rate} onChange={(e) => setFormData({ ...formData, hourly_rate: parseFloat(e.target.value) || 0 })}
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={hourlyRateInput}
+                            onChange={(e) => {
+                              // String state preserves the '.' while typing "50.5";
+                              // empty field = 0 (never stuck). Out-of-range values are
+                              // left alone here — save validation shows the real error.
+                              const raw = e.target.value;
+                              setHourlyRateInput(raw);
+                              const parsed = raw === '' ? 0 : parseFloat(raw);
+                              setFormData({ ...formData, hourly_rate: Number.isFinite(parsed) && parsed >= 0 ? parsed : 0 });
+                            }}
                             className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="50" />
                         </div>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Years of Experience</label>
-                        <input type="number" min="0" max="60" value={formData.experience} onChange={(e) => setFormData({ ...formData, experience: parseInt(e.target.value) || 0 })}
-                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="5" />
+                        <input
+                          type="number"
+                          min="0"
+                          max="80"
+                          step="0.5"
+                          value={experienceInput}
+                          onChange={(e) => {
+                            // String state preserves the '.' while typing "2.5"; empty
+                            // field = 0 (never stuck). >80 is NOT silently wiped here —
+                            // save validation shows "between 0 and 80 years".
+                            const raw = e.target.value;
+                            setExperienceInput(raw);
+                            const parsed = raw === '' ? 0 : parseFloat(raw);
+                            setFormData({ ...formData, experience: Number.isFinite(parsed) && parsed >= 0 ? parsed : 0 });
+                          }}
+                          className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g. 5 or 2.5" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Location</label>
