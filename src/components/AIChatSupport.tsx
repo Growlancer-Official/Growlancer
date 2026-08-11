@@ -420,10 +420,12 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       await supabase.functions.invoke('email-notifications', {
         body: {
           type: 'support_ticket_created',
-          recipient_email: user.email,
-          recipient_name: user.name || user.email?.split('@')[0] || 'User',
-          subject: ticketContext?.subject || 'Support Request Received',
-          ticket_id: ticketId,
+          data: {
+            recipient_email: user.email,
+            recipient_name: user.name || user.email?.split('@')[0] || 'User',
+            subject: ticketContext?.subject || 'Support Request Received',
+            ticket_id: ticketId,
+          },
         },
       });
 

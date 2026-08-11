@@ -438,3 +438,7 @@ verify_jwt = false
 
 [functions.milestone-auto-release]
 verify_jwt = false
+
+[functions.security-alert-notify]
+verify_jwt = false
+

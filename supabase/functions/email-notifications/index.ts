@@ -11,9 +11,33 @@
 //
 // Reuses the same branded template pattern from proposal-notifications
 
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { sendEmail } from '../_shared/brevo.ts';
 
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
+
+// ─── Per-user rate limiting (in-memory sliding window) ────────────────────
+// Prevents an authenticated user from using this endpoint as an email
+// spam relay. Max EMAIL_SENDS_PER_WINDOW per EMAIL_WINDOW_MINUTES.
+const EMAIL_WINDOW_MINUTES = 60;
+const EMAIL_SENDS_PER_WINDOW = 10;
+const sendLog = new Map<string, number[]>(); // userId -> [timestamps]
+
+function rateLimited(userId: string): boolean {
+  const now = Date.now();
+  const windowStart = now - EMAIL_WINDOW_MINUTES * 60 * 1000;
+  const hits = (sendLog.get(userId) ?? []).filter(t => t > windowStart);
+  if (hits.length >= EMAIL_SENDS_PER_WINDOW) return true;
+  hits.push(now);
+  sendLog.set(userId, hits);
+  // Memory safety: prune stale entries when the map grows large.
+  if (sendLog.size > 5000) {
+    for (const [k, v] of sendLog) {
+      if (!v.some(t => t > windowStart)) sendLog.delete(k);
+    }
+  }
+  return false;
+}
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
 function escapeHtml(str: string): string {
@@ -447,6 +471,30 @@ Deno.serve(async (req) => {
       )
     }
 
+    // 🔐 Auth: the caller MUST be a real authenticated user (gateway JWT
+    // alone is not enough — we verify the identity server-side).
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized — valid session required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 🔐 Anti-spam: per-user rate limit before doing any work.
+    if (rateLimited(user.id)) {
+      return new Response(
+        JSON.stringify({ error: `Rate limit exceeded — max ${EMAIL_SENDS_PER_WINDOW} emails per ${EMAIL_WINDOW_MINUTES} minutes` }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const body = await req.json()
     const { type, data } = body // type: 'withdrawal_completed' | 'withdrawal_failed' | ...
 
@@ -462,6 +510,79 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({ error: 'recipient_email and recipient_name are required in data' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 🔐 Recipient authorization: the recipient must be legitimately
+    // connected to the caller — one of:
+    //   (a) the caller's own registered email,
+    //   (b) a registered user who shares a contract with the caller
+    //       (client <-> freelancer), verified server-side,
+    //   (c) any registered user, when the caller is an admin
+    //       (suspension, verification, dispute-resolution emails).
+    // This blocks arbitrary-address spam relays even with a valid JWT.
+    const { data: callerProfile } = await supabase
+      .from('profiles')
+      .select('email, role')
+      .eq('id', user.id)
+      .maybeSingle();
+    const callerEmail = String(callerProfile?.email ?? '').trim().toLowerCase();
+    const requestedEmail = String(recipient_email ?? '').trim().toLowerCase();
+    const isAdmin = callerProfile?.role === 'admin';
+
+    let recipientAuthorized = false;
+    if (isAdmin) {
+      // Admin may email any registered user (verified below).
+      const { data: anyUser } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', requestedEmail)
+        .maybeSingle();
+      recipientAuthorized = !!anyUser;
+    } else if (requestedEmail === callerEmail) {
+      recipientAuthorized = true; // own email
+    } else if (type === 'dispute_opened' || type === 'dispute_resolved') {
+      // The caller must be a party to the dispute AND the recipient must
+      // be one of the two parties (client or freelancer) of that dispute.
+      const disputeId = data?.dispute_id;
+      if (disputeId) {
+        const { data: d } = await supabase
+          .from('disputes')
+          .select('client_id, freelancer_id, client:profiles!disputes_client_id_fkey(email), freelancer:profiles!disputes_freelancer_id_fkey(email)')
+          .eq('id', disputeId)
+          .maybeSingle();
+        const callerIsParty = !!d &&
+          (d.client_id === user.id || d.freelancer_id === user.id);
+        const partyEmails = [
+          String((d?.client as { email?: string } | null)?.email ?? '').toLowerCase(),
+          String((d?.freelancer as { email?: string } | null)?.email ?? '').toLowerCase(),
+        ].filter(Boolean);
+        recipientAuthorized = callerIsParty && partyEmails.includes(requestedEmail);
+      }
+    } else {
+      // The recipient must be a registered user who shares a contract
+      // with the caller (escrow, milestone, or dispute counterparty).
+      const { data: recipientProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', requestedEmail)
+        .maybeSingle();
+      if (recipientProfile) {
+        const { data: sharedContract } = await supabase
+          .from('contracts')
+          .select('id')
+          .or(`and(client_id.eq.${user.id},freelancer_id.eq.${recipientProfile.id}),and(freelancer_id.eq.${user.id},client_id.eq.${recipientProfile.id})`)
+          .limit(1)
+          .maybeSingle();
+        recipientAuthorized = !!sharedContract;
+      }
+    }
+
+    if (!recipientAuthorized) {
+      console.warn(`[email-notifications] FORBIDDEN: user ${user.id} tried to email ${requestedEmail} (type=${type})`);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden — recipient is not connected to your account' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 

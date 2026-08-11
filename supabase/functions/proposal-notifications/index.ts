@@ -38,6 +38,27 @@ function getCorsHeaders(origin: string | null) {
   };
 }
 
+// ─── Per-user rate limiting (in-memory sliding window) ────────────────────
+const RATE_WINDOW_MINUTES = 60;
+const RATE_MAX_CALLS = 20;
+const callLog = new Map<string, number[]>(); // userId -> [timestamps]
+
+function rateLimited(userId: string): boolean {
+  const now = Date.now();
+  const windowStart = now - RATE_WINDOW_MINUTES * 60 * 1000;
+  const hits = (callLog.get(userId) ?? []).filter(t => t > windowStart);
+  if (hits.length >= RATE_MAX_CALLS) return true;
+  hits.push(now);
+  callLog.set(userId, hits);
+  // Memory safety: prune stale entries when the map grows large.
+  if (callLog.size > 5000) {
+    for (const [k, v] of callLog) {
+      if (!v.some(t => t > windowStart)) callLog.delete(k);
+    }
+  }
+  return false;
+}
+
 // ─── Email Sender (Brevo) ─────────────────────────────────────────────────
 async function sendNotificationEmail(
   to: string,
@@ -174,16 +195,41 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-    )
-
     // Only accept POST
     if (req.method !== 'POST') {
       return new Response(
         JSON.stringify({ error: 'Method not allowed' }),
         { status: 405, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // 🔐 Auth: verify the caller is a real authenticated user. This is an
+    // email-sending endpoint — a valid JWT alone is not enough, we confirm
+    // the identity server-side before trusting any of the body fields.
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const userClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized — valid session required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    )
+
+    // 🔐 Per-user rate limit (email endpoint abuse protection).
+    if (rateLimited(user.id)) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded — try again later' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
@@ -229,6 +275,24 @@ Deno.serve(async (req) => {
       .select('client_id')
       .eq('id', proposal.project_id)
       .single()
+
+    // 🔐 Ownership: only the project's client (or an admin) may trigger
+    // accept/reject emails for this proposal. Any other authenticated user
+    // is rejected with 403 — this blocks spam/confusion emails about
+    // proposals that are not theirs.
+    const { data: callerProfile } = await supabaseClient
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    const callerIsAdmin = callerProfile?.role === 'admin';
+    if (!callerIsAdmin && projectFull?.client_id !== user.id) {
+      console.warn(`[proposal-notifications] FORBIDDEN: user ${user.id} tried to ${action} proposal ${proposal_id}`);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden — you do not own this project' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
 
     if (projectFull?.client_id) {
       const { data: cp } = await supabaseClient

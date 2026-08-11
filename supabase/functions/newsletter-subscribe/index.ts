@@ -45,6 +45,31 @@ async function isDisposableEmail(
   }
 }
 
+// ─── Per-IP rate limiting (in-memory sliding window) ────────────────────
+// Prevents newsletter subscription abuse (email bombing of the welcome
+// email / waitlist rows). Public endpoint → keyed by client IP.
+const SUB_WINDOW_MINUTES = 60;
+const SUB_MAX_PER_WINDOW = 5;
+const subLog = new Map<string, number[]>(); // ip -> [timestamps]
+
+function rateLimited(key: string): boolean {
+  const now = Date.now();
+  const windowStart = now - SUB_WINDOW_MINUTES * 60 * 1000;
+  const hits = (subLog.get(key) ?? []).filter(t => t > windowStart);
+  if (hits.length >= SUB_MAX_PER_WINDOW) return true;
+  hits.push(now);
+  subLog.set(key, hits);
+  // Memory safety: prune stale entries when the map grows large.
+  if (subLog.size > 5000) {
+    for (const [k, v] of subLog) {
+      if (!v.some(t => t > windowStart)) subLog.delete(k);
+    }
+  }
+  return false;
+}
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
@@ -144,15 +169,27 @@ Deno.serve(async (req) => {
 
     // ─── POST: Subscribe ──────────────────────────────────────────────
     if (method === 'POST') {
+      const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+        || req.headers.get('x-real-ip')
+        || 'unknown';
+      if (rateLimited(clientIp)) {
+        return new Response(
+          JSON.stringify({ error: 'Too many subscription attempts — please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
       const body = await req.json()
       const { email, name, country } = body
 
-      if (!email || !email.includes('@')) {
+      const normalizedEmail = String(email ?? '').trim().toLowerCase()
+      if (!EMAIL_RE.test(normalizedEmail)) {
         return new Response(
           JSON.stringify({ error: 'Valid email is required' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
+      email = normalizedEmail
       if (await isDisposableEmail(supabaseClient, email)) {
         return new Response(
           JSON.stringify({ error: 'This format is not acceptable. Disposable / temporary email addresses are not allowed — please use a permanent email address.' }),
