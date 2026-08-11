@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle, Clock, Lock, Scale,  } from 'lucide-react';
+import { ArrowRight, CheckCircle, Clock, Lock, RefreshCcw, Scale,  } from 'lucide-react';
 
 export function EscrowPolicyPage() {
   const steps = [
@@ -20,6 +20,12 @@ export function EscrowPolicyPage() {
       title: '3. Verification & Release',
       description: 'Once deliverables are submitted, the client reviews them. Approving the milestone releases escrow funds directly into the freelancer\'s Wallet balance.',
       color: 'from-pink-500 to-pink-600'
+    },
+    {
+      icon: RefreshCcw,
+      title: '4. Revisions & Review Window',
+      description: 'Services include a stated number of free revisions (shown on the service page). Clients may request extra revisions beyond the included amount, and freelancers may charge their published extra-revision rate or a mutually agreed price — always with the client\'s consent before extra work begins. Unaddressed delivered work follows our review-window escalation so no party is left hanging.',
+      color: 'from-amber-500 to-orange-600'
     },
   ];
 

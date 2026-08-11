@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, LifeBuoy, Lock, RefreshCcw, Scale, ShieldCheck, } from 'lucide-react';
+import { ArrowRight, Clock, LifeBuoy, Lock, RefreshCcw, Scale, ShieldCheck, Wrench, } from 'lucide-react';
 
 export function RefundPolicyPage() {
   const scenarios = [
@@ -26,6 +26,12 @@ export function RefundPolicyPage() {
       title: 'Dispute Resolved in Your Favor',
       description:
         'If a dispute is raised and resolved in your favor, the disputed escrow portion is refunded to your wallet. Our dispute resolution team reviews the available evidence before releasing any funds.',
+    },
+    {
+      icon: Wrench,
+      title: 'Revisions & Extra Work',
+      description:
+        'Services include a stated number of free revisions (shown on the service page before ordering). If you request more revisions than included, the freelancer may charge their published extra-revision rate or a mutually agreed price — never without your consent. Revisions are not refundable once delivered and accepted; disputed revision work follows our standard dispute process.',
     },
     {
       icon: RefreshCcw,

@@ -115,6 +115,10 @@ const termsSections: Section[] = [
               <h5 className="font-bold text-slate-900 text-sm">C. Milestone Releases</h5>
               <p className="text-slate-600 text-xs mt-1">Upon delivery of the milestone files or services, the Client will review. Once satisfied, the Client clicks "Release Escrow", which initiates the transfer of funds to the Freelancer's wallet balance. Releasing funds constitutes final acceptance of that milestone.</p>
             </div>
+            <div>
+              <h5 className="font-bold text-slate-900 text-sm">D. Revisions & Extra Work</h5>
+              <p className="text-slate-600 text-xs mt-1">Each Service listing states the number of free revisions included in the base price. Requests within the included free revisions are covered at no additional cost. If the Client requests more revisions than included, the Freelancer may charge their published extra-revision rate or a mutually agreed price; the Client's consent is required before any paid extra work begins, and any such charges are payable through Growlancer Escrow. Unaddressed delivered work follows the platform's review-window escalation process so that no party is left without a resolution. Revision disputes are governed by Section 6 (Dispute Resolution & Mediation).</p>
+            </div>
           </div>
         </>
       ),

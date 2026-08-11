@@ -18,6 +18,8 @@ interface ServiceData {
   subcategory: string | null;
   price_type: 'fixed' | 'hourly' | 'package';
   price: number;
+  extra_revision_price?: number;
+  revisions?: number;
   price_package?: { name: string; price: number; description: string }[];
   delivery_time: string;
   tags: string[];
@@ -262,6 +264,12 @@ export function ServiceDetailPage() {
                   <Calendar className="w-4 h-4" />
                   Updated {new Date(service.updated_at).toLocaleDateString()}
                 </span>
+                {typeof service.revisions === 'number' && service.revisions > 0 && (
+                  <span className="flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4" />
+                    {service.revisions} free revisions
+                  </span>
+                )}
               </div>
             </div>
 
@@ -287,6 +295,56 @@ export function ServiceDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Revision Policy — transparent to the client */}
+            {(typeof service.revisions === 'number' && service.revisions > 0) || Number(service.extra_revision_price) > 0 ? (
+              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-emerald-600" />
+                  Revision Policy
+                </h2>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-4 bg-emerald-50/50 border border-emerald-100 rounded-xl">
+                    <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-emerald-900">
+                        {service.revisions || 0} free revisions included
+                      </p>
+                      <p className="text-xs text-emerald-700 mt-1 leading-relaxed">
+                        You can request up to {service.revisions || 0} revision(s) of the delivered work at no extra
+                        cost. Revisions cover reasonable fixes to the agreed scope of the service.
+                      </p>
+                    </div>
+                  </div>
+                  {Number(service.extra_revision_price) > 0 ? (
+                    <div className="flex items-start gap-3 p-4 bg-amber-50/50 border border-amber-100 rounded-xl">
+                      <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-amber-900">
+                          Extra revisions: {formatCurrency(Number(service.extra_revision_price))} each
+                        </p>
+                        <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                          Beyond the included free revisions, the freelancer may charge {formatCurrency(Number(service.extra_revision_price))}
+                          per revision. The freelancer sets this rate — you can agree on the price before any extra work begins.
+                          No charge applies unless you both agree.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-start gap-3 p-4 bg-slate-50 border border-slate-100 rounded-xl">
+                      <Shield className="w-5 h-5 text-slate-500 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-800">Extra revisions</p>
+                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                          Beyond the free revisions, any additional revision is subject to a mutually agreed price
+                          between you and the freelancer. All payments stay protected by Growlancer Escrow.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : null}
 
             {/* Packages */}
             {service.price_package && service.price_package.length > 0 && (

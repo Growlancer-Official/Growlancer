@@ -967,6 +967,16 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+              <RotateCcw className="w-3.5 h-3.5 text-indigo-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Revisions & review.</span> You agree to the included free
+              revisions on your service. If the client asks for more, you may charge your published extra-revision
+              rate or a mutually agreed price — never work for free beyond the agreed scope.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
             <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
               <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
             </div>

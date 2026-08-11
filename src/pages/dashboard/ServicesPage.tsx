@@ -350,7 +350,18 @@ export function ServicesPage() {
                     <Clock className="w-4 h-4" />
                     <span>{service.delivery_days} days</span>
                   </div>
+                  {service.revisions ? (
+                    <div className="flex items-center gap-1">
+                      <Tag className="w-4 h-4" />
+                      <span>{service.revisions} free rev</span>
+                    </div>
+                  ) : null}
                 </div>
+                {Number(service.extra_revision_price) > 0 && (
+                  <p className="text-[11px] text-amber-600 mb-4">
+                    Extra revision: ₹{service.extra_revision_price} each (beyond free revisions)
+                  </p>
+                )}
 
                 {service.tags && service.tags.length > 0 && (
                   <div className="flex flex-wrap gap-2 mb-4">

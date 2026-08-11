@@ -817,6 +817,17 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">Revisions.</span> Your service includes free revisions
+              (shown before you order). If you request more, the freelancer may charge their published extra-revision
+              rate or a mutually agreed price. Agree on the price before extra work begins — never ask freelancers
+              to work outside the agreed scope for free.
+            </p>
+          </div>
+          <div className="flex items-start gap-2.5">
             <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
               <Shield className="w-3.5 h-3.5 text-slate-600" />
             </div>

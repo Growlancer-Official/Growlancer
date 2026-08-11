@@ -3286,6 +3286,7 @@ export type Database = {
           created_at: string | null
           delivery_days: number
           description: string
+          extra_revision_price: number
           features: Json | null
           freelancer_id: string
           id: string
@@ -3309,6 +3310,7 @@ export type Database = {
           created_at?: string | null
           delivery_days: number
           description: string
+          extra_revision_price?: number
           features?: Json | null
           freelancer_id: string
           id?: string
@@ -3332,6 +3334,7 @@ export type Database = {
           created_at?: string | null
           delivery_days?: number
           description?: string
+          extra_revision_price?: number
           features?: Json | null
           freelancer_id?: string
           id?: string

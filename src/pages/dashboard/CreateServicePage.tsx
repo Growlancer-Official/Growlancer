@@ -19,7 +19,8 @@ export function CreateServicePage() {
     price: '',
     price_type: 'fixed' as 'fixed' | 'hourly' | 'package',
     delivery_days: '7',
-    revisions: '3',
+    revisions: '5',
+    extra_revision_price: '',
     requirements: '',
     tags: [] as string[],
     features: [] as string[],
@@ -94,6 +95,7 @@ export function CreateServicePage() {
         price_type: formData.price_type,
         delivery_days: parseInt(formData.delivery_days),
         revisions: parseInt(formData.revisions),
+        extra_revision_price: parseFloat(formData.extra_revision_price) || 0,
         requirements: formData.requirements || null,
         features: formData.features,
         tags: formData.tags,
@@ -247,18 +249,42 @@ export function CreateServicePage() {
             </div>
           </div>
 
-          <div className="mt-4">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Revisions Included *</label>
-            <input
-              type="number"
-              required
-              min="0"
-              value={formData.revisions}
-              onChange={(e) => setFormData({ ...formData, revisions: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              placeholder="3"
-            />
-            <p className="text-xs text-slate-500 mt-1">Number of free revisions included in the base price</p>
+          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Revisions Included (Free) *</label>
+              <input
+                type="number"
+                required
+                min="0"
+                value={formData.revisions}
+                onChange={(e) => setFormData({ ...formData, revisions: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                placeholder="5"
+              />
+              <p className="text-xs text-slate-500 mt-1">Free revisions included in the base price. We recommend at least 5 for client confidence.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Extra Revision Price (₹/revision)</label>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={formData.extra_revision_price}
+                onChange={(e) => setFormData({ ...formData, extra_revision_price: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                placeholder="0 (no extra charge)"
+              />
+              <p className="text-xs text-slate-500 mt-1">Charge per revision beyond the free limit. Clients see this clearly before ordering — you decide the rate.</p>
+            </div>
+          </div>
+          <div className="mt-4 p-4 bg-blue-50 rounded-xl flex items-start gap-2">
+            <Shield className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-blue-700 leading-relaxed">
+              <strong>Professional note:</strong> If the client requests more revisions than included, you may charge
+              your extra-revision rate (or a mutually agreed price). The included free revisions guarantee the client a
+              clear scope — anything beyond it is fairly paid work, agreed before it starts. Both sides stay protected by
+              Growlancer's Refund & Dispute Policy.
+            </p>
           </div>
         </div>
 

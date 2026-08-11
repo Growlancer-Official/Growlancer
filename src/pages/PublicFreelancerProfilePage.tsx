@@ -90,6 +90,7 @@ interface FreelancerService {
   price: number;
   delivery_days: number | null;
   revisions: number | null;
+  extra_revision_price?: number | null;
   tags: string[];
   active: boolean;
 }
@@ -212,7 +213,7 @@ export function PublicFreelancerProfilePage() {
           reviewService.getUserReviews(userKey),
           supabase
             .from('services')
-            .select('id, title, description, category, image_url, price, delivery_days, revisions, tags, active')
+            .select('id, title, description, category, image_url, price, delivery_days, revisions, extra_revision_price, tags, active')
             .eq('freelancer_id', userKey)
             .eq('active', true)
             .order('created_at', { ascending: false }),
@@ -637,7 +638,13 @@ export function PublicFreelancerProfilePage() {
                           {service.revisions ? (
                             <span className="flex items-center gap-1">
                               <CheckCircle className="w-3.5 h-3.5" />
-                              {service.revisions} rev
+                              {service.revisions} free rev
+                            </span>
+                          ) : null}
+                          {Number(service.extra_revision_price) > 0 ? (
+                            <span className="flex items-center gap-1 text-amber-600">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              +₹{Number(service.extra_revision_price)}/extra
                             </span>
                           ) : null}
                           <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
