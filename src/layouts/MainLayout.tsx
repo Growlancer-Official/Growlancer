@@ -107,8 +107,8 @@ export function MainLayout() {
             <div className="flex items-center gap-2 sm:gap-3">
               {!isAuthenticated && (
                 <>
-                  <button onClick={handleOpenLogin} className="hidden sm:inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">Login</button>
-                  <button onClick={() => handleOpenSignup()} className="inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-medium text-slate-900 ring-1 ring-slate-200 bg-white hover:bg-slate-50 transition-colors">Signup</button>
+                  <button onClick={handleOpenLogin} className="hidden sm:inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-medium text-slate-700 ring-1 ring-slate-200 bg-white hover:text-slate-900 hover:bg-slate-50 hover:ring-slate-300 transition-colors">Login</button>
+                  <button onClick={() => handleOpenSignup()} className="inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-semibold text-emerald-700 ring-2 ring-emerald-500 bg-white hover:bg-emerald-50 hover:ring-emerald-600 transition-colors shadow-sm">Signup</button>
                 </>
               )}
               {isAuthenticated && (
