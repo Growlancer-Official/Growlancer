@@ -76,6 +76,23 @@ export function SkillCertificationsPage() {
         <p className="text-slate-500 mt-1">Earn verified badges to showcase your expertise to clients</p>
       </div>
 
+      {/* Learn & Earn — mature platform promise */}
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-5 text-white shadow-sm">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <div className="space-y-1">
+            <p className="font-bold text-sm">Learn. Get Certified. Earn More.</p>
+            <p className="text-xs text-emerald-50 leading-relaxed">
+              Growlancer is a mature, trusted marketplace. Pass our skill assessments to earn verified badges that
+              appear next to your name and in your workspace — clients see your proven expertise, trust grows, and
+              quality work means fewer disputes and refunds for everyone. Real skills. Verified badges. Fair work.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-2xl border border-slate-100 p-5">

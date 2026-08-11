@@ -127,6 +127,64 @@ export function RefundPolicyPage() {
         </div>
       </section>
 
+      {/* How We Prevent Refunds — mature platform promise */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl -mr-20 -mt-20"></div>
+
+          <div className="relative space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-500/30">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h3 className="font-display text-2xl font-bold tracking-tight">How Growlancer prevents refunds before they happen</h3>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed font-medium">
+              Our goal is simple: <strong className="text-white">fair work, verified skills, and payments that land first time</strong>.
+              Refunds are a safety net — not a feature. We keep them rare by building trust into every step:
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              {[
+                {
+                  icon: ShieldCheck,
+                  title: 'Escrow holds every payment',
+                  text: 'Money never goes directly to a freelancer. It is released only when you approve work, or by auto-release after the review window — so there is nothing to chase after a dispute.',
+                },
+                {
+                  icon: RefreshCcw,
+                  title: 'Free revisions first',
+                  text: 'Most issues are fixed in a revision, not a refund. Every service includes free revisions, and extra revisions are charged only with your consent.',
+                },
+                {
+                  icon: Wrench,
+                  title: 'Verified, certified freelancers',
+                  text: 'Freelancers earn verified skill badges through our assessments. Certified professionals deliver quality work — which is exactly why disputes and refunds are rare on Growlancer.',
+                },
+                {
+                  icon: Lock,
+                  title: 'Fraud-proof delivery checks',
+                  text: 'If work evidence exists, a refund is never auto-approved. Accusations freeze the escrow instantly and our resolution team reviews every piece of evidence before any money moves.',
+                },
+              ].map((item, i) => (
+                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2">
+                  <item.icon className="w-5 h-5 text-emerald-400" />
+                  <p className="font-bold text-sm text-white">{item.title}</p>
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">{item.text}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed font-medium">
+              And when a refund <strong className="text-white">is</strong> genuinely due — before work, after mutual agreement, or
+              after a fair admin decision — it is processed promptly to your wallet or original payment method. Genuine clients
+              are always protected; only fraud and abuse are not.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Timing & Process */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
         <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-xl">

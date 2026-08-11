@@ -17,6 +17,7 @@ import {
   Briefcase,
   Check,
   CheckCircle2,
+  Award,
   ClipboardList,
   Clock,
   CreditCard,
@@ -74,6 +75,8 @@ interface Contract {
     id: string
     name: string | null
     avatar: string | null
+    verification_status?: string | null
+    is_pro?: boolean | null
   }
   project?: {
     id: string
@@ -146,6 +149,9 @@ export function ClientWorkspacePage() {
   const [savingAutoRelease, setSavingAutoRelease] = useState(false)
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([])
   const [refundHistory, setRefundHistory] = useState<RefundHistoryEvent[]>([])
+  const [freelancerCerts, setFreelancerCerts] = useState<Array<{ skill: string; level: string }>>([])
+  const [freelancerRating, setFreelancerRating] = useState<number | null>(null)
+  const [freelancerReviewCount, setFreelancerReviewCount] = useState(0)
   const [showFundEscrow, setShowFundEscrow] = useState(false)
   const [releasingEscrow, setReleasingEscrow] = useState(false)
   const [activeTab, setActiveTab] = useState<ActiveTab>('chat')
@@ -162,7 +168,7 @@ export function ClientWorkspacePage() {
   const refreshContract = useCallback(async (contractId: string) => {
     const { data, error } = await supabase
       .from('contracts')
-      .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, verification_status), project:projects!contracts_project_id_fkey(id, title)')
+      .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, verification_status, is_pro), project:projects!contracts_project_id_fkey(id, title)')
       .eq('id', contractId)
       .single()
     if (!error && data) {
@@ -176,7 +182,7 @@ export function ClientWorkspacePage() {
     const fetchContracts = async () => {
       const { data: contractsData, error: contractsError } = await supabase
         .from('contracts')
-        .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, verification_status), project:projects!contracts_project_id_fkey(id, title)')
+        .select('*, freelancer:profiles!contracts_freelancer_id_fkey(id, name, avatar, verification_status, is_pro), project:projects!contracts_project_id_fkey(id, title)')
         .eq('client_id', user.id)
         .in('status', ['pending', 'active', 'in_progress', 'disputed', 'completed'])
         .order('created_at', { ascending: false })
@@ -386,9 +392,36 @@ export function ClientWorkspacePage() {
     }
   }, [selectedContract])
 
+  // ─── Freelancer trust signals (certs + rating) ────────────────
+  const loadFreelancerTrust = useCallback(async () => {
+    if (!selectedContract?.freelancer?.id) return
+    const fid = selectedContract.freelancer.id
+    const [certsRes, ratingRes] = await Promise.all([
+      supabase
+        .from('skill_certifications')
+        .select('skill, level')
+        .eq('user_id', fid)
+        .not('passed_at', 'is', null)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('freelancer_profiles')
+        .select('rating, total_reviews')
+        .eq('user_id', fid)
+        .maybeSingle(),
+    ])
+    if (!certsRes.error) {
+      setFreelancerCerts((certsRes.data || []) as unknown as Array<{ skill: string; level: string }>)
+    }
+    if (!ratingRes.error && ratingRes.data) {
+      setFreelancerRating(Number((ratingRes.data as { rating?: number | null }).rating ?? 0))
+      setFreelancerReviewCount(Number((ratingRes.data as { total_reviews?: number | null }).total_reviews ?? 0))
+    }
+  }, [selectedContract?.freelancer?.id])
+
   useEffect(() => {
     if (!selectedContract) return
     void loadRefundData()
+    void loadFreelancerTrust()
 
     const channel = supabase
       .channel(`refund-live-${selectedContract.id}`)
@@ -403,7 +436,7 @@ export function ClientWorkspacePage() {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [selectedContract, loadRefundData])
+  }, [selectedContract, loadRefundData, loadFreelancerTrust])
 
   // ─── Extra revisions (client side) ───────────────────────────────
   const loadRevisionData = useCallback(async () => {
@@ -768,6 +801,30 @@ export function ClientWorkspacePage() {
               )}
               {(selectedContract?.freelancer as any)?.is_pro && (
                 <ProBadge size="xs" className="ml-1" />
+              )}
+              {freelancerRating !== null && freelancerReviewCount > 0 && (
+                <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600">
+                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                  {freelancerRating.toFixed(1)}
+                  <span className="text-slate-400 font-medium">({freelancerReviewCount})</span>
+                </span>
+              )}
+              {freelancerCerts.length > 0 && (
+                <span className="ml-2 inline-flex items-center gap-1.5 flex-wrap">
+                  {freelancerCerts.slice(0, 3).map(cert => (
+                    <span
+                      key={cert.skill}
+                      title={`Verified ${cert.skill} — ${cert.level} level (earned via Growlancer skill assessment)`}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-full border border-amber-200"
+                    >
+                      <Award className="w-3 h-3" />
+                      {cert.skill}
+                    </span>
+                  ))}
+                  {freelancerCerts.length > 3 && (
+                    <span className="text-[10px] font-bold text-slate-500">+{freelancerCerts.length - 3} more</span>
+                  )}
+                </span>
               )}
               {selectedContract?.escrow_funded && (
                 <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">
@@ -1759,6 +1816,32 @@ export function ClientWorkspacePage() {
                 {selectedContract.freelancer_started_at || (milestones.some(m => ['released', 'paid', 'completed', 'approved'].includes(m.status)))
                   ? 'Work has started on this project. The freelancer must accept your cancellation; if they decline, the case goes to dispute resolution. Released milestones are never refunded.'
                   : 'Work has not started yet. Your escrow will be refunded automatically — no questions asked, no platform fee.'}
+              </div>
+
+              {/* How refunds work — genuine-client path clarity */}
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
+                <p className="text-xs font-bold text-emerald-900 mb-2 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  Your money is always protected — how refunds work here
+                </p>
+                <ul className="space-y-1.5 text-xs text-emerald-800 leading-relaxed">
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span><strong>Work not started</strong> — your escrow refunds automatically, in full, with no platform fee.</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span><strong>Work started / delivered</strong> — the freelancer can accept (full refund) or reject, and the case is escalated to our resolution team with escrow frozen until a fair decision.</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span><strong>Fraud, scam or non-delivery claims</strong> — escrow freezes instantly and our team reviews the workspace evidence (files, chat, timeline) before any money moves.</span>
+                  </li>
+                  <li className="flex items-start gap-1.5">
+                    <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span><strong>Tip:</strong> before requesting a refund, try a <strong>free revision</strong> — most issues are fixed within the included revisions and everyone saves time.</span>
+                  </li>
+                </ul>
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
