@@ -6,6 +6,8 @@ import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
+import { InfoTip } from '../components/InfoTip';
+import { TipNote } from '../components/TipNote';
 
 interface Contract {
   id: string;
@@ -178,7 +180,13 @@ export function ClientContractsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Contracts</h1>
+          <h1 className="flex items-center gap-1.5 font-display text-2xl font-bold text-slate-900">
+            Contracts
+            <InfoTip
+              title="How contracts work for you"
+              text="1) Accept a proposal or a freelancer accepts your invite → contract is Pending. 2) You fund escrow → contract becomes Active and the freelancer starts work. 3) The freelancer delivers in the Workspace → you review and approve. 4) Funds release from escrow only after your approval. Your money is safe until you're happy with the work."
+            />
+          </h1>
           <p className="text-slate-500 mt-1">Manage active and completed contracts with freelancers</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl">
@@ -186,6 +194,12 @@ export function ClientContractsPage() {
           <span className="font-bold">{contracts.length} Contracts</span>
         </div>
       </div>
+
+      <TipNote tone="protection" title="Your money is protected until you approve" compact>
+        A contract is only active after escrow is funded. The freelancer can't touch the funds — they release only when you
+        approve the delivered work. If you're not satisfied, request a revision or raise a dispute instead of paying outside
+        the platform. Never pay a freelancer directly; it voids Growlancer's protection.
+      </TipNote>
 
       <div className="flex gap-2 border-b border-slate-200">
         {(['all', 'active', 'completed', 'pending'] as const).map((f) => (

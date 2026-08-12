@@ -7,6 +7,7 @@ import { CheckCircle, Clock, ExternalLink, Eye, FileText, IndianRupee, MoreVerti
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
+import { TipNote } from '../components/TipNote';
 import { formatBudgetRange } from '../utils/date';
 
 interface Proposal {
@@ -285,6 +286,11 @@ export function ClientProposalsPage() {
           <span className="font-bold">{proposals.length} Proposals</span>
         </div>
       </div>
+
+      {/* Accept & Hire — plain-language guide */}
+      <TipNote tone="info" title="Accepting a proposal" compact>
+        When you click <strong>Accept &amp; Hire</strong>, a contract and workspace are created instantly with escrow protection built in — you only pay when you fund the escrow, and funds are released to the freelancer only after you approve the completed work.
+      </TipNote>
 
       {actionError && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{actionError}</p>

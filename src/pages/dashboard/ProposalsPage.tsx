@@ -9,6 +9,7 @@ import { formatBudgetRange } from '../../utils/date';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { realtimeChannels, tables } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
+import { TipNote } from '../../components/TipNote';
 
 type ProposalWithProject = Tables<'proposals'> & {
   project: Tables<'projects'> & {
@@ -206,6 +207,11 @@ export function ProposalsPage() {
           Submit New Proposal
         </Link>
       </div>
+
+      {/* Proposal lifecycle — plain-language guide */}
+      <TipNote tone="tip" title="What each status means" compact>
+        <strong>Pending Review</strong> — the client hasn't responded yet. <strong>Accepted</strong> — the client selected your proposal; a contract is created from this workspace. <strong>Hired</strong> — escrow is ready to be funded and work has started. You can withdraw a pending proposal anytime, but once accepted it's locked in.
+      </TipNote>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

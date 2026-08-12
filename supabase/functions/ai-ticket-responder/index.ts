@@ -7,6 +7,27 @@ if (!AI_API_KEY) {
   console.error('AI_API_KEY environment variable is not set');
 }
 
+// ── Prompt-injection defense (same defang as ai-assistant) ──────────────────
+// Ticket subject/description are attacker-controlled (any logged-in user can
+// open a ticket), so they must never reach the model verbatim. Strip common
+// jailbreak markers and truncate length before the content is used.
+function sanitizeInput(input: string): string {
+  const dangerousPatterns = [
+    /ignore\s+(previous|all|above)\s+(instructions|prompts|rules)/gi,
+    /system\s*:/gi,
+    /assistant\s*:/gi,
+    /<script/gi,
+    /\$\{.*\}/g,
+  ];
+
+  let sanitized = input;
+  for (const pattern of dangerousPatterns) {
+    sanitized = sanitized.replace(pattern, '[FILTERED]');
+  }
+
+  return sanitized.substring(0, 8000);
+}
+
 // Rate limiting — every call costs a credit on the gateway, so unthrottled
 // loops are a direct cost-abuse vector. DB-backed via rate_limits table.
 const ROUTE = 'ai-ticket-responder';
@@ -111,7 +132,7 @@ Your task is to respond to a support ticket helpfully and professionally.
 ## Category-specific guidance:
 ${categoryGuidance}`;
 
-  const userMessage = `Subject: ${ticket.subject}\n\nDescription: ${ticket.description}\n\nPriority: ${ticket.priority}\n\n${priorityResponse}`;
+  const userMessage = `Subject: ${sanitizeInput(ticket.subject)}\n\nDescription: ${sanitizeInput(ticket.description)}\n\nPriority: ${ticket.priority}\n\n${priorityResponse}`;
 
   try {
     const response = await fetch(`${AI_BASE_URL}/chat/completions`, {

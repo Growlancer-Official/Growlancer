@@ -32,6 +32,8 @@ import { supabase } from '../../lib/supabase';
 import { withdrawalService, type Withdrawal, type PayoutMethod } from '../../lib/withdrawal';
 import { PLATFORM_CONFIG } from '../../lib/config';
 import { safeFormatDate } from '../../utils/date';
+import { InfoTip } from '../../components/InfoTip';
+import { TipNote } from '../../components/TipNote';
 
 // ────────────────────────────────────────
 // Types
@@ -698,8 +700,13 @@ export function WalletPage() {
                 <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-xs font-medium bg-white/20 px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-medium bg-white/20 px-3 py-1 rounded-full">
                   Available
+                  <InfoTip
+                    align="center"
+                    title="Ready to withdraw"
+                    text="This is the money you can withdraw right now. Funds reach your wallet after the client approves your completed work and escrow releases — then they become Available."
+                  />
                 </span>
               </div>
               <p className="text-3xl font-bold">{formatCurrency(availableBalance)}</p>
@@ -712,8 +719,13 @@ export function WalletPage() {
                 <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
                   <Clock className="w-6 h-6 text-amber-500" />
                 </div>
-                <span className="text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-600 bg-amber-50 px-3 py-1 rounded-full">
                   Pending
+                  <InfoTip
+                    align="center"
+                    title="In processing"
+                    text="Withdrawals currently being processed. They move to 'Available' once the transfer completes — usually 1-2 business days."
+                  />
                 </span>
               </div>
               <p className="text-3xl font-bold text-slate-900">{formatCurrency(pendingBalance)}</p>
@@ -726,8 +738,13 @@ export function WalletPage() {
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
                   <Shield className="w-6 h-6 text-blue-500" />
                 </div>
-                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                   Escrow
+                  <InfoTip
+                    align="center"
+                    title="Money in escrow"
+                    text="Payments the client has funded for active contracts. Escrow is released to you only after the client approves the completed work (or the auto-release window passes). Not withdrawable until released."
+                  />
                 </span>
               </div>
               <p className="text-3xl font-bold text-slate-900">{formatCurrency(escrowBalance)}</p>
@@ -740,8 +757,13 @@ export function WalletPage() {
                 <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
                   <ArrowUpRight className="w-6 h-6 text-blue-500" />
                 </div>
-                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                   Withdrawn
+                  <InfoTip
+                    align="center"
+                    title="Lifetime total"
+                    text="Everything you've successfully withdrawn from Growlancer to your payout method, since you joined."
+                  />
                 </span>
               </div>
               <p className="text-3xl font-bold text-slate-900">{formatCurrency(totalWithdrawn)}</p>
@@ -1066,9 +1088,14 @@ export function WalletPage() {
             </div>
           ) : (
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
-              <h3 className="font-display text-lg font-bold text-slate-900 mb-6">
+              <h3 className="font-display text-lg font-bold text-slate-900 mb-3">
                 Withdraw Funds
               </h3>
+              <TipNote tone="info" title="How withdrawals work" compact className="mb-5">
+                Enter the amount you want to move out of Growlancer and pick your saved payout method (UPI or bank).
+                A small processing fee ({' '}<span className="font-semibold">{(WITHDRAWAL_FEE_RATE * 100).toFixed(1)}%</span>{' '})
+                applies and is shown before you confirm. Your withdrawal appears here in real time with its status.
+              </TipNote>
 
               {/* Error */}
               {withdrawError && (

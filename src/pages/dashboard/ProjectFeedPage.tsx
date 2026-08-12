@@ -212,6 +212,14 @@ export function ProjectFeedPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const applyProjectId = searchParams.get('apply');
 
+  // Sync with the dashboard top-bar search: /dashboard/feed?search=<term>
+  // deep-links a search term into the feed and re-seeds the in-page box when
+  // the user searches again from the header.
+  useEffect(() => {
+    const term = searchParams.get('search');
+    if (term != null) setSearchQuery(term);
+  }, [searchParams]);
+
   // Deep-link apply flow: /dashboard/feed?apply=<projectId> (from public project
   // detail pages) auto-opens the proposal modal for that project once matches
   // load. Falls back to fetching the project directly when it isn't in the feed.

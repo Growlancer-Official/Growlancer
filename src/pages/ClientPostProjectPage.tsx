@@ -7,6 +7,7 @@ import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryPicker } from '../components/CategoryPicker';
 import { IndustrySelect } from '../components/IndustrySelect';
+import { TipNote } from '../components/TipNote';
 
 export function ClientPostProjectPage() {
   const navigate = useNavigate();
@@ -302,6 +303,15 @@ export function ClientPostProjectPage() {
               Set the budget you're willing to pay for this project (₹500 – ₹1,00,000).
               Freelancers use it to gauge scope and submit accurate proposals.
             </p>
+          </div>
+
+          <div className="mt-4">
+            <TipNote tone="protection" title="How you'll pay — always protected" compact>
+              You only pay once a contract starts, and the money goes into{' '}
+              <span className="font-semibold">Growlancer Escrow</span> — never directly to the freelancer. It's released
+              only after you approve the completed work (a small platform fee applies at payment).
+              This keeps your money safe on every project.
+            </TipNote>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   LayoutGrid,
@@ -91,8 +91,10 @@ const accountLinks: SidebarLink[] = [
 
 export function ClientDashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { logout, user } = useAuth();
   const currentPath = location.pathname;
+  const [headerSearch, setHeaderSearch] = useState('');
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [badgeCounts, setBadgeCounts] = useState({
@@ -520,12 +522,30 @@ export function ClientDashboardLayout() {
             </button>
             <div className="hidden sm:flex items-center gap-4 flex-1 min-w-0">
               <div className="relative w-full max-w-xs md:max-w-sm group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                 <input
-                  type="text"
-                  placeholder="Search..."
-                  className="w-full pl-9 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  type="search"
+                  value={headerSearch}
+                  onChange={(e) => setHeaderSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const q = headerSearch.trim();
+                      navigate(q ? `/client/find-talent?search=${encodeURIComponent(q)}` : '/client/find-talent');
+                    }
+                  }}
+                  placeholder="Search freelancers..."
+                  aria-label="Search freelancers"
+                  className="w-full pl-4 pr-10 sm:pr-12 py-2 sm:py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
                 />
+                <button
+                  onClick={() => {
+                    const q = headerSearch.trim();
+                    navigate(q ? `/client/find-talent?search=${encodeURIComponent(q)}` : '/client/find-talent');
+                  }}
+                  aria-label="Search freelancers"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>

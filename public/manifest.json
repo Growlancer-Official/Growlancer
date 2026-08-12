@@ -32,8 +32,8 @@
     {
       "name": "Dashboard",
       "short_name": "Dashboard",
-      "description": "View your freelancer dashboard",
-      "url": "/dashboard/overview",
+      "description": "Open your dashboard",
+      "url": "/dashboard",
       "icons": [
         {
           "src": "/UpdatedLogo.png",
@@ -43,10 +43,10 @@
       ]
     },
     {
-      "name": "Projects",
+      "name": "Project Feed",
       "short_name": "Projects",
       "description": "Browse open projects",
-      "url": "/dashboard/projects",
+      "url": "/dashboard/feed",
       "icons": [
         {
           "src": "/UpdatedLogo.png",
@@ -56,10 +56,10 @@
       ]
     },
     {
-      "name": "Messages",
-      "short_name": "Inbox",
-      "description": "View your messages",
-      "url": "/dashboard/inbox",
+      "name": "Notifications",
+      "short_name": "Notifications",
+      "description": "View your notifications",
+      "url": "/dashboard/notifications",
       "icons": [
         {
           "src": "/UpdatedLogo.png",

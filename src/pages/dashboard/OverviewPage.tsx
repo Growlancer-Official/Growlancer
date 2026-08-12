@@ -16,6 +16,7 @@ import {
 import { notificationService } from '../../lib/notifications';
 import { ProBadge } from '../../components/ProBadge';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
+import { InfoTip } from '../../components/InfoTip';
 import { useProStatus } from '../../hooks/useProStatus';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../../lib/contractStatuses';
 import { getSellerLevelInfo, getSellerLevelProgress, type SellerLevel } from '../../lib/sellerLevels';
@@ -36,6 +37,8 @@ interface QuickStat {
   value: string | number;
   change?: string;
   changeType?: 'positive' | 'negative' | 'neutral';
+  /** Short plain-language explanation shown as a hover tooltip next to the label. */
+  hint?: string;
 }
 
 /**
@@ -393,30 +396,35 @@ export function OverviewPage() {
           value: stats.activeContracts,
           change: stats.activeContracts > 0 ? 'Live from workspace' : 'Apply or accept invites',
           changeType: stats.activeContracts > 0 ? 'positive' : 'neutral',
+          hint: 'Contracts you are currently working on. Open the Workspace from Contracts to see milestones, chat and deliver work.',
         },
         {
           label: 'Pending Proposals',
           value: stats.pendingProposals,
           change: stats.pendingProposals > 0 ? 'Awaiting client review' : 'Browse project feed',
           changeType: 'neutral',
+          hint: 'Proposals you sent that the client has not decided on yet. You can add more or check the Project Feed for new opportunities.',
         },
         {
           label: 'AI Matches',
           value: stats.newMatches,
           change: stats.newMatches > 0 ? 'Fresh matches, live' : 'Update skills to get matched',
           changeType: stats.newMatches > 0 ? 'positive' : 'neutral',
+          hint: 'Projects our AI matched to your skills (score 40%+). Keeping your skills up to date improves match quality.',
         },
         {
           label: 'Earnings (INR)',
           value: `₹${safeNumber(stats.totalEarnings).toLocaleString()}`,
           change: `₹${safeNumber(stats.monthlyEarnings).toLocaleString()} this month`,
           changeType: stats.monthlyEarnings > 0 ? 'positive' : 'neutral',
+          hint: 'Money released from escrow into your wallet after clients approve your work. Withdraw it anytime from the Wallet page.',
         },
         {
           label: 'Profile Views',
           value: safeNumber(stats.profileViews).toLocaleString(),
           change: 'From your public profile',
           changeType: stats.profileViews > 0 ? 'positive' : 'neutral',
+          hint: 'How many times clients viewed your public profile. A complete profile with portfolio and verified skills attracts more views.',
         },
       ]
     : [
@@ -425,30 +433,35 @@ export function OverviewPage() {
           value: stats.activeContracts,
           change: stats.activeContracts > 0 ? 'In progress right now' : 'No active contracts',
           changeType: stats.activeContracts > 0 ? 'positive' : 'neutral',
+          hint: 'Work currently in progress with freelancers. Open a contract workspace to share files, chat and approve delivered work.',
         },
         {
           label: 'Pending Contracts',
           value: stats.pendingInvites, // reused as pending-contracts count
           change: stats.pendingInvites > 0 ? 'Awaiting freelancer start' : 'No pending contracts',
           changeType: stats.pendingInvites > 0 ? 'positive' : 'neutral',
+          hint: 'Contracts created but not yet started. Once the freelancer begins and you fund escrow, the contract becomes active.',
         },
         {
           label: 'Pending Proposals',
           value: stats.pendingProposals,
           change: stats.pendingProposals > 0 ? 'Awaiting your review' : 'No pending proposals',
           changeType: stats.pendingProposals > 0 ? 'positive' : 'neutral',
+          hint: 'Freelancers who applied to your projects and are waiting for your decision. Review them under Proposals.',
         },
         {
           label: 'Total Spent',
           value: `₹${safeNumber(stats.totalEarnings).toLocaleString()}`,
           change: 'Across all contracts',
           changeType: 'neutral',
+          hint: 'Total amount paid across all completed contracts. Your money is always protected in escrow until you approve the work.',
         },
         {
           label: 'Notifications',
           value: stats.unreadNotifications,
           change: stats.unreadNotifications > 0 ? 'Unread messages' : 'All caught up',
           changeType: stats.unreadNotifications > 0 ? 'positive' : 'neutral',
+          hint: 'Unread updates about your projects, proposals and contracts. Stay on top of them to keep work moving.',
         },
       ];
 
@@ -474,7 +487,10 @@ export function OverviewPage() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {quickStats.slice(0, 4).map((stat, index) => (
           <div key={index} className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
-            <p className="text-slate-500 text-xs sm:text-sm font-medium truncate">{stat.label}</p>
+            <p className="flex items-center gap-1 text-slate-500 text-xs sm:text-sm font-medium truncate">
+              {stat.label}
+              {stat.hint && <InfoTip text={stat.hint} />}
+            </p>
             <p className="text-xl sm:text-3xl font-bold text-slate-900 mt-1 sm:mt-2">{stat.value}</p>
             {stat.change && (
               <p className={`text-[10px] sm:text-xs mt-1 sm:mt-2 truncate ${
@@ -718,7 +734,13 @@ export function OverviewPage() {
             return (
               <div className="bg-white rounded-2xl p-6 border border-slate-100">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-slate-900">Your Position</h3>
+                  <h3 className="flex items-center gap-1.5 font-semibold text-slate-900">
+                    Your Position
+                    <InfoTip
+                      title="Freelancer levels"
+                      text="Your position grows automatically as you complete contracts on time with happy clients: New → Level 1 → Rising Talent → Top Rated → Top Rated Plus. Higher levels unlock more visibility and trust with clients."
+                    />
+                  </h3>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-bold border ${levelInfo.bgColor} ${levelInfo.color} ${levelInfo.borderColor}`}>
                     {levelInfo.label}
                   </span>

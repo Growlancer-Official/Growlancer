@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   LayoutDashboard,
@@ -101,8 +101,10 @@ const supportLinks: SidebarLink[] = [
 ];
 export function DashboardLayout() {
   const location = useLocation();
+  const navigate = useNavigate();
   const { logout, user } = useAuth();
   const currentPath = location.pathname;
+  const [headerSearch, setHeaderSearch] = useState('');
   const [badgeCounts, setBadgeCounts] = useState({
     invites: 0,
     proposals: 0,
@@ -662,12 +664,30 @@ export function DashboardLayout() {
             </button>
             <div className="hidden sm:flex items-center gap-4 flex-1 min-w-0">
               <div className="relative w-full max-w-xs md:max-w-sm group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
                 <input
-                  type="text"
+                  type="search"
+                  value={headerSearch}
+                  onChange={(e) => setHeaderSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const q = headerSearch.trim();
+                      navigate(q ? `/dashboard/feed?search=${encodeURIComponent(q)}` : '/dashboard/feed');
+                    }
+                  }}
                   placeholder="Search projects, contracts..."
-                  className="w-full pl-9 sm:pl-11 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
+                  aria-label="Search projects"
+                  className="w-full pl-4 pr-10 sm:pr-12 py-2 sm:py-2.5 bg-slate-50 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
                 />
+                <button
+                  onClick={() => {
+                    const q = headerSearch.trim();
+                    navigate(q ? `/dashboard/feed?search=${encodeURIComponent(q)}` : '/dashboard/feed');
+                  }}
+                  aria-label="Search projects"
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                >
+                  <Search className="w-4 h-4" />
+                </button>
               </div>
             </div>
           </div>

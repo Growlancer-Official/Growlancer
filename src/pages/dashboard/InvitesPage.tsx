@@ -4,6 +4,7 @@ import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Load
 import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { TipNote } from '../../components/TipNote';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, dbFunctions, uniqueChannelName } from '../../lib/supabase';
 import { formatBudgetRange, safeFormatDate } from '../../utils/date';
@@ -298,6 +299,11 @@ export function InvitesPage() {
           </div>
         )}
       </div>
+
+      {/* Invite lifecycle — plain-language guide */}
+      <TipNote tone="tip" title="How invites work" compact>
+        A client personally invited you to their project. <strong>Accept</strong> — a contract is created with escrow protection and you can start working. <strong>Decline</strong> — the invite is closed and the client is notified. Invites expire after the deadline shown on each card.
+      </TipNote>
 
       {/* New Invite Alert */}
       {newInviteAlert && (

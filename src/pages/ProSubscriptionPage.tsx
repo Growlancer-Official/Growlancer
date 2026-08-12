@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { safeFormatDate } from '../utils/date';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
 import { ProBadge } from '../components/ProBadge';
+import { TipNote } from '../components/TipNote';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
 import {
@@ -254,6 +255,15 @@ export function ProSubscriptionPage() {
                 Save 17%
               </span>
             </button>
+          </div>
+
+          {/* How the trial → paid flow works */}
+          <div className="max-w-5xl mx-auto px-4 mb-8">
+            <TipNote tone="tip" title={trialUsed ? 'Your free trial is used — upgrade anytime' : 'Start your free trial first'} compact>
+              {trialUsed
+                ? 'You can now subscribe with a payment method (wallet balance or Razorpay — UPI, cards, net banking). Your Pro badge stays active the whole time and your billing is managed right here in real time.'
+                : 'Fresh freelancers get a free trial first — no payment needed. After the trial ends, you can continue with a paid plan (wallet or Razorpay). Your Pro badge appears next to your name as soon as the trial starts.'}
+            </TipNote>
           </div>
 
           {/* Plan Cards */}

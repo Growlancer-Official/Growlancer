@@ -9,6 +9,8 @@ import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCir
 import { formatCurrency, safeFormatDate, safeNumber } from '../utils/date';
 import { withdrawalService } from '../lib/withdrawal';
 import { RazorpayCheckout } from '../components/RazorpayCheckout';
+import { InfoTip } from '../components/InfoTip';
+import { TipNote } from '../components/TipNote';
 
 interface Transaction {
   id: string;
@@ -407,6 +409,11 @@ export function ClientPaymentsPage() {
         </Link>
       </div>
 
+      {/* How payments work — plain-language guide */}
+      <TipNote tone="info" title="How your money moves on Growlancer" compact>
+        Fund escrow from your wallet or card before work starts — money is held safely and only released to the freelancer after you approve the completed work. Every transaction is recorded here in real time, and invoices are generated automatically when escrow is released.
+      </TipNote>
+
       {/* Wallet — add funds to test the escrow workflow */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-600/20 relative overflow-hidden">
         <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full" />
@@ -417,7 +424,16 @@ export function ClientPaymentsPage() {
               <Wallet className="w-7 h-7 text-white" />
             </div>
             <div>
-              <p className="text-emerald-100 text-xs font-medium uppercase tracking-widest">Wallet Balance</p>
+              <p className="text-emerald-100 text-xs font-medium uppercase tracking-widest flex items-center gap-1.5">
+                Wallet Balance
+                <InfoTip
+                  text="Money you've added to your Growlancer wallet. Use it to fund escrow instantly — funds never expire and are fully refundable if no work has started."
+                  title="Wallet Balance"
+                  align="left"
+                  tone="emerald"
+                  className="[&_svg]:text-emerald-100 [&_svg]:hover:text-white"
+                />
+              </p>
               <div className="flex items-center gap-3">
                 <p className="text-3xl font-bold mt-1">
                   {walletLoading ? (

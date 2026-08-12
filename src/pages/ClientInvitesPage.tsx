@@ -6,6 +6,7 @@ import { Calendar, Clock, MailCheck, MoreVertical, Plus, RefreshCw, Send, X } fr
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
+import { TipNote } from '../components/TipNote';
 
 interface Invite {
   id: string;
@@ -171,6 +172,11 @@ export function ClientInvitesPage() {
           Send New Invite
         </Link>
       </div>
+
+      {/* Invite lifecycle — plain-language guide */}
+      <TipNote tone="info" title="What happens after you invite a freelancer" compact>
+        The freelancer sees your invite in real time and can <strong>Accept</strong> (a contract + workspace is created instantly with escrow protection) or <strong>Decline</strong>. You can <strong>Cancel</strong> a pending invite anytime or <strong>Resend</strong> it to give the freelancer a gentle nudge. Invites auto-expire after the shown deadline.
+      </TipNote>
 
       {/* Filter Tabs */}
       <div className="flex gap-2 border-b border-slate-200">

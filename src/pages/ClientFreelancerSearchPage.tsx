@@ -9,7 +9,7 @@ import { CategoriesSection } from '../components/CategoriesSection';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { invitesService } from '../lib/dataService';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { safeLower } from '../utils/date';
 
 interface FreelancerResult {
@@ -57,6 +57,15 @@ export function ClientFreelancerSearchPage() {
   const [saveName, setSaveName] = useState('');
   const toast = useToast();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
+  // Sync with the dashboard top-bar search: /client/find-talent?search=<term>
+  // deep-links a search term into the talent search and re-seeds the box when
+  // the user searches again from the header.
+  useEffect(() => {
+    const term = searchParams.get('search');
+    if (term != null) setSearchQuery(term);
+  }, [searchParams]);
 
   // ── Contact (invite) modal state ──
   const [contactFreelancer, setContactFreelancer] = useState<FreelancerResult | null>(null);

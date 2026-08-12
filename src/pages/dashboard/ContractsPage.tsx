@@ -10,6 +10,8 @@ import { milestoneService, getMilestoneProgress } from '../../lib/contractMilest
 import { safeFormatDate } from '../../utils/date';
 import type { MilestoneItem } from '../../lib/contractMilestones';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../../lib/contractStatuses';
+import { InfoTip } from '../../components/InfoTip';
+import { TipNote } from '../../components/TipNote';
 
 type ContractWithDetails = Tables<'contracts'> & {
   project?: Tables<'projects'> | null;
@@ -500,6 +502,10 @@ export function ContractsPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <InfoTip
+            title="How contracts & money work"
+            text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlancer."
+          />
           <div className="px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
             <p className="text-xs text-emerald-600">Total Earnings</p>
             <p className="text-xl font-bold text-emerald-700">{formatCurrency(totalEarnings)}</p>
@@ -510,6 +516,13 @@ export function ContractsPage() {
           </div>
         </div>
       </div>
+
+      {/* How-it-works strip — hover the funding badges on any contract for details */}
+      <TipNote tone="protection" title="Your money is always protected" compact>
+        The{' '}<span className="font-semibold">funding badges</span> on each contract (Not Funded / Partially Funded / Fully Funded)
+        tell you exactly where escrow stands. Work confidently — payment releases to your wallet only after the client
+        approves your work, or automatically once the review window passes.
+      </TipNote>
 
       {/* Tabs — workflow order: All → Active → Pending → Completed */}
       <div className="flex items-center gap-2 border-b border-slate-200">
