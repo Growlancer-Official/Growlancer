@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   TrendingUp, Wallet, Scale, RotateCcw, Download, Loader2, RefreshCw,
-  FileText, Banknote, PiggyBank, Receipt, AlertTriangle,
+  FileText, Banknote, PiggyBank, Receipt, AlertTriangle, ArrowUpRight,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase, realtimeChannels } from '../../lib/supabase';
 import { adminQuery } from '../../lib/adminDataProxy';
 import { useToast } from '../../components/Toast';
 
@@ -90,6 +91,15 @@ export function AdminFinancePage() {
 
   useEffect(() => { void fetchAll(); }, [fetchAll]);
 
+  // Real-time: commission updates as soon as escrow is released / refunds land
+  useEffect(() => {
+    const channel = realtimeChannels.transactions(`admin-finance-${Date.now()}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'platform_revenue' }, () => void fetchAll())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, () => void fetchAll())
+      .subscribe();
+    return () => { channel.unsubscribe(); };
+  }, [fetchAll]);
+
   const exportInvoicesCSV = () => {
     const header = ['Invoice Number', 'Client', 'Freelancer', 'Project', 'Subtotal', 'Platform Fee', 'Freelancer Net', 'Total', 'Status', 'Issued At'];
     const lines = invoices.map(i => [
@@ -131,6 +141,12 @@ export function AdminFinancePage() {
           <button onClick={() => void fetchAll()} className="p-2 hover:bg-white/5 rounded-lg text-slate-400 transition-colors" title="Refresh">
             <RefreshCw className={'w-4 h-4 ' + (loading ? 'animate-spin' : '')} />
           </button>
+          <Link
+            to="/admin/withdrawals"
+            className="px-3 py-2 bg-emerald-500/10 text-emerald-400 rounded-xl text-[10px] font-bold uppercase hover:bg-emerald-500/20 transition-all flex items-center gap-1.5"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5" /> Withdraw
+          </Link>
           <button
             onClick={exportInvoicesCSV}
             disabled={invoices.length === 0}

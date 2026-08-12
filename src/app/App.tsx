@@ -128,6 +128,7 @@ const AdminProjectsPage = lazy(() => import('@pages/admin/AdminProjectsPage').th
 const AdminContractsPage = lazy(() => import('@pages/admin/AdminContractsPage').then(m => ({ default: m.AdminContractsPage })));
 const AdminPaymentsPage = lazy(() => import('@pages/admin/AdminPaymentsPage').then(m => ({ default: m.AdminPaymentsPage })));
 const AdminFinancePage = lazy(() => import('@pages/admin/AdminFinancePage').then(m => ({ default: m.AdminFinancePage })));
+const AdminWithdrawalsPage = lazy(() => import('@pages/admin/AdminWithdrawalsPage').then(m => ({ default: m.AdminWithdrawalsPage })));
 const AdminDisputesPage = lazy(() => import('@pages/admin/AdminDisputesPage').then(m => ({ default: m.AdminDisputesPage })));
 const AdminSubscriptionsPage = lazy(() => import('@pages/admin/AdminSubscriptionsPage').then(m => ({ default: m.AdminSubscriptionsPage })));
 const AdminReportsPage = lazy(() => import('@pages/admin/AdminReportsPage').then(m => ({ default: m.AdminReportsPage })));
@@ -326,6 +327,7 @@ function App() {
                 <Route path="contracts" element={<AdminContractsPage />} />
                 <Route path="payments" element={<AdminPaymentsPage />} />
                 <Route path="finance" element={<AdminFinancePage />} />
+                <Route path="withdrawals" element={<AdminWithdrawalsPage />} />
                 <Route path="disputes" element={<AdminDisputesPage />} />
                 <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
                 <Route path="reports" element={<AdminReportsPage />} />
