@@ -3358,8 +3358,81 @@ export type Database = {
           },
         ]
       }
+      service_offers: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string | null
+          freelancer_id: string
+          id: string
+          message: string | null
+          service_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string | null
+          freelancer_id: string
+          id?: string
+          message?: string | null
+          service_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string | null
+          freelancer_id?: string
+          id?: string
+          message?: string | null
+          service_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_offers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "active_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_offers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_offers_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "active_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_offers_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_offers_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       services: {
         Row: {
+          accepts_tips: boolean | null
           active: boolean | null
           category: string
           created_at: string | null
@@ -3370,6 +3443,7 @@ export type Database = {
           freelancer_id: string
           id: string
           image_url: string | null
+          negotiable: boolean | null
           orders: number | null
           price: number
           price_type: string | null
@@ -3384,6 +3458,7 @@ export type Database = {
           views: number | null
         }
         Insert: {
+          accepts_tips?: boolean | null
           active?: boolean | null
           category: string
           created_at?: string | null
@@ -3394,6 +3469,7 @@ export type Database = {
           freelancer_id: string
           id?: string
           image_url?: string | null
+          negotiable?: boolean | null
           orders?: number | null
           price: number
           price_type?: string | null
@@ -3408,6 +3484,7 @@ export type Database = {
           views?: number | null
         }
         Update: {
+          accepts_tips?: boolean | null
           active?: boolean | null
           category?: string
           created_at?: string | null
@@ -3418,6 +3495,7 @@ export type Database = {
           freelancer_id?: string
           id?: string
           image_url?: string | null
+          negotiable?: boolean | null
           orders?: number | null
           price?: number
           price_type?: string | null

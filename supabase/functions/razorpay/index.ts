@@ -234,7 +234,9 @@ serve(async req => {
       case 'create_order': {
         const {
           order_type,
-          currency = 'USD',
+          // India-first: Razorpay is an INR gateway, so an omitted currency must
+          // never silently create a USD order priced with INR math.
+          currency = 'INR',
           description,
           contract_id,
           subscription_id,
@@ -300,11 +302,50 @@ serve(async req => {
           const serviceId = metadata?.service_id || data.service_id;
           if (!serviceId) throw new Error('service_id is required for service_purchase');
           const { data: service } = await supabaseClient
-            .from('services').select('price, active, freelancer_id').eq('id', serviceId).single();
+            .from('services').select('price, active, freelancer_id, accepts_tips, negotiable').eq('id', serviceId).single();
           if (!service || service.active === false) {
             throw new Error('Service not found or inactive');
           }
-          serverAmount = Number(service.price) || 0;
+          const basePrice = Number(service.price) || 0;
+          let effectivePrice = basePrice;
+
+          // 💬 Negotiated price: ONLY an ACCEPTED offer owned by this client
+          // may change the amount. The offer id comes from the request but the
+          // amount is read from the DB — a client can never pay an amount the
+          // freelancer didn't agree to.
+          const offerId = metadata?.offer_id || data.offer_id;
+          if (offerId) {
+            const { data: offer } = await supabaseClient
+              .from('service_offers')
+              .select('id, status, amount, client_id, service_id')
+              .eq('id', offerId)
+              .maybeSingle();
+            if (!offer || offer.status !== 'accepted' || offer.service_id !== serviceId || offer.client_id !== user.id) {
+              throw new Error('Offer is not valid for this purchase');
+            }
+            const offered = Number(offer.amount) || 0;
+            // Bounds: the agreed price must stay within a professional range
+            // of the listed price (never wildly off, never below ₹50).
+            if (offered < 50 || offered > Math.max(basePrice * 2, 5000)) {
+              throw new Error('Offer amount is out of the allowed range');
+            }
+            effectivePrice = offered;
+          }
+
+          // 💜 Tip: only honoured when the freelancer enabled accepts_tips,
+          // never more than the (effective) service price.
+          let tipAmount = 0;
+          if (service.accepts_tips === true) {
+            const requestedTip = Number(metadata?.tip_amount || 0);
+            if (Number.isFinite(requestedTip) && requestedTip > 0) {
+              if (requestedTip > effectivePrice) {
+                throw new Error('Tip cannot exceed the service price');
+              }
+              tipAmount = Math.round(requestedTip * 100) / 100;
+            }
+          }
+
+          serverAmount = Math.round((effectivePrice + tipAmount) * 100) / 100;
         } else if (validOrderType === 'card_verification') {
           // ₹1 authorization used purely to tokenize a card for one-click future
           // payments (Settings → Billing → Add Card). The amount is fixed
@@ -701,7 +742,7 @@ serve(async req => {
         // Ownership check: only the order owner or an admin may refund
         const { data: orderRec } = await supabaseClient
           .from('razorpay_orders')
-          .select('user_id')
+          .select('user_id, contract_id')
           .eq('razorpay_payment_id', razorpay_payment_id)
           .maybeSingle();
 
@@ -734,6 +775,21 @@ serve(async req => {
           currency: refundResult.currency || 'INR',
           status: refundResult.status,
           processor_response: refundResult,
+        });
+
+        // Track the refund so the webhook (refund.processed) completes the ledger
+        // row and reconciles escrow idempotently. Manual refunds used to skip this
+        // — no provider_refund_id meant the refund never appeared in the refunds
+        // ledger/timeline and the refund_request was never closed.
+        await supabaseAdmin.from('refunds').insert({
+          contract_id: orderRec.contract_id || null,
+          provider: 'razorpay',
+          provider_refund_id: refundResult.id,
+          provider_payment_id: razorpay_payment_id,
+          amount: parseFloat(refundResult.amount) / 100,
+          currency: refundResult.currency || 'INR',
+          status: 'processing',
+          timeline: [{ event: 'created', at: new Date().toISOString(), razorpay_refund_id: refundResult.id }],
         });
 
         // Financial audit trail + notify the client

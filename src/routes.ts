@@ -55,6 +55,7 @@ export const ROUTES = {
     IDENTITY_VERIFICATION: '/dashboard/identity-verification',
     SERVICES: '/dashboard/services',
     SERVICES_CREATE: '/dashboard/services/create',
+    SERVICES_EDIT: '/dashboard/services/edit/:serviceId',
     AI_SUBSCRIPTION: '/dashboard/ai-subscription',
     AI_ASSISTANT: '/dashboard/ai-assistant',
     TICKETS: '/dashboard/tickets',

@@ -261,6 +261,7 @@ function App() {
                 <Route path="ai-assistant" element={<AIAssistantPage />} />
                 <Route path="services" element={<ServicesPage />} />
                 <Route path="services/create" element={<CreateServicePage />} />
+                <Route path="services/edit/:serviceId" element={<CreateServicePage />} />
                 <Route path="portfolio" element={<PortfolioPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="notifications" element={<NotificationsCenterPage />} />

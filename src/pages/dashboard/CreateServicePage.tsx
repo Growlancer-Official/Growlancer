@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Plus, Shield, Sparkles, Tag, X, Zap } from 'lucide-react';
@@ -10,14 +10,20 @@ import { ImageUpload } from '../../components/ImageUpload';
 export function CreateServicePage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { serviceId } = useParams<{ serviceId: string }>();
+  const isEditMode = Boolean(serviceId);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(isEditMode);
   const toast = useToast();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'Web Development',
     price: '',
-    price_type: 'fixed' as 'fixed' | 'hourly' | 'package',
+    // ⚠️ Hourly removed — services are fixed-price (or package tiers) only.
+    // Clients expect one clear professional price; per-hour billing caused
+    // confusion between freelancer and client. Only 'fixed' | 'package' remain.
+    price_type: 'fixed' as 'fixed' | 'package',
     delivery_days: '7',
     revisions: '5',
     extra_revision_price: '',
@@ -25,6 +31,9 @@ export function CreateServicePage() {
     tags: [] as string[],
     features: [] as string[],
     image_url: '',
+    // 💡 Tip + negotiable — freelancer chooses; clients see them on the detail page
+    accepts_tips: false,
+    negotiable: false,
   });
   const [tagInput, setTagInput] = useState('');
   const [featureInput, setFeatureInput] = useState('');
@@ -81,46 +90,137 @@ export function CreateServicePage() {
     });
   };
 
+  // Edit mode: load the existing service into the form (real time — the
+  // dashboard already subscribes to services changes, so saving updates every
+  // open view of this service instantly).
+  useEffect(() => {
+    if (!serviceId) return;
+    let cancelled = false;
+
+    const loadService = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('*')
+          .eq('id', serviceId)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (cancelled || !data) return;
+        if (data.freelancer_id !== user?.id) {
+          toast.error('Error', 'You can only edit your own services.');
+          navigate('/dashboard/services');
+          return;
+        }
+
+        const svc = data as unknown as {
+          title: string; description: string; category: string;
+          price: number; price_type: string | null; delivery_days: number;
+          revisions: number | null; extra_revision_price: number | null;
+          requirements: string | null; tags: string[] | null;
+          features: unknown; image_url: string | null;
+          accepts_tips: boolean | null; negotiable: boolean | null;
+        };
+
+        setFormData({
+          title: svc.title || '',
+          description: svc.description || '',
+          category: svc.category || 'Web Development',
+          price: svc.price != null ? String(svc.price) : '',
+          price_type: svc.price_type === 'package' ? 'package' : 'fixed',
+          delivery_days: svc.delivery_days != null ? String(svc.delivery_days) : '7',
+          revisions: svc.revisions != null ? String(svc.revisions) : '5',
+          extra_revision_price: svc.extra_revision_price ? String(svc.extra_revision_price) : '',
+          requirements: svc.requirements || '',
+          tags: svc.tags || [],
+          features: Array.isArray(svc.features) ? svc.features.map(String) : [],
+          image_url: svc.image_url || '',
+          accepts_tips: svc.accepts_tips === true,
+          negotiable: svc.negotiable === true,
+        });
+      } catch (err) {
+        console.error('Failed to load service for edit:', err);
+        toast.error('Error', 'Failed to load service. Please try again.');
+        navigate('/dashboard/services');
+      } finally {
+        if (!cancelled) setFetching(false);
+      }
+    };
+
+    void loadService();
+    return () => { cancelled = true; };
+  }, [serviceId, user?.id, navigate, toast]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    try {
-      const { error } = await (supabase.from('services') as any).insert({
-        freelancer_id: user?.id,
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        price: parseFloat(formData.price),
-        price_type: formData.price_type,
-        delivery_days: parseInt(formData.delivery_days),
-        revisions: parseInt(formData.revisions),
-        extra_revision_price: parseFloat(formData.extra_revision_price) || 0,
-        requirements: formData.requirements || null,
-        features: formData.features,
-        tags: formData.tags,
-        image_url: formData.image_url || null,
-        status: 'active',
-        views: 0,
-        orders: 0,
-        rating: 0,
-      });
+    const payload = {
+      title: formData.title,
+      description: formData.description,
+      category: formData.category,
+      price: parseFloat(formData.price),
+      price_type: formData.price_type,
+      delivery_days: parseInt(formData.delivery_days),
+      revisions: parseInt(formData.revisions),
+      extra_revision_price: parseFloat(formData.extra_revision_price) || 0,
+      requirements: formData.requirements || null,
+      features: formData.features,
+      tags: formData.tags,
+      image_url: formData.image_url || null,
+      accepts_tips: formData.accepts_tips,
+      negotiable: formData.negotiable,
+    };
 
-      if (error) throw error;
+    try {
+      if (isEditMode && serviceId) {
+        // Keep the existing status — editing must NOT silently reactivate a
+        // service the freelancer intentionally deactivated.
+        const { error } = await supabase
+          .from('services')
+          .update(payload)
+          .eq('id', serviceId);
+        if (error) throw error;
+        toast.success('Service updated', 'Your changes are live in real time.');
+      } else {
+        const { error } = await (supabase.from('services') as any).insert({
+          ...payload,
+          freelancer_id: user?.id,
+          status: 'active',
+          views: 0,
+          orders: 0,
+          rating: 0,
+        });
+        if (error) throw error;
+        toast.success('Service published', 'Your service is now live.');
+      }
 
       navigate('/dashboard/services');
     } catch (error) {
-      toast.error('Error', 'Failed to create service. Please try again.');
+      console.error('Save service failed:', error);
+      toast.error('Error', isEditMode ? 'Failed to update service. Please try again.' : 'Failed to create service. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">Create New Service</h1>
-        <p className="text-slate-500">Create a professional service offering to attract clients and grow your business</p>
+        <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">
+          {isEditMode ? 'Edit Service' : 'Create New Service'}
+        </h1>
+        <p className="text-slate-500">{isEditMode
+          ? 'Update your service — changes go live instantly for clients'
+          : 'Create a professional service offering to attract clients and grow your business'}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -212,13 +312,13 @@ export function CreateServicePage() {
               <select
                 required
                 value={formData.price_type}
-                onChange={(e) => setFormData({ ...formData, price_type: e.target.value as 'fixed' | 'hourly' | 'package' })}
+                onChange={(e) => setFormData({ ...formData, price_type: e.target.value as 'fixed' | 'package' })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
               >
                 <option value="fixed">Fixed Price</option>
-                <option value="hourly">Hourly Rate</option>
                 <option value="package">Package</option>
               </select>
+              <p className="text-xs text-slate-500 mt-1">Fixed price keeps it clear for both sides — one professional price for your service.</p>
             </div>
 
             <div>
@@ -285,6 +385,61 @@ export function CreateServicePage() {
               clear scope — anything beyond it is fairly paid work, agreed before it starts. Both sides stay protected by
               Growlancer's Refund & Dispute Policy.
             </p>
+          </div>
+
+          {/* 💡 Tip + Negotiable — professional ways to win more orders */}
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+                    <span aria-hidden>💜</span> Accept Tips
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    Clients can add an optional tip at checkout — happy clients tip generously and it builds goodwill.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.accepts_tips}
+                  onClick={() => setFormData({ ...formData, accepts_tips: !formData.accepts_tips })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
+                    formData.accepts_tips ? 'bg-emerald-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.accepts_tips ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl border border-slate-200 bg-white">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+                    <span aria-hidden>🤝</span> Price Negotiable
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                    Let clients make a fair offer. You accept or decline — the agreed price is honored, never changed silently.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={formData.negotiable}
+                  onClick={() => setFormData({ ...formData, negotiable: !formData.negotiable })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
+                    formData.negotiable ? 'bg-emerald-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    formData.negotiable ? 'translate-x-6' : 'translate-x-1'
+                  }`} />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -447,12 +602,12 @@ export function CreateServicePage() {
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Creating...
+                {isEditMode ? 'Saving...' : 'Creating...'}
               </>
             ) : (
               <>
                 <CheckCircle className="w-5 h-5" />
-                Publish Service
+                {isEditMode ? 'Save Changes' : 'Publish Service'}
                 <ArrowRight className="w-5 h-5" />
               </>
             )}

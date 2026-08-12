@@ -91,20 +91,25 @@ function isOwnStorageUrl(url: string, userId: string): boolean {
     // Path must go through the storage API and the verification-documents bucket.
     const path = parsed.pathname;
     if (!path.includes('/storage/v1/object/')) return false;
-    const bucketMatch = path.match(/\/storage\/v1\/object\/[^/]+\/([^/]+)\//);
-    if (!bucketMatch || bucketMatch[1] !== 'verification-documents') return false;
 
-    // The first path segment after the bucket must be the caller's user id
-    // (matches the bucket RLS policy: (storage.foldername(name))[1] = auth.uid()).
-    // Path forms:  /storage/v1/object/sign/{bucket}/{userId}/...  (signed)
-    //              /storage/v1/object/public/{bucket}/{userId}/... (public)
-    // So after splitting on '/', the userId is at index 3 (0=storage, 1=v1,
-    // 2=object|sign|public, 3={bucket}, 4={userId}).
+    // Find the bucket segment, then require the IMMEDIATELY FOLLOWING segment
+    // to be the caller's user id. This matches the bucket RLS policy
+    // (storage.foldername(name))[1] = auth.uid()) and handles BOTH path forms:
+    //   /storage/v1/object/sign/{bucket}/{userId}/...    (signed URL)
+    //   /storage/v1/object/public/{bucket}/{userId}/...  (public URL)
+    // segments: [storage, v1, object, sign|public, bucket, userId, verification-docs, file]
+    // ─── FIX (2026-08-12) ───
+    // The old code compared segments[3] === 'verification-documents' and
+    // segments[4] === userId, but for signed URLs there is an extra 'sign'
+    // segment at index 3 — the bucket actually sits at index 4 and the user id
+    // at index 5. Every signed URL therefore FAILED the check and verification
+    // returned 500 "Image URL must be from your own private verification-documents
+    // storage" even for perfectly valid, freshly uploaded images.
     const segments = path.split('/').filter(Boolean);
-    // segments: [storage, v1, object|sign|public, bucket, userId, verification-docs, file]
-    if (segments.length < 6) return false;
-    if (segments[3] !== 'verification-documents') return false;
-    return segments[4] === userId;
+    const bucketIndex = segments.indexOf('verification-documents');
+    if (bucketIndex < 0) return false;
+    if (segments.length < bucketIndex + 2) return false;
+    return segments[bucketIndex + 1] === userId;
   } catch {
     return false;
   }
