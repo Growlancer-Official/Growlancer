@@ -16,6 +16,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { CategoryPicker } from '../../components/CategoryPicker';
 import { ProBadge } from '../../components/ProBadge';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
+import { TipNote } from '../../components/TipNote';
 import { useProStatus } from '../../hooks/useProStatus';
 import type { Tables } from '../../types/supabase';
 import type { PayoutMethod } from '../../lib/withdrawal';
@@ -883,6 +884,11 @@ export function ProfessionalProfilePage() {
           </div>
         )}
       </div>
+
+      {/* Profile guide — plain-language */}
+      <TipNote tone="tip" title="A complete profile wins more work" compact>
+        Clients see this profile before deciding to hire you. Fill every section — <strong>title, bio, skills, rate, portfolio</strong> — and the completion bar above turns green. A 100% profile gets <strong>higher AI match scores</strong>, shows your <strong>Verified</strong> and <strong>Pro</strong> badges, and ranks higher in client search. Changes save instantly and sync across all your sessions in real time.
+      </TipNote>
 
       {/* Email verification recommendation — hidden automatically once confirmed */}
       <EmailVerificationBanner />

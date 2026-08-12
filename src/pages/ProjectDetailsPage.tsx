@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { ROUTES } from '../routes';
 import { useToast } from '../components/Toast';
+import { TipNote } from '../components/TipNote';
 
 interface ProjectDetails {
   id: string;
@@ -421,6 +422,12 @@ export function ProjectDetailsPage() {
                 </div>
               </div>
             </div>
+
+            {/* How it works note */}
+            <TipNote tone="protection" compact>
+              <strong>Safe by design:</strong> no money moves outside Growlancer. You hire → contract + escrow → freelancer
+              delivers → you approve → funds release. Disputes and refunds go through our fair resolution process.
+            </TipNote>
 
             {/* Actions Card */}
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

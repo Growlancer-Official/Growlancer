@@ -4,6 +4,7 @@ import { Clock, Eye, Filter, Grid3X3, List, Loader2, Package, Search, ShoppingCa
 import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 import { useToast } from '../components/Toast';
+import { TipNote } from '../components/TipNote';
 import { safeLower } from '../utils/date';
 
 interface ServiceResult {
@@ -115,6 +116,11 @@ export function ServicesCatalogPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">Browse Services</h1>
           <p className="text-blue-100 text-lg mb-6">Discover pre-packaged services from top freelancers — order instantly.</p>
+          <div className="mb-6">
+            <TipNote tone="protection" title="Every order is protected" compact>
+              Pay through <strong>Growlancer Escrow</strong> — your money is held safely and released to the freelancer only after you approve the completed work. Delivery times and free revisions are shown on every card, and many services are <strong>price-negotiable</strong> with tips welcome.
+            </TipNote>
+          </div>
           <div className="flex gap-3 max-w-3xl">
             <div className="flex-1 relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />

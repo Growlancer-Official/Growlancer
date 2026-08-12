@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels, tables } from '../lib/supabase';
 import { formatBudgetRange } from '../utils/date';
+import { TipNote } from '../components/TipNote';
 import { AlertTriangle, Briefcase, CheckCircle, CheckCircle2, Clock, IndianRupee, Edit3, Eye, MoreVertical, Plus, RefreshCw, X } from 'lucide-react';
 
 /* ── Dropdown menu for each project card ── */
@@ -309,6 +310,11 @@ export function ClientProjectsPage() {
           Post New Project
         </Link>
       </div>
+
+      {/* Projects guide — plain-language */}
+      <TipNote tone="info" title="From post to completed — your project journey" compact>
+        <strong>Open</strong> — freelancers can apply and you can invite AI matches. <strong>In Progress</strong> — a freelancer is hired and working under escrow. <strong>Completed</strong> — work delivered and approved. <strong>Cancelled</strong> — you closed it (active contracts continue safely). Use the ⋮ menu on any project to see proposals, AI matches, edit, or change status — all in real time.
+      </TipNote>
 
       {/* Filter Tabs */}
       <div className="flex gap-2 border-b border-slate-200">

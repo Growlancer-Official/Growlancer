@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { useToast } from '../components/Toast';
+import { TipNote } from '../components/TipNote';
 import { safeLower } from '../utils/date';
 
 interface FreelancerResult {
@@ -147,7 +148,12 @@ export function FreelancersSearchPage() {
       <section className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">Find Top Freelancers</h1>
-          <p className="text-emerald-100 text-lg mb-6">Browse talented professionals ready to bring your vision to life.</p>
+          <p className="text-emerald-100 text-lg mb-4">Browse talented professionals ready to bring your vision to life.</p>
+          <TipNote tone="info" compact className="max-w-3xl mb-6 bg-white/10 border-white/20 [&_*]:!text-white">
+            <strong>Verified</strong> (green/blue badge) and <strong>Pro</strong> badges are shown next to a freelancer's
+            name — every payment you make is held in Growlancer Escrow until you approve the completed work, and all
+            communication stays inside the platform for your protection.
+          </TipNote>
 
           {/* Search Bar */}
           <div className="flex gap-3 max-w-3xl">

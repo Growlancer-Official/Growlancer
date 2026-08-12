@@ -5,6 +5,7 @@ import { Pagination } from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { TipNote } from '../components/TipNote';
 import { supabase } from '../lib/supabase';
 import { contestService, type Contest, getTimeRemaining } from '../lib/contests';
 
@@ -97,6 +98,11 @@ export function ClientContestsPage() {
           Create Contest
         </Link>
       </div>
+
+      {/* Contests guide — plain-language */}
+      <TipNote tone="info" title="How contests work" compact className="mb-6">
+        Post a <strong>prize</strong> and a brief — freelancers submit entries before the deadline (<strong>Active</strong>), you move the contest to <strong>Judging</strong> while you review, then award the winner and it becomes <strong>Completed</strong>. Prizes are paid through escrow protection. Submissions appear here and on the contest page in real time.
+      </TipNote>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">

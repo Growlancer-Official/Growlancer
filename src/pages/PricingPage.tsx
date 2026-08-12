@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Check, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { TipNote } from '../components/TipNote';
 
 export function PricingPage() {
   const plans = [
@@ -78,6 +79,12 @@ export function PricingPage() {
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             No hidden fees. No surprises. Pay only when you hire, with industry-leading escrow protection.
           </p>
+          <TipNote tone="protection" className="mt-6 max-w-2xl mx-auto text-left">
+            <strong>How the platform fee works:</strong> the fee is deducted <em>only</em> when a payment succeeds —
+            never upfront. Your money is held in Growlancer Escrow until the work is delivered and you approve it, and
+            it is auto-released to the freelancer only after that approval (or after the review window passes).
+            Refunds on unapproved work are processed through our fair dispute process.
+          </TipNote>
         </div>
       </section>
 

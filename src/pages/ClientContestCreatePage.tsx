@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, IndianRupee, FileText, Loader2, Plus, Tag, X } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { TipNote } from '../components/TipNote';
 import { useAuth } from '../context/AuthContext';
 import { contestService, CONTEST_CATEGORIES } from '../lib/contests';
 
@@ -88,10 +89,14 @@ export function ClientContestCreatePage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">Create Contest</h1>
         <p className="text-slate-500">Post a design or development contest and receive competing submissions from talented freelancers</p>
       </div>
+
+      <TipNote tone="tip" title="Tips for a successful contest" compact className="mb-6">
+        Set a <strong>clear brief</strong> with specific deliverables so freelancers know exactly what to submit. A <strong>fair prize</strong> attracts quality entries — 2nd/3rd prizes are optional but encourage more submissions. The <strong>deadline</strong> controls how long entries are accepted, then you review and award the winner. Skills shown help freelancers decide if they're a fit.
+      </TipNote>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
+import { TipNote } from '../../components/TipNote';
 import { supabase } from '../../lib/supabase';
 
 interface TimeEntry {
@@ -244,6 +245,11 @@ export function TimeTrackingPage() {
         <h1 className="text-2xl font-bold text-slate-900">Time Tracking</h1>
         <p className="text-slate-500 mt-1">Log hours on hourly contracts</p>
       </div>
+
+      {/* Time tracking guide — plain-language */}
+      <TipNote tone="info" title="How time tracking works" compact>
+        Start the <strong>timer</strong> while you work (or add a <strong>manual entry</strong> for past hours) — every session is submitted to the client for approval in real time. <strong>Approved</strong> hours count toward your payout; <strong>Pending</strong> hours are waiting on the client's review. Only log real, honest work hours — entries above 16 hours/day are flagged.
+      </TipNote>
 
       {/* Contract Selector */}
       {contracts.length > 0 && (

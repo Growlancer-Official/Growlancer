@@ -20,6 +20,7 @@ import { useAuth } from '../../context/AuthContext';
 import { notificationService, type NotificationWithMeta } from '../../lib/notifications';
 import { safeFormatDate } from '../../utils/date';
 import { useToast } from '../../components/Toast';
+import { TipNote } from '../../components/TipNote';
 
 type TabId = 'all' | 'unread' | 'archived';
 type FilterValue = string | null;
@@ -356,7 +357,7 @@ export function NotificationsCenterPage() {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <BellRing className="w-6 h-6 text-white" />
@@ -391,6 +392,11 @@ export function NotificationsCenterPage() {
           )}
         </div>
       </div>
+
+      {/* Notifications guide — plain-language */}
+      <TipNote tone="info" title="Stay on top of everything" compact className="mb-4">
+        Payment, escrow, contract, message and review updates arrive here <strong>in real time</strong>. Every notification has a <strong>reference ID</strong> — copy it and quote it when contacting support for faster help. Use <strong>Archive</strong> to tidy up, and enable push notifications below for instant alerts on this device.
+      </TipNote>
 
       {/* Tabs + Filter */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">

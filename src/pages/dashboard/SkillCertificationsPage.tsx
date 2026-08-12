@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Award, BarChart3, BrainCircuit, CheckCircle2, Code, Lock, Palette, Search, Server, Sparkles, TrendingUp,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { TipNote } from '../../components/TipNote';
 import { useAuth } from '../../context/AuthContext';
 import { realtimeChannels } from '../../lib/supabase';
 import { skillCertificationService, CERTIFICATION_LEVELS, type SkillCertification, type SkillTest } from '../../lib/skillCertifications';
@@ -92,6 +93,11 @@ export function SkillCertificationsPage() {
           </div>
         </div>
       </div>
+
+      {/* Test rules — plain-language */}
+      <TipNote tone="info" title="Test rules — read before you start" compact>
+        Copy-paste, tab-switching and other cheating are <strong>prohibited and monitored</strong>. Fail a test and you can retake it after <strong>24 hours</strong>; cheat once and you're locked out for <strong>7 days</strong>; repeated cheating leads to a <strong>permanent ban</strong> from that test. Pass honestly — your verified badge shows next to your name to every client, in real time.
+      </TipNote>
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

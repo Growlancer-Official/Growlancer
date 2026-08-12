@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, Ban, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Loader2, MessageCircle, Scale, Send, Shield, ThumbsUp, User,  } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { TipNote } from '../../components/TipNote';
 import { disputeService } from '../../lib/disputeService';
 import type { DisputeCase } from '../../lib/disputeService';
 import { supabase } from '../../lib/supabase';
@@ -420,6 +421,11 @@ export function DisputeResolutionPage() {
           </span>
         </div>
       </div>
+
+      {/* Dispute guide — plain-language */}
+      <TipNote tone="warning" title="How dispute resolution works" compact>
+        A dispute freezes the affected escrow money while our team reviews the case — funds are never moved without a decision. Be clear and factual in your messages: <strong>escrow funds</strong>, timelines and deliverables are the main factors. <strong>Pending Review</strong> → <strong>Under Review</strong> → <strong>Resolved</strong> or <strong>Dismissed</strong>, all in real time. Genuine refunds are possible; fraud is not.
+      </TipNote>
 
       {/* Empty state */}
       {disputes.length === 0 ? (

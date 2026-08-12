@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, IndianRupee, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { TipNote } from '../../components/TipNote';
+import { InfoTip } from '../../components/InfoTip';
 import { useAuth } from '../../context/AuthContext';
 import { analyticsService, type AnalyticsData } from '../../lib/analyticsService';
 import { supabase } from '../../lib/supabase';
@@ -100,7 +102,13 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Analytics</h1>
+          <h1 className="text-3xl font-bold text-slate-900 flex items-center gap-2">
+            Analytics
+            <InfoTip
+              title="About these numbers"
+              text="All metrics update in real time as contracts, proposals, reviews and payments happen. Success Rate = completed contracts ÷ total contracts. Proposal conversion = accepted proposals ÷ proposals sent. Use the 7d/30d/90d/1y buttons to change the view."
+            />
+          </h1>
           <p className="text-slate-500 mt-1">Track your performance and growth</p>
         </div>
         <div className="flex items-center gap-2">
@@ -128,6 +136,11 @@ export function AnalyticsPage() {
           </div>
         </div>
       </div>
+
+      {/* Metrics guide — plain-language */}
+      <TipNote tone="info" title="How to read your analytics" compact>
+        <strong>Total Earnings</strong> is what you've earned from completed work · <strong>Pending Payouts</strong> is escrow money waiting to be released after client approval · <strong>Success Rate</strong> shows how reliably you finish contracts — clients see this, so keep it high. Hover any card's ⓘ for details.
+      </TipNote>
 
       {data && (
         <>

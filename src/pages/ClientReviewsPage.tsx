@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Loader2, MessageSquare, Send, Star, User } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { TipNote } from '../components/TipNote';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { reviewService } from '../lib/reviews';
@@ -102,6 +103,11 @@ export function ClientReviewsPage() {
         <h1 className="text-3xl font-bold text-slate-900">Reviews</h1>
         <p className="text-slate-500 mt-1">Reviews from freelancers you've worked with</p>
       </div>
+
+      {/* Reviews guide — plain-language */}
+      <TipNote tone="info" title="Your rating is your reputation" compact>
+        Freelancers rate you after a <strong>completed contract</strong> — on quality, communication, timeliness and professionalism. Your overall rating shows next to your name everywhere, so reply to reviews with the <strong>Reply</strong> button to build trust. New reviews appear here in real time.
+      </TipNote>
 
       {/* Stats */}
       <div className="bg-white rounded-2xl border border-slate-100 p-6 flex items-center gap-6">

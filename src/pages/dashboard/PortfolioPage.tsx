@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Edit3, ExternalLink, Image, Loader2, Plus, Save, Star, StarOff, Tag, Trash2, X,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { TipNote } from '../../components/TipNote';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -173,6 +174,11 @@ export function PortfolioPage() {
           Add Project
         </button>
       </div>
+
+      {/* Portfolio guide — plain-language */}
+      <TipNote tone="tip" title="Showcase work that wins clients" compact>
+        Add 3-5 of your <strong>best completed projects</strong> with clear titles and descriptions — clients view this on your public profile before contacting you. <strong>Feature</strong> your standout work with the ★ button. Updates appear on your public profile in real time.
+      </TipNote>
 
       {/* Add / Edit Form */}
       {showForm && (
