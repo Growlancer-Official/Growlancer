@@ -11,6 +11,7 @@ import { VerifiedBadge } from '../components/VerifiedBadge';
 import { invitesService } from '../lib/dataService';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { safeLower } from '../utils/date';
+import { TipNote } from '../components/TipNote';
 
 interface FreelancerResult {
   id: string;
@@ -236,6 +237,10 @@ export function ClientFreelancerSearchPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Find Talent</h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
+          <TipNote tone="protection" compact className="mt-3 max-w-2xl">
+            <strong>Verified</strong> and <strong>Pro</strong> badges show real, checked freelancers — contact them
+            here and hiring happens only inside Growlancer, with escrow protection on every payment.
+          </TipNote>
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setShowFilters(!showFilters)} className="px-4 py-2 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2">

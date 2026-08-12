@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { ticketService } from '../lib/supportTicketService';
 import { useToast } from './Toast';
+import { TipNote } from './TipNote';
 import {
   Bot,
   Check,
@@ -542,6 +543,14 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             )}
           </div>
         </div>
+        {chatMode === 'assistant' && (
+          <TipNote tone="info" compact className="mt-3">
+            This is your <strong>AI Assistant</strong> — great for day-to-day questions about{' '}
+            {context === 'freelancer' ? 'proposals, contracts, escrow and growing your business' : 'hiring, contracts, escrow and managing projects'}.
+            For account, payment or dispute issues use the <strong>AI Support</strong> chat or tap{' '}
+            <strong>Escalate to a Human</strong> below — your conversations stay separate and private.
+          </TipNote>
+        )}
       </div>
 
       {/* Ticket Context Banner */}

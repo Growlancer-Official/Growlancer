@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown, Clock, IndianRupee, Filter, Loader2, Search, Sparkles, Trophy, Users,  } from 'lucide-react';
 import { contestService, type Contest, CONTEST_CATEGORIES, getTimeRemaining } from '../lib/contests';
+import { TipNote } from '../components/TipNote';
 import { safeLower } from '../utils/date';
 
 type ContestType = 'all' | 'design' | 'development' | 'writing' | 'marketing' | 'other';
@@ -62,6 +63,10 @@ export function ContestsPage() {
             <p className="text-emerald-100 text-lg mb-8">
               Join design and development contests to showcase your skills, win prizes, and build your portfolio.
             </p>
+            <TipNote tone="info" compact className="max-w-2xl mx-auto mb-8 bg-white/10 border-white/20 [&_*]:!text-white">
+              <strong>How contests work:</strong> clients fund the prize in escrow upfront — the winner is chosen
+              fairly from public submissions and paid in real time. No work outside Growlancer, ever.
+            </TipNote>
             
             {/* Search Bar */}
             <div className="relative max-w-2xl mx-auto">

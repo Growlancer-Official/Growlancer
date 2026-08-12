@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Layers, Loader2 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
+import { TipNote } from '../components/TipNote';
 
 export function CategoriesPage() {
   const { categories, loading, error, refresh } = useCategories();
@@ -39,6 +40,10 @@ export function CategoriesPage() {
             Explore all {loading ? '...' : categories.length} categories — from Development & IT to Sustainability. 
             Browse all categories and find the right freelancer for your project.
           </p>
+          <TipNote tone="info" className="mt-6 max-w-2xl mx-auto text-left">
+            Every category connects you to vetted freelancers with real ratings, verified badges and escrow-protected
+            payments — no matter which skill you need, hiring stays safe and inside Growlancer.
+          </TipNote>
         </div>
       </section>
 

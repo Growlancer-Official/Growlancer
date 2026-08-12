@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { supabase } from '../lib/supabase';
 import { contestService, type Contest, type ContestSubmission, type ContestComment, getTimeRemaining } from '../lib/contests';
+import { TipNote } from '../components/TipNote';
 
 export function ContestDetailPage() {
   const { contestId } = useParams<{ contestId: string }>();
@@ -249,6 +250,10 @@ export function ContestDetailPage() {
 
               {/* Time & Submissions */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+                <TipNote tone="protection" compact className="!p-3">
+                  <strong>Fair &amp; safe:</strong> the prize is funded in escrow upfront and released to the winner in
+                  real time — submissions are public, votes are tracked, and all communication stays on Growlancer.
+                </TipNote>
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-emerald-600" />
                   <div>
