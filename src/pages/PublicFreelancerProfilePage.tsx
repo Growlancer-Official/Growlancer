@@ -27,6 +27,7 @@ import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
+import { InfoTip } from '../components/InfoTip';
 import { invitesService } from '../lib/dataService';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/date';
@@ -510,6 +511,13 @@ export function PublicFreelancerProfilePage() {
                   <RatingStars rating={averageRating} />
                   <span className="text-white/90 font-medium">{formatRating(averageRating)}</span>
                   <span className="text-white/60">({totalReviews} reviews)</span>
+                  <InfoTip
+                    text="Ratings come only from completed contracts — clients rate quality, communication, timeliness and professionalism. New reviews appear here in real time."
+                    title="Ratings & Reviews"
+                    align="left"
+                    tone="emerald"
+                    className="[&_svg]:text-white/70 [&_svg]:hover:text-white"
+                  />
                 </div>
               )}
             </div>

@@ -19,6 +19,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { TipNote } from '../../components/TipNote';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { ProBadge } from '../../components/ProBadge';
@@ -256,6 +257,12 @@ export function AISubscriptionPage() {
         </h1>
         <p className="text-slate-500">Choose the plan that fits your freelance career. Upgrade anytime.</p>
       </div>
+
+      {/* Trial → paid flow — plain-language guide */}
+      <TipNote tone="tip" title="Your free trial" compact className="mb-6">
+        As a new freelancer you get a <strong>free trial</strong> — just tap <strong>Start Free Trial</strong> and your Pro badge goes live instantly, no card needed.
+        When the trial ends you'll see <strong>Pay with Wallet</strong> and <strong>Pay with Razorpay</strong> options. The trial can only be used once — after that, renewal keeps your Pro badge and priority features active in real time.
+      </TipNote>
 
       {/* Live Status Badge */}
       <div className="mb-6 flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-full border border-slate-200 w-fit">

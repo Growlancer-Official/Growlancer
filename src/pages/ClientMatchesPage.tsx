@@ -8,6 +8,7 @@ import { CheckCircle2, IndianRupee, MapPin, RefreshCw, Send, Sparkles, Star, Use
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
+import { TipNote } from '../components/TipNote';
 
 export function ClientMatchesPage() {
   const { user } = useAuth();
@@ -306,6 +307,11 @@ export function ClientMatchesPage() {
           )}
         </div>
       </div>
+
+      {/* AI matching — plain-language guide */}
+      <TipNote tone="info" title="How AI matching works" compact>
+        Our engine scores freelancers against your project's skills, experience and budget — higher scores mean a stronger fit. <strong>Invite</strong> the freelancers you like; when they accept, a contract + workspace is created instantly with escrow protection. <strong>Regenerate</strong> anytime to refresh the list in real time.
+      </TipNote>
 
       {/* Loading State */}
       {loading && (
