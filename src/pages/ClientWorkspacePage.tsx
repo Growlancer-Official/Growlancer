@@ -1014,8 +1014,8 @@ export function ClientWorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Refunds.</span> If work is not delivered or you are not satisfied,
-              raise a <span className="font-medium">refund request / dispute</span> from this workspace. Escrowed funds are
-              refunded to you in full when the freelancer accepts or when our team rules in your favour.
+              raise a <span className="font-medium">refund request / dispute</span> from this workspace. The escrowed amount
+              is refunded to you when the freelancer accepts or when our team rules in your favour.
             </p>
           </div>
           <div className="flex items-start gap-2.5">

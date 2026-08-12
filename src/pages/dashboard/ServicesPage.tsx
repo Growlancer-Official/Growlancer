@@ -496,7 +496,6 @@ export function ServicesPage() {
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-semibold text-slate-900">
                       ₹{service.price}
-                      {service.price_type === 'hourly' && '/hr'}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">

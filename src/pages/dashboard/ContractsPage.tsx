@@ -653,7 +653,7 @@ export function ContractsPage() {
                         <p className="text-lg font-bold text-emerald-700">{formatCurrency(contract.freelancer_amount)}</p>
                       </div>
                       <div className="p-3 bg-blue-50 rounded-xl">
-                        <p className="text-xs text-blue-600 mb-1">Platform Fee</p>
+                        <p className="text-xs text-blue-600 mb-1">Platform Fee (paid by client)</p>
                         <p className="text-lg font-bold text-blue-700">{formatCurrency(contract.platform_fee)}</p>
                       </div>
                       <div className="p-3 bg-purple-50 rounded-xl">
@@ -984,7 +984,6 @@ export function ContractsPage() {
         const cc = contractModalContract;
         const cBalance = escrowBalances[cc.id]?.balance;
         const cMilestones = milestones(cc.milestones);
-        const feePct = cc.amount > 0 ? Math.round(((cc.amount - (cc.freelancer_amount || 0)) / cc.amount) * 100) : 0;
 
         return (
           <div
@@ -1036,13 +1035,22 @@ export function ContractsPage() {
                     <p className="text-lg font-bold text-slate-900">{formatCurrency(cc.amount)}</p>
                   </div>
                   <div className="p-4 bg-emerald-50 rounded-xl">
-                    <p className="text-xs text-emerald-600 mb-1">Your Earnings ({100 - feePct}%)</p>
+                    <p className="text-xs text-emerald-600 mb-1">Your Earnings (100%)</p>
                     <p className="text-lg font-bold text-emerald-700">{formatCurrency(cc.freelancer_amount)}</p>
                   </div>
                   <div className="p-4 bg-blue-50 rounded-xl">
-                    <p className="text-xs text-blue-600 mb-1">Platform Fee ({feePct}%)</p>
+                    <p className="text-xs text-blue-600 mb-1">Platform Fee (paid by client)</p>
                     <p className="text-lg font-bold text-blue-700">{formatCurrency(cc.platform_fee)}</p>
                   </div>
+                </div>
+
+                {/* Full-payout note — the 5% fee is the client's, never yours */}
+                <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl">
+                  <Shield className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <p className="text-xs text-emerald-700 leading-relaxed">
+                    <strong>100% of your contract value goes to your wallet.</strong> The 5% platform fee is paid by the
+                    client at checkout — it is never deducted from your earnings.
+                  </p>
                 </div>
 
                 {/* Escrow summary */}
@@ -1169,8 +1177,6 @@ export function ContractsPage() {
         const released = balance?.releasedAmount ?? 0;
         const fundedPct = totalAmount > 0 ? Math.round((funded / totalAmount) * 100) : 0;
         const releasedPct = totalAmount > 0 ? Math.round((released / totalAmount) * 100) : 0;
-        const feePct = ec.amount > 0 ? Math.round(((ec.amount - (ec.freelancer_amount || 0)) / ec.amount) * 100) : 0;
-        const earnPct = Math.max(0, 100 - feePct);
 
         return (
           <div
@@ -1210,13 +1216,22 @@ export function ContractsPage() {
                     <p className="text-lg font-bold text-slate-900">{formatCurrency(ec.amount)}</p>
                   </div>
                   <div className="p-4 bg-emerald-50 rounded-xl">
-                    <p className="text-xs text-emerald-600 mb-1">Your Earnings ({earnPct}%)</p>
+                    <p className="text-xs text-emerald-600 mb-1">Your Earnings (100%)</p>
                     <p className="text-lg font-bold text-emerald-700">{formatCurrency(ec.freelancer_amount)}</p>
                   </div>
                   <div className="p-4 bg-blue-50 rounded-xl">
-                    <p className="text-xs text-blue-600 mb-1">Platform Fee ({feePct}%)</p>
+                    <p className="text-xs text-blue-600 mb-1">Platform Fee (paid by client)</p>
                     <p className="text-lg font-bold text-blue-700">{formatCurrency(ec.platform_fee)}</p>
                   </div>
+                </div>
+
+                {/* Full-payout note — the 5% fee is the client's, never yours */}
+                <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl mb-5">
+                  <Shield className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <p className="text-xs text-emerald-700 leading-relaxed">
+                    <strong>100% of your contract value goes to your wallet.</strong> The 5% platform fee is paid by the
+                    client at checkout — it is never deducted from your earnings.
+                  </p>
                 </div>
 
                 {/* Escrow status + funding progress */}

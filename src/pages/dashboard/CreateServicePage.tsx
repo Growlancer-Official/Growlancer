@@ -127,7 +127,9 @@ export function CreateServicePage() {
           description: svc.description || '',
           category: svc.category || 'Web Development',
           price: svc.price != null ? String(svc.price) : '',
-          price_type: svc.price_type === 'package' ? 'package' : 'fixed',
+          // One-price model: every service is fixed-price, even if it was
+          // created as 'package' before this change — saving converts it.
+          price_type: 'fixed',
           delivery_days: svc.delivery_days != null ? String(svc.delivery_days) : '7',
           revisions: svc.revisions != null ? String(svc.revisions) : '5',
           extra_revision_price: svc.extra_revision_price ? String(svc.extra_revision_price) : '',
@@ -160,7 +162,8 @@ export function CreateServicePage() {
       description: formData.description,
       category: formData.category,
       price: parseFloat(formData.price),
-      price_type: formData.price_type,
+      // One-price model — hourly/package pricing was removed platform-wide.
+      price_type: 'fixed' as const,
       delivery_days: parseInt(formData.delivery_days),
       revisions: parseInt(formData.revisions),
       extra_revision_price: parseFloat(formData.extra_revision_price) || 0,
@@ -306,19 +309,16 @@ export function CreateServicePage() {
             Pricing & Delivery
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Price Type *</label>
-              <select
-                required
-                value={formData.price_type}
-                onChange={(e) => setFormData({ ...formData, price_type: e.target.value as 'fixed' | 'package' })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              >
-                <option value="fixed">Fixed Price</option>
-                <option value="package">Package</option>
-              </select>
-              <p className="text-xs text-slate-500 mt-1">Fixed price keeps it clear for both sides — one professional price for your service.</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-2.5">
+              <Shield className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-slate-900">Fixed Price — one clear price</p>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                  Set a single professional price for your service. Clients see exactly what they pay, and you
+                  receive 100% of it — the 5% platform fee is paid by the client on top.
+                </p>
+              </div>
             </div>
 
             <div>

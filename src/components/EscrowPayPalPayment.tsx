@@ -657,6 +657,9 @@ export function EscrowPayPalPayment({
               <span>₹{totalAmount.toFixed(2)}</span>
             </div>
           </div>
+          <p className="text-[11px] text-emerald-700 mt-2 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
+            The platform fee is added to your payment — <strong>{freelancerName} receives 100% of the project amount</strong>.
+          </p>
         </div>
 
         <div className="flex gap-3 mt-6">
@@ -728,6 +731,9 @@ export function EscrowPayPalPayment({
             <span>Total to Pay</span>
             <span>₹{totalAmount.toFixed(2)}</span>
           </div>
+          <p className="text-[11px] text-emerald-700 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 mt-3">
+            The platform fee is added to your payment — <strong>{freelancerName} receives 100% of the project amount</strong>.
+          </p>
         </div>
       </div>
 

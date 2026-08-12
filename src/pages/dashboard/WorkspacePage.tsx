@@ -1068,6 +1068,16 @@ export function WorkspacePage() {
               Growlancer's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
             </p>
           </div>
+          <div className="flex items-start gap-2.5">
+            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+            </div>
+            <p className="text-xs text-slate-700 leading-relaxed">
+              <span className="font-bold text-slate-900">You keep 100%.</span> The 5% platform fee is paid by the client
+              at checkout — the full contract value goes into escrow and is released to your wallet. Growlancer never
+              deducts from your earnings.
+            </p>
+          </div>
         </div>
       </div>
 

@@ -367,7 +367,9 @@ export function WalletPage() {
     fetchPayoutMethods();
   }, [user, fetchOverview, fetchTransactions, fetchPayoutMethods]);
 
-  // ── Real-time subscription to withdrawals ──
+  // ── Real-time subscription: withdrawals + wallet balance + credits ──
+  // Balance cards (Available / Pending / Escrow / Withdrawn) refresh the
+  // moment anything changes — an escrow release, a withdrawal, a credit.
   useEffect(() => {
     if (!user) return;
 
@@ -383,6 +385,33 @@ export function WalletPage() {
         },
         () => {
           fetchOverview();
+          fetchTransactions(0, true);
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wallets',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          // Escrow release / wallet top-up → balance changed, refresh instantly.
+          fetchOverview();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`,
+        },
+        () => {
+          fetchOverview();
+          fetchTransactions(0, true);
         }
       )
       .subscribe();
@@ -390,7 +419,7 @@ export function WalletPage() {
     return () => {
       channel.unsubscribe();
     };
-  }, [user, fetchOverview]);
+  }, [user, fetchOverview, fetchTransactions]);
 
   // ── Real-time subscription to payout methods — an added/updated method
   // reflects instantly (what the freelancer set is what shows). ──

@@ -51,7 +51,6 @@ export function ServiceDetailPage() {
   const [service, setService] = useState<ServiceData | null>(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
-  const [selectedPackage, setSelectedPackage] = useState<number>(0);
   const [addingToCart, setAddingToCart] = useState(false);
   // 💬 Negotiable price + tips
   const [myOffers, setMyOffers] = useState<any[]>([]);
@@ -82,9 +81,18 @@ export function ServiceDetailPage() {
           `)
           .eq('id', serviceId)
           .eq('status', 'active')
-          .single();
+          .maybeSingle();
 
+        // Graceful not-found: a missing/inactive/deleted service must show the
+        // friendly "Service Not Found" state — never a scary error toast.
+        // (.single() used to raise PGRST116 here which surfaced as
+        // "Failed to load service." even though nothing was actually broken.)
         if (error) throw error;
+        if (!data) {
+          setService(null);
+          setLoading(false);
+          return;
+        }
 
         const svc = data as unknown as ServiceData;
 
@@ -198,9 +206,14 @@ export function ServiceDetailPage() {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
-  const currentPrice = service.price_package
-    ? service.price_package[selectedPackage]?.price || service.price
-    : service.price;
+  // One-price model — hourly/package pricing was removed platform-wide.
+  // Every service shows a single fixed price set by the freelancer.
+  // One-price model — hourly/package pricing was removed platform-wide.
+  // Every service shows a single fixed price set by the freelancer.
+  // Legacy package services (created before the change) fall back to their
+  // first package price so the card never renders ₹0/NaN.
+  const currentPrice = service.price
+    || (service.price_package && service.price_package.length > 0 ? service.price_package[0].price : 0);
 
   // Real checkout — creates a Razorpay service_purchase order (server-side
   // amount recomputed from the services table, never trusts the client) and
@@ -362,7 +375,7 @@ export function ServiceDetailPage() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Tag className="w-4 h-4" />
-                  {service.price_type === 'fixed' ? 'Fixed Price' : service.price_type === 'hourly' ? 'Hourly Rate' : 'Packages'}
+                  Fixed Price
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
@@ -450,29 +463,6 @@ export function ServiceDetailPage() {
               </div>
             ) : null}
 
-            {/* Packages */}
-            {service.price_package && service.price_package.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-                <h2 className="text-lg font-semibold text-slate-900 mb-4">Packages & Pricing</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {service.price_package.map((pkg, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedPackage(idx)}
-                      className={`p-4 rounded-xl border-2 text-left transition-all ${
-                        selectedPackage === idx
-                          ? 'border-emerald-500 bg-emerald-50/30'
-                          : 'border-slate-100 hover:border-slate-200'
-                      }`}
-                    >
-                      <p className="font-semibold text-slate-900">{pkg.name}</p>
-                      <p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(pkg.price)}</p>
-                      <p className="text-sm text-slate-500 mt-1">{pkg.description}</p>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Sidebar */}
@@ -482,7 +472,7 @@ export function ServiceDetailPage() {
               <div className="text-center">
                 <p className="text-3xl font-bold text-slate-900">{formatCurrency(displayPrice)}</p>
                 <p className="text-sm text-slate-500 mt-1">
-                  {service.price_type === 'hourly' ? 'per hour' : service.delivery_time ? `in ${service.delivery_time}` : ''}
+                  {service.delivery_time ? `in ${service.delivery_time}` : 'fixed price'}
                 </p>
                 {(service as any).negotiable && !acceptedOffer && (
                   <span className="inline-flex items-center gap-1 mt-2 px-2.5 py-1 text-[11px] font-bold rounded-full bg-violet-50 text-violet-700 border border-violet-100">
