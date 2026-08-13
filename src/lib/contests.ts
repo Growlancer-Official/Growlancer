@@ -18,6 +18,9 @@ export interface Contest {
   max_submissions: number;
   submission_count: number;
   winner_id: string | null;
+  prize_funded?: boolean;
+  escrow_amount?: number;
+  prize_released?: boolean;
   created_at: string;
   updated_at: string;
   client?: {
@@ -45,6 +48,7 @@ export interface ContestSubmission {
     avatar: string | null;
   };
   vote_count?: number;
+  has_voted?: boolean;
 }
 
 export interface ContestComment {
@@ -196,7 +200,7 @@ export const contestService = {
     return !error;
   },
 
-  // Get submissions for a contest
+  // Get submissions for a contest (with live vote counts + current user's vote)
   async getContestSubmissions(contestId: string): Promise<ContestSubmission[]> {
     const { data, error } = await supabase
       .from('contest_submissions')
@@ -208,7 +212,65 @@ export const contestService = {
       console.error('Error fetching submissions:', error);
       return [];
     }
-    return (data ?? []) as unknown as ContestSubmission[];
+
+    const subs = (data ?? []) as unknown as ContestSubmission[];
+    if (subs.length === 0) return subs;
+
+    // Live vote counts for all submissions in one query
+    const { data: { session } } = await supabase.auth.getSession();
+    const userId = session?.user?.id;
+
+    const { data: voteRows, error: voteErr } = await supabase
+      .from('contest_votes')
+      .select('submission_id, user_id')
+      .in('submission_id', subs.map(s => s.id));
+
+    if (!voteErr && voteRows) {
+      const countMap = new Map<string, number>();
+      const votedMap = new Map<string, boolean>();
+      for (const v of voteRows as Array<{ submission_id: string; user_id: string }>) {
+        countMap.set(v.submission_id, (countMap.get(v.submission_id) || 0) + 1);
+        if (userId && v.user_id === userId) votedMap.set(v.submission_id, true);
+      }
+      return subs.map(s => ({
+        ...s,
+        vote_count: countMap.get(s.id) || 0,
+        has_voted: userId ? !!votedMap.get(s.id) : false,
+      }));
+    }
+    return subs;
+  },
+
+  /** Fund the contest prize pool from the client's wallet (5% platform fee). */
+  async fundContestPrizeFromWallet(contestId: string): Promise<{ success: boolean; error?: string; balance?: number }> {
+    try {
+      const { data, error } = await (supabase.rpc as any)('fund_contest_prize_from_wallet', { p_contest_id: contestId });
+      if (error) throw error;
+      return { success: data?.success !== false, balance: data?.balance, error: data?.error };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to fund prize' };
+    }
+  },
+
+  /** Award 1st (required) + optional 2nd/3rd prizes — releases escrow to winner wallets. */
+  async awardContestPrizes(
+    contestId: string,
+    firstSubmissionId: string,
+    secondSubmissionId?: string | null,
+    thirdSubmissionId?: string | null
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data, error } = await (supabase.rpc as any)('award_contest_prizes', {
+        p_contest_id: contestId,
+        p_first_submission_id: firstSubmissionId,
+        p_second_submission_id: secondSubmissionId || null,
+        p_third_submission_id: thirdSubmissionId || null,
+      });
+      if (error) throw error;
+      return { success: data?.success !== false, error: data?.error };
+    } catch (err) {
+      return { success: false, error: err instanceof Error ? err.message : 'Failed to award prizes' };
+    }
   },
 
   // Get user's submission for a contest

@@ -98,6 +98,10 @@ export function ClientContestCreatePage() {
         Set a <strong>clear brief</strong> with specific deliverables so freelancers know exactly what to submit. A <strong>fair prize</strong> attracts quality entries — 2nd/3rd prizes are optional but encourage more submissions. The <strong>deadline</strong> controls how long entries are accepted, then you review and award the winner. Skills shown help freelancers decide if they're a fit.
       </TipNote>
 
+      <TipNote tone="protection" title="Escrow protection — how your prize is secured" compact className="mb-6">
+        After creating the contest you'll <strong>fund the prize pool</strong> (1st + 2nd + 3rd + a 5% platform fee) from your wallet. The money is held in escrow — freelancers can only submit once it's funded, so everyone knows the prize is real. When you award winners, their prizes are <strong>released instantly</strong> to their wallets. Fair for you, fair for freelancers.
+      </TipNote>
+
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Information */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100">

@@ -146,7 +146,7 @@ serve(async req => {
           // captured amount matches the order amount (server-side recompute).
           const { data: order } = await supabaseClient
             .from('paypal_orders')
-            .select('contract_id, subscription_id, user_id, amount')
+            .select('contract_id, subscription_id, user_id, amount, order_type, metadata')
             .eq('paypal_order_id', paypalOrderId)
             .single();
 
@@ -162,6 +162,12 @@ serve(async req => {
             await supabaseClient.rpc('fund_escrow', {
               p_contract_id: order.contract_id,
               p_client_id: order.user_id,
+            });
+          }
+
+          if (order?.order_type === 'contest_prize' && order?.metadata?.contest_id) {
+            await supabaseClient.rpc('admin_fund_contest_prize', {
+              p_contest_id: order.metadata.contest_id,
             });
           }
 

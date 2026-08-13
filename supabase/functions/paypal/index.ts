@@ -303,11 +303,12 @@ serve(async req => {
           description,
           contract_id,
           subscription_id,
+          contest_id,
           metadata,
         } = data;
 
         const validOrderType = validateString(order_type, 'order_type', 50);
-        if (!['contract_escrow', 'subscription', 'service_purchase'].includes(validOrderType)) {
+        if (!['contract_escrow', 'subscription', 'service_purchase', 'contest_prize'].includes(validOrderType)) {
           throw new Error('Invalid order_type');
         }
 
@@ -343,6 +344,26 @@ serve(async req => {
             .eq('id', subscription.plan_id)
             .single();
           serverAmount = Number(plan?.price) || 0;
+        } else if (validOrderType === 'contest_prize') {
+          // Contest prize pool (1st + 2nd + 3rd) + 5% platform fee, recomputed
+          // server-side from the contest row — never trusted from the body.
+          const contestId = data.contest_id || metadata?.contest_id;
+          if (!contestId) throw new Error('contest_id is required for contest_prize');
+          const { data: contest } = await supabaseClient
+            .from('contests')
+            .select('client_id, prize_amount, second_prize, third_prize, prize_funded')
+            .eq('id', contestId)
+            .single();
+          if (!contest || contest.client_id !== user.id) {
+            throw new Error('Unauthorized: You do not own this contest');
+          }
+          if (contest.prize_funded === true) {
+            throw new Error('Contest prize is already funded');
+          }
+          const pool = Math.round((Number(contest.prize_amount || 0) + Number(contest.second_prize || 0) + Number(contest.third_prize || 0)) * 100) / 100;
+          if (pool <= 0) throw new Error('Invalid prize pool');
+          const fee = Math.round(pool * 0.05 * 100) / 100; // 5% platform fee
+          serverAmount = Math.round((pool + fee) * 100) / 100;
         } else if (validOrderType === 'service_purchase') {
           const serviceId = metadata?.service_id || data.service_id;
           if (!serviceId) throw new Error('service_id is required for service_purchase');
@@ -382,6 +403,11 @@ serve(async req => {
           accessToken
         );
 
+        // contest_id rides inside metadata for contest_prize orders.
+        const storedMetadata = validOrderType === 'contest_prize'
+          ? { ...(metadata || {}), contest_id: data.contest_id || metadata?.contest_id }
+          : metadata;
+
         const { data: dbOrder, error: dbError } = await supabaseClient
           .from('paypal_orders')
           .insert({
@@ -394,7 +420,7 @@ serve(async req => {
             currency: validateString(currency, 'currency', 3),
             status: 'created',
             description: description ? validateString(description, 'description', 200) : null,
-            metadata,
+            metadata: storedMetadata,
           })
           .select()
           .single();

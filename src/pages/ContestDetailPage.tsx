@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileText, Loader2, MessageSquare, Send, ThumbsUp, Trophy, Upload, Users,  } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileText, IndianRupee, Loader2, Lock, Medal, MessageSquare, Send, ShieldCheck, ThumbsUp, Trophy, Upload, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { supabase } from '../lib/supabase';
@@ -24,6 +24,13 @@ export function ContestDetailPage() {
     preview_url: '',
   });
   const toast = useToast();
+
+  // Winner-award selections (judging panel, owner only)
+  const [awardSelection, setAwardSelection] = useState<{ first: string | null; second: string | null; third: string | null }>({ first: null, second: null, third: null });
+  const [awarding, setAwarding] = useState(false);
+  const [showAwardConfirm, setShowAwardConfirm] = useState(false);
+  const [funding, setFunding] = useState(false);
+  const [showFundConfirm, setShowFundConfirm] = useState(false);
 
   const fetchContestData = useCallback(async () => {
     if (!contestId) return;
@@ -68,6 +75,21 @@ export function ContestDetailPage() {
     
     return () => { void channel.unsubscribe(); };
   }, [contestId, fetchContestData]);
+
+  // Real-time vote counts — subscribe to votes on this contest's submissions
+  useEffect(() => {
+    if (!contestId || submissions.length === 0) return;
+    const ids = submissions.map(s => s.id).join(',');
+    const voteChannel = supabase
+      .channel(`contest-votes-${contestId}-${ids.length}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'contest_votes', filter: `submission_id=in.(${ids})` },
+        () => { void fetchContestData(); }
+      )
+      .subscribe();
+    return () => { void voteChannel.unsubscribe(); };
+  }, [contestId, submissions, fetchContestData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,6 +144,47 @@ export function ContestDetailPage() {
       toast.success('Comment posted!');
     }
     void fetchContestData();
+  };
+
+  /** Fund the prize pool from the client's wallet (escrow protection). */
+  const handleFundPrize = async () => {
+    if (!user || !contestId) return;
+    setFunding(true);
+    const result = await contestService.fundContestPrizeFromWallet(contestId);
+    setFunding(false);
+    setShowFundConfirm(false);
+    if (result.success) {
+      toast.success('Prize funded! The contest is now live for submissions.');
+      void fetchContestData();
+    } else {
+      toast.error(result.error || 'Failed to fund prize. Add funds to your wallet first.');
+    }
+  };
+
+  /** Award 1st/2nd/3rd prizes — escrow released to winner wallets in real time. */
+  const handleAward = async () => {
+    if (!user || !contestId || !awardSelection.first) return;
+    setAwarding(true);
+    const result = await contestService.awardContestPrizes(
+      contestId,
+      awardSelection.first,
+      awardSelection.second,
+      awardSelection.third
+    );
+    setAwarding(false);
+    setShowAwardConfirm(false);
+    if (result.success) {
+      toast.success('Prizes released! Winners have been notified.');
+      setAwardSelection({ first: null, second: null, third: null });
+      void fetchContestData();
+    } else {
+      toast.error(result.error || 'Failed to award prizes');
+    }
+  };
+
+  /** Toggle 1st/2nd/3rd selection for the owner judging panel. */
+  const toggleAwardSelection = (submissionId: string, place: 'first' | 'second' | 'third') => {
+    setAwardSelection(prev => ({ ...prev, [place]: prev[place] === submissionId ? null : submissionId }));
   };
 
   const getStatusColor = (status: string) => {
@@ -246,13 +309,105 @@ export function ContestDetailPage() {
                     </div>
                   )}
                 </div>
+                <div className="mt-4 pt-4 border-t border-white/20 flex items-center gap-2 text-sm">
+                  {contest.prize_funded ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4 shrink-0" />
+                      <span>
+                        <strong>Escrowed:</strong> ₹{Number(contest.escrow_amount || 0).toLocaleString()} protected
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4 shrink-0" />
+                      <span>Prize not funded yet — entries are paused</span>
+                    </>
+                  )}
+                </div>
               </div>
+
+              {/* Fund Prize CTA (owner, unfunded) */}
+              {isOwner && !contest.prize_funded && contest.status !== 'completed' && contest.status !== 'cancelled' && (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+                  <h3 className="font-bold text-amber-900 flex items-center gap-2 mb-2">
+                    <Lock className="w-4 h-4" />
+                    Fund the Prize to Go Live
+                  </h3>
+                  <p className="text-sm text-amber-800 mb-4">
+                    Fund the prize pool (₹{(
+                      contest.prize_amount + (contest.second_prize || 0) + (contest.third_prize || 0)
+                    ).toLocaleString()} + 5% fee) from your wallet. Until then, freelancers can't submit — escrow protects everyone.
+                  </p>
+                  <button
+                    onClick={() => setShowFundConfirm(true)}
+                    disabled={funding}
+                    className="w-full py-3 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {funding ? <Loader2 className="animate-spin w-5 h-5" /> : <><IndianRupee className="w-5 h-5" /> Fund Prize</>}
+                  </button>
+                </div>
+              )}
+
+              {/* Winner banner */}
+              {contest.status === 'completed' && contest.winner_id && (
+                <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-2xl p-5 text-amber-950">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Trophy className="w-5 h-5" />
+                    <span className="font-extrabold">Winner Announced</span>
+                  </div>
+                  <p className="text-sm font-semibold">Prizes released to the winning freelancers — check the submissions below.</p>
+                </div>
+              )}
+
+              {/* Judging — award winners (owner) */}
+              {isOwner && contest.status === 'judging' && contest.prize_funded && (
+                <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5">
+                  <h3 className="font-bold text-violet-900 flex items-center gap-2 mb-2">
+                    <Medal className="w-4 h-4" />
+                    Award Winners
+                  </h3>
+                  <p className="text-sm text-violet-800 mb-3">
+                    Select the 1st place entry (required), then optional 2nd/3rd. Prizes are released to their wallets instantly.
+                  </p>
+                  <div className="space-y-2 mb-4">
+                    {(['first', 'second', 'third'] as const).map((place) => {
+                      const selectedId = awardSelection[place];
+                      return (
+                        <div key={place} className="flex items-center justify-between bg-white border border-violet-200 rounded-xl px-3 py-2">
+                          <span className="text-xs font-bold text-violet-700 uppercase tracking-wide">
+                            {place === 'first' ? '🥇 1st' : place === 'second' ? '🥈 2nd' : '🥉 3rd'}
+                          </span>
+                          <select
+                            value={selectedId || ''}
+                            onChange={(e) => toggleAwardSelection(e.target.value, place)}
+                            className="flex-1 mx-3 px-2 py-1.5 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-violet-200"
+                          >
+                            <option value="">— Select entry —</option>
+                            {submissions.filter(s => s.status !== 'rejected').map((s) => (
+                              <option key={s.id} value={s.id}>
+                                {s.title} {s.freelancer?.name ? `(by ${s.freelancer.name})` : ''}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => setShowAwardConfirm(true)}
+                    disabled={!awardSelection.first || awarding}
+                    className="w-full py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {awarding ? <Loader2 className="animate-spin w-5 h-5" /> : <><Trophy className="w-5 h-5" /> Release Prizes</>}
+                  </button>
+                </div>
+              )}
 
               {/* Time & Submissions */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
                 <TipNote tone="protection" compact className="!p-3">
-                  <strong>Fair &amp; safe:</strong> the prize is funded in escrow upfront and released to the winner in
-                  real time — submissions are public, votes are tracked, and all communication stays on Growlancer.
+                  <strong>Fair &amp; safe:</strong> the prize is escrowed upfront before any entries are accepted, and
+                  released to the winners in real time. Entries and votes are public — everyone sees the same contest.
                 </TipNote>
                 <div className="flex items-center gap-3">
                   <Clock className="w-5 h-5 text-emerald-600" />
@@ -280,7 +435,13 @@ export function ContestDetailPage() {
               </div>
 
               {/* Submit Button */}
-              {isContestActive && user && !hasSubmitted && !isOwner && (
+              {isContestActive && !contest.prize_funded && (
+                <div className="w-full py-3 bg-slate-100 text-slate-500 font-bold rounded-2xl text-center flex items-center justify-center gap-2">
+                  <Lock className="w-5 h-5" />
+                  Entries paused — prize not funded yet
+                </div>
+              )}
+              {isContestActive && contest.prize_funded && user && !hasSubmitted && !isOwner && (
                 <button
                   onClick={() => setShowSubmitForm(true)}
                   className="w-full py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2"
@@ -433,11 +594,27 @@ export function ContestDetailPage() {
                     <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                       <button
                         onClick={() => handleVote(submission.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-700 rounded-xl transition-colors font-medium"
+                        disabled={submission.has_voted}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors font-medium ${
+                          submission.has_voted
+                            ? 'bg-emerald-100 text-emerald-700 cursor-default'
+                            : 'bg-slate-100 hover:bg-emerald-100 text-slate-700 hover:text-emerald-700'
+                        }`}
                       >
                         <ThumbsUp className="w-4 h-4" />
-                        Vote
+                        {submission.has_voted ? 'Voted' : 'Vote'}
+                        <span className="text-xs font-bold bg-white/70 rounded-full px-2 py-0.5">
+                          {submission.vote_count || 0}
+                        </span>
                       </button>
+                      {submission.status === 'winner' && submission.rank && (
+                        <span className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-extrabold ${
+                          submission.rank === 1 ? 'bg-yellow-100 text-yellow-700' : submission.rank === 2 ? 'bg-slate-100 text-slate-600' : 'bg-orange-100 text-orange-700'
+                        }`}>
+                          <Trophy className="w-3.5 h-3.5" />
+                          {submission.rank === 1 ? '1st' : submission.rank === 2 ? '2nd' : '3rd'} — ₹{Number(submission.prize_amount || 0).toLocaleString()}
+                        </span>
+                      )}
                       {submission.file_url && (
                         <a
                           href={submission.file_url}
@@ -513,6 +690,68 @@ export function ContestDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Fund Prize Confirmation */}
+      {showFundConfirm && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-emerald-600" />
+              Fund Prize Pool
+            </h3>
+            <p className="text-sm text-slate-600 mb-4">
+              ₹{(
+                contest.prize_amount + (contest.second_prize || 0) + (contest.third_prize || 0)
+              ).toLocaleString()} will be escrowed from your wallet plus a 5% platform fee. Once funded, freelancers can submit and winners are paid instantly.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowFundConfirm(false)}
+                className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void handleFundPrize()}
+                disabled={funding}
+                className="flex-1 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {funding ? <Loader2 className="animate-spin w-5 h-5" /> : <><IndianRupee className="w-5 h-5" /> Fund Now</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Award Winners Confirmation */}
+      {showAwardConfirm && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <Medal className="w-5 h-5 text-violet-600" />
+              Release Prizes?
+            </h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Winners will be notified and their prizes released to their wallets instantly. This action finalizes the contest and cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowAwardConfirm(false)}
+                className="flex-1 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void handleAward()}
+                disabled={awarding}
+                className="flex-1 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {awarding ? <Loader2 className="animate-spin w-5 h-5" /> : <><Trophy className="w-5 h-5" /> Confirm & Release</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

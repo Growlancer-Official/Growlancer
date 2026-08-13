@@ -258,11 +258,12 @@ serve(async req => {
           description,
           contract_id,
           subscription_id,
+          contest_id,
           metadata,
         } = data;
 
         const validOrderType = typeof order_type === 'string' ? order_type.trim() : '';
-        if (!['contract_escrow', 'subscription', 'service_purchase', 'card_verification', 'wallet_topup', 'revision_payment'].includes(validOrderType)) {
+        if (!['contract_escrow', 'subscription', 'service_purchase', 'card_verification', 'wallet_topup', 'revision_payment', 'contest_prize'].includes(validOrderType)) {
           throw new Error('Invalid order_type');
         }
 
@@ -380,6 +381,28 @@ serve(async req => {
             throw new Error('Amount must be between ₹50 and ₹1,00,000');
           }
           serverAmount = Math.round(requested * 100) / 100;
+        } else if (validOrderType === 'contest_prize') {
+          // Client funds a contest prize pool (1st + 2nd + 3rd) + 5% platform
+          // fee. The amount is recomputed server-side from the contest row —
+          // never trusted from the request body. The contest must be owned by
+          // the caller and must not already be funded.
+          const contestId = data.contest_id || metadata?.contest_id;
+          if (!contestId) throw new Error('contest_id is required for contest_prize');
+          const { data: contest } = await supabaseClient
+            .from('contests')
+            .select('client_id, prize_amount, second_prize, third_prize, prize_funded')
+            .eq('id', contestId)
+            .single();
+          if (!contest || contest.client_id !== user.id) {
+            throw new Error('Unauthorized: You do not own this contest');
+          }
+          if (contest.prize_funded === true) {
+            throw new Error('Contest prize is already funded');
+          }
+          const pool = Math.round((Number(contest.prize_amount || 0) + Number(contest.second_prize || 0) + Number(contest.third_prize || 0)) * 100) / 100;
+          if (pool <= 0) throw new Error('Invalid prize pool');
+          const fee = Math.round(pool * 0.05 * 100) / 100; // 5% platform fee
+          serverAmount = Math.round((pool + fee) * 100) / 100;
         } else if (validOrderType === 'revision_payment') {
           // Client pays for EXTRA REVISIONS beyond the free included ones.
           // The amount is the revision_requests.total_amount (set when the
@@ -426,7 +449,12 @@ serve(async req => {
           }),
         });
 
-        // Store order in database
+        // Store order in database (contest_id rides inside metadata for
+        // contest_prize orders — there is no dedicated column on the table).
+        const storedMetadata = validOrderType === 'contest_prize'
+          ? { ...(metadata || {}), contest_id: data.contest_id || metadata?.contest_id }
+          : metadata;
+
         const { data: dbOrder, error: dbError } = await supabaseClient
           .from('razorpay_orders')
           .insert({
@@ -439,7 +467,7 @@ serve(async req => {
             currency,
             status: 'created',
             description: description || null,
-            metadata,
+            metadata: storedMetadata,
           })
           .select()
           .single();

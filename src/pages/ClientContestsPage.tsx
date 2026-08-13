@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, IndianRupee, Eye, Filter, Loader2, Plus, Trash2, Trophy, Users,  } from 'lucide-react';
+import { Calendar, Clock, IndianRupee, Eye, Filter, Loader2, Lock, Medal, Plus, ShieldCheck, Trash2, Trophy, Users } from 'lucide-react';
 import { Pagination } from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
@@ -101,7 +101,7 @@ export function ClientContestsPage() {
 
       {/* Contests guide — plain-language */}
       <TipNote tone="info" title="How contests work" compact className="mb-6">
-        Post a <strong>prize</strong> and a brief — freelancers submit entries before the deadline (<strong>Active</strong>), you move the contest to <strong>Judging</strong> while you review, then award the winner and it becomes <strong>Completed</strong>. Prizes are paid through escrow protection. Submissions appear here and on the contest page in real time.
+        Post a <strong>prize</strong> and a brief, then <strong>fund the prize</strong> (escrowed + 5% fee) — freelancers can only submit once the prize is protected. After the deadline the contest moves to <strong>Judging</strong>, you pick 1st/2nd/3rd, and prizes are released to the winners' wallets in real time. Entries, votes and results are all public for transparency.
       </TipNote>
 
       {/* Stats Cards */}
@@ -204,6 +204,15 @@ export function ClientContestsPage() {
                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">
                       {contest.contest_type.charAt(0).toUpperCase() + contest.contest_type.slice(1)}
                     </span>
+                    {contest.prize_funded ? (
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3" /> Escrowed
+                      </span>
+                    ) : (
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200 flex items-center gap-1">
+                        <Lock className="w-3 h-3" /> Prize Not Funded
+                      </span>
+                    )}
                   </div>
                   
                   <Link
@@ -236,6 +245,26 @@ export function ClientContestsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {contest.status === 'judging' && contest.prize_funded && (
+                    <Link
+                      to={`/contests/${contest.id}`}
+                      className="px-4 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-all flex items-center gap-1.5"
+                      title="Judge entries and award winners"
+                    >
+                      <Medal className="w-4 h-4" />
+                      Judge & Award
+                    </Link>
+                  )}
+                  {!contest.prize_funded && contest.status !== 'completed' && contest.status !== 'cancelled' && (
+                    <Link
+                      to={`/contests/${contest.id}`}
+                      className="px-4 py-2.5 bg-amber-600 text-white text-sm font-bold rounded-xl hover:bg-amber-700 transition-all flex items-center gap-1.5"
+                      title="Fund the prize to go live"
+                    >
+                      <Lock className="w-4 h-4" />
+                      Fund Prize
+                    </Link>
+                  )}
                   <Link
                     to={`/contests/${contest.id}`}
                     className="p-3 bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-600 rounded-xl transition-colors"

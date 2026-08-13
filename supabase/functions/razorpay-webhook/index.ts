@@ -385,6 +385,29 @@ serve(async (req) => {
         }
       }
 
+      // Contest prize funding: mark the contest prize escrowed. Idempotent —
+      // admin_fund_contest_prize returns TRUE early if already funded, so a
+      // replay can never double-fund.
+      if (dbOrder.order_type === 'contest_prize') {
+        const contestId = dbOrder.metadata?.contest_id;
+        if (contestId) {
+          const { error: contestFundErr } = await supabaseAdmin.rpc('admin_fund_contest_prize', {
+            p_contest_id: contestId,
+          });
+          if (contestFundErr) {
+            console.error('[razorpay-webhook] admin_fund_contest_prize failed:', contestFundErr.message);
+          } else {
+            await notify(
+              supabaseAdmin, dbOrder.user_id, 'contest',
+              'Contest prize funded',
+              `Your contest prize of ${dbOrder.currency} ${Number(dbOrder.amount).toFixed(2)} was received — the contest is now live for submissions.`,
+              '/client/contests',
+              { contest_id: contestId }
+            );
+          }
+        }
+      }
+
       // Wallet top-ups: credit the user's wallet. Idempotent — this block only
       // runs on the FIRST capture of the order (the already_processed branch
       // above returns early on any duplicate), so a replay or a later client
