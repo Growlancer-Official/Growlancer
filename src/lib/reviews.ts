@@ -14,7 +14,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 export type Review = Tables<'reviews'>;
 
 export interface ReviewData {
-  contract_id: string;
+  contract_id?: string;
+  contest_id?: string;
   reviewee_id: string;
   rating: number;
   communication_rating?: number;
@@ -97,6 +98,29 @@ export const reviewService = {
   },
 
   // ==================== READ OPERATIONS (Direct Queries + Cache) ====================
+
+  /**
+   * Get reviews for a contest (winner + client mutual reviews after completion)
+   */
+  async getContestReviews(contestId: string): Promise<ReviewWithProfiles[]> {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('reviews')
+        .select(`
+          *,
+          reviewer:profiles!reviewer_id(id, name, avatar),
+          reviewee:profiles!reviewee_id(id, name, avatar)
+        `)
+        .eq('contest_id', contestId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return (data || []) as unknown as ReviewWithProfiles[];
+    } catch (error) {
+      console.error('Error fetching contest reviews:', error);
+      return [];
+    }
+  },
 
   /**
    * Get reviews for a contract

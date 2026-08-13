@@ -4,7 +4,8 @@ import { reviewService } from '../lib/reviews';
 import { useToast } from './Toast';
 
 interface ReviewModalProps {
-  contractId: string;
+  contractId?: string;
+  contestId?: string;
   revieweeId: string;
   revieweeName: string;
   projectTitle?: string;
@@ -40,7 +41,7 @@ function StarRow({ value, onChange }: { value: number; onChange: (v: number) => 
   );
 }
 
-export function ReviewModal({ contractId, revieweeId, revieweeName, projectTitle, onClose, onSubmitted }: ReviewModalProps) {
+export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, projectTitle, onClose, onSubmitted }: ReviewModalProps) {
   const toast = useToast();
   const [rating, setRating] = useState(0);
   const [communication, setCommunication] = useState(0);
@@ -62,6 +63,7 @@ export function ReviewModal({ contractId, revieweeId, revieweeName, projectTitle
     try {
       const result = await reviewService.createReview({
         contract_id: contractId,
+        contest_id: contestId,
         reviewee_id: revieweeId,
         rating,
         communication_rating: communication || undefined,

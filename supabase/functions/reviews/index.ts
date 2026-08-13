@@ -111,6 +111,7 @@ Deno.serve(async (req) => {
       // Create a review
       const {
         contract_id,
+        contest_id,
         reviewee_id,
         rating,
         communication_rating,
@@ -121,7 +122,7 @@ Deno.serve(async (req) => {
         would_hire_again,
       } = await req.json()
 
-      if (!contract_id || !reviewee_id || !rating) {
+      if ((!contract_id && !contest_id) || !reviewee_id || !rating) {
         return new Response(
           JSON.stringify({ error: 'Missing required fields' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -136,65 +137,162 @@ Deno.serve(async (req) => {
         )
       }
 
-      // Verify user is part of the contract
-      const { data: contract, error: contractError } = await supabaseClient
-        .from('contracts')
-        .select('freelancer_id, client_id, status')
-        .eq('id', contract_id)
+      // ── CONTRACT REVIEW ─────────────────────────────────────────────
+      if (contract_id) {
+        // Verify user is part of the contract
+        const { data: contract, error: contractError } = await supabaseClient
+          .from('contracts')
+          .select('freelancer_id, client_id, status')
+          .eq('id', contract_id)
+          .single()
+
+        if (contractError || !contract) {
+          return new Response(
+            JSON.stringify({ error: 'Contract not found' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Reviews are only meaningful after the work is actually done — prevents
+        // rating-bombing before completion.
+        if (contract.status !== 'completed') {
+          return new Response(
+            JSON.stringify({ error: 'You can only review a contract after it has been completed' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        if (contract.freelancer_id !== user.id && contract.client_id !== user.id) {
+          return new Response(
+            JSON.stringify({ error: 'You are not part of this contract' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Verify reviewee is the other party in the contract
+        const otherPartyId = contract.freelancer_id === user.id ? contract.client_id : contract.freelancer_id
+        if (reviewee_id !== otherPartyId) {
+          return new Response(
+            JSON.stringify({ error: 'You can only review the other party in the contract' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Check if review already exists
+        const { data: existingReview } = await supabaseClient
+          .from('reviews')
+          .select('id')
+          .eq('contract_id', contract_id)
+          .eq('reviewer_id', user.id)
+          .single()
+
+        if (existingReview) {
+          return new Response(
+            JSON.stringify({ error: 'You have already reviewed this contract' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          )
+        }
+
+        // Create review
+        const { data: review, error: reviewError } = await supabaseClient
+          .from('reviews')
+          .insert({
+            contract_id,
+            reviewer_id: user.id,
+            reviewee_id,
+            rating,
+            communication_rating,
+            quality_rating,
+            timeliness_rating,
+            professionalism_rating,
+            comment,
+            would_hire_again,
+          })
+          .select()
+          .single()
+
+        if (reviewError) {
+          throw reviewError
+        }
+
+        return new Response(
+          JSON.stringify({ review }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
+
+      // ── CONTEST REVIEW ──────────────────────────────────────────────
+      // Winner(s) and client review each other after the contest completes.
+      // Client → winner freelancer (must hold a 'winner' submission);
+      // winner freelancer → client. Both sides verified server-side.
+      const { data: contest, error: contestError } = await supabaseClient
+        .from('contests')
+        .select('client_id, winner_id, status')
+        .eq('id', contest_id)
         .single()
 
-      if (contractError || !contract) {
+      if (contestError || !contest) {
         return new Response(
-          JSON.stringify({ error: 'Contract not found' }),
+          JSON.stringify({ error: 'Contest not found' }),
           { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Reviews are only meaningful after the work is actually done — prevents
-      // rating-bombing before completion.
-      if (contract.status !== 'completed') {
+      if (contest.status !== 'completed') {
         return new Response(
-          JSON.stringify({ error: 'You can only review a contract after it has been completed' }),
+          JSON.stringify({ error: 'You can only review a contest after it has been completed' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      if (contract.freelancer_id !== user.id && contract.client_id !== user.id) {
+      const isClient = contest.client_id === user.id
+      const isWinner = await (async () => {
+        if (user.id === contest.winner_id) return true
+        const { data: sub } = await supabaseClient
+          .from('contest_submissions')
+          .select('id')
+          .eq('contest_id', contest_id)
+          .eq('freelancer_id', user.id)
+          .eq('status', 'winner')
+          .maybeSingle()
+        return !!sub
+      })()
+
+      if (!isClient && !isWinner) {
         return new Response(
-          JSON.stringify({ error: 'You are not part of this contract' }),
+          JSON.stringify({ error: 'You are not part of this contest' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Verify reviewee is the other party in the contract
-      const otherPartyId = contract.freelancer_id === user.id ? contract.client_id : contract.freelancer_id
-      if (reviewee_id !== otherPartyId) {
+      // Reviewee must be the other side
+      const otherSideId = isClient ? contest.winner_id : contest.client_id
+      if (!otherSideId || reviewee_id !== otherSideId) {
         return new Response(
-          JSON.stringify({ error: 'You can only review the other party in the contract' }),
+          JSON.stringify({ error: 'You can only review the other party in the contest' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Check if review already exists
-      const { data: existingReview } = await supabaseClient
+      // No duplicate contest reviews from the same reviewer
+      const { data: existingContestReview } = await supabaseClient
         .from('reviews')
         .select('id')
-        .eq('contract_id', contract_id)
+        .eq('contest_id', contest_id)
         .eq('reviewer_id', user.id)
-        .single()
+        .maybeSingle()
 
-      if (existingReview) {
+      if (existingContestReview) {
         return new Response(
-          JSON.stringify({ error: 'You have already reviewed this contract' }),
+          JSON.stringify({ error: 'You have already reviewed this contest' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
       }
 
-      // Create review
       const { data: review, error: reviewError } = await supabaseClient
         .from('reviews')
         .insert({
-          contract_id,
+          contest_id,
           reviewer_id: user.id,
           reviewee_id,
           rating,
@@ -226,9 +324,27 @@ Deno.serve(async (req) => {
     if (method === 'GET') {
       const url = new URL(req.url)
       const contractId = url.searchParams.get('contract_id')
+      const contestId = url.searchParams.get('contest_id')
       const revieweeId = url.searchParams.get('reviewee_id')
 
-      if (contractId) {
+      if (contestId) {
+        // Get reviews for a contest (winner + client mutual reviews)
+        const { data: reviews, error } = await supabaseClient
+          .from('reviews')
+          .select(`
+            *,
+            reviewer:profiles!reviews_reviewer_id_fkey(id, name, avatar),
+            reviewee:profiles!reviews_reviewee_id_fkey(id, name, avatar)
+          `)
+          .eq('contest_id', contestId)
+
+        if (error) throw error
+
+        return new Response(
+          JSON.stringify({ reviews }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      } else if (contractId) {
         // Get reviews for a contract
         const { data: reviews, error } = await supabaseClient
           .from('reviews')

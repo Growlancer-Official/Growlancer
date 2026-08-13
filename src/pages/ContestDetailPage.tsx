@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileText, IndianRupee, Loader2, Lock, Medal, MessageSquare, Send, ShieldCheck, ThumbsUp, Trophy, Upload, Users } from 'lucide-react';
+import { ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileText, IndianRupee, Loader2, Lock, Medal, MessageSquare, Send, ShieldCheck, Star, ThumbsUp, Trophy, Upload, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { supabase } from '../lib/supabase';
 import { contestService, type Contest, type ContestSubmission, type ContestComment, getTimeRemaining } from '../lib/contests';
+import { reviewService, type ReviewWithProfiles } from '../lib/reviews';
+import { ReviewModal } from '../components/ReviewModal';
 import { TipNote } from '../components/TipNote';
 
 export function ContestDetailPage() {
@@ -32,6 +34,10 @@ export function ContestDetailPage() {
   const [funding, setFunding] = useState(false);
   const [showFundConfirm, setShowFundConfirm] = useState(false);
 
+  // Contest reviews (after completion — winner + client rate each other)
+  const [reviews, setReviews] = useState<ReviewWithProfiles[]>([]);
+  const [reviewModal, setReviewModal] = useState<{ revieweeId: string; revieweeName: string; label: string } | null>(null);
+
   const fetchContestData = useCallback(async () => {
     if (!contestId) return;
     setLoading(true);
@@ -45,6 +51,13 @@ export function ContestDetailPage() {
     setContest(contestData);
     setSubmissions(submissionsData);
     setComments(commentsData);
+
+    if (contestData && contestData.status === 'completed') {
+      const reviewData = await reviewService.getContestReviews(contestId);
+      setReviews(reviewData);
+    } else {
+      setReviews([]);
+    }
     setLoading(false);
   }, [contestId]);
 
@@ -75,6 +88,20 @@ export function ContestDetailPage() {
     
     return () => { void channel.unsubscribe(); };
   }, [contestId, fetchContestData]);
+
+  // Real-time reviews (after completion)
+  useEffect(() => {
+    if (!contestId || contest?.status !== 'completed') return;
+    const reviewChannel = supabase
+      .channel(`contest-reviews-${contestId}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reviews', filter: `contest_id=eq.${contestId}` },
+        () => { void fetchContestData(); }
+      )
+      .subscribe();
+    return () => { void reviewChannel.unsubscribe(); };
+  }, [contestId, contest?.status, fetchContestData]);
 
   // Real-time vote counts — subscribe to votes on this contest's submissions
   useEffect(() => {
@@ -690,6 +717,96 @@ export function ContestDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Reviews — after completion, winner(s) & client rate each other */}
+      {contest.status === 'completed' && (
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 pb-12">
+          <div className="bg-white rounded-2xl border border-slate-200 p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-5">
+              <div>
+                <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Star className="w-5 h-5 text-amber-400 fill-amber-400" />
+                  Reviews
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">Winners and clients rate each other after the contest completes — real reputation, visible to everyone.</p>
+              </div>
+
+              {/* Review CTAs */}
+              {user && isOwner && (
+                <button
+                  onClick={() => {
+                    const winnerSub = submissions.find(s => s.status === 'winner' && s.rank === 1);
+                    const winner = winnerSub?.freelancer;
+                    if (winner) setReviewModal({ revieweeId: winnerSub.freelancer_id, revieweeName: winner.name || 'Winner', label: 'the winner' });
+                    else toast.warning('No winner found to review');
+                  }}
+                  className="px-5 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all"
+                >
+                  Review the Winner
+                </button>
+              )}
+              {user && !isOwner && (
+                (() => {
+                  const mySub = submissions.find(s => s.freelancer_id === user.id && s.status === 'winner');
+                  if (mySub) {
+                    return (
+                      <button
+                        onClick={() => setReviewModal({ revieweeId: contest.client_id, revieweeName: contest.client?.name || 'Client', label: 'the client' })}
+                        className="px-5 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-all"
+                      >
+                        Review the Client
+                      </button>
+                    );
+                  }
+                  return null;
+                })()
+              )}
+            </div>
+
+            {reviews.length === 0 ? (
+              <div className="text-center py-8">
+                <MessageSquare className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                <p className="text-slate-500 text-sm">No reviews yet — the winner and client can rate each other now.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {reviews.map((review) => (
+                  <div key={review.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="h-8 w-8 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center text-xs">
+                        {review.reviewer?.name?.charAt(0) || 'R'}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900">{review.reviewer?.name || 'User'}</p>
+                        <p className="text-[11px] text-slate-400">reviewed {review.reviewee?.name || 'the other party'}</p>
+                      </div>
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star key={n} className={`w-3.5 h-3.5 ${n <= Math.round(review.rating) ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}`} />
+                        ))}
+                        <span className="ml-1 text-sm font-bold text-slate-900">{Number(review.rating).toFixed(1)}</span>
+                      </div>
+                    </div>
+                    {review.comment && <p className="text-sm text-slate-600">{review.comment}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Review Modal */}
+      {reviewModal && (
+        <ReviewModal
+          contestId={contest.id}
+          revieweeId={reviewModal.revieweeId}
+          revieweeName={reviewModal.revieweeName}
+          projectTitle={`${contest.title} — review ${reviewModal.label}`}
+          onClose={() => setReviewModal(null)}
+          onSubmitted={() => { void fetchContestData(); }}
+        />
+      )}
 
       {/* Fund Prize Confirmation */}
       {showFundConfirm && (
