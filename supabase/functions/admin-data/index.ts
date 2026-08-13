@@ -559,10 +559,11 @@ Deno.serve(async (req) => {
       }
 
       try {
-        // Auto-create bucket if it doesn't exist (using service_role)
+        // Auto-create bucket if it doesn't exist (using service_role).
+        // Private by default — documents/resumes must never be public.
         const { error: bucketError } = await supabaseClient
           .storage
-          .createBucket(bucket, { public: true });
+          .createBucket(bucket, { public: false });
 
         if (bucketError && !bucketError.message?.includes('already exists')) {
           console.error('Bucket creation error:', bucketError.message);
@@ -591,12 +592,11 @@ Deno.serve(async (req) => {
           });
         }
 
-        const { data: { publicUrl } } = supabaseClient
-          .storage
-          .from(bucket)
-          .getPublicUrl(file_path);
+        // internship_documents is a private bucket — the stored reference is
+        // the file path; the client renders it via a signed URL on demand.
+        const filePath = data?.path || file_path;
 
-        return new Response(JSON.stringify({ success: true, path: data?.path, publicUrl }), {
+        return new Response(JSON.stringify({ success: true, path: filePath, filePath, publicUrl: '' }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } catch (err) {

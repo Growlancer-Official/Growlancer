@@ -93,6 +93,22 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+/**
+ * Resolve a signed (time-limited) URL for a storage file.
+ * internship_resumes is now a private bucket — public URLs no longer work.
+ * Legacy rows may hold full public URLs (e.g. old certificate_documents
+ * links); those stay usable as-is.
+ */
+async function resolveSignedUrl(value: string | null, bucket = 'internship_resumes'): Promise<string | null> {
+  if (!value) return null;
+  if (/^https?:\/\//.test(value)) return value; // legacy public URL
+  const { data, error } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(value, 3600);
+  if (error || !data) return null;
+  return data.signedUrl;
+}
+
 function formatRelativeTime(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
   const mins = Math.floor(diff / 60000);
@@ -157,18 +173,20 @@ export function AdminInternshipsPage() {
 
       if (fnError || uploadResult?.error) throw new Error(uploadResult?.error || fnError?.message || 'Upload failed');
       
-      const publicUrl = uploadResult.publicUrl;
-      if (!publicUrl) throw new Error('No public URL returned');
+      // Store the file path (not a public URL) — internship_documents is a
+      // private bucket; the view link is generated as a signed URL on demand.
+      const storedRef = uploadResult.filePath || `internship_documents/${filePath}`;
+      if (!storedRef) throw new Error('No file reference returned');
 
       const { error: updateError } = await supabase
         .from('internship_applications')
-        .update({ [field]: publicUrl } as any)
+        .update({ [field]: storedRef } as any)
         .eq('id', appId);
       if (updateError) throw updateError;
       toast.success('Uploaded', `${label} PDF uploaded successfully.`);
       // Update local state directly to avoid auto-refresh
       setApplications(prev => 
-        prev.map(a => a.id === appId ? { ...a, [field]: publicUrl } : a)
+        prev.map(a => a.id === appId ? { ...a, [field]: storedRef } : a)
       );
     } catch (err) {
       console.error('Document upload error:', err);
@@ -446,13 +464,52 @@ export function AdminInternshipsPage() {
     }
   };
 
-  const getResumeDownloadUrl = (app: InternshipApplication): string | null => {
-    if (app.resume_file_path) {
-      const { data } = supabase.storage
-        .from('internship_resumes')
-        .getPublicUrl(app.resume_file_path);
-      return data.publicUrl;
+  const [resumeSignedUrls, setResumeSignedUrls] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const pending = applications.filter(a => a.resume_file_path && !resumeSignedUrls[a.id]);
+    if (pending.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const next: Record<string, string> = {};
+      for (const app of pending) {
+        const url = await resolveSignedUrl(app.resume_file_path);
+        if (cancelled) return;
+        if (url) next[app.id] = url;
+      }
+      if (!cancelled) setResumeSignedUrls(prev => ({ ...prev, ...next }));
+    })();
+    return () => { cancelled = true; };
+  }, [applications, resumeSignedUrls]);
+
+  // Signed URLs for the three admin-uploaded PDFs (offer letter / NDA /
+  // internship letter) — stored as file paths in a private bucket.
+  const [docSignedUrls, setDocSignedUrls] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const pending: Array<{ id: string; value: string }> = [];
+    for (const app of applications) {
+      for (const key of ['offer_letter_url', 'nda_url', 'internship_letter_url'] as const) {
+        const value = app[key];
+        if (value && !docSignedUrls[`${app.id}:${key}`]) pending.push({ id: `${app.id}:${key}`, value });
+      }
     }
+    if (pending.length === 0) return;
+    let cancelled = false;
+    (async () => {
+      const next: Record<string, string> = {};
+      for (const p of pending) {
+        const url = await resolveSignedUrl(p.value, 'internship_documents');
+        if (cancelled) return;
+        if (url) next[p.id] = url;
+      }
+      if (!cancelled) setDocSignedUrls(prev => ({ ...prev, ...next }));
+    })();
+    return () => { cancelled = true; };
+  }, [applications, docSignedUrls]);
+
+  const getResumeDownloadUrl = (app: InternshipApplication): string | null => {
+    if (app.resume_file_path) return resumeSignedUrls[app.id] || null;
     return app.resume_url || null;
   };
 
@@ -1189,7 +1246,7 @@ export function AdminInternshipsPage() {
                               </label>
                               {existingUrl && (
                                 <a
-                                  href={existingUrl}
+                                  href={docSignedUrls[`${app.id}:${key}`] || existingUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="flex items-center justify-center gap-1 px-3 py-2 rounded-lg bg-slate-700/50 text-slate-400 text-xs font-bold hover:text-emerald-400 transition-colors"
