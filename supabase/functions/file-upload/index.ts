@@ -286,8 +286,25 @@ Deno.serve(async (req) => {
         throw error
       }
 
+      // contract-files is a private bucket — replace the stored public URL
+      // with a short-lived signed URL (participant-authorized). The client
+      // reads file.public_url, so the response shape stays identical.
+      const signedFiles = await Promise.all(
+        (files || []).map(async (f: any) => {
+          try {
+            const { data: signed } = await supabaseClient
+              .storage
+              .from('contract-files')
+              .createSignedUrl(f.file_path, 3600); // 1 hour
+            return { ...f, public_url: signed?.signedUrl || f.public_url };
+          } catch {
+            return f;
+          }
+        })
+      )
+
       return new Response(
-        JSON.stringify({ files }),
+        JSON.stringify({ files: signedFiles }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
