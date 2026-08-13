@@ -527,10 +527,17 @@ serve(async (req) => {
         .maybeSingle();
 
       if (dbOrder) {
+        // Use the ACTUAL refund amount (refund.entity.amount is in paise) —
+        // never the full order amount, which includes the platform fee.
+        const refundEntity = payload?.refund?.entity || {};
+        const refundAmount = refundEntity.amount != null
+          ? Number(refundEntity.amount) / 100
+          : Number(dbOrder.amount) || 0;
+
         await notify(
           supabaseAdmin, dbOrder.user_id, 'payment',
           'Refund initiated',
-          `Your refund of ${dbOrder.currency} ${Number(dbOrder.amount).toFixed(2)} has been initiated and is being processed.`,
+          `Your refund of ${dbOrder.currency} ${refundAmount.toFixed(2)} has been initiated and is being processed.`,
           '/client/payments',
           { contract_id: dbOrder.contract_id || null }
         );
@@ -540,7 +547,7 @@ serve(async (req) => {
           entity_type: 'razorpay_order',
           entity_id: dbOrder.id,
           user_id: dbOrder.user_id,
-          amount: dbOrder.amount,
+          amount: refundAmount,
           currency: dbOrder.currency,
           metadata: { event: eventType, refund_id: payload?.refund?.entity?.id || null },
         });
@@ -559,6 +566,13 @@ serve(async (req) => {
         .maybeSingle();
 
       if (dbOrder && eventType === 'refund.processed') {
+        // Use the ACTUAL refund amount (refund.entity.amount is in paise) —
+        // never the full order amount, which includes the platform fee.
+        const refundEntity = payload?.refund?.entity || {};
+        const refundAmount = refundEntity.amount != null
+          ? Number(refundEntity.amount) / 100
+          : Number(dbOrder.amount) || 0;
+
         await supabaseAdmin
           .from('razorpay_orders')
           .update({ status: 'refunded' })
@@ -602,19 +616,59 @@ serve(async (req) => {
 
         // Reconcile escrow: return a funded escrow to 'refunded' + debit the
         // client's escrow balance (Razorpay already returned the money).
+        // NOTE: for wallet-funded escrow, admin_reverse_escrow credits the
+        // client's wallet balance AND inserts its own transactions row — so we
+        // only add a visibility row below when the money went back to the
+        // original payment method (card/UPI/bank), never double-book.
+        let escrowReversed = false;
         if (dbOrder.contract_id) {
           const { error: reverseErr } = await supabaseAdmin.rpc('admin_reverse_escrow', {
             p_contract_id: dbOrder.contract_id,
           });
           if (reverseErr) {
             console.error('[razorpay-webhook] admin_reverse_escrow failed:', reverseErr.message);
+          } else {
+            escrowReversed = true;
+          }
+        }
+
+        // Visibility record for card/UPI-funded refunds: the client's Payments
+        // page shows refunds from the transactions table, but a refund returned
+        // to the original payment method never touched the wallet, so no row
+        // existed and the page silently showed ₹0. Insert an informational
+        // 'refund' transaction (source=refund, completed) WITHOUT touching the
+        // wallet balance — the money is with the bank/card provider, not the
+        // wallet. Idempotent: skipped when this refund id was already recorded.
+        if (refundId) {
+          const { data: dupRefundRow } = await supabaseAdmin
+            .from('transactions')
+            .select('id')
+            .eq('user_id', dbOrder.user_id)
+            .eq('source', 'refund')
+            .eq('status', 'completed')
+            .eq('metadata->>razorpay_refund_id', refundId)
+            .maybeSingle();
+          if (!dupRefundRow) {
+            await supabaseAdmin.from('transactions').insert({
+              user_id: dbOrder.user_id,
+              contract_id: dbOrder.contract_id || null,
+              amount: refundAmount,
+              type: 'credit',
+              source: 'refund',
+              status: 'completed',
+              description: escrowReversed
+                ? `Refund of ${dbOrder.currency} ${refundAmount.toFixed(2)} returned to your original payment method (card/UPI/bank)`
+                : `Refund of ${dbOrder.currency} ${refundAmount.toFixed(2)} processed`,  
+              currency: dbOrder.currency || 'INR',
+              metadata: { razorpay_refund_id: refundId, provider: 'razorpay', returned_to_payment_method: true },
+            });
           }
         }
 
         await notify(
           supabaseAdmin, dbOrder.user_id, 'payment',
           'Refund processed',
-          `Your refund of ${dbOrder.currency} ${Number(dbOrder.amount).toFixed(2)} has been processed and will be returned to your payment method.`,
+          `Your refund of ${dbOrder.currency} ${refundAmount.toFixed(2)} has been processed and will be returned to your original payment method (card/UPI/bank). This usually takes 5–7 business days depending on your bank.`,
           '/client/payments',
           { contract_id: dbOrder.contract_id || null }
         );
@@ -624,15 +678,20 @@ serve(async (req) => {
           entity_type: 'razorpay_order',
           entity_id: dbOrder.id,
           user_id: dbOrder.user_id,
-          amount: dbOrder.amount,
+          amount: refundAmount,
           currency: dbOrder.currency,
-          metadata: { event: eventType },
+          metadata: { event: eventType, razorpay_refund_id: refundId },
         });
       } else if (dbOrder && eventType === 'refund.failed') {
+        const refundEntity = payload?.refund?.entity || {};
+        const refundAmount = refundEntity.amount != null
+          ? Number(refundEntity.amount) / 100
+          : Number(dbOrder.amount) || 0;
+
         await notify(
           supabaseAdmin, dbOrder.user_id, 'payment',
           'Refund failed',
-          `Your refund of ${dbOrder.currency} ${Number(dbOrder.amount).toFixed(2)} could not be processed. Our team will contact you, or you can retry from your payments page.`,
+          `Your refund of ${dbOrder.currency} ${refundAmount.toFixed(2)} could not be processed. Our team will contact you, or you can retry from your payments page.`,
           '/client/payments',
           { contract_id: dbOrder.contract_id || null }
         );
@@ -642,7 +701,7 @@ serve(async (req) => {
           entity_type: 'razorpay_order',
           entity_id: dbOrder.id,
           user_id: dbOrder.user_id,
-          amount: dbOrder.amount,
+          amount: refundAmount,
           currency: dbOrder.currency,
           metadata: { event: eventType },
         });

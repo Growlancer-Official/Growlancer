@@ -19,7 +19,7 @@ export function RefundPolicyPage() {
       icon: Clock,
       title: 'Project Canceled with Funded Escrow',
       description:
-        'If the project is canceled after escrow is funded but before work begins, the full funded amount is returned to your Growlancer wallet (minus any platform fees already incurred), typically within 3–5 business days.',
+        'If the project is canceled after escrow is funded but before work begins, the full funded amount is returned to you (minus any platform fees already incurred). If you funded with your wallet balance, the money is credited back to your wallet instantly. If you paid by card/UPI, the refund is processed by Razorpay back to your original payment method, typically within 5–7 business days depending on your bank.',
     },
     {
       icon: Scale,
