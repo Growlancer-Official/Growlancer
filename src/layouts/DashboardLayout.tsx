@@ -25,7 +25,6 @@ import {
   Shield,
   Crown,
   Award,
-  Clock,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -83,7 +82,6 @@ const sidebarGroups: SidebarGroup[] = [
     links: [
       { id: 'analytics', path: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
       { id: 'certifications', path: '/dashboard/certifications', icon: Award, label: 'Certifications' },
-      { id: 'time-tracking', path: '/dashboard/time-tracking', icon: Clock, label: 'Time Tracking' },
       { id: 'referrals', path: '/dashboard/referrals', icon: Share2, label: 'Referrals' },
       { id: 'ai-subscription', path: '/dashboard/ai-subscription', icon: Crown, label: 'Pro Plan' },
     ],

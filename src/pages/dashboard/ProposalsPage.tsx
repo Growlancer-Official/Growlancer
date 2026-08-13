@@ -390,9 +390,6 @@ export function ProposalsPage() {
                         <p className="text-xs text-emerald-600 mb-1 font-medium">Your Rate</p>
                         <p className="text-lg font-bold text-slate-900">
                           ₹{proposal.proposed_rate?.toLocaleString('en-IN') || 'N/A'}
-                          <span className="text-xs text-slate-500 font-normal ml-1">
-                            /{proposal.rate_type === 'hourly' ? 'hr' : 'project'}
-                          </span>
                         </p>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-xl">

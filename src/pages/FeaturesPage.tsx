@@ -41,7 +41,7 @@ export function FeaturesPage() {
     {
       icon: BarChart3,
       title: 'Progress Analytics',
-      description: 'Track task burndown rates, hourly timesheets, and milestone releases with visual analytics.',
+      description: 'Track task burndown rates and milestone releases with visual analytics.',
       color: 'from-blue-400 to-cyan-500',
       badge: 'Metrics'
     },

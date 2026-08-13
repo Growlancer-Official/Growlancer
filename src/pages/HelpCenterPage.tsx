@@ -57,7 +57,7 @@ const faqs: FAQ[] = [
   {
     category: 'For Freelancers',
     question: 'How do I submit proposals to open projects?',
-    answer: 'Browse your Project Feed for matching jobs. Click "Submit Proposal", specify your proposed hourly rate or fixed bid, enter a cover letter, outline milestones, and click submit. Pro subscribers receive high-priority visibility and unlimited proposal submissions.',
+    answer: 'Browse your Project Feed for matching jobs. Click "Submit Proposal", propose your project price, enter a cover letter, outline milestones, and click submit. Pro subscribers receive high-priority visibility and unlimited proposal submissions.',
   },
   {
     category: 'For Freelancers',

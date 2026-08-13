@@ -162,21 +162,21 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       }
 
       // --- BUDGET SCORE (0-100) ---
-      const hourlyRate = fp.hourly_rate || 0;
+      // Fixed-pricing model: compare the freelancer's base rate directly to the
+      // client's project budget (same fairness rule as the proposal smart
+      // pricing — never reward a deal the freelancer would take at a loss).
+      const baseRate = fp.hourly_rate || 0;
       const budgetMax = project.budget_max || 999;
-      const impliedHourlyBudget = budgetMax > 0 ? budgetMax / 80 : 0;
       let budgetScore = 50;
-      if (hourlyRate > 0 && impliedHourlyBudget > 0) {
-        if (hourlyRate <= impliedHourlyBudget && hourlyRate >= impliedHourlyBudget * 0.4) {
-          budgetScore = 100;
-        } else if (hourlyRate <= impliedHourlyBudget * 1.3) {
-          budgetScore = 80;
-        } else if (hourlyRate <= impliedHourlyBudget * 0.4) {
-          budgetScore = 70;
-        } else if (hourlyRate <= impliedHourlyBudget * 1.8) {
-          budgetScore = 50;
+      if (baseRate > 0 && budgetMax > 0) {
+        if (baseRate <= budgetMax) {
+          budgetScore = 100;          // base rate fits within the client's budget
+        } else if (baseRate <= budgetMax * 1.3) {
+          budgetScore = 80;           // slightly above budget — close enough
+        } else if (baseRate <= budgetMax * 1.67) {
+          budgetScore = 50;           // moderately above — may not fit
         } else {
-          budgetScore = 30;
+          budgetScore = 30;           // well above budget — poor fit
         }
       }
 

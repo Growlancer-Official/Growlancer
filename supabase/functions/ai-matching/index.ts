@@ -128,7 +128,7 @@ Respond with STRICT JSON ONLY — an object of the form:
 
 Rules:
 - Score primarily on skill overlap, domain relevance, and experience fit.
-- Consider budget compatibility (candidate hourly_rate vs project budget).
+- Consider budget compatibility (candidate base rate vs the project's single budget — a base rate within the budget is a strong fit, far above it is a weak fit).
 - Never invent skills. Use only what is provided.
 - Keep reasons under 12 words, professional and specific.`;
 
@@ -504,16 +504,18 @@ function calculateExperienceScore(requiredLevel: string, freelancerYears: number
   return 20;
 }
 
-function calculateBudgetScore(budgetMin: number, budgetMax: number, hourlyRate: number): number {
-  if (!hourlyRate) return 50; // Neutral if no rate is set
+function calculateBudgetScore(budgetMin: number, budgetMax: number, baseRate: number): number {
+  // Fixed-pricing model: compare the freelancer's base rate directly to the
+  // client's single project budget (min === max). Never reward a deal the
+  // freelancer would take at a loss (same 60% floor as proposal smart pricing).
+  if (!baseRate) return 50; // Neutral if no rate is set
 
-  const impliedHourly = budgetMax > 0 ? budgetMax / 80 : 0;
-  if (impliedHourly > 0) {
-    if (hourlyRate <= impliedHourly && hourlyRate >= impliedHourly * 0.4) return 100;
-    if (hourlyRate <= impliedHourly * 1.3) return 80;
-    if (hourlyRate < impliedHourly * 0.4) return 70;
-    if (hourlyRate <= impliedHourly * 1.8) return 50;
-    return 30;
+  const budget = budgetMax > 0 ? budgetMax : budgetMin > 0 ? budgetMin : 0;
+  if (budget > 0) {
+    if (baseRate <= budget) return 100;          // base rate fits within budget
+    if (baseRate <= budget * 1.3) return 80;     // slightly above — close enough
+    if (baseRate <= budget * 1.67) return 50;    // moderately above — may not fit
+    return 30;                                    // well above budget — poor fit
   }
   return 50;
 }

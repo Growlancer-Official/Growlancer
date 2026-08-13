@@ -328,8 +328,8 @@ export function ClientFreelancerSearchPage() {
         <select value={sortBy} onChange={(e) => setSortBy(e.target.value as typeof sortBy)} className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
           <option value="relevance">Best Match (Verified First)</option>
           <option value="rating">Best Rating</option>
-          <option value="rate_low">Rate: Low to High</option>
-          <option value="rate_high">Rate: High to Low</option>
+          <option value="rate_low">Base Rate: Low to High</option>
+          <option value="rate_high">Base Rate: High to Low</option>
         </select>
       </div>
 

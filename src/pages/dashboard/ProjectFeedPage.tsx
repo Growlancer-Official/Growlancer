@@ -43,20 +43,14 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
   const [message, setMessage] = useState('');
   const [estimatedDuration, setEstimatedDuration] = useState('');
   const [proposedRate, setProposedRate] = useState(freelancerRate?.toString() || '');
-  const [rateType, setRateType] = useState<'hourly' | 'fixed'>('fixed');
 
   // ── Smart pricing — fair for both sides ──────────────────────────────────
-  // Compare the freelancer's bid against the client's single budget. For hourly
-  // bids we compare the implied project cost (rate × days × 8h/day); for fixed
-  // bids we compare the bid directly. Suggestions never push a deal below 60% of
-  // the freelancer's base rate — so neither the freelancer nor the client loses.
+  // Compare the freelancer's fixed project bid against the client's single
+  // budget. Suggestions never push a deal below 60% of the freelancer's base
+  // rate — so neither the freelancer nor the client loses.
   const clientBudget = project?.budget_max || 0;
   const baseRate = freelancerRate || 0;
   const parsedProposed = parseFloat(proposedRate) || 0;
-  const estDays = parseInt(estimatedDuration) || 0;
-  const isHourly = rateType === 'hourly';
-  const impliedHours = isHourly && estDays > 0 ? estDays * 8 : 0;
-  const compareAmount = isHourly ? (impliedHours > 0 ? parsedProposed * impliedHours : null) : parsedProposed;
 
   const suggestedTotal = (() => {
     if (clientBudget <= 0) return baseRate;
@@ -65,12 +59,10 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
     return Math.max(Math.round(baseRate * 0.6), clientBudget);
   })();
 
-  const canCompare = !isHourly || impliedHours > 0;
-  const withinBudget = canCompare && clientBudget > 0 && compareAmount !== null && compareAmount > 0 && compareAmount <= clientBudget;
-  const aboveBudget = canCompare && clientBudget > 0 && compareAmount !== null && compareAmount > clientBudget;
-  const isFixed = rateType === 'fixed';
-  const baseFitsBudget = isFixed && clientBudget > 0 && baseRate > 0 && baseRate <= clientBudget;
-  const budgetWayBelowBase = isFixed && clientBudget > 0 && baseRate > 0 && clientBudget < Math.round(baseRate * 0.6);
+  const withinBudget = clientBudget > 0 && parsedProposed > 0 && parsedProposed <= clientBudget;
+  const aboveBudget = clientBudget > 0 && parsedProposed > clientBudget;
+  const baseFitsBudget = clientBudget > 0 && baseRate > 0 && baseRate <= clientBudget;
+  const budgetWayBelowBase = clientBudget > 0 && baseRate > 0 && clientBudget < Math.round(baseRate * 0.6);
 
   if (!isOpen || !project) return null;
 
@@ -80,7 +72,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
       message,
       estimated_duration: parseInt(estimatedDuration),
       proposed_rate: parseFloat(proposedRate),
-      rate_type: rateType,
+      rate_type: 'fixed',
     });
   };
 
@@ -116,52 +108,32 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               Apply at your standard rate. No competitive bidding - clients see your rate upfront.
             </p>
             
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Rate Type
-                </label>
-                <select
-                  value={rateType}
-                  onChange={(e) => setRateType(e.target.value as 'hourly' | 'fixed')}
-                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
-                >
-                  <option value="hourly">Hourly Rate</option>
-                  <option value="fixed">Fixed Project Price</option>
-                </select>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">
+                Your Project Price (₹)
+              </label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₹</span>
+                <input
+                  type="number"
+                  required
+                  min={1}
+                  value={proposedRate}
+                  onChange={(e) => setProposedRate(e.target.value)}
+                  className="w-full pl-7 pr-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
+                  placeholder={freelancerRate?.toString() || '50'}
+                />
               </div>
-              <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  {isHourly ? 'Your Rate (₹/hr)' : 'Your Project Price (₹)'}
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₹</span>
-                  <input
-                    type="number"
-                    required
-                    min={1}
-                    value={proposedRate}
-                    onChange={(e) => setProposedRate(e.target.value)}
-                    className="w-full pl-7 pr-3 py-2 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm"
-                    placeholder={freelancerRate?.toString() || '50'}
-                  />
-                </div>
-                {isHourly && estDays > 0 && parsedProposed > 0 && (
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    ≈ ₹{(parsedProposed * impliedHours).toLocaleString('en-IN')} total for {estDays} days
-                  </p>
-                )}
-                {withinBudget && (
-                  <p className="text-[11px] text-emerald-600 mt-1 flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> Within the client's budget — strong chance of winning
-                  </p>
-                )}
-                {aboveBudget && (
-                  <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
-                    <Zap className="w-3 h-3" /> Above the client's budget (₹{clientBudget.toLocaleString('en-IN')}) — a lower bid improves your chances
-                  </p>
-                )}
-              </div>
+              {withinBudget && (
+                <p className="text-[11px] text-emerald-600 mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Within the client's budget — strong chance of winning
+                </p>
+              )}
+              {aboveBudget && (
+                <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
+                  <Zap className="w-3 h-3" /> Above the client's budget (₹{clientBudget.toLocaleString('en-IN')}) — a lower bid improves your chances
+                </p>
+              )}
             </div>
             
             {project.budget_min && project.budget_max && (
@@ -180,7 +152,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               </div>
             )}
 
-            {!baseFitsBudget && !budgetWayBelowBase && isFixed && baseRate > 0 && clientBudget > 0 && (
+            {!baseFitsBudget && !budgetWayBelowBase && baseRate > 0 && clientBudget > 0 && (
               <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
                 <div className="flex items-start gap-2">
                   <Sparkles className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
