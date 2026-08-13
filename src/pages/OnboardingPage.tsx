@@ -12,6 +12,7 @@ import {
   Globe,
   Loader2,
   MapPin,
+  Shield,
   Sparkles,
   User,
   X,
@@ -27,6 +28,7 @@ import { fetchUserProfile, createUserProfile } from '../lib/services/authService
 import { useToast } from '../components/Toast';
 
 interface FreelancerForm {
+  name: string;
   title: string;
   bio: string;
   hourly_rate: number;
@@ -45,6 +47,7 @@ const COMMON_LANGUAGES = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Po
 const MAX_LANGUAGE_LENGTH = 40;
 
 interface ClientForm {
+  name: string;
   company_name: string;
   industry: string;
   size: string;
@@ -68,6 +71,10 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
     (user?.role === 'client' ? 'client' : 'freelancer') as 'freelancer' | 'client'
   );
   const isFreelancer = selectedRole === 'freelancer';
+
+  // Shared name + bio (both roles)
+  const [name, setName] = useState(user?.name || '');
+  const [bio, setBio] = useState('');
 
   // Freelancer fields
   const [title, setTitle] = useState('');
@@ -188,10 +195,18 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
         }
       }
 
+      // Save the chosen display name + start the 30-day security lock
+      const { error: nameErr } = await supabase
+        .from('profiles')
+        .update({ name: name.trim() || user.name || 'User', name_changed_at: new Date().toISOString() } as any)
+        .eq('id', user.id);
+      if (nameErr) console.error('OAuth onboarding name save error:', nameErr);
+
       if (isFreelancer) {
         const { error: fpError } = await supabase.from('freelancer_profiles').upsert({
           user_id: user.id,
           title: title || undefined,
+          bio: bio.trim() || undefined,
           hourly_rate: hourlyRate > 0 ? hourlyRate : null,
           location: location || null,
           skills: skillNames.length > 0 ? skillNames : null,
@@ -214,6 +229,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
           user_id: user.id,
           company_name: companyName || null,
           industry: industry || null,
+          description: bio.trim() || null,
           company_logo: companyLogo || null,
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' });
@@ -361,6 +377,22 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Your Name <span className="text-red-400">*</span></label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)}
+                placeholder="Your full name — clients will see this on your profile"
+                maxLength={60}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
+              <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                <Shield className="w-3 h-3" /> Choose your name carefully — for security, you can only change it once every 30 days.
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Bio</label>
+              <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)}
+                placeholder="Describe your expertise and experience..."
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none" />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Professional Title <span className="text-red-400">*</span></label>
               <input type="text" value={title} onChange={e => setTitle(e.target.value)}
                 placeholder="e.g. Full Stack Developer, UI/UX Designer"
@@ -424,6 +456,22 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Your Name <span className="text-red-400">*</span></label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)}
+                placeholder="Your full name — freelancers will see this when you hire them"
+                maxLength={60}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
+              <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                <Shield className="w-3 h-3" /> Choose your name carefully — for security, you can only change it once every 30 days.
+              </p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Bio / About</label>
+              <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)}
+                placeholder="Tell freelancers about you and your company..."
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none" />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Name <span className="text-red-400">*</span></label>
               <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
                 placeholder="Your company or brand name"
@@ -477,7 +525,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
           {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><CheckCircle className="w-5 h-5" /> Complete Setup</>}
         </button>
 
-        <p className="text-xs text-slate-400 text-center mt-4">You can always update this later from your profile settings.</p>
+        <p className="text-xs text-slate-400 text-center mt-4">Most details can be updated later from settings — your name is locked for 30 days for security.</p>
       </div>
     </div>
   );
@@ -507,6 +555,7 @@ export function OnboardingPage() {
 
   // Freelancer form state
   const [freelancerForm, setFreelancerForm] = useState<FreelancerForm>({
+    name: user?.name || '',
     title: '',
     bio: '',
     hourly_rate: 0,
@@ -528,6 +577,7 @@ export function OnboardingPage() {
 
   // Client form state
   const [clientForm, setClientForm] = useState<ClientForm>({
+    name: user?.name || '',
     company_name: '',
     industry: '',
     size: '',
@@ -710,6 +760,16 @@ export function OnboardingPage() {
         }
       }
 
+      // Save the chosen display name + start the 30-day security lock
+      const { error: nameErr } = await supabase
+        .from('profiles')
+        .update({
+          name: (isFreelancer ? freelancerForm.name : clientForm.name).trim() || user.name || 'User',
+          name_changed_at: new Date().toISOString(),
+        } as any)
+        .eq('id', user.id);
+      if (nameErr) console.error('Onboarding name save error:', nameErr);
+
       if (isFreelancer) {
         const { error: fpError } = await supabase
           .from('freelancer_profiles')
@@ -842,10 +902,14 @@ export function OnboardingPage() {
   const isFormValid = () => {
     if (step === 'welcome') return true;
     if (step === 'profile' && isFreelancer) {
-      return freelancerForm.title.trim().length > 0 && freelancerForm.bio.trim().length > 0;
+      return (
+        freelancerForm.name.trim().length > 0 &&
+        freelancerForm.title.trim().length > 0 &&
+        freelancerForm.bio.trim().length > 0
+      );
     }
     if (step === 'profile' && isClient) {
-      return clientForm.company_name.trim().length > 0;
+      return clientForm.name.trim().length > 0 && clientForm.company_name.trim().length > 0;
     }
     return true;
   };
@@ -1034,15 +1098,27 @@ export function OnboardingPage() {
                   </div>
                 </div>
 
-                {/* Professional Title */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                    Professional Title <span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={freelancerForm.title}
-                    onChange={(e) => setFreelancerForm({ ...freelancerForm, title: e.target.value })}
+                {/* Professional Title */}            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Your Name <span className="text-red-400">*</span></label>
+              <input
+                type="text"
+                value={freelancerForm.name}
+                onChange={(e) => setFreelancerForm({ ...freelancerForm, name: e.target.value })}
+                placeholder="Your full name — clients will see this on your profile"
+                maxLength={60}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              />
+              <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                <Shield className="w-3 h-3" /> Choose your name carefully — for security, you can only change it once every 30 days.
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Professional Title <span className="text-red-400">*</span></label>
+              <input
+                type="text"
+                value={freelancerForm.title}
+                onChange={(e) => setFreelancerForm({ ...freelancerForm, title: e.target.value })}
                     placeholder="e.g., Full Stack Developer, UI/UX Designer"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                   />
@@ -1282,6 +1358,24 @@ export function OnboardingPage() {
                       </div>
                     </div>
 
+                    {/* Your Name */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                        Your Name <span className="text-red-400">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={clientForm.name}
+                        onChange={(e) => setClientForm({ ...clientForm, name: e.target.value })}
+                        placeholder="Your full name — freelancers will see this when you hire them"
+                        maxLength={60}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                      />
+                      <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                        <Shield className="w-3 h-3" /> Choose your name carefully — for security, you can only change it once every 30 days.
+                      </p>
+                    </div>
+
                     {/* Company Name */}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">
@@ -1339,14 +1433,14 @@ export function OnboardingPage() {
                       </div>
                     </div>
 
-                    {/* Company Description */}
+                    {/* Bio / About */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Description</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Bio / About</label>
                       <textarea
                         rows={4}
                         value={clientForm.description}
                         onChange={(e) => setClientForm({ ...clientForm, description: e.target.value })}
-                        placeholder="Tell freelancers about your company, mission, and the type of projects you typically need help with..."
+                        placeholder="Introduce yourself and your company — freelancers want to know who they'll be working with..."
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
                       />
                     </div>

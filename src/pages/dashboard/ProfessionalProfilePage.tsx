@@ -20,6 +20,7 @@ import { TipNote } from '../../components/TipNote';
 import { useProStatus } from '../../hooks/useProStatus';
 import type { Tables } from '../../types/supabase';
 import type { PayoutMethod } from '../../lib/withdrawal';
+import { getNameChangeLock } from '../../lib/nameChangeLock';
 
 
 
@@ -145,6 +146,10 @@ export function ProfessionalProfilePage() {
     language: 'en',
     phone: '',
   });
+  // When the display name was last changed (profiles.name_changed_at) — used to
+  // enforce the 30-day name-change lock for security.
+  const [nameChangedAt, setNameChangedAt] = useState<string | null>(null);
+  const nameLock = getNameChangeLock(nameChangedAt);
 
   // ── Security form state ──
   const [securityData, setSecurityData] = useState({
@@ -280,6 +285,7 @@ export function ProfessionalProfilePage() {
         const p = profileResp.data as Profile;
         setProfile(p);
         setAccountData(prev => ({ ...prev, name: p?.name || '', email: p?.email || '' }));
+        setNameChangedAt((p as any)?.name_changed_at || null);
       }
 
       if (!freelancerResp.error && freelancerResp.data) {
@@ -515,6 +521,14 @@ export function ProfessionalProfilePage() {
 
     // Optimistic snapshot
     const prevName = accountData.name;
+
+    // 30-day name-change lock: reject edits while the lock is active.
+    if (nameLock.locked && prevName !== accountData.name) {
+      setSaving(false);
+      setErrorMessage(`Your name is locked for security. You can change it on ${nameLock.unlockDate}.`);
+      autoClearMessages();
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -1296,7 +1310,13 @@ export function ProfessionalProfilePage() {
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
                       <input type="text" value={accountData.name} onChange={(e) => setAccountData({ ...accountData, name: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Your full name" />
+                        disabled={nameLock.locked}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed" placeholder="Your full name" />
+                      {nameLock.locked && (
+                        <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                          <Lock className="w-3 h-3" /> Name locked for security — you can change it on {nameLock.unlockDate}.
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>

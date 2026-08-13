@@ -10,6 +10,7 @@ import { ReauthDialog } from '../components/ReauthDialog';
 import { isReauthValid, markReauthVerified } from '../lib/reauth';
 import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 import { IndustrySelect } from '../components/IndustrySelect';
+import { getNameChangeLock } from '../lib/nameChangeLock';
 import {
   AlertCircle,
   AlertTriangle,
@@ -109,6 +110,10 @@ export function ClientSettingsPage() {
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [savingName, setSavingName] = useState(false);
+  // When the display name was last changed (profiles.name_changed_at) — used to
+  // enforce the 30-day name-change lock for security.
+  const [nameChangedAt, setNameChangedAt] = useState<string | null>(null);
+  const nameLock = getNameChangeLock(nameChangedAt);
 
   // ── Change Email state ──
   const [newEmail, setNewEmail] = useState('');
@@ -298,6 +303,7 @@ export function ClientSettingsPage() {
           name: profileResp.name || '',
           email: profileResp.email || '',
         });
+        setNameChangedAt((profileResp as any).name_changed_at || null);
       }
 
       // Fetch client profile
@@ -502,6 +508,10 @@ export function ClientSettingsPage() {
 
   // ── Edit Profile (name) handler ──
   const startEditName = () => {
+    if (nameLock.locked) {
+      setErrorMessage(`Your name is locked for security. You can change it on ${nameLock.unlockDate}.`);
+      return;
+    }
     setNameDraft(accountData.name || '');
     setErrorMessage(null);
     setEditingName(true);
@@ -523,6 +533,12 @@ export function ClientSettingsPage() {
     setSavingName(true);
     setErrorMessage(null);
     setSuccessMessage(null);
+    // 30-day name-change lock: reject edits while the lock is active.
+    if (nameLock.locked && trimmed !== accountData.name) {
+      setSavingName(false);
+      setErrorMessage(`Your name is locked for security. You can change it on ${nameLock.unlockDate}.`);
+      return;
+    }
     try {
       const { error } = await supabase
         .from('profiles')
@@ -1287,13 +1303,19 @@ export function ClientSettingsPage() {
                         ) : (
                           <p className="font-medium text-slate-900 flex flex-wrap items-center gap-2">
                             {accountData.name || '—'}
-                            <button
-                              type="button"
-                              onClick={startEditName}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
-                            >
-                              <User className="w-3 h-3" /> Edit Profile
-                            </button>
+                            {nameLock.locked ? (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg">
+                                <Lock className="w-3 h-3" /> Locked till {nameLock.unlockDate}
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={startEditName}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                              >
+                                <User className="w-3 h-3" /> Edit Profile
+                              </button>
+                            )}
                           </p>
                         )}
                       </div>
