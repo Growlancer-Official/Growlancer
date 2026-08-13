@@ -10,7 +10,25 @@ const RAZORPAY_KEY_SECRET = Deno.env.get('RAZORPAY_KEY_SECRET') || '';
 const RAZORPAY_API_URL = 'https://api.razorpay.com/v1';
 // Shared secret for cron-triggered internal actions (execute_refund).
 // pg_cron calls this function via pg_net with `Authorization: Bearer <CRON_SECRET>`.
+// The DB cron_settings.cron_secret row is accepted as a fallback so a secret
+// rotation that updates only one side can never silently break refunds again
+// (both sides are checked; either match authorizes the call).
 const CRON_SECRET = Deno.env.get('CRON_SECRET') || '';
+
+async function isValidCronSecret(bearer: string, admin: ReturnType<typeof createClient>): Promise<boolean> {
+  if (CRON_SECRET && bearer === CRON_SECRET) return true;
+  try {
+    const { data } = await admin
+      .from('cron_settings')
+      .select('value')
+      .eq('key', 'cron_secret')
+      .maybeSingle();
+    const dbSecret = data?.value as string | undefined;
+    return !!dbSecret && bearer === dbSecret;
+  } catch {
+    return false;
+  }
+}
 
 // Fail loudly if payment credentials are missing — never silently continue
 if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
@@ -205,7 +223,7 @@ serve(async req => {
     } else if (action === 'execute_refund') {
       const authHeader = req.headers.get('Authorization') || '';
       const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-      if (!CRON_SECRET || bearer !== CRON_SECRET) {
+      if (!bearer || !(await isValidCronSecret(bearer, supabaseAdmin))) {
         return new Response(JSON.stringify({ error: 'Unauthorized' }), {
           status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });

@@ -25,6 +25,24 @@ const CRON_SECRET = Deno.env.get('CRON_SECRET') || '';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
+// Accepts the env CRON_SECRET or the DB cron_settings.cron_secret row, so a
+// secret rotation that updates only one side can never silently break the
+// cron again (either match authorizes the call).
+async function isValidCronSecret(bearer: string): Promise<boolean> {
+  if (CRON_SECRET && bearer === CRON_SECRET) return true;
+  try {
+    const { data } = await supabase
+      .from('cron_settings')
+      .select('value')
+      .eq('key', 'cron_secret')
+      .maybeSingle();
+    const dbSecret = data?.value as string | undefined;
+    return !!dbSecret && bearer === dbSecret;
+  } catch {
+    return false;
+  }
+}
+
 function escapeHtml(text: string): string {
   return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -42,7 +60,7 @@ serve(async (req: Request) => {
   // ── Cron auth: CRON_SECRET bearer (same pattern as razorpay execute_refund)
   const authHeader = req.headers.get('Authorization') || '';
   const bearer = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  if (!CRON_SECRET || bearer !== CRON_SECRET) {
+  if (!bearer || !(await isValidCronSecret(bearer))) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
