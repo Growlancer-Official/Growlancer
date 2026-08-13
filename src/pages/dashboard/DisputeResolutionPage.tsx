@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { AlertTriangle, ArrowLeft, Ban, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Loader2, MessageCircle, Scale, Send, Shield, ThumbsUp, User,  } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, Ban, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Loader2, MessageCircle, Scale, Send, Shield, User, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { TipNote } from '../../components/TipNote';
@@ -13,21 +13,55 @@ import { supabase } from '../../lib/supabase';
 /* ------------------------------------------------------------------ */
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; Icon: React.FC<{ className?: string }> }> = {
-  pending:       { label: 'Pending Review',  color: 'text-amber-600 bg-amber-50 border-amber-200', Icon: Clock },
-  under_review:  { label: 'Under Review',    color: 'text-blue-600 bg-blue-50 border-blue-200',    Icon: Scale },
-  resolved:      { label: 'Resolved',         color: 'text-emerald-600 bg-emerald-50 border-emerald-200', Icon: CheckCircle2 },
-  dismissed:     { label: 'Dismissed',        color: 'text-slate-600 bg-slate-100 border-slate-200', Icon: Ban },
-  escalated:     { label: 'Escalated',        color: 'text-red-600 bg-red-50 border-red-200',       Icon: AlertTriangle },
+  pending:        { label: 'Pending Review',                 color: 'text-amber-600 bg-amber-50 border-amber-200',   Icon: Clock },
+  under_review:   { label: 'Under Review',                   color: 'text-blue-600 bg-blue-50 border-blue-200',      Icon: Scale },
+  open:           { label: 'Open',                           color: 'text-amber-600 bg-amber-50 border-amber-200',   Icon: Clock },
+  investigating:  { label: 'Under Investigation',            color: 'text-blue-600 bg-blue-50 border-blue-200',      Icon: Scale },
+  escalated:      { label: 'Escalated',                      color: 'text-red-600 bg-red-50 border-red-200',          Icon: AlertTriangle },
+  resolved_refunded: { label: 'Resolved — Refunded to Client', color: 'text-rose-600 bg-rose-50 border-rose-200',    Icon: XCircle },
+  resolved_released: { label: 'Resolved — Paid to Freelancer', color: 'text-emerald-600 bg-emerald-50 border-emerald-200', Icon: CheckCircle2 },
+  cancelled:      { label: 'Dismissed — Work Resumes',       color: 'text-slate-600 bg-slate-100 border-slate-200',   Icon: Ban },
 };
 
-function getStatusBadge(status: string | null) {
-  const cfg = STATUS_CONFIG[status || ''] || STATUS_CONFIG.pending;
+function getStatusBadge(status: string | null, decision?: string | null) {
+  let cfg = STATUS_CONFIG[status || ''] || STATUS_CONFIG.pending;
+  // A refunded resolution can be a full client refund OR a split — show the real outcome.
+  if (status === 'resolved_refunded' && decision === 'split') {
+    cfg = { label: 'Resolved — Split', color: 'text-violet-600 bg-violet-50 border-violet-200', Icon: Scale };
+  }
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${cfg.color}`}>
       <cfg.Icon className="w-3.5 h-3.5" />
       {cfg.label}
     </span>
   );
+}
+
+/* Real dispute statuses used by the app (pending/under_review/open/investigating/
+   escalated are pre-resolution; resolved_refunded / resolved_released are terminal
+   with money moved; cancelled means dismissed). */
+const ACTIVE_STATUSES = ['pending', 'under_review', 'open', 'investigating', 'escalated'];
+const RESOLVED_STATUSES = ['resolved_refunded', 'resolved_released'];
+const TERMINAL_STATUSES = ['resolved_refunded', 'resolved_released', 'cancelled'];
+
+/* Plain-language explanation of the admin's final decision + where the money went. */
+function getDecisionExplanation(dispute: DisputeCase): string {
+  const decision = (dispute as any).decision as string | null;
+  const amount = Number((dispute as any).decision_amount || 0);
+  const amt = amount > 0 ? `₹${amount.toLocaleString('en-IN')}` : 'the escrow amount';
+
+  switch (decision) {
+    case 'client_refund':
+      return `${amt} was refunded to the client in full. The contract is cancelled and the freelancer receives no payment for this project.`;
+    case 'freelancer_release':
+      return `${amt} was released to the freelancer from escrow. The contract is marked completed and the freelancer's wallet has been credited for the work delivered.`;
+    case 'split':
+      return `The escrow was split fairly between both parties — the client received a partial refund for the unmet portion and the freelancer was paid for the work actually delivered.`;
+    case 'dismiss':
+      return `The dispute was dismissed — no wrongdoing was found. Work on this contract continues normally and the escrow funds stay locked to the contract.`;
+    default:
+      return `This dispute has been closed. No further action is needed from your side.`;
+  }
 }
 
 const REASON_LABELS: Record<string, string> = {
@@ -81,15 +115,13 @@ interface DisputeMessage {
 /*  Tab                                                               */
 /* ------------------------------------------------------------------ */
 
-type TabId = 'all' | 'pending' | 'under_review' | 'resolved' | 'dismissed' | 'escalated';
+type TabId = 'all' | 'active' | 'resolved' | 'dismissed';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'all', label: 'All Disputes' },
-  { id: 'pending', label: 'Pending' },
-  { id: 'under_review', label: 'Under Review' },
+  { id: 'active', label: 'Active' },
   { id: 'resolved', label: 'Resolved' },
   { id: 'dismissed', label: 'Dismissed' },
-  { id: 'escalated', label: 'Escalated' },
 ];
 
 /* ================================================================== */
@@ -212,11 +244,15 @@ export function DisputeResolutionPage() {
   /* filtered disputes */
   const filteredDisputes = activeTab === 'all'
     ? disputes
-    : disputes.filter(d => d.status === activeTab);
+    : activeTab === 'active'
+      ? disputes.filter(d => ACTIVE_STATUSES.includes(d.status))
+      : activeTab === 'resolved'
+        ? disputes.filter(d => RESOLVED_STATUSES.includes(d.status))
+        : disputes.filter(d => d.status === 'cancelled');
 
   /* summary counts */
-  const pendingCount = disputes.filter(d => d.status === 'pending' || d.status === 'under_review').length;
-  const resolvedCount = disputes.filter(d => d.status === 'resolved').length;
+  const pendingCount = disputes.filter(d => ACTIVE_STATUSES.includes(d.status)).length;
+  const resolvedCount = disputes.filter(d => RESOLVED_STATUSES.includes(d.status)).length;
 
   /* ================================================================ */
   /*  Loading State                                                     */
@@ -248,7 +284,7 @@ export function DisputeResolutionPage() {
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h2 className="text-xl font-bold text-slate-900">Dispute #{selectedDispute.id.slice(0, 8)}</h2>
-                {getStatusBadge(selectedDispute.status)}
+                {getStatusBadge(selectedDispute.status, (selectedDispute as any).decision)}
               </div>
               <p className="text-slate-500 text-sm">
                 Raised {formatDateFull(selectedDispute.created_at)}
@@ -303,25 +339,35 @@ export function DisputeResolutionPage() {
           )}
         </div>
 
-        {/* Resolution Notes (if resolved/dismissed) */}
-        {(selectedDispute.status === 'resolved' || selectedDispute.status === 'dismissed') && (selectedDispute as any).resolution && (
+        {/* Resolution Outcome (terminal statuses) */}
+        {TERMINAL_STATUSES.includes(selectedDispute.status) && (
           <div className={`bg-white rounded-2xl border p-6 shadow-sm ${
-            selectedDispute.status === 'resolved' ? 'border-emerald-100' : 'border-slate-100'
+            selectedDispute.status === 'resolved_released' ? 'border-emerald-100' : selectedDispute.status === 'cancelled' ? 'border-slate-100' : 'border-rose-100'
           }`}>
             <div className="flex items-center gap-2 mb-3">
-              {selectedDispute.status === 'resolved' ? (
-                <ThumbsUp className="w-5 h-5 text-emerald-500" />
-              ) : (
+              {selectedDispute.status === 'resolved_released' ? (
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+              ) : selectedDispute.status === 'cancelled' ? (
                 <Ban className="w-5 h-5 text-slate-400" />
+              ) : (
+                <XCircle className="w-5 h-5 text-rose-500" />
               )}
               <h3 className="font-semibold text-slate-900">
-                {selectedDispute.status === 'resolved' ? 'Resolution' : 'Dismissal Note'}
+                {selectedDispute.status === 'cancelled' ? 'Dispute Dismissed' : 'Resolution Outcome'}
               </h3>
+              {getStatusBadge(selectedDispute.status, (selectedDispute as any).decision)}
             </div>
-            <p className="text-slate-600 text-sm leading-relaxed">{(selectedDispute as any).resolution}</p>
-            {(selectedDispute as any).resolved_by && (
-              <p className="text-xs text-slate-400 mt-2">
-                Resolved by {(selectedDispute as any).resolved_by}
+            <p className="text-slate-600 text-sm leading-relaxed">
+              {getDecisionExplanation(selectedDispute)}
+            </p>
+            {(selectedDispute as any).decision_amount != null && (
+              <p className="text-xs text-slate-400 mt-3">
+                Amount involved: ₹{Number((selectedDispute as any).decision_amount || 0).toLocaleString('en-IN')}
+              </p>
+            )}
+            {(selectedDispute as any).resolved_at && (
+              <p className="text-xs text-slate-400 mt-1">
+                Decided on {formatDateFull((selectedDispute as any).resolved_at)} by Growlancer Admin Team
               </p>
             )}
           </div>
@@ -423,9 +469,33 @@ export function DisputeResolutionPage() {
       </div>
 
       {/* Dispute guide — plain-language */}
-      <TipNote tone="warning" title="How dispute resolution works" compact>
-        A dispute freezes the affected escrow money while our team reviews the case — funds are never moved without a decision. Be clear and factual in your messages: <strong>escrow funds</strong>, timelines and deliverables are the main factors. <strong>Pending Review</strong> → <strong>Under Review</strong> → <strong>Resolved</strong> or <strong>Dismissed</strong>, all in real time. Genuine refunds are possible; fraud is not.
+      <TipNote tone="warning" title="How dispute resolution works — where your money goes" compact>
+        A dispute <strong>freezes the escrow money</strong> until our review team decides the case — funds are never moved without a decision. You can message and upload evidence in the meantime. Once decided, one of these outcomes happens automatically:
       </TipNote>
+
+      {/* Outcome cards — what each decision means for both sides */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 mb-2" />
+          <p className="text-xs font-bold text-emerald-900 mb-1">Freelancer Favour — Work Delivered</p>
+          <p className="text-[11px] text-emerald-700 leading-relaxed">The full escrow is released to the freelancer's wallet. Contract completes.</p>
+        </div>
+        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4">
+          <XCircle className="w-5 h-5 text-rose-600 mb-2" />
+          <p className="text-xs font-bold text-rose-900 mb-1">Client Favour — No Work Done</p>
+          <p className="text-[11px] text-rose-700 leading-relaxed">The full escrow is refunded back to the client. Contract cancelled — freelancer gets nothing.</p>
+        </div>
+        <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4">
+          <Scale className="w-5 h-5 text-violet-600 mb-2" />
+          <p className="text-xs font-bold text-violet-900 mb-1">Split — Partial Work</p>
+          <p className="text-[11px] text-violet-700 leading-relaxed">Client gets a partial refund and the freelancer is paid for the work actually delivered.</p>
+        </div>
+        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+          <Ban className="w-5 h-5 text-slate-600 mb-2" />
+          <p className="text-xs font-bold text-slate-900 mb-1">Dismissed — No Wrongdoing</p>
+          <p className="text-[11px] text-slate-600 leading-relaxed">Work resumes normally — escrow stays locked to the contract for the agreed payment.</p>
+        </div>
+      </div>
 
       {/* Empty state */}
       {disputes.length === 0 ? (
@@ -464,7 +534,11 @@ export function DisputeResolutionPage() {
                   {tab.label}
                   {tab.id !== 'all' && (
                     <span className="ml-2 text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">
-                      {disputes.filter(d => d.status === tab.id).length}
+                      {tab.id === 'active'
+                        ? disputes.filter(d => ACTIVE_STATUSES.includes(d.status)).length
+                        : tab.id === 'resolved'
+                          ? disputes.filter(d => RESOLVED_STATUSES.includes(d.status)).length
+                          : disputes.filter(d => d.status === 'cancelled').length}
                     </span>
                   )}
                 </button>
@@ -492,7 +566,7 @@ export function DisputeResolutionPage() {
                           <h3 className="font-semibold text-slate-900 truncate">
                             Dispute #{dispute.id.slice(0, 8)}
                           </h3>
-                          {getStatusBadge(dispute.status)}
+                          {getStatusBadge(dispute.status, (dispute as any).decision)}
                         </div>
                         <p className="text-sm text-slate-500 line-clamp-1">
                           <span className="font-medium text-slate-600">

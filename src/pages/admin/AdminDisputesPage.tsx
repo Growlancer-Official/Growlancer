@@ -54,8 +54,23 @@ const statusColors: Record<string, string> = {
   cancelled: 'bg-slate-500/10 text-slate-400',
 };
 
+const STATUS_LABELS: Record<string, string> = {
+  pending: 'Pending',
+  under_review: 'Under Review',
+  open: 'Open',
+  investigating: 'Investigating',
+  escalated: 'Escalated',
+  resolved_refunded: 'Resolved (Refunded)',
+  resolved_released: 'Resolved (Released)',
+  cancelled: 'Dismissed',
+  client_refund: 'Refund Client',
+  freelancer_release: 'Release to Freelancer',
+  split: 'Split',
+  dismiss: 'Dismissed',
+};
+
 function statusLabel(s: string): string {
-  return s.replace(/_/g, ' ');
+  return STATUS_LABELS[s] || s.replace(/_/g, ' ');
 }
 
 export function AdminDisputesPage() {
@@ -384,6 +399,12 @@ export function AdminDisputesPage() {
               {/* Decision actions */}
               <div className="space-y-3">
                 <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Admin Decision</p>
+                <div className="p-3 bg-slate-800/60 rounded-xl text-[10px] text-slate-400 leading-relaxed">
+                  <span className="text-emerald-400 font-bold">Release to Freelancer</span> — full escrow paid to the freelancer (work delivered).{' '}
+                  <span className="text-red-400 font-bold">Refund Client</span> — full escrow returned to the client, freelancer gets nothing.{' '}
+                  <span className="text-indigo-400 font-bold">Split</span> — enter the client refund amount below; the freelancer receives the remaining balance.{' '}
+                  <span className="text-slate-300 font-bold">Dismiss</span> — no wrongdoing; work resumes, escrow stays in the contract.
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <button onClick={() => void handleDecision('client_refund')} disabled={decisionBusy !== null}
                     className="py-3 bg-red-600 text-white font-bold rounded-xl text-[10px] uppercase hover:bg-red-700 disabled:opacity-50 flex items-center justify-center gap-1">
@@ -401,8 +422,9 @@ export function AdminDisputesPage() {
                     <input
                       value={splitAmount}
                       onChange={e => setSplitAmount(e.target.value)}
-                      placeholder="Client share"
+                      placeholder="Client refund ₹"
                       type="number"
+                      min={0}
                       className="flex-1 min-w-0 px-3 py-3 bg-slate-800 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
                     <button onClick={() => void handleDecision('split')} disabled={decisionBusy !== null}
