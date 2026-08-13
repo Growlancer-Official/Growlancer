@@ -258,7 +258,7 @@ export const contestService = {
     firstSubmissionId: string,
     secondSubmissionId?: string | null,
     thirdSubmissionId?: string | null
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<{ success: boolean; error?: string; certificates?: { submission_id: string; place: number; code: string }[] }> {
     try {
       const { data, error } = await (supabase.rpc as any)('award_contest_prizes', {
         p_contest_id: contestId,
@@ -267,9 +267,35 @@ export const contestService = {
         p_third_submission_id: thirdSubmissionId || null,
       });
       if (error) throw error;
-      return { success: data?.success !== false, error: data?.error };
+      return {
+        success: data?.success !== false,
+        error: data?.error,
+        certificates: Array.isArray(data?.certificates) ? data.certificates : [],
+      };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Failed to award prizes' };
+    }
+  },
+
+  /** Winner achievement certificates for a contest (auto-issued on award). */
+  async getContestCertificates(contestId: string): Promise<{ submission_id: string; place: number; code: string }[]> {
+    try {
+      const { data, error } = await supabase
+        .from('skill_certifications')
+        .select('metadata, verification_code, recipient_name')
+        .eq('certificate_type', 'achievement')
+        .filter('metadata->contest_id', 'eq', contestId);
+      if (error) throw error;
+      return (data ?? [])
+        .filter((c: any) => c?.metadata?.place)
+        .map((c: any) => ({
+          submission_id: String(c.metadata.submission_id || ''),
+          place: Number(c.metadata.place),
+          code: String(c.verification_code || ''),
+        }));
+    } catch (err) {
+      console.error('Error fetching contest certificates:', err);
+      return [];
     }
   },
 

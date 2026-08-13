@@ -38,6 +38,9 @@ export function ContestDetailPage() {
   const [reviews, setReviews] = useState<ReviewWithProfiles[]>([]);
   const [reviewModal, setReviewModal] = useState<{ revieweeId: string; revieweeName: string; label: string } | null>(null);
 
+  // Winner achievement certificates (auto-issued on award) — submission_id → code
+  const [certificates, setCertificates] = useState<{ submission_id: string; place: number; code: string }[]>([]);
+
   const fetchContestData = useCallback(async () => {
     if (!contestId) return;
     setLoading(true);
@@ -53,10 +56,15 @@ export function ContestDetailPage() {
     setComments(commentsData);
 
     if (contestData && contestData.status === 'completed') {
-      const reviewData = await reviewService.getContestReviews(contestId);
+      const [reviewData, certData] = await Promise.all([
+        reviewService.getContestReviews(contestId),
+        contestService.getContestCertificates(contestId),
+      ]);
       setReviews(reviewData);
+      setCertificates(certData);
     } else {
       setReviews([]);
+      setCertificates([]);
     }
     setLoading(false);
   }, [contestId]);
@@ -201,7 +209,10 @@ export function ContestDetailPage() {
     setAwarding(false);
     setShowAwardConfirm(false);
     if (result.success) {
-      toast.success('Prizes released! Winners have been notified.');
+      toast.success('Prizes released! Winners have been notified and certificates issued.');
+      if (result.certificates && result.certificates.length > 0) {
+        setCertificates(prev => [...prev, ...result.certificates!]);
+      }
       setAwardSelection({ first: null, second: null, third: null });
       void fetchContestData();
     } else {
@@ -383,6 +394,54 @@ export function ContestDetailPage() {
                     <span className="font-extrabold">Winner Announced</span>
                   </div>
                   <p className="text-sm font-semibold">Prizes released to the winning freelancers — check the submissions below.</p>
+                </div>
+              )}
+
+              {/* Winner certificates — auto-issued on award, publicly verifiable */}
+              {contest.status === 'completed' && certificates.length > 0 && (
+                <div className="bg-white rounded-2xl border border-slate-200 p-5 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Medal className="w-5 h-5 text-amber-500" />
+                    <h3 className="font-bold text-slate-900">Winner Certificates</h3>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Every winner earned a verifiable achievement certificate — share it anywhere, anyone can verify it in real time.
+                  </p>
+                  <div className="space-y-3">
+                    {submissions
+                      .filter(s => s.status === 'winner' && s.rank)
+                      .sort((a, b) => (a.rank || 9) - (b.rank || 9))
+                      .map((sub) => {
+                        const cert = certificates.find(c => c.submission_id === sub.id) || certificates.find(c => c.place === sub.rank);
+                        if (!cert) return null;
+                        const isMe = user?.id === sub.freelancer_id;
+                        const rankColor = sub.rank === 1 ? 'from-yellow-400 to-amber-500' : sub.rank === 2 ? 'from-slate-300 to-slate-400' : 'from-orange-300 to-orange-500';
+                        return (
+                          <div key={sub.id} className={`rounded-xl border ${isMe ? 'border-amber-300 bg-amber-50/60' : 'border-slate-200 bg-slate-50'} p-4 flex items-center gap-4`}>
+                            <div className={`shrink-0 w-11 h-11 rounded-xl bg-gradient-to-br ${rankColor} flex items-center justify-center text-lg font-black text-white shadow`}>
+                              {sub.rank === 1 ? '🥇' : sub.rank === 2 ? '🥈' : '🥉'}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-slate-900 truncate">
+                                {sub.rank === 1 ? '1st' : sub.rank === 2 ? '2nd' : '3rd'} Place — {sub.freelancer?.name || 'Winner'}{isMe ? ' (You)' : ''}
+                              </p>
+                              <p className="text-xs text-slate-500 truncate">
+                                {contest.title} • ₹{Number(sub.prize_amount || 0).toLocaleString()}
+                              </p>
+                            </div>
+                            <a
+                              href={`/verify-certificate/${cert.code}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-colors"
+                            >
+                              <FileText className="w-3.5 h-3.5" />
+                              View Certificate
+                            </a>
+                          </div>
+                        );
+                      })}
+                  </div>
                 </div>
               )}
 
