@@ -395,13 +395,53 @@ Deno.serve(async (req) => {
       });
     }
 
-    // ─── POST: send_welcome_email (PUBLIC — used after signup) ──────
+    // ─── POST: send_welcome_email (AUTHENTICATED — own verified email only) ─
+    // Was PUBLIC with an arbitrary recipient → anyone could spam any address
+    // with branded Growlancer emails (phishing + Brevo quota abuse). Now the
+    // caller must be signed in AND the recipient must be their own verified
+    // email; IP rate-limited to prevent abuse.
     if (req.method === 'POST' && action === 'send_welcome_email') {
       const { recipient_email, recipient_name: rawRecipientName } = body;
 
       if (!recipient_email || !rawRecipientName) {
         return new Response(JSON.stringify({ success: false, error: 'recipient_email and recipient_name are required' }), {
           status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // 1) Must be authenticated
+      const authHeader = req.headers.get('authorization') || ''
+      const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
+      if (!token) {
+        return new Response(JSON.stringify({ success: false, error: 'Unauthorized: sign in required' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const anonClient = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        { global: { headers: { Authorization: `Bearer ${token}` } } },
+      )
+      const { data: { user: signer }, error: userErr } = await anonClient.auth.getUser()
+      if (userErr || !signer) {
+        return new Response(JSON.stringify({ success: false, error: 'Unauthorized: invalid session' }), {
+          status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // 2) Recipient must be the caller's OWN verified email
+      if (!signer.email || signer.email.toLowerCase() !== String(recipient_email).toLowerCase()) {
+        return new Response(JSON.stringify({ success: false, error: 'You can only send a welcome email to your own verified email address' }), {
+          status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // 3) IP rate limit (5 per 15 min) — prevents email-quota abuse
+      const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
+      const rateAllowed = await checkAuthRateLimit(supabaseClient, `${clientIP}:welcome_email`);
+      if (!rateAllowed) {
+        return new Response(JSON.stringify({ success: false, error: 'Too many requests. Please try again later.' }), {
+          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
 

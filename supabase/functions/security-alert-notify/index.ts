@@ -76,7 +76,22 @@ Deno.serve(async (req) => {
   // 🔐 CRON_SECRET check — only pg_cron (via pg_net) may call this.
   const expected = Deno.env.get('CRON_SECRET') ?? '';
   const auth = (req.headers.get('Authorization') ?? '').replace(/^Bearer\s+/i, '');
-  if (!expected || auth !== expected) {
+  // Accepts the env CRON_SECRET or the DB cron_settings.cron_secret row, so a
+  // one-sided secret rotation can never silently break the alert email again.
+  let authorized = !!auth && !!expected && auth === expected;
+  if (!authorized && auth) {
+    try {
+      const probe = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      );
+      const { data } = await probe.from('cron_settings').select('value').eq('key', 'cron_secret').maybeSingle();
+      authorized = !!data?.value && auth === (data.value as string);
+    } catch {
+      authorized = false;
+    }
+  }
+  if (!authorized) {
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
