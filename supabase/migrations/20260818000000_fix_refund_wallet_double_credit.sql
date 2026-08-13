@@ -66,17 +66,22 @@ BEGIN
   WHERE id = p_contract_id;
 
   -- Wallet-funded (no razorpay payment EVER captured for this contract —
-  -- captured OR refunded — with a payment id) → the funds came from the
-  -- client's wallet balance, so they must return there. Otherwise the
-  -- provider refund already returned the money to the client's payment
-  -- method. NOTE: deliberately no status filter — the webhook marks the
-  -- order 'refunded' before this RPC runs, so a status='captured' check
-  -- would wrongly conclude "wallet-funded" and double-credit the wallet.
+  -- captured OR refunded — with a payment id, and no paypal capture either)
+  -- → the funds came from the client's wallet balance, so they must return
+  -- there. Otherwise the provider refund already returned the money to the
+  -- client's payment method. NOTE: deliberately no status filter — the
+  -- webhook marks the order 'refunded' before this RPC runs, so a
+  -- status='captured' check would wrongly conclude "wallet-funded" and
+  -- double-credit the wallet.
   SELECT NOT EXISTS (
     SELECT 1 FROM public.razorpay_orders
     WHERE contract_id = p_contract_id
       AND order_type = 'contract_escrow'
       AND razorpay_payment_id IS NOT NULL
+  ) AND NOT EXISTS (
+    SELECT 1 FROM public.paypal_orders
+    WHERE contract_id = p_contract_id
+      AND status IN ('captured', 'refunded')
   ) INTO v_wallet_funded;
 
   IF v_wallet_funded THEN
@@ -143,14 +148,19 @@ BEGIN
   v_freelancer_amount := COALESCE(v_contract.freelancer_amount, v_contract.amount);
 
   -- Wallet-funded escrow (no razorpay payment EVER captured for this
-  -- contract) → refunds must be credited back to the client's wallet
-  -- balance, not to a payment method. No status filter — if the order was
-  -- already refunded, a payment id still proves it was card/UPI funded.
+  -- contract, and no paypal capture either) → refunds must be credited back
+  -- to the client's wallet balance, not to a payment method. No status
+  -- filter — if the order was already refunded, a payment id still proves
+  -- it was card/UPI funded.
   SELECT NOT EXISTS (
     SELECT 1 FROM public.razorpay_orders
     WHERE contract_id = v_dispute.contract_id
       AND order_type = 'contract_escrow'
       AND razorpay_payment_id IS NOT NULL
+  ) AND NOT EXISTS (
+    SELECT 1 FROM public.paypal_orders
+    WHERE contract_id = v_dispute.contract_id
+      AND status IN ('captured', 'refunded')
   ) INTO v_wallet_funded;
 
   IF p_decision = 'client_refund' THEN

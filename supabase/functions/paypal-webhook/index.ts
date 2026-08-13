@@ -189,6 +189,12 @@ serve(async req => {
         const relatedOrderId = resource.supplementary_data?.related_ids?.order_id;
 
         if (relatedOrderId) {
+          const { data: order } = await supabaseClient
+            .from('paypal_orders')
+            .select('contract_id, user_id, amount, currency')
+            .eq('paypal_order_id', relatedOrderId)
+            .single();
+
           await supabaseClient
             .from('paypal_orders')
             .update({ status: 'refunded' })
@@ -204,19 +210,41 @@ serve(async req => {
             processor_response: resource,
           });
 
-          // If contract escrow, reverse the escrow
-          const { data: order } = await supabaseClient
-            .from('paypal_orders')
-            .select('contract_id')
-            .eq('paypal_order_id', relatedOrderId)
-            .single();
-
+          // If contract escrow, reverse the escrow through the same safe RPC
+          // used by the Razorpay path (escrow → refunded, contract → pending,
+          // wallet-funded escrow credited back, card/PayPal-funded left to the
+          // payment method — never double-credited).
           if (order?.contract_id) {
-            // Release escrow back to client
-            await supabaseClient
-              .from('escrow')
-              .update({ status: 'refunded' })
-              .eq('contract_id', order.contract_id);
+            await supabaseClient.rpc('admin_reverse_escrow', {
+              p_contract_id: order.contract_id,
+            });
+
+            // Visibility record so the client's Payments page shows where the
+            // money went (PayPal refunds return to the PayPal account / card).
+            if (order.user_id) {
+              const refundAmount = parseFloat(resource.amount?.value || '0') || 0;
+              const { data: dupRefundRow } = await supabaseClient
+                .from('transactions')
+                .select('id')
+                .eq('user_id', order.user_id)
+                .eq('source', 'refund')
+                .eq('status', 'completed')
+                .eq('metadata->>paypal_refund_id', refundCaptureId)
+                .maybeSingle();
+              if (!dupRefundRow && refundAmount > 0) {
+                await supabaseClient.from('transactions').insert({
+                  user_id: order.user_id,
+                  contract_id: order.contract_id,
+                  amount: refundAmount,
+                  type: 'credit',
+                  source: 'refund',
+                  status: 'completed',
+                  description: `Refund of ${order.currency || 'USD'} ${refundAmount.toFixed(2)} returned to your original payment method (PayPal/card)`,
+                  currency: order.currency || 'USD',
+                  metadata: { paypal_refund_id: refundCaptureId, provider: 'paypal', returned_to_payment_method: true },
+                });
+              }
+            }
           }
         }
         break;
