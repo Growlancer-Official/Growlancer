@@ -487,7 +487,7 @@ export function PublicFreelancerProfilePage() {
                 {profile.hourly_rate && (
                   <span className="flex items-center gap-1 font-medium text-white/90">
                     <IndianRupee className="w-4 h-4" />
-                    {profile.hourly_rate}/hr
+                    {profile.hourly_rate}
                   </span>
                 )}
                 {availabilityLabel && (

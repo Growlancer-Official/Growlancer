@@ -43,7 +43,34 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
   const [message, setMessage] = useState('');
   const [estimatedDuration, setEstimatedDuration] = useState('');
   const [proposedRate, setProposedRate] = useState(freelancerRate?.toString() || '');
-  const [rateType, setRateType] = useState<'hourly' | 'fixed'>('hourly');
+  const [rateType, setRateType] = useState<'hourly' | 'fixed'>('fixed');
+
+  // ── Smart pricing — fair for both sides ──────────────────────────────────
+  // Compare the freelancer's bid against the client's single budget. For hourly
+  // bids we compare the implied project cost (rate × days × 8h/day); for fixed
+  // bids we compare the bid directly. Suggestions never push a deal below 60% of
+  // the freelancer's base rate — so neither the freelancer nor the client loses.
+  const clientBudget = project?.budget_max || 0;
+  const baseRate = freelancerRate || 0;
+  const parsedProposed = parseFloat(proposedRate) || 0;
+  const estDays = parseInt(estimatedDuration) || 0;
+  const isHourly = rateType === 'hourly';
+  const impliedHours = isHourly && estDays > 0 ? estDays * 8 : 0;
+  const compareAmount = isHourly ? (impliedHours > 0 ? parsedProposed * impliedHours : null) : parsedProposed;
+
+  const suggestedTotal = (() => {
+    if (clientBudget <= 0) return baseRate;
+    if (baseRate <= 0) return clientBudget;
+    if (baseRate <= clientBudget) return baseRate;
+    return Math.max(Math.round(baseRate * 0.6), clientBudget);
+  })();
+
+  const canCompare = !isHourly || impliedHours > 0;
+  const withinBudget = canCompare && clientBudget > 0 && compareAmount !== null && compareAmount > 0 && compareAmount <= clientBudget;
+  const aboveBudget = canCompare && clientBudget > 0 && compareAmount !== null && compareAmount > clientBudget;
+  const isFixed = rateType === 'fixed';
+  const baseFitsBudget = isFixed && clientBudget > 0 && baseRate > 0 && baseRate <= clientBudget;
+  const budgetWayBelowBase = isFixed && clientBudget > 0 && baseRate > 0 && clientBudget < Math.round(baseRate * 0.6);
 
   if (!isOpen || !project) return null;
 
@@ -105,7 +132,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               </div>
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Your Rate (₹/hr)
+                  {isHourly ? 'Your Rate (₹/hr)' : 'Your Project Price (₹)'}
                 </label>
                 <div className="relative">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₹</span>
@@ -119,6 +146,21 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
                     placeholder={freelancerRate?.toString() || '50'}
                   />
                 </div>
+                {isHourly && estDays > 0 && parsedProposed > 0 && (
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    ≈ ₹{(parsedProposed * impliedHours).toLocaleString('en-IN')} total for {estDays} days
+                  </p>
+                )}
+                {withinBudget && (
+                  <p className="text-[11px] text-emerald-600 mt-1 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Within the client's budget — strong chance of winning
+                  </p>
+                )}
+                {aboveBudget && (
+                  <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
+                    <Zap className="w-3 h-3" /> Above the client's budget (₹{clientBudget.toLocaleString('en-IN')}) — a lower bid improves your chances
+                  </p>
+                )}
               </div>
             </div>
             
@@ -126,6 +168,44 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               <p className="text-xs text-slate-600 mt-2">
                 Client budget: {formatBudgetRange(project.budget_min, project.budget_max)}
               </p>
+            )}
+
+            {/* Smart pricing notes — fixed bids, fair for both sides */}
+            {baseFitsBudget && (
+              <div className="mt-3 flex items-start gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-emerald-800">
+                  <span className="font-semibold">Great fit:</span> your base rate of ₹{baseRate.toLocaleString('en-IN')} is within the client's budget (₹{clientBudget.toLocaleString('en-IN')}) — bid confidently at your standard price.
+                </p>
+              </div>
+            )}
+
+            {!baseFitsBudget && !budgetWayBelowBase && isFixed && baseRate > 0 && clientBudget > 0 && (
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                  <p className="text-xs text-amber-800">
+                    <span className="font-semibold">Smart price suggestion:</span> the client's budget (₹{clientBudget.toLocaleString('en-IN')}) is below your base rate (₹{baseRate.toLocaleString('en-IN')}). Bidding around <span className="font-bold">₹{suggestedTotal.toLocaleString('en-IN')}</span> fits their budget and helps you win more orders — your base rate stays unchanged for other projects.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setProposedRate(String(suggestedTotal))}
+                  className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Use suggested price (₹{suggestedTotal.toLocaleString('en-IN')})
+                </button>
+              </div>
+            )}
+
+            {budgetWayBelowBase && (
+              <div className="mt-3 flex items-start gap-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2.5">
+                <Zap className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+                <p className="text-xs text-rose-800">
+                  <span className="font-semibold">Heads-up:</span> the client's budget (₹{clientBudget.toLocaleString('en-IN')}) is well below your base rate (₹{baseRate.toLocaleString('en-IN')}). Taking this project may not be worth your time — consider negotiating the scope or passing.
+                </p>
+              </div>
             )}
           </div>
 

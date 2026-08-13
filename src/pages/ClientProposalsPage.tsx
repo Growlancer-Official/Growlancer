@@ -398,7 +398,7 @@ export function ClientProposalsPage() {
                               ? proposal.freelancer.freelancer_profiles[0] 
                               : proposal.freelancer?.freelancer_profiles;
                             return fp?.hourly_rate || 0;
-                          })()}/hr
+                          })()}
                         </span>
                       </div>
                     </div>
@@ -440,6 +440,13 @@ export function ClientProposalsPage() {
                 <div className="flex items-center gap-2">
                   <IndianRupee className="w-4 h-4" />
                   <span className="font-bold text-slate-900">₹{(proposal.bid_amount ?? proposal.proposed_rate ?? 0).toLocaleString('en-IN')}</span>
+                  {proposal.project && proposal.project.budget_max > 0 && (
+                    (proposal.bid_amount ?? proposal.proposed_rate ?? 0) > proposal.project.budget_max ? (
+                      <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-semibold rounded-full">Above your budget</span>
+                    ) : (
+                      <span className="ml-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-semibold rounded-full">Within budget</span>
+                    )
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />

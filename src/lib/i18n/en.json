@@ -159,7 +159,7 @@
     "available": "Available",
     "busy": "Busy",
     "unavailable": "Unavailable",
-    "hourlyRate": "Hourly Rate",
+    "hourlyRate": "Base Rate",
     "fixedRate": "Fixed Rate",
     "serviceTitle": "Service Title",
     "serviceDescription": "Service Description",

@@ -45,7 +45,7 @@ const privacySections: Section[] = [
           <div className="space-y-4">
             <div>
               <h5 className="font-bold text-slate-900 text-sm">A. Account & Profile Information</h5>
-              <p className="text-slate-600 text-xs mt-1">Includes registered names, email addresses, verified credentials, portfolios, hourly rates, declared skills, and avatar images.</p>
+              <p className="text-slate-600 text-xs mt-1">Includes registered names, email addresses, verified credentials, portfolios, base rates, declared skills, and avatar images.</p>
             </div>
             <div>
               <h5 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas Transactions</h5>

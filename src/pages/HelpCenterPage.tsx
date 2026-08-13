@@ -22,7 +22,7 @@ const faqs: FAQ[] = [
   {
     category: 'Getting Started',
     question: 'How does the AI Matchmaking system work?',
-    answer: 'Growlancer runs an intelligent matching algorithm that cross-analyzes freelancer skills, experience, availability, and hourly rates with the client\'s specific project requirements (skills required, budget, and deadlines). Best matches are fed directly onto the client\'s "AI Matches" dashboard and the freelancer\'s project feed, enabling immediate invites and hires.',
+    answer: 'Growlancer runs an intelligent matching algorithm that cross-analyzes freelancer skills, experience, availability, and base rates with the client\'s specific project requirements (skills required, budget, and deadlines). Best matches are fed directly onto the client\'s "AI Matches" dashboard and the freelancer\'s project feed, enabling immediate invites and hires.',
   },
   {
     category: 'Project Management',

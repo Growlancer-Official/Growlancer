@@ -404,7 +404,7 @@ export function ProfessionalProfilePage() {
 
     // ── Validation ──
     if (formData.hourly_rate < 0) {
-      setErrorMessage('Hourly rate must be a positive number.');
+      setErrorMessage('Base rate must be a positive number.');
       return;
     }
     if (formData.experience < 0 || formData.experience > 80) {
@@ -1029,7 +1029,7 @@ export function ProfessionalProfilePage() {
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Professional Info</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Hourly Rate (₹/hr)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Base Rate (₹)</label>
                         <div className="relative">
                           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
                           <input
@@ -1048,6 +1048,7 @@ export function ProfessionalProfilePage() {
                             }}
                             className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="50" />
                         </div>
+                        <p className="text-xs text-slate-400 mt-1.5">Your standard base rate — the starting point clients see on your profile (negotiable)</p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Years of Experience</label>
@@ -1180,7 +1181,7 @@ export function ProfessionalProfilePage() {
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Professional Info</h3>
                       <div className="space-y-3">
                         <div><span className="text-xs text-slate-400">Title</span><p className="font-medium">{formData.title || 'Not set'}</p></div>
-                        <div><span className="text-xs text-slate-400">Hourly Rate</span><p className="font-medium">{formData.hourly_rate ? `₹${formData.hourly_rate}/hr` : 'Not set'}</p></div>
+                        <div><span className="text-xs text-slate-400">Base Rate</span><p className="font-medium">{formData.hourly_rate ? `₹${formData.hourly_rate}` : 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Experience</span><p className="font-medium">{formData.experience ? `${formData.experience} years` : 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Location</span><p className="font-medium">{formData.location || 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Portfolio</span><p className="font-medium">{formData.portfolio_url ? <a href={formData.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">{formData.portfolio_url}</a> : 'Not set'}</p></div>

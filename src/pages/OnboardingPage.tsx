@@ -369,7 +369,7 @@ function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'clie
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Hourly Rate (₹/hr)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Base Rate (₹)</label>
                 <input
                   type="number"
                   min={0}
@@ -1063,10 +1063,10 @@ export function OnboardingPage() {
                       />
                     </div>
 
-                    {/* Hourly Rate & Experience */}
+                    {/* Base Rate & Experience */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Hourly Rate (₹/hr)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Base Rate (₹)</label>
                         <div className="relative">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
                           <input
@@ -1084,6 +1084,7 @@ export function OnboardingPage() {
                             className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                           />
                         </div>
+                        <p className="text-xs text-slate-400 mt-1">Your standard base rate — the starting point clients see on your profile (negotiable)</p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Years of Experience</label>                          <input
@@ -1513,7 +1514,7 @@ export function OnboardingPage() {
                         <div>
                           <h3 className="font-bold text-lg text-slate-900">{freelancerForm.title || 'Your Title'}</h3>
                           <p className="text-sm text-slate-500">
-                            {freelancerForm.hourly_rate > 0 ? `₹${freelancerForm.hourly_rate}/hr` : 'Rate not set'} 
+                            {freelancerForm.hourly_rate > 0 ? `₹${freelancerForm.hourly_rate}` : 'Base rate not set'} 
                             {freelancerForm.experience > 0 ? ` · ${freelancerForm.experience} years exp` : ''}
                           </p>
                         </div>

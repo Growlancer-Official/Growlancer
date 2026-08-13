@@ -412,7 +412,7 @@ export function ClientMatchesPage() {
               <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
                   <IndianRupee className="w-4 h-4" />
-                  <span>₹{match.freelancer.hourly_rate || 0}/hr</span>
+                  <span>₹{match.freelancer.hourly_rate || 0}</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-600">
                   <MapPin className="w-4 h-4" />
