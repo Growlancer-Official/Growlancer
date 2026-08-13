@@ -25,6 +25,8 @@ export function ContestDetailPage() {
     file_url: '',
     preview_url: '',
   });
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<{ name: string; url: string; isImage: boolean } | null>(null);
   const toast = useToast();
 
   // Winner-award selections (judging panel, owner only)
@@ -126,6 +128,41 @@ export function ContestDetailPage() {
     return () => { void voteChannel.unsubscribe(); };
   }, [contestId, submissions, fetchContestData]);
 
+  /** Upload a contest work file to the private contest-submissions bucket. */
+  const handleFileUpload = async (file: File) => {
+    if (!user || !contestId) return;
+    const MAX = 50 * 1024 * 1024;
+    if (file.size > MAX) {
+      toast.error('File too large — maximum 50 MB');
+      return;
+    }
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop()?.toLowerCase() || 'bin';
+      const path = `${contestId}/${user.id}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+      const { error: upErr } = await supabase.storage.from('contest-submissions').upload(path, file, {
+        contentType: file.type || 'application/octet-stream',
+        cacheControl: '3600',
+      });
+      if (upErr) throw upErr;
+      const { data: signed } = await supabase.storage.from('contest-submissions').createSignedUrl(path, 60 * 60 * 24 * 7);
+      if (!signed?.signedUrl) throw new Error('Could not generate file link');
+      const isImage = /^(image\/|.*\.(png|jpe?g|gif|webp|svg|avif|bmp))$/i.test(file.type || ext);
+      setUploadedFile({ name: file.name, url: signed.signedUrl, isImage });
+      setSubmitForm(prev => ({
+        ...prev,
+        file_url: signed.signedUrl,
+        preview_url: isImage ? signed.signedUrl : prev.preview_url,
+      }));
+      toast.success('File uploaded!');
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast.error(err instanceof Error ? err.message : 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !contestId) return;
@@ -137,13 +174,14 @@ export function ContestDetailPage() {
       title: submitForm.title,
       description: submitForm.description,
       file_url: submitForm.file_url || null,
-      file_type: null,
+      file_type: uploadedFile ? uploadedFile.isImage ? 'image' : 'file' : null,
       preview_url: submitForm.preview_url || null,
     });
     
     if (result.success) {
       setShowSubmitForm(false);
       setSubmitForm({ title: '', description: '', file_url: '', preview_url: '' });
+      setUploadedFile(null);
       void fetchContestData();
       toast.success('Submission created!');
     } else {
@@ -576,11 +614,49 @@ export function ContestDetailPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">File URL</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Upload Your Work</label>
+                <label
+                  className={`flex flex-col items-center justify-center gap-2 border-2 border-dashed rounded-xl px-4 py-6 cursor-pointer transition-colors ${
+                    uploading ? 'border-emerald-400 bg-emerald-50' : uploadedFile ? 'border-emerald-400 bg-emerald-50/50' : 'border-slate-300 hover:border-emerald-400 hover:bg-emerald-50/40'
+                  }`}
+                >
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*,.pdf,.zip,.rar,.7z,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.mp4,.mov,.webm,.mp3,.wav"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) void handleFileUpload(f); e.target.value = ''; }}
+                  />
+                  {uploading ? (
+                    <>
+                      <Loader2 className="animate-spin w-6 h-6 text-emerald-600" />
+                      <span className="text-sm text-emerald-700 font-medium">Uploading...</span>
+                    </>
+                  ) : uploadedFile ? (
+                    <>
+                      <CheckCircle className="w-6 h-6 text-emerald-600" />
+                      <span className="text-sm text-emerald-700 font-semibold truncate max-w-full">{uploadedFile.name}</span>
+                      <span className="text-xs text-slate-400">Click to replace</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 text-slate-400" />
+                      <span className="text-sm text-slate-500 font-medium">Click to upload (max 50 MB)</span>
+                      <span className="text-xs text-slate-400">Images, PDF, ZIP, documents, video &amp; audio</span>
+                    </>
+                  )}
+                </label>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-slate-400">
+                <span className="flex-1 h-px bg-slate-200" />
+                OR use an external link
+                <span className="flex-1 h-px bg-slate-200" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">File URL (optional)</label>
                 <input
                   type="url"
                   value={submitForm.file_url}
-                  onChange={(e) => setSubmitForm({ ...submitForm, file_url: e.target.value })}
+                  onChange={(e) => { setSubmitForm({ ...submitForm, file_url: e.target.value }); }}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none"
                   placeholder="https://drive.google.com/..."
                 />
@@ -709,7 +785,7 @@ export function ContestDetailPage() {
                           className="flex items-center gap-2 px-4 py-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors font-medium"
                         >
                           <Eye className="w-4 h-4" />
-                          View File
+                          {submission.file_type === 'image' ? 'View Image' : 'View File'}
                         </a>
                       )}
                     </div>
