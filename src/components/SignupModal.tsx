@@ -146,13 +146,39 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = name.trim();
 
+    // ✅ Email format + disposable check FIRST — a disposable / temporary
+    // address must never be hidden behind (or acked around) the same-browser
+    // banner. This is a hard block: it cannot be dismissed.
+    const emailValidation = validateEmail(normalizedEmail);
+    if (!emailValidation.isValid) {
+      setError(emailValidation.error || 'Invalid email');
+      return;
+    }
+
+    // 🔍 Server-authoritative disposable check — the DB function carries the
+    // full 8,000+ domain list, so throwaway providers that are newer than the
+    // client-side list still get rejected BEFORE hitting auth. Best-effort:
+    // if the RPC itself fails, the auth.users INSERT trigger is the backstop,
+    // so a legit signup is never blocked by a network hiccup.
+    try {
+      const domain = normalizedEmail.slice(normalizedEmail.lastIndexOf('@') + 1);
+      if (domain) {
+        const { data: isDisposable } = await supabase.rpc('is_disposable_email_domain' as any, { p_domain: domain });
+        if (isDisposable) {
+          setError('This format is not acceptable. Disposable / temporary email addresses are not allowed — please use a permanent email address.');
+          return;
+        }
+      }
+    } catch {
+      // ignore — server trigger enforces this anyway
+    }
+
     // 🚫 Same-browser block: this browser already has a Growlancer account.
     // Creating a second account from the same device is not allowed (referral
     // / bonus abuse). The user must log out of the existing account instead.
+    // NOTE: no setError here — the red banner above this form IS this message;
+    // setting `error` too made the same text render in 3 places at once.
     if (sameBrowserWarn && !sameBrowserAck) {
-      setError(
-        'This browser already has a Growlancer account. One account per browser is required for platform security — please log out of the existing account first, or confirm you are a different person on a shared device.'
-      );
       return;
     }
 
@@ -176,12 +202,6 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
     }
     if (!cleanedPhone.startsWith('6') && !cleanedPhone.startsWith('7') && !cleanedPhone.startsWith('8') && !cleanedPhone.startsWith('9')) {
       setError('Please enter a valid Indian mobile number starting with 6, 7, 8, or 9');
-      return;
-    }
-
-    const emailValidation = validateEmail(normalizedEmail);
-    if (!emailValidation.isValid) {
-      setError(emailValidation.error || 'Invalid email');
       return;
     }
 
@@ -681,14 +701,6 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               .
             </label>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-center gap-2 p-2.5 bg-red-50 border border-red-100 rounded-lg">
-              <AlertCircle className="w-3.5 h-3.5 text-red-500 flex-shrink-0" />
-              <p className="text-[11px] text-red-600 font-medium">{error}</p>
-            </div>
-          )}
 
           {/* Submit Button */}
           <button

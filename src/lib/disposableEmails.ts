@@ -121,7 +121,11 @@ export const DISPOSABLE_EMAILS: readonly string[] = [
   'tempmail.email', 'tempmail.icu', 'tempmail.gg', 'tempmail.ninja', 'tempmail.rocks',
   'tempmail.win', 'temp-mail.win', 'mailinator.cc', 'guerrillamail.me',
   'yopmail.website', 'throwaway.email.net', 'trash-mail.de', 'trash-mail.com',
-  'trash-mail.net', 'trashmail.ws', 'tmpemail.com', 'tempmail.net.in',
+  'trash-mail.net', 'trashmail.ws',  'tmpemail.com', 'tempmail.net.in',
+
+  // ── DisposableMail family ──
+  'disposablemail.com', 'disposablemail.net', 'disposablemail.org', 'disposablemail.info',
+  'disposablemail.me', 'disposablemail.co', 'disposablemail.xyz',
 ];
 
 /** Fast lookup set built once from the list */
