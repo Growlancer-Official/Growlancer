@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  TrendingUp, Wallet, Scale, RotateCcw, Download, Loader2, RefreshCw,
-  FileText, Banknote, PiggyBank, Receipt, AlertTriangle, ArrowUpRight,
+  TrendingUp, Scale, RotateCcw, Download, Loader2, RefreshCw,
+  FileText, Banknote, PiggyBank, Receipt, AlertTriangle, ArrowUpRight, Percent,
 } from 'lucide-react';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { adminQuery } from '../../lib/adminDataProxy';
@@ -125,9 +125,9 @@ export function AdminFinancePage() {
     { label: 'This Month', value: stats.revenue.this_month, icon: TrendingUp, color: 'text-emerald-400', sub: '30-day commission' },
     { label: 'This Year', value: stats.revenue.this_year, icon: Banknote, color: 'text-emerald-400', sub: 'YTD commission' },
     { label: 'Total Revenue', value: stats.revenue.total, icon: PiggyBank, color: 'text-amber-400', sub: 'Lifetime commission' },
-    { label: 'Gross Volume', value: stats.gross_volume, icon: Wallet, color: 'text-blue-400', sub: 'Total client payments' },
-    { label: 'Pending Escrow', value: stats.pending_revenue, icon: Scale, color: 'text-orange-400', sub: 'Held, not yet released' },
-    { label: 'Refunded', value: stats.refunded_revenue, icon: RotateCcw, color: 'text-red-400', sub: 'Commission reversed' },
+    { label: 'Commission Rate', value: '5%', icon: Percent, color: 'text-blue-400', sub: 'Flat fee on every escrow — never refunded' },
+    { label: 'Pending Escrow', value: stats.pending_revenue, icon: Scale, color: 'text-orange-400', sub: 'Client funds held, not yet released' },
+    { label: 'Refunded', value: stats.escrow.refunded, icon: RotateCcw, color: 'text-red-400', sub: 'Escrow refunded to clients — commission retained' },
   ] : [];
 
   return (
@@ -175,7 +175,7 @@ export function AdminFinancePage() {
                   <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{s.label}</p>
                   <s.icon className={'w-4 h-4 ' + s.color} />
                 </div>
-                <p className="text-xl font-bold text-white">{formatCurrency(s.value)}</p>
+                <p className="text-xl font-bold text-white">{typeof s.value === 'number' ? formatCurrency(s.value) : s.value}</p>
                 <p className="text-[10px] text-slate-600 mt-1">{s.sub}</p>
               </div>
             ))}
@@ -204,7 +204,7 @@ export function AdminFinancePage() {
             <div className="p-6 rounded-[2rem]" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-sm font-bold text-white">Revenue — Last 12 Months</h3>
-                <span className="text-[10px] text-slate-500 uppercase tracking-widest">Commission vs Gross Volume</span>
+                <span className="text-[10px] text-slate-500 uppercase tracking-widest">Commission vs Client Volume</span>
               </div>
               <div className="flex items-end gap-2 h-44">
                 {stats.monthly.map((m, i) => {
@@ -223,7 +223,7 @@ export function AdminFinancePage() {
               </div>
               <div className="flex items-center gap-4 mt-3 text-[10px] text-slate-500">
                 <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-emerald-500/70" /> Commission</span>
-                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-blue-500/50" /> Gross Volume</span>
+                <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-blue-500/50" /> Client Volume (escrow)</span>
               </div>
             </div>
           )}

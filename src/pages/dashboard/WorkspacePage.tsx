@@ -597,7 +597,7 @@ export function WorkspacePage() {
     } else {
       toast.success(
         'Work delivered — auto-release timer started',
-        `The client can review and release sooner; if they don't respond within ~${result.auto_release_hours ?? 72} hours, the escrow auto-releases to your wallet.`
+        `The client can review and release sooner; if they don't respond within ~${result.auto_release_hours ?? 10} hours, the escrow auto-releases to your wallet.`
       );
       void refreshContract(selectedContract.id);
     }

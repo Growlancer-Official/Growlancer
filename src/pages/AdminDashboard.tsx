@@ -16,7 +16,7 @@ interface PlatformMetrics {
   totalUsers: number; totalFreelancers: number; totalClients: number;
   activeProjects: number; liveContracts: number; platformGmv: number;
   platformFees: number; pendingDisputes: number; newUsersThisMonth: number;
-  userGrowth: number; gmvGrowth: number; inactiveAccounts: number;
+  userGrowth: number; gmvGrowth: number; feeGrowth: number; inactiveAccounts: number;
   totalContractsComplete: number; flaggedProjects: number;
 }
 
@@ -145,7 +145,7 @@ function PlatformStats() {
         adminQuery({ table: 'contracts', select: 'amount, platform_fee, created_at, status' }).then(r => ({ data: r.data })),
         adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: monthAgo } }).then(r => r.total ?? 0),
         adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: twoMonthsAgo } }).then(r => r.total ?? 0),
-        adminQuery({ table: 'contracts', select: 'amount', gte: { created_at: twoMonthsAgo } }).then(r => ({ data: r.data })),
+        adminQuery({ table: 'contracts', select: 'amount, platform_fee', gte: { created_at: twoMonthsAgo } }).then(r => ({ data: r.data })),
         adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'flagged' } }).then(r => r.total ?? 0),
       ]);
 
@@ -157,6 +157,8 @@ function PlatformStats() {
       const userGrowth = (lastMonthUsers && lastMonthUsers > 0) ? ((newUsers - lastMonthUsers!) / lastMonthUsers!) * 100 : 12;
       const lastGmv = ((lastMonthContracts?.data || []) as Array<{ amount: number }>).reduce((s, c) => s + (c.amount || 0), 0);
       const gmvGrowth = lastGmv > 0 ? ((totalGmv - lastGmv) / lastGmv) * 100 : 8.4;
+      const lastFees = ((lastMonthContracts?.data || []) as Array<{ platform_fee: number }>).reduce((s, c) => s + (Number(c.platform_fee) || 0), 0);
+      const feeGrowth = lastFees > 0 ? ((totalFees - lastFees) / lastFees) * 100 : 8.4;
       const completed = cData.filter(c => c.status === 'completed').length;
 
       setMetrics({
@@ -164,7 +166,7 @@ function PlatformStats() {
         activeProjects: activeProjects || 0, liveContracts: liveContracts || 0,
         platformGmv: totalGmv, platformFees: totalFees, pendingDisputes: pendingDisputes || 0,
         newUsersThisMonth: newUsers, userGrowth: Math.round(userGrowth * 10) / 10,
-        gmvGrowth: Math.round(gmvGrowth * 10) / 10, inactiveAccounts: 0,
+        gmvGrowth: Math.round(gmvGrowth * 10) / 10, feeGrowth: Math.round(feeGrowth * 10) / 10, inactiveAccounts: 0,
         totalContractsComplete: completed, flaggedProjects: flaggedProjects || 0,
       });
     } catch (err) { console.error('Failed to fetch metrics:', err); toast.error('Metrics Error', 'Could not load platform metrics.'); }
@@ -193,10 +195,10 @@ function PlatformStats() {
     { title: 'Live Contracts', value: formatCompactNumber(metrics?.liveContracts || 0),
       change: `${metrics?.totalContractsComplete || 0} completed`,
       icon: Handshake, color: 'text-orange-400' },
-    { title: 'Platform GMV', value: formatCurrency(metrics?.platformGmv || 0),
-      change: `${metrics?.gmvGrowth && metrics.gmvGrowth >= 0 ? '+' : ''}${metrics?.gmvGrowth || 0}%`,
-      up: (metrics?.gmvGrowth || 0) >= 0,
-      icon: IndianRupee, color: 'text-emerald-400' },
+    { title: 'Platform Commission', value: formatCurrency(metrics?.platformFees || 0),
+      change: `${metrics?.feeGrowth && metrics.feeGrowth >= 0 ? '+' : ''}${metrics?.feeGrowth || 0}%`,
+      up: (metrics?.feeGrowth || 0) >= 0,
+      icon: IndianRupee, color: 'text-emerald-400', sub: '5% escrow fee — never refunded' },
   ];
 
   return (

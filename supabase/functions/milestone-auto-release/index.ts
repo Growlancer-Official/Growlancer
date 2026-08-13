@@ -108,7 +108,7 @@ serve(async (req: Request) => {
           const deliveredAt = new Date(c.delivered_at).getTime();
           if (!Number.isFinite(deliveredAt)) continue;
 
-          const hours = Number(c.auto_release_hours) > 0 ? Number(c.auto_release_hours) : 72;
+          const hours = Number(c.auto_release_hours) > 0 ? Number(c.auto_release_hours) : 10;
           const elapsedH = (now - deliveredAt) / 3600000;
 
           if (elapsedH >= hours) {
@@ -129,7 +129,7 @@ serve(async (req: Request) => {
         const deliveredAt = new Date(m.delivered_at).getTime();
         if (!Number.isFinite(deliveredAt)) return;
 
-        const hours = Number(m.auto_release_hours) > 0 ? Number(m.auto_release_hours) : 72;
+        const hours = Number(m.auto_release_hours) > 0 ? Number(m.auto_release_hours) : 10;
         const elapsedH = (now - deliveredAt) / 3600000;
 
         // Due → auto-release now

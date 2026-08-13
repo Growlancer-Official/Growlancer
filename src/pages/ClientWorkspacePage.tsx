@@ -555,17 +555,17 @@ export function ClientWorkspacePage() {
     if (!selectedContract) return
     const ms = Array.isArray((selectedContract as any).milestones) ? (selectedContract as any).milestones : []
     const hours = ms[0]?.auto_release_hours
-    if (typeof hours === 'number' && hours >= 24 && hours <= 168) {
+    if (typeof hours === 'number' && hours >= 10 && hours <= 168) {
       setAutoReleaseHours(String(hours))
     }
   }, [selectedContract])
 
-  // Auto-release window override (client). 24–168 hours.
+  // Auto-release window override (client). 10–168 hours.
   const handleSetAutoReleaseHours = async () => {
     if (!selectedContract) return
     const hours = parseInt(autoReleaseHours, 10)
-    if (!hours || hours < 24 || hours > 168) {
-      toast.error('Invalid window', 'Auto-release window must be between 24 and 168 hours (1–7 days).')
+    if (!hours || hours < 10 || hours > 168) {
+      toast.error('Invalid window', 'Auto-release window must be between 10 and 168 hours (10 hours – 7 days).')
       return
     }
     setSavingAutoRelease(true)
@@ -1343,13 +1343,13 @@ export function ClientWorkspacePage() {
                       <div className="flex items-center gap-2 mt-3">
                         <input
                           type="number"
-                          min="24"
+                          min="10"
                           max="168"
                           value={autoReleaseHours}
                           onChange={(e) => setAutoReleaseHours(e.target.value)}
                           className="w-28 px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-violet-500 focus:border-violet-500 outline-none"
                         />
-                        <span className="text-sm text-slate-600">hours (24–168)</span>
+                        <span className="text-sm text-slate-600">hours (10–168)</span>
                         <button
                           onClick={() => void handleSetAutoReleaseHours()}
                           disabled={savingAutoRelease}
@@ -1392,7 +1392,7 @@ export function ClientWorkspacePage() {
                               )}
                               {milestone.status === 'delivered' && (
                                 <p className="text-xs text-violet-700 mt-1 font-medium">
-                                  Delivered — review & release within {milestone.auto_release_hours ?? 72}h or payment releases automatically
+                                  Delivered — review & release within {milestone.auto_release_hours ?? 10}h or payment releases automatically
                                 </p>
                               )}
                             </div>
@@ -1416,12 +1416,12 @@ export function ClientWorkspacePage() {
                             <div className="mt-3 p-3.5 bg-violet-50 border border-violet-200 rounded-xl text-left">
                               <p className="text-xs font-bold text-violet-800 flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5" />
-                                Delivered — review & release within {(selectedContract as any).auto_release_hours ?? 72}h
+                                Delivered — review & release within {(selectedContract as any).auto_release_hours ?? 10}h
                               </p>
                               <p className="text-[11px] text-violet-700 mt-1 leading-relaxed">
                                 The freelancer has delivered the full project. Review the files and release the escrow when
                                 satisfied — if you don't respond within{' '}
-                                <strong>{(selectedContract as any).auto_release_hours ?? 72} hours</strong>, the payment
+                                <strong>{(selectedContract as any).auto_release_hours ?? 10} hours</strong>, the payment
                                 releases to the freelancer automatically.
                               </p>
                             </div>
