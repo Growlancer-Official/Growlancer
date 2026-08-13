@@ -22,7 +22,7 @@ import { validateEmail } from '../utils/validation';
 // ═══════════════════════════════════════════════════════════════
 const SECTION_PADDING = 'py-12 sm:py-16 lg:py-20';
 const SECTION_PADDING_SM = 'py-10 sm:py-14 lg:py-16';
-const CONTAINER = 'mx-auto max-w-7xl px-4 sm:px-6 lg:px-8';
+const CONTAINER = 'mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12';
 const CARD_CLASS = 'rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm';
 
 // ═══════════════════════════════════════════════════════════════

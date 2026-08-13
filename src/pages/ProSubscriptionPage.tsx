@@ -172,7 +172,7 @@ export function ProSubscriptionPage() {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
       {/* Header */}
       <header className="backdrop-blur-xl bg-white/80 sticky top-0 z-50 border-b border-slate-200/60">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-10 w-10 rounded-xl" />
             <span className="font-display text-xl font-bold tracking-tight">Growlancer</span>
@@ -479,7 +479,7 @@ export function ProSubscriptionPage() {
 
         {/* Why Upgrade Section */}
         <section className="bg-white py-24 border-y border-slate-100">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-[100rem] mx-auto px-4">
             <div className="text-center mb-16">
               <h2 className="font-display text-3xl font-extrabold mb-4">Why Upgrade?</h2>
               <p className="text-slate-500">The simple math of high-performance freelancing.</p>
@@ -586,7 +586,7 @@ export function ProSubscriptionPage() {
 
         {/* Testimonials Section */}
         <section className="py-24 bg-slate-50">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-[100rem] mx-auto px-4">
             <div className="text-center">
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm mb-6">
                 <Sparkles className="w-4 h-4" />
@@ -605,7 +605,7 @@ export function ProSubscriptionPage() {
 
         {/* FAQ Section */}
         <section className="py-24 bg-slate-900 text-white">
-          <div className="max-w-7xl mx-auto px-4">
+          <div className="max-w-[100rem] mx-auto px-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               <div className="space-y-8">
                 <h2 className="font-display text-4xl font-extrabold">Common Questions</h2>
@@ -697,7 +697,7 @@ export function ProSubscriptionPage() {
 
       {/* Footer */}
       <footer className="bg-white py-12 border-t border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 text-center">
+        <div className="max-w-[100rem] mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-bold text-slate-900">Growlancer</span>

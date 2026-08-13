@@ -72,7 +72,7 @@ export function MainLayout() {
     <div className="min-h-screen flex flex-col bg-cream">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="h-16 flex items-center justify-between gap-3">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">

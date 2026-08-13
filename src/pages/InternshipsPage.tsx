@@ -824,7 +824,7 @@ export function InternshipsPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-bold text-xl tracking-tight text-slate-900">Growlancer</span>
@@ -845,7 +845,7 @@ export function InternshipsPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -ml-20 -mb-20" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent" />
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             Growlancer Internship Program
@@ -868,7 +868,7 @@ export function InternshipsPage() {
       </section>
 
       {/* Program Overview */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
         <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-6 sm:p-8">
           <h2 className="font-display text-2xl font-bold text-slate-900 mb-6">About the Program</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -903,7 +903,7 @@ export function InternshipsPage() {
       </section>
 
       {/* Open Internships */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
         <div className="flex items-center gap-3 mb-8">
           <Briefcase className="w-6 h-6 text-emerald-600" />
           <h2 className="font-display text-2xl font-bold text-slate-900">Open Internship Positions</h2>
@@ -926,7 +926,7 @@ export function InternshipsPage() {
       </section>
 
       {/* Program Benefits */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
         <div className="text-center mb-10">
           <h2 className="font-display text-2xl font-bold text-slate-900">Why Join Growlancer's Internship?</h2>
           <p className="text-slate-500 text-sm mt-2">More than just an internship — it's a launchpad for your career.</p>
@@ -945,7 +945,7 @@ export function InternshipsPage() {
       </section>
 
       {/* How It Works */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
         <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 sm:p-10 text-white">
           <h2 className="font-display text-2xl font-bold mb-8 text-center">Application Process</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -967,7 +967,7 @@ export function InternshipsPage() {
       </section>
 
       {/* FAQ */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 mb-20">
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20 mb-20">
         <div className="text-center mb-10">
           <HelpCircle className="w-8 h-8 text-emerald-600 mx-auto mb-3" />
           <h2 className="font-display text-2xl font-bold text-slate-900">Frequently Asked Questions</h2>

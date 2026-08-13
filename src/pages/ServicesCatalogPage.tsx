@@ -113,7 +113,7 @@ export function ServicesCatalogPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero */}
       <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">Browse Services</h1>
           <p className="text-blue-100 text-lg mb-6">Discover pre-packaged services from top freelancers — order instantly.</p>
           <div className="mb-6">
@@ -144,7 +144,7 @@ export function ServicesCatalogPage() {
 
       {/* Category Tabs */}
       <div className="bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="flex gap-1 overflow-x-auto py-3 scrollbar-hide">
             {['All', ...categories].map((cat) => (
               <button
@@ -166,7 +166,7 @@ export function ServicesCatalogPage() {
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-white border-b border-slate-200 py-4">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-wrap items-end gap-4">
+          <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 flex flex-wrap items-end gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Max Price</label>
               <input
@@ -194,7 +194,7 @@ export function ServicesCatalogPage() {
 
       {/* Results */}
       <section className="py-8 pb-16 sm:pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-slate-500">
               {loading ? 'Searching...' : `${services.length} service${services.length !== 1 ? 's' : ''} found`}

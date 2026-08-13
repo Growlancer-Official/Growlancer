@@ -172,7 +172,7 @@ export function ContestDetailPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-6">
           <Link to="/contests" className="inline-flex items-center gap-2 text-slate-600 hover:text-emerald-600 transition-colors mb-4">
             <ArrowLeft className="w-4 h-4" />
             Back to Contests
@@ -377,7 +377,7 @@ export function ContestDetailPage() {
       )}
 
       {/* Submissions Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-12">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Submissions List */}
           <div className="lg:col-span-2">

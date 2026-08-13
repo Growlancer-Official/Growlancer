@@ -9,7 +9,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
   return (
     <footer className="border-t border-slate-200 bg-white">
       {/* Main Footer Content */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+      <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-4">

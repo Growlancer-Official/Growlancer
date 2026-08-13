@@ -511,7 +511,7 @@ export function ClientDashboardLayout() {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">          {/* Top Bar */}
-        <header className="min-h-16 sm:h-20 bg-white sticky top-0 z-40 border-b border-slate-100 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-2 sm:gap-4">
+        <header className="min-h-16 sm:h-20 bg-white sticky top-0 z-40 border-b border-slate-100 px-4 sm:px-6 lg:px-8 2xl:px-12 flex items-center justify-between gap-2 sm:gap-4">
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <button
               onClick={() => setMobileNavOpen(true)}
@@ -602,7 +602,7 @@ export function ClientDashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full pb-24 sm:pb-16">
+        <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[100rem] mx-auto w-full pb-24 sm:pb-16">
           <Suspense fallback={<ClientDashboardFallback />}>
             <Outlet />
           </Suspense>

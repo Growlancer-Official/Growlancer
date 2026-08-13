@@ -248,7 +248,7 @@ export function AISubscriptionPage() {
   const proPlan = plans.find(p => (p.price ?? 0) > 0);
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-[100rem] mx-auto">
       {/* Header */}
       <div className="mb-6">
         <h1 className="font-display text-3xl font-bold text-slate-900 mb-2 flex items-center gap-2.5">

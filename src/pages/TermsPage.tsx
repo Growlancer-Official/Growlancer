@@ -344,7 +344,7 @@ export function TermsPage() {
     <div className="min-h-screen bg-cream font-sans pb-24 text-slate-800">
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
@@ -364,7 +364,7 @@ export function TermsPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center space-y-4">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-4">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Shield className="w-3.5 h-3.5" />
             Legal Terms
@@ -380,7 +380,7 @@ export function TermsPage() {
       </section>
 
       {/* Legal Structure Grid */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Sticky Sidebar Outline */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-2 bg-white rounded-3xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">

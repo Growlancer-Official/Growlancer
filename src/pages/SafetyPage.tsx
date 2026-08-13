@@ -51,7 +51,7 @@ export function SafetyPage() {
     <div className="min-h-screen bg-cream font-sans pb-24 text-slate-800">
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
@@ -70,7 +70,7 @@ export function SafetyPage() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5" />
             Security & Trust
@@ -85,7 +85,7 @@ export function SafetyPage() {
       </section>
 
       {/* Safety Grid */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {safetyFeatures.map((feature, index) => (
             <div 
@@ -108,7 +108,7 @@ export function SafetyPage() {
       </section>
 
       {/* Proactive Help Promo */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-20">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
         <div className="bg-emerald-600 rounded-[2.5rem] p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-20 -mt-20"></div>
           

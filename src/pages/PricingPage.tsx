@@ -59,7 +59,7 @@ export function PricingPage() {
     <div className="min-h-screen bg-cream">
       {/* Premium Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
@@ -72,7 +72,7 @@ export function PricingPage() {
 
       {/* Hero */}
       <section className="py-10 sm:py-14">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 text-center">
           <h1 className="font-display text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
             Simple, Transparent Pricing
           </h1>
@@ -90,7 +90,7 @@ export function PricingPage() {
 
       {/* Pricing Cards */}
       <section className="pb-14 sm:pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {plans.map((plan, index) => (
               <div
@@ -145,7 +145,7 @@ export function PricingPage() {
 
       {/* Trust Badges */}
       <section className="pb-16 sm:pb-20 pt-8 border-t border-slate-100">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="flex items-center gap-4 bg-white rounded-2xl p-6 border border-slate-200">
               <ShieldCheck className="w-8 h-8 text-emerald-500" />

@@ -77,7 +77,7 @@ export function AboutPage() {
     <div className="min-h-screen bg-cream font-sans pb-24 text-slate-800">
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src="/UpdatedLogo.png" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
@@ -97,7 +97,7 @@ export function AboutPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             Our Mission
@@ -113,7 +113,7 @@ export function AboutPage() {
       </section>
 
       {/* Stats Panel */}
-      <section className="relative -mt-10 z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="relative -mt-10 z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
         <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 sm:p-10 shadow-xl">
           <div className="text-center space-y-2 mb-8">
             <h2 className="text-xs font-black uppercase text-emerald-600 tracking-widest flex items-center justify-center gap-1.5">
@@ -147,7 +147,7 @@ export function AboutPage() {
       </section>
 
       {/* Vision & Narrative */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-24">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-24">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <span className="inline-flex items-center gap-1 text-xs font-black uppercase text-emerald-600 tracking-wider">
@@ -186,7 +186,7 @@ export function AboutPage() {
       </section>
 
       {/* Founder Section */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 sm:mt-28">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20 sm:mt-28">
         {/* Section Label */}
         <div className="text-center space-y-3 mb-10 sm:mb-14">
           <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 font-bold rounded-full border border-emerald-500/20 text-xs uppercase tracking-wider">
@@ -299,7 +299,7 @@ export function AboutPage() {
       </section>
 
       {/* Core Values Grid */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-28">
+      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-28">
         <div className="text-center space-y-3 mb-16">
           <span className="text-xs font-black uppercase text-emerald-600 tracking-widest">Platform Core Values</span>
           <h2 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -336,7 +336,7 @@ export function AboutPage() {
       </section>
 
       {/* CTA Join Mission */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-28">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-28">
         <div className="bg-emerald-600 rounded-[3rem] p-8 sm:p-14 text-center text-white relative overflow-hidden shadow-xl shadow-emerald-950/20">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-16 -mt-16"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/10 rounded-full blur-2xl -ml-16 -mb-16"></div>

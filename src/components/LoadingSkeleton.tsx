@@ -289,7 +289,7 @@ export function RouteFallback() {
 /** Dashboard Suspense fallback (lightweight page-level) */
 export function DashboardFallback() {
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-8 max-w-[100rem] mx-auto">
       <FullPageSkeleton />
     </div>
   );
@@ -298,7 +298,7 @@ export function DashboardFallback() {
 /** Client dashboard Suspense fallback */
 export function ClientDashboardFallback() {
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-8 max-w-[100rem] mx-auto">
       <FullPageSkeleton />
     </div>
   );

@@ -793,7 +793,7 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
   const navigate = useNavigate();
   return (
     <header className={`sticky top-0 z-40 border-b backdrop-blur-xl ${dark ? 'bg-slate-950/80 border-slate-800/50' : 'bg-white/80 border-slate-200'}`}>
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="max-w-[100rem] mx-auto px-4 py-3 flex items-center justify-between">
         <button onClick={onHome || (() => navigate('/verify-certificate', { replace: true }))}
           className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
           <div className="relative">

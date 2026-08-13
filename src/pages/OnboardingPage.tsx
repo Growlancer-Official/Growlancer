@@ -920,7 +920,7 @@ export function OnboardingPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/30 flex flex-col">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
@@ -1767,7 +1767,7 @@ export function OnboardingPage() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-4 mt-auto">
-        <div className="max-w-7xl mx-auto px-4 text-center">
+        <div className="max-w-[100rem] mx-auto px-4 text-center">
           <p className="text-xs text-slate-400">
             You can always update your profile later from the Settings page
           </p>

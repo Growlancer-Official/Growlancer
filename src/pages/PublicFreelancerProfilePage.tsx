@@ -442,7 +442,7 @@ export function PublicFreelancerProfilePage() {
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -left-16 w-80 h-80 bg-teal-300/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+        <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
           <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
@@ -556,7 +556,7 @@ export function PublicFreelancerProfilePage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         {/* Tabs */}
         <div className="flex gap-0 border-b border-slate-200 mb-8 overflow-x-auto">
           {[

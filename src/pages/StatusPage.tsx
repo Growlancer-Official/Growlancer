@@ -114,7 +114,7 @@ export function StatusPage() {
     <div className="min-h-screen bg-cream font-sans pb-24 text-slate-800">
       {/* Premium Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>

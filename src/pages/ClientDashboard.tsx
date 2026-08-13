@@ -121,7 +121,7 @@ export default function ClientDashboard() {
 
   if (error) {
     return (
-      <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="p-6 lg:p-8 max-w-[100rem] mx-auto">
         <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
           <p className="text-red-700 font-medium mb-4">{error}</p>
           <button
@@ -170,7 +170,7 @@ export default function ClientDashboard() {
   ];
 
   return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+    <div className="p-6 lg:p-8 max-w-[100rem] mx-auto">
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900">

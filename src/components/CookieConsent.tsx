@@ -188,7 +188,7 @@ export function CookieConsent() {
           animateIn ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
         }`}
       >
-        <div className="mx-auto max-w-7xl px-3 sm:px-6 pb-3 sm:pb-6">
+        <div className="mx-auto max-w-[100rem] px-3 sm:px-6 pb-3 sm:pb-6">
           <div
             className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
             style={{

@@ -382,7 +382,7 @@ export function AdminDashboardLayout() {
         </header>
 
         {/* Page Content */}
-        <div className="flex-1 p-8 max-w-7xl mx-auto w-full">
+        <div className="flex-1 p-8 max-w-[100rem] mx-auto w-full">
           <Suspense fallback={<AdminDashboardFallback />}>
             <Outlet />
           </Suspense>

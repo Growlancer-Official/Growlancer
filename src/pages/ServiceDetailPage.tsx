@@ -331,7 +331,7 @@ export function ServiceDetailPage() {
     <div className="min-h-screen bg-cream">
       {/* Back Navigation */}
       <div className="bg-white border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
           <Link to="/services" className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Back to Services
@@ -342,7 +342,7 @@ export function ServiceDetailPage() {
       {/* Cover Image Hero */}
       {service.image_url && (
         <div className="w-full max-h-80 overflow-hidden bg-slate-100">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
             <img
               src={service.image_url}
               alt={service.title}
@@ -352,7 +352,7 @@ export function ServiceDetailPage() {
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-8">

@@ -146,7 +146,7 @@ export function FreelancersSearchPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero */}
       <section className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">Find Top Freelancers</h1>
           <p className="text-emerald-100 text-lg mb-4">Browse talented professionals ready to bring your vision to life.</p>
           <TipNote tone="info" compact className="max-w-3xl mb-6 bg-white/10 border-white/20 [&_*]:!text-white">
@@ -180,7 +180,7 @@ export function FreelancersSearchPage() {
 
       {/* Browse Categories - A-Z Accordion */}
       <section className="py-6 bg-white border-b border-slate-200">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
             <button
               onClick={() => setShowCategories(!showCategories)}
@@ -212,7 +212,7 @@ export function FreelancersSearchPage() {
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-white border-b border-slate-200 py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               {/* Category */}
               <div>
@@ -313,7 +313,7 @@ export function FreelancersSearchPage() {
 
       {/* Results */}
       <section className="py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           {/* Sort & Count */}
           <div className="flex items-center justify-between mb-6">
             <p className="text-sm text-slate-500">
@@ -443,7 +443,7 @@ export function FreelancersSearchPage() {
 
       {/* CTA */}
       <section className="pb-24">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 text-center border border-slate-200 shadow-sm">
             <h2 className="font-display text-3xl font-bold text-slate-900 mb-4">Can't find the right freelancer?</h2>
             <p className="text-slate-600 mb-8 max-w-lg mx-auto">Post a project and let our AI match you with the perfect freelancer based on skills, experience, and budget.</p>

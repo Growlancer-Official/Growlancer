@@ -27,7 +27,7 @@ export function GuidelinesPage() {
     <div className="min-h-screen bg-cream font-sans pb-24 text-slate-800">
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
@@ -46,7 +46,7 @@ export function GuidelinesPage() {
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Compass className="w-3.5 h-3.5" />
             Community Guidelines
@@ -61,7 +61,7 @@ export function GuidelinesPage() {
       </section>
 
       {/* Do's and Dont's */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-16">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Dos */}
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/50 shadow-sm space-y-6">
@@ -110,7 +110,7 @@ export function GuidelinesPage() {
       </section>
 
       {/* Enforcement Alert Box */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-12">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12">
         <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-6 flex flex-col sm:flex-row gap-4 items-start shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-5 h-5 text-amber-700 animate-pulse" />
@@ -125,7 +125,7 @@ export function GuidelinesPage() {
       </section>
 
       {/* Support link */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-20 text-center">
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20 text-center">
         <div className="bg-emerald-600 rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-20 -mt-20"></div>
           

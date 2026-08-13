@@ -11,7 +11,7 @@ export function CategoriesPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Premium Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 group">
             <img
               src="/UpdatedLogo.webp"
@@ -28,7 +28,7 @@ export function CategoriesPage() {
 
       {/* Hero */}
       <section className="py-10 sm:py-14">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider rounded-full mb-6">
             <Layers className="w-3.5 h-3.5" />
             {loading ? '...' : categories.length} Categories
@@ -49,7 +49,7 @@ export function CategoriesPage() {
 
       {/* Categories Section */}
       <section className="pb-16 sm:pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           {/* Error banner */}
           {error && !loading && (
             <div className="mb-8 flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm">
@@ -76,7 +76,7 @@ export function CategoriesPage() {
 
       {/* CTA */}
       <section className="pb-16 sm:pb-20">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 text-center border border-slate-200 shadow-sm">
             <h2 className="font-display text-3xl font-bold text-slate-900 mb-4">Can't find what you're looking for?</h2>
             <p className="text-slate-600 mb-8 max-w-lg mx-auto">

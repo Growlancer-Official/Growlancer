@@ -51,7 +51,7 @@ export function ContestsPage() {
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero Section */}
       <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6">
               <Trophy className="w-4 h-4" />
@@ -85,7 +85,7 @@ export function ContestsPage() {
 
       {/* Stats Banner */}
       <section className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             <div className="text-center">
               <p className="text-3xl font-extrabold text-emerald-600">{contests.length}</p>
@@ -115,7 +115,7 @@ export function ContestsPage() {
 
       {/* Filters */}
       <section className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
           <div className="flex flex-wrap items-center gap-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -165,7 +165,7 @@ export function ContestsPage() {
       </section>
 
       {/* Contests Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <section className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-12">
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="animate-spin h-12 w-12 text-emerald-600" />

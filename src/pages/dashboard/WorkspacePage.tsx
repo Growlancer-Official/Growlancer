@@ -855,7 +855,7 @@ export function WorkspacePage() {
 
   if (contracts.length === 0) {
     return (
-      <div className="space-y-6 max-w-7xl mx-auto px-4 py-8">
+      <div className="space-y-6 max-w-[100rem] mx-auto px-4 py-8">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
             <Laptop className="w-6 h-6 text-white" />

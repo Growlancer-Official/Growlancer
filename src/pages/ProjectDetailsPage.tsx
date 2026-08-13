@@ -250,7 +250,7 @@ export function ProjectDetailsPage() {
 
   return (
     <main className="min-h-screen bg-cream px-4 py-12">
-      <div className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-[100rem]">
         {/* Navigation & Actions */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
