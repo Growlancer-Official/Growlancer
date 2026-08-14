@@ -9,7 +9,7 @@ import {
 } from '../lib/services/authService';
 import { shouldRedirectToAuthCallback } from '../lib/authAction';
 import { captureError, captureInfo } from '../lib/telemetry';
-import { recordBrowserAccount } from '../lib/browserIdentity';
+import { recordBrowserAccount, clearBrowserAccount } from '../lib/browserIdentity';
 import {
   recordLoginAttempt,
   resetLoginAttempts,
@@ -382,6 +382,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           );
           await supabase.auth.signOut().catch(() => {});
           clearSupabaseAuthStorage();
+          // Account deleted — drop the stale same-browser marker too.
+          clearBrowserAccount();
           setUser(null);
           setSession(null);
           setSupabaseUser(null);
@@ -574,6 +576,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             devLog('[Auth] Stale session detected (user no longer exists server-side) — force-clearing');
             await supabase.auth.signOut({ scope: 'local' }).catch(() => {});
             clearSupabaseAuthStorage();
+            // The account is gone — the same-browser marker for it is stale too.
+            clearBrowserAccount();
             setSession(null);
             setSupabaseUser(null);
             setUser(null);
@@ -747,6 +751,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             devLog('[Auth] Profile deleted from backend — signing out');
             await supabase.auth.signOut().catch(() => {});
             clearSupabaseAuthStorage();
+            // Account deleted — drop the stale same-browser marker too.
+            clearBrowserAccount();
             setUser(null);
             setSession(null);
             setSupabaseUser(null);
@@ -823,6 +829,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             devLog('[Auth] Periodic check: Profile not found after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
             await supabase.auth.signOut().catch(() => {});
             clearSupabaseAuthStorage();
+            // Profile is gone — the account was deleted; drop the stale same-browser marker too.
+            clearBrowserAccount();
             broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
             setUser(null);
             setSession(null);
@@ -840,6 +848,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           devLog('[Auth] Periodic check: Profile fetch error after', MAX_PROFILE_CHECK_FAILURES, 'attempts — signing out');
           await supabase.auth.signOut().catch(() => {});
           clearSupabaseAuthStorage();
+          // Profile is gone — the account was deleted; drop the stale same-browser marker too.
+          clearBrowserAccount();
           broadcastAuthMessage({ type: 'AUTH_SIGNED_OUT' });
           setUser(null);
           setSession(null);

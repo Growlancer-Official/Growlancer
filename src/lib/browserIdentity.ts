@@ -102,6 +102,23 @@ export function recordBrowserAccount(
 }
 
 /**
+ * Clears the recorded browser account marker (e.g. when the recorded account
+ * no longer exists — user deleted it — or on logout of a deleted account).
+ * Returns true if a marker was actually removed.
+ */
+export function clearBrowserAccount(): boolean {
+  try {
+    if (localStorage.getItem(BROWSER_ACCOUNT_KEY)) {
+      localStorage.removeItem(BROWSER_ACCOUNT_KEY);
+      return true;
+    }
+  } catch {
+    // localStorage unavailable — best-effort
+  }
+  return false;
+}
+
+/**
  * Real-time same-browser check: true when THIS browser already has a Growlancer
  * account recorded (different from the email currently being typed).
  * @param currentEmail The email being typed in the signup form (optional)

@@ -17,7 +17,7 @@ import {
 import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 import { validateEmail, validatePassword, validateRequired, getPasswordStrength } from '../utils/validation';
-import { hasSameBrowserAccount, getSameBrowserEmail } from '../lib/browserIdentity';
+import { hasSameBrowserAccount, getSameBrowserEmail, clearBrowserAccount } from '../lib/browserIdentity';
 import { Modal } from './Modal';
 
 interface SignupModalProps {
@@ -76,12 +76,36 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
     }
   }, []);
 
+  // 🔎 Stale-marker validation: the browser marker may reference an account
+  // that no longer exists (user deleted it). Verify the recorded email still
+  // has a real account — if not, clear the marker so the banner doesn't block
+  // unrelated signups. Boolean-only RPC, no data leak. Runs once per modal open
+  // (and after the email settles) so deleted-account markers disappear fast.
+  const validateBrowserMarker = useCallback(async () => {
+    const recordedEmail = getSameBrowserEmail();
+    if (!recordedEmail) return;
+    try {
+      const { data: exists } = await supabase.rpc('email_account_exists' as any, {
+        p_email: recordedEmail,
+      });
+      if (exists === false) {
+        clearBrowserAccount();
+        setSameBrowserWarn(false);
+        setSameBrowserEmail(null);
+        setSameBrowserAck(false);
+      }
+    } catch {
+      // Network hiccup — keep the marker; the banner is dismissible anyway.
+    }
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       setSameBrowserAck(false); // fresh ack per modal open
       checkSameBrowser(email);
+      validateBrowserMarker();
     }
-  }, [isOpen, email, checkSameBrowser]);
+  }, [isOpen, email, checkSameBrowser, validateBrowserMarker]);
 
   // Sync role from initialRole when modal opens (only if explicitly provided via URL)
   useEffect(() => {
