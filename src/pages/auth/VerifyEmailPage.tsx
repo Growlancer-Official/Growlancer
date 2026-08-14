@@ -242,7 +242,9 @@ export function VerifyEmailPage() {
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
+          // 🎯 Same as signup — the confirm link lands on EmailConfirmPage
+          // ("Email verified ✓ — close this window"), never auto-onboarding.
+          emailRedirectTo: `${window.location.origin}/auth/email-confirm?type=signup`,
         },
       });
       if (error) {

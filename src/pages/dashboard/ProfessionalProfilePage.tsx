@@ -114,7 +114,8 @@ export function ProfessionalProfilePage() {
         type: 'signup',
         email: accountData.email,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
+          // 🎯 Confirm link lands on EmailConfirmPage ("close this window")
+          emailRedirectTo: `${window.location.origin}/auth/email-confirm?type=signup`,
         },
       });
       if (error) {

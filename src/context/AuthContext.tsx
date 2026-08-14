@@ -459,10 +459,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // 🛡️ Homepage-fallback rescue: if Supabase redirected the user to the site URL
         // (homepage) instead of /auth/callback because the exact callback URL wasn't in
         // the project's allowed Redirect URLs, the PKCE code / OTP token_hash / implicit
-        // hash tokens are sitting in THIS page's URL. Bounce to /auth/callback preserving
-        // the params so the callback page can exchange the token and route to
-        // onboarding/dashboard — instead of the user being stuck on the homepage with a
-        // silent session.
+        // hash tokens are sitting in THIS page's URL. Bounce to the correct auth page
+        // preserving the params so the token is exchanged and the flow continues —
+        // instead of the user being stuck on the homepage with a silent session.
+        // Email signup/email_change confirmations go to EmailConfirmPage (which shows
+        // the "Email verified ✓ — close this window" screen and NEVER auto-redirects
+        // to onboarding); OAuth / magic-link / recovery go to AuthCallbackPage.
         if (typeof window !== 'undefined' &&
             shouldRedirectToAuthCallback(
               window.location.pathname,
@@ -471,8 +473,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             )) {
           const search = window.location.search;
           const hash = window.location.hash;
-          devLog('[Auth] Auth action params on non-callback page — bouncing to /auth/callback');
-          window.location.replace(`/auth/callback${search}${hash}`);
+          const typeParam =
+            new URLSearchParams(search).get('type') ||
+            new URLSearchParams(hash.replace(/^#/, '')).get('type') ||
+            '';
+          const isEmailConfirm =
+            typeParam === 'signup' || typeParam === 'email_change';
+          const target = isEmailConfirm ? '/auth/email-confirm' : '/auth/callback';
+          devLog(`[Auth] Auth action params on non-auth page (type=${typeParam || 'none'}) — bouncing to ${target}`);
+          window.location.replace(`${target}${search}${hash}`);
           return;
         }
 
@@ -1204,7 +1213,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
         options: {
           data: { name, role, referral_code: referralCode, referred_by: referrerCode || null },
-          emailRedirectTo: `${window.location.origin}/auth/callback?type=signup`,
+          // 🎯 Email confirmation links land DIRECTLY on the EmailConfirmPage —
+          // a plain "Email verified ✓ — you can now close this window" screen.
+          // NEVER /auth/callback (which auto-redirects to onboarding before the
+          // user has returned to the original tab and clicked "I've verified").
+          emailRedirectTo: `${window.location.origin}/auth/email-confirm?type=signup`,
         },
       });
 

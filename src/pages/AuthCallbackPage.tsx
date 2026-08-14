@@ -293,6 +293,26 @@ export function AuthCallbackPage() {
           return;
         }
 
+        // 🎯 Email/password signup with CONFIRMED email — show the plain "Email
+        // verified ✓ — you can now close this window" screen and STOP. NEVER
+        // auto-redirect this tab to onboarding: the user finishes in the ORIGINAL
+        // tab via VerifyEmailPage's "I've verified, continue" button (or its
+        // real-time listener), which routes to onboarding. This is the exact flow
+        // requested: the confirm tab only ever says "verified, close this window".
+        // (Covers confirm links that still point at /auth/callback — e.g. emails
+        //  sent before the redirect target was switched to /auth/email-confirm.)
+        if (sessionFound && authUser && detectedAction === 'signup' && !isOAuthFlow) {
+          devLog('[AuthCallback] Email signup confirmed — showing close-window screen (no auto-onboarding)');
+          // Brief success flash, then land on EmailConfirmPage's dedicated
+          // "Email verified ✓ — close this window" screen (session is already
+          // persisted, so it shows success instantly).
+          setStatus('success');
+          await new Promise(resolve => setTimeout(resolve, 1200));
+          if (cancelled) return;
+          window.location.replace('/auth/email-confirm');
+          return;
+        }
+
         // ✅ OAuth (GitHub/LinkedIn) users NEVER hit an email-confirmation gate —
         // the provider already verified identity at sign-in, so requiring another
         // app-level email confirmation would block brand-new users from onboarding

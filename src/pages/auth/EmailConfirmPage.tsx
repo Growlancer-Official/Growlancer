@@ -66,6 +66,30 @@ export function EmailConfirmPage() {
           }
         }
 
+        // 🛡️ Implicit-flow hash fallback: with flowType 'implicit' the confirmation
+        // link redirects with #access_token=...&refresh_token=... in the URL hash.
+        // supabase-js's detectSessionInUrl normally auto-processes it, but if that
+        // raced or failed (fresh load where the client hadn't finished initializing),
+        // getSession() returns null even though the tokens are right here. Establish
+        // the session explicitly from the hash so the "Email verified ✓" screen
+        // always shows instead of a misleading "link invalid/expired".
+        if (!session?.user?.email_confirmed_at) {
+          const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+          const hashAccessToken = hashParams.get('access_token');
+          const hashRefreshToken = hashParams.get('refresh_token');
+          if (hashAccessToken && hashRefreshToken) {
+            const { data: hashSession } = await supabase.auth
+              .setSession({
+                access_token: hashAccessToken,
+                refresh_token: hashRefreshToken,
+              })
+              .catch(() => ({ data: { session: null } }));
+            if (hashSession?.session?.user?.email_confirmed_at) {
+              session = hashSession.session;
+            }
+          }
+        }
+
         if (cancelled) return;
 
         if (!session?.user?.email_confirmed_at) {
@@ -94,7 +118,7 @@ export function EmailConfirmPage() {
         // homepage/onboarding. The user continues in the ORIGINAL tab via the
         // "I've verified, continue" button (or the real-time listener).
         setMessage(
-          'Your email has been verified. You can now close this window and continue in the original tab.'
+          'Your email has been verified. You can now close this window, go back to the Growlancer tab and click "I\'ve verified, continue" to finish setting up your account.'
         );
       } catch (err) {
         if (!cancelled) {
