@@ -29,9 +29,10 @@ CREATE INDEX IF NOT EXISTS idx_rate_limits_cleanup
 CREATE OR REPLACE FUNCTION cleanup_expired_rate_limits()
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER
+SET search_path TO 'public, pg_catalog'
 AS $$
 BEGIN
-  DELETE FROM rate_limits
+  DELETE FROM public.rate_limits
   WHERE window_start < NOW() - INTERVAL '24 hours';
 END;
 $$;
@@ -45,5 +46,5 @@ ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
 -- Service role bypasses RLS, so no explicit policies are needed for edge functions.
 
 -- ==================== SCHEDULED CLEANUP (optional) ====================
--- To enable automatic cleanup, uncomment:
+-- Scheduled cleanup (enabled on the live DB):
 -- SELECT cron.schedule('cleanup-rate-limits', '0 3 * * *', 'SELECT cleanup_expired_rate_limits();');

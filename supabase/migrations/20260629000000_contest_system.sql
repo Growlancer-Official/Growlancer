@@ -150,11 +150,11 @@ CREATE TRIGGER on_contest_submission_change
   FOR EACH ROW EXECUTE FUNCTION update_contest_submission_count();
 
 -- Function to auto-close expired contests
-CREATE OR REPLACE FUNCTION close_expired_contests()
+CREATE OR REPLACE FUNCTION public.close_expired_contests()
 RETURNS void AS $$
 BEGIN
-  UPDATE contests 
+  UPDATE public.contests
   SET status = 'judging', updated_at = now()
   WHERE status = 'active' AND end_date < now();
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public, pg_catalog';
