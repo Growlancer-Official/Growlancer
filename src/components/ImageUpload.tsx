@@ -233,11 +233,13 @@ export function ImageUpload({
       {previewUrl ? (
         <div className="space-y-3">
           {/* 🖼️ Full-image preview — object-contain so EVERY part of the image
-              is visible regardless of its aspect ratio. Professional backdrop
-              keeps portrait/square images looking clean inside the frame. */}
+              is visible regardless of its aspect ratio. The frame ALWAYS keeps
+              the configured aspect ratio (compact mode caps the height so it
+              stays small) — this gives the img a definite box to fit inside,
+              otherwise a tall image would overflow and get cropped. */}
           <div
             className={`relative rounded-xl overflow-hidden border-2 border-slate-200 group bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 ${compact ? 'max-h-44' : ''}`}
-            style={{ aspectRatio: compact ? undefined : aspectRatio, minHeight: compact ? undefined : '140px' }}
+            style={{ aspectRatio, minHeight: compact ? undefined : '140px' }}
           >
             <img
               src={previewUrl}
