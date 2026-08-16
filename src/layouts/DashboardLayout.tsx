@@ -25,6 +25,7 @@ import {
   Shield,
   Crown,
   Award,
+  Trophy,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -69,6 +70,7 @@ const sidebarGroups: SidebarGroup[] = [
     links: [
       { id: 'services', path: '/dashboard/services', icon: Package, label: 'Services' },
       { id: 'portfolio', path: '/dashboard/portfolio', icon: Image, label: 'Portfolio' },
+      { id: 'contests', path: '/contests', icon: Trophy, label: 'Contests' },
     ],
   },
   {

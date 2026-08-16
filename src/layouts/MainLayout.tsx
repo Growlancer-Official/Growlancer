@@ -95,6 +95,7 @@ export function MainLayout() {
               <Link to={ROUTES.CATEGORIES} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Categories</Link>
               <Link to={ROUTES.SERVICES} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Services</Link>
               <Link to={ROUTES.FREELANCERS} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Freelancers</Link>
+              <Link to={ROUTES.CONTESTS} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Contests</Link>
               <Link to={ROUTES.FEATURES} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Features</Link>
               <Link to={ROUTES.PRICING} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Pricing</Link>
               <Link to={ROUTES.INTERNSHIPS} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Internships</Link>
@@ -155,6 +156,10 @@ export function MainLayout() {
             <Link to={ROUTES.FREELANCERS} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
               <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               Freelancers
+            </Link>
+            <Link to={ROUTES.CONTESTS} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+              <svg className="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v12m0 0l-3-3m3 3l3-3M6 21h12" /></svg>
+              Contests
             </Link>
             <Link to={ROUTES.FEATURES} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
               <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>

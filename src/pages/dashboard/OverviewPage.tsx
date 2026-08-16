@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Briefcase, Check, CreditCard, FileText, Handshake, MessageSquare, Plus, Sparkles, Users, Wallet, Zap,  } from 'lucide-react';
+import { ArrowRight, Briefcase, Check, CreditCard, FileText, Handshake, MessageSquare, Plus, Sparkles, Trophy, Users, Wallet, Zap,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -669,6 +669,13 @@ export function OverviewPage() {
                   >
                     <Wallet className="w-5 h-5 text-slate-600" />
                     <span className="font-medium text-slate-700">Earnings</span>
+                  </Link>
+                  <Link
+                    to="/contests"
+                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                  >
+                    <Trophy className="w-5 h-5 text-amber-500" />
+                    <span className="font-medium text-slate-700">Contests</span>
                   </Link>
                 </>
               ) : (
