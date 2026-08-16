@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { getPostAuthPath } from '../lib/authAction';
 import { validateEmail, validateRequired } from '../utils/validation';
 import { Modal } from './Modal';
 
@@ -78,16 +79,18 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
       const result = await login(normalizedEmail, password);
 
       if (result.success && result.role) {
-        // If onboarding not completed, redirect to onboarding first
-        const redirectPath = result.onboardingNeeded
-          ? '/onboarding'
-          : result.role === 'freelancer'
-            ? '/dashboard'
-            : result.role === 'client'
-              ? '/client'
-              : result.role === 'admin'
-                ? '/admin'
-                : '/';
+        // 🎯 Use the SAME post-auth destination rules as the email-verify flow
+        // (getPostAuthPath from lib/authAction — role-specific onboarding when
+        // incomplete, role dashboard when complete). Login must land on exactly
+        // the same onboarding screen the email-confirm flow shows — never a
+        // "different onboarding" — so both paths are always consistent.
+        const redirectPath = getPostAuthPath(
+          {
+            role: result.role,
+            onboardingCompleted: result.onboardingNeeded ? false : true,
+          },
+          false
+        );
         
         // Close modal and navigate with a small delay to ensure cleanup
         onClose();

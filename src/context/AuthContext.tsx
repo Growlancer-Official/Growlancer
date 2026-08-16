@@ -1217,7 +1217,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           // a plain "Email verified ✓ — you can now close this window" screen.
           // NEVER /auth/callback (which auto-redirects to onboarding before the
           // user has returned to the original tab and clicked "I've verified").
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm?type=signup`,
+          // ⚠️ NO ?type=signup query here: GoTrue's redirect allowlist uses glob
+          // matching against the FULL URL including the query string, so adding
+          // ?type=signup made the link fail validation → GoTrue fell back to the
+          // Site URL (homepage) → ugly homepage flash before the verify page.
+          // GoTrue appends type=signup itself in the final redirect, so the
+          // plain URL both matches the allowlist AND still carries the type.
+          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
         },
       });
 
