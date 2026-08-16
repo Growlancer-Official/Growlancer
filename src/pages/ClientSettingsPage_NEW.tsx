@@ -382,7 +382,13 @@ export function ClientSettingsPage() {
           size: companyData.size,
           location: companyData.location,
           description: companyData.description,
-        });
+          updated_at: new Date().toISOString(),
+          // 🐛 FIX: upsert must target the UNIQUE user_id column — without
+          // onConflict, the primary key (id) is used, so every save after the
+          // first INSERTs a new row with a fresh id and violates
+          // client_profiles_user_id_key (duplicate user_id) → the save always
+          // failed with "Failed to save profile" once the row existed.
+        }, { onConflict: 'user_id' });
 
       if (error) throw error;
       setSuccessMessage('Company profile saved successfully!');
