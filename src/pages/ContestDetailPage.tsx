@@ -566,7 +566,7 @@ export function ContestDetailPage() {
                   Entries paused — prize not funded yet
                 </div>
               )}
-              {isContestActive && contest.prize_funded && user && !hasSubmitted && !isOwner && (
+              {isContestActive && contest.prize_funded && user && user.role === 'freelancer' && !hasSubmitted && !isOwner && (
                 <button
                   onClick={() => setShowSubmitForm(true)}
                   className="w-full py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg flex items-center justify-center gap-2"
