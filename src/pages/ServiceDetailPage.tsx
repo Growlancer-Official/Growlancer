@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgePercent, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Send, Shield, ShoppingCart, Star, Tag, X } from 'lucide-react';
 import { supabase, uniqueChannelName } from '../lib/supabase';
+import { formatCurrency as libFormatCurrency, currencySymbol } from '../lib/currency';
 import { requireKycForAction } from '../lib/kycGate';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
@@ -226,8 +227,7 @@ export function ServiceDetailPage() {
     );
   }
 
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+  const formatCurrency = (amount: number) => libFormatCurrency(amount);
 
   // ── PACKAGE MODEL (FINAL): 3 published tiers; legacy single-price services
   // render as one Basic package so nothing breaks.
@@ -734,7 +734,7 @@ export function ServiceDetailPage() {
 
                   <div className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Your offer (₹) *</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Your offer ({currencySymbol()}) *</label>
                       <input
                         type="number"
                         min="1"

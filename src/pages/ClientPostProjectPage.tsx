@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { formatCurrency, currencySymbol } from '../lib/currency';
 import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
@@ -116,11 +117,11 @@ export function ClientPostProjectPage() {
       return;
     }
     if (budget < 500) {
-      toast.error('Validation Error', 'Budget must be at least ₹500.');
+      toast.error('Validation Error', `Budget must be at least ${formatCurrency(500)}.`);
       return;
     }
     if (budget > 100000) {
-      toast.error('Validation Error', 'Budget cannot exceed ₹1,00,000.');
+      toast.error('Validation Error', `Budget cannot exceed ${formatCurrency(100000)}.`);
       return;
     }
     setLoading(true);
@@ -324,7 +325,7 @@ export function ClientPostProjectPage() {
           </h2>
 
           <div className="max-w-md">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Enter Your Budget (₹) *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-2">Enter Your Budget ({currencySymbol()}) *</label>
             <input
               type="number"
               required
@@ -336,7 +337,7 @@ export function ClientPostProjectPage() {
               placeholder="e.g., 10000"
             />
             <p className="text-xs text-slate-400 mt-1.5">
-              Set the budget you're willing to pay for this project (₹500 – ₹1,00,000).
+              Set the budget you're willing to pay for this project ({formatCurrency(500)} – {formatCurrency(100000)}).
               Freelancers use it to gauge scope and submit accurate proposals.
             </p>
           </div>

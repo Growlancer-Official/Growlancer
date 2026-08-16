@@ -35,6 +35,7 @@ import { PLATFORM_CONFIG } from '../../lib/config';
 import { safeFormatDate } from '../../utils/date';
 import { InfoTip } from '../../components/InfoTip';
 import { TipNote } from '../../components/TipNote';
+import { currencySymbol } from '../../lib/currency';
 
 // ────────────────────────────────────────
 // Types
@@ -1150,11 +1151,11 @@ export function WalletPage() {
                   {/* Amount */}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Amount (₹)
+                      Amount ({currencySymbol()})
                     </label>
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">
-                        ₹
+                        {currencySymbol()}
                       </span>
                       <input
                         type="number"

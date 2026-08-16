@@ -7,6 +7,7 @@ import { TipNote } from '../../components/TipNote';
 import { disputeService } from '../../lib/disputeService';
 import type { DisputeCase } from '../../lib/disputeService';
 import { supabase } from '../../lib/supabase';
+import { formatCurrency } from '../../lib/currency';
 
 /* ------------------------------------------------------------------ */
 /*  Status helpers                                                     */
@@ -48,7 +49,7 @@ const TERMINAL_STATUSES = ['resolved_refunded', 'resolved_released', 'cancelled'
 function getDecisionExplanation(dispute: DisputeCase): string {
   const decision = (dispute as any).decision as string | null;
   const amount = Number((dispute as any).decision_amount || 0);
-  const amt = amount > 0 ? `₹${amount.toLocaleString('en-IN')}` : 'the escrow amount';
+  const amt = amount > 0 ? formatCurrency(amount) : 'the escrow amount';
 
   switch (decision) {
     case 'client_refund':
@@ -311,7 +312,7 @@ export function DisputeResolutionPage() {
             {contractDetail && (
               <span className="inline-flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg text-slate-600">
                 <User className="w-4 h-4 text-slate-400" />
-                Contract: ₹{Number((contractDetail as any).amount || 0).toLocaleString('en-IN')}
+                Contract: {formatCurrency(Number((contractDetail as any).amount || 0))}
               </span>
             )}
             {contractDetail && (
@@ -362,7 +363,7 @@ export function DisputeResolutionPage() {
             </p>
             {(selectedDispute as any).decision_amount != null && (
               <p className="text-xs text-slate-400 mt-3">
-                Amount involved: ₹{Number((selectedDispute as any).decision_amount || 0).toLocaleString('en-IN')}
+                Amount involved: {formatCurrency(Number((selectedDispute as any).decision_amount || 0))}
               </p>
             )}
             {(selectedDispute as any).resolved_at && (

@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { aiMatchingService, type AIMatchWithProfile } from '../lib/aiMatching';
 import { realtimeChannels, supabase } from '../lib/supabase';
+import { formatCurrency } from '../lib/currency';
 import { useAuth } from '../context/AuthContext';
 import { inviteFreelancerToProject } from '../lib/workflowService';
 import { CheckCircle2, IndianRupee, MapPin, RefreshCw, Send, Sparkles, Star, User, XCircle, Plus, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
@@ -412,7 +413,7 @@ export function ClientMatchesPage() {
               <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
                   <IndianRupee className="w-4 h-4" />
-                  <span>₹{match.freelancer.hourly_rate || 0}</span>
+                  <span>{formatCurrency(match.freelancer.hourly_rate || 0)}</span>
                 </div>
                 <div className="flex items-center gap-2 text-slate-600">
                   <MapPin className="w-4 h-4" />

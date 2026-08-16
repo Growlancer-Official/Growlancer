@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, CheckCircle2, Clock, CreditCard, IndianRupee, FileText, Handshake, Plus, Sparkles, Users,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { formatCurrency } from '../lib/currency';
 import {
   projectsService,
   contractsService,
@@ -163,7 +164,7 @@ export default function ClientDashboard() {
     },
     { 
       label: 'Total Spent', 
-      value: `₹${safeNumber(stats.totalSpent).toLocaleString()}`, 
+      value: formatCurrency(safeNumber(stats.totalSpent)), 
       icon: IndianRupee, 
       color: 'bg-orange-50 text-orange-600' 
     },
@@ -313,7 +314,7 @@ export default function ClientDashboard() {
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <span className="text-sm font-medium text-slate-900">
-                      ₹{safeNumber(contract.amount).toLocaleString()}
+                      {formatCurrency(safeNumber(contract.amount))}
                     </span>
                     {contract.escrow_funded ? (
                       <span className="flex items-center gap-1 text-xs text-emerald-600">

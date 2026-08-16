@@ -3,10 +3,11 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Globe, Heart, ShieldCheck, Sparkles, Target, TrendingUp, Users, Zap } from 'lucide-react';
 import { LiveCodeTerminal, type TerminalLine } from '@/components/LiveCodeTerminal';
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
+import { formatCurrency } from '@/lib/currency';
 
 function formatInrFull(inr: number): string {
-  if (!Number.isFinite(inr) || inr < 0) return '₹0';
-  return `₹${Math.round(inr).toLocaleString('en-IN')}`;
+  if (!Number.isFinite(inr) || inr < 0) return formatCurrency(0);
+  return formatCurrency(Math.round(inr));
 }
 
 export function AboutPage() {
@@ -15,7 +16,7 @@ export function AboutPage() {
   // Real content — inject live platform numbers into the terminal script.
   const terminalLines = useMemo<TerminalLine[]>(() => {
     const members = raw.members != null ? raw.members.toLocaleString('en-US') : '—';
-    const escrow = raw.escrowInr != null ? formatInrFull(raw.escrowInr) : '₹0';
+    const escrow = raw.escrowInr != null ? formatInrFull(raw.escrowInr) : formatCurrency(0);
     const sat = raw.satisfactionPercent != null ? `${Math.round(raw.satisfactionPercent)}%` : '—';
     const countries = raw.countries != null ? raw.countries.toLocaleString('en-US') : '—';
     return [

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { supabase, uniqueChannelName } from '@/lib/supabase';
+import { formatCompactCurrency } from '@/lib/currency';
 
 const METRICS_URL = '/platform-metrics.json';
 const POLL_MS = 60_000;
@@ -18,10 +19,7 @@ export type AboutStatCard = { value: string; label: string };
 
 function formatInrShort(inr: number): string {
   if (!Number.isFinite(inr) || inr < 0) return '—';
-  if (inr === 0) return '₹0';
-  if (inr < 1_000) return `₹${Math.round(inr).toLocaleString('en-IN')}`;
-  if (inr < 1_00_00_000) return `₹${(inr / 1_000).toFixed(inr < 10_000 ? 1 : 0)}K`;
-  return `₹${(inr / 1_00_00_000).toFixed(inr < 10_00_00_000 ? 2 : 1)}Cr`;
+  return formatCompactCurrency(inr);
 }
 
 function formatPercent(p: number): string {

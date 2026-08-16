@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown, Clock, IndianRupee, Filter, Loader2, Search, Sparkles, Trophy, Users,  } from 'lucide-react';
 import { contestService, type Contest, CONTEST_CATEGORIES, getTimeRemaining } from '../lib/contests';
+import { formatCurrency } from '../lib/currency';
 import { TipNote } from '../components/TipNote';
 import { safeLower } from '../utils/date';
 
@@ -93,7 +94,7 @@ export function ContestsPage() {
             </div>
             <div className="text-center">
               <p className="text-3xl font-extrabold text-emerald-600">
-                ₹{contests.reduce((sum, c) => sum + c.prize_amount, 0).toLocaleString('en-IN')}
+                {formatCurrency(contests.reduce((sum, c) => sum + c.prize_amount, 0))}
               </p>
               <p className="text-sm text-slate-500 font-medium">Total Prizes</p>
             </div>

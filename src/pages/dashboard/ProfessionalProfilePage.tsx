@@ -8,6 +8,7 @@ import { notificationPreferencesService } from '../../lib/notificationPreference
 import { withdrawalService } from '../../lib/withdrawal';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { formatCurrency, currencySymbol } from '../../lib/currency';
 import { ReauthDialog } from '../../components/ReauthDialog';
 import { isReauthValid, markReauthVerified } from '../../lib/reauth';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
@@ -1046,9 +1047,9 @@ export function ProfessionalProfilePage() {
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Professional Info</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-2">Base Rate (₹)</label>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Base Rate ({currencySymbol()})</label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">₹</span>
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{currencySymbol()}</span>
                           <input
                             type="number"
                             step="0.01"
@@ -1198,7 +1199,7 @@ export function ProfessionalProfilePage() {
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Professional Info</h3>
                       <div className="space-y-3">
                         <div><span className="text-xs text-slate-400">Title</span><p className="font-medium">{formData.title || 'Not set'}</p></div>
-                        <div><span className="text-xs text-slate-400">Base Rate</span><p className="font-medium">{formData.hourly_rate ? `₹${formData.hourly_rate}` : 'Not set'}</p></div>
+                        <div><span className="text-xs text-slate-400">Base Rate</span><p className="font-medium">{formData.hourly_rate ? formatCurrency(Number(formData.hourly_rate)) : 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Experience</span><p className="font-medium">{formData.experience ? `${formData.experience} years` : 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Location</span><p className="font-medium">{formData.location || 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Portfolio</span><p className="font-medium">{formData.portfolio_url ? <a href={formData.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">{formData.portfolio_url}</a> : 'Not set'}</p></div>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Award, BarChart3, Check, CheckCircle, CreditCard, Crown, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { safeFormatDate } from '../utils/date';
+import { formatCurrency } from '../lib/currency';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
 import { ProBadge } from '../components/ProBadge';
 import { TipNote } from '../components/TipNote';
@@ -198,7 +199,7 @@ export function ProSubscriptionPage() {
               FREELANCER PREMIUM
             </div>
             <h1 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
-              One Simple Plan. <span className="text-emerald-600">₹299/month.</span>
+              One Simple Plan. <span className="text-emerald-600">{formatCurrency(299)}/month.</span>
             </h1>
             <p className="text-lg text-slate-500 max-w-2xl mx-auto">
               Premium unlocks our <strong>AI writing tools, AI assistant, profile optimization and advanced analytics</strong>.
@@ -234,7 +235,7 @@ export function ProSubscriptionPage() {
           {/* Single flat plan — no billing-interval toggle (one plan only) */}
           <div className="flex items-center justify-center mb-12">
             <span className="px-6 py-2.5 rounded-xl font-bold text-sm bg-slate-900 text-white shadow-lg">
-              Monthly · ₹299
+              Monthly · {formatCurrency(299)}
             </span>
             <span className="ml-3 text-xs text-slate-500 font-medium">
               One plan only — no tiers, no annual commitment
@@ -244,7 +245,7 @@ export function ProSubscriptionPage() {
           {/* No lock-in note — one flat plan, cancel anytime */}
           <div className="max-w-5xl mx-auto px-4 mb-8">
             <TipNote tone="tip" title="No lock-in — cancel anytime" compact>
-              Premium is <strong>₹299/month, flat</strong> — one simple plan, no tiers, no teams, no annual
+              Premium is <strong>{formatCurrency(299)}/month, flat</strong> — one simple plan, no tiers, no teams, no annual
               commitment. Pay with wallet balance or Razorpay (UPI, cards, net banking). Your Pro badge stays
               active the whole time and billing is managed right here in real time. Your packages, proposals and
               visibility stay exactly the same before and after — Premium is purely extra AI + productivity tools.
@@ -300,7 +301,7 @@ export function ProSubscriptionPage() {
                   <div className="mb-6">
                     <div className="flex items-baseline gap-1">
                       <span className="font-display text-4xl font-extrabold">
-                        ₹{plan.price.toLocaleString('en-IN')}
+                        {formatCurrency(plan.price)}
                       </span>
                       <span className="text-slate-400 font-bold text-sm">
                         /{plan.interval}

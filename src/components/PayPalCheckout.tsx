@@ -6,6 +6,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { paypalService, PayPalOrderRequest } from '../lib/paypal';
+import { formatCurrency } from '../lib/currency';
 
 interface PayPalCheckoutProps {
   orderData: PayPalOrderRequest;
@@ -139,7 +140,7 @@ export function PayPalCheckout({
           <div>
             <p className="text-sm text-slate-600">Total Amount</p>
             <p className="text-2xl font-bold text-slate-900">
-              ₹{(Number.isFinite(orderData.amount) ? orderData.amount : 0).toLocaleString('en-IN')} {orderData.currency || 'INR'}
+              {formatCurrency(Number.isFinite(orderData.amount) ? orderData.amount : 0, orderData.currency || 'INR')}
             </p>
           </div>
           <CreditCard className="w-8 h-8 text-blue-600" />

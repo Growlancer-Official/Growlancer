@@ -7,6 +7,7 @@ import { razorpayService, type SavedPaymentCard } from '../lib/razorpay';
 import type { ClientPaymentMethod } from '../lib/clientPaymentMethods';
 import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCircle, CreditCard, Download, FileText, Filter, IndianRupee, Loader2, Plus, PlusCircle, Shield, Trash2, Wallet, X } from 'lucide-react';
 import { formatCurrency, safeFormatDate, safeNumber } from '../utils/date';
+import { currencySymbol } from '../lib/currency';
 import { withdrawalService } from '../lib/withdrawal';
 import { RazorpayCheckout } from '../components/RazorpayCheckout';
 import { InfoTip } from '../components/InfoTip';
@@ -356,7 +357,7 @@ export function ClientPaymentsPage() {
   };
 
   const formatAmount = (amount: number, type: string) => {
-    return `${type === 'credit' ? '+' : '-'}₹${safeNumber(Math.abs(amount)).toLocaleString()}`;
+    return `${type === 'credit' ? '+' : '-'}${formatCurrency(safeNumber(Math.abs(amount)))}`;
   };
 
   const formatInvoiceAmount = (amount: number) =>
@@ -507,9 +508,9 @@ export function ClientPaymentsPage() {
                 </div>
               )}
 
-              <label className="block text-sm font-medium text-slate-700 mb-2">Amount (₹)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Amount ({currencySymbol()})</label>
               <div className="relative mb-1.5">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">{currencySymbol()}</span>
                 <input
                   type="number"
                   min={50}
@@ -532,7 +533,7 @@ export function ClientPaymentsPage() {
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
-                    ₹{amt.toLocaleString('en-IN')}
+                    {formatCurrency(amt)}
                   </button>
                 ))}
               </div>
@@ -553,7 +554,7 @@ export function ClientPaymentsPage() {
                 onError={(e) => {
                   setAddFundsError(e.message || 'Payment failed. Please try again.');
                 }}
-                buttonText={`Pay ₹${(Number(addFundsAmount) || 0).toLocaleString('en-IN')} with Razorpay`}
+                buttonText={`Pay ${formatCurrency(Number(addFundsAmount) || 0)} with Razorpay`}
                 userInfo={{ name: (user as any)?.user_metadata?.name, email: user?.email }}
               />
 

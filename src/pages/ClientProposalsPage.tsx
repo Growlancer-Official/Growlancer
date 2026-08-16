@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
+import { formatCurrency } from '../lib/currency';
 import { hireFreelancerFromProposal, rejectProposal } from '../lib/workflowService';
 import { CheckCircle, Clock, ExternalLink, Eye, FileText, IndianRupee, MoreVertical, Plus, Star, User, XCircle } from 'lucide-react';
 import { useToast } from '../components/Toast';
@@ -393,12 +394,12 @@ export function ClientProposalsPage() {
                       <div className="flex items-center gap-1">
                         <IndianRupee className="w-4 h-4" />
                         <span>
-                          ₹{(() => {
+                          {formatCurrency((() => {
                             const fp = Array.isArray(proposal.freelancer?.freelancer_profiles) 
                               ? proposal.freelancer.freelancer_profiles[0] 
                               : proposal.freelancer?.freelancer_profiles;
                             return fp?.hourly_rate || 0;
-                          })()}
+                          })())}
                         </span>
                       </div>
                     </div>
@@ -439,7 +440,7 @@ export function ClientProposalsPage() {
               <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
                 <div className="flex items-center gap-2">
                   <IndianRupee className="w-4 h-4" />
-                  <span className="font-bold text-slate-900">₹{(proposal.bid_amount ?? proposal.proposed_rate ?? 0).toLocaleString('en-IN')}</span>
+                  <span className="font-bold text-slate-900">{formatCurrency(proposal.bid_amount ?? proposal.proposed_rate ?? 0)}</span>
                   {proposal.project && proposal.project.budget_max > 0 && (
                     (proposal.bid_amount ?? proposal.proposed_rate ?? 0) > proposal.project.budget_max ? (
                       <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-semibold rounded-full">Above your budget</span>

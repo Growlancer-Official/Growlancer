@@ -15,6 +15,7 @@ import { useAuth } from '../context/AuthContext';
 import { PayPalCheckout } from './PayPalCheckout';
 import { RazorpayCheckout } from './RazorpayCheckout';
 import { PAYMENTS_CONFIG } from '../lib/payments';
+import { formatCurrency } from '../lib/currency';
 import { supabase } from '../lib/supabase';
 import { withdrawalService } from '../lib/withdrawal';
 import { PLATFORM_CONFIG, calculatePlatformFee, calculateTotalWithFee } from '../lib/config';
@@ -124,7 +125,7 @@ function MilestoneStepIndicator({
               {/* Amount and status */}
               <div className="text-right flex-shrink-0">
                 <p className="text-sm font-semibold text-slate-900">
-                  ₹{Number(milestone.amount || 0).toFixed(2)}
+                  {formatCurrency(Number(milestone.amount || 0))}
                 </p>
                 <span className={`text-xs font-medium capitalize ${
                   isCompleted ? 'text-emerald-600' : isDisputed ? 'text-red-600' : 'text-slate-400'
@@ -153,7 +154,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
     <div className="p-4 bg-slate-50 rounded-lg">
       <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium text-slate-700">Escrow Funding Progress</span>
-        <span className="text-sm font-bold text-slate-900">₹{safeFunded.toFixed(0)} / ₹{safeTotal.toFixed(0)}</span>
+        <span className="text-sm font-bold text-slate-900">{formatCurrency(safeFunded)} / {formatCurrency(safeTotal)}</span>
       </div>
       <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
         <div
@@ -165,7 +166,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
       </div>
       <div className="flex justify-between text-xs text-slate-500">
         <span>{percent}% funded</span>
-        {remaining > 0 && <span>₹{remaining.toFixed(2)} remaining</span>}
+        {remaining > 0 && <span>{formatCurrency(remaining)} remaining</span>}
       </div>
     </div>
   );
@@ -373,7 +374,7 @@ export function EscrowPayPalPayment({
         </div>
         <h2 className="text-2xl font-bold text-slate-900 mb-2">Payment Successful!</h2>
         <p className="text-slate-600 mb-4">
-          Your escrow payment of <span className="font-semibold">₹{totalAmount.toFixed(2)}</span> has been received.
+          Your escrow payment of <span className="font-semibold">{formatCurrency(totalAmount)}</span> has been received.
         </p>
         {milestones.length > 0 && (
           <p className="text-sm text-slate-500 mb-6">
@@ -457,7 +458,7 @@ export function EscrowPayPalPayment({
             <span className="text-sm font-medium text-slate-600">
               Balance:{' '}
               <span className={walletBalance !== null && walletBalance >= totalAmount ? 'text-emerald-700 font-bold' : 'text-slate-500'}>
-                {walletLoading ? '…' : `₹${(walletBalance ?? 0).toLocaleString('en-IN')}`}
+                {walletLoading ? '…' : formatCurrency(walletBalance ?? 0)}
               </span>
             </span>
           </div>
@@ -465,7 +466,7 @@ export function EscrowPayPalPayment({
             {walletBalance !== null && walletBalance >= totalAmount
               ? 'You have enough balance to fund this escrow instantly — no card needed.'
               : walletBalance !== null && walletBalance > 0
-              ? `Add ₹${(totalAmount - walletBalance).toLocaleString('en-IN')} more to fund from wallet, or pay with a card below.`
+              ? `Add ${formatCurrency(totalAmount - walletBalance)} more to fund from wallet, or pay with a card below.`
               : 'Add funds to your wallet, or pay securely with a card below.'}
           </p>
           <button
@@ -486,7 +487,7 @@ export function EscrowPayPalPayment({
             ) : (
               <>
                 <Banknote className="w-4 h-4" />
-                Fund Escrow with Wallet — ₹{totalAmount.toLocaleString('en-IN')}
+                Fund Escrow with Wallet — {formatCurrency(totalAmount)}
               </>
             )}
           </button>
@@ -519,7 +520,7 @@ export function EscrowPayPalPayment({
           onSuccess={handlePayPalSuccess}
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
-          buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')} with Razorpay`}
+          buttonText={`Pay ${formatCurrency(totalAmount)} with Razorpay`}
           userInfo={{
             name: (user as any)?.user_metadata?.name,
             email: user?.email,
@@ -554,7 +555,7 @@ export function EscrowPayPalPayment({
               onSuccess={handlePayPalSuccess}
               onError={handlePayPalError}
               onCancel={handlePayPalCancel}
-              buttonText={`Pay ₹${totalAmount.toLocaleString('en-IN')} with PayPal`}
+              buttonText={`Pay ${formatCurrency(totalAmount)} with PayPal`}
             />
           </>
         ) : (
@@ -585,23 +586,23 @@ export function EscrowPayPalPayment({
                 return (
                   <div key={idx} className="flex justify-between text-slate-600">
                     <span>{ms?.title || `Milestone ${idx + 1}`}</span>
-                    <span>₹{msAmount.toFixed(2)}</span>
+                    <span>{formatCurrency(msAmount)}</span>
                   </div>
                 );
               })
             ) : (
               <div className="flex justify-between text-slate-600">
                 <span>Project Amount</span>
-                <span>₹{fundingAmount.toFixed(2)}</span>
+                <span>{formatCurrency(fundingAmount)}</span>
               </div>
             )}
             <div className="flex justify-between text-slate-600">
               <span>Platform Fee ({feePercentage}%)</span>
-              <span>₹{platformFee.toFixed(2)}</span>
+              <span>{formatCurrency(platformFee)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total</span>
-              <span>₹{totalAmount.toFixed(2)}</span>
+              <span>{formatCurrency(totalAmount)}</span>
             </div>
           </div>
         </div>
@@ -646,15 +647,15 @@ export function EscrowPayPalPayment({
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Funding Amount</span>
-              <span className="font-semibold text-slate-900">₹{fundingAmount.toFixed(2)}</span>
+              <span className="font-semibold text-slate-900">{formatCurrency(fundingAmount)}</span>
             </div>
             <div className="flex justify-between text-slate-600">
               <span>Platform Fee ({feePercentage}%)</span>
-              <span>₹{platformFee.toFixed(2)}</span>
+              <span>{formatCurrency(platformFee)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total to Pay</span>
-              <span>₹{totalAmount.toFixed(2)}</span>
+              <span>{formatCurrency(totalAmount)}</span>
             </div>
           </div>
           <p className="text-[11px] text-emerald-700 mt-2 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
@@ -715,21 +716,21 @@ export function EscrowPayPalPayment({
           </div>
           <div className="flex justify-between text-slate-600">
             <span>Project Amount</span>
-            <span className="font-medium text-slate-900">₹{safeAmount.toFixed(2)}</span>
+            <span className="font-medium text-slate-900">{formatCurrency(safeAmount)}</span>
           </div>
           {selectedMilestones.size > 0 && (
             <div className="flex justify-between text-slate-600">
               <span>Funding Amount (Selected Milestones)</span>
-              <span className="font-medium text-slate-900">₹{fundingAmount.toFixed(2)}</span>
+              <span className="font-medium text-slate-900">{formatCurrency(fundingAmount)}</span>
             </div>
           )}
           <div className="flex justify-between text-slate-600">
             <span>Platform Fee ({feePercentage}%)</span>
-            <span className="font-medium text-slate-900">₹{platformFee.toFixed(2)}</span>
+            <span className="font-medium text-slate-900">{formatCurrency(platformFee)}</span>
           </div>
           <div className="flex justify-between font-semibold text-slate-900 pt-3 border-t border-slate-200 text-lg">
             <span>Total to Pay</span>
-            <span>₹{totalAmount.toFixed(2)}</span>
+            <span>{formatCurrency(totalAmount)}</span>
           </div>
           <p className="text-[11px] text-emerald-700 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 mt-3">
             The platform fee is added to your payment — <strong>{freelancerName} receives 100% of the project amount</strong>.

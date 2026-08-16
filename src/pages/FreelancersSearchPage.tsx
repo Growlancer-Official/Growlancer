@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, ChevronDown, ChevronUp, Clock, Filter, Globe, Layers, Loader2, MapPin, Search, Star, X,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { formatCurrency, currencySymbol } from '../lib/currency';
 import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { useToast } from '../components/Toast';
@@ -231,7 +232,7 @@ export function FreelancersSearchPage() {
 
               {/* Min Rate */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Min Base Rate (₹)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Min Base Rate ({currencySymbol()})</label>
                 <input
                   type="number"
                   value={minRate}
@@ -243,7 +244,7 @@ export function FreelancersSearchPage() {
 
               {/* Max Rate */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Max Base Rate (₹)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Max Base Rate ({currencySymbol()})</label>
                 <input
                   type="number"
                   value={maxRate}
@@ -430,7 +431,7 @@ export function FreelancersSearchPage() {
                     </div>
                     {freelancer.hourly_rate && (
                       <span className="text-lg font-bold text-emerald-600">
-                        ₹{Number(freelancer.hourly_rate).toLocaleString('en-IN')}
+                        {formatCurrency(Number(freelancer.hourly_rate))}
                       </span>
                     )}
                   </div>

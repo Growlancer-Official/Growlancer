@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { safeFormatDate, safeFormatTime, safeFormatDateTime } from '../../utils/date';
+import { formatCurrency as libFormatCurrency, currencySymbol } from '../../lib/currency';
 import {
   AlertCircle,
   AlertTriangle,
@@ -841,12 +842,7 @@ export function WorkspacePage() {
   const formatCurrency = (amount: number) => {
     // NaN-safe — contracts can have null/undefined amounts; never render ₹NaN.
     const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0;
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(safeAmount);
+    return libFormatCurrency(safeAmount);
   };
 
   if (loading) {
@@ -1121,7 +1117,7 @@ export function WorkspacePage() {
                     <span className="block mt-1 font-semibold">Reason:</span> {pendingRevision.reason}
                   </p>
                   <label className="block mt-3 text-xs font-medium text-blue-800">
-                    Per-revision price (₹) — default from your published rate:
+                    Per-revision price ({currencySymbol()}) — default from your published rate:
                     <input
                       type="number"
                       min="1"
@@ -1134,7 +1130,7 @@ export function WorkspacePage() {
                   </label>
                   {Number(revisionPriceInput) > 0 && (
                     <p className="text-xs text-blue-700 mt-1.5 font-semibold">
-                      Client will pay ₹{((Number(revisionPriceInput) * pendingRevision.revision_count)).toLocaleString('en-IN')} through escrow
+                      Client will pay {formatCurrency(Number(revisionPriceInput) * pendingRevision.revision_count)} through escrow
                     </p>
                   )}
                 </div>

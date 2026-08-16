@@ -6,6 +6,7 @@ import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { formatBudgetRange } from '../../utils/date';
+import { formatCurrency } from '../../lib/currency';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { realtimeChannels, tables } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
@@ -389,7 +390,7 @@ export function ProposalsPage() {
                       <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                         <p className="text-xs text-emerald-600 mb-1 font-medium">Your Rate</p>
                         <p className="text-lg font-bold text-slate-900">
-                          ₹{proposal.proposed_rate?.toLocaleString('en-IN') || 'N/A'}
+                          {proposal.proposed_rate ? formatCurrency(proposal.proposed_rate) : 'N/A'}
                         </p>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-xl">

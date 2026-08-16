@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Calendar, CheckCircle, Clock, Eye, FileText, IndianRupee, Loader2, Lock, Medal, MessageSquare, Send, ShieldCheck, Star, ThumbsUp, Trophy, Upload, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { formatCurrency } from '../lib/currency';
 import { useToast } from '../components/Toast';
 import { supabase } from '../lib/supabase';
 import { contestService, type Contest, type ContestSubmission, type ContestComment, getTimeRemaining } from '../lib/contests';
@@ -370,18 +371,18 @@ export function ContestDetailPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="text-emerald-100">🥇 1st Place</span>
-                    <span className="font-extrabold text-xl">₹{contest.prize_amount.toLocaleString()}</span>
+                    <span className="font-extrabold text-xl">{formatCurrency(contest.prize_amount)}</span>
                   </div>
                   {contest.second_prize > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-emerald-100">🥈 2nd Place</span>
-                      <span className="font-bold">₹{contest.second_prize.toLocaleString()}</span>
+                      <span className="font-bold">{formatCurrency(contest.second_prize)}</span>
                     </div>
                   )}
                   {contest.third_prize > 0 && (
                     <div className="flex justify-between items-center">
                       <span className="text-emerald-100">🥉 3rd Place</span>
-                      <span className="font-bold">₹{contest.third_prize.toLocaleString()}</span>
+                      <span className="font-bold">{formatCurrency(contest.third_prize)}</span>
                     </div>
                   )}
                 </div>
@@ -390,7 +391,7 @@ export function ContestDetailPage() {
                     <>
                       <ShieldCheck className="w-4 h-4 shrink-0" />
                       <span>
-                        <strong>Escrowed:</strong> ₹{Number(contest.escrow_amount || 0).toLocaleString()} protected
+                        <strong>Escrowed:</strong> {formatCurrency(Number(contest.escrow_amount || 0))} protected
                       </span>
                     </>
                   ) : (
@@ -410,9 +411,9 @@ export function ContestDetailPage() {
                     Fund the Prize to Go Live
                   </h3>
                   <p className="text-sm text-amber-800 mb-4">
-                    Fund the prize pool (₹{(
+                    Fund the prize pool ({formatCurrency(
                       contest.prize_amount + (contest.second_prize || 0) + (contest.third_prize || 0)
-                    ).toLocaleString()} + 5% fee) from your wallet. Until then, freelancers can't submit — escrow protects everyone.
+                    )} + 5% fee) from your wallet. Until then, freelancers can't submit — escrow protects everyone.
                   </p>
                   <button
                     onClick={() => setShowFundConfirm(true)}
@@ -464,7 +465,7 @@ export function ContestDetailPage() {
                                 {sub.rank === 1 ? '1st' : sub.rank === 2 ? '2nd' : '3rd'} Place — {sub.freelancer?.name || 'Winner'}{isMe ? ' (You)' : ''}
                               </p>
                               <p className="text-xs text-slate-500 truncate">
-                                {contest.title} • ₹{Number(sub.prize_amount || 0).toLocaleString()}
+                                {contest.title} • {formatCurrency(Number(sub.prize_amount || 0))}
                               </p>
                             </div>
                             <a
@@ -774,7 +775,7 @@ export function ContestDetailPage() {
                           submission.rank === 1 ? 'bg-yellow-100 text-yellow-700' : submission.rank === 2 ? 'bg-slate-100 text-slate-600' : 'bg-orange-100 text-orange-700'
                         }`}>
                           <Trophy className="w-3.5 h-3.5" />
-                          {submission.rank === 1 ? '1st' : submission.rank === 2 ? '2nd' : '3rd'} — ₹{Number(submission.prize_amount || 0).toLocaleString()}
+                          {submission.rank === 1 ? '1st' : submission.rank === 2 ? '2nd' : '3rd'} — {formatCurrency(Number(submission.prize_amount || 0))}
                         </span>
                       )}
                       {submission.file_url && (
@@ -952,9 +953,9 @@ export function ContestDetailPage() {
               Fund Prize Pool
             </h3>
             <p className="text-sm text-slate-600 mb-4">
-              ₹{(
+              {formatCurrency(
                 contest.prize_amount + (contest.second_prize || 0) + (contest.third_prize || 0)
-              ).toLocaleString()} will be escrowed from your wallet plus a 5% platform fee. Once funded, freelancers can submit and winners are paid instantly.
+              )} will be escrowed from your wallet plus a 5% platform fee. Once funded, freelancers can submit and winners are paid instantly.
             </p>
             <div className="flex gap-3">
               <button

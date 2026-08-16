@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Clock, Lock, RefreshCcw, Scale,  } from 'lucide-react';
+import { formatCurrency } from '../lib/currency';
 
 export function EscrowPolicyPage() {
   const steps = [
@@ -112,7 +113,7 @@ export function EscrowPolicyPage() {
             </p>
           </div>
           <div className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Freelancer Premium: ₹299/month</h3>
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Freelancer Premium: {formatCurrency(299)}/month</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               Optional, no lock-in, cancel anytime. It unlocks only <strong>AI tools and analytics</strong> —
               building packages, getting work, and your ranking are identical with or without it.

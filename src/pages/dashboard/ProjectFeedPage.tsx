@@ -5,6 +5,7 @@ import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Spar
 import { useToast } from '../../components/Toast';
 import { TipNote } from '../../components/TipNote';
 import { formatBudgetRange, safeLower } from '../../utils/date';
+import { formatCurrency, currencySymbol } from '../../lib/currency';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import AIGenerateModal from '../../components/AIGenerateModal';
@@ -111,10 +112,10 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
             
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">
-                Your Project Price (₹)
+                Your Project Price ({currencySymbol()})
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">₹</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">{currencySymbol()}</span>
                 <input
                   type="number"
                   required
@@ -132,7 +133,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               )}
               {aboveBudget && (
                 <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
-                  <Zap className="w-3 h-3" /> Above the client's budget (₹{clientBudget.toLocaleString('en-IN')}) — a lower bid improves your chances
+                  <Zap className="w-3 h-3" /> Above the client's budget ({formatCurrency(clientBudget)}) — a lower bid improves your chances
                 </p>
               )}
             </div>
@@ -148,7 +149,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               <div className="mt-3 flex items-start gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                 <p className="text-xs text-emerald-800">
-                  <span className="font-semibold">Great fit:</span> your base rate of ₹{baseRate.toLocaleString('en-IN')} is within the client's budget (₹{clientBudget.toLocaleString('en-IN')}) — bid confidently at your standard price.
+                  <span className="font-semibold">Great fit:</span> your base rate of {formatCurrency(baseRate)} is within the client's budget ({formatCurrency(clientBudget)}) — bid confidently at your standard price.
                 </p>
               </div>
             )}
@@ -158,7 +159,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
                 <div className="flex items-start gap-2">
                   <Sparkles className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
                   <p className="text-xs text-amber-800">
-                    <span className="font-semibold">Smart price suggestion:</span> the client's budget (₹{clientBudget.toLocaleString('en-IN')}) is below your base rate (₹{baseRate.toLocaleString('en-IN')}). Bidding around <span className="font-bold">₹{suggestedTotal.toLocaleString('en-IN')}</span> fits their budget and helps you win more orders — your base rate stays unchanged for other projects.
+                    <span className="font-semibold">Smart price suggestion:</span> the client's budget ({formatCurrency(clientBudget)}) is below your base rate ({formatCurrency(baseRate)}). Bidding around <span className="font-bold">{formatCurrency(suggestedTotal)}</span> fits their budget and helps you win more orders — your base rate stays unchanged for other projects.
                   </p>
                 </div>
                 <button
@@ -167,7 +168,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
                   className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 transition-colors"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  Use suggested price (₹{suggestedTotal.toLocaleString('en-IN')})
+                  Use suggested price ({formatCurrency(suggestedTotal)})
                 </button>
               </div>
             )}
@@ -176,7 +177,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               <div className="mt-3 flex items-start gap-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2.5">
                 <Zap className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
                 <p className="text-xs text-rose-800">
-                  <span className="font-semibold">Heads-up:</span> the client's budget (₹{clientBudget.toLocaleString('en-IN')}) is well below your base rate (₹{baseRate.toLocaleString('en-IN')}). Taking this project may not be worth your time — consider negotiating the scope or passing.
+                  <span className="font-semibold">Heads-up:</span> the client's budget ({formatCurrency(clientBudget)}) is well below your base rate ({formatCurrency(baseRate)}). Taking this project may not be worth your time — consider negotiating the scope or passing.
                 </p>
               </div>
             )}

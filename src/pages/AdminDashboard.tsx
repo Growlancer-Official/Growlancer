@@ -10,6 +10,7 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { disputeService, type DisputeCase } from '../lib/disputeService';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { formatCurrency as _formatCurrency } from '../lib/currency';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface PlatformMetrics {
@@ -58,8 +59,9 @@ function formatRelativeTime(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString();
 }
 
+// Local alias — real implementation lives in src/lib/currency.ts
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
+  return _formatCurrency(amount);
 }
 
 function formatCompactNumber(num: number): string {
@@ -553,7 +555,7 @@ function AIRiskAnalysis() {
       const largeEscrows = (largeRes || []).filter((c: any) => (c.amount || 0) > 15000) as any[];
       if (largeEscrows && largeEscrows.length > 1) {
         detected.push({ id: 'large-escrow', icon: IndianRupee, iconBg: 'bg-orange-500/20', iconColor: 'text-orange-500',
-          title: '💰 Large Escrow Deposits', description: `${largeEscrows.length} contracts over ₹15,000 this week. Total: ${formatCurrency(largeEscrows.reduce((s, c) => s + (c.amount || 0), 0))}.`,
+          title: '💰 Large Escrow Deposits', description: `${largeEscrows.length} contracts over ${formatCurrency(15000)} this week. Total: ${formatCurrency(largeEscrows.reduce((s, c) => s + (c.amount || 0), 0))}.`,
           severity: 'high', actions: [{ label: 'Review', primary: true, color: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500 hover:text-white' }] });
       }
 
@@ -591,7 +593,7 @@ function AIRiskAnalysis() {
         const unverifiedClients = (clientProfiles || []).filter((p: any) => !p.onboarding_completed).length;
         if (unverifiedClients > 1) {
           detected.push({ id: 'unverified-clients', icon: ShieldAlert, iconBg: 'bg-amber-500/20', iconColor: 'text-amber-500',
-            title: 'Unverified Clients with High-Value Projects', description: `${unverifiedClients} unverified clients posted projects over ₹5k. Flag for identity verification.`,
+            title: 'Unverified Clients with High-Value Projects', description: `${unverifiedClients} unverified clients posted projects over ${formatCurrency(5000)}. Flag for identity verification.`,
             severity: 'high', actions: [{ label: 'Review Clients', primary: true, color: 'bg-amber-500/10 text-amber-500 hover:bg-amber-500 hover:text-white' }] });
         }
       }

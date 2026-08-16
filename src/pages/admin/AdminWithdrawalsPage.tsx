@@ -5,9 +5,10 @@ import {
 } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { adminWithdrawalService, type AdminWithdrawal, type AdminCommissionBalance } from '../../lib/adminWithdrawal';
+import { formatCurrency as libFormatCurrency, currencySymbol } from '../../lib/currency';
 
 function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount || 0);
+  return libFormatCurrency(amount || 0);
 }
 
 function formatDateTime(dateStr: string): string {
@@ -72,8 +73,8 @@ export function AdminWithdrawalsPage() {
   const validateForm = (): string | null => {
     const amt = Number(amount);
     if (!amount || !Number.isFinite(amt) || amt <= 0) return 'Please enter a valid withdrawal amount.';
-    if (amt < 100) return 'Minimum withdrawal amount is ₹100 (per SBM bank limits).';
-    if (amt > 500000) return 'Maximum withdrawal amount is ₹5,00,000 (per SBM bank limits).';
+    if (amt < 100) return `Minimum withdrawal amount is ${formatCurrency(100)} (per SBM bank limits).`;
+    if (amt > 500000) return `Maximum withdrawal amount is ${formatCurrency(500000)} (per SBM bank limits).`;
     if (amt > (balance?.available_balance || 0)) {
       return `Insufficient commission balance. Available: ${formatCurrency(balance?.available_balance || 0)}`;
     }
@@ -176,7 +177,7 @@ export function AdminWithdrawalsPage() {
             <h3 className="text-sm font-bold text-white">Withdraw Commission</h3>
           </div>
           <p className="text-[11px] text-slate-500 mb-5">
-            Transfers go to your bank via RazorpayX. Per SBM (Suryoday Small Finance Bank) limits: <span className="text-amber-400 font-bold">min ₹100 · max ₹5,00,000</span>.
+            Transfers go to your bank via RazorpayX. Per SBM (Suryoday Small Finance Bank) limits: <span className="text-amber-400 font-bold">min {formatCurrency(100)} · max {formatCurrency(500000)}</span>.
           </p>
 
           {/* Method toggle */}
@@ -207,9 +208,9 @@ export function AdminWithdrawalsPage() {
 
           {/* Amount */}
           <div className="mb-4">
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Amount (₹)</label>
+            <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1.5">Amount ({currencySymbol()})</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-bold">₹</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-bold">{currencySymbol()}</span>
               <input
                 type="number"
                 min={100}
@@ -312,7 +313,7 @@ export function AdminWithdrawalsPage() {
             </li>
             <li className="flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />
-              <span><strong className="text-slate-200">Limits (SBM Small Finance Bank):</strong> minimum <strong className="text-amber-400">₹100</strong>, maximum <strong className="text-amber-400">₹5,00,000</strong> per payout.</span>
+              <span><strong className="text-slate-200">Limits (SBM Small Finance Bank):</strong> minimum <strong className="text-amber-400">{formatCurrency(100)}</strong>, maximum <strong className="text-amber-400">{formatCurrency(500000)}</strong> per payout.</span>
             </li>
             <li className="flex items-start gap-2.5">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mt-1.5 shrink-0" />

@@ -7,6 +7,7 @@ import { adminQuery, adminDelete } from '../../lib/adminDataProxy';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { refundService, type DisputeMessage, type DisputeEvidence, type DisputeInternalNote, type RefundHistoryEvent } from '../../lib/refundService';
+import { currencySymbol } from '../../lib/currency';
 
 interface AdminDispute {
   id: string;
@@ -422,7 +423,7 @@ export function AdminDisputesPage() {
                     <input
                       value={splitAmount}
                       onChange={e => setSplitAmount(e.target.value)}
-                      placeholder="Client refund ₹"
+                      placeholder={`Client refund ${currencySymbol()}`}
                       type="number"
                       min={0}
                       className="flex-1 min-w-0 px-3 py-3 bg-slate-800 border border-white/10 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"

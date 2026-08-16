@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
+import { formatCurrency } from '../lib/currency';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
 import { ProBadge } from '../components/ProBadge';
@@ -301,7 +302,7 @@ export function ClientContractsPage() {
                   <div className="flex items-center gap-2 text-slate-600">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-medium text-slate-900">
-                      ₹{Number(contract.amount).toLocaleString('en-IN')}
+                      {formatCurrency(Number(contract.amount))}
                     </span>
                   </div>
                   {contract.start_date && (
@@ -320,7 +321,7 @@ export function ClientContractsPage() {
                     <div className="flex items-center gap-2 text-slate-600">
                       <FileText className="w-4 h-4" />
                       <span>
-                        Escrow: ₹{escrow.amount.toLocaleString('en-IN')} ({escrow.status})
+                        Escrow: {formatCurrency(escrow.amount)} ({escrow.status})
                       </span>
                     </div>
                   )}

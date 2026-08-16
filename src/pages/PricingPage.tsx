@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Crown, ShieldCheck, Sparkles, Zap } from 'lucide-react';
 import { TipNote } from '../components/TipNote';
 import { subscriptionService, type AIPlan } from '../lib/subscriptionHelpers';
+import { formatCurrency } from '../lib/currency';
 
 export function PricingPage() {
   const [plans, setPlans] = useState<AIPlan[]>([]);
@@ -56,7 +57,7 @@ export function PricingPage() {
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
             One flat 5% commission from clients. Free forever for freelancers, with one optional
-            Premium plan (₹299/month) for AI + productivity tools. No hidden fees, no pay-to-win.
+            Premium plan ({formatCurrency(299)}/month) for AI + productivity tools. No hidden fees, no pay-to-win.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-8">
@@ -75,9 +76,9 @@ export function PricingPage() {
                 For Freelancers
               </p>
               <p className="text-sm text-slate-300">
-                <strong className="text-white">₹0 to start</strong> — no commission, no fees on
+                <strong className="text-white">{formatCurrency(0)} to start</strong> — no commission, no fees on
                 your earnings. 3-tier service packages are free for everyone. Optional Premium
-                (₹299/month) adds AI writing, AI assistant & analytics — never ranking or visibility.
+                ({formatCurrency(299)}/month) adds AI writing, AI assistant & analytics — never ranking or visibility.
               </p>
             </div>
           </div>
@@ -134,7 +135,7 @@ export function PricingPage() {
                 Post a Project — It's Free
               </Link>
               <p className="text-[11px] text-slate-500 text-center mt-3">
-                Posting a project and inviting freelancers costs ₹0. You only pay when you hire.
+                Posting a project and inviting freelancers costs {formatCurrency(0)}. You only pay when you hire.
               </p>
             </div>
           </div>
@@ -155,7 +156,7 @@ export function PricingPage() {
             <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
               Join free, earn 100% of every payment, and build services with <strong>3 package
               tiers (Basic / Standard / Premium)</strong> — completely free for every freelancer.
-              Upgrade to <strong>Premium (₹299/month, optional)</strong> for unlimited AI writing,
+              Upgrade to <strong>Premium ({formatCurrency(299)}/month, optional)</strong> for unlimited AI writing,
               AI assistant & advanced analytics. Packages, visibility and matching stay
               <strong> merit-based and identical</strong> — never a commission on your earnings.
             </p>
@@ -202,7 +203,7 @@ export function PricingPage() {
                     <div className="mb-6">
                       <div className="flex items-baseline gap-1">
                         <span className="font-display text-4xl font-bold">
-                          ₹{plan.price.toLocaleString('en-IN')}
+                          {formatCurrency(plan.price)}
                         </span>
                         <span className={`text-sm font-bold ${isPopular ? 'text-slate-400' : 'text-slate-400'}`}>
                           /{plan.interval}
@@ -320,7 +321,7 @@ export function PricingPage() {
                 No. Creating a profile, building 3-tier packages, applying to projects, and
                 receiving payments are completely free — including <strong>5 free AI-written
                 titles, descriptions and cover messages every day</strong>. The optional{' '}
-                <strong>Premium plan (₹299/month, flat)</strong> unlocks <strong>unlimited AI
+                <strong>Premium plan ({formatCurrency(299)}/month, flat)</strong> unlocks <strong>unlimited AI
                 writing</strong>, the AI assistant and advanced analytics. It is{' '}
                 <strong>not</strong> a commission, never touches your earnings, and never affects
                 your ranking, visibility or matching.
@@ -389,7 +390,7 @@ export function PricingPage() {
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
                 <p className="text-sm text-slate-600">
-                  <strong className="text-slate-900">Optional Premium ₹299/month</strong> —
+                  <strong className="text-slate-900">Optional Premium {formatCurrency(299)}/month</strong> —
                   freelancers who want extra AI tools and analytics. Purely optional, no lock-in.
                 </p>
               </li>

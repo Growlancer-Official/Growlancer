@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/Toast'
+import { formatCurrency as libFormatCurrency } from '../lib/currency'
 import { requireKycForAction } from '../lib/kycGate'
 import { supabase, dbFunctions } from '../lib/supabase'
 import { messagesService } from '../lib/messages'
@@ -760,12 +761,7 @@ export function ClientWorkspacePage() {
   const formatCurrency = (amount: number) => {
     // NaN-safe — contracts can have null/undefined amounts; never render ₹NaN.
     const safeAmount = Number.isFinite(Number(amount)) ? Number(amount) : 0
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(safeAmount)
+    return libFormatCurrency(safeAmount)
   }
 
   const milestoneProgress = selectedContract ? getMilestoneProgress((selectedContract as any).milestones) : { completed: 0, total: 0, percent: 0, milestones: [] }
@@ -1555,7 +1551,7 @@ export function ClientWorkspacePage() {
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-slate-900">
                                   {req.revision_count} revision{req.revision_count > 1 ? 's' : ''} ·{' '}
-                                  <span className="text-emerald-600 font-semibold">₹{Number(req.total_amount).toLocaleString('en-IN')}</span>
+                                  <span className="text-emerald-600 font-semibold">{formatCurrency(Number(req.total_amount))}</span>
                                 </p>
                                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">{req.reason}</p>
                               </div>
@@ -1574,7 +1570,7 @@ export function ClientWorkspacePage() {
                                     ) : (
                                       <CreditCard className="h-4 w-4 mr-1.5" />
                                     )}
-                                    Pay ₹{Number(req.total_amount).toLocaleString('en-IN')}
+                                    Pay {formatCurrency(Number(req.total_amount))}
                                   </button>
                                 )}
                               </div>

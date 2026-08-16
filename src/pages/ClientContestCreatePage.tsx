@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, CheckCircle, IndianRupee, FileText, Loader2, Plus, Tag, X } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { currencySymbol } from '../lib/currency';
 import { TipNote } from '../components/TipNote';
 import { useAuth } from '../context/AuthContext';
 import { contestService, CONTEST_CATEGORIES } from '../lib/contests';
@@ -180,7 +181,7 @@ export function ClientContestCreatePage() {
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">1st Prize (₹) *</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">1st Prize ({currencySymbol()}) *</label>
                 <input
                   type="number"
                   required
@@ -193,7 +194,7 @@ export function ClientContestCreatePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">2nd Prize (₹)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">2nd Prize ({currencySymbol()})</label>
                 <input
                   type="number"
                   min="0"
@@ -205,7 +206,7 @@ export function ClientContestCreatePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">3rd Prize (₹)</label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">3rd Prize ({currencySymbol()})</label>
                 <input
                   type="number"
                   min="0"

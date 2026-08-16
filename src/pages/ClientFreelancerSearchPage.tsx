@@ -3,6 +3,7 @@ import { Award, Bell, BellOff, ChevronDown, ChevronUp, Filter, Layers, Loader2, 
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { formatCurrency } from '../lib/currency';
 import { useCategories } from '../hooks/useCategories';
 import { getSellerLevelBadgeProps } from '../lib/sellerLevels';
 import { CategoriesSection } from '../components/CategoriesSection';
@@ -312,8 +313,8 @@ export function ClientFreelancerSearchPage() {
               <option value="All">All Categories</option>
               {categories.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
             </select>
-            <input type="number" value={minRate} onChange={(e) => setMinRate(e.target.value)} placeholder="Min ₹" className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            <input type="number" value={maxRate} onChange={(e) => setMaxRate(e.target.value)} placeholder="Max ₹" className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            <input type="number" value={minRate} onChange={(e) => setMinRate(e.target.value)} placeholder="Min" className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            <input type="number" value={maxRate} onChange={(e) => setMaxRate(e.target.value)} placeholder="Max" className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             <label className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
               <input type="checkbox" checked={availabilityOnly} onChange={(e) => setAvailabilityOnly(e.target.checked)} className="w-4 h-4 rounded border-slate-300 text-emerald-600" />
               <span className="text-sm font-medium text-slate-700">Available Now</span>
@@ -375,7 +376,7 @@ export function ClientFreelancerSearchPage() {
               )}
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                 <span className="flex items-center gap-1 text-xs text-slate-500">{f.location && <><MapPin className="w-3 h-3" />{f.location}</>}</span>
-                {f.hourly_rate && <span className="text-lg font-bold text-emerald-600">₹{f.hourly_rate}</span>}
+                {f.hourly_rate && <span className="text-lg font-bold text-emerald-600">{formatCurrency(Number(f.hourly_rate))}</span>}
               </div>
               <div className="flex items-center gap-2 mt-4">
                 <button
@@ -457,7 +458,7 @@ export function ClientFreelancerSearchPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSaveModal(false)}>
           <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 mb-4">Save This Search</h3>
-            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under ₹500" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under 500" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             <div className="flex gap-3">
               <button onClick={() => setShowSaveModal(false)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>
               <button onClick={handleSaveSearch} disabled={!saveName.trim()} className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50">Save Search</button>

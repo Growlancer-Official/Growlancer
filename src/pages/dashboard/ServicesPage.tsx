@@ -31,6 +31,7 @@ import { ConfirmModal } from '../../components/ConfirmModal';
 import { CategoriesSection } from '../../components/CategoriesSection';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
+import { formatCurrency } from '../../lib/currency';
 
 export function ServicesPage() {
   const { user } = useAuth();
@@ -337,7 +338,7 @@ export function ServicesPage() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <p className="text-sm font-semibold text-slate-900">
                           {offer.client?.name || 'Client'} offered{' '}
-                          <span className="text-emerald-600">₹{Number(offer.amount).toLocaleString('en-IN')}</span>
+                          <span className="text-emerald-600">{formatCurrency(Number(offer.amount))}</span>
                         </p>
                         <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full ${
                           offer.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
@@ -495,7 +496,7 @@ export function ServicesPage() {
                   <div className="flex items-center gap-1">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-semibold text-slate-900">
-                      {(service as any).packages?.length > 0 ? 'From ₹' : '₹'}{service.price}
+                      {(service as any).packages?.length > 0 ? 'From ' : ''}{formatCurrency(Number(service.price))}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -527,7 +528,7 @@ export function ServicesPage() {
                 ) : null}
                 {Number(service.extra_revision_price) > 0 && (
                   <p className="text-[11px] text-amber-600 mb-4">
-                    Extra revision: ₹{service.extra_revision_price} each (beyond free revisions)
+                    Extra revision: {formatCurrency(Number(service.extra_revision_price))} each (beyond free revisions)
                   </p>
                 )}
 

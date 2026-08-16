@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Eye, Filter, Grid3X3, List, Loader2, Package, Search, ShoppingCart, Star,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { formatCurrency } from '../lib/currency';
 import { useCategories } from '../hooks/useCategories';
 import { useToast } from '../components/Toast';
 import { TipNote } from '../components/TipNote';
@@ -284,7 +285,7 @@ export function ServicesCatalogPage() {
                         )}
                       </div>
                       <span className="text-lg font-bold text-emerald-600">
-                        ₹{Number(service.price).toLocaleString('en-IN')}
+                        {formatCurrency(Number(service.price))}
                       </span>
                     </div>
                   </div>
@@ -320,7 +321,7 @@ export function ServicesCatalogPage() {
                         </div>
                       </div>
                       <div className="text-right ml-4">
-                        <span className="text-xl font-bold text-emerald-600">₹{Number(service.price).toLocaleString('en-IN')}</span>
+                        <span className="text-xl font-bold text-emerald-600">{formatCurrency(Number(service.price))}</span>
                         <span className="text-xs text-slate-400 block">{(service as any).packages?.length > 0 ? 'From · 3 tiers' : 'Fixed Price'}</span>
                       </div>
                     </div>

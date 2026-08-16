@@ -5,6 +5,7 @@ import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { formatBudgetRange, safeFormatDate, safeLower, safeNumber } from '../../utils/date';
+import { formatCurrency } from '../../lib/currency';
 import { CacheManager } from '../../lib/services/cacheManager';
 import {
   projectsService,
@@ -414,8 +415,8 @@ export function OverviewPage() {
         },
         {
           label: 'Earnings (INR)',
-          value: `₹${safeNumber(stats.totalEarnings).toLocaleString()}`,
-          change: `₹${safeNumber(stats.monthlyEarnings).toLocaleString()} this month`,
+          value: formatCurrency(safeNumber(stats.totalEarnings)),
+          change: `${formatCurrency(safeNumber(stats.monthlyEarnings))} this month`,
           changeType: stats.monthlyEarnings > 0 ? 'positive' : 'neutral',
           hint: 'Money released from escrow into your wallet after clients approve your work. Withdraw it anytime from the Wallet page.',
         },
@@ -451,7 +452,7 @@ export function OverviewPage() {
         },
         {
           label: 'Total Spent',
-          value: `₹${safeNumber(stats.totalEarnings).toLocaleString()}`,
+          value: formatCurrency(safeNumber(stats.totalEarnings)),
           change: 'Across all contracts',
           changeType: 'neutral',
           hint: 'Total amount paid across all completed contracts. Your money is always protected in escrow until you approve the work.',

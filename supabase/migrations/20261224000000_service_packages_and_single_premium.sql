@@ -146,19 +146,20 @@ BEGIN
   END IF;
 
   -- Create the contract (escrow-protected; funded after payment capture).
+  -- currency is explicit INR (India-first); the platform is single-currency.
   INSERT INTO public.contracts (
     freelancer_id, client_id, amount, platform_fee, freelancer_amount,
-    status, milestones, start_date
+    status, milestones, start_date, currency
   ) VALUES (
     v_service.freelancer_id, p_client_id, v_amount, v_fee, v_amount,
-    'pending', v_milestones, current_date
+    'pending', v_milestones, current_date, 'INR'
   )
   RETURNING id INTO v_contract_id;
 
   -- Escrow row (fund_escrow flips it to 'funded' after payment capture — it
   -- does NOT create the row itself, so we must insert it here).
-  INSERT INTO public.escrow (contract_id, amount, status)
-  VALUES (v_contract_id, v_amount, 'pending');
+  INSERT INTO public.escrow (contract_id, amount, status, currency)
+  VALUES (v_contract_id, v_amount, 'pending', 'INR');
 
   -- Workspace + members (mirrors create_contract_with_escrow).
   INSERT INTO public.workspaces(contract_id, client_id, lead_freelancer_id, status)

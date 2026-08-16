@@ -227,22 +227,10 @@ export function addDays(date: Date | string | number, days: number): Date {
   return d;
 }
 
-/**
- * Format currency with symbol (Growlancer is India-first: default INR)
- * @param amount - Amount to format
- * @param currency - Currency code (default: INR)
- * @returns Formatted currency string
- */
-export function formatCurrency(amount: number, currency = 'INR'): string {
-  // Guard against NaN/undefined so the UI never renders ₹NaN.
-  const safeAmount = Number.isFinite(amount) ? amount : 0;
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(safeAmount);
-}
+// Currency formatting lives in src/lib/currency.ts (single source of truth).
+// Re-exported here so existing importers of utils/date keep working.
+import { formatCurrency } from '../lib/currency';
+export { formatCurrency };
 
 /**
  * Format a project budget. Growlancer uses a single-budget model where
@@ -253,11 +241,10 @@ export function formatCurrency(amount: number, currency = 'INR'): string {
 export function formatBudgetRange(min?: number | null, max?: number | null): string {
   const minN = Number(min ?? 0);
   const maxN = Number(max ?? 0);
-  const fmt = (n: number) => `₹${n.toLocaleString('en-IN')}`;
-  if (minN > 0 && maxN > 0 && minN === maxN) return fmt(minN);
-  if (minN > 0 && maxN > 0) return `${fmt(minN)} - ${fmt(maxN)}`;
-  if (minN > 0) return fmt(minN);
-  if (maxN > 0) return fmt(maxN);
+  if (minN > 0 && maxN > 0 && minN === maxN) return formatCurrency(minN);
+  if (minN > 0 && maxN > 0) return `${formatCurrency(minN)} - ${formatCurrency(maxN)}`;
+  if (minN > 0) return formatCurrency(minN);
+  if (maxN > 0) return formatCurrency(maxN);
   return '—';
 }
 

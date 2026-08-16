@@ -7,12 +7,14 @@ import { useToast } from '../../components/Toast';
 import { useCategories } from '../../hooks/useCategories';
 import { ImageUpload } from '../../components/ImageUpload';
 import AIGenerateModal from '../../components/AIGenerateModal';
+import { formatCurrency, currencySymbol } from '../../lib/currency';
 
 // ── Package tier types (FINAL MODEL: 3 tiers, free for ALL freelancers) ──
 export interface ServicePackage {
   tier: 'basic' | 'standard' | 'premium';
   title: string;
   price: number;
+  currency: string;
   delivery_days: number;
   revisions: number;
   deliverables: string[];
@@ -22,6 +24,7 @@ export interface ServiceAddon {
   id: string;
   title: string;
   price: number;
+  currency: string;
   type: 'extra_revision' | 'fast_delivery' | 'extra';
 }
 
@@ -35,6 +38,7 @@ const emptyPackage = (tier: ServicePackage['tier']): ServicePackage => ({
   tier,
   title: TIER_META[tier].label,
   price: 0,
+  currency: 'INR',
   delivery_days: 7,
   revisions: 5,
   deliverables: [],
@@ -245,6 +249,7 @@ export function CreateServicePage() {
           id: `addon_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
           title: addonInput.title.trim(),
           price,
+          currency: 'INR',
           type: 'extra',
         },
       ],
@@ -288,6 +293,7 @@ export function CreateServicePage() {
       // Basic tier price feeds the legacy `price` column (cards/search).
       price: basic.price,
       price_type: 'package' as const,
+      currency: 'INR',
       packages: publishedPackages,
       addons: formData.addons,
       milestone_mode: formData.milestone_mode,
@@ -486,7 +492,7 @@ export function CreateServicePage() {
                       <p className="text-xs text-slate-500 mt-0.5">{meta.hint}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-500">Price (₹)</span>
+                      <span className="text-xs text-slate-500">Price ({currencySymbol()})</span>
                       <input
                         type="number"
                         min="0"
@@ -625,7 +631,7 @@ export function CreateServicePage() {
                   key={addon.id}
                   className="px-3 py-1.5 bg-violet-50 text-violet-700 text-sm font-medium rounded-full border border-violet-200 flex items-center gap-1.5"
                 >
-                  {addon.title} · ₹{addon.price}
+                  {addon.title} · {formatCurrency(Number(addon.price))}
                   <button
                     type="button"
                     onClick={() => removeAddon(addon.id)}
@@ -654,7 +660,7 @@ export function CreateServicePage() {
                 onChange={(e) => setAddonInput({ ...addonInput, price: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAddon())}
                 className="w-28 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="Price ₹"
+                placeholder={`Price ${currencySymbol()}`}
               />
               <button
                 type="button"

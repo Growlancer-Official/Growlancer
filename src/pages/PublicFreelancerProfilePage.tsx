@@ -654,7 +654,7 @@ export function PublicFreelancerProfilePage() {
                           {Number(service.extra_revision_price) > 0 ? (
                             <span className="flex items-center gap-1 text-amber-600">
                               <CheckCircle className="w-3.5 h-3.5" />
-                              +₹{Number(service.extra_revision_price)}/extra
+                              +{formatCurrency(Number(service.extra_revision_price))}/extra
                             </span>
                           ) : null}
                           <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />

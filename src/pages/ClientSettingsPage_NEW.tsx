@@ -948,7 +948,7 @@ export function ClientSettingsPage() {
         amount: 100, // ₹1 in paise
         currency,
         name: 'Growlancer',
-        description: 'Card verification — ₹1 will be refunded',
+        description: `Card verification — ${formatCurrency(1)} will be refunded`,
         order_id: order.razorpay_order_id,
         prefill: { name: user.name || '', email: user.email || '' },
         theme: { color: '#059669' },
@@ -979,7 +979,7 @@ export function ClientSettingsPage() {
             await razorpayService.refundPayment(response.razorpay_payment_id, 1);
           } catch { /* refund is best-effort */ }
 
-          setSuccessMessage('Card added — ₹1 verification charge refunded.');
+          setSuccessMessage(`Card added — ${formatCurrency(1)} verification charge refunded.`);
           setTimeout(() => setSuccessMessage(null), 4000);
           await fetchSavedCards();
           await fetchBillingOrders();

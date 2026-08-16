@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import { PayPalCheckout } from './PayPalCheckout';
 import { RazorpayCheckout } from './RazorpayCheckout';
 import { PAYMENTS_CONFIG } from '../lib/payments';
+import { formatCurrency } from '../lib/currency';
 import { supabase } from '../lib/supabase';
 import { subscriptionService } from '../lib/subscriptionHelpers';
 import { withdrawalService } from '../lib/withdrawal';
@@ -63,7 +64,7 @@ export function SubscriptionPayPalPayment({
       const balance = freshBal.success && freshBal.balance ? Number(freshBal.balance.balance) || 0 : 0;
       if (balance < planPrice) {
         setWalletBalance(balance);
-        throw new Error(`Insufficient wallet balance. Required: ₹${planPrice.toLocaleString('en-IN')}, Available: ₹${balance.toLocaleString('en-IN')}`);
+        throw new Error(`Insufficient wallet balance. Required: ${formatCurrency(planPrice)}, Available: ${formatCurrency(balance)}`);
       }
       setWalletBalance(balance);
 
@@ -205,7 +206,7 @@ export function SubscriptionPayPalPayment({
           onSuccess={handlePayPalSuccess}
           onError={handlePayPalError}
           onCancel={handlePayPalCancel}
-          buttonText={`Subscribe for ₹${planPrice.toLocaleString('en-IN')}/month`}
+          buttonText={`Subscribe for ${formatCurrency(planPrice)}/month`}
           userInfo={{
             name: (user as any)?.user_metadata?.name,
             email: user?.email,
@@ -237,7 +238,7 @@ export function SubscriptionPayPalPayment({
               onSuccess={handlePayPalSuccess}
               onError={handlePayPalError}
               onCancel={handlePayPalCancel}
-              buttonText={`Subscribe for ₹${planPrice.toLocaleString('en-IN')}/month`}
+              buttonText={`Subscribe for ${formatCurrency(planPrice)}/month`}
             />
           </>
         ) : (
@@ -281,7 +282,7 @@ export function SubscriptionPayPalPayment({
         <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
           <h3 className="font-semibold text-amber-900 mb-1">{planName} Plan</h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-amber-600">₹{planPrice.toFixed(2)}</span>
+            <span className="text-3xl font-bold text-amber-600">{formatCurrency(planPrice)}</span>
             <span className="text-amber-700">/month</span>
           </div>
         </div>
@@ -350,7 +351,7 @@ export function SubscriptionPayPalPayment({
         </div>
         <p className="text-sm text-blue-600 mb-3">
           {walletBalance !== null
-            ? `Available balance: ₹${walletBalance.toLocaleString('en-IN')}`
+            ? `Available balance: ${formatCurrency(walletBalance)}`
             : 'Loading wallet balance...'}
         </p>
         <button
@@ -366,7 +367,7 @@ export function SubscriptionPayPalPayment({
           ) : (
             <>
               <Wallet className="w-5 h-5" />
-              Pay ₹{planPrice.toLocaleString('en-IN')} from Wallet
+              Pay {formatCurrency(planPrice)} from Wallet
             </>
           )}
         </button>
