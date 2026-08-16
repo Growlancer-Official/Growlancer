@@ -8,6 +8,7 @@ import { useCategories } from '../hooks/useCategories';
 import { CategoryPicker } from '../components/CategoryPicker';
 import { IndustrySelect } from '../components/IndustrySelect';
 import { TipNote } from '../components/TipNote';
+import AIGenerateModal from '../components/AIGenerateModal';
 
 export function ClientPostProjectPage() {
   const navigate = useNavigate();
@@ -231,14 +232,33 @@ export function ClientPostProjectPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Project Title *</label>
-              <input
-                type="text"
-                required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="e.g., Build a React Native Mobile App"
-              />
+              <div className="flex items-start gap-2">
+                <input
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                  placeholder="e.g., Build a React Native Mobile App"
+                />
+                <AIGenerateModal
+                  field="project_title"
+                  triggerLabel="AI"
+                  className="shrink-0 mt-1"
+                  context={{
+                    budget: formData.budget || undefined,
+                    category: formData.category || undefined,
+                    industry: formData.industry || undefined,
+                    skills: formData.skills_required,
+                    deadline: formData.deadline || undefined,
+                  }}
+                  onApply={(text) => setFormData({ ...formData, title: text })}
+                />
+              </div>
+              <p className="text-xs text-slate-400 mt-1.5">
+                Stuck on a title? Click <span className="font-semibold text-violet-600">AI</span> — describe what you
+                want to build and get a professional title in seconds.
+              </p>
             </div>
 
             <div>
@@ -251,6 +271,22 @@ export function ClientPostProjectPage() {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
                 placeholder="Describe your project in detail. Include requirements, deliverables, and any specific skills needed..."
               />
+              <div className="mt-2 flex items-center gap-2">
+                <AIGenerateModal
+                  field="project_description"
+                  triggerLabel="Write description with AI"
+                  context={{
+                    budget: formData.budget || undefined,
+                    category: formData.category || undefined,
+                    industry: formData.industry || undefined,
+                    skills: formData.skills_required,
+                    deadline: formData.deadline || undefined,
+                    experience_level: formData.experience_level,
+                  }}
+                  onApply={(text) => setFormData({ ...formData, description: text })}
+                />
+                <span className="text-[11px] text-slate-400">Free: 5/day · Pro: unlimited</span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -6,6 +6,7 @@ import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Plus, Shield, S
 import { useToast } from '../../components/Toast';
 import { useCategories } from '../../hooks/useCategories';
 import { ImageUpload } from '../../components/ImageUpload';
+import AIGenerateModal from '../../components/AIGenerateModal';
 
 export function CreateServicePage() {
   const navigate = useNavigate();
@@ -259,14 +260,26 @@ export function CreateServicePage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Service Title *</label>
-              <input
-                type="text"
-                required
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="e.g., I will build a professional React website for your business"
-              />
+              <div className="flex items-start gap-2">
+                <input
+                  type="text"
+                  required
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                  placeholder="e.g., I will build a professional React website for your business"
+                />
+                <AIGenerateModal
+                  field="service_title"
+                  triggerLabel="AI"
+                  className="shrink-0 mt-1"
+                  context={{
+                    category: formData.category || undefined,
+                    base_price: formData.price || undefined,
+                  }}
+                  onApply={(text) => setFormData({ ...formData, title: text })}
+                />
+              </div>
               <p className="text-xs text-slate-500 mt-1">Make it descriptive and keyword-rich for better visibility</p>
             </div>
 
@@ -280,6 +293,19 @@ export function CreateServicePage() {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
                 placeholder="Describe your service in detail. Include what you deliver, your process, and what makes you unique..."
               />
+              <div className="mt-2 flex items-center gap-2">
+                <AIGenerateModal
+                  field="service_description"
+                  triggerLabel="Write description with AI"
+                  context={{
+                    category: formData.category || undefined,
+                    base_price: formData.price || undefined,
+                    extra_revision_price: formData.extra_revision_price || undefined,
+                  }}
+                  onApply={(text) => setFormData({ ...formData, description: text })}
+                />
+                <span className="text-[11px] text-slate-400">Free: 5/day · Pro: unlimited</span>
+              </div>
               <p className="text-xs text-slate-500 mt-1">Minimum 150 characters recommended for better SEO</p>
             </div>
 

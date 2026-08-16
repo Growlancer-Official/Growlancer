@@ -459,3 +459,9 @@ verify_jwt = false
 [functions.security-alert-notify]
 verify_jwt = false
 
+# ai-writer is called from the app with the user's JWT (it re-validates the
+# user via auth.getUser() and enforces the daily free/Pro allowance), so it
+# keeps the default verify_jwt = true.
+[functions.ai-writer]
+verify_jwt = true
+

@@ -7,6 +7,7 @@ import { TipNote } from '../../components/TipNote';
 import { formatBudgetRange, safeLower } from '../../utils/date';
 import { Pagination } from '../../components/Pagination';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import AIGenerateModal from '../../components/AIGenerateModal';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
@@ -208,6 +209,20 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
               placeholder="Introduce yourself and explain why you're the best fit for this project..."
             />
+            <div className="mt-2 flex items-center gap-2">
+              <AIGenerateModal
+                field="cover_letter"
+                triggerLabel="Write cover message with AI"
+                context={{
+                  project_title: project.title || undefined,
+                  project_description: project.description || undefined,
+                  budget: project.budget_max || project.budget_min || undefined,
+                  freelancer_skills: [],
+                }}
+                onApply={(text) => setMessage(text)}
+              />
+              <span className="text-[11px] text-slate-400">Free: 5/day · Pro: unlimited</span>
+            </div>
           </div>
 
           <div className="flex gap-3">
