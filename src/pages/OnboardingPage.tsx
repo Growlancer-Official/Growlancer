@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { validateOptionalGstin } from '../lib/gst';
 import { CategoryPicker } from '../components/CategoryPicker';
 import { IndustrySelect } from '../components/IndustrySelect';
 import { useCategories } from '../hooks/useCategories';
@@ -47,7 +48,9 @@ const MAX_LANGUAGE_LENGTH = 40;
 
 interface ClientForm {
   name: string;
+  account_type: 'individual' | 'business';
   company_name: string;
+  gst_number: string;
   industry: string;
   size: string;
   location: string;
@@ -112,7 +115,9 @@ export function OnboardingPage() {
   // Client form state
   const [clientForm, setClientForm] = useState<ClientForm>({
     name: user?.name || '',
+    account_type: 'individual',
     company_name: '',
+    gst_number: '',
     industry: '',
     size: '',
     location: '',
@@ -120,6 +125,7 @@ export function OnboardingPage() {
     website: '',
     company_logo: null,
   });
+  const [gstError, setGstError] = useState<string | null>(null);
 
   // Referral code state (optional, validated live against profiles.referral_code)
   const [referralCode, setReferralCode] = useState('');
@@ -354,7 +360,9 @@ export function OnboardingPage() {
           .from('client_profiles')
           .upsert({
             user_id: user.id,
-            company_name: clientForm.company_name || null,
+            company_name: clientForm.account_type === 'business' ? (clientForm.company_name || null) : null,
+            account_type: clientForm.account_type,
+            gst_number: clientForm.account_type === 'business' ? (clientForm.gst_number || null) : null,
             industry: clientForm.industry || null,
             size: clientForm.size || null,
             location: clientForm.location || null,
@@ -362,7 +370,7 @@ export function OnboardingPage() {
             website: clientForm.website || null,
             company_logo: clientForm.company_logo || null,
             updated_at: new Date().toISOString(),
-          }, { onConflict: 'user_id' });
+          } as any, { onConflict: 'user_id' });
 
         if (cpError) {
           console.error('Onboarding client_profiles error:', cpError);
@@ -457,7 +465,11 @@ export function OnboardingPage() {
       );
     }
     if (step === 'profile' && isClient) {
-      return clientForm.name.trim().length > 0 && clientForm.company_name.trim().length > 0;
+      if (clientForm.name.trim().length === 0) return false;
+      // Business accounts must name the company; individual accounts may skip it.
+      if (clientForm.account_type === 'business' && clientForm.company_name.trim().length === 0) return false;
+      // GST is optional, but if provided it must be valid.
+      return validateOptionalGstin(clientForm.gst_number).valid;
     }
     return true;
   };
@@ -955,10 +967,44 @@ export function OnboardingPage() {
                       </p>
                     </div>
 
+                    {/* Account Type */}
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Account Type</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setClientForm({ ...clientForm, account_type: 'individual' })}
+                          className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                            clientForm.account_type === 'individual'
+                              ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200'
+                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                          }`}
+                        >
+                          <User className="w-4 h-4" /> Individual
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setClientForm({ ...clientForm, account_type: 'business' })}
+                          className={`flex items-center justify-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                            clientForm.account_type === 'business'
+                              ? 'border-violet-500 bg-violet-50 text-violet-700 ring-2 ring-violet-200'
+                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                          }`}
+                        >
+                          <Building2 className="w-4 h-4" /> Business
+                        </button>
+                      </div>
+                      <p className="text-xs text-slate-400 mt-1.5">
+                        {clientForm.account_type === 'business'
+                          ? 'Companies hire with their business name — GST appears on invoices.'
+                          : 'Individuals hire with their personal name.'}
+                      </p>
+                    </div>
+
                     {/* Company Name */}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                        Company Name <span className="text-red-400">*</span>
+                        Company Name {clientForm.account_type === 'business' && <span className="text-red-400">*</span>}
                       </label>
                       <input
                         type="text"
@@ -968,6 +1014,41 @@ export function OnboardingPage() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                       />
                     </div>
+
+                    {/* GST Number (business only) */}
+                    {clientForm.account_type === 'business' && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">GST Number</label>
+                        <input
+                          type="text"
+                          value={clientForm.gst_number}
+                          onChange={(e) => {
+                            const raw = e.target.value.toUpperCase();
+                            setClientForm({ ...clientForm, gst_number: raw });
+                            const check = validateOptionalGstin(raw);
+                            setGstError(check.valid ? null : check.error || null);
+                          }}
+                          placeholder="e.g. 27AABCS1234F1Z5"
+                          maxLength={15}
+                          className={`w-full px-4 py-3 rounded-xl border outline-none transition-all font-mono tracking-wider ${
+                            gstError
+                              ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                              : 'border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'
+                          }`}
+                        />
+                        {gstError ? (
+                          <p className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" /> {gstError}
+                          </p>
+                        ) : clientForm.gst_number ? (
+                          <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                            <CheckCircle className="w-3 h-3" /> Valid GSTIN format
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-400 mt-1">Optional — business invoices show your GST number.</p>
+                        )}
+                      </div>
+                    )}
 
                     {/* Industry */}
                     <div>

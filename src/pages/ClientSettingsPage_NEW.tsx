@@ -11,6 +11,7 @@ import { isReauthValid, markReauthVerified } from '../lib/reauth';
 import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 import { IndustrySelect } from '../components/IndustrySelect';
 import { getNameChangeLock } from '../lib/nameChangeLock';
+import { validateOptionalGstin, normalizeGstin } from '../lib/gst';
 import {
   AlertCircle,
   AlertTriangle,
@@ -93,12 +94,15 @@ export function ClientSettingsPage() {
   // Company form state
   const [companyData, setCompanyData] = useState({
     company_name: '',
+    account_type: 'individual' as 'individual' | 'business',
+    gst_number: '',
     industry: '',
     website: '',
     size: '1-10',
     location: '',
     description: '',
   });
+  const [gstError, setGstError] = useState<string | null>(null);
 
   // Account form state
   const [accountData, setAccountData] = useState({
@@ -319,6 +323,8 @@ export function ClientSettingsPage() {
       if (!clientErr && clientResp) {
         setCompanyData({
           company_name: clientResp.company_name || '',
+          account_type: (clientResp as { account_type?: string }).account_type === 'business' ? 'business' : 'individual',
+          gst_number: (clientResp as { gst_number?: string | null }).gst_number || '',
           industry: clientResp.industry || '',
           website: clientResp.website || '',
           size: clientResp.size || '1-10',
@@ -349,6 +355,8 @@ export function ClientSettingsPage() {
         },            (payload) => {
           setCompanyData({
             company_name: payload.new.company_name || '',
+            account_type: (payload.new as { account_type?: string }).account_type === 'business' ? 'business' : 'individual',
+            gst_number: (payload.new as { gst_number?: string | null }).gst_number || '',
             industry: payload.new.industry || '',
             website: payload.new.website || '',
             size: payload.new.size || '1-10',
@@ -370,13 +378,31 @@ export function ClientSettingsPage() {
     setSaving(true);
     setErrorMessage(null);
     setSuccessMessage(null);
+    setGstError(null);
+
+    // Business validation: company name required + GSTIN must be valid if provided
+    if (companyData.account_type === 'business') {
+      if (!companyData.company_name.trim()) {
+        setSaving(false);
+        setErrorMessage('Company name is required for business accounts.');
+        return;
+      }
+      const gstCheck = validateOptionalGstin(companyData.gst_number);
+      if (!gstCheck.valid) {
+        setSaving(false);
+        setGstError(gstCheck.error || 'Invalid GSTIN');
+        return;
+      }
+    }
 
     try {
       const { error } = await supabase
         .from('client_profiles')
         .upsert({
           user_id: user?.id,
-          company_name: companyData.company_name,
+          company_name: companyData.account_type === 'business' ? companyData.company_name : null,
+          account_type: companyData.account_type,
+          gst_number: companyData.account_type === 'business' ? (companyData.gst_number || null) : null,
           industry: companyData.industry,
           website: companyData.website,
           size: companyData.size,
@@ -388,7 +414,7 @@ export function ClientSettingsPage() {
           // first INSERTs a new row with a fresh id and violates
           // client_profiles_user_id_key (duplicate user_id) → the save always
           // failed with "Failed to save profile" once the row existed.
-        }, { onConflict: 'user_id' });
+        } as any, { onConflict: 'user_id' });
 
       if (error) throw error;
       setSuccessMessage('Company profile saved successfully!');
@@ -1137,12 +1163,83 @@ export function ClientSettingsPage() {
                 </div>
 
                 <form onSubmit={handleCompanySubmit} className="space-y-6">
+                  {/* Account type */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Account Type</label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setCompanyData({ ...companyData, account_type: 'individual' })}
+                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                          companyData.account_type === 'individual'
+                            ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        }`}
+                      >
+                        <User className="w-4 h-4" /> Individual
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCompanyData({ ...companyData, account_type: 'business' })}
+                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                          companyData.account_type === 'business'
+                            ? 'border-violet-500 bg-violet-50 text-violet-700 ring-2 ring-violet-200'
+                            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                        }`}
+                      >
+                        <Building2 className="w-4 h-4" /> Business
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-2">
+                      {companyData.account_type === 'business'
+                        ? 'Companies post projects with their company name — GST number appears on invoices.'
+                        : 'Individual accounts hire with their personal name.'}
+                    </p>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Company Name</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {companyData.account_type === 'business' ? 'Company Name *' : 'Company / Brand Name (optional)'}
+                      </label>
                       <input type="text" value={companyData.company_name} onChange={(e) => setCompanyData({ ...companyData, company_name: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Your company name" />
                     </div>
+                    {companyData.account_type === 'business' && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">GST Number</label>
+                        <input
+                          type="text"
+                          value={companyData.gst_number}
+                          onChange={(e) => {
+                            const raw = e.target.value.toUpperCase();
+                            setCompanyData({ ...companyData, gst_number: raw });
+                            const check = validateOptionalGstin(raw);
+                            setGstError(check.valid ? null : check.error || null);
+                          }}
+                          placeholder="e.g. 27AABCS1234F1Z5"
+                          maxLength={15}
+                          className={`w-full px-4 py-3 rounded-xl border outline-none transition-all font-mono tracking-wider ${
+                            gstError
+                              ? 'border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200'
+                              : 'border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'
+                          }`}
+                        />
+                        {gstError ? (
+                          <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                            <AlertCircle className="w-3.5 h-3.5" /> {gstError}
+                          </p>
+                        ) : companyData.gst_number ? (
+                          <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
+                            <CheckCircle className="w-3.5 h-3.5" /> Valid GSTIN format
+                          </p>
+                        ) : (
+                          <p className="text-xs text-slate-400 mt-1.5">
+                            Optional — business invoices show your GST number. {normalizeGstin(companyData.gst_number) && 'Note: GSTIN is 15 characters.'}
+                          </p>
+                        )}
+                      </div>
+                    )}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Industry</label>
                       <IndustrySelect
