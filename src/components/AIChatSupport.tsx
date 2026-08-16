@@ -1,9 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { ticketService } from '../lib/supportTicketService';
 import { useToast } from './Toast';
 import { TipNote } from './TipNote';
+import type { SupportOption, SupportTopic } from '../lib/supportTopics';
 import {
   Bot,
   Check,
@@ -43,9 +45,12 @@ interface AIChatSupportProps {
     subject?: string;
     description?: string;
   };
+  /** Preloaded support topics (role-aware). When provided in support mode,
+   * the user clicks a topic and follows a guided flow instead of free-typing. */
+  supportTopics?: SupportTopic[];
 }
 
-export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', chatMode: explicitMode, ticketContext }: AIChatSupportProps) {
+export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', chatMode: explicitMode, ticketContext, supportTopics = [] }: AIChatSupportProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -64,6 +69,11 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  // ── Guided support flow state ──
+  const [activeTopic, setActiveTopic] = useState<SupportTopic | null>(null);
+  const [activeStepIndex, setActiveStepIndex] = useState(0);
+  const [flowEnded, setFlowEnded] = useState(false);
+  const [guestPrompted, setGuestPrompted] = useState(false);
 
   // ── Chat persistence ──
   // Chat history is saved per-user in localStorage so it survives page
@@ -345,6 +355,24 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       timestamp: new Date(),
     };
 
+    // ── GUEST (no account): professional account-creation message — no AI
+    // call, no dead end. Applies to the public 24/7 Contact chat.
+    if (!user?.id) {
+      setMessages((prev) => [
+        ...prev,
+        userMessage,
+        {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: `Thanks for reaching out! 💚 To chat with our 24/7 AI support and get help with your account, please create a **free Growlancer account** first (it takes under a minute) — or log in if you already have one. Your question matters to us, and we'll be right here waiting.`,
+          timestamp: new Date(),
+        },
+      ]);
+      setInput('');
+      setGuestPrompted(true);
+      return;
+    }
+
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setLoading(true);
@@ -352,6 +380,71 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     await getStreamingAIResponse(userMessage.content);
 
     setLoading(false);
+  };
+
+  // ── Guided support flow: pick a topic ──
+  const handlePickTopic = (topic: SupportTopic) => {
+    if (loading || !user) return;
+    setActiveTopic(topic);
+    setActiveStepIndex(0);
+    setFlowEnded(false);
+    const first = topic.steps[0];
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `topic-${topic.id}-${Date.now()}`,
+        role: 'assistant',
+        content: `${topic.emoji} **${topic.title}**\n\n${first.text}`,
+        timestamp: new Date(),
+      },
+    ]);
+  };
+
+  // ── Guided support flow: pick an option ──
+  const handlePickOption = (option: SupportOption) => {
+    if (!activeTopic || loading) return;
+    // User's choice appears in chat
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `opt-${Date.now()}`,
+        role: 'user',
+        content: option.label,
+        timestamp: new Date(),
+      },
+    ]);
+
+    if (option.escalate) {
+      setFlowEnded(true);
+      void handleEscalate();
+      return;
+    }
+    if (option.done) {
+      setFlowEnded(true);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `done-${Date.now()}`,
+          role: 'assistant',
+          content: option.done || 'Glad I could help!',
+          timestamp: new Date(),
+        },
+      ]);
+      return;
+    }
+    if (typeof option.next === 'number' && activeTopic.steps[option.next]) {
+      const step = activeTopic.steps[option.next];
+      setActiveStepIndex(option.next);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `step-${option.next}-${Date.now()}`,
+          role: 'assistant',
+          content: step.text,
+          timestamp: new Date(),
+        },
+      ]);
+    }
   };
 
   // ── Resend the email verification link ──
@@ -568,7 +661,38 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 && (
+        {messages.length === 0 && chatMode === 'support' && supportTopics.length > 0 && (
+          <div className="py-4">
+            <div className="text-center mb-6">
+              <div className="p-4 bg-emerald-100 rounded-full w-16 h-16 mx-auto mb-4">
+                <Headphones className="w-8 h-8 text-emerald-600" />
+              </div>
+              <h4 className="font-semibold text-slate-900 mb-1">How can we help you today?</h4>
+              <p className="text-sm text-slate-500">
+                Pick a topic — no typing needed. Every topic takes you through a quick guided flow.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {supportTopics.map((topic) => (
+                <button
+                  key={topic.id}
+                  onClick={() => handlePickTopic(topic)}
+                  className="text-left rounded-2xl border border-slate-200 bg-white p-4 hover:border-emerald-300 hover:shadow-sm transition-all group"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl leading-none">{topic.emoji}</span>
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors">{topic.title}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{topic.description}</p>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {messages.length === 0 && !(chatMode === 'support' && supportTopics.length > 0) && (
           <div className="text-center py-12">
             <div className="p-4 bg-emerald-100 rounded-full w-16 h-16 mx-auto mb-4">
               <Sparkles className="w-8 h-8 text-emerald-600" />
@@ -651,6 +775,21 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
           </div>
         ))}
 
+        {/* Guided support flow — clickable options under the last assistant step */}
+        {activeTopic && !flowEnded && !loading && (
+          <div className="flex flex-wrap gap-2 pl-1">
+            {activeTopic.steps[activeStepIndex]?.options.map((opt, idx) => (
+              <button
+                key={`${activeTopic.id}-${activeStepIndex}-${idx}`}
+                onClick={() => handlePickOption(opt)}
+                className="px-4 py-2 rounded-full border border-emerald-200 bg-emerald-50/60 text-sm font-medium text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300 transition-all"
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -721,13 +860,31 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             </button>
           </div>
         )}
+        {/* Guest CTA — professional account-creation call to action */}
+        {guestPrompted && !user && (
+          <div className="mb-3 grid grid-cols-2 gap-2">
+            <Link
+              to="/signup"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"
+            >
+              <User className="w-4 h-4" />
+              Create Free Account
+            </Link>
+            <Link
+              to="/?modal=login"
+              className="flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl border border-emerald-300 bg-white text-emerald-700 text-xs font-bold hover:bg-emerald-50 transition-colors"
+            >
+              Log In
+            </Link>
+          </div>
+        )}
         <div className="flex gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Ask me anything in any language..."
+            placeholder={user ? 'Ask me anything in any language...' : 'Type your question — we’ll help you get started...'}
             className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
             disabled={loading}
           />
