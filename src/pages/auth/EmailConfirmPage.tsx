@@ -175,7 +175,10 @@ export function EmailConfirmPage() {
                 Email verified ✓
               </h2>
               <p className="text-sm text-slate-500 mb-6">{message}</p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              {/* 🎯 Only "Close this window" — this tab was opened from the email
+                  link; navigating here would just open the homepage as a new page.
+                  The user continues in their original Growlancer tab instead. */}
+              <div className="flex justify-center">
                 <button
                   onClick={() => {
                     try { window.close(); } catch { /* ignore */ }
@@ -183,12 +186,6 @@ export function EmailConfirmPage() {
                   className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
                 >
                   Close this window
-                </button>
-                <button
-                  onClick={() => navigate('/?modal=login', { replace: true })}
-                  className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-200 hover:bg-slate-50 transition-colors"
-                >
-                  Go to login
                 </button>
               </div>
             </div>

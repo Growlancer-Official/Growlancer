@@ -202,6 +202,10 @@ export function OnboardingPage() {
   const confirmSkip = async () => {
     if (!user?.id) return;
 
+    // 🎯 The role picked on the welcome step wins — skip must land on THAT
+    // dashboard (freelancer OR client), never a hardcoded freelancer default.
+    const finalRole = isFreelancer ? 'freelancer' : 'client';
+
     try {
       // Ensure a basic profile row exists so the dashboard doesn't
       // see an empty/null profile (breaks getOpenProjects matching).
@@ -209,12 +213,20 @@ export function OnboardingPage() {
       if (!existing) {
         const created = await createUserProfile(
           user.id, user.email || '', user.name || 'User',
-          user.role === 'client' ? 'client' : 'freelancer'
+          finalRole
         );
         if (!created) {
           toast.error('Profile Error', 'Failed to create your profile. Please try again or contact support.');
           return;
         }
+      } else if (existing.role !== finalRole) {
+        // Role was changed on the welcome step — persist it so the dashboard
+        // redirect and role gates match the user's choice.
+        const { error: roleErr } = await supabase
+          .from('profiles')
+          .update({ role: finalRole, updated_at: new Date().toISOString() } as any)
+          .eq('id', user.id);
+        if (roleErr) console.error('Onboarding skip role change error:', roleErr);
       }
 
       // If freelancer, create a minimal freelancer_profiles row
@@ -251,14 +263,14 @@ export function OnboardingPage() {
         return;
       }
 
-      updateUser({ onboardingCompleted: true });
+      updateUser({ onboardingCompleted: true, role: finalRole });
     } catch (err) {
       console.error('Skip onboarding error:', err);
       toast.error('Save Error', 'Failed to skip setup. Please try again.');
       return;
     }
 
-    window.location.href = getDashboardRoute();
+    window.location.href = getDashboardRoute(finalRole);
   };
 
   const handleSubmit = async () => {
@@ -403,9 +415,10 @@ export function OnboardingPage() {
       }
 
       // 🆕 Sync context BEFORE redirect so the dashboard route check sees
-      // onboardingCompleted = true immediately (no stale-gate flash).
-      updateUser({ onboardingCompleted: true });
-      window.location.href = getDashboardRoute();
+      // onboardingCompleted + the chosen role immediately (no stale-gate flash
+      // and the right dashboard for the role picked on the welcome step).
+      updateUser({ onboardingCompleted: true, role: finalRole });
+      window.location.href = getDashboardRoute(finalRole);
     } catch (err) {
       console.error('Onboarding save error:', err);
       toast.error('Save Error', 'Failed to save your profile. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
