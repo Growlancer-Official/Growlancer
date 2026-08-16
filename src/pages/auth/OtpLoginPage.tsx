@@ -137,8 +137,9 @@ export function OtpLoginPage() {
           .maybeSingle();
 
         const role = profile?.role === 'client' ? 'client' : 'freelancer';
+        // 🎯 ONE onboarding for everyone — role is chosen on the welcome step.
         const path = profile && profile.onboarding_completed === false
-          ? (role === 'client' ? '/onboarding/client' : '/onboarding/freelancer')
+          ? '/onboarding'
           : (role === 'client' ? '/client' : '/dashboard');
 
         setTimeout(() => {

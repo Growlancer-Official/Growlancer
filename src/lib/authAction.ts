@@ -3,12 +3,16 @@
  * Shared post-auth routing helpers.
  *
  * Every authentication entry point (AuthCallbackPage, EmailConfirmPage,
- * VerifyEmailPage, and the AuthContext homepage-fallback bounce) converges
- * on the SAME destination rules so the flow is consistent:
+ * VerifyEmailPage, LoginModal, and the AuthContext homepage-fallback bounce)
+ * converges on the SAME destination rules so the flow is consistent:
  *
- *   verified + no profile        → role selection  (/onboarding?mode=oauth)
- *   verified + onboarding pending → role-specific onboarding
+ *   verified + no profile / onboarding pending → ONE onboarding  (/onboarding)
  *   verified + onboarding done    → role-specific dashboard
+ *
+ * There is exactly ONE onboarding page for everyone (email signup,
+ * GitHub/LinkedIn OAuth, invites, and login-for-incomplete-users). The
+ * role is chosen on the onboarding welcome step, so no separate
+ * role-selection mini form or role-specific onboarding routes exist.
  * ═══════════════════════════════════════════════════════════════════
  */
 import type { AuthUser } from '../types/auth';
@@ -21,28 +25,12 @@ export interface PostAuthProfile {
 /**
  * Resolve the correct destination for an authenticated (and verified) user.
  *
- * @param profile    The user's profile row (null = brand new user, no role yet).
- * @param oauthMode  When true (OAuth signup via GitHub/LinkedIn), users with
- *                   incomplete onboarding are sent to the role-selection mini
- *                   form (/onboarding?mode=oauth) instead of the role-specific
- *                   full onboarding. OAuth providers auto-confirm the email, so
- *                   these users never see the email-verification flow and need
- *                   an explicit role choice first. GitHub and LinkedIn behave
- *                   identically here.
+ * @param profile The user's profile row (null = brand new user, no role yet).
  */
-export function getPostAuthPath(
-  profile: PostAuthProfile | null,
-  oauthMode: boolean = false
-): string {
-  if (!profile) {
-    // No profile / no role selected → role selection screen
-    return '/onboarding?mode=oauth';
-  }
-  if (profile.onboardingCompleted === false) {
-    // OAuth users pick their role on the mini form (consistency for GitHub/LinkedIn);
-    // email users go to their role-specific full onboarding (role already chosen at signup).
-    if (oauthMode) return '/onboarding?mode=oauth';
-    return profile.role === 'client' ? '/onboarding/client' : '/onboarding/freelancer';
+export function getPostAuthPath(profile: PostAuthProfile | null): string {
+  if (!profile || profile.onboardingCompleted === false) {
+    // One onboarding for everyone — role selection lives on its welcome step.
+    return '/onboarding';
   }
   switch (profile.role) {
     case 'client':
@@ -62,11 +50,8 @@ export function getPostAuthPath(
  * replace() (not href=) prevents the browser Back button from returning
  * to the auth page and re-running token processing.
  */
-export function redirectAfterAuth(
-  profile: PostAuthProfile | null,
-  oauthMode: boolean = false
-): void {
-  window.location.replace(getPostAuthPath(profile, oauthMode));
+export function redirectAfterAuth(profile: PostAuthProfile | null): void {
+  window.location.replace(getPostAuthPath(profile));
 }
 
 /**

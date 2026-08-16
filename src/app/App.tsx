@@ -216,7 +216,11 @@ function App() {
               <Route
                 path="/onboarding"
                 element={
-                  <ProtectedRoute allowedRoles={['freelancer', 'client']}>
+                  // 🎯 ONE onboarding for everyone — no role gate so brand-new
+                  // OAuth users (role not finalised yet) can onboard and pick
+                  // their account type on the welcome step. Role-specific paths
+                  // below still exist as legacy deep links.
+                  <ProtectedRoute>
                     <OnboardingPage />
                   </ProtectedRoute>
                 }

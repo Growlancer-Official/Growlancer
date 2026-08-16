@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -59,491 +58,27 @@ interface ClientForm {
 
 type Step = 'welcome' | 'profile' | 'skills' | 'review';
 
-function OAuthMiniForm({ onComplete }: { onComplete: (role: 'freelancer' | 'client') => void }) {
-  const { user, updateUser } = useAuth();
-  const { categories } = useCategories();
-  const toast = useToast();
-  const [saving, setSaving] = useState(false);
-  const [step, setStep] = useState<'info' | 'done'>('info');
-
-  // Role selection (OAuth defaults to 'freelancer', user can switch)
-  const [selectedRole, setSelectedRole] = useState<'freelancer' | 'client'>(
-    (user?.role === 'client' ? 'client' : 'freelancer') as 'freelancer' | 'client'
-  );
-  const isFreelancer = selectedRole === 'freelancer';
-
-  // Shared name + bio (both roles)
-  const [name, setName] = useState(user?.name || '');
-  const [bio, setBio] = useState('');
-
-  // Freelancer fields
-  const [title, setTitle] = useState('');
-  const [hourlyRate, setHourlyRate] = useState(0);
-  // Raw text for the rate input — preserves the '.' while typing "50.5"
-  const [hourlyRateInput, setHourlyRateInput] = useState('');
-  const [location, setLocation] = useState('');
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
-  const [skillNames, setSkillNames] = useState<string[]>([]);
-  const [avatar, setAvatar] = useState<string | null>(null);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Client fields
-  const [companyName, setCompanyName] = useState('');
-  const [industry, setIndustry] = useState('');
-  const [companyLogo, setCompanyLogo] = useState<string | null>(null);
-  const [uploadingLogo, setUploadingLogo] = useState(false);
-  const logoInputRef = useRef<HTMLInputElement>(null);
-
-  // Referral code (optional, validated live)
-  const [referralCode, setReferralCode] = useState('');
-  const [referralStatus, setReferralStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
-  const [referrerName, setReferrerName] = useState<string | null>(null);
-
-  // Real-time referral code validation (debounced)
-  useEffect(() => {
-    const code = referralCode.trim();
-    if (!code) {
-      setReferralStatus('idle');
-      setReferrerName(null);
-      return;
-    }
-    if (!user?.id) return;
-    setReferralStatus('checking');
-    const t = setTimeout(async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name')
-        .eq('referral_code', code)
-        .neq('id', user.id)
-        .maybeSingle();
-      if (error) { setReferralStatus('invalid'); return; }
-      if (data) {
-        setReferralStatus('valid');
-        setReferrerName(data.name);
-      } else {
-        setReferralStatus('invalid');
-        setReferrerName(null);
-      }
-    }, 600);
-    return () => clearTimeout(t);
-  }, [referralCode, user?.id]);
-
-  // Map selected category IDs to names for saving
-  const categoryNames = selectedCategoryIds
-    .map(id => categories.find(c => c.id === id))
-    .filter((c): c is NonNullable<typeof c> => !!c)
-    .map(c => c.name);
-
-  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user?.id) return;
-    if (file.size > 2 * 1024 * 1024) { toast.error('File Too Large', 'Company logo must be less than 2MB'); return; }
-    setUploadingLogo(true);
-    try {
-      const result = await avatarPackService.uploadCompanyLogo(file, user.id);
-      if (result.success && result.logo_url) {
-        setCompanyLogo(result.logo_url);
-        toast.success('Logo Uploaded', 'Company logo added!');
-      } else {
-        toast.error('Upload Failed', result.error || 'Failed to upload logo');
-      }
-    } catch { toast.error('Upload Failed', 'Failed to upload company logo'); }
-    finally { setUploadingLogo(false); }
-  };
-
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error('File Too Large', 'File must be less than 5MB'); return; }
-    setUploadingAvatar(true);
-    try {
-      const result = await avatarUploadService.uploadAvatar(file);
-      if (result.success && result.avatar_url) {
-        setAvatar(result.avatar_url);
-      }
-    } catch { toast.error('Upload Failed', 'Failed to upload avatar'); }
-    finally { setUploadingAvatar(false); }
-  };
-
-  const handleSave = async () => {
-    if (!user?.id) return;
-    setSaving(true);
-    try {
-      // 🆕 UPSERT PATTERN: First check if profile exists, create if not, then update
-      const existing = await fetchUserProfile(user.id);
-      if (!existing) {
-        const created = await createUserProfile(
-          user.id,
-          user.email || '',
-          user.name || 'User',
-          selectedRole
-        );
-        if (!created) {
-          toast.error('Profile Error', 'Failed to create your profile. Please try again or contact support.');
-          setSaving(false);
-          return;
-        }
-      } else if (user.role !== selectedRole) {
-        // Profile exists, update role if changed
-        const { error: roleErr } = await supabase.from('profiles').update({ role: selectedRole }).eq('id', user.id);
-        if (roleErr) {
-          console.error('OAuth onboarding role update error:', roleErr);
-          toast.error('Role Error', 'Failed to save your role: ' + roleErr.message);
-          setSaving(false);
-          return;
-        }
-      }
-
-      // Save the chosen display name + start the 30-day security lock
-      const { error: nameErr } = await supabase
-        .from('profiles')
-        .update({ name: name.trim() || user.name || 'User', name_changed_at: new Date().toISOString() } as any)
-        .eq('id', user.id);
-      if (nameErr) console.error('OAuth onboarding name save error:', nameErr);
-
-      if (isFreelancer) {
-        const { error: fpError } = await supabase.from('freelancer_profiles').upsert({
-          user_id: user.id,
-          title: title || undefined,
-          bio: bio.trim() || undefined,
-          hourly_rate: hourlyRate > 0 ? hourlyRate : null,
-          location: location || null,
-          skills: skillNames.length > 0 ? skillNames : null,
-          categories: categoryNames.length > 0 ? categoryNames : null,
-          availability: true,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
-        if (fpError) {
-          console.error('OAuth onboarding freelancer_profiles error:', fpError);
-          toast.error('Save Error', 'Failed to save: ' + fpError.message);
-          setSaving(false);
-          return;
-        }
-        if (avatar) {
-          await supabase.from('profiles').update({ avatar }).eq('id', user.id);
-          updateUser({ avatar });
-        }
-      } else {
-        const { error: cpError } = await supabase.from('client_profiles').upsert({
-          user_id: user.id,
-          company_name: companyName || null,
-          industry: industry || null,
-          description: bio.trim() || null,
-          company_logo: companyLogo || null,
-          updated_at: new Date().toISOString(),
-        }, { onConflict: 'user_id' });
-        if (cpError) {
-          console.error('OAuth onboarding client_profiles error:', cpError);
-          toast.error('Save Error', 'Failed to save: ' + cpError.message);
-          setSaving(false);
-          return;
-        }
-        // 🔄 Sync company logo into profiles.avatar for the header/profile icon
-        if (companyLogo) {
-          await supabase.from('profiles').update({ avatar: companyLogo, updated_at: new Date().toISOString() }).eq('id', user.id);
-          updateUser({ avatar: companyLogo });
-        }
-      }
-
-      const { error: onboardingErr } = await supabase.from('profiles').update({ onboarding_completed: true }).eq('id', user.id);
-      if (onboardingErr) {
-        console.error('OAuth onboarding completion error:', onboardingErr);
-        toast.error('Completion Error', 'Failed to complete: ' + onboardingErr.message);
-        setSaving(false);
-        return;
-      }
-
-      // Apply referral code (optional, non-blocking)
-      if (referralStatus === 'valid' && referralCode.trim()) {
-        const { error: refErr } = await supabase.rpc('process_referral', {
-          p_referral_code: referralCode.trim(),
-          p_new_user_id: user.id,
-          p_new_user_email: user.email || '',
-        });
-        if (refErr) console.error('Referral apply error:', refErr);
-      }
-
-      // 🆕 Sync BOTH onboarding completion AND the chosen role into context so the
-      // dashboard redirect below lands on the correct dashboard (a user who switched
-      // from freelancer → client must reach /client, not /dashboard).
-      updateUser({ onboardingCompleted: true, role: selectedRole });
-      setStep('done');
-      setTimeout(() => onComplete(selectedRole), 1500);
-    } catch (err) {
-      console.error('OAuth onboarding save error:', err);
-      toast.error('Save Error', 'Failed to save. Please try again. Error: ' + (err instanceof Error ? err.message : 'Unknown error'));
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (step === 'done') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/30 flex items-center justify-center">
-        <div className="bg-white rounded-3xl p-10 max-w-md w-full mx-4 shadow-sm border border-slate-100 text-center">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-8 h-8 text-emerald-600" />
-          </div>
-          <h2 className="font-display text-2xl font-bold text-slate-900 mb-2">All set!</h2>
-          <p className="text-slate-500 text-sm">Taking you to your dashboard...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-emerald-50/30 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-sm border border-slate-100 animate-fade-in">
-        {/* Progress indication */}
-        <div className="flex items-center gap-2 mb-6">
-          <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-            <div className="h-full w-full bg-emerald-500 rounded-full" />
-          </div>
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Setup</span>
-        </div>
-
-        {/* Role Toggle */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-            {isFreelancer ? <User className="w-6 h-6" /> : <Building2 className="w-6 h-6" />}
-          </div>
-          <div>
-            <h2 className="font-display text-xl font-bold text-slate-900">
-              {isFreelancer ? 'Complete Your Freelancer Profile' : 'Complete Your Company Profile'}
-            </h2>
-            <p className="text-sm text-slate-500">Just a few quick details to get started</p>
-          </div>
-        </div>
-
-        {/* 🆕 New-account note — OAuth users without an existing Growlancer account
-            land on this mini form after GitHub/LinkedIn sign-in. Show a clear
-            'signup' message so it's obvious a new account is being created. */}
-        <div className="mb-5 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
-          <Sparkles className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-amber-800 leading-relaxed">
-            New account detected — you're one step away from joining Growlancer.
-            Pick your role below to finish signing up.
-          </p>
-        </div>
-
-        {/* Role Switcher */}
-        <div className="mb-6 p-3 bg-slate-50 rounded-xl">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">I want to...</p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setSelectedRole('freelancer')}
-              className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${
-                selectedRole === 'freelancer'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
-              }`}
-            >
-              <User className="w-4 h-4" />
-              Freelance
-            </button>
-            <button
-              onClick={() => setSelectedRole('client')}
-              className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-bold transition-all ${
-                selectedRole === 'client'
-                  ? 'bg-emerald-600 text-white shadow-md'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              Hire Talent
-            </button>
-          </div>
-        </div>
-
-        {/* Freelancer Fields */}
-        {isFreelancer ? (
-          <div className="space-y-5">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200">
-                  {avatar ? <img src={avatar} alt="" className="w-full h-full object-cover" /> : <User className="w-8 h-8 text-slate-400 m-auto mt-5" />}
-                </div>
-                <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}
-                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg">
-                  {uploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                </button>
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleAvatarUpload} className="hidden" />
-              </div>
-              <div>
-                <p className="font-medium text-slate-900">Profile Photo</p>
-                <p className="text-xs text-slate-500">Add a photo to build trust</p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Your Name <span className="text-red-400">*</span></label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)}
-                placeholder="Your full name — clients will see this on your profile"
-                maxLength={60}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-              <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                <Shield className="w-3 h-3" /> Choose your name carefully — for security, you can only change it once every 30 days.
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Bio</label>
-              <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)}
-                placeholder="Describe your expertise and experience..."
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Professional Title <span className="text-red-400">*</span></label>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)}
-                placeholder="e.g. Full Stack Developer, UI/UX Designer"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Base Rate (₹)</label>
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={hourlyRateInput}
-                  onChange={(e) => {
-                    const raw = e.target.value;
-                    setHourlyRateInput(raw);
-                    setHourlyRate(Math.max(0, parseFloat(raw) || 0));
-                  }}
-                  placeholder="50" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
-                <input type="text" value={location} onChange={e => setLocation(e.target.value)}
-                  placeholder="e.g. New York, USA" className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-              </div>
-            </div>
-
-            {/* Categories + Free-text skills */}
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-              <p className="text-xs text-slate-500 mb-3">Select your categories and add the skills you offer</p>
-              <CategoryPicker
-                mode="freelancer"
-                maxCategories={3}
-                selectedCategoryIds={selectedCategoryIds}
-                selectedSkills={skillNames}
-                onCategoriesChange={setSelectedCategoryIds}
-                onSkillsChange={setSkillNames}
-              />
-            </div>
-          </div>
-        ) : (
-          /* Client Fields */
-          <div className="space-y-5">
-            {/* Company Logo */}
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center">
-                  {companyLogo ? <img src={companyLogo} alt="Company logo" className="w-full h-full object-cover" /> : <Building2 className="w-8 h-8 text-slate-400" />}
-                </div>
-                <button onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}
-                  className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg">
-                  {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                </button>
-                <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" onChange={handleLogoUpload} className="hidden" />
-              </div>
-              <div>
-                <p className="font-medium text-slate-900">Company Logo</p>
-                <p className="text-xs text-slate-500">Add your company logo to build trust (optional)</p>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Your Name <span className="text-red-400">*</span></label>
-              <input type="text" value={name} onChange={e => setName(e.target.value)}
-                placeholder="Your full name — freelancers will see this when you hire them"
-                maxLength={60}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-              <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                <Shield className="w-3 h-3" /> Choose your name carefully — for security, you can only change it once every 30 days.
-              </p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Bio / About</label>
-              <textarea rows={3} value={bio} onChange={e => setBio(e.target.value)}
-                placeholder="Tell freelancers about you and your company..."
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Company Name <span className="text-red-400">*</span></label>
-              <input type="text" value={companyName} onChange={e => setCompanyName(e.target.value)}
-                placeholder="Your company or brand name"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Industry</label>
-              <IndustrySelect
-                value={industry}
-                onChange={setIndustry}
-                placeholder="Select your industry..."
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Referral Code (optional) */}
-        <div className="mt-5">
-          <label className="block text-sm font-medium text-slate-700 mb-1.5">
-            Referral Code <span className="text-slate-400 font-normal">(optional)</span>
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              value={referralCode}
-              onChange={e => setReferralCode(e.target.value)}
-              placeholder="Have a Growlancer referral code? Enter it here"
-              className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2">
-              {referralStatus === 'checking' && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
-              {referralStatus === 'valid' && <Check className="w-4 h-4 text-emerald-600" />}
-              {referralStatus === 'invalid' && <X className="w-4 h-4 text-red-500" />}
-            </span>
-          </div>
-          {referralStatus === 'valid' && referrerName && (
-            <p className="mt-1.5 text-xs text-emerald-600 flex items-center gap-1">
-              <Check className="w-3 h-3" /> Valid code — you were referred by {referrerName}
-            </p>
-          )}
-          {referralStatus === 'invalid' && (
-            <p className="mt-1.5 text-xs text-red-500">This referral code doesn't exist.</p>
-          )}
-        </div>
-
-        <button
-          onClick={handleSave}
-          disabled={saving || (isFreelancer && !title.trim()) || (!isFreelancer && !companyName.trim())}
-          className="w-full mt-6 h-12 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-600/25 flex items-center justify-center gap-2"
-        >
-          {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><CheckCircle className="w-5 h-5" /> Complete Setup</>}
-        </button>
-
-        <p className="text-xs text-slate-400 text-center mt-4">Most details can be updated later from settings — your name is locked for 30 days for security.</p>
-      </div>
-    </div>
-  );
-}
 
 export function OnboardingPage() {
   const toast = useToast();
   const { user, getDashboardRoute, updateUser } = useAuth();
   const { categories } = useCategories();
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const isOAuthMode = searchParams.get('mode') === 'oauth';
 
   // ── ALL hooks declared BEFORE any early return ──
   const [step, setStep] = useState<Step>('welcome');
   const [animationDir, setAnimationDir] = useState<'next' | 'prev'>('next');
   const [saving, setSaving] = useState(false);
   const [showSkipModal, setShowSkipModal] = useState(false);
+
+  // 🎯 ONE onboarding for everyone (email + GitHub/LinkedIn OAuth + invite).
+  // The role is chosen on the welcome step: email users see their signup role
+  // pre-selected (and can switch before committing), OAuth users pick freely.
+  // Previously OAuth users got a separate 1-step mini form — that duplicate
+  // experience is gone; every user walks the same welcome → profile → skills
+  // → review flow and the chosen role flows through to profiles.role.
+  const [chosenRole, setChosenRole] = useState<'freelancer' | 'client' | null>(
+    user?.role === 'freelancer' || user?.role === 'client' ? user.role : null
+  );
 
   // Avatar upload state
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -635,20 +170,10 @@ export function OnboardingPage() {
     return () => clearTimeout(t);
   }, [referralCode, user?.id]);
 
-  // OAuth users get a simpler 1-step form
-  if (isOAuthMode) {
-    return (
-      <OAuthMiniForm
-        onComplete={(role) => {
-          const route = role === 'client' ? '/client' : '/dashboard';
-          navigate(route, { replace: true });
-        }}
-      />
-    );
-  }
-
-  const isFreelancer = user?.role === 'freelancer';
-  const isClient = user?.role === 'client';
+  // Role-aware rendering: the welcome-step choice (chosenRole) wins over the
+  // context role so switching roles mid-onboarding updates the form instantly.
+  const isFreelancer = (chosenRole ?? user?.role) === 'freelancer';
+  const isClient = !isFreelancer;
 
   const handleNext = () => {
     setAnimationDir('next');
@@ -746,18 +271,27 @@ export function OnboardingPage() {
 
     try {
       const existing = await fetchUserProfile(user.id);
+      const finalRole = isFreelancer ? 'freelancer' : 'client';
       if (!existing) {
         const created = await createUserProfile(
           user.id,
           user.email || '',
           user.name || 'User',
-          user.role === 'client' ? 'client' : 'freelancer'
+          finalRole
         );
         if (!created) {
           toast.error('Profile Error', 'Failed to create your profile. Please try again or contact support.');
           setSaving(false);
           return;
         }
+      } else if (existing.role !== finalRole) {
+        // Role was changed on the welcome step (e.g. OAuth user switched to
+        // client) — persist it so the dashboard redirect and role gates match.
+        const { error: roleErr } = await supabase
+          .from('profiles')
+          .update({ role: finalRole, updated_at: new Date().toISOString() } as any)
+          .eq('id', user.id);
+        if (roleErr) console.error('Onboarding role change error:', roleErr);
       }
 
       // Save the chosen display name + start the 30-day security lock
@@ -900,7 +434,9 @@ export function OnboardingPage() {
       ];
 
   const isFormValid = () => {
-    if (step === 'welcome') return true;
+    // Welcome step requires a role choice (one onboarding for everyone —
+    // email users get their signup role pre-selected, OAuth users pick here).
+    if (step === 'welcome') return !!chosenRole;
     if (step === 'profile' && isFreelancer) {
       return (
         freelancerForm.name.trim().length > 0 &&
@@ -988,13 +524,63 @@ export function OnboardingPage() {
                 </div>
 
                 <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
-                  {isFreelancer ? 'Welcome to Growlancer!' : 'Welcome to Growlancer!'}
+                  Welcome to Growlancer!
                 </h1>
                 <p className="text-slate-600 text-lg leading-relaxed mb-8 max-w-lg mx-auto">
-                  {isFreelancer
-                    ? 'Let\'s set up your freelance profile so our AI can match you with the perfect projects. It only takes a few minutes!'
-                    : 'Set up your client account to start posting projects and hiring talented freelancers from around the world.'}
+                  Set up your profile so our AI can match you with the perfect projects — it only takes a few minutes.
                 </p>
+
+                {/* 🎯 Role selection — one onboarding for every signup path.
+                    Email users see their signup role pre-selected (they can switch
+                    before committing); GitHub/LinkedIn OAuth and invited users pick
+                    their account type here. Choosing updates the profile role so the
+                    rest of the flow (and the dashboard redirect) matches. */}
+                <div className="mb-8 text-left">
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
+                    I want to...
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => { setChosenRole('freelancer'); updateUser({ role: 'freelancer' }); }}
+                      className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                        chosenRole === 'freelancer'
+                          ? 'border-emerald-500 bg-emerald-50 shadow-md'
+                          : 'border-slate-200 bg-white hover:border-emerald-300'
+                      }`}
+                    >
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${chosenRole === 'freelancer' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        <User className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-slate-900">Freelancer</p>
+                        <p className="text-xs text-slate-500">Offer your skills and earn</p>
+                      </div>
+                      {chosenRole === 'freelancer' && <Check className="w-5 h-5 text-emerald-600" />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { setChosenRole('client'); updateUser({ role: 'client' }); }}
+                      className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                        chosenRole === 'client'
+                          ? 'border-emerald-500 bg-emerald-50 shadow-md'
+                          : 'border-slate-200 bg-white hover:border-emerald-300'
+                      }`}
+                    >
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${chosenRole === 'client' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'}`}>
+                        <Building2 className="w-5 h-5" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-slate-900">Client</p>
+                        <p className="text-xs text-slate-500">Hire talent for your projects</p>
+                      </div>
+                      {chosenRole === 'client' && <Check className="w-5 h-5 text-emerald-600" />}
+                    </button>
+                  </div>
+                  {!chosenRole && (
+                    <p className="text-xs text-amber-600 mt-2">Choose how you'll use Growlancer to continue.</p>
+                  )}
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
                   {[
@@ -1011,7 +597,8 @@ export function OnboardingPage() {
 
                 <button
                   onClick={handleNext}
-                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-600/25"
+                  disabled={!chosenRole}
+                  className="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   Get Started
                   <ArrowRight className="w-4 h-4" />

@@ -522,12 +522,8 @@ export function AuthCallbackPage() {
           return; // Stop — country confirmation UI will handle the redirect
         }
 
-        // ⚡ oauthMode: GitHub/LinkedIn OAuth users with incomplete onboarding go to the
-        // role-selection mini form (/onboarding?mode=oauth) — email was auto-confirmed
-        // by the provider, so no verification screen. Email users go to their
-        // role-specific full onboarding (role already chosen at signup).
-        // isProviderOAuth (not isOAuthFlow) so a rare manual email navigation to
-        // /auth/callback without a type param still keeps role-specific onboarding.
+        // 🎯 ONE onboarding for everyone (email + OAuth + invite): redirectAfterAuth
+        // always lands on /onboarding where the role is chosen on the welcome step.
         // 🛡️ GUARANTEE the session is in localStorage before redirecting.
         // getSession() can return an in-memory session even when supabase-js
         // didn't finish writing storage — the next page load had no session →
@@ -566,10 +562,11 @@ export function AuthCallbackPage() {
 
         devLog('[AuthCallback] redirectAfterAuth', {
           hasProfile: !!profile,
-          oauthMode: isProviderOAuth,
           role: profile?.role,
         });
-        redirectAfterAuth(profile, isProviderOAuth);
+        // 🎯 ONE onboarding for everyone — role chosen on the onboarding
+        // welcome step (no separate OAuth role-selection mini-form).
+        redirectAfterAuth(profile);
       } catch (err) {
         if (!cancelled) {
           setStatus('error');
@@ -621,10 +618,10 @@ export function AuthCallbackPage() {
         // Now determine redirect based on profile
         // 🛡️ FULL PAGE redirect — same reason as the main callback flow above.
         // Avoids the ProtectedRoute bounce-back race after country selection.
-        // oauthMode=true: the country gate is only reachable for OAuth flows
-        // (GitHub/LinkedIn), so route them to the role-selection mini form.
+        // Country gate is only reachable for OAuth flows — one onboarding for
+        // everyone (role chosen on the welcome step).
         const profile = await fetchUserProfile(userId);
-        redirectAfterAuth(profile, true);
+        redirectAfterAuth(profile);
       } else {
         // Non-India country — insert into waitlist, redirect to /waitlist
         const email = sessionData.session?.user?.email || '';

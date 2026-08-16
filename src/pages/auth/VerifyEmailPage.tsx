@@ -68,9 +68,11 @@ export function VerifyEmailPage() {
         profile = await createUserProfile(u.id, u.email || '', name, role).catch(() => null);
       }
     }
-    redirectAfterAuth(profile, isOAuthMode);
+    // 🎯 ONE onboarding for everyone — role is chosen on the onboarding
+    // welcome step (no separate OAuth mini-form anymore).
+    redirectAfterAuth(profile);
     return true;
-  }, [isOAuthMode]);
+  }, []);
 
   /**
    * Server-side truth check: is this email confirmed in auth.users?

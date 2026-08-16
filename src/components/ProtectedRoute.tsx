@@ -267,10 +267,12 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
   }
 
   // ── Onboarding check ──
+  // ONE onboarding route for everyone (email, OAuth, invite) — the role is
+  // chosen on the onboarding welcome step, so there are no role-specific
+  // onboarding paths anymore.
   if (user.onboardingCompleted === false) {
-    const onboardingPath = user.role === 'client' ? '/onboarding/client' : '/onboarding/freelancer';
     if (!window.location.pathname.startsWith('/onboarding')) {
-      return <Navigate to={onboardingPath} replace />;
+      return <Navigate to="/onboarding" replace />;
     }
   }
 

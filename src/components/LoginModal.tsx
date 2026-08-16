@@ -84,13 +84,10 @@ export function LoginModal({ isOpen, onClose, onSwitchToSignup }: LoginModalProp
         // incomplete, role dashboard when complete). Login must land on exactly
         // the same onboarding screen the email-confirm flow shows — never a
         // "different onboarding" — so both paths are always consistent.
-        const redirectPath = getPostAuthPath(
-          {
-            role: result.role,
-            onboardingCompleted: result.onboardingNeeded ? false : true,
-          },
-          false
-        );
+        const redirectPath = getPostAuthPath({
+          role: result.role,
+          onboardingCompleted: result.onboardingNeeded ? false : true,
+        });
         
         // Close modal and navigate with a small delay to ensure cleanup
         onClose();
