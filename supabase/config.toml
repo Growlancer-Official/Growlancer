@@ -447,6 +447,17 @@ enabled = true
 [functions.razorpay-webhook]
 verify_jwt = false
 
+# PayPal's webhook is also a server-to-server callback (no Supabase JWT) —
+# JWT verification must be disabled. The function verifies the PayPal
+# signature itself (fail-closed: missing PAYPAL_WEBHOOK_ID rejects the call).
+[functions.paypal-webhook]
+verify_jwt = false
+
+# RazorpayX payout webhook — same server-to-server pattern (x-razorpay-signature
+# is verified inside the function, fail-closed).
+[functions.razorpay-payout-webhook]
+verify_jwt = false
+
 # Cron-triggered edge functions are called by pg_cron → pg_net with a
 # CRON_SECRET bearer token (NOT a user JWT), so JWT verification must be
 # disabled. Both enforce the CRON_SECRET check inside the function itself.
