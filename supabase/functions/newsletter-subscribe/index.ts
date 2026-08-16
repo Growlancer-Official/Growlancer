@@ -293,6 +293,11 @@ Deno.serve(async (req) => {
         )
       }
 
+      // 🐛 FIX: normalizedEmail was undefined in the PATCH branch (only the
+      // POST branch defined it) — .eq('email', undefined) matched nothing, so
+      // unsubscribe silently did nothing. Normalize here before matching.
+      const normalizedEmail = String(email ?? '').trim().toLowerCase()
+
       await supabaseClient
         .from('newsletter_subscribers')
         .update({
