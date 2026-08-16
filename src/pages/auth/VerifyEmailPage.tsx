@@ -17,7 +17,10 @@ export function VerifyEmailPage() {
   const isOAuthMode = searchParams.get('mode') === 'oauth';
 
   const [verifying, setVerifying] = useState(false);
-  const [verified, setVerified] = useState(false);
+  // Server-side verification detected (this tab or another) — the user STAYS
+  // on this page and clicks "I've verified, continue" to proceed. No
+  // auto-redirect, never a bounce to a login modal.
+  const [confirmed, setConfirmed] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendMessage, setResendMessage] = useState<string | null>(null);
   // Guards against double-redirect when the realtime listener and the poll
@@ -25,20 +28,24 @@ export function VerifyEmailPage() {
   const redirectedRef = useRef(false);
 
   /**
-   * Shared destination logic: fetch the profile once the email is confirmed and
-   * route to onboarding/dashboard by role. Full-page redirect avoids the
-   * ProtectedRoute bounce-back race (same as AuthCallbackPage/EmailConfirmPage).
-   * oauthMode=true keeps OAuth users on the role-selection mini-form path.
+   * Establish a session and route to the destination — called ONLY from the
+   * user's "I've verified, continue" click (and manual re-checks). A verified
+   * user is NEVER bounced to a login modal:
+   *   'redirected'   → session found, redirecting to onboarding/dashboard
+   *   'need-login'   → email verified but no way to sign in on this device —
+   *                     caller shows an inline message, user stays on the page
+   *   'not-verified' → server says the email is NOT confirmed yet
    */
-  const goToAppDestination = useCallback(async () => {
-    if (redirectedRef.current) return false;
-    redirectedRef.current = true;
+  const establishAndGo = useCallback(async (emailToCheck?: string): Promise<'redirected' | 'need-login' | 'not-verified'> => {
+    // Only mark redirectedRef when we ACTUALLY redirect — a failed attempt
+    // (no session yet) must not permanently block a later successful one.
+    if (redirectedRef.current) return 'redirected';
 
-    // Session may not be established yet (fresh confirm in another tab/device) —
-    // try getSession, then getUser + refreshSession as recovery fallbacks so the
-    // redirect is never skipped because the session was momentarily missing.
+    // 1) Existing session (same-tab confirm or cross-tab sync already delivered)
     const { data } = await supabase.auth.getSession();
-    let userId = data?.session?.user?.id;
+    let userId = data?.session?.user?.id ?? null;
+
+    // 2) Recovery fallbacks — session may be momentarily missing
     if (!userId) {
       const { data: userData } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
       if (userData?.user?.id) {
@@ -46,7 +53,35 @@ export function VerifyEmailPage() {
         userId = refreshed?.session?.user?.id ?? userData.user.id;
       }
     }
-    if (!userId) return false;
+
+    // 3) Auto sign-in with the credentials saved at signup (verification
+    //    happened in a new tab — this device may not have the session yet).
+    if (!userId && emailToCheck) {
+      const storedEmail = sessionStorage.getItem('gw_signup_email');
+      const storedPassword = sessionStorage.getItem('gw_signup_password');
+      if (storedEmail && storedPassword && storedEmail.toLowerCase() === emailToCheck.toLowerCase()) {
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: storedEmail,
+          password: storedPassword,
+        });
+        if (!signInError && signInData.session?.user?.email_confirmed_at) {
+          sessionStorage.removeItem('gw_signup_email');
+          sessionStorage.removeItem('gw_signup_password');
+          userId = signInData.session.user.id;
+        }
+      }
+    }
+
+    if (!userId) {
+      // No session possible on this device — decide the message by server truth
+      if (emailToCheck) {
+        const { data: confirmed } = await (supabase.rpc as any)('is_email_confirmed', {
+          p_email: emailToCheck,
+        });
+        if (confirmed !== true) return 'not-verified';
+      }
+      return 'need-login';
+    }
 
     let profile = await fetchUserProfile(userId).catch(() => null);
     if (!profile) {
@@ -70,58 +105,31 @@ export function VerifyEmailPage() {
     }
     // 🎯 ONE onboarding for everyone — role is chosen on the onboarding
     // welcome step (no separate OAuth mini-form anymore).
+    redirectedRef.current = true;
     redirectAfterAuth(profile);
-    return true;
+    return 'redirected';
   }, []);
 
   /**
    * Server-side truth check: is this email confirmed in auth.users?
    * Needed because the confirmation may have happened in ANOTHER tab/browser —
    * this tab has no local session, so getUser() would wrongly report
-   * "email not verified". When confirmed, auto-signs in with the credentials
-   * stored at signup time (same device/tab) so the user continues seamlessly.
+   * "email not verified". Pure read-only check — NO navigation, NO sign-in
+   * here. The session is established later in establishAndGo (only when the
+   * user clicks "I've verified, continue").
    */
   const checkServerConfirmed = useCallback(async (emailToCheck: string): Promise<boolean> => {
     try {
       // ⚠️ supabase.rpc() resolves to { data, error } — NOT a raw boolean.
-      // Previously `confirmed` was the whole response object, so
-      // `confirmed !== true` was ALWAYS true and the server-side check
-      // NEVER succeeded — "I've verified, continue" always reported
-      // "Email not yet verified" even after the link was clicked in
-      // another tab/browser. Unwrap .data to get the actual boolean.
+      // Unwrap .data to get the actual boolean.
       const { data: confirmed } = await (supabase.rpc as any)('is_email_confirmed', {
         p_email: emailToCheck,
       });
-      if (confirmed !== true) return false;
-
-      // Auto sign-in with the credentials saved by the signup form (this device/tab)
-      const storedEmail = sessionStorage.getItem('gw_signup_email');
-      const storedPassword = sessionStorage.getItem('gw_signup_password');
-      if (storedEmail && storedPassword && storedEmail.toLowerCase() === emailToCheck.toLowerCase()) {
-        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-          email: storedEmail,
-          password: storedPassword,
-        });
-        if (!signInError && signInData.session?.user?.email_confirmed_at) {
-          sessionStorage.removeItem('gw_signup_email');
-          sessionStorage.removeItem('gw_signup_password');
-          return true;
-        }
-      }
-
-      // Verified, but no way to auto-login on this device → guide to login once
-      if (!redirectedRef.current) {
-        redirectedRef.current = true;
-        setResendMessage('Your email is verified! Please log in to continue.');
-        setTimeout(() => {
-          navigate('/?modal=login&email=' + encodeURIComponent(emailToCheck), { replace: true });
-        }, 1400);
-      }
-      return false;
+      return confirmed === true;
     } catch {
       return false;
     }
-  }, [navigate]);
+  }, []);
 
   // 🔒 Clear the temporarily-stored signup credentials when this page unmounts
   // (they are only meant to bridge the confirm-in-new-tab gap).
@@ -170,13 +178,12 @@ export function VerifyEmailPage() {
   useEffect(() => {
     let cancelled = false;
 
-    const confirmAndGo = async () => {
+    // 🎯 Verification detected (real-time) — the user STAYS on this page and
+    // clicks "I've verified, continue" to proceed to the next steps. No
+    // auto-redirect, and NEVER a bounce to a login modal.
+    const markConfirmed = () => {
       if (cancelled) return;
-      setVerified(true);
-      // Brief success flash, then redirect (real-time but not jarring)
-      setTimeout(() => {
-        if (!cancelled) void goToAppDestination();
-      }, 900);
+      setConfirmed(true);
     };
 
     async function checkVerification() {
@@ -185,12 +192,12 @@ export function VerifyEmailPage() {
         const { data } = await supabase.auth.getUser();
         if (cancelled) return;
         if (data?.user?.email_confirmed_at) {
-          void confirmAndGo();
+          markConfirmed();
         } else {
           // No local session — confirmation may have happened in another tab/browser
           const serverConfirmed = await checkServerConfirmed(email);
           if (!cancelled && serverConfirmed) {
-            void confirmAndGo();
+            markConfirmed();
           }
         }
       } catch {
@@ -205,7 +212,7 @@ export function VerifyEmailPage() {
       if (cancelled) return;
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
         if (session?.user?.email_confirmed_at) {
-          void confirmAndGo();
+          markConfirmed();
         } else if (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED') {
           // User confirmed but session still carrying stale flags — re-check
           void checkVerification();
@@ -221,13 +228,13 @@ export function VerifyEmailPage() {
           if (cancelled) return;
           if (data?.user?.email_confirmed_at) {
             clearInterval(interval);
-            void confirmAndGo();
+            markConfirmed();
           } else {
             // cross-tab / cross-browser fallback — ask the database directly
             checkServerConfirmed(email).then((ok) => {
               if (!cancelled && ok) {
                 clearInterval(interval);
-                void confirmAndGo();
+                markConfirmed();
               }
             }).catch(() => {});
           }
@@ -240,7 +247,7 @@ export function VerifyEmailPage() {
       authListener?.subscription.unsubscribe();
       clearInterval(interval);
     };
-  }, [email, goToAppDestination, checkServerConfirmed]);
+  }, [email, checkServerConfirmed]);
 
   const handleResendEmail = async () => {
     setResending(true);
@@ -281,28 +288,15 @@ export function VerifyEmailPage() {
     setVerifying(true);
     setResendMessage(null);
     try {
-      // 1) Local session (same-tab confirm or cross-tab sync already delivered)
-      const { data: sessionData } = await supabase.auth.getSession();
-      if (sessionData.session?.user?.email_confirmed_at) {
-        setVerified(true);
-        setTimeout(() => {
-          void goToAppDestination();
-        }, 900);
-        return;
-      }
-      // 2) Server-side truth — the email may be verified even though THIS tab
-      //    has no session (confirmation happened in a new tab/browser).
-      const serverConfirmed = await checkServerConfirmed(email);
-      if (serverConfirmed) {
-        // checkServerConfirmed auto-signed-in when credentials were available
-        setVerified(true);
-        setTimeout(() => {
-          void goToAppDestination();
-        }, 900);
-        return;
-      }
-      if (!resendMessage) {
+      // Establish the session and go to the next steps (onboarding/dashboard).
+      // Never lands on a login modal — see establishAndGo.
+      const outcome = await establishAndGo(email);
+      if (outcome === 'not-verified') {
         setResendMessage('Email not yet verified. Check your inbox and click the verification link.');
+      } else if (outcome === 'need-login') {
+        // Verified, but no session/credentials on this device — stay on this
+        // page and let the user log in via the "Log in here" link below.
+        setResendMessage('Your email is verified! Please log in below to continue.');
       }
     } catch {
       setResendMessage('Could not check verification status. Please try again.');
@@ -311,27 +305,9 @@ export function VerifyEmailPage() {
     }
   };
 
-  // ── Success screen ──
-  if (verified) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-emerald-50">
-        <div className="max-w-md w-full mx-4">
-          <div className="bg-white rounded-[2rem] shadow-xl border border-emerald-100 p-8 md:p-10 text-center">
-            <div className="flex justify-center mb-6">
-              <div className="h-20 w-20 rounded-full bg-emerald-100 flex items-center justify-center animate-bounce-in">
-                <CheckCircle2 className="w-10 h-10 text-emerald-600" />
-              </div>
-            </div>
-            <h1 className="text-2xl font-bold text-slate-900 mb-2">Email Verified! 🎉</h1>
-            <p className="text-slate-500 mb-6">Redirecting you to your dashboard...</p>
-            <Loader2 className="w-5 h-5 animate-spin text-emerald-600 mx-auto" />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── Verify Email screen ──
+  // ── Verify Email screen (user stays here after verification — the inline
+  //    green banner appears in real time, then "I've verified, continue"
+  //    takes them to the next steps) ──
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-emerald-50">
       {/* Background decorations */}
@@ -370,6 +346,17 @@ export function VerifyEmailPage() {
             <ExternalLink className="w-5 h-5" />
             Open {providerName}
           </a>
+
+          {/* 🎯 Real-time verified banner — user stays on this page and clicks
+              "I've verified, continue" to proceed (no auto-redirect, no login modal) */}
+          {confirmed && (
+            <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2 animate-fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+              <p className="text-xs font-medium text-emerald-700">
+                Your email is verified! Click "I've verified, continue" below to proceed to the next steps.
+              </p>
+            </div>
+          )}
 
           {/* Manual Check Button */}
           <button
