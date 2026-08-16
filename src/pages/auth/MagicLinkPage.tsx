@@ -27,7 +27,10 @@ export function MagicLinkPage() {
       const { error: otpError } = await supabase.auth.signInWithOtp({
         email: normalizedEmail,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?type=magiclink`,
+          // NO ?type= query — GoTrue appends type=magiclink to the URL
+          // fragment itself; AuthCallbackPage reads it from the hash. A query
+          // suffix would break the allowlist glob match (homepage flash).
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
       });
 

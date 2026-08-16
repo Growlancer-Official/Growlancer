@@ -81,7 +81,13 @@ export function VerifyEmailPage() {
    */
   const checkServerConfirmed = useCallback(async (emailToCheck: string): Promise<boolean> => {
     try {
-      const confirmed = await (supabase.rpc as any)('is_email_confirmed', {
+      // ⚠️ supabase.rpc() resolves to { data, error } — NOT a raw boolean.
+      // Previously `confirmed` was the whole response object, so
+      // `confirmed !== true` was ALWAYS true and the server-side check
+      // NEVER succeeded — "I've verified, continue" always reported
+      // "Email not yet verified" even after the link was clicked in
+      // another tab/browser. Unwrap .data to get the actual boolean.
+      const { data: confirmed } = await (supabase.rpc as any)('is_email_confirmed', {
         p_email: emailToCheck,
       });
       if (confirmed !== true) return false;
@@ -244,7 +250,11 @@ export function VerifyEmailPage() {
         options: {
           // 🎯 Same as signup — the confirm link lands on EmailConfirmPage
           // ("Email verified ✓ — close this window"), never auto-onboarding.
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm?type=signup`,
+          // NO ?type= query: GoTrue glob-matches redirect_to against the
+          // allowlist INCLUDING the query string — a ?type=signup suffix breaks
+          // the match and GoTrue falls back to the Site URL (homepage flash).
+          // The flow type is appended to the URL fragment by GoTrue itself.
+          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
         },
       });
       if (error) {

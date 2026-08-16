@@ -115,7 +115,9 @@ export function ProfessionalProfilePage() {
         email: accountData.email,
         options: {
           // 🎯 Confirm link lands on EmailConfirmPage ("close this window")
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm?type=signup`,
+          // NO ?type= query — see VerifyEmailPage resend (query suffix breaks
+          // the GoTrue allowlist glob → homepage flash; type arrives in fragment).
+          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
         },
       });
       if (error) {

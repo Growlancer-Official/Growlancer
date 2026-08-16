@@ -206,7 +206,9 @@ export function ClientSettingsPage() {
         email: accountData.email,
         options: {
           // 🎯 Confirm link lands on EmailConfirmPage ("close this window")
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm?type=signup`,
+          // NO ?type= query — see VerifyEmailPage resend (query suffix breaks
+          // the GoTrue allowlist glob → homepage flash; type arrives in fragment).
+          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
         },
       });
       if (error) {
@@ -486,8 +488,11 @@ export function ClientSettingsPage() {
   const performEmailChange = async (normalized: string) => {
     try {
       const { error } = await supabase.auth.updateUser(
+        // NO ?type= query — GoTrue appends type=email_change to the URL
+        // fragment itself; AuthCallbackPage reads it from the hash. A query
+        // suffix would break the allowlist glob match (homepage flash).
         { email: normalized },
-        { emailRedirectTo: `${window.location.origin}/auth/callback?type=email_change` }
+        { emailRedirectTo: `${window.location.origin}/auth/callback` }
       );
 
       if (error) throw error;
