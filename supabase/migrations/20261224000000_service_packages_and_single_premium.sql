@@ -155,6 +155,11 @@ BEGIN
   )
   RETURNING id INTO v_contract_id;
 
+  -- Escrow row (fund_escrow flips it to 'funded' after payment capture — it
+  -- does NOT create the row itself, so we must insert it here).
+  INSERT INTO public.escrow (contract_id, amount, status)
+  VALUES (v_contract_id, v_amount, 'pending');
+
   -- Workspace + members (mirrors create_contract_with_escrow).
   INSERT INTO public.workspaces(contract_id, client_id, lead_freelancer_id, status)
   VALUES (v_contract_id, p_client_id, v_service.freelancer_id, 'active')
