@@ -27,6 +27,7 @@ export function PricingPage() {
     '5% flat platform fee on every successful payment — no hidden charges',
     'Your money sits in Growlancer Escrow until you approve the work',
     'AI-powered freelancer matching, tailored to your project',
+    'AI writing for project titles & descriptions (5 free per day)',
     'Milestone-based payments — pay as the work progresses',
     'Free cancellation & full refund before work is delivered',
     'Fair dispute resolution with a neutral admin review',
@@ -151,8 +152,10 @@ export function PricingPage() {
               Growlancer Pro — Optional Upgrade
             </h2>
             <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
-              Join free, earn 100% of every payment. Upgrade to Pro for more visibility, more AI
-              power, and more projects — <strong>never a commission on your earnings</strong>.
+              Join free, earn 100% of every payment, and get <strong>5 free AI-written titles,
+              descriptions & cover messages every day</strong>. Upgrade to Pro for unlimited AI
+              writing, more visibility, and more projects —{' '}
+              <strong>never a commission on your earnings</strong>.
             </p>
           </div>
 
@@ -221,6 +224,14 @@ export function PricingPage() {
                           {plan.ai_messages_limit >= 1000
                             ? 'Unlimited AI messages'
                             : `${plan.ai_messages_limit} AI messages/month`}
+                        </span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <Check className={`w-5 h-5 flex-shrink-0 ${isPopular ? 'text-emerald-400' : 'text-emerald-500'}`} />
+                        <span className={`text-sm ${isPopular ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {plan.ai_messages_limit >= 1000
+                            ? 'Unlimited AI writing (titles, descriptions, cover letters)'
+                            : 'AI writing — 5 generations per day'}
                         </span>
                       </li>
                       <li className="flex items-start gap-3">
@@ -305,9 +316,11 @@ export function PricingPage() {
               <h3 className="font-bold text-slate-900 mb-1">Do freelancers pay anything to use Growlancer?</h3>
               <p className="text-sm text-slate-600">
                 No. Creating a profile, applying to projects, and receiving payments are completely
-                free. The optional <strong>Pro subscription</strong> is a separate monthly/yearly
-                plan that boosts visibility and adds AI tools — it is <strong>not</strong> a
-                commission and never touches your earnings.
+                free — including <strong>5 free AI-written titles, descriptions and cover
+                messages every day</strong>. The optional <strong>Pro subscription</strong> is a
+                separate monthly/yearly plan that boosts visibility, unlocks{' '}
+                <strong>unlimited AI writing</strong>, and adds more AI tools — it is{' '}
+                <strong>not</strong> a commission and never touches your earnings.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-slate-200">

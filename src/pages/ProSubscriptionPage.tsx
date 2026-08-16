@@ -153,6 +153,7 @@ export function ProSubscriptionPage() {
   // Build comparison rows from plan features
   const allFeatures = [
     { key: 'ai_messages', label: 'AI Messages', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : `${p.ai_messages_limit}/mo`) },
+    { key: 'ai_writing', label: 'AI Writing', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : '5/day') },
     { key: 'ai_priority', label: 'AI Priority', getValue: (p: AIPlan) => (p.ai_priority ? 'Highest' : 'Standard') },
     { key: 'matching', label: 'Project Matching', getValue: (p: AIPlan) => (p.ai_priority ? 'Priority AI' : 'AI-powered') },
     { key: 'analytics', label: 'Analytics', getValue: (p: AIPlan) => (p.price > 0 ? 'Advanced' : 'Basic') },
@@ -336,6 +337,14 @@ export function ProSubscriptionPage() {
                         {plan.ai_messages_limit >= 1000
                           ? 'Unlimited AI messages'
                           : `${plan.ai_messages_limit} AI messages/month`}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                      <span className="text-slate-700">
+                        {plan.ai_messages_limit >= 1000
+                          ? 'Unlimited AI writing (titles, descriptions, cover letters)'
+                          : 'AI writing — 5 generations per day'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2 text-sm">

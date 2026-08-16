@@ -34,6 +34,7 @@ import {
 
 const FEATURE_COMPARISON = [
   { feature: 'AI Messages / Month', free: '10 messages', pro: 'Unlimited', proHighlight: true },
+  { feature: 'AI Writing (Titles, Descriptions, Cover Letters)', free: '5 per day', pro: 'Unlimited', proHighlight: true },
   { feature: 'AI-Powered Matching', free: 'Basic', pro: 'Priority AI', proHighlight: true },
   { feature: 'AI Assistant', free: 'Basic', pro: 'Advanced + Priority', proHighlight: true },
   { feature: 'Profile Visibility', free: 'Standard', pro: 'Featured Priority', proHighlight: true },
@@ -371,6 +372,10 @@ export function AISubscriptionPage() {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span className="text-slate-700">AI writing — 5 generations per day</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                 <span className="text-slate-700">Basic AI matching</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
@@ -443,6 +448,14 @@ export function AISubscriptionPage() {
                 <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                 <span className="text-slate-700">
                   {proPlan.ai_messages_limit >= 1000 ? 'Unlimited AI messages' : `${proPlan.ai_messages_limit} AI messages/month`}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                <span className="text-slate-700">
+                  {proPlan.ai_messages_limit >= 1000
+                    ? 'Unlimited AI writing (titles, descriptions, cover letters)'
+                    : 'AI writing — 5 generations per day'}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-sm">
