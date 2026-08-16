@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { identityVerificationService, documentNeedsBack, KYC_MAX_ATTEMPTS, getRemainingKycAttempts, isKycBlocked, formatKycCooldown, getKycBlockedMsLeft, type VerificationUpload } from '../../lib/identityVerification';
 import { supabase } from '../../lib/supabase';
@@ -22,6 +22,14 @@ type PageStatus = 'loading' | 'idle';
 
 export function IdentityVerificationPage() {
   const { user } = useAuth();
+  const [searchParams] = useSearchParams();
+  // This page is shared by BOTH dashboards: /dashboard/identity-verification
+  // (freelancer) and /client/verification (client). Keep the copy role-aware.
+  const isClient = user?.role === 'client';
+  // Where to send the user after verification succeeds (set by the KYC gate
+  // via ?redirect=). Falls back to the role dashboard.
+  const postVerifyRedirect =
+    searchParams.get('redirect') || (isClient ? '/client' : '/dashboard');
   const [pageStatus, setPageStatus] = useState<PageStatus>('loading');
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected' | 'blocked'>('none');
   const [blockedMsLeft, setBlockedMsLeft] = useState(0);
@@ -34,10 +42,6 @@ export function IdentityVerificationPage() {
   const [consentAgreed, setConsentAgreed] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const backFileInputRef = useRef<HTMLInputElement>(null);
-
-  // This page is shared by BOTH dashboards: /dashboard/identity-verification
-  // (freelancer) and /client/verification (client). Keep the copy role-aware.
-  const isClient = user?.role === 'client';
 
   // Form state — supports FRONT + BACK images per document type
   const [formData, setFormData] = useState<VerificationUpload>({
@@ -795,6 +799,15 @@ export function IdentityVerificationPage() {
           })}
         </p>
       )}
+      <Link
+        to={postVerifyRedirect}
+        className="mt-6 inline-flex items-center justify-center gap-2 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all"
+      >
+        Continue to Dashboard
+      </Link>
+      <p className="text-[11px] text-slate-400 mt-3">
+        You can now use the full platform — payments, projects, matches and more are unlocked.
+      </p>
     </div>
   );
 

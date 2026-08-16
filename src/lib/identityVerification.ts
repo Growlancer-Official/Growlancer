@@ -358,6 +358,14 @@ export const identityVerificationService = {
             title: 'Identity Verified ✅',
             message: 'Your document has been verified by AI. Your verified badge is now live.',
           });
+      } else {
+        // Submitted for (possibly manual) review → sync 'pending' so the KYC
+        // gate routes the user to the in-progress stepper instead of asking
+        // them to start a fresh verification.
+        await supabase
+          .from('profiles' as any)
+          .update({ verification_status: 'pending' })
+          .eq('id', userId);
       }
 
       return { success: true, verification: data as unknown as IdentityVerification };
