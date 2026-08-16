@@ -129,9 +129,16 @@ BEGIN
     RAISE EXCEPTION 'Role is not open for hiring';
   END IF;
 
-  -- Same fee math as create_contract_with_escrow: flat 5% client-side
+  -- Amount must be positive and bounded (same cap as the single-contract RPC)
+  IF p_amount IS NULL OR p_amount <= 0 OR p_amount > 100000 THEN
+    RAISE EXCEPTION 'Invalid contract amount';
+  END IF;
+
+  -- Same fee math as create_contract_with_escrow: the flat 5% platform fee is
+  -- charged to the CLIENT on top at payment time (order = amount + 5%). The
+  -- freelancer receives 100% of the role amount in their wallet.
   v_platform_fee := ROUND(p_amount * 0.05, 2);
-  v_freelancer_amount := p_amount - v_platform_fee;
+  v_freelancer_amount := p_amount; -- 100% to the freelancer
 
   INSERT INTO public.contracts (
     project_id, freelancer_id, client_id, amount, platform_fee,
@@ -144,8 +151,10 @@ BEGIN
   )
   RETURNING id INTO v_contract_id;
 
-  INSERT INTO public.escrow (contract_id, amount, status)
-  VALUES (v_contract_id, p_amount, 'pending');
+  -- escrow.client_id / freelancer_id are NOT NULL — required for the existing
+  -- release_escrow payout path (full pool belongs to the freelancer).
+  INSERT INTO public.escrow (contract_id, client_id, freelancer_id, amount, status)
+  VALUES (v_contract_id, p_client_id, p_freelancer_id, p_amount, 'pending');
 
   RETURN v_contract_id;
 END;
