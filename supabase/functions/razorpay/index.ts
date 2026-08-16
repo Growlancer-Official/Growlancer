@@ -321,17 +321,42 @@ serve(async req => {
           const serviceId = metadata?.service_id || data.service_id;
           if (!serviceId) throw new Error('service_id is required for service_purchase');
           const { data: service } = await supabaseClient
-            .from('services').select('price, active, freelancer_id, accepts_tips, negotiable').eq('id', serviceId).single();
+            .from('services')
+            .select('price, packages, addons, active, freelancer_id, accepts_tips, negotiable')
+            .eq('id', serviceId)
+            .single();
           if (!service || service.active === false) {
             throw new Error('Service not found or inactive');
           }
-          const basePrice = Number(service.price) || 0;
-          let effectivePrice = basePrice;
+
+          // ─── PACKAGE MODEL: client sends ONLY the tier name + addon IDs.
+          // Prices are read from the service row (server-side authority) — a
+          // client can never pay a price the freelancer did not publish.
+          const packages: any[] = Array.isArray(service.packages) ? service.packages : [];
+          const addons: any[] = Array.isArray(service.addons) ? service.addons : [];
+          const tier = String(metadata?.tier || data.tier || 'basic');
+          const pkg = packages.find((p: any) => p.tier === tier) || packages[0];
+          let basePrice = Number(pkg?.price) || Number(service.price) || 0;
+          if (basePrice <= 0) throw new Error('Service has no valid package price');
+
+          // Add-ons — only published addon IDs, prices from the service row.
+          const addonIds: string[] = Array.isArray(metadata?.addon_ids)
+            ? metadata.addon_ids.map(String)
+            : (Array.isArray(data.addon_ids) ? data.addon_ids.map(String) : []);
+          let addonTotal = 0;
+          for (const aid of addonIds) {
+            const addon = addons.find((a: any) => String(a.id) === aid);
+            if (!addon) throw new Error(`Addon "${aid}" is not valid for this service`);
+            addonTotal += Number(addon.price) || 0;
+          }
+          addonTotal = Math.round(addonTotal * 100) / 100;
+          let effectivePrice = Math.round((basePrice + addonTotal) * 100) / 100;
 
           // 💬 Negotiated price: ONLY an ACCEPTED offer owned by this client
-          // may change the amount. The offer id comes from the request but the
-          // amount is read from the DB — a client can never pay an amount the
-          // freelancer didn't agree to.
+          // may change the amount (replaces the tier price; add-ons stay on
+          // top). The offer id comes from the request but the amount is read
+          // from the DB — a client can never pay an amount the freelancer
+          // didn't agree to.
           const offerId = metadata?.offer_id || data.offer_id;
           if (offerId) {
             const { data: offer } = await supabaseClient
@@ -348,7 +373,7 @@ serve(async req => {
             if (offered < 50 || offered > Math.max(basePrice * 2, 5000)) {
               throw new Error('Offer amount is out of the allowed range');
             }
-            effectivePrice = offered;
+            effectivePrice = Math.round((offered + addonTotal) * 100) / 100;
           }
 
           // 💜 Tip: only honoured when the freelancer enabled accepts_tips,
@@ -364,7 +389,10 @@ serve(async req => {
             }
           }
 
-          serverAmount = Math.round((effectivePrice + tipAmount) * 100) / 100;
+          // FINAL MODEL: client pays package + add-ons + tip + flat 5% platform
+          // fee on top (same calculatePlatformFee rule as contracts).
+          const platformFee = Math.round(effectivePrice * 0.05 * 100) / 100;
+          serverAmount = Math.round((effectivePrice + tipAmount + platformFee) * 100) / 100;
         } else if (validOrderType === 'card_verification') {
           // ₹1 authorization used purely to tokenize a card for one-click future
           // payments (Settings → Billing → Add Card). The amount is fixed
@@ -674,13 +702,55 @@ serve(async req => {
             .eq('id', updatedOrder.subscription_id);
         }
 
-        // Service purchase: bump the service's live order count so the
-        // freelancer's dashboard reflects real demand. Idempotent — this branch
-        // only runs on the FIRST capture (guarded by the status='captured'
-        // check above), so a retried verify can never double-count an order.
+        // Service purchase: create the escrow contract (server-side package
+        // prices — tier + addon IDs only from the client) + fund it from this
+        // captured payment, then bump the service's live order count.
+        // Idempotent — this branch only runs on the FIRST capture (guarded by
+        // the status='captured' check above).
         if (updatedOrder.order_type === 'service_purchase') {
           const serviceId = updatedOrder.metadata?.service_id || data?.service_id;
+          const tier = String(updatedOrder.metadata?.tier || data?.tier || 'basic');
+          const addonIds: string[] = Array.isArray(updatedOrder.metadata?.addon_ids)
+            ? updatedOrder.metadata.addon_ids.map(String)
+            : (Array.isArray(data?.addon_ids) ? data.addon_ids.map(String) : []);
           if (serviceId) {
+            // 1) Create the escrow contract server-side (SECURITY DEFINER —
+            //    recomputes package + add-on prices from the services row).
+            const { data: created, error: createErr } = await supabaseAdmin.rpc(
+              'create_service_purchase_contract',
+              {
+                p_service_id: serviceId,
+                p_client_id: user.id,
+                p_tier: tier,
+                p_addon_ids: addonIds,
+              }
+            );
+            if (createErr) {
+              console.error('[razorpay] create_service_purchase_contract failed:', createErr.message);
+            } else if (created?.success && created.contract_id) {
+              // 2) Fund the escrow with the paid amount (client owns the
+              // contract). fund_escrow validates auth.uid() === p_client_id,
+              // so it must run in the client's session (supabaseClient).
+              const { error: fundErr } = await supabaseClient.rpc('fund_escrow', {
+                p_contract_id: created.contract_id,
+                p_client_id: user.id,
+              });
+              if (fundErr) {
+                console.error('[razorpay] fund_escrow for service contract failed:', fundErr.message);
+              } else {
+                await notify(
+                  supabaseAdmin, user.id, 'contract',
+                  'Order placed & escrow funded',
+                  `Your payment for "${updatedOrder.metadata?.service_title || 'the service'}" was received and escrow is funded. The freelancer can start now.`,
+                  '/client/contracts',
+                  { contract_id: created.contract_id }
+                );
+              }
+            } else {
+              console.error('[razorpay] service contract create failed:', created?.error || 'unknown');
+            }
+
+            // 3) Bump order count (idempotent, first capture only).
             const { error: ordErr } = await supabaseAdmin.rpc('increment_service_orders', {
               p_service_id: serviceId,
             });

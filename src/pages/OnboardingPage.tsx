@@ -108,7 +108,6 @@ export function OnboardingPage() {
   // Raw numeric-field text (decimal-friendly editing) — typing "2." must not
   // collapse to "2"; the parsed numbers still live in freelancerForm.
   const [experienceInput, setExperienceInput] = useState('');
-  const [hourlyRateInput, setHourlyRateInput] = useState('');
 
   // Client form state
   const [clientForm, setClientForm] = useState<ClientForm>({
@@ -739,29 +738,9 @@ export function OnboardingPage() {
                       />
                     </div>
 
-                    {/* Base Rate & Experience */}
+                    {/* Experience only — pricing lives at the service-create step,
+                        never during onboarding (final model). */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Base Rate (₹)</label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-medium">₹</span>
-                          <input
-                            type="number"
-                            min={0}
-                            step="0.01"
-                            value={hourlyRateInput}
-                            onChange={(e) => {
-                              const raw = e.target.value;
-                              setHourlyRateInput(raw);
-                              const parsed = raw === '' ? 0 : parseFloat(raw);
-                              setFreelancerForm({ ...freelancerForm, hourly_rate: Number.isFinite(parsed) ? Math.max(0, parsed) : 0 });
-                            }}
-                            placeholder="50"
-                            className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                          />
-                        </div>
-                        <p className="text-xs text-slate-400 mt-1">Your standard base rate — the starting point clients see on your profile (negotiable)</p>
-                      </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Years of Experience</label>                          <input
                             type="number"
@@ -1208,8 +1187,7 @@ export function OnboardingPage() {
                         <div>
                           <h3 className="font-bold text-lg text-slate-900">{freelancerForm.title || 'Your Title'}</h3>
                           <p className="text-sm text-slate-500">
-                            {freelancerForm.hourly_rate > 0 ? `₹${freelancerForm.hourly_rate}` : 'Base rate not set'} 
-                            {freelancerForm.experience > 0 ? ` · ${freelancerForm.experience} years exp` : ''}
+                            {freelancerForm.experience > 0 ? `${freelancerForm.experience} years experience` : 'Experience not set'} · {freelancerForm.location || 'Location not set'}
                           </p>
                         </div>
                       </div>
@@ -1294,12 +1272,11 @@ export function OnboardingPage() {
                     <span className="text-sm font-bold text-emerald-600">
                       {Math.round(
                         isFreelancer
-                          ? ((freelancerForm.title ? 20 : 0) +
+                          ? ((freelancerForm.title ? 25 : 0) +
                              (freelancerForm.bio ? 20 : 0) +
-                             (freelancerForm.hourly_rate > 0 ? 15 : 0) +
                              (skillNames.length > 0 ? 25 : 0) +
-                             (freelancerForm.location ? 10 : 0) +
-                             (freelancerForm.portfolio_url ? 10 : 0))
+                             (freelancerForm.location ? 15 : 0) +
+                             (freelancerForm.portfolio_url ? 15 : 0))
                           : ((clientForm.company_name ? 25 : 0) +
                              (clientForm.industry ? 20 : 0) +
                              (clientForm.size ? 15 : 0) +
@@ -1314,12 +1291,11 @@ export function OnboardingPage() {
                       style={{
                         width: `${
                           isFreelancer
-                            ? ((freelancerForm.title ? 20 : 0) +
+                            ? ((freelancerForm.title ? 25 : 0) +
                                (freelancerForm.bio ? 20 : 0) +
-                               (freelancerForm.hourly_rate > 0 ? 15 : 0) +
                                (skillNames.length > 0 ? 25 : 0) +
-                               (freelancerForm.location ? 10 : 0) +
-                               (freelancerForm.portfolio_url ? 10 : 0))
+                               (freelancerForm.location ? 15 : 0) +
+                               (freelancerForm.portfolio_url ? 15 : 0))
                             : ((clientForm.company_name ? 25 : 0) +
                                (clientForm.industry ? 20 : 0) +
                                (clientForm.size ? 15 : 0) +

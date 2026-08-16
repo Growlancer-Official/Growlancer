@@ -27,33 +27,29 @@ export const PLATFORM_CONFIG = {
   },
   
   // Subscription Plans (prices in INR — India-first, affordable)
+  // FINAL MODEL: ONE flat plan — Freelancer Premium ₹299/month, purely optional.
+  // It unlocks ONLY AI + productivity tools (AI writing, AI assistant, profile
+  // optimization, advanced analytics). It NEVER gates packaging, visibility,
+  // ranking or matching — those are 100% merit-based and free for everyone.
+  // Clients are free forever (fair-use rate limit only).
   subscriptions: {
     free: {
       proposals_per_month: 5,
       ai_matches_per_month: 10,
       portfolio_items: 3,
     },
-    pro_monthly: {
-      price: 499,
+    premium_monthly: {
+      price: 299,
       proposals_per_month: 50,
       ai_matches_per_month: 100,
       portfolio_items: 20,
-      features: ['priority_support', 'analytics', 'verified_badge'],
-    },
-    pro_yearly: {
-      price: 4999,
-      proposals_per_month: 50,
-      ai_matches_per_month: 100,
-      portfolio_items: 20,
-      features: ['priority_support', 'analytics', 'verified_badge'],
-    },
-    ai_monthly: {
-      price: 399,
-      features: ['unlimited_ai_chat', 'ai_proposal_review', 'ai_profile_optimization'],
-    },
-    ai_yearly: {
-      price: 3999,
-      features: ['unlimited_ai_chat', 'ai_proposal_review', 'ai_profile_optimization'],
+      features: [
+        'unlimited_ai_writing',
+        'ai_assistant',
+        'ai_profile_optimization',
+        'advanced_analytics',
+        'priority_support',
+      ],
     },
   },
   
@@ -70,6 +66,10 @@ export const PLATFORM_CONFIG = {
     ai_matching: { requests: 20, window_ms: 60000 },
     paypal: { requests: 20, window_ms: 60000 },
     withdrawal: { requests: 10, window_ms: 3600000 }, // 10 per hour
+    // Client AI is FREE FOR LIFETIME — this is a fair-use abuse-protection cap
+    // (bots/cost-explosion guard), NOT a paywall. Cross it and the client sees
+    // a friendly "resets tomorrow" message — never an upsell.
+    client_ai_daily: { requests: 100, window_ms: 86400000 },
   },
   
   // Pagination

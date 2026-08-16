@@ -2,11 +2,43 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Plus, Shield, Sparkles, Tag, X, Zap } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Layers, Plus, Shield, Sparkles, Tag, Trash2, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { useCategories } from '../../hooks/useCategories';
 import { ImageUpload } from '../../components/ImageUpload';
 import AIGenerateModal from '../../components/AIGenerateModal';
+
+// ── Package tier types (FINAL MODEL: 3 tiers, free for ALL freelancers) ──
+export interface ServicePackage {
+  tier: 'basic' | 'standard' | 'premium';
+  title: string;
+  price: number;
+  delivery_days: number;
+  revisions: number;
+  deliverables: string[];
+}
+
+export interface ServiceAddon {
+  id: string;
+  title: string;
+  price: number;
+  type: 'extra_revision' | 'fast_delivery' | 'extra';
+}
+
+const TIER_META: Record<ServicePackage['tier'], { label: string; hint: string; accent: string }> = {
+  basic:    { label: 'Basic',    hint: 'Essential — your entry offer for most clients', accent: 'border-slate-200 bg-slate-50/50' },
+  standard: { label: 'Standard', hint: 'Most popular — best value for typical projects', accent: 'border-emerald-200 bg-emerald-50/40' },
+  premium:  { label: 'Premium',  hint: 'Full package — for clients who want everything', accent: 'border-violet-200 bg-violet-50/40' },
+};
+
+const emptyPackage = (tier: ServicePackage['tier']): ServicePackage => ({
+  tier,
+  title: TIER_META[tier].label,
+  price: 0,
+  delivery_days: 7,
+  revisions: 5,
+  deliverables: [],
+});
 
 export function CreateServicePage() {
   const navigate = useNavigate();
@@ -20,14 +52,13 @@ export function CreateServicePage() {
     title: '',
     description: '',
     category: 'Web Development',
+    // FINAL MODEL: 3-tier packaging — Basic required, Standard/Premium optional.
+    // The legacy single `price` column is kept in sync with the Basic tier so
+    // cards/search continue to work; escrow uses packages server-side.
     price: '',
-    // ⚠️ Hourly removed — services are fixed-price (or package tiers) only.
-    // Clients expect one clear professional price; per-hour billing caused
-    // confusion between freelancer and client. Only 'fixed' | 'package' remain.
-    price_type: 'fixed' as 'fixed' | 'package',
-    delivery_days: '7',
-    revisions: '5',
-    extra_revision_price: '',
+    packages: [emptyPackage('basic'), emptyPackage('standard'), emptyPackage('premium')] as ServicePackage[],
+    addons: [] as ServiceAddon[],
+    milestone_mode: 'single' as 'single' | 'multi',
     requirements: '',
     tags: [] as string[],
     features: [] as string[],
@@ -36,6 +67,7 @@ export function CreateServicePage() {
     accepts_tips: false,
     negotiable: false,
   });
+  const [addonInput, setAddonInput] = useState({ title: '', price: '' });
   const [tagInput, setTagInput] = useState('');
   const [featureInput, setFeatureInput] = useState('');
 
@@ -120,20 +152,32 @@ export function CreateServicePage() {
           revisions: number | null; extra_revision_price: number | null;
           requirements: string | null; tags: string[] | null;
           features: unknown; image_url: string | null;
+          packages: unknown; addons: unknown; milestone_mode: string | null;
           accepts_tips: boolean | null; negotiable: boolean | null;
         };
+
+        // Rebuild the package list from the stored JSONB (defaults when legacy
+        // single-price services have no packages yet).
+        const storedPackages = Array.isArray(svc.packages)
+          ? (svc.packages as ServicePackage[])
+          : [];
+        const packages = (['basic', 'standard', 'premium'] as ServicePackage['tier'][]).map((tier) => {
+          const found = storedPackages.find((p) => p.tier === tier);
+          return found ? { ...emptyPackage(tier), ...found } : emptyPackage(tier);
+        });
+        // Legacy services fall back to their single price as the Basic tier.
+        if (storedPackages.length === 0 && svc.price != null) {
+          packages[0] = { ...packages[0], price: Number(svc.price) };
+        }
 
         setFormData({
           title: svc.title || '',
           description: svc.description || '',
           category: svc.category || 'Web Development',
           price: svc.price != null ? String(svc.price) : '',
-          // One-price model: every service is fixed-price, even if it was
-          // created as 'package' before this change — saving converts it.
-          price_type: 'fixed',
-          delivery_days: svc.delivery_days != null ? String(svc.delivery_days) : '7',
-          revisions: svc.revisions != null ? String(svc.revisions) : '5',
-          extra_revision_price: svc.extra_revision_price ? String(svc.extra_revision_price) : '',
+          packages,
+          addons: Array.isArray(svc.addons) ? (svc.addons as ServiceAddon[]) : [],
+          milestone_mode: svc.milestone_mode === 'multi' ? 'multi' : 'single',
           requirements: svc.requirements || '',
           tags: svc.tags || [],
           features: Array.isArray(svc.features) ? svc.features.map(String) : [],
@@ -154,20 +198,99 @@ export function CreateServicePage() {
     return () => { cancelled = true; };
   }, [serviceId, user?.id, navigate, toast]);
 
+  const updatePackage = (tier: ServicePackage['tier'], patch: Partial<ServicePackage>) => {
+    setFormData({
+      ...formData,
+      packages: formData.packages.map((p) => (p.tier === tier ? { ...p, ...patch } : p)),
+    });
+  };
+
+  const updatePackageDeliverable = (tier: ServicePackage['tier'], index: number, value: string) => {
+    setFormData({
+      ...formData,
+      packages: formData.packages.map((p) =>
+        p.tier === tier
+          ? { ...p, deliverables: p.deliverables.map((d, i) => (i === index ? value : d)) }
+          : p
+      ),
+    });
+  };
+
+  const addDeliverable = (tier: ServicePackage['tier']) => {
+    setFormData({
+      ...formData,
+      packages: formData.packages.map((p) =>
+        p.tier === tier ? { ...p, deliverables: [...p.deliverables, ''] } : p
+      ),
+    });
+  };
+
+  const removeDeliverable = (tier: ServicePackage['tier'], index: number) => {
+    setFormData({
+      ...formData,
+      packages: formData.packages.map((p) =>
+        p.tier === tier ? { ...p, deliverables: p.deliverables.filter((_, i) => i !== index) } : p
+      ),
+    });
+  };
+
+  const handleAddAddon = () => {
+    const price = parseFloat(addonInput.price);
+    if (!addonInput.title.trim() || !Number.isFinite(price) || price <= 0) return;
+    setFormData({
+      ...formData,
+      addons: [
+        ...formData.addons,
+        {
+          id: `addon_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          title: addonInput.title.trim(),
+          price,
+          type: 'extra',
+        },
+      ],
+    });
+    setAddonInput({ title: '', price: '' });
+  };
+
+  const removeAddon = (id: string) => {
+    setFormData({ ...formData, addons: formData.addons.filter((a) => a.id !== id) });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
+    // Validate: Basic tier is mandatory and must have a real price.
+    const basic = formData.packages.find((p) => p.tier === 'basic');
+    if (!basic || !Number.isFinite(basic.price) || basic.price <= 0) {
+      toast.error('Basic package required', 'Set a price for the Basic package — it is the minimum every client can order.');
+      setLoading(false);
+      return;
+    }
+    // Higher tiers are optional, but if present they must be valid.
+    const invalidTier = formData.packages.find((p) => p.tier !== 'basic' && p.price > 0 && (!Number.isFinite(p.price) || p.price < 0));
+    if (invalidTier) {
+      toast.error('Invalid package price', `${TIER_META[invalidTier.tier].label} package price must be a valid amount.`);
+      setLoading(false);
+      return;
+    }
+
+    // Only keep tiers the freelancer actually filled (price > 0) so empty
+    // optional tiers don't create ₹0 cards. Basic is always kept.
+    const publishedPackages = formData.packages.filter(
+      (p) => p.tier === 'basic' || (p.price > 0 && p.title.trim())
+    );
 
     const payload = {
       title: formData.title,
       description: formData.description,
       category: formData.category,
-      price: parseFloat(formData.price),
-      // One-price model — hourly/package pricing was removed platform-wide.
-      price_type: 'fixed' as const,
-      delivery_days: parseInt(formData.delivery_days),
-      revisions: parseInt(formData.revisions),
-      extra_revision_price: parseFloat(formData.extra_revision_price) || 0,
+      // Basic tier price feeds the legacy `price` column (cards/search).
+      price: basic.price,
+      price_type: 'package' as const,
+      packages: publishedPackages,
+      addons: formData.addons,
+      milestone_mode: formData.milestone_mode,
       requirements: formData.requirements || null,
       features: formData.features,
       tags: formData.tags,
@@ -180,8 +303,7 @@ export function CreateServicePage() {
       if (isEditMode && serviceId) {
         // Keep the existing status — editing must NOT silently reactivate a
         // service the freelancer intentionally deactivated.
-        const { error } = await supabase
-          .from('services')
+        const { error } = await (supabase.from('services') as any)
           .update(payload)
           .eq('id', serviceId);
         if (error) throw error;
@@ -300,7 +422,6 @@ export function CreateServicePage() {
                   context={{
                     category: formData.category || undefined,
                     base_price: formData.price || undefined,
-                    extra_revision_price: formData.extra_revision_price || undefined,
                   }}
                   onApply={(text) => setFormData({ ...formData, description: text })}
                 />
@@ -328,88 +449,230 @@ export function CreateServicePage() {
           </div>
         </div>
 
-        {/* Pricing & Delivery */}
+        {/* Pricing & Delivery — FINAL MODEL: 3 package tiers + addons */}
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
             <IndianRupee className="w-5 h-5 text-emerald-600" />
-            Pricing & Delivery
+            Packages & Pricing
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-2.5">
-              <Shield className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-sm font-semibold text-slate-900">Fixed Price — one clear price</p>
-                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                  Set a single professional price for your service. Clients see exactly what they pay, and you
-                  receive 100% of it — the 5% platform fee is paid by the client on top.
-                </p>
-              </div>
-            </div>
-
+          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-2.5 mb-5">
+            <Shield className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Price (₹) *</label>
-              <input
-                type="number"
-                required
-                min="0"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="500"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Delivery Days *</label>
-              <input
-                type="number"
-                required
-                min="1"
-                value={formData.delivery_days}
-                onChange={(e) => setFormData({ ...formData, delivery_days: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="7"
-              />
+              <p className="text-sm font-semibold text-slate-900">3 tiers — free for every freelancer, no subscription needed</p>
+              <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                Offer Basic, Standard and Premium packages so clients can pick the scope that fits. This is completely
+                free — your subscription never affects packages, visibility or ranking. The client pays the package
+                price + a flat 5% platform fee; you receive 100% of the package price.
+              </p>
             </div>
           </div>
 
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Revisions Included (Free) *</label>
-              <input
-                type="number"
-                required
-                min="0"
-                value={formData.revisions}
-                onChange={(e) => setFormData({ ...formData, revisions: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="5"
-              />
-              <p className="text-xs text-slate-500 mt-1">Free revisions included in the base price. We recommend at least 5 for client confidence.</p>
+          {/* Package tiers */}
+          <div className="space-y-4">
+            {formData.packages.map((pkg) => {
+              const meta = TIER_META[pkg.tier];
+              const isBasic = pkg.tier === 'basic';
+              return (
+                <div key={pkg.tier} className={`rounded-2xl border p-5 ${meta.accent}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <div>
+                      <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                        {meta.label}
+                        {isBasic && (
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Required</span>
+                        )}
+                      </h3>
+                      <p className="text-xs text-slate-500 mt-0.5">{meta.hint}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">Price (₹)</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        value={pkg.price > 0 ? pkg.price : ''}
+                        onChange={(e) => updatePackage(pkg.tier, { price: parseFloat(e.target.value) || 0 })}
+                        className="w-28 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                        placeholder={isBasic ? '500' : 'Optional'}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Package title</label>
+                      <input
+                        type="text"
+                        value={pkg.title}
+                        onChange={(e) => updatePackage(pkg.tier, { title: e.target.value })}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                        placeholder={meta.label}
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Delivery (days)</label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={pkg.delivery_days}
+                          onChange={(e) => updatePackage(pkg.tier, { delivery_days: parseInt(e.target.value) || 1 })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-600 mb-1">Revisions</label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={pkg.revisions}
+                          onChange={(e) => updatePackage(pkg.tier, { revisions: parseInt(e.target.value) || 0 })}
+                          className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Deliverables — what this package includes */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">
+                      What's included (deliverables)
+                    </label>
+                    <div className="space-y-2">
+                      {pkg.deliverables.map((d, i) => (
+                        <div key={i} className="flex gap-2">
+                          <input
+                            type="text"
+                            value={d}
+                            onChange={(e) => updatePackageDeliverable(pkg.tier, i, e.target.value)}
+                            className="flex-1 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                            placeholder={i === 0 ? `e.g., ${meta.label} design with 3 pages` : 'Another deliverable'}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeDeliverable(pkg.tier, i)}
+                            className="px-2.5 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Remove"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => addDeliverable(pkg.tier)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add deliverable
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Milestone mode */}
+          <div className="mt-5 p-4 rounded-xl border border-slate-200 bg-white">
+            <p className="text-sm font-semibold text-slate-900 mb-1.5 flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-emerald-600" />
+              Milestone structure
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, milestone_mode: 'single' })}
+                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
+                  formData.milestone_mode === 'single'
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'
+                }`}
+              >
+                Single milestone (recommended)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, milestone_mode: 'multi' })}
+                className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all ${
+                  formData.milestone_mode === 'multi'
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : 'bg-white border-slate-200 text-slate-600 hover:border-emerald-300'
+                }`}
+              >
+                One milestone per deliverable
+              </button>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Extra Revision Price (₹/revision)</label>
+            <p className="text-xs text-slate-500 mt-2 leading-relaxed">
+              Single: the full package amount is released on delivery. Multi: the amount splits across deliverables
+              and each releases as it's delivered. Every milestone has the same escrow protection + 72h auto-release.
+            </p>
+          </div>
+
+          {/* Addons */}
+          <div className="mt-5 p-4 rounded-xl border border-slate-200 bg-white">
+            <p className="text-sm font-semibold text-slate-900 mb-1.5 flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-emerald-600" />
+              Add-ons (optional paid extras)
+            </p>
+            <p className="text-xs text-slate-500 mb-3 leading-relaxed">
+              Offer extras clients can add at checkout — faster delivery, extra revisions, or anything else you sell.
+            </p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {formData.addons.map((addon) => (
+                <span
+                  key={addon.id}
+                  className="px-3 py-1.5 bg-violet-50 text-violet-700 text-sm font-medium rounded-full border border-violet-200 flex items-center gap-1.5"
+                >
+                  {addon.title} · ₹{addon.price}
+                  <button
+                    type="button"
+                    onClick={() => removeAddon(addon.id)}
+                    className="hover:text-violet-900"
+                    title="Remove add-on"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <input
+                type="text"
+                value={addonInput.title}
+                onChange={(e) => setAddonInput({ ...addonInput, title: e.target.value })}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAddon())}
+                className="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                placeholder="e.g., 48-hour fast delivery"
+              />
               <input
                 type="number"
                 min="0"
                 step="1"
-                value={formData.extra_revision_price}
-                onChange={(e) => setFormData({ ...formData, extra_revision_price: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                placeholder="0 (no extra charge)"
+                value={addonInput.price}
+                onChange={(e) => setAddonInput({ ...addonInput, price: e.target.value })}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAddon())}
+                className="w-28 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                placeholder="Price ₹"
               />
-              <p className="text-xs text-slate-500 mt-1">Charge per revision beyond the free limit. Clients see this clearly before ordering — you decide the rate.</p>
+              <button
+                type="button"
+                onClick={handleAddAddon}
+                className="px-4 py-2 bg-violet-600 text-white font-semibold rounded-xl hover:bg-violet-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
             </div>
           </div>
-          <div className="mt-4 p-4 bg-blue-50 rounded-xl flex items-start gap-2">
+
+          <div className="mt-5 p-4 bg-blue-50 rounded-xl flex items-start gap-2">
             <Shield className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-blue-700 leading-relaxed">
-              <strong>Professional note:</strong> If the client requests more revisions than included, you may charge
-              your extra-revision rate (or a mutually agreed price). The included free revisions guarantee the client a
-              clear scope — anything beyond it is fairly paid work, agreed before it starts. Both sides stay protected by
-              Growlancer's Refund & Dispute Policy.
+              <strong>Professional note:</strong> Package prices are locked into escrow when a client orders — the client
+              pays exactly the published price, plus a flat 5% platform fee. You receive 100% of the package price. If a
+              client requests more revisions than included, you may charge your extra-revision rate (or a mutually agreed
+              price) — agreed before it starts, protected by Growlancer's Refund & Dispute Policy.
             </p>
           </div>
 
@@ -448,7 +711,8 @@ export function CreateServicePage() {
                     <span aria-hidden>🤝</span> Price Negotiable
                   </p>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Let clients make a fair offer. You accept or decline — the agreed price is honored, never changed silently.
+                    Let clients make a fair offer on the package they choose. You accept or decline — the agreed price is
+                    honored, never changed silently.
                   </p>
                 </div>
                 <button

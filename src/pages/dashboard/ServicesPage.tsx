@@ -495,7 +495,7 @@ export function ServicesPage() {
                   <div className="flex items-center gap-1">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-semibold text-slate-900">
-                      ₹{service.price}
+                      {(service as any).packages?.length > 0 ? 'From ₹' : '₹'}{service.price}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">

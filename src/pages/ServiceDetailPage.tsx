@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgePercent, Calendar, CheckCircle, ChevronRight, Clock, HandCoins, Loader2, MessageSquare, Send, Shield, ShoppingCart, Star, Tag, X } from 'lucide-react';
+import { ArrowLeft, BadgePercent, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Send, Shield, ShoppingCart, Star, Tag, X } from 'lucide-react';
 import { supabase, uniqueChannelName } from '../lib/supabase';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
@@ -8,6 +8,22 @@ import { VerifiedBadge } from '../components/VerifiedBadge';
 import { ProBadge } from '../components/ProBadge';
 import { razorpayService } from '../lib/razorpay';
 import { useAuth } from '../context/AuthContext';
+
+interface ServicePackage {
+  tier: 'basic' | 'standard' | 'premium';
+  title: string;
+  price: number;
+  delivery_days: number;
+  revisions: number;
+  deliverables: string[];
+}
+
+interface ServiceAddon {
+  id: string;
+  title: string;
+  price: number;
+  type: 'extra_revision' | 'fast_delivery' | 'extra';
+}
 
 interface ServiceData {
   id: string;
@@ -21,6 +37,9 @@ interface ServiceData {
   extra_revision_price?: number;
   revisions?: number;
   price_package?: { name: string; price: number; description: string }[];
+  packages?: ServicePackage[] | null;
+  addons?: ServiceAddon[] | null;
+  milestone_mode?: 'single' | 'multi' | null;
   delivery_time: string;
   tags: string[];
   status: string;
@@ -59,6 +78,9 @@ export function ServiceDetailPage() {
   const [offerMessage, setOfferMessage] = useState('');
   const [submittingOffer, setSubmittingOffer] = useState(false);
   const [tipPercent, setTipPercent] = useState<number | null>(null);
+  // ── Package tier + add-ons (FINAL MODEL: 3 tiers, client picks, server prices) ──
+  const [selectedTier, setSelectedTier] = useState<ServicePackage['tier'] | null>(null);
+  const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -206,14 +228,23 @@ export function ServiceDetailPage() {
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
-  // One-price model — hourly/package pricing was removed platform-wide.
-  // Every service shows a single fixed price set by the freelancer.
-  // One-price model — hourly/package pricing was removed platform-wide.
-  // Every service shows a single fixed price set by the freelancer.
-  // Legacy package services (created before the change) fall back to their
-  // first package price so the card never renders ₹0/NaN.
-  const currentPrice = service.price
-    || (service.price_package && service.price_package.length > 0 ? service.price_package[0].price : 0);
+  // ── PACKAGE MODEL (FINAL): 3 published tiers; legacy single-price services
+  // render as one Basic package so nothing breaks.
+  const publishedPackages: ServicePackage[] = Array.isArray(service.packages) && service.packages.length > 0
+    ? service.packages
+    : [{
+        tier: 'basic',
+        title: 'Standard',
+        price: service.price || 0,
+        delivery_days: Number(service.delivery_time) || 7,
+        revisions: service.revisions ?? 5,
+        deliverables: [],
+      }];
+  const selectedPackage =
+    publishedPackages.find((p) => p.tier === selectedTier) ?? publishedPackages[0] ?? publishedPackages[0];
+  const addonsList: ServiceAddon[] = Array.isArray(service.addons) ? service.addons : [];
+  const selectedAddons = addonsList.filter((a) => selectedAddonIds.includes(a.id));
+  const addonTotal = selectedAddons.reduce((sum, a) => sum + (Number(a.price) || 0), 0);
 
   // Real checkout — creates a Razorpay service_purchase order (server-side
   // amount recomputed from the services table, never trusts the client) and
@@ -225,11 +256,16 @@ export function ServiceDetailPage() {
   const acceptedOffer = myOffers.find(o => o.status === 'accepted');
   const pendingOffer = myOffers.find(o => o.status === 'pending');
   const declinedOffer = myOffers.find(o => o.status === 'declined');
-  const displayPrice = acceptedOffer ? Number(acceptedOffer.amount) : currentPrice;
+  // Package price (or the accepted-negotiated price, which replaces the tier
+  // price — the razorpay function re-verifies the offer server-side).
+  const displayPrice = acceptedOffer ? Number(acceptedOffer.amount) : (selectedPackage?.price || 0);
   const tipAmount = tipPercent
     ? Math.round((displayPrice * tipPercent) / 100 * 100) / 100
     : 0;
-  const totalPayable = displayPrice + tipAmount;
+  // Client pays: package + add-ons + tip + flat 5% platform fee (server-side
+  // recomputed — this breakdown is informational, the amount is re-verified).
+  const platformFee = Math.round((displayPrice + addonTotal) * 0.05 * 100) / 100;
+  const totalPayable = displayPrice + addonTotal + tipAmount + platformFee;
 
   const submitOffer = async () => {
     if (!user || !service) return;
@@ -273,14 +309,19 @@ export function ServiceDetailPage() {
 
     setAddingToCart(true);
     try {
+      // Client sends ONLY the tier name + addon IDs — the edge function reads
+      // prices from the services row (server-side authority, never trusts a
+      // client-sent price). The accepted offer (if any) replaces the tier price.
       const { order, razorpay_key_id, amount, currency } = await razorpayService.createOrder({
         order_type: 'service_purchase',
         amount: totalPayable,
         currency: 'INR',
-        description: `Service: ${service.title}${tipAmount > 0 ? ' + tip' : ''}`,
+        description: `Service: ${service.title} — ${selectedPackage?.title || 'Package'}${addonTotal > 0 ? ' + add-ons' : ''}${tipAmount > 0 ? ' + tip' : ''}`,
         metadata: {
           service_id: service.id,
           service_title: service.title,
+          tier: selectedPackage?.tier ?? 'basic',
+          addon_ids: selectedAddonIds,
           // Server-side validated: 0 <= tip <= service price
           tip_amount: tipAmount > 0 ? tipAmount : 0,
           // Server-side validated: only the client's ACCEPTED offer is honored
@@ -375,7 +416,7 @@ export function ServiceDetailPage() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Tag className="w-4 h-4" />
-                  Fixed Price
+                  {publishedPackages.length > 1 ? '3 Package Tiers' : 'Fixed Price'}
                 </span>
                 <span className="flex items-center gap-1">
                   <Calendar className="w-4 h-4" />
@@ -467,25 +508,117 @@ export function ServiceDetailPage() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Price Card */}
+            {/* Package Selector Card — FINAL MODEL: 3 tiers + add-ons */}
             <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-              <div className="text-center">
-                <p className="text-3xl font-bold text-slate-900">{formatCurrency(displayPrice)}</p>
-                <p className="text-sm text-slate-500 mt-1">
-                  {service.delivery_time ? `in ${service.delivery_time}` : 'fixed price'}
-                </p>
-                {(service as any).negotiable && !acceptedOffer && (
-                  <span className="inline-flex items-center gap-1 mt-2 px-2.5 py-1 text-[11px] font-bold rounded-full bg-violet-50 text-violet-700 border border-violet-100">
-                    <BadgePercent className="w-3 h-3" />
-                    Price Negotiable — make a fair offer
-                  </span>
+              <p className="text-sm font-bold text-slate-900 mb-3">Choose a package</p>
+
+              {/* Tier comparison — Fiverr-style cards */}
+              <div className="space-y-2.5">
+                {publishedPackages.map((pkg) => {
+                  const selected = selectedPackage?.tier === pkg.tier;
+                  const isStd = pkg.tier === 'standard';
+                  return (
+                    <button
+                      key={pkg.tier}
+                      type="button"
+                      onClick={() => {
+                        setSelectedTier(pkg.tier);
+                        setSelectedAddonIds([]);
+                      }}
+                      className={`w-full text-left rounded-xl border-2 p-4 transition-all ${
+                        selected
+                          ? 'border-emerald-500 bg-emerald-50/50 shadow-sm'
+                          : 'border-slate-200 bg-white hover:border-emerald-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-bold text-slate-900">
+                          {pkg.title || pkg.tier}
+                          {isStd && (
+                            <span className="ml-1.5 align-middle text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">POPULAR</span>
+                          )}
+                        </p>
+                        <p className="text-lg font-bold text-emerald-600">{formatCurrency(Number(pkg.price) || 0)}</p>
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        {pkg.delivery_days ? `${pkg.delivery_days} day delivery` : 'Delivery in days'} · {pkg.revisions ?? 0} revisions
+                      </p>
+                      {(pkg.deliverables || []).length > 0 && (
+                        <ul className="mt-2 space-y-1">
+                          {pkg.deliverables.slice(0, 4).map((d, i) => (
+                            <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
+                              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              {d}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Add-ons */}
+              {addonsList.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-slate-100">
+                  <p className="text-xs font-bold text-slate-700 mb-2">Add-ons (optional)</p>
+                  <div className="space-y-2">
+                    {addonsList.map((addon) => {
+                      const checked = selectedAddonIds.includes(addon.id);
+                      return (
+                        <label
+                          key={addon.id}
+                          className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-all ${
+                            checked ? 'border-violet-300 bg-violet-50/50' : 'border-slate-200 bg-white hover:border-violet-200'
+                          }`}
+                        >
+                          <span className="flex items-center gap-2 text-sm text-slate-700">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) =>
+                                setSelectedAddonIds((prev) =>
+                                  e.target.checked ? [...prev, addon.id] : prev.filter((id) => id !== addon.id)
+                                )
+                              }
+                              className="rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                            />
+                            {addon.title}
+                          </span>
+                          <span className="text-sm font-semibold text-slate-800">+{formatCurrency(Number(addon.price) || 0)}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Price breakdown — transparent, informational (server re-verifies) */}
+              <div className="mt-4 pt-4 border-t border-slate-100 space-y-1.5 text-sm">
+                <div className="flex justify-between text-slate-600">
+                  <span>{selectedPackage?.title || 'Package'}</span>
+                  <span className="font-medium">{formatCurrency(displayPrice)}</span>
+                </div>
+                {addonTotal > 0 && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Add-ons</span>
+                    <span className="font-medium">{formatCurrency(addonTotal)}</span>
+                  </div>
                 )}
-                {(service as any).accepts_tips && !acceptedOffer && (
-                  <span className="inline-flex items-center gap-1 mt-1.5 px-2.5 py-1 text-[11px] font-bold rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">
-                    <HandCoins className="w-3 h-3" />
-                    Tips welcome
-                  </span>
+                {tipAmount > 0 && (
+                  <div className="flex justify-between text-slate-600">
+                    <span>Tip</span>
+                    <span className="font-medium">{formatCurrency(tipAmount)}</span>
+                  </div>
                 )}
+                <div className="flex justify-between text-slate-500">
+                  <span>Platform fee (5%)</span>
+                  <span className="font-medium">{formatCurrency(platformFee)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-slate-900 pt-1.5 border-t border-slate-100">
+                  <span>Total</span>
+                  <span>{formatCurrency(totalPayable)}</span>
+                </div>
               </div>
 
               {/* 💬 Offer status — live */}
@@ -531,11 +664,6 @@ export function ServiceDetailPage() {
                       </button>
                     ))}
                   </div>
-                  {tipPercent ? (
-                    <p className="text-[11px] text-slate-500 mt-1.5">
-                      Tip: {formatCurrency(tipAmount)} · Total: <span className="font-bold text-slate-800">{formatCurrency(totalPayable)}</span>
-                    </p>
-                  ) : null}
                 </div>
               )}
 

@@ -90,6 +90,46 @@ export function EscrowPolicyPage() {
         </div>
       </section>
 
+      {/* Fees & Transparency — the full money picture */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
+        <h2 className="font-display text-2xl font-black text-slate-900 mb-6 text-center">Fees & Transparency</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Growlancer commission: 5%</h3>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              Paid by the <strong>client</strong>, on top of the package price, only when a contract is
+              successfully funded. The freelancer receives <strong>100% of the package price</strong>.
+              There is no listing fee, no hidden charge, and no other platform fee.
+            </p>
+          </div>
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Payout processing: 2%</h3>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              When a freelancer withdraws wallet funds, the payment processor (Razorpay/PayPal)
+              charges a <strong>2% transfer fee</strong>. This is the processor's actual cost — it is
+              <strong> not</strong> Growlancer profit and is shown separately from the 5% commission,
+              before you confirm any withdrawal.
+            </p>
+          </div>
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Freelancer Premium: ₹299/month</h3>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              Optional, no lock-in, cancel anytime. It unlocks only <strong>AI tools and analytics</strong> —
+              building packages, getting work, and your ranking are identical with or without it.
+              Everyone competes on merit; nobody pays for visibility.
+            </p>
+          </div>
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Client AI: free forever</h3>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              AI freelancer matching and the AI assistant are <strong>free for clients for
+              lifetime</strong>, protected only by a fair-use daily cap against bots. No paywall, no
+              upsell — ever.
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Mediation Details */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
         <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-xl">

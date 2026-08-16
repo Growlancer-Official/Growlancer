@@ -321,7 +321,7 @@ export function ServicesCatalogPage() {
                       </div>
                       <div className="text-right ml-4">
                         <span className="text-xl font-bold text-emerald-600">₹{Number(service.price).toLocaleString('en-IN')}</span>
-                        <span className="text-xs text-slate-400 block">Fixed Price</span>
+                        <span className="text-xs text-slate-400 block">{(service as any).packages?.length > 0 ? 'From · 3 tiers' : 'Fixed Price'}</span>
                       </div>
                     </div>
                   </div>

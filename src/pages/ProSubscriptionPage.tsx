@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award, BarChart3, Check, CheckCircle, CreditCard, Crown, Eye, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap,  } from 'lucide-react';
+import { ArrowRight, Award, BarChart3, Check, CheckCircle, CreditCard, Crown, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { safeFormatDate } from '../utils/date';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
@@ -150,15 +150,15 @@ export function ProSubscriptionPage() {
   const yearlyPlans = plans.filter((p) => p.interval === 'year');
   const displayPlans = billingInterval === 'month' ? monthlyPlans : yearlyPlans;
 
-  // Build comparison rows from plan features
+  // Build comparison rows from plan features.
+  // ⚠️ RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.
   const allFeatures = [
-    { key: 'ai_messages', label: 'AI Messages', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : `${p.ai_messages_limit}/mo`) },
     { key: 'ai_writing', label: 'AI Writing', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : '5/day') },
-    { key: 'ai_priority', label: 'AI Priority', getValue: (p: AIPlan) => (p.ai_priority ? 'Highest' : 'Standard') },
-    { key: 'matching', label: 'Project Matching', getValue: (p: AIPlan) => (p.ai_priority ? 'Priority AI' : 'AI-powered') },
+    { key: 'ai_messages', label: 'AI Assistant', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : `${p.ai_messages_limit}/mo`) },
+    { key: 'packages', label: '3-Tier Service Packages', getValue: () => '✓ Free for everyone' },
+    { key: 'matching', label: 'AI Matching & Ranking', getValue: () => 'Merit-based — same for all' },
     { key: 'analytics', label: 'Analytics', getValue: (p: AIPlan) => (p.price > 0 ? 'Advanced' : 'Basic') },
     { key: 'support', label: 'Support', getValue: (p: AIPlan) => (p.price > 0 ? '24/7 Priority' : 'Email') },
-    { key: 'early_access', label: 'Early Access', getValue: (p: AIPlan) => (p.price > 0 ? '✓' : '—') },
   ];
 
   if (loading) {
@@ -195,14 +195,14 @@ export function ProSubscriptionPage() {
           <div className="max-w-4xl mx-auto text-center mb-16">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-6">
               <Sparkles className="w-4 h-4" />
-              PRO SUBSCRIPTION
+              FREELANCER PREMIUM
             </div>
             <h1 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
-              Upgrade Your <span className="text-emerald-600">Freelancing Power</span>
+              One Simple Plan. <span className="text-emerald-600">₹299/month.</span>
             </h1>
             <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-              Get more visibility, more projects, and better opportunities. Choose the plan that
-              fits your freelance career.
+              Premium unlocks our <strong>AI writing tools, AI assistant, profile optimization and advanced analytics</strong>.
+              It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone.
             </p>
 
             {/* Subscription Status Banner */}
@@ -231,39 +231,23 @@ export function ProSubscriptionPage() {
             )}
           </div>
 
-          {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-12">
-            <button
-              onClick={() => setBillingInterval('month')}
-              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                billingInterval === 'month'
-                  ? 'bg-slate-900 text-white shadow-lg'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingInterval('year')}
-              className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all ${
-                billingInterval === 'year'
-                  ? 'bg-slate-900 text-white shadow-lg'
-                  : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-200'
-              }`}
-            >
-              Yearly
-              <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full">
-                Save 17%
-              </span>
-            </button>
+          {/* Single flat plan — no billing-interval toggle (one plan only) */}
+          <div className="flex items-center justify-center mb-12">
+            <span className="px-6 py-2.5 rounded-xl font-bold text-sm bg-slate-900 text-white shadow-lg">
+              Monthly · ₹299
+            </span>
+            <span className="ml-3 text-xs text-slate-500 font-medium">
+              One plan only — no tiers, no annual commitment
+            </span>
           </div>
 
-          {/* How the trial → paid flow works */}
+          {/* No lock-in note — one flat plan, cancel anytime */}
           <div className="max-w-5xl mx-auto px-4 mb-8">
-            <TipNote tone="tip" title={trialUsed ? 'Your free trial is used — upgrade anytime' : 'Start your free trial first'} compact>
-              {trialUsed
-                ? 'You can now subscribe with a payment method (wallet balance or Razorpay — UPI, cards, net banking). Your Pro badge stays active the whole time and your billing is managed right here in real time.'
-                : 'Fresh freelancers get a free trial first — no payment needed. After the trial ends, you can continue with a paid plan (wallet or Razorpay). Your Pro badge appears next to your name as soon as the trial starts.'}
+            <TipNote tone="tip" title="No lock-in — cancel anytime" compact>
+              Premium is <strong>₹299/month, flat</strong> — one simple plan, no tiers, no teams, no annual
+              commitment. Pay with wallet balance or Razorpay (UPI, cards, net banking). Your Pro badge stays
+              active the whole time and billing is managed right here in real time. Your packages, proposals and
+              visibility stay exactly the same before and after — Premium is purely extra AI + productivity tools.
             </TipNote>
           </div>
 
@@ -490,48 +474,48 @@ export function ProSubscriptionPage() {
         <section className="bg-white py-24 border-y border-slate-100">
           <div className="max-w-[100rem] mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="font-display text-3xl font-extrabold mb-4">Why Upgrade?</h2>
-              <p className="text-slate-500">The simple math of high-performance freelancing.</p>
+              <h2 className="font-display text-3xl font-extrabold mb-4">What Premium Unlocks</h2>
+              <p className="text-slate-500">
+                Fair and honest: Premium is purely AI + productivity tools. Your packages, proposals,
+                visibility and matching score are <strong>identical</strong> with or without it — everything on this
+                platform is merit-based.
+              </p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
               <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
                 <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-6">
-                  <Eye className="w-6 h-6" />
+                  <Sparkles className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">More Visibility</h3>
+                <h3 className="font-bold text-lg mb-3">Unlimited AI Writing</h3>
                 <p className="text-sm text-slate-500">
-                  Pro profiles are prioritized in search results, giving you 5x more profile views
-                  daily.
+                  Unlimited AI-generated titles, descriptions and cover letters (free users get 5/day).
                 </p>
               </div>
               <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
                 <div className="h-12 w-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-6">
-                  <Zap className="w-6 h-6" />
+                  <MessageSquare className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">Faster Matching</h3>
+                <h3 className="font-bold text-lg mb-3">AI Assistant & Support</h3>
                 <p className="text-sm text-slate-500">
-                  Our AI processes Pro applications first, putting you in front of clients before
-                  the crowd.
+                  Priority AI assistant responses and 24/7 priority support — human help when you need it.
                 </p>
               </div>
               <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
                 <div className="h-12 w-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-6">
                   <BarChart3 className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">Higher Earnings</h3>
+                <h3 className="font-bold text-lg mb-3">Advanced Analytics</h3>
                 <p className="text-sm text-slate-500">
-                  On average, Pro users secure 30% larger projects due to increased trust and
-                  visibility.
+                  Deeper performance insights for your profile, services and proposals.
                 </p>
               </div>
               <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
                 <div className="h-12 w-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-6">
-                  <MessageSquare className="w-6 h-6" />
+                  <CheckCircle className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">AI-Powered Insights</h3>
+                <h3 className="font-bold text-lg mb-3">Verified Badge</h3>
                 <p className="text-sm text-slate-500">
-                  Get unlimited AI assistance for crafting proposals, improving your profile, and
-                  more.
+                  A visible Premium badge on your profile — a signal of commitment, never a ranking boost.
                 </p>
               </div>
             </div>

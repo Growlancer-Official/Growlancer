@@ -90,7 +90,6 @@ const ReferralsPage = lazy(() => import('@pages/ReferralsPage').then(m => ({ def
 const ProSubscriptionPage = lazy(() => import('@pages/ProSubscriptionPage').then(m => ({ default: m.ProSubscriptionPage })));
 const ServicesPage = lazy(() => import('@pages/dashboard/ServicesPage').then(m => ({ default: m.ServicesPage })));
 const CreateServicePage = lazy(() => import('@pages/dashboard/CreateServicePage').then(m => ({ default: m.CreateServicePage })));
-const AISubscriptionPage = lazy(() => import('@pages/dashboard/AISubscriptionPage').then(m => ({ default: m.AISubscriptionPage })));
 const AIAssistantPage = lazy(() => import('@pages/dashboard/AIAssistantPage').then(m => ({ default: m.AIAssistantPage })));
 const PortfolioPage = lazy(() => import('@pages/dashboard/PortfolioPage').then(m => ({ default: m.PortfolioPage })));
 const AnalyticsPage = lazy(() => import('@pages/dashboard/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
@@ -279,7 +278,8 @@ function App() {
                 <Route path="settings" element={<Navigate to="/dashboard/profile" replace />} />
                 <Route path="referrals" element={<ReferralsPage />} />
                 <Route path="pro" element={<ProSubscriptionPage />} />
-                <Route path="ai-subscription" element={<AISubscriptionPage />} />
+                {/* Single Premium page — old separate AI-subscription flow merged */}
+                <Route path="ai-subscription" element={<Navigate to="/dashboard/pro" replace />} />
                 <Route path="ai-assistant" element={<AIAssistantPage />} />
                 <Route path="services" element={<ServicesPage />} />
                 <Route path="services/create" element={<CreateServicePage />} />

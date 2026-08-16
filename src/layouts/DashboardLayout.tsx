@@ -83,7 +83,7 @@ const sidebarGroups: SidebarGroup[] = [
       { id: 'analytics', path: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
       { id: 'certifications', path: '/dashboard/certifications', icon: Award, label: 'Certifications' },
       { id: 'referrals', path: '/dashboard/referrals', icon: Share2, label: 'Referrals' },
-      { id: 'ai-subscription', path: '/dashboard/ai-subscription', icon: Crown, label: 'Pro Plan' },
+      { id: 'pro', path: '/dashboard/pro', icon: Crown, label: 'Premium' },
     ],
   },
 ];
@@ -424,7 +424,7 @@ export function DashboardLayout() {
                   >
                     <link.icon className="w-5 h-5" />
                     <span className="font-medium">{link.label}</span>
-                    {link.id === 'ai-subscription' && isPro && (
+                    {link.id === 'pro' && isPro && (
                       <ProBadge size="xs" className="ml-1" />
                     )}
                     {badgeCount && (
@@ -557,7 +557,7 @@ export function DashboardLayout() {
                   >
                     <link.icon className="w-5 h-5" />
                     <span className="font-medium">{link.label}</span>
-                    {link.id === 'ai-subscription' && isPro && (
+                    {link.id === 'pro' && isPro && (
                       <ProBadge size="xs" className="ml-1" />
                     )}
                     {badgeCount && (

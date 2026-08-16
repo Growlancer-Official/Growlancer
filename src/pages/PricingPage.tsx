@@ -55,8 +55,8 @@ export function PricingPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            One flat fee for clients. Free forever for freelancers, with an optional Pro
-            upgrade for more opportunities.
+            One flat 5% commission from clients. Free forever for freelancers, with one optional
+            Premium plan (₹299/month) for AI + productivity tools. No hidden fees, no pay-to-win.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-8">
@@ -76,7 +76,8 @@ export function PricingPage() {
               </p>
               <p className="text-sm text-slate-300">
                 <strong className="text-white">₹0 to start</strong> — no commission, no fees on
-                your earnings. Optional Pro subscription boosts visibility & AI tools.
+                your earnings. 3-tier service packages are free for everyone. Optional Premium
+                (₹299/month) adds AI writing, AI assistant & analytics — never ranking or visibility.
               </p>
             </div>
           </div>
@@ -152,10 +153,11 @@ export function PricingPage() {
               Growlancer Pro — Optional Upgrade
             </h2>
             <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
-              Join free, earn 100% of every payment, and get <strong>5 free AI-written titles,
-              descriptions & cover messages every day</strong>. Upgrade to Pro for unlimited AI
-              writing, more visibility, and more projects —{' '}
-              <strong>never a commission on your earnings</strong>.
+              Join free, earn 100% of every payment, and build services with <strong>3 package
+              tiers (Basic / Standard / Premium)</strong> — completely free for every freelancer.
+              Upgrade to <strong>Premium (₹299/month, optional)</strong> for unlimited AI writing,
+              AI assistant & advanced analytics. Packages, visibility and matching stay
+              <strong> merit-based and identical</strong> — never a commission on your earnings.
             </p>
           </div>
 
@@ -290,7 +292,7 @@ export function PricingPage() {
               to="/dashboard/pro"
               className="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
             >
-              See full plan comparison & features
+              See full Premium plan details
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -315,12 +317,13 @@ export function PricingPage() {
             <div className="bg-white rounded-2xl p-6 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Do freelancers pay anything to use Growlancer?</h3>
               <p className="text-sm text-slate-600">
-                No. Creating a profile, applying to projects, and receiving payments are completely
-                free — including <strong>5 free AI-written titles, descriptions and cover
-                messages every day</strong>. The optional <strong>Pro subscription</strong> is a
-                separate monthly/yearly plan that boosts visibility, unlocks{' '}
-                <strong>unlimited AI writing</strong>, and adds more AI tools — it is{' '}
-                <strong>not</strong> a commission and never touches your earnings.
+                No. Creating a profile, building 3-tier packages, applying to projects, and
+                receiving payments are completely free — including <strong>5 free AI-written
+                titles, descriptions and cover messages every day</strong>. The optional{' '}
+                <strong>Premium plan (₹299/month, flat)</strong> unlocks <strong>unlimited AI
+                writing</strong>, the AI assistant and advanced analytics. It is{' '}
+                <strong>not</strong> a commission, never touches your earnings, and never affects
+                your ranking, visibility or matching.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-slate-200">
@@ -328,18 +331,77 @@ export function PricingPage() {
               <p className="text-sm text-slate-600">
                 Escrow protection, secure payments (Razorpay & PayPal), AI-powered matching,
                 milestone management, dispute resolution, and customer support. The fee is only
-                charged when a payment succeeds — posting, inviting, and browsing are free.
+                charged when a payment succeeds — posting, inviting, and browsing are free. There
+                is no listing fee and no hidden charge anywhere.
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-1">Is the Pro plan worth it for me?</h3>
+              <h3 className="font-bold text-slate-900 mb-1">Is the Premium plan worth it for me?</h3>
               <p className="text-sm text-slate-600">
-                Pro is optional and aimed at freelancers who want more visibility: priority
-                placement in client searches, priority AI matching, unlimited AI assistance, and
-                advanced analytics. Start with a free trial — if it doesn't bring more
-                opportunities, cancel anytime.
+                Premium is optional and purely about speed and AI help: unlimited AI writing, AI
+                assistant with priority responses, profile optimization and advanced analytics.
+                It does <strong>not</strong> boost your ranking or visibility — matches are
+                merit-based for everyone. Cancel anytime, no lock-in.
               </p>
             </div>
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <h3 className="font-bold text-slate-900 mb-1">What is the 2% payout processing fee?</h3>
+              <p className="text-sm text-slate-600">
+                When a freelancer withdraws wallet funds, the payment processor (Razorpay/PayPal)
+                charges a <strong>2% transfer fee</strong>. This is the processor's actual cost,
+                passed through at cost — it is <strong>not</strong> Growlancer revenue and is shown
+                separately from the 5% commission. Withdrawal limits and the exact fee are always
+                displayed before you confirm.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <h3 className="font-bold text-slate-900 mb-1">Is AI free for clients?</h3>
+              <p className="text-sm text-slate-600">
+                Yes — <strong>clients get AI features free for lifetime</strong>: AI freelancer
+                matching and the AI assistant. A fair-use daily cap (100 requests/day) simply
+                protects against bots and abuse; it resets every day and never asks you to upgrade.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How we make money — full transparency */}
+      <section className="pb-16 sm:pb-20 pt-8 border-t border-slate-100">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 2xl:px-12">
+          <div className="text-center mb-8">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+              How We Make Money
+            </h2>
+            <p className="text-slate-600 mt-2 text-sm sm:text-base max-w-xl mx-auto">
+              Short and honest: we earn only when work succeeds.
+            </p>
+          </div>
+          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
+            <ul className="space-y-4">
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
+                <p className="text-sm text-slate-600">
+                  <strong className="text-slate-900">5% commission</strong> — paid by the client,
+                  charged only when a contract is successfully funded and work completes.
+                </p>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
+                <p className="text-sm text-slate-600">
+                  <strong className="text-slate-900">Optional Premium ₹299/month</strong> —
+                  freelancers who want extra AI tools and analytics. Purely optional, no lock-in.
+                </p>
+              </li>
+              <li className="flex items-start gap-3">
+                <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
+                <p className="text-sm text-slate-600">
+                  <strong className="text-slate-900">No listing fees, no hidden charges, no forced
+                  subscriptions.</strong> The 2% payout processing fee is the payment processor's
+                  actual cost, passed through at cost.
+                </p>
+              </li>
+            </ul>
           </div>
         </div>
       </section>

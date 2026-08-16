@@ -64,6 +64,47 @@ const ROUTE = 'ai-matching';
 const RATE_LIMIT = 60;
 const RATE_WINDOW_MS = 60000;
 
+// Client AI is FREE FOR LIFETIME — per-user-per-day fair-use abuse guard
+// (never a paywall, never an upsell). Keyed on the authenticated user id.
+const CLIENT_DAILY_ROUTE = 'client-ai-daily';
+const CLIENT_DAILY_LIMIT = 100;
+const CLIENT_DAILY_WINDOW_MS = 86400000;
+
+async function checkDailyLimit(
+  supabaseClient: any,
+  identifier: string,
+  route: string,
+  limit: number,
+  windowMs: number
+): Promise<{ allowed: boolean; resetsInMs: number }> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - windowMs);
+
+  try {
+    await supabaseClient.rpc('cleanup_expired_rate_limits');
+  } catch {
+    // Non-critical; cleanup also runs via cron
+  }
+
+  const { count, error } = await supabaseClient
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('identifier', identifier)
+    .eq('route', route)
+    .gte('window_start', windowStart.toISOString());
+
+  if (error) return { allowed: true, resetsInMs: 0 };
+  if (count !== null && count >= limit) {
+    return { allowed: false, resetsInMs: Math.max(0, windowMs - (Date.now() - windowStart.getTime())) };
+  }
+
+  await supabaseClient
+    .from('rate_limits')
+    .insert({ identifier, route, count: 1, window_start: now.toISOString() });
+
+  return { allowed: true, resetsInMs: 0 };
+}
+
 async function checkRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
   const now = new Date();
   const windowStart = new Date(now.getTime() - RATE_WINDOW_MS);
@@ -240,6 +281,26 @@ Deno.serve(async (req: Request) => {
     const allowed = await checkRateLimit(supabase, identifier);
     if (!allowed) {
       return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Client fair-use daily cap — free forever, abuse-protected. Friendly
+    // message only; NEVER an upsell (clients are free for life).
+    const daily = await checkDailyLimit(
+      supabase,
+      authData.user.id,
+      CLIENT_DAILY_ROUTE,
+      CLIENT_DAILY_LIMIT,
+      CLIENT_DAILY_WINDOW_MS
+    );
+    if (!daily.allowed) {
+      const hours = Math.ceil(daily.resetsInMs / 3600000);
+      return new Response(JSON.stringify({
+        error: `Fair usage limit reached — it resets ${hours > 0 ? `in about ${hours} hour${hours > 1 ? 's' : ''}` : 'tomorrow'}. AI stays free for you forever.`,
+        code: 'fair_usage_limit',
+      }), {
         status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

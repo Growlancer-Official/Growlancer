@@ -634,7 +634,9 @@ export function PublicFreelancerProfilePage() {
                       <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
                         <div>
                           <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">From</p>
-                          <p className="font-bold text-emerald-700 text-lg">{formatCurrency(Number(service.price))}</p>
+                          <p className="font-bold text-emerald-700 text-lg">
+                            {(service as any).packages?.length > 0 ? 'From ' : ''}{formatCurrency(Number(service.price))}
+                          </p>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-500">
                           {service.delivery_days ? (
