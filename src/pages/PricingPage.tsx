@@ -328,6 +328,16 @@ export function PricingPage() {
               </p>
             </div>
             <div className="bg-white rounded-2xl p-6 border border-slate-200">
+              <h3 className="font-bold text-slate-900 mb-1">How does pricing work for Team Projects (multiple freelancers)?</h3>
+              <p className="text-sm text-slate-600">
+                In a Team Project, every freelancer has their own <strong>independent contract</strong> —
+                with their own escrow, milestones and dispute. The flat <strong>5% commission applies
+                per contract</strong> (client-side, same as a single hire). There is no separate "team fee"
+                — and one member's dispute or cancellation never affects the other contracts in
+                the project.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-6 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">What does the 5% fee include?</h3>
               <p className="text-sm text-slate-600">
                 Escrow protection, secure payments (Razorpay & PayPal), AI-powered matching,

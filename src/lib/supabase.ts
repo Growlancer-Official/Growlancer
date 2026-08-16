@@ -161,7 +161,9 @@ export type TableName =
   | 'team_invitations'
   | 'fraud_events'
   | 'user_reports'
-  | 'client_errors';
+  | 'client_errors'
+  | 'team_projects'
+  | 'team_project_roles';
 
 /**
  * Safe typed table reference.

@@ -128,6 +128,23 @@ export function EscrowPolicyPage() {
               upsell — ever.
             </p>
           </div>
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Team Projects: independent contracts</h3>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              In a Team Project, every freelancer's contract is <strong>independent</strong> — its own
+              escrow, milestones and dispute. One member's dispute or cancellation never affects
+              the rest of the team. The <strong>5% commission applies per contract</strong>, with no
+              separate "team fee".
+            </p>
+          </div>
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm">
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">How we make money</h3>
+            <p className="text-xs text-slate-600 leading-relaxed font-medium">
+              Only the <strong>5% commission when work is successfully funded</strong>. No listing fee,
+              no hidden charge, no forced subscription. Premium ({formatCurrency(299)}/month) is
+              optional and only unlocks AI tools and analytics — never ranking or visibility.
+            </p>
+          </div>
         </div>
       </section>
 

@@ -109,6 +109,27 @@ export function GuidelinesPage() {
         </div>
       </section>
 
+      {/* Team Projects note */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12">
+        <div className="bg-violet-50 border border-violet-200 rounded-[2rem] p-6 shadow-sm">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-10 w-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
+              <Compass className="w-5 h-5 text-violet-700" />
+            </div>
+            <h4 className="font-bold text-violet-950 text-sm">Team Projects — Independent Engagements</h4>
+          </div>
+          <p className="text-xs text-violet-900/80 leading-relaxed font-semibold">
+            In a Team Project, the Client hires each freelancer under a <strong>separate, independent
+            contract</strong> — with its own escrow, milestones and dispute process. There is no single
+            mega-contract covering the team, and Growlancer provides no cross-freelancer
+            coordination or delivery guarantee — only escrow payment protection per contract. If
+            one member's work is disputed or cancelled, the other contracts remain unaffected.
+            Treat every team member as an independent professional: communicate scope clearly per
+            role, fund each contract through escrow, and review each delivery on its own terms.
+          </p>
+        </div>
+      </section>
+
       {/* Enforcement Alert Box */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12">
         <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-6 flex flex-col sm:flex-row gap-4 items-start shadow-sm">

@@ -240,6 +240,124 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
   }
 }
 
+/**
+ * Skill-based matching for TEAM PROJECT roles — same scoring engine as
+ * runSkillBasedMatching, but driven by a role's required_skills + budget
+ * range instead of a projects row. No new algorithm: identical weights
+ * (category is skipped since roles don't carry a single category).
+ * Returns top freelancers WITHOUT writing to ai_matches (roles cache their
+ * own suggestions JSONB).
+ */
+export async function matchFreelancersBySkills(
+  skills: string[],
+  budgetMax?: number | null
+): Promise<{ success: boolean; matches?: any[]; error?: string }> {
+  try {
+    const { data: profiles, error: profsError } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        name,
+        avatar,
+        verification_status,
+        freelancer_profiles (
+          categories,
+          skills,
+          experience,
+          rating,
+          availability,
+          hourly_rate,
+          location,
+          bio
+        )
+      `)
+      .eq('role', 'freelancer')
+      .is('deleted_at', null);
+
+    if (profsError || !profiles) {
+      return { success: false, error: `Failed to fetch freelancer profiles (${profsError?.message})` };
+    }
+
+    const requiredSkills = (skills || []).map((s) => s.toLowerCase().trim()).filter(Boolean);
+    const calculatedMatches: any[] = [];
+
+    for (const profile of profiles) {
+      const fpRaw = Array.isArray(profile.freelancer_profiles)
+        ? profile.freelancer_profiles[0]
+        : profile.freelancer_profiles;
+      if (!fpRaw) continue;
+
+      const fp = fpRaw as {
+        categories?: string[];
+        skills?: string[];
+        experience?: number;
+        rating?: number;
+        availability?: boolean;
+        hourly_rate?: number;
+        location?: string;
+        bio?: string;
+      };
+      const freelancerSkills: string[] = (fp.skills || []).map((s) => s.toLowerCase().trim());
+
+      // Skills anchor: at least one required skill must overlap.
+      const matchedSkills = requiredSkills.filter((s) => freelancerSkills.includes(s));
+      if (requiredSkills.length > 0 && matchedSkills.length === 0) continue;
+
+      const skillScore = requiredSkills.length > 0
+        ? Math.round((matchedSkills.length / requiredSkills.length) * 100)
+        : 50;
+
+      // Experience (same bands as the main engine)
+      const expYears = fp.experience || 0;
+      const expScore = expYears >= 5 ? 100 : expYears >= 3 ? 80 : expYears >= 1 ? 60 : 30;
+
+      // Budget fit (same fairness rule as the main engine)
+      const baseRate = fp.hourly_rate || 0;
+      let budgetScore = 50;
+      if (baseRate > 0 && budgetMax) {
+        if (baseRate <= budgetMax) budgetScore = 100;
+        else if (baseRate <= budgetMax * 1.3) budgetScore = 80;
+        else if (baseRate <= budgetMax * 1.67) budgetScore = 50;
+        else budgetScore = 30;
+      }
+
+      const availabilityScore = fp.availability ? 100 : 20;
+
+      // Same weights as the main engine, minus category (role-driven).
+      const matchScore = Math.min(100, Math.round(
+        (skillScore * 0.40) +
+        (expScore * 0.20) +
+        (budgetScore * 0.25) +
+        (availabilityScore * 0.15)
+      ));
+
+      if (matchScore >= 45) {
+        calculatedMatches.push({
+          freelancer_id: profile.id,
+          name: profile.name,
+          avatar: profile.avatar,
+          verification_status: profile.verification_status,
+          match_score: matchScore,
+          skill_score: skillScore,
+          experience_score: expScore,
+          budget_score: budgetScore,
+          availability_score: availabilityScore,
+          hourly_rate: baseRate,
+          location: fp.location,
+          bio: fp.bio,
+          rating: fp.rating,
+        });
+      }
+    }
+
+    calculatedMatches.sort((a, b) => b.match_score - a.match_score);
+    return { success: true, matches: calculatedMatches.slice(0, 20) };
+  } catch (err: any) {
+    console.error('[aiMatching] Exception in team-role matching:', err);
+    return { success: false, error: `Matching exception: ${err?.message || 'unknown'}` };
+  }
+}
+
 export const aiMatchingService = {
   /**
    * Generate AI matches for a project.

@@ -87,6 +87,9 @@ export const ROUTES = {
     REVIEWS: '/client/reviews',
     CONTESTS: '/client/contests',
     CONTESTS_CREATE: '/client/contests/create',
+    TEAM_PROJECTS: '/client/team-projects',
+    TEAM_PROJECTS_CREATE: '/client/team-projects/create',
+    TEAM_PROJECT_DETAIL: '/client/team-projects/:teamProjectId',
   },
   
   // Admin Dashboard Routes

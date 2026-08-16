@@ -329,6 +329,26 @@
     "networkErrorDesc": "Unable to connect to the server. Please check your connection.",
     "tryAgain": "Try Again"
   },
+  "teamProjects": {
+    "sectionEyebrow": "Team Projects",
+    "sectionTitle": "Hire a whole team for big projects",
+    "sectionSubtitle": "Designer, Developer, Writer — all in one place, each freelancer with their own protected escrow.",
+    "trustCommission": "Only 5% commission",
+    "trustCommissionDesc": "Flat and transparent — charged from the client, no hidden fees anywhere.",
+    "trustEscrow": "Escrow protection",
+    "trustEscrowDesc": "Money is only released when you approve the delivered work.",
+    "trustAutoRelease": "Auto-release safety net",
+    "trustAutoReleaseDesc": "If a client goes silent, verified work auto-releases after the review window — freelancers never stay unpaid.",
+    "trustVerified": "Verified freelancers",
+    "trustVerifiedDesc": "ID-verified and skill-certified badges on every profile.",
+    "trustAiMatching": "AI-powered matching",
+    "trustAiMatchingDesc": "Instant help finding the right freelancer for every role — free for clients for life.",
+    "trustTeam": "Independent contracts",
+    "trustTeamDesc": "One member's dispute or cancellation never affects the rest of the team.",
+    "trustDispute": "Fair dispute resolution",
+    "trustDisputeDesc": "A clear, published process — admin-reviewed, with a split option when it's fair.",
+    "cta": "Post a Team Project"
+  },
   "time": {
     "justNow": "Just now",
     "minutesAgo": "{minutes}m ago",

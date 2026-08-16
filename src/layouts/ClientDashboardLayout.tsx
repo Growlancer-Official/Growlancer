@@ -64,6 +64,7 @@ const sidebarGroups: SidebarGroup[] = [
     label: 'PROJECTS',
     links: [
       { id: 'projects', path: '/client/projects', icon: FolderKanban, label: 'My Projects' },
+      { id: 'team-projects', path: '/client/team-projects', icon: Users2, label: 'Team Projects' },
       { id: 'contests', path: '/client/contests', icon: Trophy, label: 'Contests' },
     ],
   },

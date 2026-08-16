@@ -969,6 +969,79 @@ function PricingSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// Team Projects + Trust Content Section
+// ═══════════════════════════════════════════════════════════════
+function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
+  return (
+    <section className={`${SECTION_PADDING} bg-white`}>
+      <div className={CONTAINER}>
+        <div className={`${CARD_CLASS} overflow-hidden`}>
+          <div className="p-6 sm:p-8 lg:p-10">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+              <div className="max-w-2xl">
+                <div className="text-xs font-semibold text-violet-600 uppercase tracking-widest mb-2">Team Projects</div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
+                  Hire a whole team for big projects
+                </h2>
+                <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
+                  Designer, Developer, Writer — sab ek jagah. Har freelancer ka{' '}
+                  <strong className="text-slate-800">apna protected escrow</strong> hota hai, aur har role ka apna
+                  independent contract — ek member ka issue baaki team ko affect nahi karta.
+                </p>
+                <button
+                  onClick={() => onOpenSignup('client')}
+                  className="mt-5 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-violet-600 text-white font-semibold shadow-sm hover:bg-violet-700 hover:shadow-md transition-all text-sm"
+                >
+                  Post a Team Project
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </button>
+              </div>
+              <div className="rounded-xl bg-violet-50 ring-1 ring-violet-100/70 p-4 w-full lg:w-[380px] shrink-0">
+                <div className="flex items-start gap-3">
+                  <div className="h-9 w-9 rounded-xl bg-white ring-1 ring-violet-100 flex items-center justify-center shrink-0">
+                    <Users className="text-violet-600 w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-semibold text-slate-800">How team hiring works</div>
+                    <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">
+                      Role add karo → AI real-time matching → har role ka independent escrow contract.
+                      Commission (5%) har contract par — koi alag team fee nahi.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {[
+                { icon: Receipt, title: 'Only 5% commission', desc: 'Flat and transparent — charged from the client. No hidden fees.' },
+                { icon: LockKeyhole, title: 'Escrow protection', desc: 'Money releases only when you approve the delivered work.' },
+                { icon: Timer, title: 'Auto-release safety net', desc: 'Silent client? Verified work auto-releases after the review window.' },
+                { icon: BadgeCheck, title: 'Verified freelancers', desc: 'ID-verified and skill-certified badges on every profile.' },
+                { icon: Sparkles, title: 'AI matching, free for clients', desc: 'Instant help finding the right freelancer — free for life.' },
+                { icon: Users, title: 'Independent contracts', desc: 'One member dispute/cancellation never affects the rest of the team.' },
+                { icon: ShieldCheck, title: 'Fair dispute resolution', desc: 'Clear published process — admin-reviewed, split option when fair.' },
+                { icon: Wallet, title: 'Instant wallet payouts', desc: 'Released funds land in the wallet for quick withdrawal.' },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:shadow-sm transition-all">
+                  <div className="flex items-start gap-3">
+                    <Icon className="text-violet-600 w-4 h-4 mt-0.5 flex-shrink-0" />
+                    <div>
+                      <div className="text-sm font-semibold text-slate-800">{title}</div>
+                      <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">{desc}</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // Trust Section
 // ═══════════════════════════════════════════════════════════════
 function TrustSection() {
@@ -1255,6 +1328,7 @@ export function HomePage() {
       <FreelancerSection onOpenSignup={handleOpenSignup} />
       <ClientSection onOpenSignup={handleOpenSignup} />
       <CategoriesSection onOpenSignup={handleOpenSignup} />
+      <TeamProjectsSection onOpenSignup={handleOpenSignup} />
       <FeaturesSection />
       <PricingSection />
       <TrustSection />

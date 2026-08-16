@@ -118,6 +118,9 @@ const ClientReviewsPage = lazy(() => import('@pages/ClientReviewsPage').then(m =
 const ClientContestsPage = lazy(() => import('@pages/ClientContestsPage').then(m => ({ default: m.ClientContestsPage })));
 const ClientContestCreatePage = lazy(() => import('@pages/ClientContestCreatePage').then(m => ({ default: m.ClientContestCreatePage })));
 const ClientReferralsPage = lazy(() => import('@pages/ClientReferralsPage').then(m => ({ default: m.ClientReferralsPage })));
+const ClientTeamProjectsPage = lazy(() => import('@pages/ClientTeamProjectsPage').then(m => ({ default: m.ClientTeamProjectsPage })));
+const ClientPostTeamProjectPage = lazy(() => import('@pages/ClientPostTeamProjectPage').then(m => ({ default: m.ClientPostTeamProjectPage })));
+const ClientTeamProjectDetailPage = lazy(() => import('@pages/ClientTeamProjectDetailPage').then(m => ({ default: m.ClientTeamProjectDetailPage })));
 
 
 // Dashboard Pages - Admin
@@ -323,6 +326,9 @@ function App() {
                 <Route path="settings" element={<ClientSettingsPage />} />
                 <Route path="verification" element={<IdentityVerificationPage />} />
                 <Route path="referrals" element={<ClientReferralsPage />} />
+                <Route path="team-projects" element={<ClientTeamProjectsPage />} />
+                <Route path="team-projects/create" element={<ClientPostTeamProjectPage />} />
+                <Route path="team-projects/:teamProjectId" element={<ClientTeamProjectDetailPage />} />
                 {/* Clients are 100% free — no subscription. Old links redirect to the free AI assistant. */}
                 <Route path="ai-subscription" element={<Navigate to="/client/ai-assistant" replace />} />
                 <Route path="ai-assistant" element={<ClientAIAssistantPage />} />

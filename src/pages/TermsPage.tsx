@@ -119,6 +119,10 @@ const termsSections: Section[] = [
               <h5 className="font-bold text-slate-900 text-sm">D. Revisions & Extra Work</h5>
               <p className="text-slate-600 text-xs mt-1">Each Service listing states the number of free revisions included in the base price. Requests within the included free revisions are covered at no additional cost. If the Client requests more revisions than included, the Freelancer may charge their published extra-revision rate or a mutually agreed price; the Client's consent is required before any paid extra work begins, and any such charges are payable through Growlancer Escrow. Unaddressed delivered work follows the platform's review-window escalation process so that no party is left without a resolution. Revision disputes are governed by Section 6 (Dispute Resolution & Mediation).</p>
             </div>
+            <div>
+              <h5 className="font-bold text-slate-900 text-sm">E. Team Projects — Independent Contracts</h5>
+              <p className="text-slate-600 text-xs mt-1">When a Client hires multiple freelancers through a Team Project, each freelancer is engaged under a <strong>separate, independent contract</strong> — with its own escrow, milestones, review window and dispute process. The Client is independently contracting with each freelancer; there is no single mega-contract covering the team. Each freelancer is individually responsible for their own deliverables, and Growlancer provides no cross-freelancer coordination or delivery guarantee — only payment protection (escrow) for each individual contract. If one member of the team fails to deliver, the other contracts <strong>are not</strong> cancelled or affected; each contract is resolved on its own terms. The 5% platform fee applies to each individual contract, with no separate "team fee".</p>
+            </div>
           </div>
         </>
       ),
