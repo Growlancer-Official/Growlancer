@@ -111,7 +111,8 @@ const BOOT_SPLASH_HTML = `<!-- __boot_splash_marker__ -->
 </style>
 <script>
   (function () {
-    var path = window.location.pathname.replace(/\/+$/, '') || '/';
+    var path = window.location.pathname;
+    if (path.length > 1 && path.charAt(path.length - 1) === '/') path = path.slice(0, -1);
     // Exact list of pages that ARE statically prerendered — their SSR content
     // is correct and needs no overlay. Everything else gets the boot splash
     // until the app hydrates the real route.
