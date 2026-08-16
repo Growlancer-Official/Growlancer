@@ -77,6 +77,112 @@ function copyRecursiveSync(srcDir: string, destDir: string): void {
   }
 }
 
+/**
+ * Boot-splash markup injected into every built HTML file.
+ *
+ * Vike prerenders ONLY the public pages; every other path (dashboard, client,
+ * admin, onboarding, dynamic public pages…) is served by Vercel's SPA fallback
+ * which returns the prerendered `index.html` — i.e. the HOMEPAGE HTML. Before
+ * React hydrates, the user would see the homepage flash (e.g. "onboarding done
+ * → homepage flashes → dashboard appears"). This overlay covers those routes
+ * until the app renders its first frame (App.tsx calls __growlancerBootReady).
+ */
+const BOOT_SPLASH_HTML = `<!-- __boot_splash_marker__ -->
+<style>
+  #boot-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #FFF8EE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: opacity 0.25s ease;
+  }
+  #boot-overlay .boot-spinner {
+    width: 44px;
+    height: 44px;
+    border: 4px solid #d1fae5;
+    border-top-color: #10b981;
+    border-radius: 50%;
+    animation: boot-spin 0.8s linear infinite;
+  }
+  @keyframes boot-spin { to { transform: rotate(360deg); } }
+</style>
+<script>
+  (function () {
+    var path = window.location.pathname.replace(/\/+$/, '') || '/';
+    // Exact list of pages that ARE statically prerendered — their SSR content
+    // is correct and needs no overlay. Everything else gets the boot splash
+    // until the app hydrates the real route.
+    var prerendered = [
+      '/', '/how-it-works', '/features', '/categories', '/pricing', '/about',
+      '/philosophy', '/contact', '/internships', '/careers', '/help-center',
+      '/safety', '/guidelines', '/status', '/terms', '/privacy',
+      '/escrow-policy', '/cookies', '/freelancers', '/services', '/contests',
+      '/certificate', '/verify-certificate', '/auth/forgot-password',
+      '/auth/reset-password', '/auth/magic-link', '/auth/otp',
+      '/auth/email-confirm', '/auth/verify-email', '/waitlist',
+      '/payment/success', '/payment/cancel', '/not-found'
+    ];
+    if (prerendered.indexOf(path) !== -1) return;
+    var div = document.createElement('div');
+    div.id = 'boot-overlay';
+    div.innerHTML = '<div class="boot-spinner"></div>';
+    document.body.appendChild(div);
+    var hidden = false;
+    var hide = function () {
+      if (hidden) return;
+      hidden = true;
+      div.style.opacity = '0';
+      div.style.pointerEvents = 'none';
+      window.setTimeout(function () {
+        if (div.parentNode) div.parentNode.removeChild(div);
+      }, 350);
+    };
+    window.__growlancerBootReady = hide;
+    // Safety net: never trap the user behind the overlay if boot fails.
+    window.setTimeout(hide, 15000);
+  })();
+</script>`;
+
+/**
+ * Vite plugin: inject the boot-splash markup into every built HTML file.
+ *
+ * Runs in `closeBundle` AFTER the vercel-output copy, so it injects into
+ * `dist/client/**\/*.html` (the source of truth that scripts/build.mjs then
+ * copies to `dist/`). Idempotent via the marker comment.
+ */
+function bootSplashInjectPlugin(): Plugin {
+  return {
+    name: 'boot-splash-inject',
+    closeBundle() {
+      const clientDir = path.resolve(__dirname, 'dist/client');
+      if (!fs.existsSync(clientDir)) {
+        console.warn('[boot-splash] dist/client not found — skipping injection');
+        return;
+      }
+      const files: string[] = [];
+      const walk = (dir: string): void => {
+        for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+          const p = path.join(dir, entry.name);
+          if (entry.isDirectory()) walk(p);
+          else if (entry.name.endsWith('.html')) files.push(p);
+        }
+      };
+      walk(clientDir);
+      for (const file of files) {
+        let html = fs.readFileSync(file, 'utf8');
+        if (html.includes('__boot_splash_marker__')) continue;
+        if (!html.includes('</body>')) continue;
+        html = html.replace('</body>', BOOT_SPLASH_HTML + '\n</body>');
+        fs.writeFileSync(file, html);
+      }
+      console.log(`[boot-splash] Injected boot splash into ${files.length} HTML file(s)`);
+    },
+  };
+}
+
 const legalLastUpdatedIso = getLegalDocsLastUpdatedIso();
 
 export default defineConfig({
@@ -93,6 +199,10 @@ export default defineConfig({
     // build output to `dist/` after every build so the Vite preset's
     // SPA rewrite finds `index.html` regardless of overridden settings.
     vercelOutputWorkaroundPlugin(),
+    // ─── Boot splash (SPA-fallback flash guard) ────────────
+    // Injects the pre-hydration overlay into every built HTML file so the
+    // prerendered homepage never flashes on non-prerendered routes.
+    bootSplashInjectPlugin(),
     // Bundle visualizer — run `npx vite build` and open stats.html
     // Removed dynamic import to avoid build warnings
   ],

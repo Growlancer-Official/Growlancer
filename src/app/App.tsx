@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
 import { ScrollToTop } from '../components/ScrollToTop';
@@ -150,6 +150,23 @@ const DevDebugPage = import.meta.env.DEV
 
 function App() {
   const isDev = import.meta.env.DEV;
+
+  // 🎯 Boot splash: once the router has rendered the correct page (first
+  // painted frame), hide the pre-hydration overlay that covers non-prerendered
+  // routes — otherwise the SPA-fallback homepage shell would flash before
+  // hydration (e.g. "onboarding done → homepage flashes → dashboard appears").
+  useEffect(() => {
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        (window as unknown as { __growlancerBootReady?: () => void }).__growlancerBootReady?.();
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, []);
 
   return (
     <>

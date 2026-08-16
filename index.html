@@ -4,8 +4,76 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Growlancer</title>
+    <style>
+      /* Boot splash — prevents the prerendered homepage shell from flashing on
+         non-prerendered routes (dashboard, client, admin, onboarding, dynamic
+         public pages…). Vercel's SPA fallback serves index.html (the homepage
+         prerender) for every unprerendered path, so without this overlay the
+         homepage visibly paints before React hydrates the real page — e.g.
+         "onboarding done → homepage flashes → dashboard appears".
+         The overlay is only created on non-prerendered paths (inline script
+         below) and is removed by the app once the first frame renders. */
+      #boot-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        background: #FFF8EE;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.25s ease;
+      }
+      #boot-overlay .boot-spinner {
+        width: 44px;
+        height: 44px;
+        border: 4px solid #d1fae5;
+        border-top-color: #10b981;
+        border-radius: 50%;
+        animation: boot-spin 0.8s linear infinite;
+      }
+      @keyframes boot-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Hide the prerendered homepage on routes served via the SPA fallback.
+      (function () {
+        var path = window.location.pathname.replace(/\/+$/, '') || '/';
+        // Exact list of pages that ARE statically prerendered — their SSR
+        // content is correct and needs no overlay. Everything else gets the
+        // boot splash until the app hydrates the real route.
+        var prerendered = [
+          '/', '/how-it-works', '/features', '/categories', '/pricing', '/about',
+          '/philosophy', '/contact', '/internships', '/careers', '/help-center',
+          '/safety', '/guidelines', '/status', '/terms', '/privacy',
+          '/escrow-policy', '/cookies', '/freelancers', '/services', '/contests',
+          '/certificate', '/verify-certificate', '/auth/forgot-password',
+          '/auth/reset-password', '/auth/magic-link', '/auth/otp',
+          '/auth/email-confirm', '/auth/verify-email', '/waitlist',
+          '/payment/success', '/payment/cancel', '/not-found'
+        ];
+        if (prerendered.indexOf(path) !== -1) return;
+        var div = document.createElement('div');
+        div.id = 'boot-overlay';
+        div.innerHTML = '<div class="boot-spinner"></div>';
+        document.body.appendChild(div);
+        var hidden = false;
+        var hide = function () {
+          if (hidden) return;
+          hidden = true;
+          div.style.opacity = '0';
+          div.style.pointerEvents = 'none';
+          window.setTimeout(function () {
+            if (div.parentNode) div.parentNode.removeChild(div);
+          }, 350);
+        };
+        window.__growlancerBootReady = hide;
+        // Safety net: never trap the user behind the overlay if boot fails.
+        window.setTimeout(hide, 15000);
+      })();
+    </script>
   </body>
 </html>
