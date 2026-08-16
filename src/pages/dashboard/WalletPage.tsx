@@ -29,6 +29,7 @@ import {
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { requireKycForAction } from '../../lib/kycGate';
 import { withdrawalService, type Withdrawal, type PayoutMethod } from '../../lib/withdrawal';
 import { PLATFORM_CONFIG } from '../../lib/config';
 import { safeFormatDate } from '../../utils/date';
@@ -453,6 +454,15 @@ export function WalletPage() {
 
   const handleWithdrawSubmit = useCallback(async () => {
     if (!user) return;
+
+    // 🔒 Critical money action — identity must be verified to withdraw.
+    const kyc = await requireKycForAction(user);
+    if (!kyc.verified) {
+      setWithdrawError('Verification required — verify your identity to unlock withdrawals (takes under a minute).');
+      window.location.href = `${kyc.kycPath}?redirect=${encodeURIComponent('/dashboard/wallet')}`;
+      return;
+    }
+
     const amount = parseFloat(withdrawAmount);
     if (!amount || amount <= 0) {
       setWithdrawError('Please enter a valid amount');

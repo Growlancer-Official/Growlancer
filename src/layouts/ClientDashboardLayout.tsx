@@ -33,6 +33,7 @@ import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
+import { KycBanner } from '../components/KycBanner';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -603,6 +604,7 @@ export function ClientDashboardLayout() {
 
         {/* Page Content */}
         <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[100rem] mx-auto w-full pb-24 sm:pb-16">
+          <KycBanner />
           <Suspense fallback={<ClientDashboardFallback />}>
             <Outlet />
           </Suspense>

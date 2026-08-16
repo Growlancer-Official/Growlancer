@@ -1,78 +1,9 @@
-import { Navigate, Link } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
 import type { UserRole } from '../types/auth';
 import { captureInfo, captureError } from '../lib/telemetry';
-import { ShieldCheck } from 'lucide-react';
-
-// ── KYC Verification Page — shown when the user has not completed identity
-// verification yet. Professional message + benefits + encouragement, with a
-// clear CTA to the KYC page. Both freelancers and clients must verify.
-function KycRequiredPage({ redirect }: { redirect: string }) {
-  const { user } = useAuth();
-  const isClient = user?.role === 'client';
-  const kycPath = isClient ? '/client/verification' : '/dashboard/identity-verification';
-  const to = `${kycPath}?redirect=${encodeURIComponent(redirect)}`;
-
-  const benefits = isClient
-    ? [
-        { icon: '🛡️', text: 'Trusted payments — your money stays protected in escrow with verified partners' },
-        { icon: '✅', text: 'Verified freelancers only — work with professionals who passed identity checks' },
-        { icon: '⚡', text: 'Faster hiring — verified clients get priority attention from top freelancers' },
-      ]
-    : [
-        { icon: '🛡️', text: 'Unlock payments — escrow payouts release only to verified freelancers' },
-        { icon: '✅', text: 'Verified badge on your profile — clients trust you more, you win more' },
-        { icon: '⚡', text: 'Priority matching — verified freelancers rank higher in AI project matching' },
-      ];
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-cream px-4">
-      <div className="max-w-lg w-full">
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-200 p-8 sm:p-10 text-center">
-          <div className="flex justify-center mb-5">
-            <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-600/25">
-              <ShieldCheck className="w-8 h-8 text-white" />
-            </div>
-          </div>
-
-          <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">
-            Verify Your Identity to Continue
-          </h1>
-          <p className="text-sm text-slate-500 mb-6">
-            To keep Growlancer safe and scam-free for everyone, all {isClient ? 'clients' : 'freelancers'} must
-            complete a quick identity check before using the full platform. It takes under a minute and your
-            documents are verified instantly.
-          </p>
-
-          <div className="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-5 mb-6 text-left space-y-3">
-            <p className="text-xs font-bold uppercase tracking-widest text-emerald-700 mb-1">
-              Why verify? Here's what you unlock
-            </p>
-            {benefits.map((b, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <span className="text-base leading-6">{b.icon}</span>
-                <p className="text-sm text-slate-600">{b.text}</p>
-              </div>
-            ))}
-          </div>
-
-          <Link
-            to={to}
-            className="flex items-center justify-center gap-2 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all"
-          >
-            <ShieldCheck className="w-5 h-5" />
-            Verify My Identity Now
-          </Link>
-          <p className="text-[11px] text-slate-400 mt-3">
-            Government ID required (Aadhaar, PAN, Passport or Driver's License) — encrypted & never shared.
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 // ── Email Verification Page ──
 function EmailNotVerifiedPage() {
@@ -158,36 +89,11 @@ interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
 }
 
-/** Paths that must stay reachable even before KYC is complete (the KYC page
- *  itself, profile/settings so the user can finish their profile, and the
- *  notification center so they never miss KYC updates). Everything else in
- *  the dashboards requires a verified identity. */
-const KYC_EXEMPT_PATHS = [
-  '/dashboard/identity-verification',
-  '/client/verification',
-  '/dashboard/profile',
-  '/client/settings',
-  '/dashboard/notifications',
-  '/client/notifications',
-  '/dashboard/ai-assistant',
-  '/client/ai-assistant',
-];
-
-function isKycExemptPath(pathname: string): boolean {
-  return KYC_EXEMPT_PATHS.some((p) => pathname.startsWith(p));
-}
-
 /** Fields required for profile completion gating */
 export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) {
   const { isAuthenticated, isLoading, role, getDashboardRoute, user } = useAuth();
   const [serverRole, setServerRole] = useState<UserRole | null>(null);
   const [verifying, setVerifying] = useState(true);
-  // ── KYC verification state (server-side source of truth: profiles.verification_status) ──
-  // Stores the raw status ('none' | 'pending' | 'verified' | 'rejected' | 'blocked')
-  // so the gate can show different UX: never-submitted users get the benefits
-  // gate screen, while pending-review users go straight to the in-progress stepper.
-  const [kycStatus, setKycStatus] = useState<string | null>(null);
-  const [checkingKyc, setCheckingKyc] = useState(true);
   // ── Email verification state (ALWAYS declared before any early return) ──
   const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
   const [checkingEmail, setCheckingEmail] = useState(true);
@@ -252,40 +158,6 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     verifyServerRole();
     return () => { cancelled = true; };
   }, [user?.id, role]);
-
-  // ── KYC verification check — both freelancers and clients must complete
-  // identity verification to use the platform. Fetched from the server once
-  // per route mount; admin users are never gated.
-  useEffect(() => {
-    let cancelled = false;
-    async function checkKyc() {
-      if (!user?.id) return;
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('verification_status, role')
-          .eq('id', user.id)
-          .maybeSingle();
-        if (cancelled) return;
-        if (error) {
-          // Fail open on transient errors — never lock a user out of the whole
-          // platform because of a network blip; the KYC gate re-checks on the
-          // next navigation.
-          setKycStatus('verified');
-        } else if (data?.role === 'admin') {
-          setKycStatus('verified');
-        } else {
-          setKycStatus(data?.verification_status || 'none');
-        }
-      } catch {
-        if (!cancelled) setKycStatus('verified');
-      } finally {
-        if (!cancelled) setCheckingKyc(false);
-      }
-    }
-    checkKyc();
-    return () => { cancelled = true; };
-  }, [user?.id]);
 
   // ── Email verification check effect (ALWAYS called before early returns) ──
   // GitHub/LinkedIn OAuth already verified identity at the provider — those
@@ -402,35 +274,6 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
     if (!window.location.pathname.startsWith('/onboarding')) {
       return <Navigate to="/onboarding" replace />;
     }
-  }
-
-  // ── KYC check (after onboarding, before role gate) ──
-  // Both freelancers and clients must complete identity verification to use
-  // the platform. The KYC page itself (and a few maintenance routes) are
-  // exempt so the user can actually complete verification. On completion the
-  // page redirects back to the original destination via the ?redirect= param.
-  if (checkingKyc) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-cream">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-      </div>
-    );
-  }
-  if (kycStatus && kycStatus !== 'verified' && !isKycExemptPath(window.location.pathname)) {
-    const kycPath = user?.role === 'client' ? '/client/verification' : '/dashboard/identity-verification';
-    const kycTo = `${kycPath}?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
-    captureInfo('ProtectedRoute: unverified user gated on KYC', {
-      userId: user.id,
-      path: window.location.pathname,
-      status: kycStatus,
-    });
-    // Submitted & in review → go straight to the KYC page, which shows the
-    // "Verification In Progress" stepper (no point showing the start-verification
-    // gate — the user has already done their part and is waiting on the review).
-    if (kycStatus === 'pending') {
-      return <Navigate to={kycTo} replace />;
-    }
-    return <KycRequiredPage redirect={window.location.pathname + window.location.search} />;
   }
 
   // ── Role-based access ──

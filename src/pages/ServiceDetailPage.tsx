@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, BadgePercent, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Send, Shield, ShoppingCart, Star, Tag, X } from 'lucide-react';
 import { supabase, uniqueChannelName } from '../lib/supabase';
+import { requireKycForAction } from '../lib/kycGate';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
 import { VerifiedBadge } from '../components/VerifiedBadge';
@@ -306,6 +307,17 @@ export function ServiceDetailPage() {
       return;
     }
     if (!service) return;
+
+    // 🔒 Critical money action — identity must be verified to place an order.
+    const kyc = await requireKycForAction(user);
+    if (!kyc.verified) {
+      toast.info(
+        'Verification required',
+        'Please verify your identity to place an order — it takes under a minute and unlocks escrow-protected payments.'
+      );
+      navigate(`${kyc.kycPath}?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+      return;
+    }
 
     setAddingToCart(true);
     try {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useToast } from '../components/Toast'
+import { requireKycForAction } from '../lib/kycGate'
 import { supabase, dbFunctions } from '../lib/supabase'
 import { messagesService } from '../lib/messages'
 import { fileUploadService } from '../lib/fileUpload'
@@ -155,6 +156,21 @@ export function ClientWorkspacePage() {
   const [freelancerRating, setFreelancerRating] = useState<number | null>(null)
   const [freelancerReviewCount, setFreelancerReviewCount] = useState(0)
   const [showFundEscrow, setShowFundEscrow] = useState(false)
+
+  // 🔒 Critical money action — identity must be verified before funding escrow.
+  const openFundEscrow = useCallback(async () => {
+    if (!user) return;
+    const kyc = await requireKycForAction(user);
+    if (!kyc.verified) {
+      toast.info(
+        'Verification required',
+        'Please verify your identity to fund escrow — it takes under a minute and keeps every payment protected.'
+      );
+      window.location.href = `${kyc.kycPath}?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      return;
+    }
+    setShowFundEscrow(true);
+  }, [user, toast])
   const [releasingEscrow, setReleasingEscrow] = useState(false)
   const [activeTab, setActiveTab] = useState<ActiveTab>('chat')
   const [taskInput, setTaskInput] = useState('')
@@ -212,7 +228,7 @@ export function ClientWorkspacePage() {
         // a contract is selected (used by 'Fund Escrow' buttons on Contracts /
         // Payments pages). The param is cleaned so a refresh doesn't re-open it.
         if (searchParams.get('fund') === '1') {
-          setShowFundEscrow(true)
+          void openFundEscrow()
           const url = new URL(window.location.href)
           url.searchParams.delete('fund')
           window.history.replaceState(null, '', url.toString())
@@ -223,7 +239,7 @@ export function ClientWorkspacePage() {
     void fetchContracts()
     // searchParams is read inside for the ?fund=1 deep-link; the effect is
     // idempotent so re-runs after the param is cleaned are safe.
-  }, [user, contractId, searchParams])
+  }, [user, contractId, searchParams, openFundEscrow])
 
   const fetchMessages = useCallback(async () => {
     if (!selectedContract || !user) return
@@ -896,7 +912,7 @@ export function ClientWorkspacePage() {
             ))}
           {needsFunding && (
             <button
-              onClick={() => setShowFundEscrow(true)}
+              onClick={() => void openFundEscrow()}
               className="inline-flex items-center px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
             >
               <IndianRupee className="h-4 w-4 mr-1.5" />
@@ -1471,7 +1487,7 @@ export function ClientWorkspacePage() {
                     <div className="flex flex-wrap items-center gap-3 mt-6">
                       {needsFunding && (
                         <button
-                          onClick={() => setShowFundEscrow(true)}
+                          onClick={() => void openFundEscrow()}
                           className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
                         >
                           <IndianRupee className="h-5 w-5 mr-2" />
