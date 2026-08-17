@@ -334,6 +334,20 @@ export function VerifyEmailPage() {
             <h1 className="text-xl font-bold text-slate-900 mb-2">Check your inbox</h1>
             <p className="text-sm text-slate-500">We sent a verification email to</p>
             <p className="text-sm font-semibold text-slate-900 mt-1 break-all">{email || 'your email'}</p>
+            <ol className="mt-6 space-y-2.5 text-left max-w-sm mx-auto">
+              {[
+                'Open your inbox and find the verification email from Growlancer',
+                'Click the “Verify email” button inside it',
+                'Come back here and tap “I\'ve verified, continue” to finish',
+              ].map((step, idx) => (
+                <li key={step} className="flex items-start gap-3">
+                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <span className="text-sm text-slate-600 leading-relaxed">{step}</span>
+                </li>
+              ))}
+            </ol>
           </div>
 
           {/* Open Inbox Button */}
@@ -396,8 +410,9 @@ export function VerifyEmailPage() {
 
           {/* Info box */}
           <div className="p-3 bg-amber-50 border border-amber-100 rounded-xl mb-6">
-            <p className="text-[11px] text-amber-700 text-center">
-              Please verify your email to access your dashboard. The link expires in 24 hours.
+            <p className="text-[11px] sm:text-xs text-amber-700 text-center leading-relaxed">
+              You need a verified email to access your dashboard. Didn't get the email? Check spam or resend below.
+              The verification link expires in 24 hours.
             </p>
           </div>
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Award, BarChart3, Check, CheckCircle, CreditCard, Crown, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
+import { ArrowRight, BarChart3, Check, CheckCircle, CreditCard, Crown, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { safeFormatDate } from '../utils/date';
 import { formatCurrency } from '../lib/currency';
@@ -252,8 +252,14 @@ export function ProSubscriptionPage() {
             </TipNote>
           </div>
 
-          {/* Plan Cards */}
-          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 px-4">
+          {/* Plan Cards — responsive: 1-2 plans stay centered & tidy, 3+ go full width */}
+          <div
+            className={`mx-auto grid grid-cols-1 gap-6 px-4 ${
+              displayPlans.length <= 2
+                ? 'max-w-3xl md:grid-cols-2'
+                : 'max-w-5xl md:grid-cols-2 lg:grid-cols-3'
+            }`}
+          >
             {displayPlans.map((plan) => {
               const isCurrentPlan = subscription?.plan_id === plan.id;
               const isPopular = plan.ai_priority && billingInterval === 'month';
@@ -598,89 +604,93 @@ export function ProSubscriptionPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-24 bg-slate-900 text-white">
+        <section className="py-24 bg-slate-50">
           <div className="max-w-[100rem] mx-auto px-4">
+            <div className="text-center mb-16">
+              <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900">Common Questions</h2>
+              <p className="text-slate-500 mt-3 max-w-2xl mx-auto">
+                Everything you need to know about Growlancer Premium — honest answers, no fine print.
+              </p>
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               <div className="space-y-8">
-                <h2 className="font-display text-4xl font-extrabold">Common Questions</h2>
-                <p className="text-slate-400">Everything you need to know about Growlancer Pro.</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 pt-8">
-                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                    <div className="text-emerald-400 mb-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                    <div className="text-emerald-600 mb-2">
                       <Lock className="w-6 h-6" />
                     </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest mb-2">
+                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
                       Secure Payment
                     </h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      All transactions are handled securely via Razorpay with AES-256 encryption — UPI, Cards, NetBanking & Wallets.
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      All subscription payments are processed securely via Razorpay — UPI, cards and net banking.
                     </p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                    <div className="text-emerald-400 mb-2">
+                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                    <div className="text-emerald-600 mb-2">
                       <CheckCircle className="w-6 h-6" />
                     </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest mb-2">
+                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
                       No Hidden Fees
                     </h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      What you see is what you pay. No extra processing fees on subscriptions.
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      What you see is what you pay — {formatCurrency(299)}/month, flat. No tiers, no setup fees, no surprises.
                     </p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                    <div className="text-emerald-400 mb-2">
+                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                    <div className="text-emerald-600 mb-2">
                       <TrendingUp className="w-6 h-6" />
                     </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest mb-2">
-                      Month-to-Month
+                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
+                      Cancel Anytime
                     </h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      No long-term contracts. Upgrade, downgrade, or cancel at any time.
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      No lock-in, no long-term contract. Cancel whenever you want — your access stays until the period ends.
                     </p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                    <div className="text-emerald-400 mb-2">
-                      <Award className="w-6 h-6" />
+                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                    <div className="text-emerald-600 mb-2">
+                      <ShieldCheck className="w-6 h-6" />
                     </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest mb-2">
-                      Money-Back Guarantee
+                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
+                      Always Merit-Based
                     </h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Not satisfied? Get a full refund within your first 14 days of Pro.
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      Premium never boosts your ranking, visibility or matching — those stay merit-based and free for everyone.
                     </p>
                   </div>
                 </div>
               </div>
               <div className="space-y-6">
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                  <h4 className="font-bold mb-3 text-lg">What do I get in Pro?</h4>
-                  <p className="text-slate-400 text-sm">
-                    Pro gives you unlimited AI messages, prioritized placement in client searches,
-                    priority AI matching, advanced analytics, and exclusive early access to
-                    high-budget projects before free users.
+                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <h4 className="font-bold mb-3 text-lg text-slate-900">What do I get in Premium?</h4>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Premium unlocks our <strong>AI writing tools, AI assistant, profile optimization and advanced analytics</strong>.
+                    It is purely extra AI + productivity tools — it never affects your packages, proposals,
+                    visibility or matching score. Everything on the platform stays merit-based for everyone.
                   </p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                  <h4 className="font-bold mb-3 text-lg">Can I cancel anytime?</h4>
-                  <p className="text-slate-400 text-sm">
-                    Yes! You can cancel your subscription from your account settings with one
-                    click. No contracts, no commitments. You'll retain access until the end of
-                    your billing period.
+                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <h4 className="font-bold mb-3 text-lg text-slate-900">Can I cancel anytime?</h4>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Yes — cancel from the Premium page with one click, any time. No contracts, no commitments.
+                    You keep access until the end of your billing period, and you can renew again whenever you like.
                   </p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                  <h4 className="font-bold mb-3 text-lg">How does visibility increase?</h4>
-                  <p className="text-slate-400 text-sm">
-                    Our search algorithm uses a 'Pro-First' logic. Pro profiles appear at the top
-                    of client search results and project match listings automatically.
+                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <h4 className="font-bold mb-3 text-lg text-slate-900">Does Premium boost my ranking or visibility?</h4>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    <strong>No — never.</strong> Ranking, matching and visibility are always merit-based and identical for
+                    free and Premium freelancers alike. Premium only unlocks AI and analytics tools; it is never a
+                    pay-to-win boost.
                   </p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white/5 border border-white/10">
-                  <h4 className="font-bold mb-3 text-lg">What's the difference between Free and Pro?</h4>
-                  <p className="text-slate-400 text-sm">
-                    Free includes 10 AI messages per month and standard matching. Pro includes
-                    unlimited AI messages, priority matching, priority support, and advanced
-                    earnings analytics.
+                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <h4 className="font-bold mb-3 text-lg text-slate-900">What's the difference between Free and Premium?</h4>
+                  <p className="text-slate-600 text-sm leading-relaxed">
+                    Free gives you the full marketplace: 3-tier packages, unlimited proposals (fair-use), escrow,
+                    messaging and reviews. Premium ({formatCurrency(299)}/month) adds unlimited AI writing, a personalized
+                    AI assistant, profile optimization and advanced analytics. Same access to work either way.
                   </p>
                 </div>
               </div>

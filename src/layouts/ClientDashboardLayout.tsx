@@ -24,6 +24,9 @@ import {
   Bell,
   Star,
   Trophy,
+  HelpCircle,
+  Ticket,
+  Headphones,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -89,6 +92,12 @@ const accountLinks: SidebarLink[] = [
   { id: 'payments', path: '/client/payments', icon: CreditCard, label: 'Payments' },
   { id: 'settings', path: '/client/settings', icon: Settings, label: 'Settings' },
   { id: 'verification', path: '/client/verification', icon: Shield, label: 'Verification' },
+];
+
+const supportLinks: SidebarLink[] = [
+  { id: 'ai-support', path: '/client/ai-assistant', icon: Headphones, label: 'AI Support' },
+  { id: 'help-center', path: '/help-center', icon: HelpCircle, label: 'Help Center' },
+  { id: 'tickets', path: '/client/tickets', icon: Ticket, label: 'Support Tickets' },
 ];
 
 export function ClientDashboardLayout() {
@@ -366,6 +375,27 @@ export function ClientDashboardLayout() {
               ))}
             </div>
 
+            <div className="mb-2">
+              <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                SUPPORT
+              </div>
+              {supportLinks.map((link) => (
+                <Link
+                  key={link.id}
+                  to={link.path}
+                  onClick={() => setMobileNavOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                    isActive(link.path)
+                      ? 'bg-slate-100 text-emerald-600 shadow-sm border border-emerald-100'
+                      : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
+                  }`}
+                >
+                  <link.icon className="w-5 h-5" />
+                  <span className="font-medium">{link.label}</span>
+                </Link>
+              ))}
+            </div>
+
             <div className="mt-4 pt-4 border-t border-slate-200 space-y-2">
               <Link
                 to="/"
@@ -475,6 +505,26 @@ export function ClientDashboardLayout() {
               ACCOUNT
             </div>
             {accountLinks.map((link) => (
+              <Link
+                key={link.id}
+                to={link.path}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${
+                  isActive(link.path)
+                    ? 'bg-white text-emerald-600 shadow-md border border-emerald-100'
+                    : 'text-slate-500 hover:bg-white hover:text-emerald-600'
+                }`}
+              >
+                <link.icon className="w-5 h-5" />
+                <span className="font-medium">{link.label}</span>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mb-2">
+            <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              SUPPORT
+            </div>
+            {supportLinks.map((link) => (
               <Link
                 key={link.id}
                 to={link.path}

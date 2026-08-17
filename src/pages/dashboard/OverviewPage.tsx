@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Briefcase, Check, CreditCard, FileText, Handshake, MessageSquare, Plus, Sparkles, Trophy, Users, Wallet, Zap,  } from 'lucide-react';
+import { ArrowRight, Bot, Briefcase, Check, CreditCard, FileText, Handshake, Headphones, MessageSquare, Plus, Sparkles, Trophy, Users, Wallet, Zap,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -831,6 +831,74 @@ export function OverviewPage() {
           </div>
 
           {/* Profile Completion Widget Removed */}
+        </div>
+      </div>
+
+      {/* AI Assistant & Support — prominent section for both roles */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-300">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-11 w-11 rounded-xl bg-white/20 flex items-center justify-center">
+              <Bot className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold">AI Assistant</h3>
+              <p className="text-emerald-100 text-xs">
+                {isFreelancer ? 'Proposals, contracts, escrow, career help' : 'Hiring, contracts, escrow, project help'}
+              </p>
+            </div>
+          </div>
+          <p className="text-emerald-50 text-sm leading-relaxed mb-4">
+            Ask anything in any language — get instant, accurate answers about how your{' '}
+            {isFreelancer ? 'freelancing business' : 'projects'} work on Growlancer.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to={isFreelancer ? '/dashboard/ai-assistant' : '/client/ai-assistant'}
+              className="inline-flex items-center gap-2 bg-white text-emerald-700 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-emerald-50 transition-colors"
+            >
+              <Bot className="w-4 h-4" />
+              Chat with AI
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 border border-slate-100">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="h-11 w-11 rounded-xl bg-orange-100 flex items-center justify-center">
+              <Headphones className="w-6 h-6 text-orange-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Support & Help</h3>
+              <p className="text-slate-500 text-xs">Payments, verification, disputes, account issues</p>
+            </div>
+          </div>
+          <p className="text-slate-600 text-sm leading-relaxed mb-4">
+            Guided AI support for account and payment issues, or raise a support ticket and our team will help.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to={isFreelancer ? '/dashboard/ai-assistant' : '/client/ai-assistant'}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 transition-colors"
+            >
+              <Headphones className="w-4 h-4" />
+              AI Support
+            </Link>
+            <Link
+              to={isFreelancer ? '/dashboard/tickets' : '/client/tickets'}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
+            >
+              <MessageSquare className="w-4 h-4" />
+              Support Tickets
+            </Link>
+            <Link
+              to="/help-center"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
+            >
+              Help Center
+            </Link>
+          </div>
         </div>
       </div>
     </div>

@@ -118,7 +118,7 @@ export function EmailConfirmPage() {
         // homepage/onboarding. The user continues in the ORIGINAL tab via the
         // "I've verified, continue" button (or the real-time listener).
         setMessage(
-          'Your email has been verified. You can now close this window, go back to the Growlancer tab and click "I\'ve verified, continue" to finish setting up your account.'
+          'Your email is verified. Your account is ready — finish setup in your original Growlancer tab.'
         );
       } catch (err) {
         if (!cancelled) {
@@ -141,7 +141,7 @@ export function EmailConfirmPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
       <div className="max-w-md w-full mx-4">
-        <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6 sm:p-8 text-center">
           <div className="flex justify-center mb-6">
             <img
               src="/UpdatedLogo.webp"
@@ -171,23 +171,35 @@ export function EmailConfirmPage() {
                   <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                 </div>
               </div>
-              <h2 className="font-display text-xl font-bold text-slate-900 mb-2">
+              <h2 className="font-display text-xl sm:text-2xl font-bold text-slate-900 mb-2">
                 Email verified ✓
               </h2>
               <p className="text-sm text-slate-500 mb-6">{message}</p>
+              <ol className="text-left space-y-3 mb-6">
+                {[
+                  'Close this window',
+                  'Go back to the Growlancer tab where you signed up',
+                  'Click "I\'ve verified, continue" to set up your profile',
+                ].map((step, idx) => (
+                  <li key={step} className="flex items-start gap-3">
+                    <span className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold shrink-0 mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <span className="text-sm text-slate-600 leading-relaxed">{step}</span>
+                  </li>
+                ))}
+              </ol>
               {/* 🎯 Only "Close this window" — this tab was opened from the email
                   link; navigating here would just open the homepage as a new page.
                   The user continues in their original Growlancer tab instead. */}
-              <div className="flex justify-center">
-                <button
-                  onClick={() => {
-                    try { window.close(); } catch { /* ignore */ }
-                  }}
-                  className="inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
-                >
-                  Close this window
-                </button>
-              </div>
+              <button
+                onClick={() => {
+                  try { window.close(); } catch { /* ignore */ }
+                }}
+                className="w-full inline-flex items-center justify-center h-11 px-6 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+              >
+                Close this window
+              </button>
             </div>
           )}
 
