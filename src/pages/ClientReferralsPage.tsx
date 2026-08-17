@@ -63,7 +63,7 @@ export function ClientReferralsPage() {
               </div>
               <button
                 onClick={handleCopy}
-                className="px-8 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
+                className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center justify-center gap-2"
               >
                 {copied ? 'Copied!' : 'Copy Link'}
               </button>

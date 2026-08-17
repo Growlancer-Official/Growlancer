@@ -268,7 +268,7 @@ export default function ClientDashboard() {
               <p className="text-slate-600 mb-4 max-w-xs mx-auto text-sm">You haven't posted any projects yet. Start by creating your first project.</p>
               <Link
                 to="/client/post"
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors shadow-md shadow-emerald-600/20"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
               >
                 <Plus className="w-5 h-5" />
                 Post Your First Project
@@ -338,7 +338,7 @@ export default function ClientDashboard() {
               <div className="flex gap-3 justify-center">
                 <Link
                   to="/client/proposals"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors text-sm shadow-md shadow-emerald-600/20"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
                 >
                   <FileText className="w-4 h-4" />
                   Review Proposals

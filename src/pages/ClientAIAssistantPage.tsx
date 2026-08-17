@@ -15,9 +15,9 @@ export function ClientAIAssistantPage() {
       <div className="mb-3 flex items-center gap-2">
         <button
           onClick={() => setTab('assistant')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+          className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
             tab === 'assistant'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25'
+              ? 'bg-emerald-600 text-white'
               : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
           }`}
         >
@@ -26,9 +26,9 @@ export function ClientAIAssistantPage() {
         </button>
         <button
           onClick={() => setTab('support')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+          className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
             tab === 'support'
-              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/25'
+              ? 'bg-emerald-600 text-white'
               : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
           }`}
         >

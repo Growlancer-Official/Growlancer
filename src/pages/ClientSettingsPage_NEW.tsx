@@ -1285,7 +1285,7 @@ export function ClientSettingsPage() {
                   </div>
                   <div className="flex justify-end">
                     <button type="submit" disabled={saving}
-                      className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                       {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Changes</>}
                     </button>
                   </div>
@@ -1466,7 +1466,7 @@ export function ClientSettingsPage() {
                     <button
                       type="submit"
                       disabled={changeEmailLoading}
-                      className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {changeEmailLoading ? (
                         <>
@@ -1519,7 +1519,7 @@ export function ClientSettingsPage() {
                   <button
                     type="submit"
                     disabled={inviteLoading}
-                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {inviteLoading ? (
                       <>
@@ -1656,7 +1656,7 @@ export function ClientSettingsPage() {
                       <p className="text-xs text-slate-500">Log out every other device after the password change</p>
                     </div>
                   </label>
-                  <button type="submit" disabled={saving} className="w-full px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {saving ? 'Updating...' : 'Update Password'}
                   </button>
                 </form>
@@ -1701,7 +1701,7 @@ export function ClientSettingsPage() {
                       </div>
                     ) : (
                       <button onClick={handleSetup2FA} disabled={twoFactorLoading}
-                        className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50">
+                        className="flex items-center gap-2 inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                         {twoFactorLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
                         {twoFactorLoading ? 'Setting up...' : 'Enable Two-Factor Authentication'}
                       </button>
@@ -1728,7 +1728,7 @@ export function ClientSettingsPage() {
                         <input type="text" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="000000" maxLength={6}
                           className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-center text-lg font-mono tracking-widest" />
                         <button onClick={handleVerify2FA} disabled={twoFactorLoading || twoFactorCode.length !== 6}
-                          className="px-6 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                           {twoFactorLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify'}
                         </button>
                       </div>
@@ -1812,7 +1812,7 @@ export function ClientSettingsPage() {
                 </div>
                 <div className="flex justify-end pt-4 border-t border-slate-100 mt-6">
                   <button onClick={handleNotificationsSave} disabled={saving}
-                    className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Preferences</>}
                   </button>
                 </div>
@@ -1887,7 +1887,7 @@ export function ClientSettingsPage() {
                   </div>
                   <div className="flex justify-end pt-4 border-t border-slate-100">
                     <button onClick={handlePrivacySave} disabled={saving}
-                      className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                       {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Privacy Settings</>}
                     </button>
                   </div>

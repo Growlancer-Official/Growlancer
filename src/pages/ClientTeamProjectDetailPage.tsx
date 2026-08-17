@@ -158,7 +158,7 @@ export function ClientTeamProjectDetailPage() {
         <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-slate-900 mb-2">Could not load this team project</h1>
         <p className="text-slate-500 mb-6">{error || 'Not found'}</p>
-        <Link to="/client/team-projects" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 text-white text-sm font-semibold">
+        <Link to="/client/team-projects" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold transition-all hover:bg-emerald-700">
           <ArrowLeft className="w-4 h-4" /> Back to Team Projects
         </Link>
       </div>
@@ -198,7 +198,7 @@ export function ClientTeamProjectDetailPage() {
         {roles.length === 0 && (
           <div className="sm:col-span-2 text-center py-10 bg-white rounded-2xl border border-dashed border-slate-300">
             <p className="text-slate-500 mb-3">No roles yet — add the team roles you need.</p>
-            <Link to={`/client/team-projects/create?edit=${project.id}`} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-semibold">
+            <Link to={`/client/team-projects/create?edit=${project.id}`} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium transition-colors hover:bg-emerald-700">
               <Plus className="w-4 h-4" /> Add First Role
             </Link>
           </div>
@@ -261,7 +261,7 @@ export function ClientTeamProjectDetailPage() {
                 {contract ? (
                   <Link
                     to={`/client/workspace/${contract.id}`}
-                    className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700"
+                    className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-600 text-white text-xs font-medium hover:bg-emerald-700"
                   >
                     Open Workspace →
                   </Link>
@@ -269,7 +269,7 @@ export function ClientTeamProjectDetailPage() {
                   <button
                     onClick={() => hireRole(role)}
                     disabled={!role.matched_freelancer_id || role.status === 'filled'}
-                    className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold hover:bg-slate-700 disabled:opacity-40"
+                    className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-900 text-white text-xs font-medium hover:bg-slate-700 disabled:opacity-40"
                   >
                     <UserCheck className="w-3.5 h-3.5" /> {role.status === 'filled' ? 'Hired' : 'Hire & Create Contract'}
                   </button>

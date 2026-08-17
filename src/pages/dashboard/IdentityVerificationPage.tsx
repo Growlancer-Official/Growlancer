@@ -680,7 +680,7 @@ export function IdentityVerificationPage() {
             <button
               type="submit"
               disabled={submitting || !consentAgreed}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? (
                 <>
@@ -801,7 +801,7 @@ export function IdentityVerificationPage() {
       )}
       <Link
         to={postVerifyRedirect}
-        className="mt-6 inline-flex items-center justify-center gap-2 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all"
+        className="mt-6 inline-flex items-center justify-center gap-2 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
       >
         Continue to Dashboard
       </Link>
@@ -855,7 +855,7 @@ export function IdentityVerificationPage() {
           {canResubmit ? (
             <button
               onClick={handleResubmit}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
             >
               <RefreshCw className="w-4 h-4" />
               {blockExpired ? 'Submit New Verification' : `Resubmit Verification (${attemptsLeft} left)`}
@@ -985,7 +985,7 @@ export function IdentityVerificationPage() {
               <button
                 type="submit"
                 disabled={submitting || !consentAgreed}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>

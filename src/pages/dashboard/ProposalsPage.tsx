@@ -202,7 +202,7 @@ export function ProposalsPage() {
 
         <Link
           to="/dashboard/feed"
-          className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2"
+          className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2"
         >
           <FileText className="w-4 h-4" />
           Submit New Proposal
@@ -424,7 +424,7 @@ export function ProposalsPage() {
                         <button
                           onClick={() => setWithdrawConfirm(proposal.id)}
                           disabled={withdrawingProposal === proposal.id}
-                          className="px-6 py-2.5 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                          className="px-6 py-3 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
                         >
                           {withdrawingProposal === proposal.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -441,7 +441,7 @@ export function ProposalsPage() {
                     {proposal.status === 'accepted' && (
                       <Link
                         to="/dashboard/contracts"
-                        className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                        className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                       >
                         View Contract
                         <ArrowRight className="w-4 h-4" />
@@ -501,7 +501,7 @@ export function ProposalsPage() {
           </p>
           <Link
             to="/dashboard/feed"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
           >
             Browse Projects
             <ArrowRight className="w-4 h-4" />

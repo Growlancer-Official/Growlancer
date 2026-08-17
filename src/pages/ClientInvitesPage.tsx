@@ -166,7 +166,7 @@ export function ClientInvitesPage() {
         </div>
         <Link
           to="/client/matches"
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
           <Send className="w-5 h-5" />
           Send New Invite
@@ -212,7 +212,7 @@ export function ClientInvitesPage() {
           {filter === 'all' ? (
             <Link
               to="/client/matches"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
               <Plus className="w-5 h-5" />
               Send an Invite

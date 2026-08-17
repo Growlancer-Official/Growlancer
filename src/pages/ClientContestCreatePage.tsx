@@ -266,7 +266,7 @@ export function ClientContestCreatePage() {
               <button
                 type="button"
                 onClick={handleCustomSkill}
-                className="px-4 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
               >
                 <Plus className="w-5 h-5" />
               </button>
@@ -324,7 +324,7 @@ export function ClientContestCreatePage() {
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

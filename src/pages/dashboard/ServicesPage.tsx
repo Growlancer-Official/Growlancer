@@ -238,7 +238,7 @@ export function ServicesPage() {
         </div>
         <button
           onClick={() => navigate('/dashboard/services/create')}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium text-sm"
         >
           <Plus className="w-5 h-5" />
           Create Service
@@ -358,7 +358,7 @@ export function ServicesPage() {
                         <button
                           onClick={() => respondToOffer(offer, 'accepted')}
                           disabled={offerBusy === offer.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
                         >
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           {offerBusy === offer.id ? '...' : 'Accept'}
@@ -366,7 +366,7 @@ export function ServicesPage() {
                         <button
                           onClick={() => respondToOffer(offer, 'declined')}
                           disabled={offerBusy === offer.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
                           <XCircle className="w-3.5 h-3.5" />
                           Decline

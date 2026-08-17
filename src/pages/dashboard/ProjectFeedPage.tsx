@@ -975,7 +975,7 @@ export function ProjectFeedPage() {
                         return (
                           <button
                             disabled
-                            className="px-6 py-2.5 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                            className="px-6 py-3 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-2"
                           >
                             <CheckCircle2 className="w-4 h-4" />
                             {label}
@@ -985,7 +985,7 @@ export function ProjectFeedPage() {
                       return (
                         <Link
                           to={`/dashboard/workspace?contract=${ci.contractId}`}
-                          className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                          className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                         >
                           <Briefcase className="w-4 h-4" />
                           {ci.status === 'pending' ? 'View Contract' : 'Contract Active'}
@@ -996,7 +996,7 @@ export function ProjectFeedPage() {
                       return (
                         <button
                           disabled
-                          className="px-6 py-2.5 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed flex items-center justify-center gap-2"
+                          className="px-6 py-3 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-2"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           Applied
@@ -1006,7 +1006,7 @@ export function ProjectFeedPage() {
                     return (
                       <button
                         onClick={() => handleApply(match)}
-                        className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                        className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                       >
                         Apply Now
                         <ArrowRight className="w-4 h-4" />
@@ -1016,7 +1016,7 @@ export function ProjectFeedPage() {
                   {!contractInfoMap.has(match.project_id) && (
                     <button
                       onClick={() => handleDecline(match.id, match.project_id)}
-                      className="px-6 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                      className="px-6 py-3 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
                     >
                       Not Interested
                     </button>
@@ -1071,7 +1071,7 @@ export function ProjectFeedPage() {
                 setSearchQuery('');
                 setSelectedCategory('all');
               }}
-              className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+              className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Clear Filters
             </button>

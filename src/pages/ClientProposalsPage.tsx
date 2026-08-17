@@ -331,7 +331,7 @@ export function ClientProposalsPage() {
           {filter === 'all' ? (
             <Link
               to="/client/post"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
               <Plus className="w-5 h-5" />
               Post a Project
@@ -465,7 +465,7 @@ export function ClientProposalsPage() {
                     type="button"
                     disabled={actionId === proposal.id}
                     onClick={() => handleAccept(proposal)}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50"
                   >
                     <CheckCircle className="w-4 h-4" />
                     {actionId === proposal.id ? 'Hiring…' : 'Accept & Hire'}

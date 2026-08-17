@@ -54,7 +54,7 @@ export function ClientTeamProjectsPage() {
         </div>
         <Link
           to="/client/team-projects/create"
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 shadow-lg"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all"
         >
           <Plus className="w-4 h-4" /> Post a Team Project
         </Link>
@@ -77,7 +77,7 @@ export function ClientTeamProjectsPage() {
           <p className="text-slate-500 text-sm mb-5">
             Designer + Developer + Writer — sab ek project me hire karo, har ek apne contract ke saath.
           </p>
-          <Link to="/client/team-projects/create" className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700">
+          <Link to="/client/team-projects/create" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all">
             <Plus className="w-4 h-4" /> Post Your First Team Project
           </Link>
         </div>

@@ -887,7 +887,7 @@ export function ProfessionalProfilePage() {
         {activeTab === 'profile' && (
           <div className="flex items-center gap-2">
             {!isEditing ? (
-              <button onClick={() => setIsEditing(true)} className="px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2 text-sm">
+              <button onClick={() => setIsEditing(true)} className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
                 <Edit2 className="w-4 h-4" /> Edit Profile
               </button>
             ) : (
@@ -1393,7 +1393,7 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
                   <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <button type="submit" disabled={saving} className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50">
+                    <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                       {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Changes</>}
                     </button>
                   </div>
@@ -1476,7 +1476,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-xs text-slate-500">Log out every other device after the password change</p>
                     </div>
                   </label>
-                  <button type="submit" disabled={saving} className="w-full px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50">
+                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                     {saving ? 'Updating...' : 'Update Password'}
                   </button>
                 </form>
@@ -1517,7 +1517,7 @@ export function ProfessionalProfilePage() {
                     </div>
                   ) : (
                     <button onClick={handleSetup2FA} disabled={twoFactorLoading}
-                      className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50">
+                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                       {twoFactorLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
                       {twoFactorLoading ? 'Setting up...' : 'Enable Two-Factor Authentication'}
                     </button>
@@ -1636,7 +1636,7 @@ export function ProfessionalProfilePage() {
                   ))}
                 </div>
                 <div className="flex justify-end">
-                  <button onClick={handleNotificationsSave} disabled={saving} className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50">
+                  <button onClick={handleNotificationsSave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                     {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Preferences</>}
                   </button>
                 </div>
@@ -1707,7 +1707,7 @@ export function ProfessionalProfilePage() {
                     </div>
                   ))}
                   <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <button onClick={handlePrivacySave} disabled={saving} className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50">
+                    <button onClick={handlePrivacySave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                       {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Privacy Settings</>}
                     </button>
                   </div>
@@ -1925,7 +1925,7 @@ export function ProfessionalProfilePage() {
                       <div><p className="font-medium text-slate-900">I understand this action is irreversible</p><p className="text-sm text-slate-500">I confirm permanent deletion</p></div>
                     </label>
                   </div>
-                  <button onClick={() => setDeletionStep('confirm')} disabled={!acceptedTerms} className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50">
+                  <button onClick={() => setDeletionStep('confirm')} disabled={!acceptedTerms} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
                     <Trash2 className="w-5 h-5" /> Continue with Deletion
                   </button>
                 </div>
@@ -1942,7 +1942,7 @@ export function ProfessionalProfilePage() {
                   <div className="flex gap-3">
                     <button onClick={() => { setDeletionStep('initial'); setDeletionConfirm(''); }} className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
                     <button onClick={handleRequestDeletion} disabled={deletionConfirm !== 'DELETE'}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50">
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
                       {(deletionStep as string) === 'processing' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
                       Permanently Delete Account
                     </button>

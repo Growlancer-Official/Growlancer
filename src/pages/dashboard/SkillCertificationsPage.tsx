@@ -195,7 +195,7 @@ export function SkillCertificationsPage() {
               <Award className="w-12 h-12 text-slate-300 mx-auto mb-4" />
               <h3 className="text-lg font-bold text-slate-900 mb-2">No certifications yet</h3>
               <p className="text-slate-500 mb-6">Take skill tests to earn verified badges.</p>
-              <button onClick={() => setActiveTab('available')} className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Browse Tests</button>
+              <button onClick={() => setActiveTab('available')} className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">Browse Tests</button>
             </div>
           ) : (
             <div className="space-y-3">

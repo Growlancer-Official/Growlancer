@@ -236,14 +236,14 @@ export function ClientContractsPage() {
             <div className="flex gap-3 justify-center">
               <Link
                 to="/client/proposals"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
               >
                 <FileText className="w-5 h-5" />
                 View Proposals
               </Link>
               <Link
                 to="/client/matches"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
               >
                 <Users className="w-5 h-5" />
                 Find Freelancers
@@ -330,7 +330,7 @@ export function ClientContractsPage() {
                 <div className="flex gap-2 flex-wrap">
                   <Link
                     to={`/client/workspace?contract=${contract.id}`}
-                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
                   >
                     <Laptop className="w-4 h-4" />
                     Open Workspace

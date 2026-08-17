@@ -484,7 +484,7 @@ export function InvitesPage() {
                           <button
                             onClick={() => handleAcceptInvite(invite.id)}
                             disabled={processingInvite === invite.id}
-                            className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             {processingInvite === invite.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -496,7 +496,7 @@ export function InvitesPage() {
                           <button
                             onClick={() => handleDeclineInvite(invite.id)}
                             disabled={processingInvite === invite.id}
-                            className="px-6 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                            className="px-6 py-3 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
                           >
                             Decline
                           </button>
@@ -504,7 +504,7 @@ export function InvitesPage() {
                       ) : invite.status === 'accepted' ? (
                         <Link
                           to="/dashboard/contracts"
-                          className="px-6 py-2.5 bg-emerald-50 text-emerald-700 font-medium rounded-xl hover:bg-emerald-100 transition-colors flex items-center gap-2"
+                          className="px-6 py-3 bg-emerald-50 text-emerald-700 font-medium rounded-xl hover:bg-emerald-100 transition-colors inline-flex items-center gap-2"
                         >
                           View Contract
                           <ArrowRight className="w-4 h-4" />
@@ -539,7 +539,7 @@ export function InvitesPage() {
           {activeTab === 'pending' && (
             <Link
               to="/dashboard/feed"
-              className="mt-6 inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+              className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Browse Projects
               <ArrowRight className="w-4 h-4" />

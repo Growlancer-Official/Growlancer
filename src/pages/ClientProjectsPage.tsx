@@ -304,7 +304,7 @@ export function ClientProjectsPage() {
         </div>
         <Link
           to="/client/post"
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
           <Plus className="w-5 h-5" />
           Post New Project
@@ -350,7 +350,7 @@ export function ClientProjectsPage() {
           {filter === 'all' ? (
             <Link
               to="/client/post"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
               <Plus className="w-5 h-5" />
               Post Your First Project
@@ -427,7 +427,7 @@ export function ClientProjectsPage() {
               <div className="flex gap-2 flex-wrap">
                 <Link
                   to={`/client/matches?project_id=${project.id}`}
-                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
                 >
                   <Eye className="w-4 h-4" />
                   AI Matches

@@ -429,7 +429,7 @@ export function DisputeResolutionPage() {
             <button
               onClick={handleSendMessage}
               disabled={!newMessage.trim() || sendingMessage}
-              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {sendingMessage ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -511,7 +511,7 @@ export function DisputeResolutionPage() {
           </p>
           <Link
             to="/dashboard/contracts"
-            className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-5 py-2.5 rounded-xl hover:bg-emerald-100 transition-colors"
+            className="inline-flex items-center justify-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-4 py-2.5 rounded-xl hover:bg-emerald-100 transition-colors"
           >
             <FileText className="w-4 h-4" />
             View Your Contracts

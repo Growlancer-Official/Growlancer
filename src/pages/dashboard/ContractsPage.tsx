@@ -828,7 +828,7 @@ export function ContractsPage() {
                     <div className="flex items-center gap-3">
                       <Link
                         to={`/dashboard/workspace?contract=${contract.id}`}
-                        className="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                        className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-2"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <Briefcase className="w-4 h-4" />
@@ -839,7 +839,7 @@ export function ContractsPage() {
                           e.stopPropagation();
                           setContractModalContract(contract);
                         }}
-                        className="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+                        className="px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors inline-flex items-center gap-2"
                       >
                         <FileText className="w-4 h-4" />
                         View Contract
@@ -849,7 +849,7 @@ export function ContractsPage() {
                           e.stopPropagation();
                           setEscrowModalContract(contract);
                         }}
-                        className="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+                        className="px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors inline-flex items-center gap-2"
                       >
                         <Shield className="w-4 h-4" />
                         Escrow Details
@@ -904,7 +904,7 @@ export function ContractsPage() {
           </p>
           <Link
             to="/dashboard/feed"
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
           >
             Browse Projects
             <ArrowRight className="w-4 h-4" />

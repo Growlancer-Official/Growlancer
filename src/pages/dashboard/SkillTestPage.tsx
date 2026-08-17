@@ -406,7 +406,7 @@ const handleSubmit = async () => {
           <div className="flex justify-center gap-3">
             <button
               onClick={() => navigate('/dashboard/certifications')}
-              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Back to Certifications
             </button>
@@ -432,7 +432,7 @@ const handleSubmit = async () => {
           <p className="text-slate-600 mb-6 max-w-md mx-auto">{blockedMsg}</p>
           <button
             onClick={() => navigate('/dashboard/certifications')}
-            className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+            className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
           >
             Back to Certifications
           </button>
@@ -478,7 +478,7 @@ const handleSubmit = async () => {
             </ul>
           </div>
 
-          <button onClick={handleStart} className="w-full max-w-xs py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors">
+          <button onClick={handleStart} className="w-full max-w-xs py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">
             Start Test
           </button>
         </div>
@@ -559,21 +559,21 @@ const handleSubmit = async () => {
             <button
               onClick={handlePrev}
               disabled={currentQuestion === 0}
-              className="px-6 py-2.5 border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-3 border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Previous
             </button>
             {currentQuestion < questions.length - 1 ? (
               <button
                 onClick={handleNext}
-                className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
+                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
               >
                 Next
               </button>
             ) : (
               <button
                 onClick={handleSubmit}
-                className="px-6 py-2.5 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700 transition-colors"
+                className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700 transition-colors"
               >
                 Submit Test
               </button>
@@ -624,7 +624,7 @@ const handleSubmit = async () => {
           <div className="flex justify-center gap-3">
             <button
               onClick={() => navigate('/dashboard/certifications')}
-              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Back to Certifications
             </button>
@@ -637,7 +637,7 @@ const handleSubmit = async () => {
                   setScore(0);
                   setTimeLeft(test.time_limit_minutes * 60);
                 }}
-                className="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                className="px-6 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors"
               >
                 Retry Test
               </button>

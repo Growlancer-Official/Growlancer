@@ -168,7 +168,7 @@ export function PortfolioPage() {
             resetForm();
             setShowForm(true);
           }}
-          className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-sm font-medium"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
         >
           <Plus className="w-4 h-4" />
           Add Project
@@ -306,7 +306,7 @@ export function PortfolioPage() {
               <button
                 type="submit"
                 disabled={saving || !formTitle.trim()}
-                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {editingId ? 'Update' : 'Add to Portfolio'}
@@ -331,7 +331,7 @@ export function PortfolioPage() {
               resetForm();
               setShowForm(true);
             }}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
           >
             <Plus className="w-4 h-4" />
             Add Your First Project

@@ -93,7 +93,7 @@ export function ClientContestsPage() {
         </div>
         <Link
           to="/client/contests/create"
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
           <Plus className="w-5 h-5" />
           Create Contest
@@ -183,7 +183,7 @@ export function ClientContestsPage() {
           <p className="text-slate-500 mb-6">Create your first contest to start receiving submissions</p>
           <Link
             to="/client/contests/create"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
           >
             <Plus className="w-5 h-5" />
             Create Contest

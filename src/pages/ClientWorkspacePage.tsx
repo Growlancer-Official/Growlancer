@@ -1484,7 +1484,7 @@ export function ClientWorkspacePage() {
                       {needsFunding && (
                         <button
                           onClick={() => void openFundEscrow()}
-                          className="inline-flex items-center px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
                         >
                           <IndianRupee className="h-5 w-5 mr-2" />
                           Fund Escrow
@@ -1494,7 +1494,7 @@ export function ClientWorkspacePage() {
                         <button
                           onClick={() => void handleReleaseEscrow()}
                           disabled={releasingEscrow}
-                          className="inline-flex items-center px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors font-medium"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors font-semibold"
                         >
                           {releasingEscrow ? (
                             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -1563,7 +1563,7 @@ export function ClientWorkspacePage() {
                                   <button
                                     onClick={() => void handlePayRevision(req)}
                                     disabled={payingRevision === req.id}
-                                    className="inline-flex items-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
                                   >
                                     {payingRevision === req.id ? (
                                       <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />

@@ -197,7 +197,7 @@ export function ClientMatchesPage() {
           </p>
           <Link
             to="/client/post"
-            className="inline-flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white font-bold rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+            className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
           >
             <Plus className="w-5 h-5" />
             Create Your First Project
@@ -249,7 +249,7 @@ export function ClientMatchesPage() {
               <p className="text-slate-500 mb-4">No projects found</p>
               <Link
                 to="/client/post"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Post a New Project
@@ -288,14 +288,14 @@ export function ClientMatchesPage() {
         <div className="flex items-center gap-3">
           <Link
             to={`/client/post?edit=${projectId}`}
-            className="px-4 py-2 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
+            className="px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
           >
             Edit Project
           </Link>
           <button
             onClick={handleGenerateMatches}
             disabled={generating}
-            className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
             {generating ? 'Matching...' : 'Generate Matches'}
@@ -343,13 +343,13 @@ export function ClientMatchesPage() {
             <button
               onClick={handleGenerateMatches}
               disabled={generating}
-              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               {generating ? 'Generating...' : 'Generate Matches'}
             </button>
             <Link
               to={`/client/post?edit=${projectId}`}
-              className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
             >
               Edit Project Skills
             </Link>
@@ -494,7 +494,7 @@ export function ClientMatchesPage() {
                     type="button"
                     disabled={inviteBusy === match.freelancer_id}
                     onClick={() => handleInvite(match.freelancer_id)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
                     {inviteBusy === match.freelancer_id ? 'Sending…' : 'Invite'}
@@ -525,14 +525,14 @@ export function ClientMatchesPage() {
           <div className="flex gap-3 justify-center">
             <button
               onClick={() => setSkipped(new Set())}
-              className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
             >
               Show Skipped
             </button>
             <button
               onClick={handleGenerateMatches}
               disabled={generating}
-              className="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               {generating ? 'Generating...' : 'Regenerate Matches'}
             </button>

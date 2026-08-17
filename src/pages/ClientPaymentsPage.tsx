@@ -403,7 +403,7 @@ export function ClientPaymentsPage() {
         </div>
         <Link
           to="/client/workspace?fund=1"
-          className="flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
           <Plus className="w-5 h-5" />
           Fund Escrow
@@ -725,7 +725,7 @@ export function ClientPaymentsPage() {
           {!showAddPaymentMethod && (
             <button
               onClick={() => setShowAddPaymentMethod(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all text-sm"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all"
             >
               <PlusCircle className="w-4 h-4" />
               Add Reference
@@ -1074,7 +1074,7 @@ export function ClientPaymentsPage() {
           {filter === 'all' && (
             <Link
               to="/client/contracts"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 shadow-lg shadow-emerald-600/25 transition-all hover:-translate-y-0.5"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
               <FileText className="w-5 h-5" />
               View Contracts

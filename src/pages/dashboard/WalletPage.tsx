@@ -923,7 +923,7 @@ export function WalletPage() {
                 {availableBalance > 0 && (
                   <button
                     onClick={() => setActiveTab('withdraw')}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     Withdraw Funds
@@ -1114,13 +1114,13 @@ export function WalletPage() {
                     fetchOverview();
                     fetchTransactions(0, true);
                   }}
-                  className="px-6 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                  className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
                 >
                   Done
                 </button>
                 <button
                   onClick={() => setActiveTab('transactions')}
-                  className="px-6 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                  className="px-6 py-3 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   View Status
                 </button>
@@ -1382,7 +1382,7 @@ export function WalletPage() {
                   setAddingMethod(!addingMethod);
                   setMethodError(null);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
                 Add Method

@@ -305,11 +305,11 @@ export function TimeTrackingPage() {
               )}
               <div className="flex justify-center gap-3">
                 {!isTracking ? (
-                  <button onClick={startTracking} className="px-8 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2">
+                  <button onClick={startTracking} className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
                     <Play className="w-5 h-5" /> Start Timer
                   </button>
                 ) : (
-                  <button onClick={stopTracking} className="px-8 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors flex items-center gap-2">
+                  <button onClick={stopTracking} className="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors inline-flex items-center gap-2">
                     <Pause className="w-5 h-5" /> Stop & Submit ({formatElapsed(elapsed)})
                   </button>
                 )}
@@ -333,7 +333,7 @@ export function TimeTrackingPage() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                   <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What did you work on?" className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
                 </div>
-                <button onClick={submitManualEntry} disabled={!manualHours} className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                <button onClick={submitManualEntry} disabled={!manualHours} className="w-full py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50">
                   Submit Time Entry
                 </button>
               </div>

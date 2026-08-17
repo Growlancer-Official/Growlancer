@@ -244,10 +244,10 @@ export function ClientFreelancerSearchPage() {
           </TipNote>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setShowFilters(!showFilters)} className="px-4 py-2 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2">
+          <button onClick={() => setShowFilters(!showFilters)} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">
             <Filter className="w-4 h-4" /> Filters
           </button>
-          <button onClick={() => setShowSaveModal(true)} className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors flex items-center gap-2">
+          <button onClick={() => setShowSaveModal(true)} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors">
             <Plus className="w-4 h-4" /> Save Search
           </button>
         </div>
