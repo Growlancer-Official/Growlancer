@@ -469,7 +469,7 @@ export function PublicFreelancerProfilePage() {
 
             {/* Info */}
             <div className="text-center sm:text-left flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
+              <h1 className="font-display text-3xl sm:text-4xl font-bold flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
                 {displayName}
                 {profile.verification_status === 'verified' && <VerifiedBadge size="sm" />}
                 {isProFreelancer && <ProBadge size="md" />}

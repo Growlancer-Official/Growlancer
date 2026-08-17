@@ -174,7 +174,7 @@ export function ProSubscriptionPage() {
     <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
       {/* Header */}
       <header className="backdrop-blur-xl bg-white/80 sticky top-0 z-50 border-b border-slate-200/60">
-        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-20 flex items-center justify-between">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-10 w-10 rounded-xl" />
             <span className="font-display text-xl font-bold tracking-tight">Growlancer</span>

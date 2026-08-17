@@ -985,7 +985,7 @@ export function ProjectFeedPage() {
                       return (
                         <Link
                           to={`/dashboard/workspace?contract=${ci.contractId}`}
-                          className="px-6 py-2.5 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+                          className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                         >
                           <Briefcase className="w-4 h-4" />
                           {ci.status === 'pending' ? 'View Contract' : 'Contract Active'}

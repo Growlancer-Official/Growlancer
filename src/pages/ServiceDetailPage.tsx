@@ -420,7 +420,7 @@ export function ServiceDetailPage() {
                   </>
                 )}
               </div>
-              <h1 className="text-3xl font-bold text-slate-900">{service.title}</h1>
+              <h1 className="font-display text-3xl font-bold text-slate-900">{service.title}</h1>
               <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-slate-500">
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />

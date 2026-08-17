@@ -24,7 +24,7 @@ export function WaitlistPage() {
             />
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">
+          <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-900 mb-3">
             Coming Soon in Your Country 🚀
           </h1>
 

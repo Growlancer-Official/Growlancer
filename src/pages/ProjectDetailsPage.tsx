@@ -568,7 +568,7 @@ export function ProjectDetailsPage() {
               <button
                 onClick={handleReopenProject}
                 disabled={reopening}
-                className="flex-1 px-4 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50"
               >
                 {reopening ? 'Reopening...' : 'Reopen Project'}
               </button>
