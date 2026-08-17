@@ -984,9 +984,9 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
                   Hire a whole team for big projects
                 </h2>
                 <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
-                  Designer, Developer, Writer — sab ek jagah. Har freelancer ka{' '}
-                  <strong className="text-slate-800">apna protected escrow</strong> hota hai, aur har role ka apna
-                  independent contract — ek member ka issue baaki team ko affect nahi karta.
+                  Designer, Developer, Writer — all in one place. Each freelancer has their{' '}
+                  <strong className="text-slate-800">own protected escrow</strong>, and each role gets its own
+                  independent contract — one member's issue never affects the rest of the team.
                 </p>
                 <button
                   onClick={() => onOpenSignup('client')}
@@ -1004,8 +1004,8 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
                   <div>
                     <div className="text-sm font-semibold text-slate-800">How team hiring works</div>
                     <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">
-                      Role add karo → AI real-time matching → har role ka independent escrow contract.
-                      Commission (5%) har contract par — koi alag team fee nahi.
+                      Add a role → AI matches in real time → each role gets its own independent escrow contract.
+                      Commission (5%) per contract — no separate team fee.
                     </div>
                   </div>
                 </div>
