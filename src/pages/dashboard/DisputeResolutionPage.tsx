@@ -452,8 +452,8 @@ export function DisputeResolutionPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Dispute Resolution</h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <h1 className="font-display text-2xl font-bold text-slate-900">Dispute Resolution</h1>
+          <p className="text-slate-500 mt-1">
             Track and manage your contract disputes
           </p>
         </div>

@@ -88,8 +88,8 @@ export function ClientContestsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">My Contests</h1>
-          <p className="text-slate-500">Manage your design and development contests</p>
+          <h1 className="font-display text-2xl font-bold text-slate-900">My Contests</h1>
+          <p className="text-slate-500 mt-1">Manage your design and development contests</p>
         </div>
         <Link
           to="/client/contests/create"

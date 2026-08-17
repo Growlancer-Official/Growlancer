@@ -233,12 +233,12 @@ export function ServicesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My Services</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">My Services</h1>
           <p className="text-slate-500 mt-1">Manage your service offerings</p>
         </div>
         <button
           onClick={() => navigate('/dashboard/services/create')}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium text-sm"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
         >
           <Plus className="w-5 h-5" />
           Create Service

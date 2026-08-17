@@ -363,7 +363,7 @@ export function NotificationsCenterPage() {
             <BellRing className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Notifications</h1>
+            <h1 className="font-display text-2xl font-bold text-slate-900">Notifications</h1>
             <p className="text-sm text-slate-500">
               {unreadCount > 0
                 ? `You have ${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`

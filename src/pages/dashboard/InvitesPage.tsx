@@ -284,7 +284,7 @@ export function InvitesPage() {
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold text-slate-900">Project Invites</h1>
-            <p className="text-slate-500">
+            <p className="text-slate-500 mt-1">
               Clients have invited you to {pendingCount} project{pendingCount !== 1 ? 's' : ''}
             </p>
           </div>

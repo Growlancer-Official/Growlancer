@@ -46,7 +46,7 @@ export function ClientTeamProjectsPage() {
             <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
               <Users className="w-6 h-6" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">Team Projects</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">Team Projects</h1>
           </div>
           <p className="text-slate-600 mt-1">
             Bade projects ke liye poori team hire karo — har freelancer ka apna protected escrow.

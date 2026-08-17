@@ -1060,7 +1060,7 @@ export function IdentityVerificationPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Identity Verification</h1>
+            <h1 className="font-display text-2xl font-bold text-slate-900">Identity Verification</h1>
             <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
           </div>
         </div>
@@ -1084,7 +1084,7 @@ export function IdentityVerificationPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Identity Verification</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Identity Verification</h1>
           <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
         </div>
         <div className="p-2 bg-emerald-100 rounded-xl">

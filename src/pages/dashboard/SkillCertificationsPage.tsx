@@ -72,9 +72,15 @@ export function SkillCertificationsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">Skill Certifications</h1>
-        <p className="text-slate-500 mt-1">Earn verified badges to showcase your expertise to clients</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Skill Certifications</h1>
+          <p className="text-slate-500 mt-1">Earn verified badges to showcase your expertise to clients</p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
+          <Award className="w-5 h-5 text-emerald-600" />
+          <span className="text-sm font-bold text-emerald-700">{certifications.length} Badges Earned</span>
+        </div>
       </div>
 
       {/* Learn & Earn — mature platform promise */}

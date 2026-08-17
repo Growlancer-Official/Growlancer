@@ -177,7 +177,7 @@ export function ClientTeamProjectDetailPage() {
             <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
               <Users className="w-5 h-5" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">{project.title}</h1>
+            <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">{project.title}</h1>
           </div>
           <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${project.status === 'open' ? 'bg-emerald-100 text-emerald-700' : project.status === 'in_progress' ? 'bg-violet-100 text-violet-700' : project.status === 'completed' ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-500'}`}>
             {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
