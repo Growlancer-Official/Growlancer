@@ -80,12 +80,12 @@ export function FeaturesPage() {
       </header>
 
       {/* Hero section */}
-      <section className="relative py-24 overflow-hidden bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-950 text-white border-b border-indigo-900/30">
+      <section className="relative py-24 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-indigo-500/20 text-indigo-300 font-bold rounded-full border border-indigo-500/30 text-xs uppercase tracking-wider">
+          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             Growlancer Toolkit
           </span>
@@ -123,7 +123,7 @@ export function FeaturesPage() {
 
       {/* Feature breakdown list */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-gradient-to-br from-indigo-950 to-slate-900 rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-xl shadow-slate-900/10">
+        <div className="bg-gradient-to-br from-emerald-950 to-slate-900 rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-xl shadow-slate-900/10">
           <div className="absolute bottom-0 left-0 w-84 h-84 bg-indigo-500/10 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
           <div className="relative space-y-6 text-center">
@@ -133,7 +133,7 @@ export function FeaturesPage() {
             </p>
             <Link
               to="/signup"
-              className="inline-flex h-12 px-8 items-center justify-center font-bold bg-white hover:bg-slate-50 text-indigo-950 rounded-xl transition-all shadow-md text-xs active:scale-[0.99]"
+              className="inline-flex h-12 px-8 items-center justify-center font-bold bg-white hover:bg-slate-50 text-emerald-950 rounded-xl transition-all shadow-md text-xs active:scale-[0.99]"
             >
               Start Using Features Free
               <ArrowRight className="w-4 h-4 ml-1.5" />

@@ -763,7 +763,7 @@ export function ServiceDetailPage() {
                     <button
                       onClick={submitOffer}
                       disabled={submittingOffer || !offerAmount}
-                      className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold"
+                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold"
                     >
                       {submittingOffer ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       {submittingOffer ? 'Sending...' : 'Send Offer'}

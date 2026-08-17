@@ -486,26 +486,26 @@ export function ContestDetailPage() {
 
               {/* Judging — award winners (owner) */}
               {isOwner && contest.status === 'judging' && contest.prize_funded && (
-                <div className="bg-violet-50 border border-violet-200 rounded-2xl p-5">
-                  <h3 className="font-bold text-violet-900 flex items-center gap-2 mb-2">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5">
+                  <h3 className="font-bold text-emerald-900 flex items-center gap-2 mb-2">
                     <Medal className="w-4 h-4" />
                     Award Winners
                   </h3>
-                  <p className="text-sm text-violet-800 mb-3">
+                  <p className="text-sm text-emerald-800 mb-3">
                     Select the 1st place entry (required), then optional 2nd/3rd. Prizes are released to their wallets instantly.
                   </p>
                   <div className="space-y-2 mb-4">
                     {(['first', 'second', 'third'] as const).map((place) => {
                       const selectedId = awardSelection[place];
                       return (
-                        <div key={place} className="flex items-center justify-between bg-white border border-violet-200 rounded-xl px-3 py-2">
-                          <span className="text-xs font-bold text-violet-700 uppercase tracking-wide">
+                        <div key={place} className="flex items-center justify-between bg-white border border-emerald-200 rounded-xl px-3 py-2">
+                          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">
                             {place === 'first' ? '🥇 1st' : place === 'second' ? '🥈 2nd' : '🥉 3rd'}
                           </span>
                           <select
                             value={selectedId || ''}
                             onChange={(e) => toggleAwardSelection(e.target.value, place)}
-                            className="flex-1 mx-3 px-2 py-1.5 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-violet-200"
+                            className="flex-1 mx-3 px-2 py-1.5 text-sm rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200"
                           >
                             <option value="">— Select entry —</option>
                             {submissions.filter(s => s.status !== 'rejected').map((s) => (
@@ -521,7 +521,7 @@ export function ContestDetailPage() {
                   <button
                     onClick={() => setShowAwardConfirm(true)}
                     disabled={!awardSelection.first || awarding}
-                    className="w-full py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2"
                   >
                     {awarding ? <Loader2 className="animate-spin w-5 h-5" /> : <><Trophy className="w-5 h-5" /> Release Prizes</>}
                   </button>
@@ -981,7 +981,7 @@ export function ContestDetailPage() {
         <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-md w-full p-6">
             <h3 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <Medal className="w-5 h-5 text-violet-600" />
+              <Medal className="w-5 h-5 text-emerald-600" />
               Release Prizes?
             </h3>
             <p className="text-sm text-slate-600 mb-4">
@@ -997,7 +997,7 @@ export function ContestDetailPage() {
               <button
                 onClick={() => void handleAward()}
                 disabled={awarding}
-                className="flex-1 py-3 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 inline-flex items-center justify-center gap-2"
               >
                 {awarding ? <Loader2 className="animate-spin w-5 h-5" /> : <><Trophy className="w-5 h-5" /> Confirm & Release</>}
               </button>

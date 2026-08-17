@@ -853,7 +853,7 @@ export function WorkspacePage() {
     return (
       <div className="space-y-6 max-w-[100rem] mx-auto px-4 py-8">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Laptop className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -880,7 +880,7 @@ export function WorkspacePage() {
       {/* Top Banner / Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-2xl shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20 flex-shrink-0">
+          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <Laptop className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -985,13 +985,13 @@ export function WorkspacePage() {
 
       {/* Platform Policy — protect both sides (full-width, client-consistent design) */}
       <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm">
-        <div className="bg-gradient-to-r from-blue-700 to-indigo-700 px-5 py-4 flex items-center gap-3">
+        <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-5 py-4 flex items-center gap-3">
           <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
             <Shield className="w-5 h-5 text-white" />
           </div>
           <div>
             <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
-            <p className="text-[11px] text-blue-200">Your earnings and work are always protected — everything stays on the platform</p>
+            <p className="text-[11px] text-emerald-100">Your earnings and work are always protected — everything stays on the platform</p>
           </div>
         </div>
         <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

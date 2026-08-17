@@ -129,8 +129,8 @@ export function ClientContestsPage() {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-100 rounded-xl">
-              <IndianRupee className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-emerald-100 rounded-xl">
+              <IndianRupee className="w-5 h-5 text-emerald-600" />
             </div>
             <span className="text-sm text-slate-500 font-medium">Total Prizes</span>
           </div>
@@ -139,8 +139,8 @@ export function ClientContestsPage() {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-100">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-purple-100 rounded-xl">
-              <Users className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-blue-100 rounded-xl">
+              <Users className="w-5 h-5 text-blue-600" />
             </div>
             <span className="text-sm text-slate-500 font-medium">Submissions</span>
           </div>
@@ -249,7 +249,7 @@ export function ClientContestsPage() {
                   {contest.status === 'judging' && contest.prize_funded && (
                     <Link
                       to={`/contests/${contest.id}`}
-                      className="px-4 py-2.5 bg-violet-600 text-white text-sm font-bold rounded-xl hover:bg-violet-700 transition-all flex items-center gap-1.5"
+                      className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center gap-1.5"
                       title="Judge entries and award winners"
                     >
                       <Medal className="w-4 h-4" />
@@ -259,7 +259,7 @@ export function ClientContestsPage() {
                   {!contest.prize_funded && contest.status !== 'completed' && contest.status !== 'cancelled' && (
                     <Link
                       to={`/contests/${contest.id}`}
-                      className="px-4 py-2.5 bg-amber-600 text-white text-sm font-bold rounded-xl hover:bg-amber-700 transition-all flex items-center gap-1.5"
+                      className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-all inline-flex items-center gap-1.5"
                       title="Fund the prize to go live"
                     >
                       <Lock className="w-4 h-4" />

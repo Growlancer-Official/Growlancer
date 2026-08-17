@@ -55,9 +55,9 @@ export function EscrowPolicyPage() {
       </header>
 
       {/* Hero section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-indigo-950 text-white border-b border-emerald-900/30">
+      <section className="relative py-20 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
@@ -150,12 +150,12 @@ export function EscrowPolicyPage() {
 
       {/* Mediation Details */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-xl">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/10 rounded-full blur-2xl -mr-20 -mt-20"></div>
+        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-xl">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl -mr-20 -mt-20"></div>
           
           <div className="relative space-y-6">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center border border-indigo-500/30">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-500/30">
                 <Scale className="w-5 h-5" />
               </div>
               <h3 className="font-display text-2xl font-bold tracking-tight">Human-Reviewed Dispute Resolution</h3>
@@ -172,13 +172,13 @@ export function EscrowPolicyPage() {
             <div className="pt-4 flex flex-wrap gap-4">
               <Link
                 to="/help-center"
-                className="inline-flex h-11 px-5 items-center justify-center font-bold bg-white text-indigo-950 rounded-xl hover:bg-slate-50 transition-colors text-xs shadow-md"
+                className="inline-flex h-11 px-5 items-center justify-center font-bold bg-white text-emerald-950 rounded-xl hover:bg-slate-50 transition-colors text-xs shadow-md"
               >
                 Read Mediation FAQs
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex h-11 px-5 items-center justify-center font-bold bg-indigo-800 text-white border border-indigo-500/30 rounded-xl hover:bg-indigo-900 transition-colors text-xs"
+                className="inline-flex h-11 px-5 items-center justify-center font-bold bg-emerald-800 text-white border border-emerald-500/30 rounded-xl hover:bg-emerald-900 transition-colors text-xs"
               >
                 Contact Resolution Desk
                 <ArrowRight className="w-4 h-4 ml-1.5" />

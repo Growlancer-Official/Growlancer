@@ -665,7 +665,7 @@ export function CreateServicePage() {
               <button
                 type="button"
                 onClick={handleAddAddon}
-                className="px-4 py-2 bg-violet-600 text-white font-semibold rounded-xl hover:bg-violet-700 transition-colors"
+                className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
               </button>

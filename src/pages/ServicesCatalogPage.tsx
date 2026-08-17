@@ -113,10 +113,10 @@ export function ServicesCatalogPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 text-white py-12">
+      <section className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white py-12">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">Browse Services</h1>
-          <p className="text-blue-100 text-lg mb-6">Discover pre-packaged services from top freelancers — order instantly.</p>
+          <p className="text-slate-300 text-lg mb-6">Discover pre-packaged services from top freelancers — order instantly.</p>
           <div className="mb-6">
             <TipNote tone="protection" title="Every order is protected" compact>
               Pay through <strong>Growlancer Escrow</strong> — your money is held safely and released to the freelancer only after you approve the completed work. Delivery times and free revisions are shown on every card, and many services are <strong>price-negotiable</strong> with tips welcome.

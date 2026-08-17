@@ -990,13 +990,13 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
                 </p>
                 <button
                   onClick={() => onOpenSignup('client')}
-                  className="mt-5 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-violet-600 text-white font-semibold shadow-sm hover:bg-violet-700 hover:shadow-md transition-all text-sm"
+                  className="mt-5 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
                 >
                   Post a Team Project
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </button>
               </div>
-              <div className="rounded-xl bg-violet-50 ring-1 ring-violet-100/70 p-4 w-full lg:w-[380px] shrink-0">
+              <div className="rounded-xl bg-emerald-50 ring-1 ring-emerald-100/70 p-4 w-full lg:w-[380px] shrink-0">
                 <div className="flex items-start gap-3">
                   <div className="h-9 w-9 rounded-xl bg-white ring-1 ring-violet-100 flex items-center justify-center shrink-0">
                     <Users className="text-violet-600 w-4 h-4" />

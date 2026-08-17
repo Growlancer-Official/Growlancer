@@ -282,7 +282,7 @@ export function ClientPostTeamProjectPage() {
                   type="button"
                   onClick={() => runMatchForRole(role)}
                   disabled={role.matching}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-medium hover:bg-violet-700 disabled:opacity-60 transition-colors"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 disabled:opacity-60 transition-colors"
                 >
                   {role.matching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                   {role.matching ? 'Matching...' : 'Find AI Matches'}
