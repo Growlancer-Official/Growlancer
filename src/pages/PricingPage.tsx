@@ -117,7 +117,7 @@ export function PricingPage() {
                 Paid by the client on successful payments only
               </p>
               <div className="mb-6">
-                <span className="font-display text-5xl font-bold">5%</span>
+                <span className="font-display text-4xl sm:text-5xl font-bold">5%</span>
                 <p className="text-sm mt-1 text-slate-400">of the project amount, per payment</p>
               </div>
               <ul className="space-y-3 mb-8">

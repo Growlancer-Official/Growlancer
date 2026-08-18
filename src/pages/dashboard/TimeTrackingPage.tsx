@@ -301,7 +301,7 @@ export function TimeTrackingPage() {
           {/* Timer Tab */}
           {activeTab === 'timer' && (
             <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-              <div className="text-6xl font-mono font-bold text-slate-900 mb-6 tracking-wider">{formatElapsed(elapsed)}</div>
+              <div className="text-4xl sm:text-5xl md:text-6xl font-mono font-bold text-slate-900 mb-6 tracking-wider">{formatElapsed(elapsed)}</div>
               {isTracking && (
                 <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What are you working on?" className="w-full max-w-md px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 text-center focus:outline-none focus:ring-2 focus:ring-emerald-500" />
               )}

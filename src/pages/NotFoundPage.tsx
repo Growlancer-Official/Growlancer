@@ -23,7 +23,7 @@ export function NotFoundPage() {
             <div className="inline-flex items-center justify-center h-32 w-32 rounded-full bg-emerald-50 mb-4">
               <Search className="w-16 h-16 text-emerald-200" />
             </div>
-            <h1 className="font-display text-6xl font-extrabold text-slate-900 mb-2">404</h1>
+            <h1 className="font-display text-5xl sm:text-6xl font-extrabold text-slate-900 mb-2">404</h1>
             <p className="text-xl text-slate-500">Page not found</p>
           </div>
 
