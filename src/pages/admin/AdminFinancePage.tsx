@@ -134,7 +134,7 @@ export function AdminFinancePage() {
     <div className="space-y-8 pb-20 lg:pb-0">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Finance & Revenue</h1>
+          <h1 className="font-display text-2xl font-bold text-white">Finance & Revenue</h1>
           <p className="text-slate-400 text-sm mt-1">Automatic commission, invoices, escrow and payout analytics</p>
         </div>
         <div className="flex items-center gap-2">

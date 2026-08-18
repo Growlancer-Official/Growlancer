@@ -327,7 +327,7 @@ export function VerifyEmailPage() {
                 <Mail className="w-8 h-8 text-emerald-600" />
               </div>
             </div>
-            <h1 className="text-xl font-bold text-slate-900 mb-2">Check your inbox</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 mb-2">Check your inbox</h1>
             <p className="text-sm text-slate-500">We sent a verification email to</p>
             <p className="text-sm font-semibold text-slate-900 mt-1 break-all">{email || 'your email'}</p>
             <ol className="mt-6 space-y-2.5 text-left max-w-sm mx-auto">

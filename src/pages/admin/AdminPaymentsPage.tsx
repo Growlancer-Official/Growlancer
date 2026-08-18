@@ -149,7 +149,7 @@ export function AdminPaymentsPage() {
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       <div>
-        <h1 className="text-2xl font-bold text-white">Payments</h1>
+        <h1 className="font-display text-2xl font-bold text-white">Payments</h1>
         <p className="text-slate-400 text-sm mt-1">Track, process, and manage all platform transactions</p>
       </div>
 

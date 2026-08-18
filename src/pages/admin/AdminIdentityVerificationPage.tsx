@@ -474,7 +474,7 @@ export function AdminIdentityVerificationPage() {
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Identity Verification</h1>
+        <h1 className="font-display text-2xl font-bold text-white">Identity Verification</h1>
         <p className="text-slate-400 text-sm mt-1">
           Review and manage identity verification requests. Documents are securely accessed via signed URLs.
         </p>

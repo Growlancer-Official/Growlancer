@@ -154,7 +154,7 @@ export function AdminContractsPage() {
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       <div>
-        <h1 className="text-2xl font-bold text-white">Contracts</h1>
+        <h1 className="font-display text-2xl font-bold text-white">Contracts</h1>
         <p className="text-slate-400 text-sm mt-1">Monitor, manage, and release escrow for all contracts</p>
       </div>
 

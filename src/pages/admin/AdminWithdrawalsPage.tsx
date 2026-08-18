@@ -138,7 +138,7 @@ export function AdminWithdrawalsPage() {
     <div className="space-y-8 pb-20 lg:pb-0">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white">Commission Withdrawals</h1>
+          <h1 className="font-display text-2xl font-bold text-white">Commission Withdrawals</h1>
           <p className="text-slate-400 text-sm mt-1">Withdraw Growlancer's 5% commission to your bank in real time</p>
         </div>
         <button

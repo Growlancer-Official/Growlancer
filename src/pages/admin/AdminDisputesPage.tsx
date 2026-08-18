@@ -331,7 +331,7 @@ export function AdminDisputesPage() {
     <div className="space-y-8 pb-20 lg:pb-0">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Dispute Resolution</h1>
+          <h1 className="font-display text-2xl font-bold text-white">Dispute Resolution</h1>
           <p className="text-slate-400 text-sm mt-1">Review evidence, chat with parties, and decide outcomes</p>
         </div>
         {pendingCount > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full">{pendingCount} Open</span>}

@@ -660,7 +660,7 @@ export function AdminInternshipsPage() {
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white">Internship Applications</h1>
+        <h1 className="font-display text-2xl font-bold text-white">Internship Applications</h1>
         <p className="text-slate-400 text-sm mt-1">Manage, review, and process internship applications</p>
       </div>
 

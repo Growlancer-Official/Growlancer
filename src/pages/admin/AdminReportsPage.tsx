@@ -115,7 +115,7 @@ export function AdminReportsPage() {
     <div className="space-y-8 pb-20 lg:pb-0">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Reports & Analytics</h1>
+          <h1 className="font-display text-2xl font-bold text-white">Reports & Analytics</h1>
           <p className="text-slate-400 text-sm mt-1">Platform-wide metrics and growth tracking</p>
         </div>
         <button onClick={fetchMetrics} className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 hover:text-white px-3 py-2 rounded-lg hover:bg-white/5 transition-colors">

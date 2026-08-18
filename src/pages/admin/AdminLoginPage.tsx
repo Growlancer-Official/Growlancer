@@ -127,7 +127,7 @@ export function AdminLoginPage() {
               className="h-12 w-12 rounded-xl shadow-lg"
             />
             <div className="text-left">
-              <h1 className="text-xl font-bold text-white">Growlancer</h1>
+              <h1 className="font-display text-xl font-bold text-white">Growlancer</h1>
               <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">Admin Panel</span>
             </div>
           </div>
