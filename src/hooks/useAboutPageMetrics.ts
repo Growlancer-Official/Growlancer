@@ -40,7 +40,7 @@ async function loadMetricsFile(): Promise<PlatformMetricsFile> {
 
 async function loadProfileCount(): Promise<number | null> {
   try {
-    const { count, error } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).is('deleted_at', null).is('suspended_at', null);
+    const { count, error } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).is('deleted_at', null);
     if (error) return null;
     return typeof count === 'number' ? count : 0;
   } catch {

@@ -25,28 +25,20 @@ export function AdminLoginPage() {
         if (cancelled) return;
         const session = result.data?.session ?? null;
         if (session?.user) {
-          // Check if admin — first by ID, then fallback to email
-          const { data: profile } = await supabase
-            .from('profiles')
+          // Check if admin — use is_user_admin() RPC + profiles.role
+          const { data: privData } = await supabase
+            .from('profiles_private')
             .select('is_admin')
+            .eq('id', session.user.id)
+            .maybeSingle();
+          const { data: pubData } = await supabase
+            .from('profiles')
+            .select('role')
             .eq('id', session.user.id)
             .maybeSingle();
           
           if (cancelled) return;
-          const profileData = profile as { is_admin: boolean } | null;
-          let isAdmin = profileData?.is_admin === true;
-          
-          // Fallback: check by email
-          if (!isAdmin && session.user.email) {
-            const { data: profileByEmail } = await supabase
-              .from('profiles')
-              .select('is_admin')
-              .eq('email', session.user.email)
-              .maybeSingle();
-            if (cancelled) return;
-            const byEmail = profileByEmail as { is_admin: boolean } | null;
-            isAdmin = byEmail?.is_admin === true;
-          }
+          let isAdmin = privData?.is_admin === true || pubData?.role === 'admin';
           
           if (isAdmin) {
             navigate('/admin', { replace: true });
@@ -92,30 +84,19 @@ export function AdminLoginPage() {
         return;
       }
 
-      // Check admin status — first by ID, then fallback to email (handles ID mismatch)
-      const { data: profile } = await supabase
+      // Check admin status — profiles_private for is_admin, profiles for role
+      const { data: privData } = await supabase
+        .from('profiles_private')
+        .select('is_admin')
+        .eq('id', data.user.id)
+        .maybeSingle();
+      const { data: pubData } = await supabase
         .from('profiles')
-        .select('is_admin, role')
+        .select('role')
         .eq('id', data.user.id)
         .maybeSingle();
 
-      const profileData = profile as { is_admin: boolean; role: string } | null;
-      const isLegacyAdmin = profileData?.is_admin === true;
-      const hasAdminRole = profileData?.role === 'admin';
-      let isAdmin = isLegacyAdmin || hasAdminRole;
-
-      // Fallback: check by email if not found by ID
-      if (!isAdmin && data.user.email) {
-        const { data: profileByEmail } = await supabase
-          .from('profiles')
-          .select('is_admin, role')
-          .eq('email', data.user.email)
-          .maybeSingle();
-        const byEmail = profileByEmail as { is_admin: boolean; role: string } | null;
-        const emailIsLegacyAdmin = byEmail?.is_admin === true;
-        const emailHasAdminRole = byEmail?.role === 'admin';
-        isAdmin = emailIsLegacyAdmin || emailHasAdminRole;
-      }
+      let isAdmin = privData?.is_admin === true || pubData?.role === 'admin';
 
       if (!isAdmin) {
         // Not an admin — sign out and show error

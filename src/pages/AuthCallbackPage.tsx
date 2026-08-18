@@ -380,10 +380,10 @@ export function AuthCallbackPage() {
         }
 
         if (detectedAction === 'email_change') {
-          // 🆕 Sync the new email into the profiles table so the dashboard shows it immediately
+          // 🆕 Sync the new email into profiles_private (email column moved from profiles)
           if (authUser?.id && authUser.email) {
             const { error: emailSyncErr } = await supabase
-              .from('profiles')
+              .from('profiles_private')
               .update({ email: authUser.email, updated_at: new Date().toISOString() })
               .eq('id', authUser.id);
             if (emailSyncErr) devLog('[AuthCallback] email_change profile sync warning:', emailSyncErr.message);

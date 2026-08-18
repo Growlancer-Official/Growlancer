@@ -53,11 +53,17 @@ export const disputeService = {
       // Fire-and-forget: email notification to the other party
       const isClient = input.raised_by === contract.client_id;
       const otherPartyId = isClient ? contract.freelancer_id : contract.client_id;
-      const { data: otherParty } = await supabase
+      const { data: otherPartyPub } = await supabase
         .from('profiles')
-        .select('name, email')
+        .select('name')
         .eq('id', otherPartyId)
         .single();
+      const { data: otherPartyPriv } = await supabase
+        .from('profiles_private')
+        .select('email')
+        .eq('id', otherPartyId)
+        .maybeSingle();
+      const otherParty = otherPartyPub ? { ...otherPartyPub, email: otherPartyPriv?.email || '' } : null;
 
       if (otherParty) {
         emailNotificationService.disputeOpened({
@@ -153,12 +159,17 @@ export const disputeService = {
           .single();
 
         if (dispute) {
-          const { data: parties } = await supabase
+          const { data: partiesPub } = await supabase
             .from('profiles')
-            .select('id, name, email')
+            .select('id, name')
             .in('id', [dispute.client_id, dispute.freelancer_id]);
+          const { data: partiesPriv } = await supabase
+            .from('profiles_private')
+            .select('id, email')
+            .in('id', [dispute.client_id, dispute.freelancer_id]);
+          const parties = partiesPub?.map(p => ({ ...p, email: partiesPriv?.find(pp => pp.id === p.id)?.email || '' })) || [];
 
-          if (parties) {
+          if (parties.length > 0) {
             for (const party of parties) {
               emailNotificationService.disputeResolved({
                 recipientEmail: (party as any).email,

@@ -69,8 +69,7 @@ export function createReferralCode(prefix: string): string {
  */
 export async function fetchUserProfile(userId: string): Promise<AuthUser | null> {
   try {
-    // Use limit(1) instead of .single() to avoid 'multiple rows returned' errors
-    // in case of unexpected duplicates (e.g., from failed cleanup or race conditions)
+    // Fetch public profile (no PII columns — email/phone/is_admin moved to profiles_private)
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -82,15 +81,22 @@ export async function fetchUserProfile(userId: string): Promise<AuthUser | null>
       return null;
     }
 
+    // Fetch sensitive data from profiles_private (email, phone, is_admin, suspended_at, etc.)
+    const { data: priv } = await supabase
+      .from('profiles_private')
+      .select('email, phone, is_admin, suspended_at, onboarding_completed, referral_code')
+      .eq('id', userId)
+      .maybeSingle();
+
     // 🚫 SUSPENDED USER BLOCK — treat as non-existent
-    if (data.suspended_at) {
+    if (priv?.suspended_at) {
       return null;
     }
 
     // If the user is marked as admin (is_admin=true), treat as admin role
     // even if the role column is null. This prevents the periodic profile
     // check from failing for admin users and triggering cascading signout.
-    const effectiveRole = data.is_admin === true ? 'admin' : data.role;
+    const effectiveRole = priv?.is_admin === true ? 'admin' : data.role;
     const normalizedRole = normalizeRole(effectiveRole);
     if (!normalizedRole) {
       return null;
@@ -98,16 +104,16 @@ export async function fetchUserProfile(userId: string): Promise<AuthUser | null>
 
     return {
       id: data.id,
-      email: data.email,
+      email: priv?.email || undefined,
       name: data.name,
       role: normalizedRole,
       avatar: data.avatar || undefined,
       isPro: data.is_pro || false,
-      referralCode: data.referral_code || undefined,
+      referralCode: priv?.referral_code || undefined,
       createdAt: data.created_at || undefined,
-      onboardingCompleted: data.onboarding_completed || false,
+      onboardingCompleted: priv?.onboarding_completed || false,
       country: data.country || undefined,
-      phone: data.phone || undefined,
+      phone: priv?.phone || undefined,
       verificationStatus: data.verification_status || undefined,
     };
   } catch {
@@ -155,17 +161,20 @@ export async function createUserProfile(
                        String(rpcError?.code) === '23505';
     if (isDupEmail) {
       try {
-        // Try updating the existing profile by email instead
+        // Try updating the existing profile by email (email is in profiles_private)
         const { error: updateError } = await supabase
-          .from('profiles')
+          .from('profiles_private')
           .update({
-            id: userId,
-            name: name,
-            role: safeRole,
+            email: email,
             referral_code: code,
             updated_at: new Date().toISOString(),
           })
           .eq('email', email);
+        // Also update public profile fields
+        await supabase
+          .from('profiles')
+          .update({ name: name, role: safeRole, updated_at: new Date().toISOString() })
+          .eq('id', userId);
         
         if (!updateError) {
           console.log('[Auth] Updated existing profile by email for:', email);
@@ -178,15 +187,20 @@ export async function createUserProfile(
     
     // 🆕 Fallback: try direct insert (works when email is confirmed / session is valid)
     try {
+      // Public profile columns only (email/referral_code/onboarding_completed are in profiles_private)
       const { error: insertError } = await supabase.from('profiles').upsert({
         id: userId,
-        email: email,
         name: name,
         role: safeRole,
-        referral_code: code,
         is_pro: false,
-        onboarding_completed: false,
         created_at: new Date().toISOString(),
+      }, { onConflict: 'id', ignoreDuplicates: false });
+      // Insert sensitive data into profiles_private
+      await supabase.from('profiles_private').upsert({
+        id: userId,
+        email: email,
+        referral_code: code,
+        onboarding_completed: false,
       }, { onConflict: 'id', ignoreDuplicates: false });
       
       if (insertError) {

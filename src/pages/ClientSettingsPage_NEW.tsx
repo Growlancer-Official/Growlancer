@@ -305,10 +305,17 @@ export function ClientSettingsPage() {
         .eq('id', user.id)
         .single();
 
+      // Fetch sensitive data from profiles_private
+      const { data: privResp } = await supabase
+        .from('profiles_private')
+        .select('email, phone')
+        .eq('id', user.id)
+        .maybeSingle();
+
       if (!profileErr && profileResp) {
         setAccountData({
           name: profileResp.name || '',
-          email: profileResp.email || '',
+          email: privResp?.email || '',
         });
         setNameChangedAt((profileResp as any).name_changed_at || null);
       }

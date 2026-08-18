@@ -111,12 +111,18 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
         const { data: profileResult, error: profileError } = await supabase
           .from('profiles')
-          .select('role, suspended_at')
+          .select('role')
           .eq('id', user.id)
           .single();
+        const { data: privResult } = await supabase
+          .from('profiles_private')
+          .select('suspended_at')
+          .eq('id', user.id)
+          .maybeSingle();
+        const suspended_at = privResult?.suspended_at;
 
         // Check if user is suspended
-        if (profileResult?.suspended_at) {
+        if (suspended_at) {
           captureInfo('ProtectedRoute: suspended user blocked', { userId: user.id });
           await supabase.auth.signOut().catch(() => {});
           clearSupabaseAuthStorage();

@@ -280,15 +280,17 @@ export function ProfessionalProfilePage() {
   const fetchProfileData = useCallback(async () => {
     if (!user?.id) return;
     try {
-      const [profileResp, freelancerResp] = await Promise.all([
+      const [profileResp, freelancerResp, privateResp] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase.from('freelancer_profiles').select('*').eq('user_id', user.id).maybeSingle(),
+        supabase.from('profiles_private').select('email, phone, onboarding_completed').eq('id', user.id).maybeSingle(),
       ]);
 
       if (!profileResp.error && profileResp.data) {
         const p = profileResp.data as Profile;
+        const priv = privateResp?.data;
         setProfile(p);
-        setAccountData(prev => ({ ...prev, name: p?.name || '', email: p?.email || '' }));
+        setAccountData(prev => ({ ...prev, name: p?.name || '', email: priv?.email || '', phone: priv?.phone || '' }));
         setNameChangedAt((p as any)?.name_changed_at || null);
       }
 

@@ -425,11 +425,17 @@ export const identityVerificationService = {
         //    pushes to the realtime publication automatically.
 
         // Send email notification (fire-and-forget)
-        const { data: profile } = await supabase
+        const { data: profilePub } = await supabase
           .from('profiles' as any)
-          .select('name, email')
+          .select('name')
           .eq('id', userId)
           .single();
+        const { data: profilePriv } = await supabase
+          .from('profiles_private')
+          .select('email')
+          .eq('id', userId)
+          .maybeSingle();
+        const profile = profilePub ? { name: (profilePub as any).name, email: profilePriv?.email || '' } : null;
 
         if (profile) {
           const type = status === 'verified' ? 'verification_approved' : 'verification_rejected';

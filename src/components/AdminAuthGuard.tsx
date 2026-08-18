@@ -76,11 +76,17 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
         // Check admin status — first by ID, then fallback to email (handles ID mismatch)
         let profile: ProfileAdminRow | null = null;
 
-        const { data: profileById } = await supabase
+        const { data: pubProfile } = await supabase
           .from('profiles')
-          .select('id, email, name, is_admin, role')
+          .select('id, name, role')
           .eq('id', userId)
           .maybeSingle();
+        const { data: privProfile } = await supabase
+          .from('profiles_private')
+          .select('id, email, is_admin')
+          .eq('id', userId)
+          .maybeSingle();
+        const profileById = pubProfile && privProfile ? { ...pubProfile, email: privProfile.email, is_admin: privProfile.is_admin } : null;
 
         if (profileById) {
           profile = profileById as ProfileAdminRow;
@@ -95,11 +101,12 @@ export function AdminAuthGuard({ children }: { children: ReactNode }) {
           const { data: sessionData } = await supabase.auth.getSession();
           const userEmail = sessionData.session?.user?.email;
           if (userEmail) {
-            const { data: profileByEmail } = await supabase
-              .from('profiles')
-              .select('id, email, name, is_admin, role')
+            const { data: privByEmail } = await supabase
+              .from('profiles_private')
+              .select('id, is_admin')
               .eq('email', userEmail)
               .maybeSingle();
+          const profileByEmail = privByEmail ? { ...privByEmail, email: userEmail, name: '', role: '' as const } : null;
 
             if (profileByEmail) {
               const emailProfile = profileByEmail as ProfileAdminRow;

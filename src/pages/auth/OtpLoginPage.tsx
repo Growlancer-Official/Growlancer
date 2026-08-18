@@ -132,13 +132,18 @@ export function OtpLoginPage() {
         // Fetch the profile to determine the role, then redirect.
         const { data: profile } = await supabase
           .from('profiles')
-          .select('role, onboarding_completed')
+          .select('role')
+          .eq('id', sessionUser.id)
+          .maybeSingle();
+        const { data: privProfile } = await supabase
+          .from('profiles_private')
+          .select('onboarding_completed')
           .eq('id', sessionUser.id)
           .maybeSingle();
 
         const role = profile?.role === 'client' ? 'client' : 'freelancer';
-        // 🎯 ONE onboarding for everyone — role is chosen on the welcome step.
-        const path = profile && profile.onboarding_completed === false
+        const onboarding_completed = privProfile?.onboarding_completed ?? true;
+        const path = onboarding_completed === false
           ? '/onboarding'
           : (role === 'client' ? '/client' : '/dashboard');
 

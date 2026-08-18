@@ -1141,13 +1141,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           const { error: insertError } = await supabase.from('profiles').upsert({
             id: data.user.id,
-            email: normalizedEmail,
             name: savedName,
             role: savedRole,
-            referral_code: refCode,
             is_pro: false,
-            onboarding_completed: false,
             created_at: new Date().toISOString(),
+          }, { onConflict: 'id', ignoreDuplicates: false });
+          // Insert sensitive columns into profiles_private
+          await supabase.from('profiles_private').upsert({
+            id: data.user.id,
+            email: normalizedEmail,
+            referral_code: refCode,
+            onboarding_completed: false,
           }, { onConflict: 'id', ignoreDuplicates: false });
           
           if (!insertError) {

@@ -317,7 +317,7 @@ export const milestoneService = {
 
       if (disputeError) throw disputeError;
 
-      return { success: true, disputeId: disputeId || undefined };
+      return { success: true, disputeId: String(disputeId || '') || undefined };
     } catch (err) {
       return { success: false, error: err instanceof Error ? err.message : 'Failed to dispute milestone' };
     }

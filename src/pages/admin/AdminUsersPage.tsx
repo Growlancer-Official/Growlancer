@@ -77,7 +77,7 @@ export function AdminUsersPage() {
         adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'client' }, isNull: { deleted_at: true } }),
         adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'admin' }, isNull: { deleted_at: true } }),
         adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { is_pro: 'true' }, isNull: { deleted_at: true } }),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { onboarding_completed: 'true' }, isNull: { deleted_at: true } }),
+        adminQuery({ table: 'profiles_private', count: 'exact', head: true, filters: { onboarding_completed: 'true' } }),
       ]);
       setStatsData({
         total: totalRes.total || 0,
@@ -96,17 +96,16 @@ export function AdminUsersPage() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
+      // Fetch public profiles
       const opts: any = {
         table: 'profiles',
-        select: 'id, email, name, role, avatar, created_at, is_pro, onboarding_completed, referral_code, suspended_at, suspend_reason, deleted_at',
-        isNull: { deleted_at: true, suspended_at: true },
+        select: 'id, name, role, avatar, created_at, is_pro, deleted_at',
+        isNull: { deleted_at: true },
         order: 'created_at',
         orderDir: 'desc',
         limit: 100,
       };
       if (roleFilter !== 'all') opts.filters = { role: roleFilter };
-      if (statusFilter === 'active') opts.filters = { ...opts.filters, onboarding_completed: 'true' };
-      if (statusFilter === 'pending') opts.filters = { ...opts.filters, onboarding_completed: 'false' };
       if (statusFilter === 'pro') opts.filters = { ...opts.filters, is_pro: 'true' };
       
       // Show suspended users when 'suspended' filter is active
@@ -114,8 +113,30 @@ export function AdminUsersPage() {
         delete opts.isNull;
       }
 
-      const data = (await adminQuery(opts)).data;
-      setUsers((data || []) as AdminUser[]);
+      const publicData = (await adminQuery(opts)).data || [];
+
+      // Fetch sensitive data from profiles_private to merge
+      const privateOpts: any = {
+        table: 'profiles_private',
+        select: 'id, email, onboarding_completed, referral_code, suspended_at, suspend_reason',
+      };
+      if (statusFilter === 'active') privateOpts.filters = { onboarding_completed: 'true' };
+      if (statusFilter === 'pending') privateOpts.filters = { onboarding_completed: 'false' };
+
+      const privateData = (await adminQuery(privateOpts)).data || [];
+      const privateMap = new Map(privateData.map((p: any) => [p.id, p]));
+
+      // Merge public + private data
+      const merged = publicData.map((pub: any) => ({
+        ...pub,
+        email: privateMap.get(pub.id)?.email || null,
+        onboarding_completed: privateMap.get(pub.id)?.onboarding_completed ?? null,
+        referral_code: privateMap.get(pub.id)?.referral_code || null,
+        suspended_at: privateMap.get(pub.id)?.suspended_at || null,
+        suspend_reason: privateMap.get(pub.id)?.suspend_reason || null,
+      })) as AdminUser[];
+
+      setUsers(merged);
     } catch (err) {
       console.error('Failed to fetch users:', err);
       toast.error('Failed to fetch users', err instanceof Error ? err.message : 'Unknown error');
@@ -158,7 +179,7 @@ export function AdminUsersPage() {
       onConfirm: async () => {
         setActionLoading(`verify-${userId}`);
         try {
-          await adminUpdate('profiles', userId, { onboarding_completed: true });
+          await adminUpdate('profiles_private', userId, { onboarding_completed: true });
           await fetchUsers();
           toast.success(`User "${userName}" verified successfully`);
           setConfirmDialog(null);

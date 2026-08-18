@@ -78,13 +78,6 @@ export type Database = {
             foreignKeyName: "admin_credentials_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "admin_credentials_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -114,51 +107,113 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_withdrawals: {
+        Row: {
+          account_holder_name: string | null
+          account_number: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          failure_reason: string | null
+          fee: number
+          id: string
+          ifsc_code: string | null
+          method: string
+          net_amount: number
+          processed_at: string | null
+          razorpay_fund_account_id: string | null
+          razorpay_payout_id: string | null
+          status: string
+          updated_at: string
+          upi_id: string | null
+        }
+        Insert: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          amount: number
+          bank_name?: string | null
+          created_at?: string
+          failure_reason?: string | null
+          fee?: number
+          id?: string
+          ifsc_code?: string | null
+          method?: string
+          net_amount?: number
+          processed_at?: string | null
+          razorpay_fund_account_id?: string | null
+          razorpay_payout_id?: string | null
+          status?: string
+          updated_at?: string
+          upi_id?: string | null
+        }
+        Update: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          failure_reason?: string | null
+          fee?: number
+          id?: string
+          ifsc_code?: string | null
+          method?: string
+          net_amount?: number
+          processed_at?: string | null
+          razorpay_fund_account_id?: string | null
+          razorpay_payout_id?: string | null
+          status?: string
+          updated_at?: string
+          upi_id?: string | null
+        }
+        Relationships: []
+      }
       ai_matches: {
         Row: {
+          ai_score: number | null
           availability_score: number | null
           budget_score: number | null
+          category_score: number | null
           completion_score: number | null
           created_at: string | null
           experience_score: number | null
           freelancer_id: string
           id: string
+          match_reason: string | null
           match_score: number
           project_id: string
           skill_score: number | null
         }
         Insert: {
+          ai_score?: number | null
           availability_score?: number | null
           budget_score?: number | null
+          category_score?: number | null
           completion_score?: number | null
           created_at?: string | null
           experience_score?: number | null
           freelancer_id: string
           id?: string
+          match_reason?: string | null
           match_score: number
           project_id: string
           skill_score?: number | null
         }
         Update: {
+          ai_score?: number | null
           availability_score?: number | null
           budget_score?: number | null
+          category_score?: number | null
           completion_score?: number | null
           created_at?: string | null
           experience_score?: number | null
           freelancer_id?: string
           id?: string
+          match_reason?: string | null
           match_score?: number
           project_id?: string
           skill_score?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "ai_matches_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "ai_matches_freelancer_id_fkey"
             columns: ["freelancer_id"]
@@ -256,24 +311,58 @@ export type Database = {
             foreignKeyName: "certifications_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "certifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
       }
+      client_errors: {
+        Row: {
+          component_stack: string | null
+          created_at: string
+          event_id: string
+          id: string
+          message: string
+          role: string | null
+          stack: string | null
+          url: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          component_stack?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          message?: string
+          role?: string | null
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          component_stack?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          message?: string
+          role?: string | null
+          stack?: string | null
+          url?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       client_profiles: {
         Row: {
+          account_type: string
           company_logo: string | null
           company_name: string | null
           created_at: string | null
           description: string | null
+          gst_number: string | null
           id: string
           industry: string | null
           location: string | null
@@ -283,10 +372,12 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          account_type?: string
           company_logo?: string | null
           company_name?: string | null
           created_at?: string | null
           description?: string | null
+          gst_number?: string | null
           id?: string
           industry?: string | null
           location?: string | null
@@ -296,10 +387,12 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          account_type?: string
           company_logo?: string | null
           company_name?: string | null
           created_at?: string | null
           description?: string | null
+          gst_number?: string | null
           id?: string
           industry?: string | null
           location?: string | null
@@ -312,14 +405,7 @@ export type Database = {
           {
             foreignKeyName: "client_profiles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "client_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -423,13 +509,6 @@ export type Database = {
             foreignKeyName: "contest_comments_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contest_comments_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -493,13 +572,6 @@ export type Database = {
             foreignKeyName: "contest_submissions_freelancer_id_fkey"
             columns: ["freelancer_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contest_submissions_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -536,13 +608,6 @@ export type Database = {
             foreignKeyName: "contest_votes_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contest_votes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -556,9 +621,14 @@ export type Database = {
           created_at: string | null
           description: string
           end_date: string
+          escrow_amount: number | null
           id: string
           max_submissions: number | null
           prize_amount: number
+          prize_funded: boolean | null
+          prize_funded_at: string | null
+          prize_released: boolean | null
+          prize_released_at: string | null
           second_prize: number | null
           skills_required: string[] | null
           start_date: string | null
@@ -576,9 +646,14 @@ export type Database = {
           created_at?: string | null
           description: string
           end_date: string
+          escrow_amount?: number | null
           id?: string
           max_submissions?: number | null
           prize_amount: number
+          prize_funded?: boolean | null
+          prize_funded_at?: string | null
+          prize_released?: boolean | null
+          prize_released_at?: string | null
           second_prize?: number | null
           skills_required?: string[] | null
           start_date?: string | null
@@ -596,9 +671,14 @@ export type Database = {
           created_at?: string | null
           description?: string
           end_date?: string
+          escrow_amount?: number | null
           id?: string
           max_submissions?: number | null
           prize_amount?: number
+          prize_funded?: boolean | null
+          prize_funded_at?: string | null
+          prize_released?: boolean | null
+          prize_released_at?: string | null
           second_prize?: number | null
           skills_required?: string[] | null
           start_date?: string | null
@@ -614,21 +694,7 @@ export type Database = {
             foreignKeyName: "contests_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contests_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contests_winner_id_fkey"
-            columns: ["winner_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -689,13 +755,6 @@ export type Database = {
             foreignKeyName: "contract_files_uploaded_by_fkey"
             columns: ["uploaded_by"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contract_files_uploaded_by_fkey"
-            columns: ["uploaded_by"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -705,12 +764,19 @@ export type Database = {
         Row: {
           amount: number
           auto_release_hours: number | null
+          cancellation_requested_by: string | null
+          cancellation_status: string | null
           client_id: string
           created_at: string | null
+          currency: string
           delivered_at: string | null
           end_date: string | null
+          escrow_funded: boolean
           freelancer_amount: number
           freelancer_id: string
+          freelancer_started_at: string | null
+          freeze_reason: string | null
+          frozen_at: string | null
           hourly_rate: number | null
           id: string
           milestones: Json | null
@@ -722,17 +788,26 @@ export type Database = {
           shared_tasks: Json | null
           start_date: string | null
           status: string | null
+          team_project_id: string | null
+          team_project_role_id: string | null
           updated_at: string | null
         }
         Insert: {
           amount: number
           auto_release_hours?: number | null
+          cancellation_requested_by?: string | null
+          cancellation_status?: string | null
           client_id: string
           created_at?: string | null
+          currency?: string
           delivered_at?: string | null
           end_date?: string | null
+          escrow_funded?: boolean
           freelancer_amount: number
           freelancer_id: string
+          freelancer_started_at?: string | null
+          freeze_reason?: string | null
+          frozen_at?: string | null
           hourly_rate?: number | null
           id?: string
           milestones?: Json | null
@@ -744,17 +819,26 @@ export type Database = {
           shared_tasks?: Json | null
           start_date?: string | null
           status?: string | null
+          team_project_id?: string | null
+          team_project_role_id?: string | null
           updated_at?: string | null
         }
         Update: {
           amount?: number
           auto_release_hours?: number | null
+          cancellation_requested_by?: string | null
+          cancellation_status?: string | null
           client_id?: string
           created_at?: string | null
+          currency?: string
           delivered_at?: string | null
           end_date?: string | null
+          escrow_funded?: boolean
           freelancer_amount?: number
           freelancer_id?: string
+          freelancer_started_at?: string | null
+          freeze_reason?: string | null
+          frozen_at?: string | null
           hourly_rate?: number | null
           id?: string
           milestones?: Json | null
@@ -766,6 +850,8 @@ export type Database = {
           shared_tasks?: Json | null
           start_date?: string | null
           status?: string | null
+          team_project_id?: string | null
+          team_project_role_id?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -773,21 +859,7 @@ export type Database = {
             foreignKeyName: "contracts_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contracts_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contracts_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -811,54 +883,483 @@ export type Database = {
             referencedRelation: "proposals"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "contracts_team_project_id_fkey"
+            columns: ["team_project_id"]
+            isOneToOne: false
+            referencedRelation: "team_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_team_project_role_id_fkey"
+            columns: ["team_project_role_id"]
+            isOneToOne: false
+            referencedRelation: "team_project_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      countries: {
+        Row: {
+          code: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      credential_audit_logs: {
+        Row: {
+          action: string
+          admin_email: string | null
+          admin_id: string | null
+          created_at: string
+          credential_id: string | null
+          details: Json | null
+          id: string
+          ip_address: string | null
+          new_values: Json | null
+          old_values: Json | null
+        }
+        Insert: {
+          action: string
+          admin_email?: string | null
+          admin_id?: string | null
+          created_at?: string
+          credential_id?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Update: {
+          action?: string
+          admin_email?: string | null
+          admin_id?: string | null
+          created_at?: string
+          credential_id?: string | null
+          details?: Json | null
+          id?: string
+          ip_address?: string | null
+          new_values?: Json | null
+          old_values?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credential_audit_logs_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credential_audit_logs_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "internship_certificates_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credential_audit_logs_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "skill_certifications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credential_verification_tokens: {
+        Row: {
+          created_at: string
+          credential_id: string
+          expires_at: string | null
+          generated_by: string | null
+          id: string
+          metadata: Json | null
+          revoked_at: string | null
+          status: string
+          token: string
+          token_version: number
+        }
+        Insert: {
+          created_at?: string
+          credential_id: string
+          expires_at?: string | null
+          generated_by?: string | null
+          id?: string
+          metadata?: Json | null
+          revoked_at?: string | null
+          status?: string
+          token: string
+          token_version?: number
+        }
+        Update: {
+          created_at?: string
+          credential_id?: string
+          expires_at?: string | null
+          generated_by?: string | null
+          id?: string
+          metadata?: Json | null
+          revoked_at?: string | null
+          status?: string
+          token?: string
+          token_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credential_verification_tokens_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "internship_certificates_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credential_verification_tokens_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "skill_certifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credential_verification_tokens_generated_by_fkey"
+            columns: ["generated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      credential_version_history: {
+        Row: {
+          action: string
+          changes: Json | null
+          created_at: string
+          credential_id: string
+          id: string
+          new_qr_token: string | null
+          notes: string | null
+          old_qr_token: string | null
+          performed_by: string | null
+          version_number: number
+        }
+        Insert: {
+          action: string
+          changes?: Json | null
+          created_at?: string
+          credential_id: string
+          id?: string
+          new_qr_token?: string | null
+          notes?: string | null
+          old_qr_token?: string | null
+          performed_by?: string | null
+          version_number: number
+        }
+        Update: {
+          action?: string
+          changes?: Json | null
+          created_at?: string
+          credential_id?: string
+          id?: string
+          new_qr_token?: string | null
+          notes?: string | null
+          old_qr_token?: string | null
+          performed_by?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credential_version_history_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "internship_certificates_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credential_version_history_credential_id_fkey"
+            columns: ["credential_id"]
+            isOneToOne: false
+            referencedRelation: "skill_certifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credential_version_history_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cron_settings: {
+        Row: {
+          key: string
+          updated_at: string
+          value: string
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: string
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: string
+        }
+        Relationships: []
+      }
+      deletion_failures: {
+        Row: {
+          created_at: string
+          error: string
+          id: number
+          report: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          error: string
+          id?: never
+          report?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          error?: string
+          id?: never
+          report?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dispute_evidence: {
+        Row: {
+          created_at: string
+          dispute_id: string
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          mime_type: string | null
+          uploader_id: string
+        }
+        Insert: {
+          created_at?: string
+          dispute_id: string
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          mime_type?: string | null
+          uploader_id: string
+        }
+        Update: {
+          created_at?: string
+          dispute_id?: string
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          mime_type?: string | null
+          uploader_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_evidence_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_evidence_uploader_id_fkey"
+            columns: ["uploader_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_internal_notes: {
+        Row: {
+          admin_id: string
+          created_at: string
+          dispute_id: string
+          id: string
+          note: string
+        }
+        Insert: {
+          admin_id: string
+          created_at?: string
+          dispute_id: string
+          id?: string
+          note: string
+        }
+        Update: {
+          admin_id?: string
+          created_at?: string
+          dispute_id?: string
+          id?: string
+          note?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_internal_notes_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_internal_notes_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dispute_messages: {
+        Row: {
+          created_at: string
+          dispute_id: string
+          id: string
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          dispute_id: string
+          id?: string
+          message: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          dispute_id?: string
+          id?: string
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dispute_messages_dispute_id_fkey"
+            columns: ["dispute_id"]
+            isOneToOne: false
+            referencedRelation: "disputes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dispute_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       disputes: {
         Row: {
+          admin_assigned_to: string | null
           amount: number
+          appeal_decided_at: string | null
+          appeal_decided_by: string | null
+          appeal_reason: string | null
+          appeal_status: string | null
           client_id: string
           contract_id: string
           created_at: string | null
+          decision: string | null
+          decision_amount: number | null
           description: string
+          escalated: boolean
           freelancer_id: string
           id: string
           reason: string
           resolved_at: string | null
           resolved_by: string | null
           status: string
+          updated_at: string
         }
         Insert: {
+          admin_assigned_to?: string | null
           amount: number
+          appeal_decided_at?: string | null
+          appeal_decided_by?: string | null
+          appeal_reason?: string | null
+          appeal_status?: string | null
           client_id: string
           contract_id: string
           created_at?: string | null
+          decision?: string | null
+          decision_amount?: number | null
           description: string
+          escalated?: boolean
           freelancer_id: string
           id?: string
           reason: string
           resolved_at?: string | null
           resolved_by?: string | null
           status?: string
+          updated_at?: string
         }
         Update: {
+          admin_assigned_to?: string | null
           amount?: number
+          appeal_decided_at?: string | null
+          appeal_decided_by?: string | null
+          appeal_reason?: string | null
+          appeal_status?: string | null
           client_id?: string
           contract_id?: string
           created_at?: string | null
+          decision?: string | null
+          decision_amount?: number | null
           description?: string
+          escalated?: boolean
           freelancer_id?: string
           id?: string
           reason?: string
           resolved_at?: string | null
           resolved_by?: string | null
           status?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "disputes_client_id_fkey"
-            columns: ["client_id"]
+            foreignKeyName: "disputes_admin_assigned_to_fkey"
+            columns: ["admin_assigned_to"]
             isOneToOne: false
-            referencedRelation: "active_users"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_appeal_decided_by_fkey"
+            columns: ["appeal_decided_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -879,21 +1380,7 @@ export type Database = {
             foreignKeyName: "disputes_freelancer_id_fkey"
             columns: ["freelancer_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "disputes_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "disputes_resolved_by_fkey"
-            columns: ["resolved_by"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -947,13 +1434,6 @@ export type Database = {
             foreignKeyName: "education_history_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "education_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -998,13 +1478,6 @@ export type Database = {
             foreignKeyName: "employment_history_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "employment_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1017,6 +1490,7 @@ export type Database = {
           client_id: string
           contract_id: string
           created_at: string | null
+          currency: string
           current_milestone: number | null
           freelancer_id: string
           funded_at: string | null
@@ -1034,6 +1508,7 @@ export type Database = {
           client_id: string
           contract_id: string
           created_at?: string | null
+          currency?: string
           current_milestone?: number | null
           freelancer_id: string
           funded_at?: string | null
@@ -1051,6 +1526,7 @@ export type Database = {
           client_id?: string
           contract_id?: string
           created_at?: string | null
+          currency?: string
           current_milestone?: number | null
           freelancer_id?: string
           funded_at?: string | null
@@ -1067,13 +1543,6 @@ export type Database = {
             foreignKeyName: "escrow_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escrow_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1082,13 +1551,6 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "escrow_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -1140,13 +1602,6 @@ export type Database = {
             foreignKeyName: "fraud_events_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fraud_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1179,6 +1634,7 @@ export type Database = {
           total_reviews: number | null
           updated_at: string | null
           user_id: string
+          verification_status: string
           weighted_rating: number | null
         }
         Insert: {
@@ -1207,6 +1663,7 @@ export type Database = {
           total_reviews?: number | null
           updated_at?: string | null
           user_id: string
+          verification_status?: string
           weighted_rating?: number | null
         }
         Update: {
@@ -1235,20 +1692,14 @@ export type Database = {
           total_reviews?: number | null
           updated_at?: string | null
           user_id?: string
+          verification_status?: string
           weighted_rating?: number | null
         }
         Relationships: [
           {
             foreignKeyName: "freelancer_profiles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "freelancer_profiles_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1287,13 +1738,6 @@ export type Database = {
             foreignKeyName: "freelancer_skills_freelancer_id_fkey"
             columns: ["freelancer_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "freelancer_skills_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1308,52 +1752,66 @@ export type Database = {
       }
       identity_verifications: {
         Row: {
+          blocked_until: string | null
           created_at: string | null
+          date_of_birth: string | null
+          document_hash: string | null
           document_number: string | null
           document_type: string
           document_url: string
+          document_url_back: string | null
           expiry_date: string | null
+          full_name: string | null
           id: string
+          rejection_count: number
           rejection_reason: string | null
           status: string
           updated_at: string | null
           user_id: string
+          verification_provider: string | null
           verified_at: string | null
         }
         Insert: {
+          blocked_until?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
+          document_hash?: string | null
           document_number?: string | null
           document_type: string
           document_url: string
+          document_url_back?: string | null
           expiry_date?: string | null
+          full_name?: string | null
           id?: string
+          rejection_count?: number
           rejection_reason?: string | null
           status?: string
           updated_at?: string | null
           user_id: string
+          verification_provider?: string | null
           verified_at?: string | null
         }
         Update: {
+          blocked_until?: string | null
           created_at?: string | null
+          date_of_birth?: string | null
+          document_hash?: string | null
           document_number?: string | null
           document_type?: string
           document_url?: string
+          document_url_back?: string | null
           expiry_date?: string | null
+          full_name?: string | null
           id?: string
+          rejection_count?: number
           rejection_reason?: string | null
           status?: string
           updated_at?: string | null
           user_id?: string
+          verification_provider?: string | null
           verified_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "identity_verifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "identity_verifications_user_id_fkey"
             columns: ["user_id"]
@@ -1362,6 +1820,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      industries: {
+        Row: {
+          created_at: string
+          display_order: number
+          icon: string | null
+          id: string
+          is_active: boolean
+          name: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       internship_applications: {
         Row: {
@@ -1379,8 +1870,13 @@ export type Database = {
           graduation_date: string | null
           graduation_year: string | null
           id: string
+          internship_letter_url: string | null
+          interview_duration: number | null
+          interview_time: string | null
           linkedin_url: string | null
+          nda_url: string | null
           notes: string | null
+          offer_letter_url: string | null
           phone: string | null
           portfolio_url: string | null
           resume_file_name: string | null
@@ -1409,8 +1905,13 @@ export type Database = {
           graduation_date?: string | null
           graduation_year?: string | null
           id?: string
+          internship_letter_url?: string | null
+          interview_duration?: number | null
+          interview_time?: string | null
           linkedin_url?: string | null
+          nda_url?: string | null
           notes?: string | null
+          offer_letter_url?: string | null
           phone?: string | null
           portfolio_url?: string | null
           resume_file_name?: string | null
@@ -1439,8 +1940,13 @@ export type Database = {
           graduation_date?: string | null
           graduation_year?: string | null
           id?: string
+          internship_letter_url?: string | null
+          interview_duration?: number | null
+          interview_time?: string | null
           linkedin_url?: string | null
+          nda_url?: string | null
           notes?: string | null
+          offer_letter_url?: string | null
           phone?: string | null
           portfolio_url?: string | null
           resume_file_name?: string | null
@@ -1495,21 +2001,7 @@ export type Database = {
             foreignKeyName: "invites_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invites_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "invites_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -1524,6 +2016,88 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_id: string
+          contract_id: string | null
+          created_at: string
+          currency: string | null
+          freelancer_amount: number
+          freelancer_id: string
+          id: string
+          invoice_number: string
+          issued_at: string
+          paid_at: string | null
+          payment_method: string | null
+          pdf_url: string | null
+          platform_fee: number
+          project_title: string | null
+          status: string
+          subtotal: number
+          total: number
+        }
+        Insert: {
+          client_id: string
+          contract_id?: string | null
+          created_at?: string
+          currency?: string | null
+          freelancer_amount: number
+          freelancer_id: string
+          id?: string
+          invoice_number: string
+          issued_at?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          pdf_url?: string | null
+          platform_fee?: number
+          project_title?: string | null
+          status?: string
+          subtotal: number
+          total: number
+        }
+        Update: {
+          client_id?: string
+          contract_id?: string | null
+          created_at?: string
+          currency?: string | null
+          freelancer_amount?: number
+          freelancer_id?: string
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          paid_at?: string | null
+          payment_method?: string | null
+          pdf_url?: string | null
+          platform_fee?: number
+          project_title?: string | null
+          status?: string
+          subtotal?: number
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1555,17 +2129,49 @@ export type Database = {
             foreignKeyName: "languages_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "languages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
+      }
+      ledger_entries: {
+        Row: {
+          account: string
+          amount: number
+          balance_after: number | null
+          created_at: string
+          description: string | null
+          direction: string
+          entity_id: string | null
+          entity_type: string | null
+          entry_date: string
+          id: string
+        }
+        Insert: {
+          account: string
+          amount: number
+          balance_after?: number | null
+          created_at?: string
+          description?: string | null
+          direction: string
+          entity_id?: string | null
+          entity_type?: string | null
+          entry_date?: string
+          id?: string
+        }
+        Update: {
+          account?: string
+          amount?: number
+          balance_after?: number | null
+          created_at?: string
+          description?: string | null
+          direction?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          entry_date?: string
+          id?: string
+        }
+        Relationships: []
       }
       messages: {
         Row: {
@@ -1631,13 +2237,6 @@ export type Database = {
             foreignKeyName: "messages_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1645,21 +2244,7 @@ export type Database = {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_typing_user_id_fkey"
-            columns: ["typing_user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -1857,13 +2442,6 @@ export type Database = {
             foreignKeyName: "notification_preferences_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_preferences_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1914,13 +2492,6 @@ export type Database = {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1959,21 +2530,7 @@ export type Database = {
             foreignKeyName: "opportunity_events_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "opportunity_events_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "opportunity_events_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -1988,6 +2545,59 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_audit_logs: {
+        Row: {
+          action: string
+          actor_role: string | null
+          amount: number | null
+          created_at: string
+          currency: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          provider: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_role?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          provider?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_role?: string | null
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          provider?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2040,16 +2650,58 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_webhook_events: {
+        Row: {
+          created_at: string
+          event_id: string
+          event_type: string
+          id: string
+          payload: Json | null
+          processed_at: string | null
+          provider: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          event_type: string
+          id?: string
+          payload?: Json | null
+          processed_at?: string | null
+          provider: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          event_type?: string
+          id?: string
+          payload?: Json | null
+          processed_at?: string | null
+          provider?: string
+          status?: string
+        }
+        Relationships: []
+      }
       payout_methods: {
         Row: {
+          account_holder_name: string | null
+          account_number: string | null
+          bank_name: string | null
           created_at: string | null
           details: Json
+          email: string | null
           id: string
+          ifsc_code: string | null
           is_default: boolean | null
           is_verified: boolean | null
           label: string | null
+          phone: string | null
+          razorpay_fund_account_id: string | null
+          routing_number: string | null
           type: string
           updated_at: string | null
+          upi_id: string | null
           user_id: string
           verification_attempts: number | null
           verification_code: string | null
@@ -2057,14 +2709,23 @@ export type Database = {
           verified_at: string | null
         }
         Insert: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
           created_at?: string | null
           details: Json
+          email?: string | null
           id?: string
+          ifsc_code?: string | null
           is_default?: boolean | null
           is_verified?: boolean | null
           label?: string | null
+          phone?: string | null
+          razorpay_fund_account_id?: string | null
+          routing_number?: string | null
           type: string
           updated_at?: string | null
+          upi_id?: string | null
           user_id: string
           verification_attempts?: number | null
           verification_code?: string | null
@@ -2072,14 +2733,23 @@ export type Database = {
           verified_at?: string | null
         }
         Update: {
+          account_holder_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
           created_at?: string | null
           details?: Json
+          email?: string | null
           id?: string
+          ifsc_code?: string | null
           is_default?: boolean | null
           is_verified?: boolean | null
           label?: string | null
+          phone?: string | null
+          razorpay_fund_account_id?: string | null
+          routing_number?: string | null
           type?: string
           updated_at?: string | null
+          upi_id?: string | null
           user_id?: string
           verification_attempts?: number | null
           verification_code?: string | null
@@ -2087,13 +2757,6 @@ export type Database = {
           verified_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "payout_methods_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "payout_methods_user_id_fkey"
             columns: ["user_id"]
@@ -2270,6 +2933,76 @@ export type Database = {
           },
         ]
       }
+      platform_revenue: {
+        Row: {
+          client_id: string | null
+          contract_id: string | null
+          created_at: string
+          freelancer_amount: number
+          freelancer_id: string | null
+          gross_amount: number
+          id: string
+          invoice_id: string | null
+          platform_fee: number
+          refunded_at: string | null
+          released_at: string | null
+          source: string
+          status: string
+        }
+        Insert: {
+          client_id?: string | null
+          contract_id?: string | null
+          created_at?: string
+          freelancer_amount: number
+          freelancer_id?: string | null
+          gross_amount: number
+          id?: string
+          invoice_id?: string | null
+          platform_fee: number
+          refunded_at?: string | null
+          released_at?: string | null
+          source?: string
+          status?: string
+        }
+        Update: {
+          client_id?: string | null
+          contract_id?: string | null
+          created_at?: string
+          freelancer_amount?: number
+          freelancer_id?: string | null
+          gross_amount?: number
+          id?: string
+          invoice_id?: string | null
+          platform_fee?: number
+          refunded_at?: string | null
+          released_at?: string | null
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_revenue_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_revenue_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_revenue_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       portfolio_items: {
         Row: {
           category: string | null
@@ -2324,13 +3057,6 @@ export type Database = {
             foreignKeyName: "portfolio_items_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "portfolio_items_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2339,85 +3065,102 @@ export type Database = {
       profiles: {
         Row: {
           avatar: string | null
-          banned_at: string | null
           country: string | null
           created_at: string | null
           deleted_at: string | null
-          email: string
           id: string
-          is_admin: boolean
           is_pro: boolean | null
+          kyc_verified_at: string | null
           name: string
-          onboarding_completed: boolean | null
-          phone: string | null
+          name_changed_at: string | null
           rating: number | null
-          referral_code: string | null
           role: string
-          suspend_reason: string | null
-          suspended_at: string | null
-          suspended_by: string | null
           total_reviews: number | null
           updated_at: string | null
-          verification_status: string | null
+          verification_status: string
         }
         Insert: {
           avatar?: string | null
-          banned_at?: string | null
           country?: string | null
           created_at?: string | null
           deleted_at?: string | null
-          email: string
           id: string
-          is_admin?: boolean
           is_pro?: boolean | null
+          kyc_verified_at?: string | null
           name: string
-          onboarding_completed?: boolean | null
-          phone?: string | null
+          name_changed_at?: string | null
           rating?: number | null
-          referral_code?: string | null
           role: string
-          suspend_reason?: string | null
-          suspended_at?: string | null
-          verification_status?: string | null
-          suspended_by?: string | null
           total_reviews?: number | null
           updated_at?: string | null
+          verification_status?: string
         }
         Update: {
           avatar?: string | null
-          banned_at?: string | null
           country?: string | null
           created_at?: string | null
           deleted_at?: string | null
-          email?: string
           id?: string
-          is_admin?: boolean
           is_pro?: boolean | null
+          kyc_verified_at?: string | null
           name?: string
+          name_changed_at?: string | null
+          rating?: number | null
+          role?: string
+          total_reviews?: number | null
+          updated_at?: string | null
+          verification_status?: string
+        }
+        Relationships: []
+      }
+      profiles_private: {
+        Row: {
+          banned_at: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_admin: boolean | null
+          onboarding_completed: boolean | null
+          phone: string | null
+          referral_code: string | null
+          suspend_reason: string | null
+          suspended_at: string | null
+          suspended_by: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          banned_at?: string | null
+          created_at?: string | null
+          email?: string | null
+          id: string
+          is_admin?: boolean | null
           onboarding_completed?: boolean | null
           phone?: string | null
-          rating?: number | null
           referral_code?: string | null
-          role?: string
           suspend_reason?: string | null
           suspended_at?: string | null
           suspended_by?: string | null
-          total_reviews?: number | null
           updated_at?: string | null
-          verification_status?: string | null
+        }
+        Update: {
+          banned_at?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_admin?: boolean | null
+          onboarding_completed?: boolean | null
+          phone?: string | null
+          referral_code?: string | null
+          suspend_reason?: string | null
+          suspended_at?: string | null
+          suspended_by?: string | null
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "profiles_suspended_by_fkey"
-            columns: ["suspended_by"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_suspended_by_fkey"
-            columns: ["suspended_by"]
-            isOneToOne: false
+            foreignKeyName: "profiles_private_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2495,13 +3238,6 @@ export type Database = {
             foreignKeyName: "project_matches_freelancer_id_fkey"
             columns: ["freelancer_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_matches_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2561,6 +3297,7 @@ export type Database = {
           description: string
           experience_level: string | null
           id: string
+          industry: string | null
           skills_required: string[] | null
           status: string | null
           title: string
@@ -2577,6 +3314,7 @@ export type Database = {
           description: string
           experience_level?: string | null
           id?: string
+          industry?: string | null
           skills_required?: string[] | null
           status?: string | null
           title: string
@@ -2593,6 +3331,7 @@ export type Database = {
           description?: string
           experience_level?: string | null
           id?: string
+          industry?: string | null
           skills_required?: string[] | null
           status?: string | null
           title?: string
@@ -2600,13 +3339,6 @@ export type Database = {
           visibility?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "projects_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "projects_client_id_fkey"
             columns: ["client_id"]
@@ -2661,13 +3393,6 @@ export type Database = {
             foreignKeyName: "proposals_freelancer_id_fkey"
             columns: ["freelancer_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "proposals_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2712,13 +3437,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "push_tokens_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "push_tokens_user_id_fkey"
             columns: ["user_id"]
@@ -2829,13 +3547,6 @@ export type Database = {
             foreignKeyName: "razorpay_orders_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "razorpay_orders_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2927,13 +3638,6 @@ export type Database = {
             foreignKeyName: "recovery_codes_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "recovery_codes_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -2971,13 +3675,6 @@ export type Database = {
           valid_referrals?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "referral_stats_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "referral_stats_user_id_fkey"
             columns: ["user_id"]
@@ -3026,13 +3723,6 @@ export type Database = {
             foreignKeyName: "referrals_referred_user_id_fkey"
             columns: ["referred_user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "referrals_referred_user_id_fkey"
-            columns: ["referred_user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -3040,14 +3730,210 @@ export type Database = {
             foreignKeyName: "referrals_referrer_id_fkey"
             columns: ["referrer_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refund_history: {
+        Row: {
+          actor_id: string | null
+          actor_role: string | null
+          created_at: string
+          event: string
+          id: string
+          metadata: Json | null
+          note: string | null
+          refund_request_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          event: string
+          id?: string
+          metadata?: Json | null
+          note?: string | null
+          refund_request_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_role?: string | null
+          created_at?: string
+          event?: string
+          id?: string
+          metadata?: Json | null
+          note?: string | null
+          refund_request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_history_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "referrals_referrer_id_fkey"
-            columns: ["referrer_id"]
+            foreignKeyName: "refund_history_refund_request_id_fkey"
+            columns: ["refund_request_id"]
+            isOneToOne: false
+            referencedRelation: "refund_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refund_requests: {
+        Row: {
+          closed_at: string | null
+          contract_id: string
+          created_at: string
+          decided_amount: number | null
+          decision_at: string | null
+          decision_by: string | null
+          description: string | null
+          id: string
+          milestone_index: number | null
+          provider_refund_id: string | null
+          reason: string
+          refund_amount: number
+          request_type: string
+          requested_by: string
+          requested_to: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          contract_id: string
+          created_at?: string
+          decided_amount?: number | null
+          decision_at?: string | null
+          decision_by?: string | null
+          description?: string | null
+          id?: string
+          milestone_index?: number | null
+          provider_refund_id?: string | null
+          reason: string
+          refund_amount?: number
+          request_type: string
+          requested_by: string
+          requested_to?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          contract_id?: string
+          created_at?: string
+          decided_amount?: number | null
+          decision_at?: string | null
+          decision_by?: string | null
+          description?: string | null
+          id?: string
+          milestone_index?: number | null
+          provider_refund_id?: string | null
+          reason?: string
+          refund_amount?: number
+          request_type?: string
+          requested_by?: string
+          requested_to?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refund_requests_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_decision_by_fkey"
+            columns: ["decision_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refund_requests_requested_to_fkey"
+            columns: ["requested_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      refunds: {
+        Row: {
+          amount: number
+          contract_id: string | null
+          created_at: string
+          currency: string | null
+          id: string
+          last_error: string | null
+          provider: string
+          provider_payment_id: string | null
+          provider_refund_id: string | null
+          refund_request_id: string | null
+          retry_count: number
+          status: string
+          timeline: Json
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          contract_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          last_error?: string | null
+          provider?: string
+          provider_payment_id?: string | null
+          provider_refund_id?: string | null
+          refund_request_id?: string | null
+          retry_count?: number
+          status?: string
+          timeline?: Json
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          contract_id?: string | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          last_error?: string | null
+          provider?: string
+          provider_payment_id?: string | null
+          provider_refund_id?: string | null
+          refund_request_id?: string | null
+          retry_count?: number
+          status?: string
+          timeline?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "refunds_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "refunds_refund_request_id_fkey"
+            columns: ["refund_request_id"]
+            isOneToOne: false
+            referencedRelation: "refund_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -3080,6 +3966,86 @@ export type Database = {
             columns: ["review_id"]
             isOneToOne: false
             referencedRelation: "reviews"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          communication_rating: number | null
+          contest_id: string | null
+          contract_id: string | null
+          created_at: string | null
+          id: string
+          professionalism_rating: number | null
+          quality_rating: number | null
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          timeliness_rating: number | null
+          updated_at: string | null
+          would_hire_again: boolean | null
+        }
+        Insert: {
+          comment?: string | null
+          communication_rating?: number | null
+          contest_id?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          id?: string
+          professionalism_rating?: number | null
+          quality_rating?: number | null
+          rating: number
+          reviewee_id: string
+          reviewer_id: string
+          timeliness_rating?: number | null
+          updated_at?: string | null
+          would_hire_again?: boolean | null
+        }
+        Update: {
+          comment?: string | null
+          communication_rating?: number | null
+          contest_id?: string | null
+          contract_id?: string | null
+          created_at?: string | null
+          id?: string
+          professionalism_rating?: number | null
+          quality_rating?: number | null
+          rating?: number
+          reviewee_id?: string
+          reviewer_id?: string
+          timeliness_rating?: number | null
+          updated_at?: string | null
+          would_hire_again?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_contest_id_fkey"
+            columns: ["contest_id"]
+            isOneToOne: false
+            referencedRelation: "contests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewee_id_fkey"
+            columns: ["reviewee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -3135,13 +4101,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "revision_requests_contract_id_fkey"
-            columns: ["contract_id"]
-            isOneToOne: false
-            referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "revision_requests_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
@@ -3149,92 +4108,15 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "revision_requests_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      reviews: {
-        Row: {
-          comment: string | null
-          communication_rating: number | null
-          contract_id: string
-          created_at: string | null
-          id: string
-          professionalism_rating: number | null
-          quality_rating: number | null
-          rating: number
-          reviewee_id: string
-          reviewer_id: string
-          timeliness_rating: number | null
-          updated_at: string | null
-          would_hire_again: boolean | null
-        }
-        Insert: {
-          comment?: string | null
-          communication_rating?: number | null
-          contract_id: string
-          created_at?: string | null
-          id?: string
-          professionalism_rating?: number | null
-          quality_rating?: number | null
-          rating: number
-          reviewee_id: string
-          reviewer_id: string
-          timeliness_rating?: number | null
-          updated_at?: string | null
-          would_hire_again?: boolean | null
-        }
-        Update: {
-          comment?: string | null
-          communication_rating?: number | null
-          contract_id?: string
-          created_at?: string | null
-          id?: string
-          professionalism_rating?: number | null
-          quality_rating?: number | null
-          rating?: number
-          reviewee_id?: string
-          reviewer_id?: string
-          timeliness_rating?: number | null
-          updated_at?: string | null
-          would_hire_again?: boolean | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_contract_id_fkey"
+            foreignKeyName: "revision_requests_contract_id_fkey"
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "reviews_reviewee_id_fkey"
-            columns: ["reviewee_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewee_id_fkey"
-            columns: ["reviewee_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
+            foreignKeyName: "revision_requests_freelancer_id_fkey"
+            columns: ["freelancer_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -3322,6 +4204,39 @@ export type Database = {
         }
         Relationships: []
       }
+      security_alerts: {
+        Row: {
+          category: string
+          created_at: string
+          detail: string
+          id: number
+          is_resolved: boolean
+          resolved_at: string | null
+          severity: string
+          source: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          detail: string
+          id?: number
+          is_resolved?: boolean
+          resolved_at?: string | null
+          severity: string
+          source?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          detail?: string
+          id?: number
+          is_resolved?: boolean
+          resolved_at?: string | null
+          severity?: string
+          source?: string
+        }
+        Relationships: []
+      }
       service_categories: {
         Row: {
           category_id: string
@@ -3362,56 +4277,42 @@ export type Database = {
         Row: {
           amount: number
           client_id: string
-          created_at: string | null
+          created_at: string
           freelancer_id: string
           id: string
           message: string | null
           service_id: string
           status: string
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
           amount: number
           client_id: string
-          created_at?: string | null
+          created_at?: string
           freelancer_id: string
           id?: string
           message?: string | null
           service_id: string
           status?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
           amount?: number
           client_id?: string
-          created_at?: string | null
+          created_at?: string
           freelancer_id?: string
           id?: string
           message?: string | null
           service_id?: string
           status?: string
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: "service_offers_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "service_offers_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "service_offers_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -3432,10 +4333,12 @@ export type Database = {
       }
       services: {
         Row: {
-          accepts_tips: boolean | null
+          accepts_tips: boolean
           active: boolean | null
+          addons: Json | null
           category: string
           created_at: string | null
+          currency: string
           delivery_days: number
           description: string
           extra_revision_price: number
@@ -3443,8 +4346,10 @@ export type Database = {
           freelancer_id: string
           id: string
           image_url: string | null
-          negotiable: boolean | null
+          milestone_mode: string
+          negotiable: boolean
           orders: number | null
+          packages: Json | null
           price: number
           price_type: string | null
           rating: number | null
@@ -3458,10 +4363,12 @@ export type Database = {
           views: number | null
         }
         Insert: {
-          accepts_tips?: boolean | null
+          accepts_tips?: boolean
           active?: boolean | null
+          addons?: Json | null
           category: string
           created_at?: string | null
+          currency?: string
           delivery_days: number
           description: string
           extra_revision_price?: number
@@ -3469,8 +4376,10 @@ export type Database = {
           freelancer_id: string
           id?: string
           image_url?: string | null
-          negotiable?: boolean | null
+          milestone_mode?: string
+          negotiable?: boolean
           orders?: number | null
+          packages?: Json | null
           price: number
           price_type?: string | null
           rating?: number | null
@@ -3484,10 +4393,12 @@ export type Database = {
           views?: number | null
         }
         Update: {
-          accepts_tips?: boolean | null
+          accepts_tips?: boolean
           active?: boolean | null
+          addons?: Json | null
           category?: string
           created_at?: string | null
+          currency?: string
           delivery_days?: number
           description?: string
           extra_revision_price?: number
@@ -3495,8 +4406,10 @@ export type Database = {
           freelancer_id?: string
           id?: string
           image_url?: string | null
-          negotiable?: boolean | null
+          milestone_mode?: string
+          negotiable?: boolean
           orders?: number | null
+          packages?: Json | null
           price?: number
           price_type?: string | null
           rating?: number | null
@@ -3510,13 +4423,6 @@ export type Database = {
           views?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "services_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "services_freelancer_id_fkey"
             columns: ["freelancer_id"]
@@ -3622,13 +4528,6 @@ export type Database = {
             foreignKeyName: "skill_certifications_issued_by_fkey"
             columns: ["issued_by"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_certifications_issued_by_fkey"
-            columns: ["issued_by"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -3661,21 +4560,7 @@ export type Database = {
             foreignKeyName: "skill_endorsements_endorsed_by_user_id_fkey"
             columns: ["endorsed_by_user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_endorsements_endorsed_by_user_id_fkey"
-            columns: ["endorsed_by_user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_endorsements_endorsed_user_id_fkey"
-            columns: ["endorsed_user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -3686,6 +4571,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      skill_test_attempts: {
+        Row: {
+          blocked_until: string | null
+          cheating_count: number
+          finished_at: string | null
+          id: string
+          permanently_blocked: boolean
+          started_at: string
+          status: string
+          test_id: string
+          updated_at: string
+          user_id: string
+          violations: number
+        }
+        Insert: {
+          blocked_until?: string | null
+          cheating_count?: number
+          finished_at?: string | null
+          id?: string
+          permanently_blocked?: boolean
+          started_at?: string
+          status?: string
+          test_id: string
+          updated_at?: string
+          user_id: string
+          violations?: number
+        }
+        Update: {
+          blocked_until?: string | null
+          cheating_count?: number
+          finished_at?: string | null
+          id?: string
+          permanently_blocked?: boolean
+          started_at?: string
+          status?: string
+          test_id?: string
+          updated_at?: string
+          user_id?: string
+          violations?: number
+        }
+        Relationships: []
       }
       skills: {
         Row: {
@@ -3789,6 +4716,7 @@ export type Database = {
           ai_messages_limit: number
           ai_priority: boolean
           created_at: string | null
+          currency: string
           description: string | null
           features: Json | null
           id: string
@@ -3804,6 +4732,7 @@ export type Database = {
           ai_messages_limit?: number
           ai_priority?: boolean
           created_at?: string | null
+          currency?: string
           description?: string | null
           features?: Json | null
           id: string
@@ -3819,6 +4748,7 @@ export type Database = {
           ai_messages_limit?: number
           ai_priority?: boolean
           created_at?: string | null
+          currency?: string
           description?: string | null
           features?: Json | null
           id?: string
@@ -3892,10 +4822,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "subscriptions_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
+            referencedRelation: "subscription_plans"
             referencedColumns: ["id"]
           },
           {
@@ -3962,13 +4892,6 @@ export type Database = {
             foreignKeyName: "support_tickets_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "support_tickets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4010,21 +4933,7 @@ export type Database = {
             foreignKeyName: "team_invitations_freelancer_id_fkey"
             columns: ["freelancer_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "team_invitations_freelancer_id_fkey"
-            columns: ["freelancer_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "team_invitations_invited_by_fkey"
-            columns: ["invited_by"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -4039,6 +4948,104 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_project_roles: {
+        Row: {
+          budget_range_max: number | null
+          budget_range_min: number | null
+          created_at: string
+          id: string
+          matched_freelancer_id: string | null
+          required_skills: string[]
+          role_title: string
+          status: string
+          suggested_freelancers: Json
+          team_project_id: string
+          updated_at: string
+        }
+        Insert: {
+          budget_range_max?: number | null
+          budget_range_min?: number | null
+          created_at?: string
+          id?: string
+          matched_freelancer_id?: string | null
+          required_skills?: string[]
+          role_title: string
+          status?: string
+          suggested_freelancers?: Json
+          team_project_id: string
+          updated_at?: string
+        }
+        Update: {
+          budget_range_max?: number | null
+          budget_range_min?: number | null
+          created_at?: string
+          id?: string
+          matched_freelancer_id?: string | null
+          required_skills?: string[]
+          role_title?: string
+          status?: string
+          suggested_freelancers?: Json
+          team_project_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_project_roles_matched_freelancer_id_fkey"
+            columns: ["matched_freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_project_roles_team_project_id_fkey"
+            columns: ["team_project_id"]
+            isOneToOne: false
+            referencedRelation: "team_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_projects: {
+        Row: {
+          client_id: string
+          created_at: string
+          description: string | null
+          id: string
+          status: string
+          title: string
+          total_budget_estimate: number | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          title: string
+          total_budget_estimate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          status?: string
+          title?: string
+          total_budget_estimate?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -4074,13 +5081,6 @@ export type Database = {
             columns: ["ticket_id"]
             isOneToOne: false
             referencedRelation: "support_tickets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "ticket_messages_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -4150,6 +5150,7 @@ export type Database = {
           amount: number
           contract_id: string | null
           created_at: string | null
+          currency: string | null
           description: string | null
           escrow_id: string | null
           id: string
@@ -4157,12 +5158,14 @@ export type Database = {
           source: string
           status: string | null
           type: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           amount: number
           contract_id?: string | null
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           escrow_id?: string | null
           id?: string
@@ -4170,12 +5173,14 @@ export type Database = {
           source: string
           status?: string | null
           type: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           amount?: number
           contract_id?: string | null
           created_at?: string | null
+          currency?: string | null
           description?: string | null
           escrow_id?: string | null
           id?: string
@@ -4183,6 +5188,7 @@ export type Database = {
           source?: string
           status?: string | null
           type?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: [
@@ -4198,13 +5204,6 @@ export type Database = {
             columns: ["escrow_id"]
             isOneToOne: false
             referencedRelation: "escrow"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "transactions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -4248,6 +5247,7 @@ export type Database = {
       }
       user_deletion_requests: {
         Row: {
+          admin_note: string | null
           cancelled_at: string | null
           confirm_token: string
           confirm_token_expires_at: string
@@ -4261,6 +5261,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          admin_note?: string | null
           cancelled_at?: string | null
           confirm_token: string
           confirm_token_expires_at: string
@@ -4274,6 +5275,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          admin_note?: string | null
           cancelled_at?: string | null
           confirm_token?: string
           confirm_token_expires_at?: string
@@ -4287,6 +5289,53 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_invitations: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invite_token: string | null
+          invited_by: string
+          role: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invite_token?: string | null
+          invited_by: string
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invite_token?: string | null
+          invited_by?: string
+          role?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_invitations_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_mfa_settings: {
         Row: {
@@ -4330,13 +5379,65 @@ export type Database = {
             foreignKeyName: "user_mfa_settings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
-            referencedRelation: "active_users"
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      user_reports: {
+        Row: {
+          browser_info: string | null
+          category: string | null
+          created_at: string
+          description: string
+          email: string | null
+          id: string
+          name: string
+          page_url: string | null
+          priority: string
+          report_type: string
+          status: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          browser_info?: string | null
+          category?: string | null
+          created_at?: string
+          description: string
+          email?: string | null
+          id?: string
+          name?: string
+          page_url?: string | null
+          priority?: string
+          report_type: string
+          status?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          browser_info?: string | null
+          category?: string | null
+          created_at?: string
+          description?: string
+          email?: string | null
+          id?: string
+          name?: string
+          page_url?: string | null
+          priority?: string
+          report_type?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "user_mfa_settings_user_id_fkey"
+            foreignKeyName: "user_reports_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4363,6 +5464,30 @@ export type Database = {
         }
         Update: {
           id?: string | null
+        }
+        Relationships: []
+      }
+      verification_rate_limits: {
+        Row: {
+          id: string
+          identifier: string
+          request_count: number
+          route: string
+          window_start: string
+        }
+        Insert: {
+          id?: string
+          identifier: string
+          request_count?: number
+          route?: string
+          window_start?: string
+        }
+        Update: {
+          id?: string
+          identifier?: string
+          request_count?: number
+          route?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -4402,13 +5527,6 @@ export type Database = {
             foreignKeyName: "waitlist_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "waitlist_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4419,7 +5537,11 @@ export type Database = {
           balance: number
           created_at: string | null
           currency: string
+          escrow_balance: number
+          freeze_reason: string | null
+          frozen_at: string | null
           id: string
+          is_frozen: boolean
           pending_balance: number
           updated_at: string | null
           user_id: string
@@ -4428,7 +5550,11 @@ export type Database = {
           balance?: number
           created_at?: string | null
           currency?: string
+          escrow_balance?: number
+          freeze_reason?: string | null
+          frozen_at?: string | null
           id?: string
+          is_frozen?: boolean
           pending_balance?: number
           updated_at?: string | null
           user_id: string
@@ -4437,19 +5563,16 @@ export type Database = {
           balance?: number
           created_at?: string | null
           currency?: string
+          escrow_balance?: number
+          freeze_reason?: string | null
+          frozen_at?: string | null
           id?: string
+          is_frozen?: boolean
           pending_balance?: number
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "wallets_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "wallets_user_id_fkey"
             columns: ["user_id"]
@@ -4466,12 +5589,16 @@ export type Database = {
           created_at: string | null
           failure_reason: string | null
           fee: number
+          freeze_note: string | null
           id: string
           method: string
           net_amount: number
+          payout_mode: string | null
           paypal_email: string | null
           paypal_payout_id: string | null
           processed_at: string | null
+          razorpay_fund_account_id: string | null
+          razorpay_payout_id: string | null
           status: string
           updated_at: string | null
           user_id: string
@@ -4482,12 +5609,16 @@ export type Database = {
           created_at?: string | null
           failure_reason?: string | null
           fee?: number
+          freeze_note?: string | null
           id?: string
           method: string
           net_amount: number
+          payout_mode?: string | null
           paypal_email?: string | null
           paypal_payout_id?: string | null
           processed_at?: string | null
+          razorpay_fund_account_id?: string | null
+          razorpay_payout_id?: string | null
           status?: string
           updated_at?: string | null
           user_id: string
@@ -4498,24 +5629,21 @@ export type Database = {
           created_at?: string | null
           failure_reason?: string | null
           fee?: number
+          freeze_note?: string | null
           id?: string
           method?: string
           net_amount?: number
+          payout_mode?: string | null
           paypal_email?: string | null
           paypal_payout_id?: string | null
           processed_at?: string | null
+          razorpay_fund_account_id?: string | null
+          razorpay_payout_id?: string | null
           status?: string
           updated_at?: string | null
           user_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "withdrawals_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "withdrawals_user_id_fkey"
             columns: ["user_id"]
@@ -4551,13 +5679,6 @@ export type Database = {
           workspace_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "workspace_activity_logs_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "workspace_activity_logs_actor_id_fkey"
             columns: ["actor_id"]
@@ -4604,13 +5725,6 @@ export type Database = {
             foreignKeyName: "workspace_members_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspace_members_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4651,13 +5765,6 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: true
             referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspace_notes_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -4709,13 +5816,6 @@ export type Database = {
             foreignKeyName: "workspace_tasks_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspace_tasks_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4757,13 +5857,6 @@ export type Database = {
             foreignKeyName: "workspaces_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspaces_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4772,13 +5865,6 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: true
             referencedRelation: "contracts"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "workspaces_lead_freelancer_id_fkey"
-            columns: ["lead_freelancer_id"]
-            isOneToOne: false
-            referencedRelation: "active_users"
             referencedColumns: ["id"]
           },
           {
@@ -4799,81 +5885,6 @@ export type Database = {
       }
     }
     Views: {
-      active_users: {
-        Row: {
-          avatar: string | null
-          banned_at: string | null
-          created_at: string | null
-          deleted_at: string | null
-          email: string | null
-          id: string | null
-          is_pro: boolean | null
-          name: string | null
-          onboarding_completed: boolean | null
-          rating: number | null
-          referral_code: string | null
-          role: string | null
-          suspend_reason: string | null
-          suspended_at: string | null
-          suspended_by: string | null
-          total_reviews: number | null
-          updated_at: string | null
-        }
-        Insert: {
-          avatar?: string | null
-          banned_at?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          email?: string | null
-          id?: string | null
-          is_pro?: boolean | null
-          name?: string | null
-          onboarding_completed?: boolean | null
-          rating?: number | null
-          referral_code?: string | null
-          role?: string | null
-          suspend_reason?: string | null
-          suspended_at?: string | null
-          suspended_by?: string | null
-          total_reviews?: number | null
-          updated_at?: string | null
-        }
-        Update: {
-          avatar?: string | null
-          banned_at?: string | null
-          created_at?: string | null
-          deleted_at?: string | null
-          email?: string | null
-          id?: string | null
-          is_pro?: boolean | null
-          name?: string | null
-          onboarding_completed?: boolean | null
-          rating?: number | null
-          referral_code?: string | null
-          role?: string | null
-          suspend_reason?: string | null
-          suspended_at?: string | null
-          suspended_by?: string | null
-          total_reviews?: number | null
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_suspended_by_fkey"
-            columns: ["suspended_by"]
-            isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "profiles_suspended_by_fkey"
-            columns: ["suspended_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       internship_certificates_view: {
         Row: {
           certificate_type: string | null
@@ -4943,13 +5954,6 @@ export type Database = {
             foreignKeyName: "skill_certifications_issued_by_fkey"
             columns: ["issued_by"]
             isOneToOne: false
-            referencedRelation: "active_users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "skill_certifications_issued_by_fkey"
-            columns: ["issued_by"]
-            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -4957,9 +5961,88 @@ export type Database = {
       }
     }
     Functions: {
+      _book_escrow_release:
+        | { Args: { p_contract_id: string }; Returns: string }
+        | {
+            Args: { p_amount?: number; p_contract_id: string }
+            Returns: string
+          }
+      _mark_revenue_refunded: {
+        Args: { p_contract_id: string }
+        Returns: undefined
+      }
+      _refund_audit: {
+        Args: {
+          p_action: string
+          p_amount: number
+          p_currency: string
+          p_entity_id: string
+          p_entity_type: string
+          p_metadata?: Json
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      _refund_history_event: {
+        Args: {
+          p_actor_id: string
+          p_actor_role: string
+          p_event: string
+          p_metadata?: Json
+          p_note: string
+          p_refund_request_id: string
+        }
+        Returns: undefined
+      }
+      _refund_notify: {
+        Args: {
+          p_action_url: string
+          p_message: string
+          p_metadata?: Json
+          p_title: string
+          p_type: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      _refundable_amount: { Args: { p_contract_id: string }; Returns: number }
+      accept_invite_create_contract: {
+        Args: { p_invite_id: string }
+        Returns: string
+      }
+      admin_add_internal_note: {
+        Args: { p_dispute_id: string; p_note: string }
+        Returns: boolean
+      }
+      admin_assign_dispute: {
+        Args: { p_admin_id: string; p_dispute_id: string }
+        Returns: boolean
+      }
+      admin_decide_dispute: {
+        Args: {
+          p_client_amount?: number
+          p_decision: string
+          p_dispute_id: string
+          p_note?: string
+        }
+        Returns: Json
+      }
+      admin_fund_contest_prize: {
+        Args: { p_contest_id: string }
+        Returns: boolean
+      }
+      admin_fund_escrow: { Args: { p_contract_id: string }; Returns: boolean }
+      admin_reverse_escrow: {
+        Args: { p_contract_id: string }
+        Returns: boolean
+      }
       admin_signup: {
         Args: { p_secret_code: string; p_user_id: string }
         Returns: Json
+      }
+      appeal_dispute: {
+        Args: { p_dispute_id: string; p_reason: string }
+        Returns: boolean
       }
       archive_all_read_notifications: {
         Args: { p_user_id: string }
@@ -4967,6 +6050,31 @@ export type Database = {
       }
       archive_notification: {
         Args: { p_notification_id: string; p_user_id: string }
+        Returns: Json
+      }
+      attach_dispute_evidence: {
+        Args: {
+          p_dispute_id: string
+          p_file_name: string
+          p_file_size?: number
+          p_file_url: string
+          p_mime_type?: string
+        }
+        Returns: boolean
+      }
+      auto_release_contract: { Args: { p_contract_id: string }; Returns: Json }
+      auto_release_milestone: {
+        Args: { p_contract_id: string; p_milestone_index: number }
+        Returns: Json
+      }
+      auto_verify_kyc: { Args: never; Returns: number }
+      award_contest_prizes: {
+        Args: {
+          p_contest_id: string
+          p_first_submission_id: string
+          p_second_submission_id?: string
+          p_third_submission_id?: string
+        }
         Returns: Json
       }
       calculate_advanced_match_score: {
@@ -4981,39 +6089,86 @@ export type Database = {
         Args: { p_freelancer_id: string }
         Returns: number
       }
+      can_view_project: { Args: { p_project_id: string }; Returns: boolean }
       cancel_account_deletion: { Args: { p_user_id: string }; Returns: Json }
       cancel_withdrawal: {
         Args: { p_user_id: string; p_withdrawal_id: string }
         Returns: Json
       }
       check_deletion_status: { Args: { p_user_id: string }; Returns: Json }
+      check_security_drift: { Args: never; Returns: number }
       cleanup_expired_rate_limits: { Args: never; Returns: undefined }
       cleanup_expired_typing_indicators: { Args: never; Returns: undefined }
       cleanup_orphaned_data: { Args: never; Returns: number }
       cleanup_user_data: { Args: { p_user_id: string }; Returns: undefined }
+      cleanup_verification_rate_limits: { Args: never; Returns: undefined }
       close_expired_contests: { Args: never; Returns: undefined }
       complete_referral: { Args: { p_referee_user_id: string }; Returns: Json }
-      create_contract_with_escrow:
-        | {
-            Args: {
-              p_amount: number
-              p_client_id: string
-              p_freelancer_id: string
-              p_project_id: string
-              p_proposal_id: string
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_amount: number
-              p_client_id: string
-              p_freelancer_id: string
-              p_project_id: string
-              p_proposal_id: string
-            }
-            Returns: string
-          }
+      create_admin_withdrawal: {
+        Args: {
+          p_account_holder_name?: string
+          p_account_number?: string
+          p_amount: number
+          p_bank_name?: string
+          p_ifsc_code?: string
+          p_method?: string
+          p_upi_id?: string
+        }
+        Returns: {
+          account_holder_name: string | null
+          account_number: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          failure_reason: string | null
+          fee: number
+          id: string
+          ifsc_code: string | null
+          method: string
+          net_amount: number
+          processed_at: string | null
+          razorpay_fund_account_id: string | null
+          razorpay_payout_id: string | null
+          status: string
+          updated_at: string
+          upi_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admin_withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      create_contract_with_escrow: {
+        Args: {
+          p_amount: number
+          p_client_id: string
+          p_freelancer_id: string
+          p_project_id: string
+          p_proposal_id: string
+        }
+        Returns: string
+      }
+      create_service_purchase_contract: {
+        Args: {
+          p_addon_ids?: string[]
+          p_client_id: string
+          p_service_id: string
+          p_tier: string
+        }
+        Returns: Json
+      }
+      create_team_role_contract: {
+        Args: {
+          p_amount: number
+          p_client_id: string
+          p_freelancer_id: string
+          p_team_project_id: string
+          p_team_project_role_id: string
+        }
+        Returns: string
+      }
       create_user_profile: {
         Args: {
           p_email: string
@@ -5030,39 +6185,114 @@ export type Database = {
       }
       delete_user_all_data: { Args: { p_user_id: string }; Returns: Json }
       disable_user_mfa: { Args: { p_user_id: string }; Returns: Json }
+      email_account_exists: { Args: { p_email: string }; Returns: boolean }
       enable_user_mfa: {
         Args: { p_totp_secret: string; p_user_id: string }
+        Returns: Json
+      }
+      finalize_admin_withdrawal: {
+        Args: {
+          p_failure_reason?: string
+          p_razorpay_payout_id?: string
+          p_status: string
+          p_withdrawal_id: string
+        }
+        Returns: {
+          account_holder_name: string | null
+          account_number: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          failure_reason: string | null
+          fee: number
+          id: string
+          ifsc_code: string | null
+          method: string
+          net_amount: number
+          processed_at: string | null
+          razorpay_fund_account_id: string | null
+          razorpay_payout_id: string | null
+          status: string
+          updated_at: string
+          upi_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "admin_withdrawals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      freelancer_decline_contract: {
+        Args: { p_contract_id: string }
+        Returns: Json
+      }
+      freeze_contract: {
+        Args: { p_contract_id: string; p_reason: string }
+        Returns: boolean
+      }
+      fund_contest_prize_from_wallet: {
+        Args: { p_contest_id: string }
         Returns: Json
       }
       fund_escrow: {
         Args: { p_client_id: string; p_contract_id: string }
         Returns: boolean
       }
+      fund_escrow_from_wallet: {
+        Args: { p_contract_id: string; p_milestone_indices?: number[] }
+        Returns: Json
+      }
       generate_certificate_code: { Args: never; Returns: string }
+      generate_credential_token: {
+        Args: { p_admin_id?: string; p_credential_id: string }
+        Returns: {
+          token: string
+          token_id: string
+          token_version: number
+        }[]
+      }
       generate_project_matches: {
         Args: { p_project_id: string }
-        Returns: {
-          created_at: string
-          freelancer_id: string
-          id: string
-          match_score: number
-          project_id: string
-          skill_match_count: number
-          status: string
-        }[]
+        Returns: number
       }
       generate_recovery_codes: {
         Args: { p_user_id: string }
         Returns: string[]
       }
       get_active_freelancers_by_category: { Args: never; Returns: Json }
+      get_admin_commission_balance: { Args: never; Returns: Json }
       get_category_counts: { Args: never; Returns: Json }
       get_category_counts_v2: { Args: never; Returns: Json }
       get_category_hierarchy: { Args: never; Returns: Json }
+      get_finance_stats: { Args: never; Returns: Json }
       get_mfa_status: { Args: { p_user_id: string }; Returns: Json }
       get_monthly_ai_usage: {
         Args: { p_feature_type?: string; p_user_id: string }
         Returns: number
+      }
+      get_my_private_profile: {
+        Args: never
+        Returns: {
+          banned_at: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_admin: boolean | null
+          onboarding_completed: boolean | null
+          phone: string | null
+          referral_code: string | null
+          suspend_reason: string | null
+          suspended_at: string | null
+          suspended_by: string | null
+          updated_at: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "profiles_private"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_notification_preferences: {
         Args: { p_user_id: string }
@@ -5080,6 +6310,7 @@ export type Database = {
         Returns: Json
       }
       get_payout_methods: { Args: { p_user_id: string }; Returns: Json }
+      get_profile_views: { Args: { p_user_id: string }; Returns: number }
       get_project_matches_advanced: {
         Args: { p_project_id: string }
         Returns: {
@@ -5118,6 +6349,48 @@ export type Database = {
           total_reviews: number
         }[]
       }
+      get_service_views: { Args: { p_service_id: string }; Returns: number }
+      get_team_role_contract: {
+        Args: { p_client_id: string; p_role_id: string }
+        Returns: {
+          amount: number
+          auto_release_hours: number | null
+          cancellation_requested_by: string | null
+          cancellation_status: string | null
+          client_id: string
+          created_at: string | null
+          currency: string
+          delivered_at: string | null
+          end_date: string | null
+          escrow_funded: boolean
+          freelancer_amount: number
+          freelancer_id: string
+          freelancer_started_at: string | null
+          freeze_reason: string | null
+          frozen_at: string | null
+          hourly_rate: number | null
+          id: string
+          milestones: Json | null
+          platform_fee: number
+          project_id: string
+          proposal_id: string | null
+          rate_type: string | null
+          shared_notes: string | null
+          shared_tasks: Json | null
+          start_date: string | null
+          status: string | null
+          team_project_id: string | null
+          team_project_role_id: string | null
+          updated_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "contracts"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      get_user_email: { Args: { target_user_id: string }; Returns: string }
       get_user_push_tokens: { Args: { p_user_id: string }; Returns: Json }
       get_user_subscription:
         | {
@@ -5147,22 +6420,80 @@ export type Database = {
             }[]
           }
       get_wallet_balance: { Args: { p_user_id: string }; Returns: Json }
+      grant_admin_role: { Args: { p_user_id: string }; Returns: Json }
       hold_wallet_funds: {
         Args: { p_amount: number; p_user_id: string }
         Returns: Json
       }
+      increment_service_orders: {
+        Args: { p_service_id: string }
+        Returns: undefined
+      }
+      insert_credential_audit_log: {
+        Args: {
+          p_action: string
+          p_admin_email?: string
+          p_admin_id?: string
+          p_credential_id: string
+          p_details?: Json
+          p_ip_address?: string
+          p_new_values?: Json
+          p_old_values?: Json
+        }
+        Returns: string
+      }
+      insert_credential_version: {
+        Args: {
+          p_action: string
+          p_changes?: Json
+          p_credential_id: string
+          p_new_qr_token?: string
+          p_notes?: string
+          p_old_qr_token?: string
+          p_performed_by?: string
+        }
+        Returns: string
+      }
+      insert_payment_audit_log: {
+        Args: {
+          p_action: string
+          p_amount?: number
+          p_currency?: string
+          p_entity_id?: string
+          p_entity_type?: string
+          p_ip_address?: string
+          p_metadata?: Json
+          p_provider?: string
+          p_user_id?: string
+        }
+        Returns: string
+      }
       is_admin: { Args: never; Returns: boolean }
-      is_user_admin: { Args: { p_user_id: string }; Returns: boolean }
+      is_admin_user: { Args: { p_user_id: string }; Returns: boolean }
+      is_disposable_email_domain: {
+        Args: { p_domain: string }
+        Returns: boolean
+      }
+      is_email_confirmed: { Args: { p_email: string }; Returns: boolean }
+      is_user_admin:
+        | { Args: never; Returns: boolean }
+        | { Args: { p_user_id: string }; Returns: boolean }
       is_user_suspended: { Args: { p_user_id: string }; Returns: boolean }
       join_waitlist: {
         Args: {
           p_country: string
           p_email: string
+          p_name?: string
           p_signup_source?: string
           p_user_id?: string
         }
         Returns: Json
       }
+      kyc_validate_document_number: {
+        Args: { p_number: string; p_type: string }
+        Returns: boolean
+      }
+      kyc_verify_row: { Args: { p_id: string }; Returns: undefined }
       log_ai_usage: {
         Args: {
           p_feature_type: string
@@ -5172,14 +6503,42 @@ export type Database = {
         }
         Returns: undefined
       }
+      mark_contract_delivered: {
+        Args: { p_contract_id: string }
+        Returns: Json
+      }
+      mark_freelancer_started: {
+        Args: { p_contract_id: string }
+        Returns: boolean
+      }
       mark_messages_as_read: {
         Args: { p_contract_id: string; p_user_id: string }
         Returns: undefined
+      }
+      mark_milestone_status: {
+        Args: {
+          p_contract_id: string
+          p_milestone_index: number
+          p_status: string
+        }
+        Returns: Json
+      }
+      mark_revision_paid: {
+        Args: { p_razorpay_order_id?: string; p_request_id: string }
+        Returns: Json
+      }
+      pay_subscription_with_wallet: {
+        Args: { p_subscription_id: string }
+        Returns: Json
       }
       process_account_deletion: {
         Args: { p_request_id: string }
         Returns: Json
       }
+      process_due_deletions: { Args: never; Returns: number }
+      process_milestone_auto_release: { Args: never; Returns: number }
+      process_no_response_disputes: { Args: never; Returns: number }
+      process_pending_refunds: { Args: never; Returns: number }
       process_referral: {
         Args: {
           p_new_user_email?: string
@@ -5188,14 +6547,26 @@ export type Database = {
         }
         Returns: Json
       }
+      process_stale_withdrawals: { Args: never; Returns: number }
       process_withdrawal_complete: {
         Args: { p_withdrawal_id: string }
         Returns: Json
       }
+      purge_orphan_user_data: { Args: never; Returns: Json }
       raise_contract_dispute: {
-        Args: { p_contract_id: string; p_description: string; p_reason: string }
+        Args: {
+          p_contract_id: string
+          p_description?: string
+          p_reason: string
+        }
+        Returns: Json
+      }
+      recompute_seller_level: {
+        Args: { p_freelancer_id: string }
         Returns: string
       }
+      record_profile_view: { Args: { p_user_id: string }; Returns: number }
+      record_service_view: { Args: { p_service_id: string }; Returns: number }
       register_push_token: {
         Args: {
           p_device_name?: string
@@ -5217,22 +6588,48 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: Json
       }
-      admin_decide_dispute: {
-        Args: { p_dispute_id: string; p_decision: string; p_client_amount?: number; p_note?: string }
+      request_account_deletion: {
+        Args: { p_reason?: string; p_user_id: string }
         Returns: Json
       }
-      mark_milestone_status: {
-        Args: { p_contract_id: string; p_milestone_index: number; p_status: string }
+      request_contract_refund: {
+        Args: {
+          p_contract_id: string
+          p_description?: string
+          p_milestone_index?: number
+          p_reason: string
+        }
+        Returns: Json
+      }
+      request_extra_revision: {
+        Args: {
+          p_contract_id: string
+          p_reason: string
+          p_revision_count: number
+        }
         Returns: Json
       }
       resolve_contract_dispute: {
         Args: { p_dispute_id: string; p_resolution: string }
         Returns: Json
       }
+      respond_cancellation_request: {
+        Args: { p_accept: boolean; p_refund_request_id: string }
+        Returns: Json
+      }
+      respond_extra_revision: {
+        Args: {
+          p_accept: boolean
+          p_per_revision_price?: number
+          p_request_id: string
+        }
+        Returns: Json
+      }
       restore_notification: {
         Args: { p_notification_id: string; p_user_id: string }
         Returns: Json
       }
+      run_weekly_cleanup: { Args: never; Returns: Json }
       search_freelancers_by_category: {
         Args: {
           p_category_slug: string
@@ -5245,6 +6642,14 @@ export type Database = {
         }
         Returns: Json
       }
+      send_dispute_message: {
+        Args: { p_dispute_id: string; p_message: string }
+        Returns: boolean
+      }
+      set_auto_release_hours: {
+        Args: { p_contract_id: string; p_hours: number }
+        Returns: Json
+      }
       set_default_payout_method: {
         Args: { p_method_id: string; p_user_id: string }
         Returns: Json
@@ -5253,7 +6658,9 @@ export type Database = {
         Args: { p_preferences: Json; p_user_id: string }
         Returns: Json
       }
+      sync_profile_pro_flag: { Args: { v_user_id: string }; Returns: undefined }
       test_simple_rpc: { Args: never; Returns: Json }
+      unfreeze_contract: { Args: { p_contract_id: string }; Returns: boolean }
       unregister_push_token: {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
@@ -5270,6 +6677,7 @@ export type Database = {
         Args: { p_amount: number; p_user_id: string }
         Returns: Json
       }
+      verify_credential_by_token: { Args: { p_token: string }; Returns: Json }
       verify_recovery_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json

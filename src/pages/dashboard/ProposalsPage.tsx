@@ -115,7 +115,7 @@ export function ProposalsPage() {
   const handleWithdraw = async (proposalId: string) => {
     setWithdrawingProposal(proposalId);
     try {
-      const { error } = await tables.proposals()
+      const { error } = await (tables.proposals() as any)
         .delete()
         .eq('id', proposalId);
 

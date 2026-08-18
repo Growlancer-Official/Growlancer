@@ -157,12 +157,17 @@ export function OnboardingPage() {
     if (!user?.id) return;
     setReferralStatus('checking');
     const t = setTimeout(async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, name')
+      const { data: privData, error } = await supabase
+        .from('profiles_private')
+        .select('id')
         .eq('referral_code', code)
         .neq('id', user.id)
         .maybeSingle();
+      let data = null;
+      if (privData) {
+        const { data: pub } = await supabase.from('profiles').select('id, name').eq('id', privData.id).maybeSingle();
+        data = pub ? { ...pub } : null;
+      }
       if (error) { setReferralStatus('invalid'); return; }
       if (data) {
         setReferralStatus('valid');
@@ -260,8 +265,8 @@ export function OnboardingPage() {
       }
 
       const { error: onboardingErr } = await supabase
-        .from('profiles')
-        .update({ onboarding_completed: true })
+        .from('profiles_private')
+        .update({ onboarding_completed: true, updated_at: new Date().toISOString() })
         .eq('id', user.id);
       if (onboardingErr) {
         toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingErr.message);
@@ -400,8 +405,8 @@ export function OnboardingPage() {
       }
 
       const { error: onboardingError } = await supabase
-        .from('profiles')
-        .update({ onboarding_completed: true })
+        .from('profiles_private')
+        .update({ onboarding_completed: true, updated_at: new Date().toISOString() })
         .eq('id', user.id);
 
       if (onboardingError) {
