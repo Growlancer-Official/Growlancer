@@ -9,7 +9,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
   return (
     <footer className="border-t border-slate-200 bg-white">
       {/* Main Footer Content */}
-      <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
+      <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 py-8 sm:py-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-4">
@@ -91,7 +91,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-10 pt-8 border-t border-slate-200">
+        <div className="mt-6 pt-6 border-t border-slate-200">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
             {/* Copyright */}
             <div className="text-sm text-slate-500 text-center lg:text-left">
