@@ -635,7 +635,7 @@ export function CertificateVerifyPage() {
               <Shield className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
+          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">
             Credential Verification Portal
           </h1>
           <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">

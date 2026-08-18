@@ -156,7 +156,7 @@ export function ClientTeamProjectDetailPage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
         <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
-        <h1 className="text-xl font-bold text-slate-900 mb-2">Could not load this team project</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Could not load this team project</h1>
         <p className="text-slate-500 mb-6">{error || 'Not found'}</p>
         <Link to="/client/team-projects" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold transition-all hover:bg-emerald-700">
           <ArrowLeft className="w-4 h-4" /> Back to Team Projects
