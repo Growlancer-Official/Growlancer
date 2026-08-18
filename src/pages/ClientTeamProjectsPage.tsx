@@ -46,10 +46,10 @@ export function ClientTeamProjectsPage() {
             <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
               <Users className="w-6 h-6" />
             </div>
-            <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">Team Projects</h1>
+            <h1 className="font-display text-2xl font-bold text-slate-900">Team Projects</h1>
           </div>
           <p className="text-slate-600 mt-1">
-            Bade projects ke liye poori team hire karo — har freelancer ka apna protected escrow.
+            Hire a whole team for bigger projects — each freelancer has their own protected escrow.
           </p>
         </div>
         <Link
@@ -61,7 +61,7 @@ export function ClientTeamProjectsPage() {
       </div>
 
       <TipNote tone="info" compact className="mb-6">
-        Har role ke liye ek <strong>independent contract</strong> banega (apna escrow / milestones / dispute). Ek member ka issue baaki team ko affect nahi karta. Commission (5%) har contract par lagta hai — koi alag team fee nahi.
+        Each role gets its own <strong>independent contract</strong> (own escrow / milestones / dispute). One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee.
       </TipNote>
 
       {error && (

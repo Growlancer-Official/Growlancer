@@ -100,7 +100,7 @@ export function ClientReviewsPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Reviews</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">Reviews</h1>
         <p className="text-slate-500 mt-1">Reviews from freelancers you've worked with</p>
       </div>
 

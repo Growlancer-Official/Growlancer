@@ -329,7 +329,7 @@ export function ContestDetailPage() {
                 </span>
               </div>
               
-              <h1 className="font-display text-3xl font-extrabold text-slate-900 mb-4">
+              <h1 className="font-display text-3xl font-bold text-slate-900 mb-4">
                 {contest.title}
               </h1>
               

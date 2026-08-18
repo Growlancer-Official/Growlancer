@@ -236,7 +236,7 @@ export function ClientFreelancerSearchPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Find Talent</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Find Talent</h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
           <TipNote tone="protection" compact className="mt-3 max-w-2xl">
             <strong>Verified</strong> and <strong>Pro</strong> badges show real, checked freelancers — contact them

@@ -163,14 +163,14 @@ export function ClientPostTeamProjectPage() {
         <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
           <Users className="w-6 h-6" />
         </div>
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">Post a Team Project</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900">Post a Team Project</h1>
       </div>
       <p className="text-slate-600 mb-6">
-        Bade projects ke liye poori team hire karo — Designer, Developer, Writer — sab ek jagah. Har freelancer ka <strong>apna protected escrow</strong> hota hai.
+        Hire a whole team for bigger projects — Designer, Developer, Writer — all in one place. Each freelancer has their <strong>own protected escrow</strong>.
       </p>
 
       <TipNote tone="info" className="mb-6">
-        <strong>How it works:</strong> har role ke liye ek <strong>independent contract</strong> banega — apna escrow, apne milestones, apna dispute. Ek member ka issue baaki team ko affect nahi karta. Commission (5%) har contract par lagta hai, koi alag "team fee" nahi.
+        <strong>How it works:</strong> each role gets an <strong>independent contract</strong> — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate "team fee".
       </TipNote>
 
       <form onSubmit={handleCreateProject} className="space-y-6">

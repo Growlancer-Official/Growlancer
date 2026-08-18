@@ -37,6 +37,7 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { KycBanner } from '../components/KycBanner';
+import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -611,6 +612,9 @@ export function ClientDashboardLayout() {
                 AI Active
               </span>
             </div>
+
+            {/* Verify Now — hidden on mobile, disappears in real time once verified */}
+            <VerifyNowHeaderButton />
 
             {/* Notifications */}
             <NotificationsPanel />

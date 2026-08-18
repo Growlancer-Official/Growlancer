@@ -39,6 +39,7 @@ import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { KycBanner } from '../components/KycBanner';
+import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 import { useProStatus } from '../hooks/useProStatus';
 import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
 
@@ -704,6 +705,9 @@ export function DashboardLayout() {
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
               <span className="text-xs font-bold text-emerald-700">AI Ready</span>
             </div>
+
+            {/* Verify Now — hidden on mobile, disappears in real time once verified */}
+            <VerifyNowHeaderButton />
 
             {/* Notifications */}
             <NotificationsPanel />
