@@ -99,9 +99,11 @@ export function ClientReviewsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">Reviews</h1>
-        <p className="text-slate-500 mt-1">Reviews from freelancers you've worked with</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Reviews</h1>
+          <p className="text-slate-500 mt-1">Reviews from freelancers you've worked with</p>
+        </div>
       </div>
 
       {/* Reviews guide — plain-language */}

@@ -38,7 +38,6 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
-import { KycBanner } from '../components/KycBanner';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 import { useProStatus } from '../hooks/useProStatus';
 import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
@@ -755,7 +754,6 @@ export function DashboardLayout() {
 
         {/* Page Content */}
         <div className="flex-1 p-4 sm:p-6 lg:p-8 max-w-[100rem] mx-auto w-full pb-24 sm:pb-16">
-          <KycBanner />
           <Suspense fallback={<DashboardFallback />}>
             <Outlet />
           </Suspense>

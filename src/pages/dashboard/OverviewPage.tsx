@@ -469,17 +469,19 @@ export function OverviewPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5 flex-wrap">
-          Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
-          {user?.verificationStatus === 'verified' && <VerifiedBadge size="sm" />}
-          {isFreelancer && isPro && <ProBadge size="md" />}
-        </h1>
-        <p className="text-slate-500 text-sm sm:text-base mt-1">
-          {isFreelancer
-            ? "Here's what's happening with your freelancing career."
-            : 'Manage your projects and freelancers all in one place.'}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5 flex-wrap">
+            Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
+            {user?.verificationStatus === 'verified' && <VerifiedBadge size="sm" />}
+            {isFreelancer && isPro && <ProBadge size="md" />}
+          </h1>
+          <p className="text-slate-500 text-sm sm:text-base mt-1">
+            {isFreelancer
+              ? "Here's what's happening with your freelancing career."
+              : 'Manage your projects and freelancers all in one place.'}
+          </p>
+        </div>
       </div>
 
       {/* Profile Completion Banner Removed */}

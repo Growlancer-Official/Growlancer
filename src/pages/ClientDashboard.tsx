@@ -173,11 +173,13 @@ export default function ClientDashboard() {
   return (
     <div className="p-6 lg:p-8 max-w-[100rem] mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
-          Welcome back, {user?.name || 'Client'}!
-        </h1>
-        <p className="text-slate-600 mt-2">Manage your projects and freelancers all in one place.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div>
+          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+            Welcome back, {user?.name || 'Client'}!
+          </h1>
+          <p className="text-slate-600 mt-2">Manage your projects and freelancers all in one place.</p>
+        </div>
       </div>
 
       {/* Stats Grid */}

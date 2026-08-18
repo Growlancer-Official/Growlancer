@@ -1064,9 +1064,11 @@ export function ClientSettingsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">Settings</h1>
-        <p className="text-slate-500 mt-1">Manage your account settings and preferences</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-slate-900">Settings</h1>
+          <p className="text-slate-500 mt-1">Manage your account settings and preferences</p>
+        </div>
       </div>
 
       {/* Email verification recommendation — industry-standard: nudge unverified

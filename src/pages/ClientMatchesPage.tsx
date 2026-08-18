@@ -180,11 +180,13 @@ export function ClientMatchesPage() {
   if (!loading && clientProjects.length === 0 && !projectId) {
     return (
       <div className="space-y-6">
-        <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">AI Talent Matches</h1>
-          <p className="text-slate-500 mt-1">
-            Get AI-powered freelancer recommendations based on your project requirements
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="font-display text-2xl font-bold text-slate-900">AI Talent Matches</h1>
+            <p className="text-slate-500 mt-1">
+              Get AI-powered freelancer recommendations based on your project requirements
+            </p>
+          </div>
         </div>
 
         <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm">
