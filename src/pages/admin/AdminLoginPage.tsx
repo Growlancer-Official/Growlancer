@@ -38,7 +38,7 @@ export function AdminLoginPage() {
             .maybeSingle();
           
           if (cancelled) return;
-          let isAdmin = privData?.is_admin === true || pubData?.role === 'admin';
+          const isAdmin = privData?.is_admin === true || pubData?.role === 'admin';
           
           if (isAdmin) {
             navigate('/admin', { replace: true });
@@ -96,7 +96,7 @@ export function AdminLoginPage() {
         .eq('id', data.user.id)
         .maybeSingle();
 
-      let isAdmin = privData?.is_admin === true || pubData?.role === 'admin';
+      const isAdmin = privData?.is_admin === true || pubData?.role === 'admin';
 
       if (!isAdmin) {
         // Not an admin — sign out and show error

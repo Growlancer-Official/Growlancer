@@ -248,7 +248,6 @@ export default function SupportTicketsPage() {
         <div className="space-y-3">
           {tickets.map((ticket) => {
             const status = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
-            const StatusIcon = status.icon;
             const isExpanded = expandedId === ticket.id;
 
             return (
