@@ -32,29 +32,13 @@ const ALLOWED_TABLES = [
 ];
 
 // Rate limiting for failed admin auth: max 10 failed attempts per IP per 15 minutes
+import { getCorsHeaders } from '../_shared/cors.ts';
+
 const MAX_FAILED_ATTEMPTS = 10
 const RATE_WINDOW_MS = 15 * 60 * 1000
 const ROUTE = 'admin-data-auth'
 
-// CORS whitelist — restricts which origins can call admin endpoints
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
-
 // ─── Helpers ────────────────────────────────────────────────────────
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-  }
-}
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
 function escapeHtml(str: string): string {

@@ -258,27 +258,6 @@ export const messagesService = {
   // -----------------------------------------------------------------------
 
   /**
-   * Subscribe to all new messages for a user (across all contracts).
-   */
-  subscribeToMessages(userId: string, callback: (message: Message) => void) {
-    const channel = realtimeChannels.messages(`${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        payload => callback(payload.new as Message)
-      )
-      .subscribe();
-
-    return {
-      unsubscribe: () => channel.unsubscribe(),
-    };
-  },
-
-  /**
    * Subscribe to INSERT/UPDATE on messages for a specific contract.
    * Useful for workspace chat panels.
    */

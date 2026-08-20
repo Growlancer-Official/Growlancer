@@ -691,6 +691,21 @@ export function ProjectFeedPage() {
     setSubmittingProposal(true);
 
     try {
+      // Daily proposal limit check (max_proposal_per_day: 20)
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const { count: todayCount } = await supabase
+        .from('proposals')
+        .select('id', { count: 'exact', head: true })
+        .eq('freelancer_id', user.id)
+        .gte('created_at', todayStart.toISOString());
+
+      if ((todayCount ?? 0) >= 20) {
+        toast.error('Daily Limit Reached', 'You\'ve submitted the maximum 20 proposals today. Try again tomorrow.');
+        setSubmittingProposal(false);
+        return;
+      }
+
       // Create proposal with bid-war free model
       const { error: proposalError } = await supabase
         .from('proposals')

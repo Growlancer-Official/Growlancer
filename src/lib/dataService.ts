@@ -501,8 +501,8 @@ export const contractsService = {
         .eq('freelancer_id', proposal.freelancer_id)
         .eq('status', 'pending');
 
-      // Update project status
-      await supabase.from('projects').update({ status: 'in_progress' }).eq('id', proposal.project_id);
+      // Update project status (must match RPC 'create_contract_with_escrow')
+      await supabase.from('projects').update({ status: 'active' }).eq('id', proposal.project_id);
 
       // Invalidate caches
       CacheManager.invalidate(`user_contracts:${clientId}`);
@@ -672,8 +672,8 @@ export const escrowService = {
         .update({ status: 'active', escrow_funded: true } as any)
         .eq('id', contractId);
 
-      // Update project status
-      await supabase.from('projects').update({ status: 'in_progress' }).eq('id', contract.project_id);
+      // Update project status (must match RPC 'create_contract_with_escrow')
+      await supabase.from('projects').update({ status: 'active' }).eq('id', contract.project_id);
 
       return true;
     } catch (err) {

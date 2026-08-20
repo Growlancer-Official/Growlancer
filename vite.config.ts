@@ -253,25 +253,10 @@ export default defineConfig({
             return 'vendor-supabase';
           }
           // UI utilities
-          if (id.includes('node_modules/lucide-react') || id.includes('node_modules/tailwind-merge') || id.includes('node_modules/clsx') || id.includes('node_modules/zustand')) {
+          if (id.includes('node_modules/lucide-react')) {
             return 'vendor-ui';
           }
-          // Sentry
-          if (id.includes('node_modules/@sentry/')) {
-            return 'vendor-sentry';
-          }
-          // Rich text / editors
-          if (id.includes('node_modules/@tiptap/') || id.includes('node_modules/prosemirror-')) {
-            return 'vendor-editor';
-          }
-          // Date utilities
-          if (id.includes('node_modules/date-fns') || id.includes('node_modules/dayjs') || id.includes('node_modules/luxon')) {
-            return 'vendor-dates';
-          }
-          // Animation libraries
-          if (id.includes('node_modules/framer-motion') || id.includes('node_modules/gsap') || id.includes('node_modules/aos')) {
-            return 'vendor-animations';
-          }
+
         },
       },
     },

@@ -143,7 +143,7 @@ export function AdminProjectsPage() {
   const stats = {
     total: projects.length,
     open: projects.filter(p => p.status === 'open').length,
-    inProgress: projects.filter(p => p.status === 'in_progress').length,
+    inProgress: projects.filter(p => p.status === 'in_progress' || p.status === 'active').length,
     completed: projects.filter(p => p.status === 'completed').length,
     cancelled: projects.filter(p => p.status === 'cancelled').length,
     totalBudget: projects.reduce((sum, p) => sum + (p.budget_max || 0), 0),
@@ -260,7 +260,7 @@ export function AdminProjectsPage() {
                             {actionLoading === `${project.id}-cancelled` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
                           </button>
                         )}
-                        {project.status === 'in_progress' && (
+                        {(project.status === 'in_progress' || project.status === 'active') && (
                           <button onClick={() => handleUpdateStatus(project.id, 'completed', project.title)}
                             disabled={actionLoading === `${project.id}-completed`}
                             className="p-1.5 hover:bg-emerald-500/10 rounded-lg text-emerald-400 transition-colors" title="Mark Completed">

@@ -316,7 +316,11 @@ export const notificationService = {
    * Subscribe to real-time notification changes for a user
    * Handles INSERT, UPDATE, and DELETE events
    */
-  subscribe(userId: string, callback: (notification: NotificationWithMeta) => void) {
+  subscribe(
+    userId: string,
+    callback: (notification: NotificationWithMeta) => void,
+    onDelete?: (notificationId: string) => void,
+  ) {
     const channel = realtimeChannels.notifications(`${userId}`)
       .on(
         'postgres_changes',
@@ -328,6 +332,14 @@ export const notificationService = {
         },
         (payload) => {
           try {
+            if (payload.eventType === 'DELETE') {
+              const oldId = (payload.old as Record<string, unknown>)?.id as string | undefined;
+              if (oldId && onDelete) {
+                onDelete(oldId);
+              }
+              return;
+            }
+
             if (!payload || !payload.new) return;
 
             if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {

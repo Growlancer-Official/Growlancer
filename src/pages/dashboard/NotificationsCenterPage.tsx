@@ -91,21 +91,27 @@ export function NotificationsCenterPage() {
 
     let channel: { unsubscribe?: () => void } | null = null;
     try {
-      channel = notificationService.subscribe(user.id, (notification) => {
-        if (!notification.id) return;
-        if (activeTab !== 'archived') {
-          setNotifications(prev => {
-            const existing = prev.find(n => n.id === notification.id);
-            if (existing) {
-              return prev.map(n => (n.id === notification.id ? notification : n));
+      channel = notificationService.subscribe(
+        user.id,
+        (notification) => {
+          if (!notification.id) return;
+          if (activeTab !== 'archived') {
+            setNotifications(prev => {
+              const existing = prev.find(n => n.id === notification.id);
+              if (existing) {
+                return prev.map(n => (n.id === notification.id ? notification : n));
+              }
+              return [notification, ...prev];
+            });
+            if (!notification.read) {
+              setUnreadCount(prev => prev + 1);
             }
-            return [notification, ...prev];
-          });
-          if (!notification.read) {
-            setUnreadCount(prev => prev + 1);
           }
-        }
-      });
+        },
+        (deletedId) => {
+          setNotifications(prev => prev.filter(n => n.id !== deletedId));
+        },
+      );
     } catch (error) {
       console.error('Error subscribing to notifications:', error);
     }

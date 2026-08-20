@@ -91,5 +91,6 @@ export function calculateTotalWithFee(amount: number): number {
 }
 
 export function calculateFreelancerAmount(amount: number): number {
-  return amount - calculatePlatformFee(amount);
+  // Per Terms of Service: client pays 5% on top, freelancer gets full bid amount
+  return amount;
 }

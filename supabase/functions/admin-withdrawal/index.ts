@@ -12,28 +12,12 @@
 // (min ₹100 · max ₹5,00,000 — SBM Small Finance Bank).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const RAZORPAY_KEY_ID = Deno.env.get('RAZORPAY_KEY_ID') || '';
 const RAZORPAY_KEY_SECRET = Deno.env.get('RAZORPAY_KEY_SECRET') || '';
 const RAZORPAY_ACCOUNT_NUMBER = Deno.env.get('RAZORPAY_ACCOUNT_NUMBER') || '';
 const RAZORPAY_API_URL = 'https://api.razorpay.com/v1';
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-  }
-}
 
 const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_URL') ?? '',

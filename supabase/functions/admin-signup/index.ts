@@ -8,23 +8,7 @@
 //    Never commit the real secret to any file in this repo.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-}
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 // ─── Rate Limiting ──────────────────────────────────────────────
 // Prevent brute-force of the admin signup secret code.
@@ -133,17 +117,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Constant-time comparison to prevent timing attacks
-    if (secretCode.length !== expectedSecret.length) {
-      return new Response(JSON.stringify({ success: false, error: 'Invalid admin secret code' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    let codeValid = true;
-    for (let i = 0; i < secretCode.length; i++) {
-      if (secretCode[i] !== expectedSecret[i]) {
+    // Constant-time comparison to prevent timing attacks.
+    // Always iterate the full length to avoid leaking the expected secret's length.
+    const maxLen = Math.max(secretCode.length, expectedSecret.length);
+    let codeValid = secretCode.length === expectedSecret.length;
+    for (let i = 0; i < maxLen; i++) {
+      if (secretCode.charCodeAt(i % secretCode.length) !== expectedSecret.charCodeAt(i % expectedSecret.length)) {
         codeValid = false;
       }
     }
