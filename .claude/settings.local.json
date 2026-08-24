@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs wc -l)",
+      "Bash(grep -v '^\\\\s*$')",
+      "Bash(npx supabase *)"
+    ]
+  }
+}
