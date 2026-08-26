@@ -49,8 +49,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem('growlancer-locale');
       if (saved === 'en' || saved === 'hi') return saved;
-      // eslint-disable-next-line no-empty
-    } catch {}
+    } catch (e) {
+      // localStorage unavailable (private browsing) — fall through to default locale
+      console.warn('[i18n] Could not read saved locale:', e);
+    }
     return I18N_CONFIG.defaultLocale;
   });
   const [messages, setMessages] = useState<TranslationMessages>(messageBundles[locale]);
@@ -87,8 +89,10 @@ export function I18nProvider({ children }: { children: React.ReactNode }) {
     setLocaleState(newLocale);
     try {
       localStorage.setItem('growlancer-locale', newLocale);
-      // eslint-disable-next-line no-empty
-    } catch {}
+    } catch (e) {
+      // localStorage write failed — locale still works for this session
+      console.warn('[i18n] Could not persist locale:', e);
+    }
     // Update <html lang> attribute
     document.documentElement.lang = newLocale;
   }, []);

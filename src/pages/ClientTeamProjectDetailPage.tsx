@@ -6,6 +6,7 @@ import { formatCurrency } from '../lib/currency';
 import { teamProjectsService, type TeamProject, type TeamRole, TEAM_COMMISSION_RATE } from '../lib/teamProjects';
 import { AlertCircle, ArrowLeft, CheckCircle2, Plus, RefreshCw, UserCheck, Users } from 'lucide-react';
 import { useToast } from '../components/Toast';
+import { ConfirmModal } from '../components/ConfirmModal';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { TipNote } from '../components/TipNote';
 
@@ -102,27 +103,16 @@ export function ClientTeamProjectDetailPage() {
     void load();
   };
 
-  const hireRole = async (role: TeamRole) => {
-    if (!role.matched_freelancer_id) {
-      toast.error('Select a freelancer first', 'Pick a suggested freelancer to match before hiring.');
-      return;
-    }
-    const amount = role.budget_range_max ?? role.budget_range_min;
-    if (!amount || amount <= 0) {
-      toast.error('Budget required', `Set a budget for "${role.role_title}" before creating the contract.`);
-      return;
-    }
+  const [hireConfirmOpen, setHireConfirmOpen] = useState(false);
+  const [hireRoleData, setHireRoleData] = useState<{ role: TeamRole; amount: number } | null>(null);
+
+  /** Execute the hire after confirmation. */
+  const doHireRole = async (role: TeamRole, amount: number) => {
     if (!project || !user) return;
-
-    const confirmOk = window.confirm(
-      `Create the contract for "${role.role_title}" at ${formatCurrency(amount)} + ${formatCurrency(Math.round(amount * TEAM_COMMISSION_RATE * 100) / 100)} (5% commission)?`
-    );
-    if (!confirmOk) return;
-
     const res = await teamProjectsService.createRoleContract({
       teamProjectId: project.id,
       roleId: role.id,
-      freelancerId: role.matched_freelancer_id,
+      freelancerId: role.matched_freelancer_id!,
       amount,
       clientId: user.id,
     });
@@ -137,6 +127,22 @@ export function ClientTeamProjectDetailPage() {
     }
     toast.success('Contract created', 'Escrow-protected contract created. Fund it from the workspace to start.');
     void load();
+  };
+
+  const hireRole = async (role: TeamRole) => {
+    if (!role.matched_freelancer_id) {
+      toast.error('Select a freelancer first', 'Pick a suggested freelancer to match before hiring.');
+      return;
+    }
+    const amount = role.budget_range_max ?? role.budget_range_min;
+    if (!amount || amount <= 0) {
+      toast.error('Budget required', `Set a budget for "${role.role_title}" before creating the contract.`);
+      return;
+    }
+    if (!project || !user) return;
+
+    setHireRoleData({ role, amount });
+    setHireConfirmOpen(true);
   };
 
   // Transparency breakdown — per-role row + project total
@@ -179,7 +185,7 @@ export function ClientTeamProjectDetailPage() {
             </div>
             <h1 className="font-display text-2xl font-bold text-slate-900">{project.title}</h1>
           </div>
-          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${project.status === 'open' ? 'bg-emerald-100 text-emerald-700' : (project.status === 'in_progress' || project.status === 'active') ? 'bg-violet-100 text-violet-700' : project.status === 'completed' ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-500'}`}>
+          <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${project.status === 'open' ? 'bg-emerald-100 text-emerald-700' : project.status === 'in_progress' ? 'bg-violet-100 text-violet-700' : project.status === 'completed' ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-500'}`}>
             {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
           </span>
         </div>
@@ -337,6 +343,22 @@ export function ClientTeamProjectDetailPage() {
           Ek role ka contract dispute/cancel ho jaaye to baaki roles ke contracts par koi effect nahi — sab independent escrow ke saath protected hain.
         </TipNote>
       </div>
+
+      <ConfirmModal
+        isOpen={hireConfirmOpen}
+        onClose={() => { setHireConfirmOpen(false); setHireRoleData(null); }}
+        onConfirm={async () => {
+          if (hireRoleData) {
+            await doHireRole(hireRoleData.role, hireRoleData.amount);
+          }
+          setHireConfirmOpen(false);
+          setHireRoleData(null);
+        }}
+        title="Create Contract"
+        message={hireRoleData ? `Create the contract for "${hireRoleData.role.role_title}" at ${formatCurrency(hireRoleData.amount)} + ${formatCurrency(Math.round(hireRoleData.amount * TEAM_COMMISSION_RATE * 100) / 100)} (5% commission)?` : ''}
+        confirmLabel="Create contract"
+        variant="info"
+      />
     </div>
   );
 }

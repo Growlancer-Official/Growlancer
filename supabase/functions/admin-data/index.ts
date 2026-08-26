@@ -318,7 +318,10 @@ Deno.serve(async (req) => {
               .eq('id', appId)
               .maybeSingle();
             if (appData) internProfile = appData as Record<string, unknown>;
-          } catch {}
+          } catch (e) {
+            // Non-critical: intern profile lookup failure doesn't block verification
+            console.error('[admin-data] Failed to fetch intern profile:', e);
+          }
         }
 
         return new Response(JSON.stringify({

@@ -328,8 +328,7 @@ export function ProjectFeedPage() {
     }
     // Clear ?apply so a manual refresh doesn't re-open the modal.
     setSearchParams({}, { replace: true });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [applyProjectId, loading, matches]);
+  }, [applyProjectId, loading, matches, user, setSearchParams]);
 
   // Declined projects are stored PER USER (shared-device safe): user A's
   // declines must never hide projects from user B. A legacy global key is

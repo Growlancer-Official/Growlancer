@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { adminQuery, adminPurgeOrphans } from '../../lib/adminDataProxy';
 import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { safeFormatDate } from '../../utils/date';
 
 interface DeletionFailure {
@@ -32,6 +33,7 @@ export function AdminDataIsolationPage() {
   const [loading, setLoading] = useState(true);
   const [purgeRunning, setPurgeRunning] = useState(false);
   const [lastPurge, setLastPurge] = useState<PurgeResult | null>(null);
+  const [purgeConfirmOpen, setPurgeConfirmOpen] = useState(false);
 
   const fetchFailures = useCallback(async () => {
     setLoading(true);
@@ -54,12 +56,12 @@ export function AdminDataIsolationPage() {
     void fetchFailures();
   }, [fetchFailures]);
 
-  const handlePurge = async () => {
+  const handlePurge = () => {
     if (purgeRunning) return;
-    const ok = window.confirm(
-      'This permanently deletes ALL remaining data of orphaned profiles (users whose auth account no longer exists). This cannot be undone. Continue?'
-    );
-    if (!ok) return;
+    setPurgeConfirmOpen(true);
+  };
+
+  const doPurge = async () => {
     setPurgeRunning(true);
     try {
       const res = await adminPurgeOrphans();
@@ -107,7 +109,7 @@ export function AdminDataIsolationPage() {
             Refresh
           </button>
           <button
-            onClick={() => void handlePurge()}
+            onClick={handlePurge}
             disabled={purgeRunning}
             className="px-4 py-2.5 bg-rose-600 text-white font-medium rounded-xl hover:bg-rose-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
@@ -206,6 +208,19 @@ export function AdminDataIsolationPage() {
           </div>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={purgeConfirmOpen}
+        onClose={() => setPurgeConfirmOpen(false)}
+        onConfirm={async () => {
+          setPurgeConfirmOpen(false);
+          await doPurge();
+        }}
+        title="Purge Orphaned Data"
+        message="This permanently deletes ALL remaining data of orphaned profiles (users whose auth account no longer exists). This cannot be undone. Continue?"
+        confirmLabel="Yes, purge"
+        variant="danger"
+      />
     </div>
   );
 }

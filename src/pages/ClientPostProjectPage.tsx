@@ -80,8 +80,7 @@ export function ClientPostProjectPage() {
       }
     };
     fetchProject();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editProjectId, user?.id]);
+  }, [editProjectId, user?.id, categories]);
 
   // Sync selected category into formData.category string (also clears on deselect)
   useEffect(() => {

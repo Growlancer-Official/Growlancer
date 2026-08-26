@@ -149,8 +149,7 @@ export function ContractsPage() {
       setActiveTab(tab);
       userTouchedFilter.current = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   // Escrow balances keyed by contract ID
   const [escrowBalances, setEscrowBalances] = useState<Record<string, EscrowState>>({});

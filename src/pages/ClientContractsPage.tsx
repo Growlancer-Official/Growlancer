@@ -59,8 +59,7 @@ export function ClientContractsPage() {
       setFilter(tab);
       userTouchedFilter.current = true;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   const fetchContracts = useCallback(async (loadMore = false) => {
     if (!user?.id) {

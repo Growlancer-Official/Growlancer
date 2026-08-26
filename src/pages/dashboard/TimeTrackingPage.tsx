@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
+import { ConfirmModal } from '../../components/ConfirmModal';
 import { TipNote } from '../../components/TipNote';
 import { supabase } from '../../lib/supabase';
 
@@ -187,20 +188,12 @@ export function TimeTrackingPage() {
     void fetchTimeEntries();
   };
 
-  const submitManualEntry = async () => {
-    if (!user || !activeContract || !manualHours) return;
-    const hours = parseFloat(manualHours);
-    if (isNaN(hours) || hours <= 0) return;
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmHours, setConfirmHours] = useState(0);
 
-    // Sanity validation
-    if (hours > 24) {
-      toast.error('A single time entry cannot exceed 24 hours.');
-      return;
-    }
-    if (hours > 16) {
-      const confirmed = window.confirm(`You entered ${hours} hours for one day. This is unusually high. Are you sure this is correct?`);
-      if (!confirmed) return;
-    }
+  /** Actual insert — called directly when hours ≤ 16, or via ConfirmModal for high entries. */
+  const doInsertManualEntry = async (hours: number) => {
+    if (!user || !activeContract) return;
     const selectedDate = new Date(manualDate);
     const today = new Date();
     today.setHours(23, 59, 59, 999);
@@ -223,6 +216,24 @@ export function TimeTrackingPage() {
     setManualHours('');
     setDescription('');
     void fetchTimeEntries();
+  };
+
+  const submitManualEntry = async () => {
+    if (!user || !activeContract || !manualHours) return;
+    const hours = parseFloat(manualHours);
+    if (isNaN(hours) || hours <= 0) return;
+
+    // Sanity validation
+    if (hours > 24) {
+      toast.error('A single time entry cannot exceed 24 hours.');
+      return;
+    }
+    if (hours > 16) {
+      setConfirmHours(hours);
+      setConfirmOpen(true);
+      return;
+    }
+    await doInsertManualEntry(hours);
   };
 
   const totalHours = timeEntries.reduce((sum, e) => sum + e.hours, 0);
@@ -372,6 +383,19 @@ export function TimeTrackingPage() {
           )}
         </>
       )}
+
+      <ConfirmModal
+        isOpen={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={async () => {
+          await doInsertManualEntry(confirmHours);
+          setConfirmOpen(false);
+        }}
+        title="Unusually High Hours"
+        message={`You entered ${confirmHours} hours for one day. This is unusually high. Are you sure this is correct?`}
+        confirmLabel="Yes, submit"
+        variant="warning"
+      />
     </div>
   );
 }

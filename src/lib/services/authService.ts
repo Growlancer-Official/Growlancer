@@ -177,7 +177,7 @@ export async function createUserProfile(
           .eq('id', userId);
         
         if (!updateError) {
-          console.log('[Auth] Updated existing profile by email for:', email);
+          if (import.meta.env.DEV) console.log('[Auth] Updated existing profile by email for:', email);
           return fetchUserProfile(userId);
         }
       } catch {
@@ -215,7 +215,7 @@ export async function createUserProfile(
     }
   }
   
-  console.log('[Auth] create_user_profile RPC success:', JSON.stringify(rpcData));
+  if (import.meta.env.DEV) console.log('[Auth] create_user_profile RPC success:', JSON.stringify(rpcData));
 
   return fetchUserProfile(userId);
 }

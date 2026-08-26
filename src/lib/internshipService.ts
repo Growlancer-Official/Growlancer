@@ -387,7 +387,7 @@ export const internshipService = {
       const result = data as { success?: boolean; application_id?: string; emails_sent?: { admin: boolean; applicant: boolean } };
 
       if (result?.success) {
-        console.log('Application submitted successfully via edge function. Emails:', result.emails_sent);
+        if (import.meta.env.DEV) console.log('[internship] Application submitted. Emails:', result.emails_sent);
         return { success: true };
       }
 
