@@ -359,7 +359,7 @@ export function AuthCallbackPage() {
           // Sync the new email into profiles_private via SECURITY DEFINER RPC
           // (bypasses RLS + validate_india_phone trigger)
           if (authUser?.id && authUser.email) {
-            const { error: emailSyncErr } = await (supabase.rpc as Function)('sync_private_email', { p_email: authUser.email });
+            const { error: emailSyncErr } = await (supabase.rpc as any)('sync_private_email', { p_email: authUser.email });
             if (emailSyncErr) devLog('[AuthCallback] email_change profile sync warning:', emailSyncErr.message);
           }
           setStatus('success');
