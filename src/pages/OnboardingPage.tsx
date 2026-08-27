@@ -21,6 +21,7 @@ import { supabase } from '../lib/supabase';
 import { validateOptionalGstin } from '../lib/gst';
 import { CategoryPicker } from '../components/CategoryPicker';
 import { IndustrySelect } from '../components/IndustrySelect';
+import { CountrySelect } from '../components/CountrySelect';
 import { useCategories } from '../hooks/useCategories';
 import { avatarUploadService } from '../lib/avatarUpload';
 import { avatarPackService } from '../lib/avatarPack';
@@ -778,19 +779,15 @@ export function OnboardingPage() {
                       </div>
                     </div>
 
-                    {/* Location */}
+                    {/* Country / Location */}
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
-                      <div className="relative">
-                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                        <input
-                          type="text"
-                          value={freelancerForm.location}
-                          onChange={(e) => setFreelancerForm({ ...freelancerForm, location: e.target.value })}
-                          placeholder="e.g., New York, USA or Remote"
-                          className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                        />
-                      </div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Country / Location</label>
+                      <CountrySelect
+                        value={freelancerForm.location}
+                        onChange={(country) => setFreelancerForm({ ...freelancerForm, location: country })}
+                        placeholder="Select your country..."
+                      />
+                      <p className="text-xs text-slate-400 mt-1">India is currently available — other countries coming soon!</p>
                     </div>
 
                     {/* Portfolio URL */}
@@ -1084,17 +1081,12 @@ export function OnboardingPage() {
                         </select>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Location</label>
-                        <div className="relative">
-                          <Globe className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                          <input
-                            type="text"
-                            value={clientForm.location}
-                            onChange={(e) => setClientForm({ ...clientForm, location: e.target.value })}
-                            placeholder="e.g., San Francisco, USA"
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                          />
-                        </div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Country / Location</label>
+                        <CountrySelect
+                          value={clientForm.location}
+                          onChange={(country) => setClientForm({ ...clientForm, location: country })}
+                          placeholder="Select your country..."
+                        />
                       </div>
                     </div>
 
