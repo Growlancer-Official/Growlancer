@@ -1,5 +1,5 @@
 -- =============================================================================
--- 20261216000000_browser_marker_email_check.sql
+-- 20261216000003_browser_marker_email_check.sql
 -- =============================================================================
 -- Lets the client validate that the email recorded in the same-browser marker
 -- (growlancer_browser_account_v1) STILL has a real account. If the user deleted

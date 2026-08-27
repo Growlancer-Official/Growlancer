@@ -29,18 +29,17 @@ GRANT SELECT (
   role,
   name,
   avatar,
-  onboarding_completed,
   is_pro,
-  referral_code,
   created_at,
   updated_at,
   rating,
   total_reviews,
   deleted_at,
-  suspended_at,
-  banned_at,
   country
 ) ON public.profiles TO anon;
+-- NOTE: onboarding_completed, referral_code, suspended_at, banned_at
+-- were moved to profiles_private by 20261221000000 and no longer
+-- exist on profiles. Do NOT grant them here.
 
 -- ── Fix 2: admin_users public ALL policy drop + admin-only SELECT ─────────
 DROP POLICY IF EXISTS "Service role can manage admin_users" ON public.admin_users;

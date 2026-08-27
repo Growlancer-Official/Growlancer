@@ -1,8 +1,12 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- FIX: profiles PII leak — move sensitive columns to profiles_private
+-- IDEMPOTENT: Safe to run against fresh DB or partially-applied state
 -- ═══════════════════════════════════════════════════════════════════════════
 
--- 0. Drop previous partial attempt objects
+-- 0. Drop dependent policies BEFORE dropping functions they reference
+DROP POLICY IF EXISTS "user_reports_admin_all" ON public.user_reports;
+
+-- 1. Drop previous partial attempt objects (safe IF EXISTS everywhere)
 DROP TRIGGER IF EXISTS on_profile_created ON public.profiles;
 DROP TRIGGER IF EXISTS on_profile_updated ON public.profiles;
 DROP FUNCTION IF EXISTS public.handle_new_profile_private();
@@ -12,12 +16,12 @@ DROP FUNCTION IF EXISTS public.get_user_email(UUID);
 DROP FUNCTION IF EXISTS public.is_user_admin();
 DROP TABLE IF EXISTS public.profiles_private CASCADE;
 
--- 1. Drop dependent objects before column removal
+-- Also drop view/triggers that may exist from prior runs
 DROP VIEW IF EXISTS public.active_users;
 DROP TRIGGER IF EXISTS trg_validate_india_phone ON public.profiles;
 
--- 2. Create profiles_private table FIRST (before any functions reference it)
-CREATE TABLE public.profiles_private (
+-- 2. Create profiles_private table (IF NOT EXISTS for idempotency)
+CREATE TABLE IF NOT EXISTS public.profiles_private (
   id          UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
   email       TEXT,
   phone       TEXT,
@@ -34,28 +38,59 @@ CREATE TABLE public.profiles_private (
 
 ALTER TABLE public.profiles_private ENABLE ROW LEVEL SECURITY;
 
--- 3. Migrate existing data
-INSERT INTO public.profiles_private (
-  id, email, phone, is_admin, suspended_at, suspend_reason, suspended_by,
-  banned_at, onboarding_completed, referral_code, created_at, updated_at
-)
-SELECT
-  id, email, phone, is_admin, suspended_at, suspend_reason, suspended_by,
-  banned_at, onboarding_completed, referral_code,
-  COALESCE(created_at, NOW()), COALESCE(updated_at, NOW())
-FROM public.profiles
-ON CONFLICT (id) DO NOTHING;
+-- 3. Migrate existing data (only if columns still exist on profiles)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'email'
+  ) THEN
+    INSERT INTO public.profiles_private (
+      id, email, phone, is_admin, suspended_at, suspend_reason, suspended_by,
+      banned_at, onboarding_completed, referral_code, created_at, updated_at
+    )
+    SELECT
+      id, email, phone, is_admin, suspended_at, suspend_reason, suspended_by,
+      banned_at, onboarding_completed, referral_code,
+      COALESCE(created_at, NOW()), COALESCE(updated_at, NOW())
+    FROM public.profiles
+    ON CONFLICT (id) DO NOTHING;
+  END IF;
+END
+$$;
 
--- 4. RLS policies for profiles_private
-CREATE POLICY "Owner reads own private profile"
-  ON public.profiles_private FOR SELECT USING (auth.uid() = id);
+-- 4. RLS policies for profiles_private (CREATE OR REPLACE not available for policies, use IF NOT EXISTS pattern)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'profiles_private'
+    AND policyname = 'Owner reads own private profile'
+  ) THEN
+    CREATE POLICY "Owner reads own private profile"
+      ON public.profiles_private FOR SELECT USING (auth.uid() = id);
+  END IF;
 
-CREATE POLICY "Owner updates own private profile"
-  ON public.profiles_private FOR UPDATE
-  USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'profiles_private'
+    AND policyname = 'Owner updates own private profile'
+  ) THEN
+    CREATE POLICY "Owner updates own private profile"
+      ON public.profiles_private FOR UPDATE
+      USING (auth.uid() = id) WITH CHECK (auth.uid() = id);
+  END IF;
 
-CREATE POLICY "Service role full access on profiles_private"
-  ON public.profiles_private FOR ALL USING (true) WITH CHECK (true);
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE schemaname = 'public' AND tablename = 'profiles_private'
+    AND policyname = 'Service role full access on profiles_private'
+  ) THEN
+    CREATE POLICY "Service role full access on profiles_private"
+      ON public.profiles_private FOR ALL
+      TO service_role
+      USING (true)
+      WITH CHECK (true);
+  END IF;
+END
+$$;
 
 -- 5. Recreate validate_india_phone for profiles_private
 CREATE OR REPLACE FUNCTION public.validate_india_phone()
@@ -79,7 +114,7 @@ CREATE TRIGGER trg_validate_india_phone
   BEFORE INSERT OR UPDATE ON public.profiles_private
   FOR EACH ROW EXECUTE FUNCTION public.validate_india_phone();
 
--- 6. Helper functions (can reference profiles_private now)
+-- 6. Helper functions (SECURITY DEFINER, search_path locked)
 CREATE OR REPLACE FUNCTION public.is_user_admin()
 RETURNS BOOLEAN
 LANGUAGE sql STABLE SECURITY DEFINER
@@ -107,7 +142,7 @@ AS $$
   SELECT email FROM public.profiles_private WHERE id = target_user_id;
 $$;
 
--- 7. Update user_reports_admin_all policy to use function instead of profiles.is_admin
+-- 7. Recreate user_reports_admin_all policy using is_user_admin()
 DROP POLICY IF EXISTS "user_reports_admin_all" ON public.user_reports;
 CREATE POLICY "user_reports_admin_all"
   ON public.user_reports FOR ALL
@@ -131,30 +166,40 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
-CREATE TRIGGER on_profile_created
-  AFTER INSERT ON public.profiles
-  FOR EACH ROW EXECUTE FUNCTION public.handle_new_profile_private();
-
-CREATE OR REPLACE FUNCTION public.sync_profile_private()
-RETURNS TRIGGER AS $$
+-- Only create trigger if profiles still has the synced columns
+DO $$
 BEGIN
-  UPDATE public.profiles_private SET
-    email = COALESCE(NEW.email, OLD.email),
-    phone = COALESCE(NEW.phone, OLD.phone),
-    is_admin = COALESCE(NEW.is_admin, OLD.is_admin),
-    onboarding_completed = COALESCE(NEW.onboarding_completed, OLD.onboarding_completed),
-    referral_code = COALESCE(NEW.referral_code, OLD.referral_code),
-    updated_at = NOW()
-  WHERE id = NEW.id;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'profiles' AND column_name = 'email'
+  ) THEN
+    CREATE TRIGGER on_profile_created
+      AFTER INSERT ON public.profiles
+      FOR EACH ROW EXECUTE FUNCTION public.handle_new_profile_private();
 
-CREATE TRIGGER on_profile_updated
-  AFTER UPDATE ON public.profiles
-  FOR EACH ROW EXECUTE FUNCTION public.sync_profile_private();
+    CREATE OR REPLACE FUNCTION public.sync_profile_private()
+    RETURNS TRIGGER AS $inner$
+    BEGIN
+      UPDATE public.profiles_private SET
+        email = COALESCE(NEW.email, OLD.email),
+        phone = COALESCE(NEW.phone, OLD.phone),
+        is_admin = COALESCE(NEW.is_admin, OLD.is_admin),
+        onboarding_completed = COALESCE(NEW.onboarding_completed, OLD.onboarding_completed),
+        referral_code = COALESCE(NEW.referral_code, OLD.referral_code),
+        updated_at = NOW()
+      WHERE id = NEW.id;
+      RETURN NEW;
+    END;
+    $inner$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 9. NOW drop sensitive columns from public profiles
+    CREATE TRIGGER on_profile_updated
+      AFTER UPDATE ON public.profiles
+      FOR EACH ROW EXECUTE FUNCTION public.sync_profile_private();
+  END IF;
+END
+$$;
+
+-- 9. Drop sensitive columns from public profiles (IF EXISTS for idempotency)
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS email;
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS phone;
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS is_admin;
