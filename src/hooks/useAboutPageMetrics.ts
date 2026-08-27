@@ -2,17 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase, uniqueChannelName } from '@/lib/supabase';
 import { formatCompactCurrency } from '@/lib/currency';
 
-const METRICS_URL = '/platform-metrics.json';
 const POLL_MS = 60_000;
 
 export type PlatformMetricsFile = {
-  note?: string;
-  /** Total INR moved through escrow (your internal / finance source until automated). */
-  paymentsProcessedInr?: number | null;
-  /** Average satisfaction % when you have enough responses to publish. */
+  /** Total INR moved through escrow (live from DB via RPC). */
+  totalEscrowInr?: number | null;
+  /** Average satisfaction % (live from reviews, min 5 reviews to show). */
   avgSatisfactionPercent?: number | null;
-  /** How many countries have at least one member (from your analytics). */
-  countriesWithMembers?: number | null;
 };
 
 export type AboutStatCard = { value: string; label: string };
@@ -29,10 +25,13 @@ function formatPercent(p: number): string {
 
 async function loadMetricsFile(): Promise<PlatformMetricsFile> {
   try {
-    const res = await fetch(`${METRICS_URL}?t=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) return {};
-    const data = (await res.json()) as PlatformMetricsFile;
-    return data && typeof data === 'object' ? data : {};
+    const { data, error } = await (supabase as any).rpc('get_public_platform_metrics');
+    if (error || !data) return {};
+    const metrics = data as unknown as Record<string, unknown>;
+    return {
+      totalEscrowInr: (metrics.totalEscrowInr as number | null) ?? null,
+      avgSatisfactionPercent: (metrics.avgSatisfactionPercent as number | null) ?? null,
+    };
   } catch {
     return {};
   }
@@ -56,34 +55,27 @@ function buildCards(profileCount: number | null, file: PlatformMetricsFile): Abo
       ? 'Registered members (live count unavailable)'
       : 'Registered members (live)';
 
-  const pay = file.paymentsProcessedInr;
+  const pay = file.totalEscrowInr;
   const paymentsValue =
     pay === null || pay === undefined ? '—' : formatInrShort(Number(pay));
-  const paymentsLabel = 'Payments through escrow (INR, to date)';
+  const paymentsLabel = 'Escrow protected (INR)';
 
   const sat = file.avgSatisfactionPercent;
   const satValue =
     sat === null || sat === undefined ? '—' : formatPercent(Number(sat));
-  const satLabel = 'Avg. satisfaction (published when meaningful)';
-
-  const countries = file.countriesWithMembers;
-  const countriesValue =
-    countries === null || countries === undefined ? '—' : countries.toLocaleString('en-US');
-  const countriesLabel = 'Countries with active members';
+  const satLabel = 'Satisfaction';
 
   return [
     { value: users, label: usersLabel },
     { value: paymentsValue, label: paymentsLabel },
     { value: satValue, label: satLabel },
-    { value: countriesValue, label: countriesLabel },
   ];
 }
 
 const LOADING_CARDS: AboutStatCard[] = [
-  { value: '…', label: 'Loading public metrics…' },
-  { value: '…', label: 'Loading public metrics…' },
-  { value: '…', label: 'Loading public metrics…' },
-  { value: '…', label: 'Loading public metrics…' },
+  { value: '…', label: 'Loading…' },
+  { value: '…', label: 'Loading…' },
+  { value: '…', label: 'Loading…' },
 ];
 
 /** Raw live values (not formatted) so other UI (e.g. the live code terminal) can inject real numbers. */
@@ -111,9 +103,9 @@ export function useAboutPageMetrics() {
     setStats(buildCards(profileCount, file));
     setRaw({
       members: profileCount,
-      escrowInr: file.paymentsProcessedInr ?? null,
+      escrowInr: file.totalEscrowInr ?? null,
       satisfactionPercent: file.avgSatisfactionPercent ?? null,
-      countries: file.countriesWithMembers ?? null,
+      countries: null, // TODO: compute from profiles table
     });
     setReady(true);
   }, []);
