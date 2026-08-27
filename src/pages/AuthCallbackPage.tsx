@@ -188,28 +188,6 @@ export function AuthCallbackPage() {
           }
         }
 
-        // 🆕 PKCE explicit exchange fallback (email-verification links / PKCE OAuth)
-        if (!sessionFound) {
-          const pkceCode = searchParams.get('code');
-          if (pkceCode) {
-            try {
-              const { data: exchanged, error: exchangeError } = await supabase.auth
-                .exchangeCodeForSession(pkceCode);
-              if (!exchangeError && exchanged?.session?.user) {
-                authUser = exchanged.session.user;
-                sessionFound = true;
-                devLog('[AuthCallback] PKCE code exchanged successfully');
-              } else {
-                devLog('[AuthCallback] PKCE exchange failed (may already be exchanged):',
-                  exchangeError?.message || 'unknown');
-              }
-            } catch (pkceThrow) {
-              devLog('[AuthCallback] PKCE exchange threw:',
-                pkceThrow instanceof Error ? pkceThrow.message : String(pkceThrow));
-            }
-          }
-        }
-
         // If still no session, try silent refresh via getUser — but ONLY a real
         // session counts. A bare user (no persisted session) does NOT survive the
         // next page load and would bounce back to login.

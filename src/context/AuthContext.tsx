@@ -962,6 +962,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Every 60 seconds, check if 24 hours have passed since last activity.
     // If so, sign out the user automatically.
     const checkSessionTimeout = () => {
+      // Re-read from localStorage on each check — another tab may have updated
+      // the activity timestamp, and the closure variable won't reflect that.
+      const storedActivity = localStorage.getItem(LAST_ACTIVITY_KEY);
+      if (storedActivity) {
+        const storedTs = parseInt(storedActivity, 10);
+        if (storedTs > lastActivity) lastActivity = storedTs;
+      }
       const elapsed = Date.now() - lastActivity;
       if (elapsed >= SESSION_TIMEOUT_MS) {
         devLog('[Auth] Session expired after', Math.round(elapsed / 3600000), 'hours of inactivity — signing out');
@@ -1131,38 +1138,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
         }
 
-        devWarn('[Auth] Profile still missing after recovery attempt; trying direct insert as last resort');
-        // 🌟 Final fallback: try direct insert into profiles table
+        devWarn('[Auth] Profile still missing after recovery attempt; trying createUserProfile as last resort');
+        // 🌟 Final fallback: use the createUserProfile RPC (idempotent upsert via
+        // SECURITY DEFINER — works even if RLS would block a direct insert).
         try {
           const meta = data.user?.user_metadata || {};
-          const savedRole = (meta.role === 'freelancer' || meta.role === 'client') ? meta.role : 'freelancer';
+          const savedRole = (meta.role === 'freelancer' || meta.role === 'client') ? meta.role as UserRole : 'freelancer';
           const savedName = (typeof meta.name === 'string' && meta.name.trim()) || data.user.email?.split('@')[0] || 'User';
-          const refCode = createReferralCode('FR');
           
-          const { error: insertError } = await supabase.from('profiles').upsert({
-            id: data.user.id,
-            name: savedName,
-            role: savedRole,
-            is_pro: false,
-            created_at: new Date().toISOString(),
-          }, { onConflict: 'id', ignoreDuplicates: false });
-          // Insert sensitive columns into profiles_private
-          await supabase.from('profiles_private').upsert({
-            id: data.user.id,
-            email: normalizedEmail,
-            referral_code: refCode,
-            onboarding_completed: false,
-          }, { onConflict: 'id', ignoreDuplicates: false });
-          
-          if (!insertError) {
-            devLog('[Auth] Profile recovered via direct insert for:', normalizedEmail);
-            const freshProfile = await fetchUserProfile(data.user.id);
-            if (freshProfile) {
-              profile = freshProfile;
-            }
+          profile = await createUserProfile(data.user.id, normalizedEmail, savedName, savedRole);
+          if (profile) {
+            devLog('[Auth] Profile recovered via createUserProfile for:', normalizedEmail);
           }
         } catch (directErr) {
-          devWarn('[Auth] Direct profile insert failed:', directErr);
+          devWarn('[Auth] createUserProfile recovery failed:', directErr);
         }
 
         if (profile) {
@@ -1302,20 +1291,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           devWarn('[Auth] Profile creation deferred');
         }
 
-        // ✅ Try auto-login — works when email verification is off OR the user's
-        // email is already confirmed (e.g., auto-confirm legacy users). With real
-        // email verification enabled, the user must click the verification link
-        // first, so auto-login fails gracefully and we guide them to check email.
-        devLog('[Auth] Trying auto-login after signup for:', email);
-        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (loginData?.user && !loginError) {
-          setSession(loginData.session);
-          setSupabaseUser(loginData.user);
-          if (created) setUser(created);
-          devLog('[Auth] Auto-login succeeded after signup');
+        // ✅ Auto-login: only attempt when email is already confirmed (auto-confirm
+        // is enabled or the user verified via a different path). With real email
+        // verification enabled and unconfirmed email, signInWithPassword always
+        // fails — skip it to avoid wasting ~1s of latency and a confusing error.
+        let loginData: { user: import('@supabase/supabase-js').User; session: import('@supabase/supabase-js').Session } | null = null;
+        const emailConfirmed = !!data.user?.email_confirmed_at;
+        if (emailConfirmed) {
+          devLog('[Auth] Email already confirmed — attempting auto-login after signup for:', email);
+          const { data: autoLogin, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
+          if (autoLogin?.user && !loginError) {
+            loginData = autoLogin;
+            setSession(autoLogin.session);
+            setSupabaseUser(autoLogin.user);
+            if (created) setUser(created);
+            devLog('[Auth] Auto-login succeeded after signup');
+          } else {
+            devLog('[Auth] Auto-login failed (email confirmed but login rejected):', loginError?.message);
+          }
         } else {
-          devLog('[Auth] Auto-login failed after signup — user must verify email first:', loginError?.message);
+          devLog('[Auth] Email not confirmed yet — skipping auto-login, user must verify email first');
         }
 
         // Process referral if this signup came from a referral link.
@@ -1323,7 +1318,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // p_new_user_id). With email verification ON there is no session at signup
         // time, so the referral is deferred and recorded on first login instead.
         if (referrerCode) {
-          if (loginData?.user && !loginError) {
+          if (loginData?.user) {
             try {
               const { data: refData, error: refError } = await supabase.rpc('process_referral', {
                 p_referral_code: referrerCode,
