@@ -337,36 +337,12 @@ export const identityVerificationService = {
 
       if (error) throw error;
 
-      // If AI pre-verified, also sync the profiles (the trigger won't fire for
-      // a non-'pending' insert, so we do it here explicitly).
-      if (options?.verifiedByAI) {
-        await supabase
-          .from('profiles' as any)
-          .update({ verification_status: 'verified' })
-          .eq('id', userId);
-        await supabase
-          .from('freelancer_profiles' as any)
-          .update({ verification_status: 'verified' })
-          .eq('user_id', userId);
-
-        // Create notification
-        await supabase
-          .from('notifications' as any)
-          .insert({
-            user_id: userId,
-            type: 'verification',
-            title: 'Identity Verified ✅',
-            message: 'Your document has been verified by AI. Your verified badge is now live.',
-          });
-      } else {
-        // Submitted for (possibly manual) review → sync 'pending' so the KYC
-        // gate routes the user to the in-progress stepper instead of asking
-        // them to start a fresh verification.
-        await supabase
-          .from('profiles' as any)
-          .update({ verification_status: 'pending' })
-          .eq('id', userId);
-      }
+      // The kyc_auto_verify_trigger_fn (SECURITY DEFINER) now handles:
+      // 1. Processing pending rows via kyc_verify_row
+      // 2. Syncing verification_status to profiles + freelancer_profiles
+      // 3. Sending real-time notifications
+      // No client-side profile updates needed — RLS WITH CHECK blocks direct
+      // verification_status changes anyway.
 
       return { success: true, verification: data as unknown as IdentityVerification };
     } catch (error) {

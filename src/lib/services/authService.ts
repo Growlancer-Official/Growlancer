@@ -192,7 +192,6 @@ export async function createUserProfile(
         id: userId,
         name: name,
         role: safeRole,
-        is_pro: false,
         created_at: new Date().toISOString(),
       }, { onConflict: 'id', ignoreDuplicates: false });
       // Insert sensitive data into profiles_private

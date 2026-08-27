@@ -224,11 +224,8 @@ const subscriptionService = {
 
       if (error) throw error;
 
-      // Update profile is_pro flag
-      await supabase
-        .from('profiles')
-        .update({ is_pro: true })
-        .eq('id', userId);
+      // is_pro is automatically synced by the sync_profile_pro_flag trigger
+      // (SECURITY DEFINER) on the subscriptions table — no client-side update needed.
 
       return { success: true, subscription: data as unknown as SubscriptionWithPlan };
     } catch (error: any) {
