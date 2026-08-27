@@ -7,7 +7,7 @@ import { avatarPackService } from '../lib/avatarPack';
 import { formatCurrency } from '../utils/date';
 import { inviteService, type UserInvitation } from '../lib/inviteService';
 import { ReauthDialog } from '../components/ReauthDialog';
-import { isReauthValid, markReauthVerified } from '../lib/reauth';
+import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../lib/reauth';
 import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
 import { IndustrySelect } from '../components/IndustrySelect';
 import { getNameChangeLock } from '../lib/nameChangeLock';
@@ -457,6 +457,13 @@ export function ClientSettingsPage() {
       return;
     }
 
+    // 🛡️ Server-side reauth verification — prevents localStorage bypass
+    if (!(await verifyReauthBeforeAction())) {
+      setPendingAction('password');
+      setReauthOpen(true);
+      return;
+    }
+
     await performPasswordChange();
   };
 
@@ -515,6 +522,14 @@ export function ClientSettingsPage() {
 
     // 🛡️ Reauthentication gate for sensitive email change
     if (!isReauthValid()) {
+      setPendingAction('email');
+      setReauthOpen(true);
+      setChangeEmailLoading(false);
+      return;
+    }
+
+    // 🛡️ Server-side reauth verification — prevents localStorage bypass
+    if (!(await verifyReauthBeforeAction())) {
       setPendingAction('email');
       setReauthOpen(true);
       setChangeEmailLoading(false);
@@ -786,6 +801,13 @@ export function ClientSettingsPage() {
       setReauthOpen(true);
       return;
     }
+
+    // 🛡️ Server-side reauth verification
+    if (!(await verifyReauthBeforeAction())) {
+      setPendingAction('disable2fa');
+      setReauthOpen(true);
+      return;
+    }
     // Ask for the current 6-digit code — verified server-side before disabling.
     setConfirmDisable2FA(true);
   };
@@ -1041,6 +1063,15 @@ export function ClientSettingsPage() {
       setReauthOpen(true);
       return;
     }
+
+    // 🛡️ Server-side reauth verification
+    if (!(await verifyReauthBeforeAction())) {
+      setPendingPaymentMethodId(cardId);
+      setPendingAction('deletePayment');
+      setReauthOpen(true);
+      return;
+    }
+
     await performDeleteSavedCard(cardId);
   };
 

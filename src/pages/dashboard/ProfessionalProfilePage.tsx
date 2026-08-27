@@ -10,7 +10,7 @@ import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 import { formatCurrency, currencySymbol } from '../../lib/currency';
 import { ReauthDialog } from '../../components/ReauthDialog';
-import { isReauthValid, markReauthVerified } from '../../lib/reauth';
+import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../../lib/reauth';
 import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
 import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, RefreshCw, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
@@ -575,6 +575,13 @@ export function ProfessionalProfilePage() {
       return;
     }
 
+    // 🛡️ Server-side reauth verification — prevents localStorage bypass
+    if (!(await verifyReauthBeforeAction())) {
+      setPendingPasswordChange(true);
+      setReauthOpen(true);
+      return;
+    }
+
     await performPasswordChange();
   };
 
@@ -685,6 +692,14 @@ export function ProfessionalProfilePage() {
       setReauthOpen(true);
       return;
     }
+
+    // 🛡️ Server-side reauth verification
+    if (!(await verifyReauthBeforeAction())) {
+      setPendingDisable2FA(true);
+      setReauthOpen(true);
+      return;
+    }
+
     // Ask for the current 6-digit code — verified server-side before disabling.
     setConfirmDisable2FA(true);
   };

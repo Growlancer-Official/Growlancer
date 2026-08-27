@@ -286,6 +286,7 @@ export type RpcName =
   | 'get_mfa_status'
   | 'generate_recovery_codes'
   | 'verify_recovery_code'
+  | 'verify_reauth_status'
   | 'enable_user_mfa'
   | 'disable_user_mfa'
   | 'get_recovery_codes_count'

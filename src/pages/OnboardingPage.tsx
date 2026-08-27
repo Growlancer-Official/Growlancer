@@ -351,6 +351,15 @@ export function OnboardingPage() {
           return;
         }
 
+        // 🆕 Sync country from onboarding to profiles.country (used by ranking, search, matching)
+        if (freelancerForm.location) {
+          const { error: countryErr } = await supabase.rpc('update_user_country', {
+            p_user_id: user.id,
+            p_country: freelancerForm.location,
+          });
+          if (countryErr) console.warn('Onboarding country sync warning:', countryErr.message);
+        }
+
         if (freelancerForm.avatar_url) {
           const { error: avatarError } = await supabase
             .from('profiles')
@@ -383,6 +392,15 @@ export function OnboardingPage() {
           toast.error('Save Error', 'Failed to save your company profile: ' + cpError.message);
           setSaving(false);
           return;
+        }
+
+        // 🆕 Sync country from onboarding to profiles.country (used by ranking, search, matching)
+        if (clientForm.location) {
+          const { error: countryErr } = await supabase.rpc('update_user_country', {
+            p_user_id: user.id,
+            p_country: clientForm.location,
+          });
+          if (countryErr) console.warn('Onboarding client country sync warning:', countryErr.message);
         }
 
         // 🔄 Sync company logo into profiles.avatar so the header/profile icon
