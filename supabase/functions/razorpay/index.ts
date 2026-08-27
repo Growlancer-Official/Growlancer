@@ -847,12 +847,12 @@ serve(async req => {
           .eq('razorpay_payment_id', razorpay_payment_id)
           .maybeSingle();
 
-        const { data: profile } = await supabaseClient
-          .from('profiles')
-          .select('role, is_admin')
-          .eq('id', user.id)
-          .maybeSingle();
-        const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+        // is_admin moved to profiles_private (migration 20261221000000)
+        const [{ data: profile }, { data: privData }] = await Promise.all([
+          supabaseClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+          supabaseClient.from('profiles_private').select('is_admin').eq('id', user.id).maybeSingle(),
+        ]);
+        const isAdmin = profile?.role === 'admin' || privData?.is_admin === true;
 
         if (!orderRec || (orderRec.user_id !== user.id && !isAdmin)) {
           throw new Error('Unauthorized to refund this payment');

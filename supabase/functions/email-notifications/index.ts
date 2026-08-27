@@ -521,20 +521,20 @@ Deno.serve(async (req) => {
     //   (c) any registered user, when the caller is an admin
     //       (suspension, verification, dispute-resolution emails).
     // This blocks arbitrary-address spam relays even with a valid JWT.
-    const { data: callerProfile } = await supabase
-      .from('profiles')
-      .select('email, role')
-      .eq('id', user.id)
-      .maybeSingle();
-    const callerEmail = String(callerProfile?.email ?? '').trim().toLowerCase();
+    // email was moved to profiles_private (migration 20261221000000)
+    const [{ data: callerProfile }, { data: callerPriv }] = await Promise.all([
+      supabase.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+      supabase.from('profiles_private').select('email').eq('id', user.id).maybeSingle(),
+    ]);
+    const callerEmail = String(callerPriv?.email ?? '').trim().toLowerCase();
     const requestedEmail = String(recipient_email ?? '').trim().toLowerCase();
     const isAdmin = callerProfile?.role === 'admin';
 
     let recipientAuthorized = false;
     if (isAdmin) {
-      // Admin may email any registered user (verified below).
+      // Admin may email any registered user (verified via profiles_private).
       const { data: anyUser } = await supabase
-        .from('profiles')
+        .from('profiles_private')
         .select('id')
         .eq('email', requestedEmail)
         .maybeSingle();

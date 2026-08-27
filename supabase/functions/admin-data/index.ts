@@ -195,24 +195,25 @@ async function verifyAdminSession(
     return null
   }
 
-  // Check is_admin flag using service_role client
-  let { data: profile } = await serviceClient
-    .from('profiles')
+  // Check is_admin flag from profiles_private (is_admin was moved there
+  // from profiles in migration 20261221000000 — it's no longer on profiles).
+  let { data: privData } = await serviceClient
+    .from('profiles_private')
     .select('is_admin, email')
     .eq('id', user.id)
     .maybeSingle()
 
-  let isAdmin = profile?.is_admin === true
+  let isAdmin = privData?.is_admin === true
 
   // Fallback: check by email if not found by ID (handles ID mismatch)
   if (!isAdmin && user.email) {
-    const { data: profileByEmail } = await serviceClient
-      .from('profiles')
+    const { data: privByEmail } = await serviceClient
+      .from('profiles_private')
       .select('is_admin, email')
       .eq('email', user.email)
       .maybeSingle()
-    if (profileByEmail?.is_admin === true) {
-      profile = profileByEmail
+    if (privByEmail?.is_admin === true) {
+      privData = privByEmail
       isAdmin = true
     }
   }

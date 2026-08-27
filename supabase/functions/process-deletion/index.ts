@@ -54,13 +54,14 @@ Deno.serve(async (req) => {
         Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
         { auth: { autoRefreshToken: false, persistSession: false } }
       );
-      const { data: profile } = await serviceClient
-        .from('profiles')
+      // is_admin was moved to profiles_private (migration 20261221000000)
+      const { data: privData } = await serviceClient
+        .from('profiles_private')
         .select('is_admin')
         .eq('id', user.id)
         .single()
 
-      if (!profile || profile.is_admin !== true) {
+      if (!privData || privData.is_admin !== true) {
         return new Response(
           JSON.stringify({ error: 'Admin access required' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

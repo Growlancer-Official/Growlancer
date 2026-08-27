@@ -620,12 +620,12 @@ serve(async req => {
 
         // Ownership check: only the subscription owner (or an admin) may cancel
         if (subRecord) {
-          const { data: profile } = await supabaseClient
-            .from('profiles')
-            .select('role, is_admin')
-            .eq('id', user.id)
-            .maybeSingle();
-          const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
+          // is_admin moved to profiles_private (migration 20261221000000)
+          const [{ data: profile }, { data: privData }] = await Promise.all([
+            supabaseClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+            supabaseClient.from('profiles_private').select('is_admin').eq('id', user.id).maybeSingle(),
+          ]);
+          const isAdmin = profile?.role === 'admin' || privData?.is_admin === true;
           if (subRecord.user_id !== user.id && !isAdmin) {
             return new Response(JSON.stringify({ error: 'Unauthorized to cancel this subscription' }), {
               status: 403,

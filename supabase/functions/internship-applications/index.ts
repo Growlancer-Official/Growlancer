@@ -1020,13 +1020,21 @@ Deno.serve(async (req) => {
     if (method === 'GET' || method === 'PATCH') {
       const { data: authData } = await supabaseAnon.auth.getUser();
       const adminId = authData?.user?.id;
-      const isAdmin = !!adminId && (await supabaseAnon
+      // is_admin moved to profiles_private (migration 20261221000000)
+      const adminProfile = adminId ? (await supabaseAnon
         .from('profiles')
-        .select('is_admin, role')
+        .select('role')
         .eq('id', adminId)
         .maybeSingle()
-      )?.data;
-      if (!adminId || !isAdmin || (isAdmin.is_admin !== true && isAdmin.role !== 'admin')) {
+      )?.data : null;
+      const adminPriv = adminId ? (await supabaseAnon
+        .from('profiles_private')
+        .select('is_admin')
+        .eq('id', adminId)
+        .maybeSingle()
+      )?.data : null;
+      const isAdmin = adminPriv?.is_admin === true || adminProfile?.role === 'admin';
+      if (!adminId || !isAdmin) {
         return new Response(
           JSON.stringify({ error: 'Forbidden: admin access required' }),
           { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

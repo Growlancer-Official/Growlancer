@@ -133,12 +133,12 @@ Deno.serve(async (req) => {
     }
 
     // ── Admin role check (server-side, never trust the client) ────────────
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('role, is_admin, name')
-      .eq('id', user.id)
-      .maybeSingle()
-    const isAdmin = profile?.role === 'admin' || profile?.is_admin === true
+    // is_admin was moved to profiles_private (migration 20261221000000)
+    const [{ data: profile }, { data: privData }] = await Promise.all([
+      supabaseClient.from('profiles').select('role, name').eq('id', user.id).maybeSingle(),
+      supabaseClient.from('profiles_private').select('is_admin').eq('id', user.id).maybeSingle(),
+    ]);
+    const isAdmin = profile?.role === 'admin' || privData?.is_admin === true
     if (!isAdmin) {
       return new Response(JSON.stringify({ error: 'Forbidden: admin access required' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }

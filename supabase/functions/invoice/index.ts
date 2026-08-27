@@ -71,16 +71,19 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Invoice not found' }), { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    const [clientRes, freelancerRes, clientProfileRes] = await Promise.all([
-      supabaseClient.from('profiles').select('name, email').eq('id', invoice.client_id).maybeSingle(),
-      supabaseClient.from('profiles').select('name, email').eq('id', invoice.freelancer_id).maybeSingle(),
+    // email was moved to profiles_private (migration 20261221000000)
+    const [clientRes, freelancerRes, clientPrivRes, freelancerPrivRes, clientProfileRes] = await Promise.all([
+      supabaseClient.from('profiles').select('name').eq('id', invoice.client_id).maybeSingle(),
+      supabaseClient.from('profiles').select('name').eq('id', invoice.freelancer_id).maybeSingle(),
+      supabaseClient.from('profiles_private').select('email').eq('id', invoice.client_id).maybeSingle(),
+      supabaseClient.from('profiles_private').select('email').eq('id', invoice.freelancer_id).maybeSingle(),
       // Business info: company name + GST number appear on the invoice for
       // business accounts (GST is validated server-side on save).
       supabaseClient.from('client_profiles').select('company_name, gst_number, account_type').eq('user_id', invoice.client_id).maybeSingle(),
     ])
 
-    const client = clientRes.data || {}
-    const freelancer = freelancerRes.data || {}
+    const client = { ...(clientRes.data || {}), email: clientPrivRes.data?.email || '' };
+    const freelancer = { ...(freelancerRes.data || {}), email: freelancerPrivRes.data?.email || '' };
     const clientProfile = clientProfileRes.data || {}
     const clientCompany = (clientProfile as { company_name?: string | null; gst_number?: string | null; account_type?: string }).company_name || ''
     const clientGst = (clientProfile as { gst_number?: string | null }).gst_number || ''
