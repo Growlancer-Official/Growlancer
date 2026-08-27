@@ -42,7 +42,12 @@ Deno.serve(async (req) => {
     const key = await crypto.subtle.importKey('raw', encoder.encode(webhookSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify'])
     const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText))
     const expectedSig = Array.from(new Uint8Array(signatureBytes)).map(b => b.toString(16).padStart(2, '0')).join('')
-    if (signature !== expectedSig) {
+    // Constant-time comparison to prevent timing attacks
+    let diff = 0;
+    for (let i = 0; i < Math.max(signature.length, expectedSig.length); i++) {
+      diff |= (signature.charCodeAt(i % signature.length) ^ expectedSig.charCodeAt(i % expectedSig.length));
+    }
+    if (diff !== 0 || signature.length !== expectedSig.length) {
       console.error('Invalid webhook signature')
       return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }

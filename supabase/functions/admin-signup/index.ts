@@ -63,6 +63,20 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // 🔒 SECURITY: Require authenticated user via JWT (never trust body user_id)
+    const anonClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? Deno.env.get('SUPABASE_URL') ?? '',
+      { global: { headers: { Authorization: req.headers.get('Authorization') || '' } } }
+    );
+    const { data: { user }, error: authError } = await anonClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ success: false, error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
@@ -73,8 +87,9 @@ Deno.serve(async (req) => {
     try { body = await req.json(); } catch { /* empty body */ }
 
     const action = body?.action || '';
-    const userId = body?.user_id || '';
     const secretCode = body?.secret_code || '';
+    // 🔒 SECURITY: Use authenticated user's ID, never accept user_id from body
+    const userId = user.id;
 
     if (action !== 'verify_admin_signup') {
       return new Response(JSON.stringify({ error: 'Invalid action' }), {
@@ -83,8 +98,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (!userId || !secretCode) {
-      return new Response(JSON.stringify({ success: false, error: 'user_id and secret_code are required' }), {
+    if (!secretCode) {
+      return new Response(JSON.stringify({ success: false, error: 'secret_code is required' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
