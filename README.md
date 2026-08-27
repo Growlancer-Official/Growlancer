@@ -32,7 +32,7 @@ Our mission is to make freelancing faster, safer, and smarter for both businesse
 - 📁 Project Workspace
 - 📊 Analytics Dashboard
 - 💳 Razorpay Integration
-- 🌍 PayPal Integration
+- 🌍 PayPal Integration (Coming Soon)
 - 🛡 Identity Verification
 - ⭐ Review & Rating System
 - 📜 Certificates Verification
