@@ -25,3 +25,9 @@ test-base64.txt
 
 # Supabase CLI temp dir (never commit).
 supabase/.temp/
+
+# Freebuff internal worktrees (never commit).
+.freebuff/
+
+# Security reports / PDFs (never commit).
+*.pdf
