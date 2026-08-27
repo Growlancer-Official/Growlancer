@@ -265,7 +265,7 @@ export function OnboardingPage() {
         }
       }
 
-      const { error: onboardingErr } = await supabase.rpc('complete_onboarding');
+      const { error: onboardingErr } = await (supabase.rpc as Function)('complete_onboarding');
       if (onboardingErr) {
         toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingErr.message);
         return;
@@ -420,7 +420,7 @@ export function OnboardingPage() {
         return;
       }
 
-      const { error: onboardingError } = await supabase.rpc('complete_onboarding');
+      const { error: onboardingError } = await (supabase.rpc as Function)('complete_onboarding');
 
       if (onboardingError) {
         console.error('Onboarding completion error:', onboardingError);
