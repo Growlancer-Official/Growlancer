@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   Headphones, Plus, ChevronDown, ChevronUp, MessageSquare,
   Clock, CheckCircle2, AlertCircle, Send, LifeBuoy,
@@ -47,18 +47,18 @@ export default function SupportTicketsPage() {
   const [submitError, setSubmitError] = useState('');
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  useEffect(() => {
-    if (!user?.id) return;
-    loadTickets();
-  }, [user?.id]);
-
-  async function loadTickets() {
+  const loadTickets = useCallback(async () => {
     if (!user?.id) return;
     setLoading(true);
     const result = await ticketService.getUserTickets(user.id);
     if (result.success) setTickets(result.tickets);
     setLoading(false);
-  }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    loadTickets();
+  }, [user?.id, loadTickets]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();

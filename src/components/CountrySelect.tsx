@@ -17,7 +17,6 @@ function getFlagEmoji(countryCode: string): string {
 // Pinned countries — shown at the top regardless of search
 // ═══════════════════════════════════════════════════════════════════════════
 const PINNED_CODES = ['IN']; // India always first
-const PINNED_LABEL = '🇮🇳 India — Currently Available';
 
 interface CountrySelectProps {
   value: string;
