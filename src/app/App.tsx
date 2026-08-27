@@ -10,17 +10,15 @@ import { RouteFallback } from '../components/LoadingSkeleton';
 import { CookieConsent } from '../components/CookieConsent';
 
 // ═══════════════════════════════════════════════════════════════
-// EAGER IMPORTS — SSR-critical components
+// EAGER IMPORTS — SSR-critical, SEO-important pages only
 // ═══════════════════════════════════════════════════════════════
-// These MUST be eagerly imported so Vike SSR renders actual
-// HTML content instead of a loading skeleton. Lazy imports
-// (React.lazy) don't resolve during SSR — they just render the
-// Suspense fallback.
+// Kept eager so Vike SSR renders real HTML for crawlers.
+// Everything else is lazy-loaded to keep the main bundle small.
 //
-// Layouts (public/static)
+// Layout (public/static)
 import { MainLayout } from '@layouts/MainLayout';
 
-// Public pages — every route under MainLayout needs SSR content
+// SEO-critical public pages (highest traffic, indexed by Google)
 import { HomePage } from '@pages/HomePage';
 import { FreelancersSearchPage } from '@pages/FreelancersSearchPage';
 import { ServicesCatalogPage } from '@pages/ServicesCatalogPage';
@@ -28,20 +26,22 @@ import { HowItWorksPage } from '@pages/HowItWorksPage';
 import { FeaturesPage } from '@pages/FeaturesPage';
 import { CategoriesPage } from '@pages/CategoriesPage';
 import { PricingPage } from '@pages/PricingPage';
-import { AboutPage } from '@pages/AboutPage';
-import { PhilosophyPage } from '@pages/PhilosophyPage';
-import { ContactPage } from '@pages/ContactPage';
-import { ReportFeedbackPage } from '@pages/ReportFeedbackPage';
-import { InternshipsPage } from '@pages/InternshipsPage';
-import { HelpCenterPage } from '@pages/HelpCenterPage';
-import { SafetyPage } from '@pages/SafetyPage';
-import { GuidelinesPage } from '@pages/GuidelinesPage';
-import { StatusPage } from '@pages/StatusPage';
-import { TermsPage } from '@pages/TermsPage';
-import { PrivacyPage } from '@pages/PrivacyPage';
-import { EscrowPolicyPage } from '@pages/EscrowPolicyPage';
-import { RefundPolicyPage } from '@pages/RefundPolicyPage';
-import { CookiesPage } from '@pages/CookiesPage';
+
+// Lazy-loaded public pages (lower traffic, code-split for smaller main bundle)
+const AboutPage = lazy(() => import('@pages/AboutPage').then(m => ({ default: m.AboutPage })));
+const PhilosophyPage = lazy(() => import('@pages/PhilosophyPage').then(m => ({ default: m.PhilosophyPage })));
+const ContactPage = lazy(() => import('@pages/ContactPage').then(m => ({ default: m.ContactPage })));
+const ReportFeedbackPage = lazy(() => import('@pages/ReportFeedbackPage').then(m => ({ default: m.ReportFeedbackPage })));
+const InternshipsPage = lazy(() => import('@pages/InternshipsPage').then(m => ({ default: m.InternshipsPage })));
+const HelpCenterPage = lazy(() => import('@pages/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })));
+const SafetyPage = lazy(() => import('@pages/SafetyPage').then(m => ({ default: m.SafetyPage })));
+const GuidelinesPage = lazy(() => import('@pages/GuidelinesPage').then(m => ({ default: m.GuidelinesPage })));
+const StatusPage = lazy(() => import('@pages/StatusPage').then(m => ({ default: m.StatusPage })));
+const TermsPage = lazy(() => import('@pages/TermsPage').then(m => ({ default: m.TermsPage })));
+const PrivacyPage = lazy(() => import('@pages/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const EscrowPolicyPage = lazy(() => import('@pages/EscrowPolicyPage').then(m => ({ default: m.EscrowPolicyPage })));
+const RefundPolicyPage = lazy(() => import('@pages/RefundPolicyPage').then(m => ({ default: m.RefundPolicyPage })));
+const CookiesPage = lazy(() => import('@pages/CookiesPage').then(m => ({ default: m.CookiesPage })));
 
 // Auth-adjacent (stay lazy — only visited via email/auth links, not crawlable)
 const AuthCallbackPage = lazy(() => import('@pages/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })));
