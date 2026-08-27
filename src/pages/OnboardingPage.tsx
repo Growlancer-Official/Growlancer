@@ -265,10 +265,7 @@ export function OnboardingPage() {
         }
       }
 
-      const { error: onboardingErr } = await supabase
-        .from('profiles_private')
-        .update({ onboarding_completed: true, updated_at: new Date().toISOString() })
-        .eq('id', user.id);
+      const { error: onboardingErr } = await supabase.rpc('complete_onboarding');
       if (onboardingErr) {
         toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingErr.message);
         return;
@@ -423,10 +420,7 @@ export function OnboardingPage() {
         return;
       }
 
-      const { error: onboardingError } = await supabase
-        .from('profiles_private')
-        .update({ onboarding_completed: true, updated_at: new Date().toISOString() })
-        .eq('id', user.id);
+      const { error: onboardingError } = await supabase.rpc('complete_onboarding');
 
       if (onboardingError) {
         console.error('Onboarding completion error:', onboardingError);

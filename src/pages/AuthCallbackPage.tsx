@@ -355,15 +355,11 @@ export function AuthCallbackPage() {
           if (cancelled) return;
           safeNavigate(() => navigate('/auth/reset-password', { replace: true }));
           return;
-        }
-
-        if (detectedAction === 'email_change') {
-          // 🆕 Sync the new email into profiles_private (email column moved from profiles)
+        }          if (detectedAction === 'email_change') {
+          // Sync the new email into profiles_private via SECURITY DEFINER RPC
+          // (bypasses RLS + validate_india_phone trigger)
           if (authUser?.id && authUser.email) {
-            const { error: emailSyncErr } = await supabase
-              .from('profiles_private')
-              .update({ email: authUser.email, updated_at: new Date().toISOString() })
-              .eq('id', authUser.id);
+            const { error: emailSyncErr } = await supabase.rpc('sync_private_email', { p_email: authUser.email });
             if (emailSyncErr) devLog('[AuthCallback] email_change profile sync warning:', emailSyncErr.message);
           }
           setStatus('success');
