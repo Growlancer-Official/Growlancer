@@ -40,9 +40,13 @@ import {
   readFileSync,
   writeFileSync,
 } from 'node:fs';
-import { resolve, join } from 'node:path';
+import { resolve, join, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const ROOT = resolve(import.meta.dirname, '..');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const ROOT = resolve(__dirname, '..');
 const DIST = resolve(ROOT, 'dist');
 const DIST_CLIENT = resolve(DIST, 'client');
 
