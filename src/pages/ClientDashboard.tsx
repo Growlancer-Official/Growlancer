@@ -381,11 +381,11 @@ export default function ClientDashboard() {
         <div className="bg-white rounded-2xl p-6 border border-slate-100">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Need Help?</h3>
           <p className="text-slate-600 mb-4">
-            Use our AI Assistant or create a support ticket for any questions.
+            Use our AI Assistant or Help Center for any questions.
           </p>
           <div className="flex flex-col gap-2">
-            <Link to="/client/tickets" className="text-emerald-600 font-medium hover:underline">
-              Create Support Ticket →
+            <Link to="/client/ai-assistant" className="text-emerald-600 font-medium hover:underline">
+              Chat with AI Assistant →
             </Link>
             <Link to="/help-center" className="text-emerald-600 font-medium hover:underline">
               Visit Help Center →

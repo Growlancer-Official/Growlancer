@@ -627,7 +627,7 @@ export function OverviewPage() {
         </div>
 
         {/* Right Column - 1/3 */}
-        <div className="space-y-4 sm:space-y-6">
+        <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-24 lg:self-start">
           {/* Quick Actions */}
           <div className="bg-white rounded-2xl p-6 border border-slate-100">
             <h3 className="font-semibold text-slate-900 mb-4">Quick Actions</h3>
@@ -876,13 +876,6 @@ export function OverviewPage() {
             >
               <Headphones className="w-4 h-4" />
               AI Support
-            </Link>
-            <Link
-              to={isFreelancer ? '/dashboard/tickets' : '/client/tickets'}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
-            >
-              <MessageSquare className="w-4 h-4" />
-              Support Tickets
             </Link>
             <Link
               to="/help-center"
