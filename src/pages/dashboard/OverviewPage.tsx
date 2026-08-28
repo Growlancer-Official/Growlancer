@@ -457,16 +457,16 @@ export function OverviewPage() {
       ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-2.5 flex-wrap">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
             Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
             {user?.verificationStatus === 'verified' && <VerifiedBadge size="sm" />}
             {isFreelancer && isPro && <ProBadge size="md" />}
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             {isFreelancer
               ? "Here's your freelancing overview."
               : 'Manage your projects and freelancers.'}
@@ -474,19 +474,17 @@ export function OverviewPage() {
         </div>
       </div>
 
-      {/* Profile Completion Banner Removed */}
-
       {/* Quick Stats Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {quickStats.slice(0, 4).map((stat, index) => (
-          <div key={index} className="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
-            <p className="flex items-center gap-1 text-slate-500 text-xs sm:text-sm font-medium truncate">
+          <div key={index} className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
+            <p className="flex items-center gap-1 text-slate-500 text-[11px] sm:text-xs font-medium truncate">
               {stat.label}
               {stat.hint && <InfoTip text={stat.hint} />}
             </p>
-            <p className="text-xl sm:text-3xl font-bold text-slate-900 mt-1 sm:mt-2">{stat.value}</p>
+            <p className="text-lg sm:text-2xl font-bold text-slate-900 mt-1">{stat.value}</p>
             {stat.change && (
-              <p className={`text-[10px] sm:text-xs mt-1 sm:mt-2 truncate ${
+              <p className={`text-[10px] sm:text-xs mt-0.5 truncate ${
                 stat.changeType === 'positive' ? 'text-emerald-600' :
                 stat.changeType === 'negative' ? 'text-red-600' : 'text-slate-500'
               }`}>
@@ -498,44 +496,44 @@ export function OverviewPage() {
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Left Column - 2/3 */}
-        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           {/* AI Recommendations / Projects */}
           {isFreelancer ? (
-            <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 rounded-2xl p-4 sm:p-6 text-white shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-300 transform animate-workflow-flow">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-4">
+            <div className="bg-gradient-to-r from-emerald-500 via-teal-600 to-emerald-600 rounded-xl p-4 text-white shadow-md">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-xl flex items-center justify-center animate-workflow-pulse shrink-0">
-                    <Zap className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center shrink-0">
+                    <Zap className="w-4 h-4 text-white" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-base sm:text-lg font-semibold flex items-center gap-1.5 flex-wrap">
-                      AI Recommendations <span className="flex h-2 w-2 rounded-full bg-emerald-300 animate-ping shrink-0"></span>
+                    <h3 className="text-sm font-semibold flex items-center gap-1.5 flex-wrap">
+                      AI Recommendations <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-300 animate-ping shrink-0"></span>
                     </h3>
-                    <p className="text-emerald-100 text-xs sm:text-sm">Projects matched to your skills</p>
+                    <p className="text-emerald-100 text-[10px]">Projects matched to your skills</p>
                   </div>
                 </div>
                 <Link
                   to="/dashboard/feed"
-                  className="                  w-full sm:w-auto text-center self-start sm:self-auto bg-white text-emerald-600 px-4 sm:px-4 py-2 sm:py-2 rounded-lg text-sm sm:text-base font-semibold hover:bg-emerald-50 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center gap-2"
+                  className="                  w-full sm:w-auto text-center self-start sm:self-auto bg-white text-emerald-600 px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-emerald-50 transition-all duration-200 flex items-center justify-center gap-1.5"
                 >
                   View All <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>                  {recentProjects.length > 0 ? (
-                <div className="mt-6 space-y-3">
+                <div className="mt-3 space-y-2">
                   {recentProjects
                     .slice(0, 3)
                     .map((project: any) => (
                     <Link
                       key={project.id}
                       to={`/dashboard/feed?project=${project.id}`}
-                      className="block bg-white/10 hover:bg-white/20 rounded-xl p-4 transition-colors"
+                      className="block bg-white/10 hover:bg-white/20 rounded-lg p-3 transition-colors"
                     >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium">{project.title}</h4>
-                          <p className="text-emerald-100 text-sm mt-1 line-clamp-1">{project.description}</p>
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0 flex-1">
+                          <h4 className="font-medium text-sm">{project.title}</h4>
+                          <p className="text-emerald-100 text-xs mt-0.5 line-clamp-1">{project.description}</p>
                         </div>
                         <div className="text-right">
                           <p className="font-semibold">{formatBudgetRange(project.budget_min, project.budget_max)}</p>
@@ -546,7 +544,7 @@ export function OverviewPage() {
                   ))}
                 </div>
               ) : (
-                <div className="mt-6 text-center py-8">
+                <div className="mt-3 text-center py-4">
                   <p className="text-emerald-100">No matching projects found. Update your skills to get better matches.</p>
                   <Link to="/dashboard/profile" className="inline-block mt-3 text-sm font-medium underline">
                     Update Profile
@@ -555,19 +553,19 @@ export function OverviewPage() {
               )}
             </div>
           ) : (
-            <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-300 transform animate-workflow-flow">
-              <div className="flex items-center gap-3 mb-4">
-                <Sparkles className="w-6 h-6 animate-workflow-pulse" />
-                <h3 className="text-lg font-semibold flex items-center gap-1.5">
-                  AI-Powered Talent Matching <span className="flex h-2 w-2 rounded-full bg-emerald-300 animate-ping"></span>
+            <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-xl p-4 text-white shadow-md">
+              <div className="flex items-center gap-2.5 mb-2">
+                <Sparkles className="w-4 h-4 animate-workflow-pulse" />
+                <h3 className="text-sm font-semibold flex items-center gap-1.5">
+                  AI-Powered Talent Matching <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-300 animate-ping"></span>
                 </h3>
               </div>
-              <p className="text-emerald-100 mb-4">
+              <p className="text-emerald-100 text-xs mb-3">
                 Let our AI find the best freelancers for your projects.
               </p>
               <Link
                 to="/client/ai-assistant"
-                className="inline-block bg-white text-emerald-600 px-4 py-2 rounded-lg font-medium hover:bg-emerald-50 hover:scale-105 active:scale-95 transition-all duration-200"
+                className="inline-block bg-white text-emerald-600 px-3 py-1.5 rounded-lg font-medium text-xs hover:bg-emerald-50 transition-all duration-200"
               >
                 Chat with AI — Free
               </Link>
@@ -575,9 +573,9 @@ export function OverviewPage() {
           )}
 
           {/* Recent Activity */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-slate-900">Recent Activity</h2>
+          <div className="bg-white rounded-xl p-4 sm:p-5 border border-slate-100">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm sm:text-base font-semibold text-slate-900">Recent Activity</h2>
               <Link
                 to={isFreelancer ? '/dashboard/contracts' : '/client/contracts'}
                 className="text-emerald-600 font-medium text-sm hover:underline"
@@ -587,20 +585,20 @@ export function OverviewPage() {
             </div>
 
             {activities.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start gap-4 p-3 hover:bg-slate-50 rounded-lg transition-colors">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  <div key={activity.id} className="flex items-start gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
                       activity.type === 'contract' ? 'bg-emerald-100 text-emerald-600' :
                       activity.type === 'proposal' ? 'bg-blue-100 text-blue-600' :
                       activity.type === 'project' ? 'bg-orange-100 text-orange-600' :
                       'bg-purple-100 text-purple-600'
                     }`}>
-                      <activity.icon className="w-5 h-5" />
+                      <activity.icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-slate-900">{activity.title}</p>
-                      <p className="text-sm text-slate-500 truncate">{activity.description}</p>
+                      <p className="font-medium text-slate-900 text-sm">{activity.title}</p>
+                      <p className="text-xs text-slate-500 truncate">{activity.description}</p>
                     </div>
                     <span className="text-xs text-slate-400">
                       {safeFormatDate(activity.timestamp)}
@@ -627,78 +625,78 @@ export function OverviewPage() {
         </div>
 
         {/* Right Column - 1/3 */}
-        <div className="space-y-4 sm:space-y-6 lg:sticky lg:top-24 lg:self-start">
+        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
           {/* Quick Actions */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100">
-            <h3 className="font-semibold text-slate-900 mb-4">Quick Actions</h3>
-            <div className="space-y-3">
+          <div className="bg-white rounded-xl p-4 border border-slate-100">
+            <h3 className="font-semibold text-slate-900 text-sm mb-3">Quick Actions</h3>
+            <div className="space-y-2">
               {isFreelancer ? (
                 <>
                   <Link
                     to="/dashboard/feed"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <Briefcase className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">Find Projects</span>
+                    <Briefcase className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">Find Projects</span>
                   </Link>
                   <Link
                     to="/dashboard/proposals"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <FileText className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">My Proposals</span>
+                    <FileText className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">My Proposals</span>
                   </Link>
                   <Link
                     to="/dashboard/invites"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <MessageSquare className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">Invites ({stats.pendingInvites})</span>
+                    <MessageSquare className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">Invites ({stats.pendingInvites})</span>
                   </Link>
                   <Link
                     to="/dashboard/wallet"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <Wallet className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">Earnings</span>
+                    <Wallet className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">Earnings</span>
                   </Link>
                   <Link
                     to="/contests"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <Trophy className="w-5 h-5 text-amber-500" />
-                    <span className="font-medium text-slate-700">Contests</span>
+                    <Trophy className="w-4 h-4 text-amber-500" />
+                    <span className="font-medium text-slate-700 text-sm">Contests</span>
                   </Link>
                 </>
               ) : (
                 <>
                   <Link
                     to="/client/post"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <Plus className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">Post a Project</span>
+                    <Plus className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">Post a Project</span>
                   </Link>
                   <Link
                     to="/client/matches"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <Users className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">Find Talent</span>
+                    <Users className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">Find Talent</span>
                   </Link>
                   <Link
                     to="/client/contracts"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <FileText className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">Contracts</span>
+                    <FileText className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">Contracts</span>
                   </Link>
                   <Link
                     to="/client/payments"
-                    className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                    className="flex items-center gap-2.5 p-2.5 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
                   >
-                    <CreditCard className="w-5 h-5 text-slate-600" />
-                    <span className="font-medium text-slate-700">Payments</span>
+                    <CreditCard className="w-4 h-4 text-slate-600" />
+                    <span className="font-medium text-slate-700 text-sm">Payments</span>
                   </Link>
                 </>
               )}
@@ -732,7 +730,7 @@ export function OverviewPage() {
                 })
               : [];
             return (
-              <div className="bg-white rounded-2xl p-6 border border-slate-100">
+              <div className="bg-white rounded-xl p-4 border border-slate-100">
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="flex items-center gap-1.5 font-semibold text-slate-900">
                     Your Position
@@ -800,23 +798,23 @@ export function OverviewPage() {
           })()}
 
           {/* Notifications */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-slate-900">Notifications</h3>
+          <div className="bg-white rounded-xl p-4 border border-slate-100">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="font-semibold text-slate-900 text-sm">Notifications</h3>
               {stats.unreadNotifications > 0 && (
                 <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                   {stats.unreadNotifications}
                 </span>
               )}
             </div>
-            <p className="text-sm text-slate-500">
+            <p className="text-xs text-slate-500">
               {isFreelancer
                 ? 'Stay updated with your latest project activities.'
                 : 'Stay informed about proposals and contract updates.'}
             </p>
             <Link
               to={isFreelancer ? '/dashboard/notifications' : '/client/contracts'}
-              className="block mt-4 text-emerald-600 font-medium text-sm hover:underline"
+              className="block mt-2 text-emerald-600 font-medium text-xs hover:underline"
             >
               View Details →
             </Link>
@@ -826,60 +824,58 @@ export function OverviewPage() {
         </div>
       </div>
 
-      {/* AI Assistant & Support — prominent section for both roles */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-300">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-11 w-11 rounded-xl bg-white/20 flex items-center justify-center">
-              <Bot className="w-6 h-6" />
+      {/* AI Assistant & Support */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-xl p-4 text-white shadow-md">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="h-8 w-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">
+              <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-lg font-bold">AI Assistant</h3>
-              <p className="text-emerald-100 text-xs">
+              <h3 className="text-sm font-bold">AI Assistant</h3>
+              <p className="text-emerald-100 text-[10px]">
                 {isFreelancer ? 'Proposals, contracts, escrow, career help' : 'Hiring, contracts, escrow, project help'}
               </p>
             </div>
           </div>
-          <p className="text-emerald-50 text-sm leading-relaxed mb-4">
-            Ask anything in any language — get instant, accurate answers about how your{' '}
+          <p className="text-emerald-50 text-xs leading-relaxed mb-3">
+            Ask anything in any language — get instant answers about how your{' '}
             {isFreelancer ? 'freelancing business' : 'projects'} work on Growlancer.
           </p>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              to={isFreelancer ? '/dashboard/ai-assistant' : '/client/ai-assistant'}
-              className="inline-flex items-center gap-2 bg-white text-emerald-700 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-emerald-50 transition-colors"
-            >
-              <Bot className="w-4 h-4" />
-              Chat with AI
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
+          <Link
+            to={isFreelancer ? '/dashboard/ai-assistant' : '/client/ai-assistant'}
+            className="inline-flex items-center gap-1.5 bg-white text-emerald-700 px-3 py-1.5 rounded-lg font-semibold text-xs hover:bg-emerald-50 transition-colors"
+          >
+            <Bot className="w-3.5 h-3.5" />
+            Chat with AI
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-slate-100">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="h-11 w-11 rounded-xl bg-orange-100 flex items-center justify-center">
-              <Headphones className="w-6 h-6 text-orange-600" />
+        <div className="bg-white rounded-xl p-4 border border-slate-100">
+          <div className="flex items-center gap-2.5 mb-2">
+            <div className="h-8 w-8 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+              <Headphones className="w-4 h-4 text-orange-600" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Support & Help</h3>
-              <p className="text-slate-500 text-xs">Payments, verification, disputes, account issues</p>
+              <h3 className="text-sm font-bold text-slate-900">Support & Help</h3>
+              <p className="text-slate-500 text-[10px]">Payments, verification, disputes, account issues</p>
             </div>
           </div>
-          <p className="text-slate-600 text-sm leading-relaxed mb-4">
-            Guided AI support for account and payment issues, or raise a support ticket and our team will help.
+          <p className="text-slate-600 text-xs leading-relaxed mb-3">
+            Guided AI support for account and payment issues.
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             <Link
               to={isFreelancer ? '/dashboard/ai-assistant' : '/client/ai-assistant'}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-semibold text-sm hover:bg-slate-200 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-semibold text-xs hover:bg-slate-200 transition-colors"
             >
-              <Headphones className="w-4 h-4" />
+              <Headphones className="w-3.5 h-3.5" />
               AI Support
             </Link>
             <Link
               to="/help-center"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-slate-700 font-semibold text-sm hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition-colors"
             >
               Help Center
             </Link>
