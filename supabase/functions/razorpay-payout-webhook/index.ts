@@ -99,7 +99,16 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ received: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
-    if (newStatus === 'failed' && withdrawal.status !== 'failed') {
+    // ── IDEMPOTENCY: skip if already in terminal state ────────────────────
+    // Prevents double-release of wallet funds on RazorpayX webhook replays
+    if (withdrawal.status === 'completed' || withdrawal.status === 'failed') {
+      console.log(`Withdrawal ${withdrawal.id} already in terminal status: ${withdrawal.status} — skipping`)
+      return new Response(JSON.stringify({ received: true, skipped: true, reason: 'already_terminal' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    if (newStatus === 'failed') {
       // Rollback: release wallet funds back to balance
       await supabaseClient.rpc('release_wallet_funds', {
         p_user_id: withdrawal.user_id,

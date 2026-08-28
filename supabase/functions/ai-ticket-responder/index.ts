@@ -11,21 +11,33 @@ if (!AI_API_KEY) {
 // Ticket subject/description are attacker-controlled (any logged-in user can
 // open a ticket), so they must never reach the model verbatim. Strip common
 // jailbreak markers and truncate length before the content is used.
+/**
+ * Hardened input sanitizer — blocks prompt-injection attempts.
+ * Returns [UNSAFE_INPUT] if the message is an obvious attack.
+ */
 function sanitizeInput(input: string): string {
-  const dangerousPatterns = [
-    /ignore\s+(previous|all|above)\s+(instructions|prompts|rules)/gi,
-    /system\s*:/gi,
-    /assistant\s*:/gi,
-    /<script/gi,
-    /\$\{.*\}/g,
+  const blocked = [
+    /^\s*(ignore|disregard|forget)\s+(all|previous|above|prior|your)\s+(instructions|prompts?|rules?|guidelines?|context|system)/i,
+    /^\s*(you are|you're)\s+now\s+(a|an|the)/i,
+    /^\s*(new|override|replace)\s+(system|instruction|prompt)/i,
+    /^\s*(act|behave|pretend|roleplay)\s+(as|like|to be)\s+(a|an|the)/i,
+    /<\s*(system|assistant|admin)\s*>/i,
+    /\[system\s*\]/i,
+    /\bDAN\b.*\bmode\b/i,
+    /\bjailbreak\b/i,
+    /\bprompt\s+injection\b/i,
   ];
-
-  let sanitized = input;
-  for (const pattern of dangerousPatterns) {
-    sanitized = sanitized.replace(pattern, '[FILTERED]');
+  for (const re of blocked) {
+    if (re.test(input)) return '[UNSAFE_INPUT — prompt injection blocked]';
   }
 
-  return sanitized.substring(0, 8000);
+  let cleaned = input
+    .replace(/^(system|assistant|user|admin|growlancer|AI)\s*:\s*/gi, '')
+    .replace(/```[\s\S]*?```/g, '[code block removed]')
+    .replace(/<script[\s\S]*?<\/script>/gi, '[script removed]')
+    .replace(/\$\{[^}]*\}/g, '[template removed]');
+
+  return cleaned.substring(0, 8000);
 }
 
 // Rate limiting — every call costs a credit on the gateway, so unthrottled
