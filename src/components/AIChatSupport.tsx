@@ -11,7 +11,6 @@ import {
   Check,
   Copy,
   Globe,
-  Headphones,
   Loader2,
   Mail,
   Send,
@@ -61,8 +60,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   // the AI stream (the edge function relays the actual model on first chunk).
   const [modelName, setModelName] = useState(() => (import.meta.env.VITE_AI_MODEL as string | undefined) || 'Growlancer AI');
   const toast = useToast();
-  const [escalating, setEscalating] = useState(false);
-  const [escalated, setEscalated] = useState(false);
   const [verifyCta, setVerifyCta] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
@@ -469,81 +466,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     }
   };
 
-  // ── Escalate to human ──
-  const handleEscalate = async () => {
-    if (!user || escalating) return;
-    setEscalating(true);
-    try {
-      // ── Email-verified gate ──
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: `⚠️ **Your session expired.** Please log in again and retry the escalation — your chat history is safe and nothing was lost.`,
-          timestamp: new Date(),
-        }]);
-        return;
-      }
-      if (!authUser.email_confirmed_at) {
-        setVerifyCta(true);
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: 'assistant',
-          content: `⚠️ **Email verification required.** To keep your account secure, please verify your email address before escalating to support. Tap **Verify Email & Resend Link** below — we'll send the verification link to ${authUser?.email || 'your inbox'} right away. Once verified, escalate again and our team will respond within 24 hours.`,
-          timestamp: new Date(),
-        }]);
-        return;
-      }
 
-      // Create a support ticket with the chat transcript
-      const transcript = messages.map(m => `[${m.role}] ${m.content}`).join('\n\n');
-      const result = await ticketService.create({
-        userId: user.id,
-        userRole: context,
-        subject: ticketContext?.subject || 'AI Chat Escalation',
-        description: `Escalated from AI Chat Support.\n\nContext: ${context}\nCategory: ${ticketContext?.category || 'general'}\nPriority: ${ticketContext?.priority || 'normal'}\n\n--- Chat Transcript ---\n${transcript}`,
-        category: ticketContext?.category as any,
-        priority: ticketContext?.priority as any,
-      });
-
-      if (!result.success) throw new Error(result.error || 'Failed to create ticket');
-      const ticketId = result.ticket?.id;
-
-      // Send confirmation email via email-notifications edge function
-      await supabase.functions.invoke('email-notifications', {
-        body: {
-          type: 'support_ticket_created',
-          data: {
-            recipient_email: user.email,
-            recipient_name: user.name || user.email?.split('@')[0] || 'User',
-            subject: ticketContext?.subject || 'Support Request Received',
-            ticket_id: ticketId,
-          },
-        },
-      });
-
-      // Show confirmation in chat
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `✅ **Your request has been escalated!** Our support team will review it within 24 hours at your registered email.`,
-        timestamp: new Date(),
-      }]);
-      setEscalated(true);
-    } catch (err) {
-      console.error('Failed to escalate:', err);
-      toast.error('Escalation Failed', 'Could not create support ticket. Please try again or contact support directly.');
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: `Sorry, I couldn't create a support ticket right now. Please try again later or contact support directly.`,
-        timestamp: new Date(),
-      }]);
-    } finally {
-      setEscalating(false);
-    }
-  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -827,24 +750,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
       {/* Input */}
       <div className="p-4 border-t border-slate-100 bg-slate-50">
-        {/* Escalate to Human */}
-        {!escalated && messages.length >= 2 && (
-          <div className="mb-3">
-            <button
-              onClick={handleEscalate}
-              disabled={escalating}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-slate-200 rounded-xl text-xs font-medium text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition-all disabled:opacity-50"
-            >
-              {escalating ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Headphones className="w-4 h-4" />
-              )}
-              {escalating ? 'Escalating...' : 'Escalate to a Human'}
-            </button>
-          </div>
-        )}
-        {verifyCta && !escalated && (
+        {verifyCta && (
           <div className="mb-3">
             <button
               onClick={handleResendVerification}
