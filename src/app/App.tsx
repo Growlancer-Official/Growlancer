@@ -99,7 +99,6 @@ const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVer
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
 const SkillTestPage = lazy(() => import('@pages/dashboard/SkillTestPage').then(m => ({ default: m.SkillTestPage })));
 const TimeTrackingPage = lazy(() => import('@pages/dashboard/TimeTrackingPage').then(m => ({ default: m.TimeTrackingPage })));
-const SupportTicketsPage = lazy(() => import('@pages/dashboard/SupportTicketsPage').then(m => ({ default: m.default })));
 
 
 // Dashboard Pages - Client
@@ -300,7 +299,6 @@ function App() {
                 <Route path="time-tracking" element={<TimeTrackingPage />} />
                 <Route path="contests" element={<ContestsPage />} />
                 <Route path="help-center" element={<HelpCenterPage />} />
-                <Route path="tickets" element={<SupportTicketsPage />} />
               </Route>
 
               {/* Client Dashboard Routes - Protected */}
@@ -340,7 +338,6 @@ function App() {
                 <Route path="contests" element={<ClientContestsPage />} />
                 <Route path="contests/create" element={<ClientContestCreatePage />} />
                 <Route path="help-center" element={<HelpCenterPage />} />
-                <Route path="tickets" element={<SupportTicketsPage />} />
               </Route>
 
               {/* Admin Dashboard Routes - Protected by Supabase Auth */}

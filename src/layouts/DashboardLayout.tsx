@@ -100,8 +100,8 @@ const accountLinks: SidebarLink[] = [
 ];
 
 const supportLinks: SidebarLink[] = [
-  { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },      { id: 'help-center', path: '/dashboard/help-center', icon: HelpCircle, label: 'Help Center' },
-  { id: 'tickets', path: '/dashboard/tickets', icon: Ticket, label: 'Support Tickets' },
+  { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },
+  { id: 'help-center', path: '/dashboard/help-center', icon: HelpCircle, label: 'Help Center' },
 ];
 export function DashboardLayout() {
   const location = useLocation();
