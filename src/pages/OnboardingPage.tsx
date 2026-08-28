@@ -265,9 +265,15 @@ export function OnboardingPage() {
         }
       }
 
-      const { error: onboardingErr } = await (supabase.rpc as any)('complete_onboarding');
+      const { data: onboardingResult, error: onboardingErr } = await (supabase.rpc as any)('complete_onboarding');
       if (onboardingErr) {
         toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingErr.message);
+        return;
+      }
+      // Check RPC return value — success may be false without a PostgreSQL error
+      if (onboardingResult && (onboardingResult as any).success === false) {
+        const errMsg = (onboardingResult as any).error || 'RPC returned failure';
+        toast.error('Completion Error', 'Failed to complete onboarding: ' + errMsg);
         return;
       }
 
@@ -420,11 +426,19 @@ export function OnboardingPage() {
         return;
       }
 
-      const { error: onboardingError } = await (supabase.rpc as any)('complete_onboarding');
+      const { data: onboardingData, error: onboardingError } = await (supabase.rpc as any)('complete_onboarding');
 
       if (onboardingError) {
         console.error('Onboarding completion error:', onboardingError);
         toast.error('Completion Error', 'Failed to complete onboarding: ' + onboardingError.message);
+        setSaving(false);
+        return;
+      }
+      // Check RPC return value — success may be false without a PostgreSQL error
+      if (onboardingData && (onboardingData as any).success === false) {
+        const errMsg = (onboardingData as any).error || 'RPC returned failure';
+        console.error('Onboarding completion RPC failed:', errMsg);
+        toast.error('Completion Error', 'Failed to complete onboarding: ' + errMsg);
         setSaving(false);
         return;
       }
