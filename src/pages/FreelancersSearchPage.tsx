@@ -146,11 +146,11 @@ export function FreelancersSearchPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white py-12">
+      <section className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white py-6">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">Find Top Freelancers</h1>
-          <p className="text-emerald-100 text-lg mb-4">Browse talented professionals ready to bring your vision to life.</p>
-          <TipNote tone="info" compact className="max-w-3xl mb-6 bg-white/10 border-white/20 [&_*]:!text-white">
+          <p className="text-emerald-100 text-lg mb-2">Browse talented professionals ready to bring your vision to life.</p>
+          <TipNote tone="info" compact className="max-w-3xl mb-3 bg-white/10 border-white/20 [&_*]:!text-white">
             <strong>Verified</strong> (green/blue badge) and <strong>Pro</strong> badges are shown next to a freelancer's
             name — every payment you make is held in Growlancer Escrow until you approve the completed work, and all
             communication stays inside the platform for your protection.
@@ -182,7 +182,7 @@ export function FreelancersSearchPage() {
       {/* Browse Categories - A-Z Accordion */}
       <section className="py-6 bg-white border-b border-slate-200">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+          <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
             <button
               onClick={() => setShowCategories(!showCategories)}
               className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
@@ -214,7 +214,7 @@ export function FreelancersSearchPage() {
       {showFilters && (
         <div className="bg-white border-b border-slate-200 py-6">
           <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
               {/* Category */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
@@ -313,10 +313,10 @@ export function FreelancersSearchPage() {
       )}
 
       {/* Results */}
-      <section className="py-8">
+      <section className="py-4">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           {/* Sort & Count */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-slate-500">
               {loading ? 'Searching...' : `${freelancers.length} freelancer${freelancers.length !== 1 ? 's' : ''} found`}
             </p>
@@ -333,26 +333,26 @@ export function FreelancersSearchPage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-10">
               <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
             </div>
           ) : freelancers.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
-              <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <div className="text-center py-10 bg-white rounded-xl border border-slate-100">
+              <Search className="w-12 h-12 text-slate-300 mx-auto mb-2" />
               <h3 className="text-lg font-bold text-slate-900 mb-2">No freelancers found</h3>
-              <p className="text-slate-500 mb-6">Try adjusting your filters or search terms.</p>
+              <p className="text-slate-500 mb-3">Try adjusting your filters or search terms.</p>
               <button onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setMinRate(''); setMaxRate(''); setMinRating('0'); setAvailabilityOnly(false); setSelectedSkills([]); }} className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Clear All Filters</button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {freelancers.map((freelancer) => (
                 <Link
                   key={freelancer.id}
                   to={`/freelancer/${freelancer.user_id}`}
-                  className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+                  className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
                 >
                   {/* Header */}
-                  <div className="flex items-start gap-4 mb-4">
+                  <div className="flex items-start gap-2 mb-2">
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                       {freelancer.profile?.avatar ? (
                         <img src={freelancer.profile.avatar} alt="" className="w-full h-full object-cover" />
@@ -381,7 +381,7 @@ export function FreelancersSearchPage() {
                   </div>
 
                   {/* Rating & Stats */}
-                  <div className="flex items-center gap-4 mb-4 text-sm">
+                  <div className="flex items-center gap-2 mb-2 text-sm">
                     {freelancer.rating && freelancer.rating > 0 ? (
                       <span className="flex items-center gap-1 font-semibold text-slate-900">
                         <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -401,7 +401,7 @@ export function FreelancersSearchPage() {
 
                   {/* Skills */}
                   {freelancer.skills && freelancer.skills.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-4">
+                    <div className="flex flex-wrap gap-1.5 mb-2">
                       {freelancer.skills.slice(0, 4).map((skill) => (
                         <span key={skill} className="px-2 py-1 bg-slate-50 text-slate-600 text-xs rounded-lg border border-slate-100">
                           {skill}
@@ -445,9 +445,9 @@ export function FreelancersSearchPage() {
       {/* CTA */}
       <section className="pb-24">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 text-center border border-slate-200 shadow-sm">
-            <h2 className="font-display text-3xl font-bold text-slate-900 mb-4">Can't find the right freelancer?</h2>
-            <p className="text-slate-600 mb-8 max-w-lg mx-auto">Post a project and let our AI match you with the perfect freelancer based on skills, experience, and budget.</p>
+          <div className="bg-white rounded-[2.5rem] p-4 sm:p-12 text-center border border-slate-200 shadow-sm">
+            <h2 className="font-display text-3xl font-bold text-slate-900 mb-2">Can't find the right freelancer?</h2>
+            <p className="text-slate-600 mb-2 max-w-lg mx-auto">Post a project and let our AI match you with the perfect freelancer based on skills, experience, and budget.</p>
             <Link to="/signup" className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-colors">
               Post a Project <ArrowRight className="w-4 h-4" />
             </Link>

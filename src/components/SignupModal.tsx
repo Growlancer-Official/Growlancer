@@ -274,13 +274,13 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-orange-100/50 rounded-full blur-2xl -ml-12 -mb-12 opacity-60 pointer-events-none"></div>
 
       <div className="relative animate-fade-in-content">
-        <p className="text-slate-500 mb-5 text-sm">
+        <p className="text-slate-500 mb-2.5 text-sm">
           Join thousands of professionals already using AI to ship faster.
         </p>
 
         {/* 🚫 Same-Browser Duplicate Account Banner — BLOCKING until shared-device acknowledgment */}
         {sameBrowserWarn && !sameBrowserAck && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -314,7 +314,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
 
         {/* ⚠️ Existing Session Banner — Dismissible, NOT blocking */}
         {existingUser && (
-          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+          <div className="mb-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
             <div className="flex items-start gap-3">
               <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
@@ -370,7 +370,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
         )}
 
         {/* Social Auth — GitHub & LinkedIn */}
-        <div className="mb-5 space-y-3">
+        <div className="mb-2.5 space-y-3">
           <button
             type="button"
             disabled={!!oauthProvider}
@@ -429,14 +429,14 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
 
         {/* Error Display */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+          <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <p className="text-xs text-red-600">{error}</p>
           </div>
         )}
 
         {/* Signup Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2">
           {/* Role Selection */}
           <div className="space-y-1.5">
             <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1">

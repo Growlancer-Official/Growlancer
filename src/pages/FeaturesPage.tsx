@@ -82,9 +82,9 @@ export function FeaturesPage() {
       {/* Hero section */}
       <section className="relative py-24 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             Growlancer Toolkit
@@ -100,14 +100,14 @@ export function FeaturesPage() {
 
       {/* Grid Features */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {mainFeatures.map((feat, idx) => (
             <div 
               key={idx} 
-              className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group hover:border-indigo-500/20"
+              className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group hover:border-indigo-500/20"
             >
               <div className="flex justify-between items-start mb-5">
-                <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${feat.color} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
+                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feat.color} text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform`}>
                   <feat.icon className="w-6 h-6 text-white" />
                 </div>
                 <span className="px-2 py-0.5 bg-slate-100 text-slate-500 font-bold rounded-full text-[9px] uppercase tracking-wider">
@@ -123,10 +123,10 @@ export function FeaturesPage() {
 
       {/* Feature breakdown list */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-gradient-to-br from-emerald-950 to-slate-900 rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-xl shadow-slate-900/10">
+        <div className="bg-gradient-to-br from-emerald-950 to-slate-900 rounded-[2.5rem] p-4 sm:p-12 text-white relative overflow-hidden shadow-xl shadow-slate-900/10">
           <div className="absolute bottom-0 left-0 w-84 h-84 bg-indigo-500/10 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-          <div className="relative space-y-6 text-center">
+          <div className="relative space-y-3 text-center">
             <h2 className="font-display text-3xl font-black tracking-tight leading-tight">Ready to unlock verified hiring?</h2>
             <p className="text-slate-300 text-xs max-w-md mx-auto leading-relaxed">
               Create a free account to join the state-of-the-art real-time collaboration canvas.

@@ -117,9 +117,9 @@ export function PaymentCallbackPage() {
 
   return (
     <main className="min-h-screen bg-cream px-4 py-20">
-      <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-10 shadow-lg">
-        <div className="flex flex-col items-center gap-6 text-center">
-          <div className="flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-100">
+      <div className="mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-10 shadow-lg">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-slate-100">
             {page.icon}
           </div>
           <div>

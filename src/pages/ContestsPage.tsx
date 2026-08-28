@@ -51,7 +51,7 @@ export function ContestsPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white py-20">
+      <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white py-10">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="text-center max-w-3xl mx-auto">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-3">
@@ -61,10 +61,10 @@ export function ContestsPage() {
             <h1 className="font-display text-4xl md:text-5xl font-extrabold mb-3">
               Compete. Create. <span className="text-emerald-200">Win.</span>
             </h1>
-            <p className="text-emerald-100 text-lg mb-8">
+            <p className="text-emerald-100 text-lg mb-2">
               Join design and development contests to showcase your skills, win prizes, and build your portfolio.
             </p>
-            <TipNote tone="info" compact className="max-w-2xl mx-auto mb-8 bg-white/10 border-white/20 [&_*]:!text-white">
+            <TipNote tone="info" compact className="max-w-2xl mx-auto mb-2 bg-white/10 border-white/20 [&_*]:!text-white">
               <strong>How contests work:</strong> clients fund the prize in escrow upfront — the winner is chosen
               fairly from public submissions and paid in real time. No work outside Growlancer, ever.
             </TipNote>
@@ -166,13 +166,13 @@ export function ContestsPage() {
       </section>
 
       {/* Contests Grid */}
-      <section className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-12">
+      <section className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-6">
         {loading ? (
-          <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-10">
             <Loader2 className="animate-spin h-12 w-12 text-emerald-600" />
           </div>
         ) : filteredContests.length === 0 ? (
-          <div className="text-center py-20">
+          <div className="text-center py-10">
             <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-2" />
             <h3 className="text-xl font-bold text-slate-900 mb-2">No contests found</h3>
             <p className="text-slate-500">Try adjusting your filters or check back later for new contests.</p>
@@ -251,12 +251,12 @@ export function ContestsPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-gradient-to-r from-emerald-600 to-teal-600 py-16">
+      <section className="bg-gradient-to-r from-emerald-600 to-teal-600 py-8">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="font-display text-3xl font-extrabold text-white mb-2">
             Ready to Compete?
           </h2>
-          <p className="text-emerald-100 mb-8 text-lg">
+          <p className="text-emerald-100 mb-2 text-lg">
             Join contests to showcase your skills, win prizes, and build your reputation on Growlancer.
           </p>
           <Link

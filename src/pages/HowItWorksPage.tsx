@@ -80,11 +80,11 @@ export function HowItWorksPage() {
       </header>
 
       {/* Hero section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 text-white border-b border-emerald-900/30">
+      <section className="relative py-10 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <TrendingUp className="w-3.5 h-3.5" />
             How it works
@@ -97,7 +97,7 @@ export function HowItWorksPage() {
           </p>
 
           {/* Interactive Toggle */}
-          <div className="inline-flex p-1.5 bg-slate-900/60 backdrop-blur border border-white/10 rounded-2xl max-w-xs mx-auto mt-8">
+          <div className="inline-flex p-1.5 bg-slate-900/60 backdrop-blur border border-white/10 rounded-xl max-w-xs mx-auto mt-8">
             <button
               onClick={() => setActiveTab('client')}
               className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -124,13 +124,13 @@ export function HowItWorksPage() {
 
       {/* Steps Visualizer */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
           {steps.map((step, idx) => (
             <div 
               key={idx} 
-              className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group hover:border-emerald-500/20"
+              className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group hover:border-emerald-500/20"
             >
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${step.color} text-white flex items-center justify-center shadow-md mb-6 group-hover:scale-105 transition-transform`}>
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${step.color} text-white flex items-center justify-center shadow-md mb-3 group-hover:scale-105 transition-transform`}>
                 <step.icon className="w-6 h-6" />
               </div>
               <h3 className="font-display text-base font-extrabold text-slate-900 mb-2 leading-snug">{step.title}</h3>
@@ -142,22 +142,22 @@ export function HowItWorksPage() {
 
       {/* Symmetrical Feature comparison */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-white rounded-[2.5rem] border border-slate-200/50 p-8 sm:p-12 shadow-sm space-y-8">
+        <div className="bg-white rounded-[2.5rem] border border-slate-200/50 p-4 sm:p-12 shadow-sm space-y-2">
           <div className="text-center space-y-2">
             <h3 className="font-display text-2xl font-extrabold text-slate-900">Why Growlancer is superior</h3>
             <p className="text-xs text-slate-500">We replace outdated transaction mechanisms with live synchronization.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-5 border border-slate-100 rounded-2xl bg-slate-50/50 space-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-2">
               <h4 className="font-bold text-slate-900 text-sm">Escrow Milestones</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">Payment is securely locked. Disputes are handled by structured, joint-release arbitration sliders.</p>
             </div>
-            <div className="p-5 border border-slate-100 rounded-2xl bg-slate-50/50 space-y-2">
+            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-2">
               <h4 className="font-bold text-slate-900 text-sm">Real-Time Sync Canvas</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">Shared boards and scratchpads stay live-synced in milliseconds. Skip email status threads entirely.</p>
             </div>
-            <div className="p-5 border border-slate-100 rounded-2xl bg-slate-50/50 space-y-2">
+            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-2">
               <h4 className="font-bold text-slate-900 text-sm">AI Matchmaking</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">Bids spam is eliminated. Smart profiles automatically link requirements directly to verified talent.</p>
             </div>
@@ -167,15 +167,15 @@ export function HowItWorksPage() {
 
       {/* CTA */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-emerald-600 rounded-[2.5rem] p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
+        <div className="bg-emerald-600 rounded-[2.5rem] p-4 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-20 -mt-20"></div>
           
-          <div className="relative space-y-6">
+          <div className="relative space-y-3">
             <h2 className="font-display text-3xl font-black tracking-tight leading-tight">Ready to get started?</h2>
             <p className="text-emerald-100 text-xs max-w-md mx-auto leading-relaxed">
               Create a free account to join the state-of-the-art real-time collaboration canvas.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
               <Link
                 to="/signup"
                 state={{ role: 'client' }}

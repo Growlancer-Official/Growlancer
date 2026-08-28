@@ -37,13 +37,13 @@ function EmailNotVerifiedPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
       <div className="max-w-md w-full mx-4">
-        <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 text-center">
-          <div className="flex justify-center mb-6">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 text-center">
+          <div className="flex justify-center mb-3">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-12 w-12 rounded-xl" />
           </div>
 
-          <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-2xl bg-emerald-100 flex items-center justify-center">
+          <div className="flex justify-center mb-2">
+            <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center">
               <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
@@ -56,7 +56,7 @@ function EmailNotVerifiedPage() {
           <p className="text-sm text-slate-500 mb-1">
             Please verify your email to access your dashboard.
           </p>
-          <p className="text-sm text-slate-500 mb-6">
+          <p className="text-sm text-slate-500 mb-3">
             We sent a verification link to <strong className="text-slate-700">{email}</strong>
           </p>
 
@@ -64,7 +64,7 @@ function EmailNotVerifiedPage() {
             href={providerUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all mb-4"
+            className="flex items-center justify-center gap-2 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all mb-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

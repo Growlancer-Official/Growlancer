@@ -54,9 +54,9 @@ export function PhilosophyPage() {
       {/* Hero section */}
       <section className="relative py-24 overflow-hidden bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -ml-40 -mb-40"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-300" />
             Foundational Philosophy
@@ -72,9 +72,9 @@ export function PhilosophyPage() {
 
       {/* Stats Section */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
-        <div className="bg-white rounded-3xl border border-slate-200/60 shadow-xl grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100 overflow-hidden">
           {pillars.map((item, idx) => (
-            <div key={idx} className="p-8 space-y-2 hover:bg-slate-50/50 transition-colors">
+            <div key={idx} className="p-4 space-y-2 hover:bg-slate-50/50 transition-colors">
               <div className="font-display font-black text-4xl text-slate-900 tracking-tight">{item.value}</div>
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{item.label}</h4>
               <p className="text-xs text-slate-500 leading-normal">{item.desc}</p>
@@ -90,13 +90,13 @@ export function PhilosophyPage() {
           <p className="text-sm text-slate-500 max-w-md mx-auto">These ideas direct every feature, pixel, and line of code we write for our remote ecosystem.</p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3">
           {principles.map((p, idx) => (
             <div 
               key={idx} 
-              className="bg-white rounded-[2rem] border border-slate-200/50 p-8 shadow-sm flex flex-col md:flex-row gap-6 items-start hover:border-emerald-500/20 hover:shadow-md transition-all group"
+              className="bg-white rounded-[2rem] border border-slate-200/50 p-4 shadow-sm flex flex-col md:flex-row gap-3 items-start hover:border-emerald-500/20 hover:shadow-md transition-all group"
             >
-              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${p.color} text-white flex items-center justify-center shadow-lg shrink-0 group-hover:scale-105 transition-transform`}>
+              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${p.color} text-white flex items-center justify-center shadow-lg shrink-0 group-hover:scale-105 transition-transform`}>
                 <p.icon className="w-7 h-7" />
               </div>
               <div className="space-y-3">
@@ -115,15 +115,15 @@ export function PhilosophyPage() {
 
       {/* CTA Box */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-emerald-600 rounded-[2.5rem] p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-xl shadow-emerald-950/20">
+        <div className="bg-emerald-600 rounded-[2.5rem] p-4 sm:p-12 text-center text-white relative overflow-hidden shadow-xl shadow-emerald-950/20">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-20 -mt-20"></div>
           
-          <div className="relative space-y-6">
+          <div className="relative space-y-3">
             <h2 className="font-display text-3xl font-black tracking-tight leading-tight">Ready to experience remote clarity?</h2>
             <p className="text-emerald-100 text-sm max-w-md mx-auto leading-relaxed">
               Create a free account today to hire vetted creators or find secure projects with integrated payment protection.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
               <Link
                 to="/signup"
                 className="inline-flex h-12 px-6 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors shadow-md text-sm shrink-0"

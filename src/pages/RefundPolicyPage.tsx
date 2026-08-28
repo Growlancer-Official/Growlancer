@@ -68,9 +68,9 @@ export function RefundPolicyPage() {
       {/* Hero section */}
       <section className="relative py-20 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <RefreshCcw className="w-3.5 h-3.5" />
             Growlancer Refund Policy
@@ -87,7 +87,7 @@ export function RefundPolicyPage() {
 
       {/* General Principles */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="bg-white rounded-3xl p-8 border border-slate-200/50 shadow-sm space-y-4">
+        <div className="bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm space-y-2">
           <h2 className="font-display text-2xl font-black text-slate-900">General Principles</h2>
           <p className="text-sm text-slate-600 leading-relaxed font-medium">
             Because Growlancer uses an escrow system, client funds never go directly to a freelancer. Money is held
@@ -112,10 +112,10 @@ export function RefundPolicyPage() {
       {/* Refund Scenarios */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 space-y-8">
         <h2 className="font-display text-2xl font-black text-slate-900 mb-8 text-center">When Refunds Apply</h2>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {scenarios.map((s, i) => (
-            <div key={i} className="bg-white rounded-3xl p-6 border border-slate-200/50 shadow-sm flex flex-col sm:flex-row items-start gap-6 hover:border-emerald-500/20 transition-colors group">
-              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform`}>
+            <div key={i} className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm flex flex-col sm:flex-row items-start gap-3 hover:border-emerald-500/20 transition-colors group">
+              <div className={`w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform`}>
                 <s.icon className="w-7 h-7" />
               </div>
               <div className="space-y-1">
@@ -129,10 +129,10 @@ export function RefundPolicyPage() {
 
       {/* How We Prevent Refunds — mature platform promise */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-xl">
+        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 rounded-[2.5rem] p-4 sm:p-10 text-white relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl -mr-20 -mt-20"></div>
 
-          <div className="relative space-y-6">
+          <div className="relative space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-500/30">
                 <ShieldCheck className="w-5 h-5" />
@@ -145,7 +145,7 @@ export function RefundPolicyPage() {
               Refunds are a safety net — not a feature. We keep them rare by building trust into every step:
             </p>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-2 sm:grid-cols-2">
               {[
                 {
                   icon: ShieldCheck,
@@ -168,7 +168,7 @@ export function RefundPolicyPage() {
                   text: 'If work evidence exists, a refund is never auto-approved. Accusations freeze the escrow instantly and our resolution team reviews every piece of evidence before any money moves.',
                 },
               ].map((item, i) => (
-                <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-5 space-y-2">
+                <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-2">
                   <item.icon className="w-5 h-5 text-emerald-400" />
                   <p className="font-bold text-sm text-white">{item.title}</p>
                   <p className="text-xs text-slate-300 leading-relaxed font-medium">{item.text}</p>
@@ -187,10 +187,10 @@ export function RefundPolicyPage() {
 
       {/* Timing & Process */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 rounded-[2.5rem] p-8 sm:p-10 text-white relative overflow-hidden shadow-xl">
+        <div className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 rounded-[2.5rem] p-4 sm:p-10 text-white relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl -mr-20 -mt-20"></div>
 
-          <div className="relative space-y-6">
+          <div className="relative space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center border border-emerald-500/30">
                 <Clock className="w-5 h-5" />
@@ -211,7 +211,7 @@ export function RefundPolicyPage() {
               workspace logs, chat archives, milestone history and payment records — before any funds move.
             </p>
 
-            <div className="pt-4 flex flex-wrap gap-4">
+            <div className="pt-4 flex flex-wrap gap-2">
               <Link
                 to="/escrow-policy"
                 className="inline-flex h-11 px-5 items-center justify-center font-bold bg-white text-emerald-950 rounded-xl hover:bg-slate-50 transition-colors text-xs shadow-md"

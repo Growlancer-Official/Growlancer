@@ -190,7 +190,7 @@ export function CookieConsent() {
       >
         <div className="mx-auto max-w-[100rem] px-3 sm:px-6 pb-3 sm:pb-6">
           <div
-            className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+            className="relative overflow-hidden rounded-xl border border-white/10 shadow-2xl"
             style={{
               background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)',
             }}
@@ -199,11 +199,11 @@ export function CookieConsent() {
             <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-16 -left-16 w-48 h-48 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="relative z-10 p-4 sm:p-6 lg:p-8">
+            <div className="relative z-10 p-4 sm:p-3 lg:p-4">
               {/* Banner Content — Two column on desktop */}
-              <div className="flex flex-col lg:flex-row lg:items-start gap-4 lg:gap-8">
+              <div className="flex flex-col lg:flex-row lg:items-start gap-2 lg:gap-2">
                 {/* Left: Icon + Text */}
-                <div className="flex items-start gap-4 lg:flex-1">
+                <div className="flex items-start gap-2 lg:flex-1">
                   <div className="hidden sm:flex h-12 w-12 shrink-0 rounded-xl bg-emerald-500/10 border border-emerald-500/20 items-center justify-center">
                     <Cookie className="w-6 h-6 text-emerald-400" />
                   </div>
@@ -261,7 +261,7 @@ export function CookieConsent() {
       {showCustomize && (
         <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
           <div
-            className={`w-full max-w-md rounded-2xl border border-white/10 shadow-2xl transition-all duration-300 ${
+            className={`w-full max-w-md rounded-xl border border-white/10 shadow-2xl transition-all duration-300 ${
               showCustomize ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
             }`}
             style={{
@@ -270,7 +270,7 @@ export function CookieConsent() {
             onClick={e => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="p-6 pb-4 border-b border-white/5">
+            <div className="p-3 pb-4 border-b border-white/5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
@@ -291,7 +291,7 @@ export function CookieConsent() {
             </div>
 
             {/* Modal Body — Category Toggles */}
-            <div className="p-6 space-y-3 max-h-[50vh] overflow-y-auto">
+            <div className="p-3 space-y-3 max-h-[50vh] overflow-y-auto">
               {CATEGORY_INFO.map(cat => {
                 const isOn = cat.alwaysOn ? true : customPrefs[cat.id];
                 const Icon = cat.icon;
@@ -304,7 +304,7 @@ export function CookieConsent() {
                         : 'bg-white/[0.02] border-white/5'
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-2">
                       <div className="flex items-start gap-3 min-w-0">
                         <div
                           className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${
@@ -357,7 +357,7 @@ export function CookieConsent() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-6 pt-4 border-t border-white/5">
+            <div className="p-3 pt-4 border-t border-white/5">
               <div className="flex flex-col sm:flex-row gap-2">
                 <button
                   onClick={handleRejectAll}

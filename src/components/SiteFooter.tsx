@@ -10,7 +10,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
     <footer className="border-t border-slate-200 bg-white">
       {/* Main Footer Content */}
       <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 py-8 sm:py-10">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-3">
           {/* Brand Column */}
           <div className="sm:col-span-2 lg:col-span-4">
             <Link to="/" className="inline-flex items-center gap-3 group">
@@ -43,7 +43,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
 
           {/* Product Links */}
           <div className="lg:col-span-2">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Product</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Product</div>
             <ul className="space-y-3">
               <li><Link to="/how-it-works" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">How it works</Link></li>
               <li><Link to="/features" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Features</Link></li>
@@ -55,7 +55,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
 
           {/* Company Links */}
           <div className="lg:col-span-2">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Company</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Company</div>
             <ul className="space-y-3">
               <li><Link to="/about" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">About</Link></li>
               <li><Link to="/philosophy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Philosophy</Link></li>
@@ -67,7 +67,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
 
           {/* Support Links */}
           <div className="lg:col-span-2">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Support</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Support</div>
             <ul className="space-y-3">
               <li><Link to="/safety" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Safety & Trust</Link></li>
               <li><Link to="/guidelines" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Guidelines</Link></li>
@@ -79,7 +79,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
 
           {/* Legal Links */}
           <div className="lg:col-span-2">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">Legal</div>
+            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Legal</div>
             <ul className="space-y-3">
               <li><Link to="/terms" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Terms of Service</Link></li>
               <li><Link to="/privacy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Privacy Policy</Link></li>
@@ -92,7 +92,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
 
         {/* Bottom Bar */}
         <div className="mt-6 pt-6 border-t border-slate-200">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
             {/* Copyright */}
             <div className="text-sm text-slate-500 text-center lg:text-left">
               &copy; {new Date().getFullYear()} <span className="font-semibold text-slate-800">Growlancer</span>. 

@@ -66,11 +66,11 @@ export function SafetyPage() {
       </header>
 
       {/* Hero section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
+      <section className="relative py-10 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <ShieldCheck className="w-3.5 h-3.5" />
             Security & Trust
@@ -86,14 +86,14 @@ export function SafetyPage() {
 
       {/* Safety Grid */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {safetyFeatures.map((feature, index) => (
             <div 
               key={index} 
-              className="bg-white rounded-3xl p-8 border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group hover:border-emerald-500/20"
+              className="bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group hover:border-emerald-500/20"
             >
-              <div className="flex justify-between items-start mb-6">
-                <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
+              <div className="flex justify-between items-start mb-3">
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
                   <feature.icon className="w-7 h-7" />
                 </div>
                 <span className="px-2.5 py-0.5 bg-slate-100 text-slate-500 font-bold rounded-full text-[10px] uppercase tracking-wider">
@@ -109,15 +109,15 @@ export function SafetyPage() {
 
       {/* Proactive Help Promo */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-emerald-600 rounded-[2.5rem] p-8 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
+        <div className="bg-emerald-600 rounded-[2.5rem] p-4 sm:p-12 text-center text-white relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-20 -mt-20"></div>
           
-          <div className="relative space-y-6">
+          <div className="relative space-y-3">
             <h2 className="font-display text-3xl font-black tracking-tight leading-tight">Collaborate with Complete Assurance</h2>
             <p className="text-emerald-100 text-xs max-w-md mx-auto leading-relaxed">
               Have any questions or need to raise an issue? Browse our Help Center or chat with our AI assistant.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
               <Link
                 to="/help-center"
                 className="inline-flex h-12 px-6 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors shadow-md text-sm shrink-0"

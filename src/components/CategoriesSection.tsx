@@ -51,7 +51,7 @@ export function CategoriesSection({
 
   if (error) {
     return (
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3">
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
         <div className="flex-1">
           <p className="text-sm font-medium text-amber-800">Could not load categories</p>
           <p className="text-xs text-amber-600 mt-1">{error}</p>
@@ -199,7 +199,7 @@ export function CategoriesSection({
             return (
               <div
                 key={cat.id}
-                className="group bg-white rounded-2xl border border-slate-100 p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default"
+                className="group bg-white rounded-xl border border-slate-100 p-4 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 cursor-default"
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${meta.bgColor} ${meta.color} mb-3 group-hover:scale-110 transition-transform duration-200`}>
                   <Icon className="w-5 h-5" />
@@ -225,7 +225,7 @@ export function CategoriesSection({
       {showToggleButton && !loading && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="mt-6 w-full py-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-2xl border border-slate-200 hover:border-emerald-200 transition-all flex items-center justify-center gap-2 group"
+          className="mt-6 w-full py-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl border border-slate-200 hover:border-emerald-200 transition-all flex items-center justify-center gap-2 group"
         >
           <span className="transition-transform duration-300 inline-flex items-center gap-2">
             {showAll ? (

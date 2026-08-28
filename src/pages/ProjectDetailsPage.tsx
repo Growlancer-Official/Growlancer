@@ -217,12 +217,12 @@ export function ProjectDetailsPage() {
 
   if (error || !project) {
     return (
-      <main className="min-h-screen bg-cream flex items-center justify-center px-4 py-12">
-        <div className="max-w-xl w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-lg">
+      <main className="min-h-screen bg-cream flex items-center justify-center px-4 py-6">
+        <div className="max-w-xl w-full bg-white rounded-xl border border-slate-200 p-4 shadow-lg">
           <div className="text-center">
-            <Briefcase className="mx-auto h-14 w-14 text-emerald-500 mb-4" />
+            <Briefcase className="mx-auto h-14 w-14 text-emerald-500 mb-2" />
             <h1 className="text-4xl font-display font-black text-slate-900 mb-2">Project not found</h1>
-            <p className="text-sm text-slate-500 mb-6">
+            <p className="text-sm text-slate-500 mb-3">
               {error ?? 'We could not find the project you were looking for.'}
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -249,10 +249,10 @@ export function ProjectDetailsPage() {
   const badge = getStatusBadge(project.status);
 
   return (
-    <main className="min-h-screen bg-cream px-4 py-12">
+    <main className="min-h-screen bg-cream px-4 py-6">
       <div className="mx-auto max-w-[100rem]">
         {/* Navigation & Actions */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link
               to={ROUTES.HOME}
@@ -354,11 +354,11 @@ export function ProjectDetailsPage() {
           )}
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-          <section className="space-y-8">
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-slate-900 mb-4">Project details</h2>
-              <div className="space-y-4 text-slate-600">
+        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.6fr]">
+          <section className="space-y-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="text-xl font-semibold text-slate-900 mb-2">Project details</h2>
+              <div className="space-y-2 text-slate-600">
                 <div>
                   <div className="text-sm uppercase tracking-[0.2em] text-slate-500 font-semibold mb-2">Description</div>
                   <p className="leading-relaxed">{project.description}</p>
@@ -379,18 +379,18 @@ export function ProjectDetailsPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-              <h2 className="text-xl font-semibold text-slate-900 mb-4">Proposals</h2>
+            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <h2 className="text-xl font-semibold text-slate-900 mb-2">Proposals</h2>
               <p className="text-slate-600">
                 This project has <span className="font-semibold text-slate-900">{project.proposals_count ?? 0}</span> proposals so far.
               </p>
             </div>
           </section>
 
-          <aside className="space-y-6">
+          <aside className="space-y-3">
             {/* Project Meta Card */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="flex items-center gap-3 text-sm text-slate-500 mb-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+              <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
                 <User className="w-4 h-4" />
                 <span>{project.client?.name ?? 'Client'}</span>
               </div>
@@ -430,7 +430,7 @@ export function ProjectDetailsPage() {
             </TipNote>
 
             {/* Actions Card */}
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
               {!user && (
                 <>
                   <h3 className="text-lg font-semibold text-slate-900 mb-3">Next steps</h3>
@@ -438,7 +438,7 @@ export function ProjectDetailsPage() {
                     <p>Log in to respond, review proposals, or invite freelancers.</p>
                     <Link
                       to="/?modal=login"
-                      className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                      className="inline-flex w-full items-center justify-center rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
                     >
                       Login to continue
                     </Link>
@@ -450,7 +450,7 @@ export function ProjectDetailsPage() {
                   <h3 className="text-lg font-semibold text-slate-900 mb-3">Interested in this project?</h3>
                   <Link
                     to={`/dashboard/feed?apply=${project.id}`}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
                   >
                     <Send className="w-4 h-4" />
                     Apply Now
@@ -463,14 +463,14 @@ export function ProjectDetailsPage() {
                   <div className="space-y-2">
                     <Link
                       to={`/client/proposals`}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
                       View Proposals
                     </Link>
                     <Link
                       to={`/client/matches?project_id=${project.id}`}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100 transition-colors"
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100 transition-colors"
                     >
                       AI Matches
                     </Link>
@@ -485,12 +485,12 @@ export function ProjectDetailsPage() {
       {/* Close Project Modal */}
       {showCloseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-2xl mb-5 mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-3">
+            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-xl mb-5 mx-auto">
               <AlertTriangle className="w-8 h-8 text-orange-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Close Project</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
               This will mark the project as cancelled. Freelancers will no longer be able to apply.
               Active contracts will continue to be managed from your workspace.
             </p>
@@ -516,12 +516,12 @@ export function ProjectDetailsPage() {
       {/* Complete Project Modal */}
       {showCompleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-2xl mb-5 mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-3">
+            <div className="flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-xl mb-5 mx-auto">
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Complete Project</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
               This will mark the project as completed. Escrow funds will be released to the freelancer.
               This action cannot be undone.
             </p>
@@ -548,12 +548,12 @@ export function ProjectDetailsPage() {
       {/* Reopen Project Modal */}
       {showReopenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-5 mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-3">
+            <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-xl mb-5 mx-auto">
               <RefreshCw className="w-8 h-8 text-blue-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Reopen Project</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
               This will reopen the project as "Open". Freelancers will be able to apply again.
               AI matches will be regenerated.
             </p>
@@ -580,16 +580,16 @@ export function ProjectDetailsPage() {
       {/* Delete Project Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-2xl mb-5 mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-3">
+            <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-xl mb-5 mx-auto">
               <Trash2 className="w-8 h-8 text-red-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Delete Project</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
               This action cannot be undone. All project data, proposals, and associated records will be permanently removed.
               Projects with active contracts cannot be deleted.
             </p>
-            <p className="text-sm font-bold text-red-600 text-center mb-6">
+            <p className="text-sm font-bold text-red-600 text-center mb-3">
               Are you sure you want to delete "{project.title}"?
             </p>
             <div className="flex gap-3">

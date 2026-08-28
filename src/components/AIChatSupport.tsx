@@ -520,7 +520,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-2xl border border-slate-200 overflow-hidden">
+    <div className="flex flex-col h-full bg-white rounded-xl border border-slate-200 overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-emerald-50 to-blue-50">
         <div className="flex items-center justify-between">
@@ -583,11 +583,11 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2">
         {messages.length === 0 && chatMode === 'support' && supportTopics.length > 0 && (
           <div className="py-4">
-            <div className="text-center mb-6">
-              <div className="p-4 bg-emerald-100 rounded-full w-16 h-16 mx-auto mb-4">
+            <div className="text-center mb-3">
+              <div className="p-4 bg-emerald-100 rounded-full w-10 h-10 mx-auto mb-2">
                 <Headphones className="w-8 h-8 text-emerald-600" />
               </div>
               <h4 className="font-semibold text-slate-900 mb-1">How can we help you today?</h4>
@@ -600,10 +600,10 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                 <button
                   key={topic.id}
                   onClick={() => handlePickTopic(topic)}
-                  className="text-left rounded-2xl border border-slate-200 bg-white p-4 hover:border-emerald-300 hover:shadow-sm transition-all group"
+                  className="text-left rounded-xl border border-slate-200 bg-white p-4 hover:border-emerald-300 hover:shadow-sm transition-all group"
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-2xl leading-none">{topic.emoji}</span>
+                    <span className="text-lg leading-none">{topic.emoji}</span>
                     <div className="min-w-0">
                       <p className="font-bold text-slate-900 text-sm group-hover:text-emerald-700 transition-colors">{topic.title}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{topic.description}</p>
@@ -617,7 +617,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
         {messages.length === 0 && !(chatMode === 'support' && supportTopics.length > 0) && (
           <div className="text-center py-12">
-            <div className="p-4 bg-emerald-100 rounded-full w-16 h-16 mx-auto mb-4">
+            <div className="p-4 bg-emerald-100 rounded-full w-10 h-10 mx-auto mb-2">
               <Sparkles className="w-8 h-8 text-emerald-600" />
             </div>
             <h4 className="font-semibold text-slate-900 mb-2">Ask me anything</h4>
@@ -655,7 +655,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
               </div>
             )}
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+              className={`max-w-[80%] rounded-xl px-4 py-3 ${
                 message.role === 'user'
                   ? 'bg-emerald-600 text-white'
                   : 'bg-slate-100 text-slate-900'

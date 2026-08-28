@@ -363,7 +363,7 @@ export function ContestDetailPage() {
             {/* Sidebar Stats */}
             <div className="lg:w-80 space-y-2">
               {/* Prize Card */}
-              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-6 text-white">
+              <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl p-3 text-white">
                 <div className="flex items-center gap-2 mb-2">
                   <Trophy className="w-6 h-6" />
                   <span className="font-bold">Prize Pool</span>
@@ -405,7 +405,7 @@ export function ContestDetailPage() {
 
               {/* Fund Prize CTA (owner, unfunded) */}
               {isOwner && !contest.prize_funded && contest.status !== 'completed' && contest.status !== 'cancelled' && (
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
                   <h3 className="font-bold text-amber-900 flex items-center gap-2 mb-2">
                     <Lock className="w-4 h-4" />
                     Fund the Prize to Go Live
@@ -427,7 +427,7 @@ export function ContestDetailPage() {
 
               {/* Winner banner */}
               {contest.status === 'completed' && contest.winner_id && (
-                <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl p-5 text-amber-950">
+                <div className="bg-gradient-to-br from-yellow-400 to-amber-500 rounded-xl p-3 text-amber-950">
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="w-5 h-5" />
                     <span className="font-extrabold">Winner Announced</span>
@@ -438,7 +438,7 @@ export function ContestDetailPage() {
 
               {/* Winner certificates — auto-issued on award, publicly verifiable */}
               {contest.status === 'completed' && certificates.length > 0 && (
-                <div className="bg-white rounded-xl border border-slate-200 p-5 space-y-2">
+                <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-2">
                   <div className="flex items-center gap-2">
                     <Medal className="w-5 h-5 text-amber-500" />
                     <h3 className="font-bold text-slate-900">Winner Certificates</h3>
@@ -486,7 +486,7 @@ export function ContestDetailPage() {
 
               {/* Judging — award winners (owner) */}
               {isOwner && contest.status === 'judging' && contest.prize_funded && (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3">
                   <h3 className="font-bold text-emerald-900 flex items-center gap-2 mb-2">
                     <Medal className="w-4 h-4" />
                     Award Winners
@@ -529,7 +529,7 @@ export function ContestDetailPage() {
               )}
 
               {/* Time & Submissions */}
-              <div className="bg-white rounded-xl border border-slate-200 p-6 space-y-2">
+              <div className="bg-white rounded-xl border border-slate-200 p-3 space-y-2">
                 <TipNote tone="protection" compact className="!p-3">
                   <strong>Fair &amp; safe:</strong> the prize is escrowed upfront before any entries are accepted, and
                   released to the winners in real time. Entries and votes are public — everyone sees the same contest.
@@ -590,7 +590,7 @@ export function ContestDetailPage() {
       {/* Submit Form Modal */}
       {showSubmitForm && (
         <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full p-6">
+          <div className="bg-white rounded-xl max-w-lg w-full p-3">
             <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Submit Your Entry</h3>
             <form onSubmit={handleSubmit} className="space-y-2">
               <div>
@@ -701,8 +701,8 @@ export function ContestDetailPage() {
       )}
 
       {/* Submissions Section */}
-      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           {/* Submissions List */}
           <div className="lg:col-span-2">
             <h2 className="font-display text-2xl font-bold text-slate-900 mb-3">
@@ -717,7 +717,7 @@ export function ContestDetailPage() {
             ) : (
               <div className="space-y-2">
                 {submissions.map((submission) => (
-                  <div key={submission.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all">
+                  <div key={submission.id} className="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-lg transition-all">
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-emerald-100 text-emerald-700 font-bold flex items-center justify-center">
@@ -827,7 +827,7 @@ export function ContestDetailPage() {
             {/* Comments List */}
             <div className="space-y-2">
               {comments.length === 0 ? (
-                <div className="bg-white rounded-xl border border-slate-200 p-6 text-center">
+                <div className="bg-white rounded-xl border border-slate-200 p-3 text-center">
                   <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                   <p className="text-sm text-slate-500">No comments yet</p>
                 </div>
@@ -857,7 +857,7 @@ export function ContestDetailPage() {
       {/* Reviews — after completion, winner(s) & client rate each other */}
       {contest.status === 'completed' && (
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 pb-12">
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-5">
               <div>
                 <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -947,7 +947,7 @@ export function ContestDetailPage() {
       {/* Fund Prize Confirmation */}
       {showFundConfirm && (
         <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl max-w-md w-full p-3">
             <h3 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-emerald-600" />
               Fund Prize Pool
@@ -979,7 +979,7 @@ export function ContestDetailPage() {
       {/* Award Winners Confirmation */}
       {showAwardConfirm && (
         <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-md w-full p-6">
+          <div className="bg-white rounded-xl max-w-md w-full p-3">
             <h3 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-2">
               <Medal className="w-5 h-5 text-emerald-600" />
               Release Prizes?

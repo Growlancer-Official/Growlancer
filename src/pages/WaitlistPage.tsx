@@ -7,16 +7,16 @@ export function WaitlistPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
       <div className="max-w-lg w-full">
-        <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 md:p-12 text-center">
+        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 md:p-12 text-center">
           {/* Icon */}
-          <div className="flex justify-center mb-6">
-            <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200">
+          <div className="flex justify-center mb-3">
+            <div className="h-20 w-20 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-200">
               <Globe className="w-10 h-10 text-white" />
             </div>
           </div>
 
           {/* Logo */}
-          <div className="flex justify-center mb-6">
+          <div className="flex justify-center mb-3">
             <img
               src="/UpdatedLogo.webp"
               alt="Growlancer"
@@ -35,7 +35,7 @@ export function WaitlistPage() {
           </p>
 
           {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
               <Clock className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
               <h3 className="text-sm font-bold text-slate-900 mb-1">Early Access</h3>

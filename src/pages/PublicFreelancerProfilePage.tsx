@@ -391,7 +391,7 @@ export function PublicFreelancerProfilePage() {
       <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Profile Not Found</h2>
-          <p className="text-slate-500 mb-6">This freelancer profile doesn't exist or has been removed.</p>
+          <p className="text-slate-500 mb-3">This freelancer profile doesn't exist or has been removed.</p>
           <Link to="/" className="text-emerald-600 hover:underline font-medium">Go Home</Link>
         </div>
       </div>
@@ -442,11 +442,11 @@ export function PublicFreelancerProfilePage() {
         <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -left-16 w-80 h-80 bg-teal-300/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-12 sm:py-16">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+        <div className="relative max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-6 sm:py-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3">
             {/* Avatar */}
             <div className="relative flex-shrink-0">
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-white/20 ring-4 ring-white/30 shadow-xl">
+              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-white/20 ring-4 ring-white/30 shadow-xl">
                 {/* Letter fallback always behind the image */}
                 <div className="absolute inset-0 flex items-center justify-center text-4xl font-bold text-white/60">
                   {initial}
@@ -543,7 +543,7 @@ export function PublicFreelancerProfilePage() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-2 mt-8">
             {heroStats.map((stat, idx) => (
               <div key={idx} className="bg-white/10 rounded-xl p-4 text-center backdrop-blur-sm border border-white/10 hover:bg-white/15 transition-colors">
                 <stat.icon className="w-5 h-5 mx-auto mb-1.5 opacity-80" />
@@ -556,9 +556,9 @@ export function PublicFreelancerProfilePage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
         {/* Tabs */}
-        <div className="flex gap-0 border-b border-slate-200 mb-8 overflow-x-auto">
+        <div className="flex gap-0 border-b border-slate-200 mb-2 overflow-x-auto">
           {[
             { id: 'services' as const, label: 'Services', count: services.length },
             { id: 'portfolio' as const, label: 'Portfolio', count: portfolio.length },
@@ -590,18 +590,18 @@ export function PublicFreelancerProfilePage() {
         {activeTab === 'services' && (
           <div>
             {services.length === 0 ? (
-              <div className="text-center py-16">
+              <div className="text-center py-8">
                 <Package className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500">No services offered yet</p>
                 <p className="text-xs text-slate-400 mt-1">This freelancer hasn't published any services</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {services.map((service) => (
                   <Link
                     key={service.id}
                     to={`/services/${service.id}`}
-                    className="group bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
+                    className="group bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200"
                   >
                     {service.image_url && (
                       <div className="aspect-video bg-slate-50 overflow-hidden">
@@ -614,7 +614,7 @@ export function PublicFreelancerProfilePage() {
                         />
                       </div>
                     )}
-                    <div className="p-5">
+                    <div className="p-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="p-2.5 rounded-xl bg-emerald-50 group-hover:bg-emerald-100 transition-colors">
                           <Package className="w-5 h-5 text-emerald-600" />
@@ -671,16 +671,16 @@ export function PublicFreelancerProfilePage() {
         {activeTab === 'portfolio' && (
           <div>
             {portfolio.length === 0 ? (
-              <div className="text-center py-16">
+              <div className="text-center py-8">
                 <ImageIcon className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500">No portfolio items yet</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {portfolio.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all"
+                    className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all"
                   >
                     <div className="aspect-video bg-slate-50">
                       {item.image_url ? (
@@ -716,14 +716,14 @@ export function PublicFreelancerProfilePage() {
         {activeTab === 'reviews' && (
           <div>
             {reviews.length === 0 ? (
-              <div className="text-center py-16">
+              <div className="text-center py-8">
                 <Star className="w-12 h-12 text-slate-300 mx-auto mb-3" />
                 <p className="text-slate-500">No reviews yet</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 {reviews.map((review) => (
-                  <div key={review.id} className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+                  <div key={review.id} className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                     <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-sm font-medium text-slate-600 flex-shrink-0">
                         {review.reviewer?.avatar ? (
@@ -743,7 +743,7 @@ export function PublicFreelancerProfilePage() {
                         {review.review_text && (
                           <p className="text-sm text-slate-600 mt-2">{review.review_text}</p>
                         )}
-                        <div className="flex gap-4 mt-2 text-xs text-slate-400">
+                        <div className="flex gap-2 mt-2 text-xs text-slate-400">
                           <span>Quality: {review.quality_rating}/5</span>
                           <span>Communication: {review.communication_rating}/5</span>
                           <span>Timeliness: {review.timeliness_rating}/5</span>
@@ -759,10 +759,10 @@ export function PublicFreelancerProfilePage() {
         )}
 
         {activeTab === 'about' && (
-          <div className="max-w-3xl space-y-6">
+          <div className="max-w-3xl space-y-3">
             {/* Bio */}
             {profile.bio && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">About</h2>
                 <p className="text-slate-600 whitespace-pre-wrap">{profile.bio}</p>
               </div>
@@ -770,7 +770,7 @@ export function PublicFreelancerProfilePage() {
 
             {/* Skills */}
             {profile.skills && profile.skills.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">Skills</h2>
                 <div className="flex flex-wrap gap-2">
                   {profile.skills.map((skill) => (
@@ -787,7 +787,7 @@ export function PublicFreelancerProfilePage() {
 
             {/* Languages */}
             {profile.languages && profile.languages.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">Languages</h2>
                 <div className="flex flex-wrap gap-2">
                   {profile.languages.map((lang) => (
@@ -801,7 +801,7 @@ export function PublicFreelancerProfilePage() {
 
             {/* Education — can be an array or a single text string in the DB */}
             {profile.education && (Array.isArray(profile.education) ? profile.education.length > 0 : profile.education.trim()) && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">Education</h2>
                 {Array.isArray(profile.education) ? (
                   <ul className="space-y-2">
@@ -820,7 +820,7 @@ export function PublicFreelancerProfilePage() {
 
             {/* Certifications */}
             {profile.certifications && profile.certifications.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">Certifications</h2>
                 <div className="flex flex-wrap gap-2">
                   {profile.certifications.map((cert) => (
@@ -843,8 +843,8 @@ export function PublicFreelancerProfilePage() {
       {contactOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setContactOpen(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-start justify-between mb-4">
+          <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-md p-3 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-start justify-between mb-2">
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden">
                   {avatarUrl ? (
@@ -873,7 +873,7 @@ export function PublicFreelancerProfilePage() {
             {clientProjects.length === 0 ? (
               <div className="text-center py-6">
                 <Briefcase className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-sm text-slate-600 mb-4">
+                <p className="text-sm text-slate-600 mb-2">
                   You need an active project to invite {displayName}. Post a project first.
                 </p>
                 <Link
@@ -885,7 +885,7 @@ export function PublicFreelancerProfilePage() {
                 </Link>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-2">
                 <div>
                   <label className="block text-xs font-semibold text-slate-600 mb-1.5">Select project</label>
                   <select

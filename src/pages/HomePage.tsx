@@ -20,10 +20,10 @@ import { validateEmail } from '../utils/validation';
 // ═══════════════════════════════════════════════════════════════
 // Constants
 // ═══════════════════════════════════════════════════════════════
-const SECTION_PADDING = 'py-12 sm:py-16 lg:py-20';
-const SECTION_PADDING_SM = 'py-10 sm:py-14 lg:py-16';
+const SECTION_PADDING = 'py-6 sm:py-8 lg:py-10';
+const SECTION_PADDING_SM = 'py-5 sm:py-14 lg:py-8';
 const CONTAINER = 'mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12';
-const CARD_CLASS = 'rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm';
+const CARD_CLASS = 'rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm';
 
 // ═══════════════════════════════════════════════════════════════
 // Hero Section
@@ -37,7 +37,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/40 via-white to-white pointer-events-none" />
       
       <div className={`${CONTAINER} relative pt-12 sm:pt-16 lg:pt-20 pb-10 sm:pb-14 lg:pb-16`}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-10 items-center">
           {/* ── Left Content ── */}
           <div className="lg:col-span-6 lg:pr-4">
             <div className="inline-flex items-center gap-2 rounded-full bg-white ring-1 ring-slate-200 px-3 py-1.5 shadow-sm opacity-0 translate-y-2 animate-fade-up">
@@ -107,10 +107,10 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
             <div className="relative w-full max-w-[640px] opacity-0 translate-y-2 animate-fade-up animation-delay-180">
               {/* Background glow */}
               <div className="absolute -inset-4 bg-gradient-to-br from-emerald-500/20 via-transparent to-blue-500/20 rounded-[32px] blur-2xl -z-10" />
-              <div className="absolute -top-8 -right-8 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -z-10" />
+              <div className="absolute -top-4 -right-8 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -z-10" />
               <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -z-10" />
 
-              <div className="relative rounded-2xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-slate-900">
+              <div className="relative rounded-xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-slate-900">
                 {!videoFailed ? (
                   <video
                     autoPlay
@@ -125,9 +125,9 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                     <source src="/videos/hero-demo.mp4" type="video/mp4" />
                   </video>
                 ) : (
-                  <div className="w-full aspect-video flex flex-col items-center justify-center p-6 sm:p-8 bg-gradient-to-br from-slate-800 to-emerald-900">
+                  <div className="w-full aspect-video flex flex-col items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-slate-800 to-emerald-900">
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="h-14 w-14 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
+                      <div className="h-14 w-14 rounded-xl bg-emerald-500/20 flex items-center justify-center">
                         <svg className="w-7 h-7 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
                       </div>
                       <div className="text-left">
@@ -219,7 +219,7 @@ function HowItWorksSection() {
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-4 mb-10 lg:mb-12">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-2 mb-10 lg:mb-12">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">How it works</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -234,10 +234,10 @@ function HowItWorksSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 lg:gap-3">
           {steps.map((step) => (
-            <div key={step.number} className="group relative rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-6 hover:shadow-lg hover:ring-emerald-200/50 transition-all duration-300">
-              <div className="flex items-center justify-between mb-4">
+            <div key={step.number} className="group relative rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 hover:shadow-lg hover:ring-emerald-200/50 transition-all duration-300">
+              <div className="flex items-center justify-between mb-2">
                 <div className={`h-11 w-11 rounded-xl flex items-center justify-center ${step.color}`}>
                   <step.icon className="text-white w-5 h-5" />
                 </div>
@@ -321,7 +321,7 @@ function WhyDifferentSection() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-14">
           <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Why Growlancer</div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 font-display mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 font-display mb-2">
             Built Different — How We Stand Out
           </h2>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
@@ -331,7 +331,7 @@ function WhyDifferentSection() {
         </div>
 
         {/* Comparison Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-14 lg:mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-14 lg:mb-16">
           {comparisons.map((item, i) => (
             <div key={i} className={`${CARD_CLASS} overflow-hidden hover:shadow-md transition-all duration-200`}>
               <div className="p-4 bg-emerald-50/60">
@@ -361,16 +361,16 @@ function WhyDifferentSection() {
         </div>
 
         {/* Pillar Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 lg:gap-3">
           {pillars.map((pillar, i) => {
             const Icon = pillar.icon;
             return (
               <div
                 key={i}
-                className={`group bg-white rounded-2xl p-6 lg:p-7 border border-slate-200/60 shadow-sm hover:shadow-lg ${pillar.border} transition-all duration-300 relative overflow-hidden`}
+                className={`group bg-white rounded-xl p-3 lg:p-7 border border-slate-200/60 shadow-sm hover:shadow-lg ${pillar.border} transition-all duration-300 relative overflow-hidden`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${pillar.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                <div className="relative flex items-start gap-4">
+                <div className="relative flex items-start gap-2">
                   <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${pillar.iconBg} group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="w-6 h-6" />
                   </div>
@@ -395,9 +395,9 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-2">
           {/* Left Content */}
-          <div className="lg:col-span-7 rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-6 sm:p-8 lg:p-10">
+          <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4 lg:p-10">
             <div>
               <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-1">For freelancers</div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -444,7 +444,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
           </div>
 
           {/* Right Dark Card */}
-          <div className="lg:col-span-5 rounded-2xl bg-slate-900 text-white shadow-sm p-6 sm:p-8 lg:p-10 relative overflow-hidden">
+          <div className="lg:col-span-5 rounded-xl bg-slate-900 text-white shadow-sm p-3 sm:p-4 lg:p-10 relative overflow-hidden">
             <div className="absolute -top-16 -right-20 h-56 w-56 rounded-full bg-emerald-600/20" />
             <div className="absolute -bottom-16 -left-20 h-56 w-56 rounded-full bg-orange-500/15" />
             <div className="relative">
@@ -485,10 +485,10 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-2">
           {/* Left Card */}
-          <div className="lg:col-span-5 rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-6 sm:p-8 flex flex-col">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="lg:col-span-5 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4 flex flex-col">
+            <div className="flex items-center gap-3 mb-2">
               <div className="h-10 w-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center">
                 <Timer className="text-orange-600 w-5 h-5" />
               </div>
@@ -567,7 +567,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
           </div>
 
           {/* Right Content */}
-          <div className="lg:col-span-7 rounded-2xl bg-white ring-1 ring-slate-200/70 shadow-sm p-6 sm:p-8">
+          <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4">
             <div>
               <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Client workflow preview</div>
               <h3 className="mt-2 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-display">
@@ -625,7 +625,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
       <div className={CONTAINER}>
         {/* Error banner */}
         {error && !loading && (
-          <div className="mb-6 flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs">
+          <div className="mb-3 flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs">
             <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
             <span>Could not load live category data.</span>
             <button onClick={refresh} className="ml-auto text-xs font-medium text-amber-700 underline hover:text-amber-800 whitespace-nowrap">
@@ -634,7 +634,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
           </div>
         )}
 
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-4 mb-8 lg:mb-10">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-2 mb-2 lg:mb-10">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Categories</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -760,7 +760,7 @@ function LiveServicesSection() {
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-4 mb-8 lg:mb-10">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-2 mb-2 lg:mb-10">
           <div className="max-w-2xl">
             <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">
               <span className="relative flex h-2 w-2">
@@ -786,7 +786,7 @@ function LiveServicesSection() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className={`${CARD_CLASS} animate-pulse`}>
                 <div className="aspect-video bg-slate-100" />
@@ -803,7 +803,7 @@ function LiveServicesSection() {
             <p className="text-slate-500 text-sm">No services published yet — be the first to list one!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
             {services.map((service) => (
               <Link
                 key={service.id}
@@ -885,7 +885,7 @@ function FeaturesSection() {
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
-        <div className="max-w-2xl mb-8 lg:mb-10">
+        <div className="max-w-2xl mb-2 lg:mb-10">
           <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Features</div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">Product features</h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
@@ -893,11 +893,11 @@ function FeaturesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
           {features.map((feat) => {
             const styles = colorStyles[feat.color as keyof typeof colorStyles];
             return (
-              <div key={feat.title} className={`${CARD_CLASS} p-6 ${styles.hover} hover:shadow-md transition-all duration-200 group`}>
+              <div key={feat.title} className={`${CARD_CLASS} p-3 ${styles.hover} hover:shadow-md transition-all duration-200 group`}>
                 <div className={`h-10 w-10 rounded-xl ring-1 flex items-center justify-center ${styles.bg} group-hover:scale-110 transition-transform`}>
                   <feat.icon className="w-5 h-5" />
                 </div>
@@ -920,8 +920,8 @@ function PricingSection() {
     <section className={`${SECTION_PADDING} bg-white`}>
       <div className={CONTAINER}>
         <div className={`${CARD_CLASS} overflow-hidden`}>
-          <div className="p-6 sm:p-8 lg:p-10">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+          <div className="p-3 sm:p-4 lg:p-10">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
               <div className="max-w-2xl">
                 <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Pricing</div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -976,8 +976,8 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
     <section className={`${SECTION_PADDING} bg-white`}>
       <div className={CONTAINER}>
         <div className={`${CARD_CLASS} overflow-hidden`}>
-          <div className="p-6 sm:p-8 lg:p-10">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+          <div className="p-3 sm:p-4 lg:p-10">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
               <div className="max-w-2xl">
                 <div className="text-xs font-semibold text-violet-600 uppercase tracking-widest mb-2">Team Projects</div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -1048,7 +1048,7 @@ function TrustSection() {
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-2">
           <div className="lg:col-span-5">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Trust</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -1058,7 +1058,7 @@ function TrustSection() {
               Growlancer builds trust by making the system understandable: how matching works, 
               how payments are protected, and how projects stay organized.
             </p>
-            <div className={`mt-6 ${CARD_CLASS} p-5 hover:shadow-md transition-all`}>
+            <div className={`mt-6 ${CARD_CLASS} p-3 hover:shadow-md transition-all`}>
               <div className="flex items-start gap-3">
                 <Eye className="text-emerald-600 w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div>
@@ -1072,13 +1072,13 @@ function TrustSection() {
             </div>
           </div>
 
-          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-2">
             {[
               { icon: Eye, title: 'Transparency', desc: 'See fit reasons and key signals behind each recommendation.', bg: 'bg-slate-50 ring-slate-200 text-slate-600' },
               { icon: LockKeyhole, title: 'Escrow safety', desc: 'Milestones + secure escrow support a safer payment flow.', bg: 'bg-emerald-50 ring-emerald-100 text-emerald-600' },
               { icon: ClipboardCheck, title: 'Workflow control', desc: 'Scope and delivery stay structured, reducing misalignment.', bg: 'bg-orange-50 ring-orange-100 text-orange-600' },
             ].map(({ icon: Icon, title, desc, bg }) => (
-              <div key={title} className={`${CARD_CLASS} p-6 hover:shadow-md transition-all duration-200 group`}>
+              <div key={title} className={`${CARD_CLASS} p-3 hover:shadow-md transition-all duration-200 group`}>
                 <div className={`h-10 w-10 rounded-xl ring-1 flex items-center justify-center ${bg} group-hover:scale-110 transition-transform`}>
                   <Icon className="w-5 h-5" />
                 </div>
@@ -1158,8 +1158,8 @@ function WaitlistSection() {
     return (
       <section className={SECTION_PADDING_SM}>
         <div className={CONTAINER}>
-          <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-lg p-8 sm:p-12 text-center">
-            <CheckCircle2 className="w-12 h-12 mx-auto mb-4 text-emerald-300" />
+          <div className="rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-lg p-4 sm:p-12 text-center">
+            <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-emerald-300" />
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight font-display mb-3">You're on the list!</h2>
             <p className="text-emerald-100 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
               We'll notify you as soon as Growlancer launches. Stay tuned!
@@ -1173,14 +1173,14 @@ function WaitlistSection() {
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
-        <div className="relative rounded-2xl bg-gradient-to-br from-slate-900 to-emerald-900 text-white shadow-xl overflow-hidden">
+        <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-emerald-900 text-white shadow-xl overflow-hidden">
           <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-emerald-500/15" />
           <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-emerald-600/10" />
 
-          <div className="relative p-8 sm:p-10 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+          <div className="relative p-4 sm:p-10 lg:p-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-center">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-2">
                   <Sparkles className="w-3 h-3" />
                   EARLY ACCESS
                 </div>
@@ -1268,12 +1268,12 @@ function CTASection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'cl
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
-        <div className="relative rounded-2xl bg-slate-900 text-white shadow-sm overflow-hidden ring-1 ring-slate-800">
+        <div className="relative rounded-xl bg-slate-900 text-white shadow-sm overflow-hidden ring-1 ring-slate-800">
           <div className="absolute -top-20 -right-24 h-72 w-72 rounded-full bg-emerald-600/20" />
           <div className="absolute -bottom-28 -left-28 h-80 w-80 rounded-full bg-orange-500/15" />
 
-          <div className="relative p-8 sm:p-10 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="relative p-4 sm:p-10 lg:p-12">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-center">
               <div className="lg:col-span-7">
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-display">
                   Start your freelancing journey today.

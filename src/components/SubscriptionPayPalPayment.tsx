@@ -142,12 +142,12 @@ export function SubscriptionPayPalPayment({
 
   if (step === 'success') {
     return (
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg text-center max-h-[calc(100vh-2rem)] overflow-y-auto">
-        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+      <div className="bg-white rounded-xl p-3 sm:p-3 shadow-lg text-center max-h-[calc(100vh-2rem)] overflow-y-auto">
+        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
           <CheckCircle className="w-8 h-8 text-emerald-600" />
         </div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">Subscription Activated!</h2>
-        <p className="text-slate-600 mb-6">
+        <h2 className="text-lg font-bold text-slate-900 mb-2">Subscription Activated!</h2>
+        <p className="text-slate-600 mb-3">
           Your {planName} subscription is now active. You have full access to all Pro features.
         </p>
         <div className="bg-emerald-50 rounded-lg p-4 text-left">
@@ -164,12 +164,12 @@ export function SubscriptionPayPalPayment({
 
   if (step === 'error') {
     return (
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
-        <div className="flex items-center gap-3 text-red-600 mb-4">
+      <div className="bg-white rounded-xl p-3 sm:p-3 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
+        <div className="flex items-center gap-3 text-red-600 mb-2">
           <AlertCircle className="w-6 h-6" />
           <h2 className="text-xl font-bold">Payment Failed</h2>
         </div>
-        <p className="text-slate-600 mb-6">{error || 'Something went wrong with the payment.'}</p>
+        <p className="text-slate-600 mb-3">{error || 'Something went wrong with the payment.'}</p>
         <button
           onClick={() => setStep('review')}
           className="w-full py-3 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors"
@@ -182,8 +182,8 @@ export function SubscriptionPayPalPayment({
 
   if (step === 'payment') {
     return (
-      <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
-        <div className="flex items-center gap-3 mb-6">
+      <div className="bg-white rounded-xl p-3 sm:p-3 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
+        <div className="flex items-center gap-3 mb-3">
           <Crown className="w-6 h-6 text-amber-600" />
           <h2 className="text-xl font-bold text-slate-900">Upgrade to Pro</h2>
         </div>
@@ -272,17 +272,17 @@ export function SubscriptionPayPalPayment({
   }
 
   return (
-    <div className="bg-white rounded-2xl p-5 sm:p-6 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
-      <div className="flex items-center gap-3 mb-6">
+    <div className="bg-white rounded-xl p-3 sm:p-3 shadow-lg max-h-[calc(100vh-2rem)] overflow-y-auto">
+      <div className="flex items-center gap-3 mb-3">
         <Crown className="w-6 h-6 text-amber-600" />
         <h2 className="text-xl font-bold text-slate-900">Upgrade to Pro</h2>
       </div>
 
-      <div className="space-y-4 mb-6">
+      <div className="space-y-2 mb-3">
         <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
           <h3 className="font-semibold text-amber-900 mb-1">{planName} Plan</h3>
           <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-amber-600">{formatCurrency(planPrice)}</span>
+            <span className="text-xl font-bold text-amber-600">{formatCurrency(planPrice)}</span>
             <span className="text-amber-700">/month</span>
           </div>
         </div>
@@ -344,7 +344,7 @@ export function SubscriptionPayPalPayment({
       </div>
 
       {/* Pay from Growlancer Wallet */}
-      <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-4">
+      <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-2">
         <div className="flex items-center gap-2 text-blue-700 mb-1">
           <Wallet className="w-4 h-4" />
           <span className="font-semibold">Pay from Growlancer Wallet</span>

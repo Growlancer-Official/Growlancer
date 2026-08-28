@@ -179,7 +179,7 @@ export function ProSubscriptionPage() {
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-10 w-10 rounded-xl" />
             <span className="font-display text-xl font-bold tracking-tight">Growlancer</span>
           </div>
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-2">
             <Link
               to="/dashboard"
               className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors"
@@ -194,11 +194,11 @@ export function ProSubscriptionPage() {
         {/* Hero Section */}
         <section className="pt-16 pb-24 px-4">
           <div className="max-w-4xl mx-auto text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-4 h-4" />
               FREELANCER PREMIUM
             </div>
-            <h1 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-6">
+            <h1 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-3">
               One Simple Plan. <span className="text-emerald-600">{formatCurrency(299)}/month.</span>
             </h1>
             <p className="text-lg text-slate-500 max-w-2xl mx-auto">
@@ -208,7 +208,7 @@ export function ProSubscriptionPage() {
 
             {/* Subscription Status Banner */}
             {isPro && subscription && (
-              <div className="mt-8 mx-auto max-w-md p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3">
+              <div className="mt-8 mx-auto max-w-md p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
                 <CheckCircle className="text-emerald-600 text-2xl w-6 h-6 flex-shrink-0" />
                 <div className="text-left">
                   <p className="text-emerald-900 font-bold text-sm flex items-center gap-2">
@@ -254,7 +254,7 @@ export function ProSubscriptionPage() {
 
           {/* Plan Cards — responsive: 1-2 plans stay centered & tidy, 3+ go full width */}
           <div
-            className={`mx-auto grid grid-cols-1 gap-6 px-4 ${
+            className={`mx-auto grid grid-cols-1 gap-3 px-4 ${
               displayPlans.length <= 2
                 ? 'max-w-3xl md:grid-cols-2'
                 : 'max-w-5xl md:grid-cols-2 lg:grid-cols-3'
@@ -268,7 +268,7 @@ export function ProSubscriptionPage() {
               return (
                 <div
                   key={plan.id}
-                  className={`relative flex flex-col rounded-[32px] p-8 border-2 transition-all duration-300 bg-white ${
+                  className={`relative flex flex-col rounded-[32px] p-4 border-2 transition-all duration-300 bg-white ${
                     isPopular
                       ? 'border-emerald-500 shadow-[0_20px_50px_-12px_rgba(16,185,129,0.25)] md:scale-105 lg:scale-110'
                       : 'border-slate-200 hover:border-slate-300'
@@ -288,7 +288,7 @@ export function ProSubscriptionPage() {
 
                   {/* Plan Icon */}
                   <div
-                    className={`p-3 rounded-2xl w-fit mb-6 ${
+                    className={`p-3 rounded-xl w-fit mb-3 ${
                       isFree ? 'bg-slate-100' : 'bg-emerald-100'
                     }`}
                   >
@@ -301,10 +301,10 @@ export function ProSubscriptionPage() {
 
                   {/* Plan Name & Description */}
                   <h3 className="font-display text-xl font-bold mb-1">{plan.name}</h3>
-                  <p className="text-sm text-slate-500 mb-6">{plan.description}</p>
+                  <p className="text-sm text-slate-500 mb-3">{plan.description}</p>
 
                   {/* Price */}
-                  <div className="mb-6">
+                  <div className="mb-3">
                     <div className="flex items-baseline gap-1">
                       <span className="font-display text-4xl font-extrabold">
                         {formatCurrency(plan.price)}
@@ -377,7 +377,7 @@ export function ProSubscriptionPage() {
                           <button
                             onClick={() => void handleRenew()}
                             disabled={cancelling}
-                            className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all text-sm disabled:opacity-50"
+                            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all text-sm disabled:opacity-50"
                           >
                             {cancelling ? 'Renewing...' : 'Renew Now'}
                           </button>
@@ -388,7 +388,7 @@ export function ProSubscriptionPage() {
                       ) : (
                         <button
                           onClick={() => setShowCancelConfirm(true)}
-                          className="w-full py-3 rounded-2xl font-bold transition-all text-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          className="w-full py-3 rounded-xl font-bold transition-all text-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
                         >
                           Cancel Subscription
                         </button>
@@ -397,7 +397,7 @@ export function ProSubscriptionPage() {
                   ) : isFree ? (
                     <button
                       disabled
-                      className="w-full py-3 rounded-2xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed text-sm"
+                      className="w-full py-3 rounded-xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed text-sm"
                     >
                       Current Plan
                     </button>
@@ -405,7 +405,7 @@ export function ProSubscriptionPage() {
                     <button
                       onClick={() => handleUpgrade(plan.id, true)}
                       disabled={upgrading === plan.id}
-                      className={`w-full py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm ${
+                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm ${
                         isPopular
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                           : 'bg-slate-900 hover:bg-slate-800 text-white'
@@ -427,7 +427,7 @@ export function ProSubscriptionPage() {
                     <button
                       onClick={() => handleUpgrade(plan.id)}
                       disabled={upgrading === plan.id}
-                      className={`w-full py-3 rounded-2xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm ${
+                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm ${
                         isPopular
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                           : 'bg-slate-900 hover:bg-slate-800 text-white'
@@ -448,7 +448,7 @@ export function ProSubscriptionPage() {
                   )}
 
                   {isCurrentPlan && !subscription?.cancel_at_period_end && (
-                    <div className="mt-4 flex items-center justify-center gap-6">
+                    <div className="mt-4 flex items-center justify-center gap-3">
                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                         <ShieldCheck className="text-emerald-500 w-4 h-4" />
                         Active
@@ -461,7 +461,7 @@ export function ProSubscriptionPage() {
           </div>
 
           {/* Trust Badges */}
-          <div className="max-w-md mx-auto mt-8 flex items-center justify-center gap-6">
+          <div className="max-w-md mx-auto mt-8 flex items-center justify-center gap-3">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <ShieldCheck className="text-emerald-500 w-4 h-4" />
               Secure Payment
@@ -481,16 +481,16 @@ export function ProSubscriptionPage() {
         <section className="bg-white py-24 border-y border-slate-100">
           <div className="max-w-[100rem] mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="font-display text-3xl font-extrabold mb-4">What Premium Unlocks</h2>
+              <h2 className="font-display text-3xl font-extrabold mb-2">What Premium Unlocks</h2>
               <p className="text-slate-500">
                 Fair and honest: Premium is purely AI + productivity tools. Your packages, proposals,
                 visibility and matching score are <strong>identical</strong> with or without it — everything on this
                 platform is merit-based.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-              <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <h3 className="font-bold text-lg mb-3">Unlimited AI Writing</h3>
@@ -498,8 +498,8 @@ export function ProSubscriptionPage() {
                   Unlimited AI-generated titles, descriptions and cover letters (free users get 5/day).
                 </p>
               </div>
-              <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-6">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <div className="h-12 w-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-3">
                   <MessageSquare className="w-6 h-6" />
                 </div>
                 <h3 className="font-bold text-lg mb-3">AI Assistant & Support</h3>
@@ -507,8 +507,8 @@ export function ProSubscriptionPage() {
                   Priority AI assistant responses and 24/7 priority support — human help when you need it.
                 </p>
               </div>
-              <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-6">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <div className="h-12 w-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-3">
                   <BarChart3 className="w-6 h-6" />
                 </div>
                 <h3 className="font-bold text-lg mb-3">Advanced Analytics</h3>
@@ -516,8 +516,8 @@ export function ProSubscriptionPage() {
                   Deeper performance insights for your profile, services and proposals.
                 </p>
               </div>
-              <div className="p-8 rounded-3xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-6">
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                <div className="h-12 w-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-3">
                   <CheckCircle className="w-6 h-6" />
                 </div>
                 <h3 className="font-bold text-lg mb-3">Verified Badge</h3>
@@ -535,15 +535,15 @@ export function ProSubscriptionPage() {
             <h2 className="font-display text-3xl font-extrabold text-center mb-16">
               Compare Plans
             </h2>
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-x-auto shadow-sm">
+            <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
               <table className="w-full min-w-[640px] border-collapse text-left">
                 <thead className="bg-slate-50">
                   <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-widest text-slate-400">
-                    <th className="p-6">Feature</th>
+                    <th className="p-3">Feature</th>
                     {displayPlans.map((plan) => (
                       <th
                         key={plan.id}
-                        className={`p-6 ${
+                        className={`p-3 ${
                           plan.ai_priority ? 'text-emerald-600' : ''
                         }`}
                       >
@@ -555,7 +555,7 @@ export function ProSubscriptionPage() {
                 <tbody className="divide-y divide-slate-100">
                   {allFeatures.map((feature) => (
                     <tr key={feature.key} className="text-sm">
-                      <td className="p-6 font-medium text-slate-700">
+                      <td className="p-3 font-medium text-slate-700">
                         {feature.label}
                       </td>
                       {displayPlans.map((plan) => {
@@ -566,7 +566,7 @@ export function ProSubscriptionPage() {
                         return (
                           <td
                             key={plan.id}
-                            className={`p-6 ${
+                            className={`p-3 ${
                               isHighlighted ? 'font-bold text-emerald-600' : ''
                             } ${
                               value === '—' ? 'text-slate-400' : ''
@@ -588,11 +588,11 @@ export function ProSubscriptionPage() {
         <section className="py-24 bg-slate-50">
           <div className="max-w-[100rem] mx-auto px-4">
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm mb-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm mb-3">
                 <Sparkles className="w-4 h-4" />
                 Pre-Launch Phase
               </div>
-              <h2 className="font-display text-3xl font-extrabold mb-4">
+              <h2 className="font-display text-3xl font-extrabold mb-2">
                 Be Among the First
               </h2>
               <p className="text-slate-500 max-w-2xl mx-auto">
@@ -614,8 +614,8 @@ export function ProSubscriptionPage() {
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
               <div className="space-y-8">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                     <div className="text-emerald-600 mb-2">
                       <Lock className="w-6 h-6" />
                     </div>
@@ -626,7 +626,7 @@ export function ProSubscriptionPage() {
                       All subscription payments are processed securely via Razorpay — UPI, cards and net banking.
                     </p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                     <div className="text-emerald-600 mb-2">
                       <CheckCircle className="w-6 h-6" />
                     </div>
@@ -637,7 +637,7 @@ export function ProSubscriptionPage() {
                       What you see is what you pay — {formatCurrency(299)}/month, flat. No tiers, no setup fees, no surprises.
                     </p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                     <div className="text-emerald-600 mb-2">
                       <TrendingUp className="w-6 h-6" />
                     </div>
@@ -648,7 +648,7 @@ export function ProSubscriptionPage() {
                       No lock-in, no long-term contract. Cancel whenever you want — your access stays until the period ends.
                     </p>
                   </div>
-                  <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                     <div className="text-emerald-600 mb-2">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
@@ -661,8 +661,8 @@ export function ProSubscriptionPage() {
                   </div>
                 </div>
               </div>
-              <div className="space-y-6">
-                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+              <div className="space-y-3">
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                   <h4 className="font-bold mb-3 text-lg text-slate-900">What do I get in Premium?</h4>
                   <p className="text-slate-600 text-sm leading-relaxed">
                     Premium unlocks our <strong>AI writing tools, AI assistant, profile optimization and advanced analytics</strong>.
@@ -670,14 +670,14 @@ export function ProSubscriptionPage() {
                     visibility or matching score. Everything on the platform stays merit-based for everyone.
                   </p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                   <h4 className="font-bold mb-3 text-lg text-slate-900">Can I cancel anytime?</h4>
                   <p className="text-slate-600 text-sm leading-relaxed">
                     Yes — cancel from the Premium page with one click, any time. No contracts, no commitments.
                     You keep access until the end of your billing period, and you can renew again whenever you like.
                   </p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                   <h4 className="font-bold mb-3 text-lg text-slate-900">Does Premium boost my ranking or visibility?</h4>
                   <p className="text-slate-600 text-sm leading-relaxed">
                     <strong>No — never.</strong> Ranking, matching and visibility are always merit-based and identical for
@@ -685,7 +685,7 @@ export function ProSubscriptionPage() {
                     pay-to-win boost.
                   </p>
                 </div>
-                <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                   <h4 className="font-bold mb-3 text-lg text-slate-900">What's the difference between Free and Premium?</h4>
                   <p className="text-slate-600 text-sm leading-relaxed">
                     Free gives you the full marketplace: 3-tier packages, unlimited proposals (fair-use), escrow,
@@ -700,9 +700,9 @@ export function ProSubscriptionPage() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white py-12 border-t border-slate-100">
+      <footer className="bg-white py-6 border-t border-slate-100">
         <div className="max-w-[100rem] mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="flex items-center justify-center gap-2 mb-3">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-bold text-slate-900">Growlancer</span>
           </div>

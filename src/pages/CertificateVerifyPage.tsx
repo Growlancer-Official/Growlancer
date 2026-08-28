@@ -100,10 +100,10 @@ function VerificationSkeleton() {
         </p>
       </div>
       {/* Skeleton */}
-      <div className="w-full max-w-lg space-y-4 animate-pulse">
+      <div className="w-full max-w-lg space-y-2 animate-pulse">
         <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full w-3/4 mx-auto" />
         <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full w-1/2 mx-auto" />
-        <div className="grid grid-cols-2 gap-4 mt-8">
+        <div className="grid grid-cols-2 gap-2 mt-8">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="h-16 bg-slate-200 dark:bg-slate-700 rounded-xl" />
           ))}
@@ -154,7 +154,7 @@ function VerifiedCard({
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8">
       {/* Verified Badge Header - Centered */}
-      <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4 duration-700">
+      <div className="text-center space-y-2 animate-in fade-in slide-in-from-top-4 duration-700">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-500/10 ring-4 ring-emerald-500/20">
           <AnimatedCheckmark className="w-12 h-12" />
         </div>
@@ -169,10 +169,10 @@ function VerifiedCard({
       </div>
 
       {/* QR Code + Quick Info Row */}
-      <div className="flex flex-col sm:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="flex flex-col sm:flex-row gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
         {/* QR Code */}
         <div className={`
-          shrink-0 p-4 rounded-2xl border flex flex-col items-center
+          shrink-0 p-4 rounded-xl border flex flex-col items-center
           ${dark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'}
           shadow-lg
         `}>
@@ -181,7 +181,7 @@ function VerifiedCard({
         </div>
         {/* Quick Info */}
         <div className={`
-          flex-1 p-5 rounded-2xl border
+          flex-1 p-3 rounded-xl border
           ${dark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'}
           shadow-lg
         `}>
@@ -220,7 +220,7 @@ function VerifiedCard({
 
       {/* Details Grid */}
       <div className={`
-        rounded-2xl border overflow-hidden
+        rounded-xl border overflow-hidden
         ${dark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'}
         shadow-[0_8px_32px_-8px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_-8px_rgba(0,0,0,0.3)]
         animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200
@@ -233,7 +233,7 @@ function VerifiedCard({
             <FileText className="w-4 h-4 text-emerald-500" /> Credential Details
           </h3>
         </div>
-        <div className="p-6">
+        <div className="p-3">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px">
             {details.map((item, i) => (
               <div
@@ -291,7 +291,7 @@ function VerifiedCard({
       {/* Performance Summary (if LOR) */}
       {isLOR && meta.performance_summary && (
         <div className={`
-          rounded-2xl p-6 border shadow-lg
+          rounded-xl p-3 border shadow-lg
           ${dark ? 'bg-slate-900 border-violet-800/30' : 'bg-white border-violet-200'}
           animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300
         `}>
@@ -307,10 +307,10 @@ function VerifiedCard({
       {/* Founder Signature */}
       <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
         <div className={`
-          inline-block px-10 py-6 rounded-2xl border shadow-lg
+          inline-block px-10 py-6 rounded-xl border shadow-lg
           ${dark ? 'bg-slate-900 border-slate-700/50' : 'bg-white border-slate-200'}
         `}>
-          <div className="w-20 h-20 mx-auto mb-3 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-xl shadow-emerald-500/20">
+          <div className="w-20 h-20 mx-auto mb-3 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-xl shadow-emerald-500/20">
             <User className="w-9 h-9 text-white" />
           </div>
           <p className="text-base font-bold text-slate-900 dark:text-white">Mohammed Miran Khan</p>
@@ -325,7 +325,7 @@ function VerifiedCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-center gap-4 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+      <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
         <button onClick={() => window.print()}
           className="flex items-center gap-2.5 px-6 py-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.97]
             border-slate-300 dark:border-slate-600
@@ -348,7 +348,7 @@ function VerifiedCard({
       {/* Trust Footer */}
       <div className="text-center">
         <div className={`
-          inline-flex items-center gap-4 px-6 py-3 rounded-xl border
+          inline-flex items-center gap-2 px-6 py-3 rounded-xl border
           ${dark ? 'bg-slate-900/50 border-slate-700/30' : 'bg-slate-50 border-slate-200'}
         `}>
           <div className="flex items-center gap-2">
@@ -375,7 +375,7 @@ function VerifiedCard({
 function RevokedCard({ cert, dark }: { cert: Certificate; dark: boolean }) {
   const meta = (cert.metadata || {}) as Record<string, any>;
   return (
-    <div className="w-full max-w-lg mx-auto text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-lg mx-auto text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 dark:bg-red-500/10 ring-4 ring-red-500/20">
         <XCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
       </div>
@@ -386,10 +386,10 @@ function RevokedCard({ cert, dark }: { cert: Certificate; dark: boolean }) {
         </p>
       </div>
       <div className={`
-        rounded-2xl p-6 border text-left shadow-lg
+        rounded-xl p-3 border text-left shadow-lg
         ${dark ? 'bg-slate-900 border-red-800/30' : 'bg-white border-red-200'}
       `}>
-        <div className="space-y-4">
+        <div className="space-y-2">
           {cert.revoked_reason && (
             <div>
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Reason</p>
@@ -419,7 +419,7 @@ function RevokedCard({ cert, dark }: { cert: Certificate; dark: boolean }) {
 // ─── Replaced Card ──────────────────────────────────────────────────
 function ReplacedCard({ onViewLatest, dark }: { onViewLatest: () => void; dark: boolean }) {
   return (
-    <div className="w-full max-w-lg mx-auto text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-lg mx-auto text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-500/10 ring-4 ring-amber-500/20">
         <RefreshCw className="w-10 h-10 text-amber-600 dark:text-amber-400" />
       </div>
@@ -430,10 +430,10 @@ function ReplacedCard({ onViewLatest, dark }: { onViewLatest: () => void; dark: 
         </p>
       </div>
       <div className={`
-        rounded-2xl p-6 border shadow-lg
+        rounded-xl p-3 border shadow-lg
         ${dark ? 'bg-slate-900 border-amber-800/30' : 'bg-white border-amber-200'}
       `}>
-        <div className="space-y-4">
+        <div className="space-y-2">
           <p className="text-sm text-slate-600 dark:text-slate-400 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-800/20">
             This credential has been replaced by a newer version. Please use the new credential for verification.
           </p>
@@ -450,7 +450,7 @@ function ReplacedCard({ onViewLatest, dark }: { onViewLatest: () => void; dark: 
 // ─── Invalid/Error Card ─────────────────────────────────────────────
 function InvalidCard({ error, onRetry }: { error: string; onRetry: () => void }) {
   return (
-    <div className="w-full max-w-lg mx-auto text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-lg mx-auto text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 dark:bg-red-500/10 ring-4 ring-red-500/20">
         <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
       </div>
@@ -471,7 +471,7 @@ function InvalidCard({ error, onRetry }: { error: string; onRetry: () => void })
 // ─── Rate Limited Card ──────────────────────────────────────────────
 function RateLimitedCard() {
   return (
-    <div className="w-full max-w-lg mx-auto text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="w-full max-w-lg mx-auto text-center space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-500/10 ring-4 ring-amber-500/20">
         <Clock className="w-10 h-10 text-amber-600 dark:text-amber-400" />
       </div>
@@ -598,7 +598,7 @@ export function CertificateVerifyPage() {
     return (
       <div className={`min-h-screen transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
         <HeaderBar dark={dark} onToggleTheme={toggleTheme} onHome={handleReset} />
-        <main className="max-w-4xl mx-auto px-4 py-12 md:py-16">
+        <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
           <VerificationSkeleton />
         </main>
         <FooterBar dark={dark} />
@@ -610,7 +610,7 @@ export function CertificateVerifyPage() {
     return (
       <div className={`min-h-screen transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
         <HeaderBar dark={dark} onToggleTheme={toggleTheme} onHome={handleReset} showNewSearch />
-        <main className="max-w-4xl mx-auto px-4 py-12 md:py-16">
+        <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
           {result.mode === 'verified' && result.certificate && <VerifiedCard cert={result.certificate} internProfile={result.internProfile} dark={dark} />}
           {result.mode === 'revoked' && result.certificate && <RevokedCard cert={result.certificate} dark={dark} />}
           {result.mode === 'replaced' && <ReplacedCard onViewLatest={handleViewLatest} dark={dark} />}
@@ -627,11 +627,11 @@ export function CertificateVerifyPage() {
     <div className={`min-h-screen transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
       <HeaderBar dark={dark} onToggleTheme={toggleTheme} />
 
-      <main className="max-w-4xl mx-auto px-4 py-12 md:py-16">
+      <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
         {/* Hero Section */}
         <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <div className="flex items-center justify-center mb-5">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-xl shadow-emerald-500/25 ring-4 ring-emerald-500/10">
+            <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-xl shadow-emerald-500/25 ring-4 ring-emerald-500/10">
               <Shield className="w-8 h-8 text-white" />
             </div>
           </div>
@@ -645,7 +645,7 @@ export function CertificateVerifyPage() {
 
         {/* Search Section - Glass Card */}
         <div className={`
-          max-w-2xl mx-auto mb-12 rounded-2xl border p-6 md:p-8
+          max-w-2xl mx-auto mb-12 rounded-xl border p-3 md:p-4
           ${dark
             ? 'bg-slate-900/80 border-slate-700/50 backdrop-blur-xl'
             : 'bg-white/80 border-slate-200 backdrop-blur-xl'
@@ -654,7 +654,7 @@ export function CertificateVerifyPage() {
           animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100
         `}>
           {/* Tab Toggle */}
-          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 mb-6">
+          <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 mb-3">
             <button onClick={() => setActiveTab('code')}
               className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === 'code'
@@ -713,14 +713,14 @@ export function CertificateVerifyPage() {
         </div>
 
         {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
           {[
             { icon: Shield, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/10', title: 'Real-Time Verification', desc: 'Instant credential verification with live data from our secure database.' },
             { icon: FileText, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-500/10', title: 'Certificates & LOR', desc: 'Verify internship certificates and letters of recommendation issued by Growlancer.' },
             { icon: Lock, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-500/10', title: 'Tamper-Proof', desc: 'Each credential is cryptographically signed and cannot be altered.' },
           ].map((card, i) => (
-            <div key={i} className={`p-6 rounded-2xl border text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${dark ? 'bg-slate-900/60 border-slate-700/50 hover:border-slate-600' : 'bg-white/60 border-slate-200 hover:border-slate-300'}`}>
-              <div className={`mx-auto w-12 h-12 rounded-xl ${card.bg} flex items-center justify-center mb-4`}>
+            <div key={i} className={`p-3 rounded-xl border text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${dark ? 'bg-slate-900/60 border-slate-700/50 hover:border-slate-600' : 'bg-white/60 border-slate-200 hover:border-slate-300'}`}>
+              <div className={`mx-auto w-12 h-12 rounded-xl ${card.bg} flex items-center justify-center mb-2`}>
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2">{card.title}</h3>
@@ -730,9 +730,9 @@ export function CertificateVerifyPage() {
         </div>
 
         {/* How It Works */}
-        <div className={`max-w-3xl mx-auto mb-10 p-6 md:p-8 rounded-2xl border ${dark ? 'bg-slate-900/40 border-slate-700/30' : 'bg-white/40 border-slate-200'} animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300`}>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white text-center mb-6">How Verification Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`max-w-3xl mx-auto mb-10 p-3 md:p-4 rounded-xl border ${dark ? 'bg-slate-900/40 border-slate-700/30' : 'bg-white/40 border-slate-200'} animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300`}>
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white text-center mb-3">How Verification Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { step: '01', title: 'Get Your Code', desc: 'Your employer will send you a unique verification code via email.', color: 'text-emerald-600 dark:text-emerald-400' },
               { step: '02', title: 'Enter Code', desc: 'Type or paste the code in the search bar above and click Verify.', color: 'text-emerald-600 dark:text-emerald-400' },
@@ -751,7 +751,7 @@ export function CertificateVerifyPage() {
 
         {/* Trust Badge */}
         <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-          <div className={`inline-flex items-center gap-6 px-8 py-4 rounded-2xl border shadow-sm ${dark ? 'bg-slate-900/50 border-slate-700/30' : 'bg-white/50 border-slate-200'}`}>
+          <div className={`inline-flex items-center gap-3 px-8 py-4 rounded-xl border shadow-sm ${dark ? 'bg-slate-900/50 border-slate-700/30' : 'bg-white/50 border-slate-200'}`}>
             {[
               { icon: Shield, label: 'Digitally Verified' },
               { icon: Clock, label: 'Real-Time' },
@@ -827,14 +827,14 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
 function FooterBar({ dark }: { dark: boolean }) {
   const navigate = useNavigate();
   return (
-    <footer className={`border-t py-8 px-4 ${dark ? 'border-slate-800/50 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
+    <footer className={`border-t py-4 px-4 ${dark ? 'border-slate-800/50 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
       <div className="max-w-4xl mx-auto text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
           <img src="/UpdatedLogo.webp" alt="" className="h-6 w-6 rounded-lg opacity-40" />
           <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Growlancer</span>
         </div>
         <p className="text-[10px] text-slate-400 dark:text-slate-500">© {new Date().getFullYear()} Growlancer. All rights reserved.</p>
-        <div className="flex items-center justify-center gap-4 mt-2">
+        <div className="flex items-center justify-center gap-2 mt-2">
           {['Terms', 'Privacy', 'Contact'].map(item => (
             <button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}
               className="text-[10px] text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{item}</button>

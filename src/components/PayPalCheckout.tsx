@@ -134,12 +134,12 @@ export function PayPalCheckout({
   }
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-slate-600">Total Amount</p>
-            <p className="text-2xl font-bold text-slate-900">
+            <p className="text-lg font-bold text-slate-900">
               {formatCurrency(Number.isFinite(orderData.amount) ? orderData.amount : 0, orderData.currency || 'INR')}
             </p>
           </div>

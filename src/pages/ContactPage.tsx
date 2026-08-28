@@ -28,11 +28,11 @@ export function ContactPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 text-white border-b border-emerald-900/30">
+      <section className="relative py-10 overflow-hidden bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             AI Support
@@ -48,12 +48,12 @@ export function ContactPage() {
 
       {/* Main Content */}
       <main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
           {/* Left: Context selector + Info cards */}
-          <div className="lg:col-span-1 space-y-4">
+          <div className="lg:col-span-1 space-y-2">
             {/* Role Context Selector */}
             {!user && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
                 <h3 className="text-sm font-bold text-slate-900 mb-3">I need help as a...</h3>
                 <div className="flex gap-2">
                   <button
@@ -82,7 +82,7 @@ export function ContactPage() {
 
             {/* Features */}
             <div className="space-y-3">
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors">
+              <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm hover:border-emerald-200 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
                     <Zap className="w-5 h-5 text-emerald-600" />
@@ -94,7 +94,7 @@ export function ContactPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors">
+              <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm hover:border-emerald-200 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
                     <Clock className="w-5 h-5 text-indigo-600" />
@@ -106,7 +106,7 @@ export function ContactPage() {
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors">
+              <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm hover:border-emerald-200 transition-colors">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
                     <Shield className="w-5 h-5 text-purple-600" />
@@ -120,7 +120,7 @@ export function ContactPage() {
             </div>
 
             {/* Quick Links */}
-            <div className="bg-gradient-to-br from-slate-50 to-emerald-50/50 border border-slate-200 rounded-2xl p-5 space-y-3 shadow-sm">
+            <div className="bg-gradient-to-br from-slate-50 to-emerald-50/50 border border-slate-200 rounded-xl p-3 space-y-3 shadow-sm">
               <div className="flex items-center gap-2">
                 <Headphones className="w-4 h-4 text-emerald-600" />
                 <h4 className="font-bold text-slate-900 text-sm">Quick Resources</h4>

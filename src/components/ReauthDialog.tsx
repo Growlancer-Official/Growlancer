@@ -158,7 +158,7 @@ export function ReauthDialog({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
 
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 p-8 animate-fade-in">
+      <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl border border-slate-200 p-4 animate-fade-in">
         {/* Close */}
         <button
           onClick={onClose}
@@ -168,24 +168,24 @@ export function ReauthDialog({
           <X className="w-5 h-5" />
         </button>
 
-        <div className="flex justify-center mb-5">
-          <div className="h-14 w-14 rounded-2xl bg-emerald-100 flex items-center justify-center">
+        <div className="flex justify-center mb-2.5">
+          <div className="h-14 w-14 rounded-xl bg-emerald-100 flex items-center justify-center">
             <ShieldCheck className="w-7 h-7 text-emerald-600" />
           </div>
         </div>
 
         <h2 className="text-center font-display text-xl font-bold text-slate-900 mb-1.5">{title}</h2>
-        <p className="text-center text-sm text-slate-500 mb-6">{description}</p>
+        <p className="text-center text-sm text-slate-500 mb-3">{description}</p>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+          <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <p className="text-xs text-red-600">{error}</p>
           </div>
         )}
 
         {/* Mode switcher */}
-        <div className="grid grid-cols-2 gap-2 mb-5">
+        <div className="grid grid-cols-2 gap-2 mb-2.5">
           <button
             type="button"
             onClick={() => { setMode('password'); setError(null); }}
@@ -213,7 +213,7 @@ export function ReauthDialog({
         {phase === 'success' ? (
           <div className="text-center py-6">
             <div className="flex justify-center mb-3">
-              <div className="h-14 w-14 rounded-2xl bg-emerald-100 flex items-center justify-center">
+              <div className="h-14 w-14 rounded-xl bg-emerald-100 flex items-center justify-center">
                 <ShieldCheck className="w-7 h-7 text-emerald-600" />
               </div>
             </div>
@@ -229,7 +229,7 @@ export function ReauthDialog({
                 busyRef.current = false;
               });
             }}
-            className="space-y-4"
+            className="space-y-2"
           >
             {mode === 'password' ? (
               <div className="space-y-1.5">

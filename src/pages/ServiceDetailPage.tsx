@@ -220,7 +220,7 @@ export function ServiceDetailPage() {
       <div className="min-h-screen flex items-center justify-center bg-cream">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Service Not Found</h2>
-          <p className="text-slate-500 mb-6">This service doesn't exist or is no longer available.</p>
+          <p className="text-slate-500 mb-3">This service doesn't exist or is no longer available.</p>
           <Link to="/" className="text-emerald-600 hover:underline font-medium">Go Home</Link>
         </div>
       </div>
@@ -405,10 +405,10 @@ export function ServiceDetailPage() {
         </div>
       )}
 
-      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-8">
+          <div className="lg:col-span-2 space-y-2">
             {/* Service Header */}
             <div>
               <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
@@ -421,7 +421,7 @@ export function ServiceDetailPage() {
                 )}
               </div>
               <h1 className="font-display text-3xl font-bold text-slate-900">{service.title}</h1>
-              <div className="flex flex-wrap items-center gap-4 mt-3 text-sm text-slate-500">
+              <div className="flex flex-wrap items-center gap-2 mt-3 text-sm text-slate-500">
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   {service.delivery_time} delivery
@@ -444,14 +444,14 @@ export function ServiceDetailPage() {
             </div>
 
             {/* Description */}
-            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
               <h2 className="text-lg font-semibold text-slate-900 mb-3">Description</h2>
               <div className="text-slate-600 whitespace-pre-wrap leading-relaxed">{service.description}</div>
             </div>
 
             {/* Tags */}
             {service.tags && service.tags.length > 0 && (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">Tags</h2>
                 <div className="flex flex-wrap gap-2">
                   {service.tags.map((tag) => (
@@ -468,7 +468,7 @@ export function ServiceDetailPage() {
 
             {/* Revision Policy — transparent to the client */}
             {(typeof service.revisions === 'number' && service.revisions > 0) || Number(service.extra_revision_price) > 0 ? (
-              <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
                   <CheckCircle className="w-5 h-5 text-emerald-600" />
                   Revision Policy
@@ -519,9 +519,9 @@ export function ServiceDetailPage() {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-3">
             {/* Package Selector Card — FINAL MODEL: 3 tiers + add-ons */}
-            <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
               <p className="text-sm font-bold text-slate-900 mb-3">Choose a package</p>
 
               {/* Tier comparison — Fiverr-style cards */}
@@ -719,8 +719,8 @@ export function ServiceDetailPage() {
             {/* 🤝 Make an Offer Modal */}
             {showOfferModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={() => !submittingOffer && setShowOfferModal(false)}>
-                <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex items-start justify-between mb-4">
+                <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-3" onClick={(e) => e.stopPropagation()}>
+                  <div className="flex items-start justify-between mb-2">
                     <div>
                       <h3 className="text-lg font-bold text-slate-900">Make a Price Offer</h3>
                       <p className="text-xs text-slate-500 mt-1">
@@ -732,7 +732,7 @@ export function ServiceDetailPage() {
                     </button>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">Your offer ({currencySymbol()}) *</label>
                       <input
@@ -777,7 +777,7 @@ export function ServiceDetailPage() {
             {service.freelancer && (
               <Link
                 to={`/freelancer/${service.freelancer_id}`}
-                className="block bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all"
+                className="block bg-white rounded-xl border border-slate-100 p-3 shadow-sm hover:shadow-md transition-all"
               >
                 <div className="flex items-center gap-3 mb-3">
                   <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-lg font-medium text-slate-600 flex-shrink-0">

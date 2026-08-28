@@ -17,13 +17,13 @@ const termsSections: Section[] = [
     icon: BookOpen,
     content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Welcome to Growlancer ("Platform", "we", "us", or "our"). These Terms of Service constitute a legally binding agreement made between you, whether personally or on behalf of an entity ("you", "User", "Client", or "Freelancer") and Growlancer, concerning your access to and use of our website, applications, and services.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             By accessing the Platform, creating an account, or clicking "Accept", you acknowledge that you have read, understood, and agree to be bound by all of these Terms. If you do not agree with all of these terms, you are expressly prohibited from using the Platform and must discontinue use immediately.
           </p>
-          <div className="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-4 flex gap-3 text-emerald-800 text-sm font-medium">
+          <div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-4 flex gap-3 text-emerald-800 text-sm font-medium">
             <ShieldCheck className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
             <div>
               <p className="font-bold">Eligibility Requirement</p>
@@ -39,13 +39,13 @@ const termsSections: Section[] = [
       icon: Scale,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer operates as a high-fidelity workspace matching platform. We provide the infrastructure (including our real-time collaborative workspace canvases, interactive Kanban boards, focus-locked shared scratchpads, and secure escrow tools) to facilitate professional engagements.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             You explicitly acknowledge and agree that:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
             <li><strong>Independent Status:</strong> Freelancers are independent contractors, not employees, agents, or partners of Growlancer or the Client. Nothing in these Terms creates an employment, agency, partnership, or joint venture relationship between you and Growlancer, and no freelancer is entitled to employee benefits, withholdings, or protections provided to employees.</li>
             <li><strong>Service Contracts:</strong> Upon a Client purchasing a Freelancer's Service or awarding a bid, a direct, legally binding contract is established between the Client and the Freelancer. Growlancer is not a party to this contract, but acts as a secure platform and escrow facilitator.</li>
             <li><strong>Performance Quality:</strong> Freelancers are solely responsible for the quality, accuracy, and timely delivery of their work as agreed upon in the workspace.</li>
@@ -59,11 +59,11 @@ const termsSections: Section[] = [
       icon: IndianRupee,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             To sustain our real-time synchronization servers, AI semantic matching models, and secure escrow operations, Growlancer implements a highly competitive and flat fee structure across all transactions.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+            <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Client Fee</span>
                 <h4 className="text-3xl font-black text-slate-900 mt-1">5%</h4>
@@ -72,7 +72,7 @@ const termsSections: Section[] = [
                 </p>
               </div>
             </div>
-            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm flex flex-col justify-between">
+            <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Freelancer Fee</span>
                 <h4 className="text-3xl font-black text-slate-900 mt-1">0%</h4>
@@ -99,10 +99,10 @@ const termsSections: Section[] = [
       icon: Lock,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer's proprietary <strong>Escrow Safety Protection</strong> is designed to help reduce financial risk for both parties and minimize the coordination gaps that can occur on freelancing platforms. Escrow helps protect both clients and freelancers by holding funds until agreed milestones or completion conditions are met, but it cannot eliminate every dispute.
           </p>
-          <div className="relative border-l-2 border-emerald-500 pl-4 space-y-4 mb-6">
+          <div className="relative border-l-2 border-emerald-500 pl-4 space-y-2 mb-3">
             <div>
               <h5 className="font-bold text-slate-900 text-sm">A. Contract Funding</h5>
               <p className="text-slate-600 text-xs mt-1">Clients must fully fund the contract amount (milestone or project total + the 5% platform fee) into a secure Growlancer Escrow balance before the Freelancer starts working. This is designed to help confirm that funds are available before work begins.</p>
@@ -133,15 +133,15 @@ const termsSections: Section[] = [
       icon: FileCode,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Intellectual Property ("IP") rights are critical for both clients and freelancers. Unless explicitly agreed otherwise in a custom written contract between the Freelancer and the Client:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
             <li><strong>Automatic Transfer:</strong> Upon the Client's final payment release of the respective project's escrow funds, all intellectual property rights, ownership, and titles in the deliverables created specifically for that project are transferred to the Client, subject to any separate written agreement between the Freelancer and Client to the contrary.</li>
             <li><strong>Pre-Existing Intellectual Property:</strong> The Freelancer retains all rights to any pre-existing code, libraries, design templates, and tools used during the project. Freelancer grants the Client a perpetual, royalty-free, worldwide license to use such pre-existing intellectual property within the deliverables, as is standard for platform-delivered work.</li>
             <li><strong>Platform Portfolio Rights:</strong> Freelancers are granted a limited license to showcase completed deliverables in their Growlancer portfolios, unless the Client has purchased a "Private Work" contract that specifies confidentiality.</li>
           </ul>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             <strong>Ownership Distinctions:</strong> Growlancer does not automatically own, and makes no claim to, the work product, deliverables, or content created by Freelancers or uploaded by Users. Growlancer retains ownership of the Platform itself, including its software, design, trademarks, logos, and other platform intellectual property. Users retain ownership of their user-generated content and uploaded files, and Clients retain ownership of assets they provide to a Freelancer for a project. By uploading content to the Platform, you grant Growlancer a limited, non-exclusive, worldwide, royalty-free license to host, display, and process that content solely to operate and improve the Platform.
           </p>
         </>
@@ -153,10 +153,10 @@ const termsSections: Section[] = [
       icon: Gavel,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             In the event of a coordination breakdown or standard mismatch in deliverables, users can trigger the official dispute process directly in their active Milestones tab.
           </p>
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 space-y-3 mb-6">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3 mb-3">
             <h5 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
               The 3-Step Dispute Protocol:
@@ -176,13 +176,13 @@ const termsSections: Section[] = [
       icon: AlertOctagon,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             To support a safe, fair, and reliable environment for both parties, Growlancer strictly prohibits circumvention of our system's secure escrow and project matching structures.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Prohibited actions include:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
             <li>Exchanging direct emails, phone numbers, MessageSquare invites, or social accounts prior to a contract being funded.</li>
             <li>Soliciting, suggesting, or accepting direct payments outside of the Growlancer system (e.g. direct PayPal, wire transfers, crypto payments) for projects initially sourced on Growlancer.</li>
             <li>Registering multiple user accounts under fake identities to game our AI matching systems or bypass platform suspension restrictions.</li>
@@ -199,16 +199,16 @@ const termsSections: Section[] = [
       icon: AlertOctagon,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             <strong>IMPORTANT: PLEASE READ THIS SECTION CAREFULLY. IT LIMITS THE LIABILITY OF GROWLANCER AND ITS AFFILIATES.</strong>
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             To the fullest extent permitted by applicable law, in no event shall Growlancer, its officers, directors, employees, or agents be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses, arising out of or in connection with your use of the Platform, whether based on warranty, contract, tort (including negligence), or any other legal theory, even if Growlancer has been advised of the possibility of such damages.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer's total liability to you for any claims arising from or relating to these Terms or your use of the Platform shall be limited to the aggregate amount of fees paid by you to Growlancer in the twelve (12) months preceding the event giving rise to the claim.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             The limitations in this section do not apply to liability that cannot be excluded or limited by applicable law, such as liability for gross negligence, fraud, or death or personal injury caused by negligence.
           </p>
         </>
@@ -220,16 +220,16 @@ const termsSections: Section[] = [
       icon: Shield,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             <strong>IMPORTANT: PLEASE READ THIS SECTION CAREFULLY. IT DISCLAIMS CERTAIN WARRANTIES.</strong>
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             THE PLATFORM IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT ANY WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED. TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, GROWLANCER DISCLAIMS ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, AND COURSE OF DEALING OR USAGE OF TRADE.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer does not warrant that: (a) the Platform will function uninterrupted, secure, or available at any particular time or location; (b) any errors or defects will be corrected; (c) the results of using the Platform will meet your requirements or expectations; or (d) the Platform is free of viruses or other harmful components.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             No advice or information, whether oral or written, obtained by you from Growlancer or through the Platform shall create any warranty not expressly stated in these Terms.
           </p>
         </>
@@ -241,10 +241,10 @@ const termsSections: Section[] = [
       icon: Cpu,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer uses artificial intelligence ("AI") and automated systems to assist with features such as project matching, dispute analysis, workspace coordination, and AI writing (generating project titles, descriptions, service listings, and cover messages from your input). AI is intended to help improve your experience and may provide recommendations, but it does not make final or perfect decisions.
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
             <li><strong>AI Assists, It Does Not Decide:</strong> AI-generated recommendations and outputs are provided to support, not replace, human judgment. Dispute resolutions and other decisions are subject to human review where applicable.</li>
             <li><strong>Not Professional Advice:</strong> AI-generated recommendations, including matching suggestions and dispute analysis, should not be treated as legal, financial, tax, or other professional advice.</li>
             <li><strong>No Guarantee of Outcomes:</strong> AI assistance does not guarantee project success, matching quality, or any particular outcome. Outputs may occasionally require human review or correction.</li>
@@ -259,10 +259,10 @@ const termsSections: Section[] = [
       icon: Gavel,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer is a technology platform and does not provide legal, financial, tax, accounting, employment, immigration, or other professional consulting services. Content available on the Platform, including AI-generated recommendations and informational materials, is provided for general informational purposes only.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             You remain solely responsible for obtaining independent professional advice where required, including in relation to your contracts, taxes, employment status, intellectual property, or compliance with applicable laws.
           </p>
         </>
@@ -274,10 +274,10 @@ const termsSections: Section[] = [
       icon: Shield,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer shall not be liable for any failure or delay in performing its obligations under these Terms caused by events beyond its reasonable control, including but not limited to natural disasters, internet or network outages, cloud provider failures, payment provider outages, cyber attacks, government actions, war, civil unrest, pandemics, power failures, and other unforeseen events.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Where such an event occurs, Growlancer will use reasonable efforts to resume performance as soon as reasonably practicable. Obligations suspended by a force majeure event will resume once the event ceases to affect performance.
           </p>
         </>
@@ -289,13 +289,13 @@ const termsSections: Section[] = [
       icon: HelpCircle,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             These Terms of Service shall be governed by and construed in accordance with the laws of the jurisdiction of the Platform's incorporation, without regard to conflict of law principles.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             If any provision of these Terms is deemed invalid or unenforceable, that specific clause shall be severed, and the remaining provisions shall continue in full force and effect.
           </p>
-          <div className="bg-slate-900 rounded-3xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-2 mt-6">
             <div>
               <h5 className="font-bold text-sm">Have legal or compliance questions?</h5>
               <p className="text-xs text-slate-400 mt-1">Submit a support ticket and our team will review your inquiry.</p>
@@ -369,7 +369,7 @@ export function TermsPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-4">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-2">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Shield className="w-3.5 h-3.5" />
             Legal Terms
@@ -385,10 +385,10 @@ export function TermsPage() {
       </section>
 
       {/* Legal Structure Grid */}
-      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-2">
         {/* Sticky Sidebar Outline */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 space-y-2 bg-white rounded-3xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
+          <div className="sticky top-24 space-y-2 bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
             <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Outline Navigation</h3>
             <div className="space-y-1">
               {sections.map((section) => {
@@ -424,10 +424,10 @@ export function TermsPage() {
               <section
                 key={section.id}
                 id={section.id}
-                className="bg-white rounded-[2rem] border border-slate-200/60 p-6 sm:p-8 shadow-sm scroll-mt-24 hover:shadow-md transition-shadow duration-300"
+                className="bg-white rounded-[2rem] border border-slate-200/60 p-3 sm:p-4 shadow-sm scroll-mt-24 hover:shadow-md transition-shadow duration-300"
               >
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-100">
-                  <div className="h-10 w-10 bg-emerald-100/80 rounded-2xl flex items-center justify-center text-emerald-700 shrink-0">
+                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-slate-100">
+                  <div className="h-10 w-10 bg-emerald-100/80 rounded-xl flex items-center justify-center text-emerald-700 shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
                   <h2 className="font-display font-black text-xl text-slate-900 leading-tight">

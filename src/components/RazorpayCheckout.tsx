@@ -193,12 +193,12 @@ export function RazorpayCheckout({
 
   // Idle state - show payment button
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div className={`space-y-2 ${className}`}>
       <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-slate-600">Total Amount</p>
-            <p className="text-2xl font-bold text-slate-900">
+            <p className="text-lg font-bold text-slate-900">
               {formatMoney(orderData.amount, orderData.currency || 'INR')}
             </p>
           </div>

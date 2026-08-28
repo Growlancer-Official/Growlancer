@@ -89,8 +89,8 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+      <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-3 border-b border-slate-100">
           <div>
             <h3 className="font-display text-lg font-bold text-slate-900">Leave a Review</h3>
             <p className="text-xs text-slate-500 mt-0.5">{projectTitle || 'Contract'}</p>
@@ -100,7 +100,7 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
           </button>
         </div>
 
-        <div className="p-5 space-y-5">
+        <div className="p-3 space-y-2.5">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>
           )}
@@ -110,7 +110,7 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
             <StarRow value={rating} onChange={setRating} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {[
               { label: 'Communication', v: communication, set: setCommunication },
               { label: 'Quality of work', v: quality, set: setQuality },

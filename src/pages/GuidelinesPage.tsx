@@ -42,11 +42,11 @@ export function GuidelinesPage() {
       </header>
 
       {/* Hero section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
+      <section className="relative py-10 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-3xl -mr-40 -mt-40"></div>
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-40"></div>
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Compass className="w-3.5 h-3.5" />
             Community Guidelines
@@ -62,10 +62,10 @@ export function GuidelinesPage() {
 
       {/* Do's and Dont's */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {/* Dos */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/50 shadow-sm space-y-6">
-            <div className="flex items-center gap-4">
+          <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200/50 shadow-sm space-y-3">
+            <div className="flex items-center gap-2">
               <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 flex-shrink-0">
                 <CheckCircle className="w-6 h-6 text-emerald-600" />
               </div>
@@ -75,7 +75,7 @@ export function GuidelinesPage() {
               </div>
             </div>
 
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               {dos.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -86,8 +86,8 @@ export function GuidelinesPage() {
           </div>
 
           {/* Donts */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/50 shadow-sm space-y-6">
-            <div className="flex items-center gap-4">
+          <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200/50 shadow-sm space-y-3">
+            <div className="flex items-center gap-2">
               <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center border border-red-100 flex-shrink-0">
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
@@ -97,7 +97,7 @@ export function GuidelinesPage() {
               </div>
             </div>
 
-            <ul className="space-y-4">
+            <ul className="space-y-2">
               {donts.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -111,7 +111,7 @@ export function GuidelinesPage() {
 
       {/* Team Projects note */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12">
-        <div className="bg-violet-50 border border-violet-200 rounded-[2rem] p-6 shadow-sm">
+        <div className="bg-violet-50 border border-violet-200 rounded-[2rem] p-3 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="h-10 w-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
               <Compass className="w-5 h-5 text-violet-700" />
@@ -132,7 +132,7 @@ export function GuidelinesPage() {
 
       {/* Enforcement Alert Box */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12">
-        <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-6 flex flex-col sm:flex-row gap-4 items-start shadow-sm">
+        <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-3 flex flex-col sm:flex-row gap-2 items-start shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-5 h-5 text-amber-700 animate-pulse" />
           </div>
@@ -147,15 +147,15 @@ export function GuidelinesPage() {
 
       {/* Support link */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20 text-center">
-        <div className="bg-emerald-600 rounded-[2.5rem] p-8 sm:p-12 text-white relative overflow-hidden shadow-xl">
+        <div className="bg-emerald-600 rounded-[2.5rem] p-4 sm:p-12 text-white relative overflow-hidden shadow-xl">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-20 -mt-20"></div>
           
-          <div className="relative space-y-6">
+          <div className="relative space-y-3">
             <h2 className="font-display text-3xl font-black tracking-tight leading-tight">Spotted a violation?</h2>
             <p className="text-emerald-100 text-xs max-w-md mx-auto leading-relaxed">
               If you see something that violates our guidelines, please create a support ticket and we'll review it promptly.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
               <Link
                 to="/contact"
                 className="inline-flex h-12 px-6 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors shadow-md text-sm shrink-0"

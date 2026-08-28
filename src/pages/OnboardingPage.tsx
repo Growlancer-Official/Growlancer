@@ -563,10 +563,10 @@ export function OnboardingPage() {
       </div>
 
       {/* Content */}
-      <main className="flex-1 flex items-start justify-center p-4 sm:p-6 pt-8">
+      <main className="flex-1 flex items-start justify-center p-4 sm:p-3 pt-8">
         <div className="max-w-2xl w-full">
           <div
-            className={`bg-white rounded-3xl p-6 sm:p-10 shadow-sm border border-slate-100 transition-all duration-400 ${
+            className={`bg-white rounded-xl p-3 sm:p-10 shadow-sm border border-slate-100 transition-all duration-400 ${
               animationDir === 'next'
                 ? 'animate-in fade-in slide-in-from-right-4'
                 : 'animate-in fade-in slide-in-from-left-4'
@@ -575,14 +575,14 @@ export function OnboardingPage() {
             {/* ═══════════ WELCOME STEP ═══════════ */}
             {step === 'welcome' && (
               <div className="text-center">
-                <div className="inline-flex items-center justify-center h-24 w-24 rounded-3xl bg-emerald-100 text-emerald-600 mb-8">
+                <div className="inline-flex items-center justify-center h-24 w-24 rounded-xl bg-emerald-100 text-emerald-600 mb-2">
                   <Sparkles className="w-12 h-12" />
                 </div>
 
-                <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+                <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
                   Welcome to Growlancer!
                 </h1>
-                <p className="text-slate-600 text-lg leading-relaxed mb-8 max-w-lg mx-auto">
+                <p className="text-slate-600 text-lg leading-relaxed mb-2 max-w-lg mx-auto">
                   Set up your profile so our AI can match you with the perfect projects — it only takes a few minutes.
                 </p>
 
@@ -591,7 +591,7 @@ export function OnboardingPage() {
                     before committing); GitHub/LinkedIn OAuth and invited users pick
                     their account type here. Choosing updates the profile role so the
                     rest of the flow (and the dashboard redirect) matches. */}
-                <div className="mb-8 text-left">
+                <div className="mb-2 text-left">
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
                     I want to...
                   </p>
@@ -599,7 +599,7 @@ export function OnboardingPage() {
                     <button
                       type="button"
                       onClick={() => { setChosenRole('freelancer'); updateUser({ role: 'freelancer' }); }}
-                      className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
                         chosenRole === 'freelancer'
                           ? 'border-emerald-500 bg-emerald-50 shadow-md'
                           : 'border-slate-200 bg-white hover:border-emerald-300'
@@ -617,7 +617,7 @@ export function OnboardingPage() {
                     <button
                       type="button"
                       onClick={() => { setChosenRole('client'); updateUser({ role: 'client' }); }}
-                      className={`flex items-center gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 text-left transition-all ${
                         chosenRole === 'client'
                           ? 'border-emerald-500 bg-emerald-50 shadow-md'
                           : 'border-slate-200 bg-white hover:border-emerald-300'
@@ -638,7 +638,7 @@ export function OnboardingPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2">
                   {[
                     { icon: User, label: isFreelancer ? 'Your Profile' : 'Company Info', color: 'bg-blue-100 text-blue-600' },
                     { icon: Briefcase, label: isFreelancer ? 'Your Skills' : 'Your Industry', color: 'bg-purple-100 text-purple-600' },
@@ -665,8 +665,8 @@ export function OnboardingPage() {
             {/* ═══════════ PROFILE STEP ═══════════ */}
             {step === 'profile' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
                     <User className="w-6 h-6" />
                   </div>
                   <div>
@@ -684,7 +684,7 @@ export function OnboardingPage() {
                 {isFreelancer ? (
                   <div>
                     {/* Avatar / Profile Photo */}
-                    <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-2 mb-2">
                   <div className="relative">
                     <div className="w-20 h-20 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200">
                       {freelancerForm.avatar_url ? (
@@ -784,7 +784,7 @@ export function OnboardingPage() {
 
                     {/* Experience only — pricing lives at the service-create step,
                         never during onboarding (final model). */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Years of Experience</label>                          <input
                             type="number"
@@ -921,9 +921,9 @@ export function OnboardingPage() {
                 ) : (
                   <div className="space-y-5">
                     {/* Company Logo */}
-                    <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-2 mb-2">
                       <div className="relative">
-                        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center">
+                        <div className="w-20 h-20 rounded-xl overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center">
                           {clientForm.company_logo ? (
                             <img src={clientForm.company_logo} alt="Company logo" className="w-full h-full object-cover" />
                           ) : (
@@ -1089,7 +1089,7 @@ export function OnboardingPage() {
                     </div>
 
                     {/* Company Size & Location */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1.5">Team Size</label>
                         <select
@@ -1172,7 +1172,7 @@ export function OnboardingPage() {
                 </div>
 
                 {/* Navigation */}
-                <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-2 mt-8 pt-6 border-t border-slate-100">
                   <button
                     onClick={handleBack}
                     className="flex items-center gap-2 px-6 py-3 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-all"
@@ -1195,8 +1195,8 @@ export function OnboardingPage() {
             {/* ═══════════ SKILLS STEP (Freelancer Only) ═══════════ */}
             {step === 'skills' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
                     <Briefcase className="w-6 h-6" />
                   </div>
                   <div>
@@ -1209,7 +1209,7 @@ export function OnboardingPage() {
 
                 {isFreelancer && (
                   <div>
-                    <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl mb-6">
+                    <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl mb-3">
                       <p className="text-sm text-purple-700">
                         <strong>Tip:</strong> Pick up to 3 categories that describe your work, then add your own skills.
                         Growlancer matches you to projects based on your categories — you can update these anytime from your profile settings.
@@ -1244,7 +1244,7 @@ export function OnboardingPage() {
                 )}
 
                 {/* Navigation — skills step is freelancer-only (clients skip it) */}
-                <div className="flex items-center justify-between gap-4 mt-8 pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-2 mt-8 pt-6 border-t border-slate-100">
                   <button
                     onClick={handleBack}
                     className="flex items-center gap-2 px-6 py-3 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-all"
@@ -1266,8 +1266,8 @@ export function OnboardingPage() {
             {/* ═══════════ REVIEW STEP ═══════════ */}
             {step === 'review' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
                     <Check className="w-6 h-6" />
                   </div>
                   <div>
@@ -1277,10 +1277,10 @@ export function OnboardingPage() {
                 </div>
 
                 {/* Profile Summary Card */}
-                <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-6 border border-emerald-100 mb-6">
+                <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-3 border border-emerald-100 mb-3">
                   {isFreelancer ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
                         <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden">
                           {freelancerForm.avatar_url ? (
                             <img src={freelancerForm.avatar_url} alt="" className="w-full h-full object-cover" />
@@ -1331,9 +1331,9 @@ export function OnboardingPage() {
                       )}
                     </div>
                   ) : (
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center overflow-hidden">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 h-16 rounded-xl bg-emerald-100 flex items-center justify-center overflow-hidden">
                           {clientForm.company_logo ? (
                             <img src={clientForm.company_logo} alt="Company logo" className="w-full h-full object-cover" />
                           ) : (
@@ -1370,7 +1370,7 @@ export function OnboardingPage() {
                 </div>
 
                 {/* Completion Percentage */}
-                <div className="mb-6">
+                <div className="mb-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-slate-700">Profile Completion</span>
                     <span className="text-sm font-bold text-emerald-600">
@@ -1412,7 +1412,7 @@ export function OnboardingPage() {
                 </div>
 
                 {/* Action */}
-                <div className="flex items-center justify-between gap-4 pt-6 border-t border-slate-100">
+                <div className="flex items-center justify-between gap-2 pt-6 border-t border-slate-100">
                   <button
                     onClick={handleBack}
                     className="flex items-center gap-2 px-6 py-3 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-all"
@@ -1461,7 +1461,7 @@ export function OnboardingPage() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
             onClick={() => setShowSkipModal(false)}
           />
-          <div className="relative bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
+          <div className="relative bg-white rounded-xl p-4 max-w-md w-full shadow-2xl animate-scale-in">
             <button
               onClick={() => setShowSkipModal(false)}
               className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 transition-colors"
@@ -1469,7 +1469,7 @@ export function OnboardingPage() {
               <X className="w-5 h-5 text-slate-400" />
             </button>
 
-            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-2xl mb-6 mx-auto">
+            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-xl mb-3 mx-auto">
               <AlertTriangle className="w-8 h-8 text-orange-600" />
             </div>
 
@@ -1477,7 +1477,7 @@ export function OnboardingPage() {
               Skip Profile Setup?
             </h2>
 
-            <p className="text-slate-600 text-center mb-8 leading-relaxed">
+            <p className="text-slate-600 text-center mb-2 leading-relaxed">
               You can skip setting up your profile for now. You can always complete it later from the Settings page, 
               but you'll need a complete profile to get AI-matched projects.
             </p>

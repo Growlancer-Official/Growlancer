@@ -119,17 +119,17 @@ export function ReferralsPage() {
   }
 
   return (
-    <div className="space-y-8 pb-20 lg:pb-0">
+    <div className="space-y-2 pb-20 lg:pb-0">
       {/* How referrals work — plain-language guide */}
       <TipNote tone="info" title="How referrals work" compact>
         Share your <strong>referral code</strong> with friends — it's the only thing that gets copied, not the full link. A referral counts as <strong>valid</strong> when the friend verifies their email, completes their profile, and sends their first proposal. Self-referrals or multiple accounts to farm rewards are flagged automatically and lead to permanent suspension.
       </TipNote>
 
       {/* Hero: Referral Stats & Code */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.15)] relative overflow-hidden">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+        <div className="lg:col-span-2 bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.15)] relative overflow-hidden">
           <div className="relative z-10">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
               <div className="space-y-1">
                 <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">Your Referral Link</h3>
                 <div className="flex items-center gap-2 mt-2">
@@ -191,7 +191,7 @@ export function ReferralsPage() {
         </div>
 
         {/* Level System */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white flex flex-col justify-between">
+        <div className="bg-slate-900 rounded-[2.5rem] p-4 text-white flex flex-col justify-between">
           <div>
             <h3 className="font-display text-xl font-bold mb-1">Level Up</h3>
             <p className="text-xs text-slate-400">Reach 25 referrals to become an Elite Referrer.</p>
@@ -270,31 +270,31 @@ export function ReferralsPage() {
       </section>
 
       {/* Rewards & Validation */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <div className="xl:col-span-2 space-y-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-2">
+        <div className="xl:col-span-2 space-y-2">
           {/* Rewards Grid */}
-          <section className="bg-white rounded-[2.5rem] p-8 border border-slate-100">
-            <div className="flex items-center justify-between mb-8">
+          <section className="bg-white rounded-[2.5rem] p-4 border border-slate-100">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="font-display text-xl font-bold">Opportunity Rewards</h3>
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cashless Program</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div className="p-3 bg-emerald-50/50 rounded-3xl border border-emerald-100">
+              <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
                 <div className="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-2">
                   <Cpu className="w-5 h-5" />
                 </div>
                 <h4 className="font-bold mb-2">AI Match Priority</h4>
                 <p className="text-xs text-slate-500 leading-relaxed">Your profile is processed first by the Growlancer matching engine for all relevant projects.</p>
               </div>
-              <div className="p-3 bg-orange-50/50 rounded-3xl border border-orange-100">
+              <div className="p-3 bg-orange-50/50 rounded-xl border border-orange-100">
                 <div className="h-10 w-10 rounded-xl bg-orange-500 text-white flex items-center justify-center mb-2">
                   <Eye className="w-5 h-5" />
                 </div>
                 <h4 className="font-bold mb-2">Project Visibility</h4>
                 <p className="text-xs text-slate-500 leading-relaxed">Referrals boost your profile to the top of client search results and project shortlists.</p>
               </div>
-              <div className="p-3 bg-slate-50 rounded-3xl border border-slate-200">
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-2">
                   <Award className="w-5 h-5" />
                 </div>
@@ -305,8 +305,8 @@ export function ReferralsPage() {
           </section>
 
           {/* Validation & Anti-Spam */}
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="bg-white p-4 rounded-[2.5rem] border border-slate-100">
               <h3 className="font-display text-lg font-bold mb-3">Validation Rules</h3>
               <ul className="space-y-2">
                 <li className="flex items-start gap-3 text-sm">
@@ -333,7 +333,7 @@ export function ReferralsPage() {
               </ul>
             </div>
 
-            <div className="bg-red-50 p-8 rounded-[2.5rem] border border-red-100">
+            <div className="bg-red-50 p-4 rounded-[2.5rem] border border-red-100">
               <h3 className="font-display text-lg font-bold text-red-900 mb-3">Anti-Spam Policy</h3>
               <div className="space-y-2">
                 <div className="flex gap-3">
@@ -353,8 +353,8 @@ export function ReferralsPage() {
         </div>
 
         {/* Leaderboard */}
-        <aside className="bg-white rounded-[2.5rem] p-8 border border-slate-100 h-fit">
-          <div className="flex items-center justify-between mb-8">
+        <aside className="bg-white rounded-[2.5rem] p-4 border border-slate-100 h-fit">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="font-display text-xl font-bold">Top Referrers</h3>
             <div className="h-8 w-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center">
               <Trophy className="w-5 h-5" />
@@ -419,7 +419,7 @@ export function ReferralsPage() {
       </div>
 
       {/* Your Referrals — always visible */}
-      <section className="bg-white rounded-[2.5rem] p-8 border border-slate-100">
+      <section className="bg-white rounded-[2.5rem] p-4 border border-slate-100">
         <div className="flex items-center justify-between mb-3">
           <h3 className="font-display text-xl font-bold">Your Referrals</h3>
           <span className="text-sm text-slate-500">{referrals.length} total</span>
@@ -469,7 +469,7 @@ export function ReferralsPage() {
             />
           </>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-6">
             <div className="w-16 h-16 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2">
               <Copy className="w-8 h-8 text-slate-300" />
             </div>

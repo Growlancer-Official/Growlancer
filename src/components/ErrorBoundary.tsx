@@ -56,10 +56,10 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       const { error, componentStack, eventId } = this.state;
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 sm:p-6">
-          <div className="w-full max-w-lg text-center bg-white rounded-2xl shadow-lg p-8 sm:p-10 border border-slate-200">
+        <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 sm:p-3">
+          <div className="w-full max-w-lg text-center bg-white rounded-xl shadow-lg p-4 sm:p-3 border border-slate-200">
             {/* Error icon */}
-            <div className="mx-auto mb-5 w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center">
+            <div className="mx-auto mb-2.5 w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center">
               <svg className="w-7 h-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
@@ -67,20 +67,20 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
               </svg>
             </div>
 
-            <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 mb-2">Something went wrong</h1>
+            <h1 className="font-display text-xl sm:text-lg font-bold text-slate-900 mb-2">Something went wrong</h1>
             <p className="text-sm sm:text-base text-slate-500 mb-2">
               We encountered an unexpected error. Our team has been notified.
             </p>
 
             {eventId && (
-              <p className="text-xs text-slate-400 mb-6 font-mono">
+              <p className="text-xs text-slate-400 mb-3 font-mono">
                 Reference: <span className="text-slate-500">{eventId}</span>
               </p>
             )}
 
             {/* Collapsible technical details (dev only) */}
             {isDev && error && (
-              <details className="mb-6 text-left">
+              <details className="mb-3 text-left">
                 <summary className="cursor-pointer text-xs text-slate-400 hover:text-slate-600 select-none font-medium">
                   Technical details
                 </summary>

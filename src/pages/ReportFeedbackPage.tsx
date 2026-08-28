@@ -131,15 +131,15 @@ export function ReportFeedbackPage() {
         </header>
 
         <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-xl p-8 sm:p-12 text-center">
-            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-workflow-glow">
+          <div className="bg-white rounded-xl border border-slate-100 shadow-xl p-4 sm:p-12 text-center">
+            <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 animate-workflow-glow">
               <CheckCircle2 className="w-10 h-10 text-emerald-600" />
             </div>
             <h1 className="font-display text-3xl font-black text-slate-900 mb-3">Report submitted!</h1>
-            <p className="text-slate-500 max-w-md mx-auto mb-6">
+            <p className="text-slate-500 max-w-md mx-auto mb-3">
               Thank you for helping us improve Growlancer. Our team will review your report and reply if a response is needed.
             </p>
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-6">
+            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3">
               <span className="text-sm text-slate-500">Reference ID:</span>
               <span className="font-mono font-bold text-emerald-700 text-sm">{successId.slice(0, 8)}</span>
             </div>
@@ -184,7 +184,7 @@ export function ReportFeedbackPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Star className="w-3.5 h-3.5 animate-pulse" />
             Report & Feedback
@@ -201,10 +201,10 @@ export function ReportFeedbackPage() {
 
       {/* Main Content */}
       <main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
           {/* Left: Info cards */}
-          <div className="lg:col-span-1 space-y-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors">
+          <div className="lg:col-span-1 space-y-2">
+            <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm hover:border-emerald-200 transition-colors">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
                   <Clock className="w-5 h-5 text-emerald-600" />
@@ -216,7 +216,7 @@ export function ReportFeedbackPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors">
+            <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm hover:border-emerald-200 transition-colors">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
                   <Zap className="w-5 h-5 text-blue-600" />
@@ -228,7 +228,7 @@ export function ReportFeedbackPage() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:border-emerald-200 transition-colors">
+            <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm hover:border-emerald-200 transition-colors">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
                   <Lock className="w-5 h-5 text-purple-600" />
@@ -241,7 +241,7 @@ export function ReportFeedbackPage() {
             </div>
 
             {/* Direct email fallback */}
-            <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-5 border border-emerald-100 shadow-sm">
+            <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-3 border border-emerald-100 shadow-sm">
               <h4 className="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
                 <Mail className="w-4 h-4 text-emerald-600" /> Prefer email?
               </h4>
@@ -260,7 +260,7 @@ export function ReportFeedbackPage() {
 
           {/* Right: Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-3xl border border-slate-100 shadow-xl p-6 sm:p-8 space-y-6">
+            <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-xl p-3 sm:p-4 space-y-3">
               {/* Report Type */}
               <div>
                 <label className="block text-sm font-bold text-slate-900 mb-3">What would you like to share?</label>
@@ -270,7 +270,7 @@ export function ReportFeedbackPage() {
                       key={t.id}
                       type="button"
                       onClick={() => setReportType(t.id)}
-                      className={`flex items-start gap-3 p-4 rounded-2xl border-2 text-left transition-all ${
+                      className={`flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all ${
                         reportType === t.id
                           ? 'border-emerald-500 bg-emerald-50/60 shadow-sm'
                           : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'

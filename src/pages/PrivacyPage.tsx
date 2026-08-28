@@ -17,13 +17,13 @@ const privacySections: Section[] = [
     icon: Shield,
     content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             At Growlancer ("Platform", "we", "us", or "our"), your privacy is a foundational pillar of our service architecture. Unlike legacy freelancing platforms that rely on static database scraping and third-party advertising tracking, Growlancer is built to coordinate real-time workspaces with the highest standard of client and freelancer confidentiality.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             This Privacy Policy details what information we collect, how it is utilized for real-time synchronization and AI matchmaking, the security measures we employ to safeguard it, and your rights under applicable data protection laws, including the Indian Digital Personal Data Protection (DPDP) Act, 2023 where applicable.
           </p>
-          <div className="bg-emerald-50 border border-emerald-200/60 rounded-2xl p-4 flex gap-3 text-emerald-800 text-sm font-medium">
+          <div className="bg-emerald-50 border border-emerald-200/60 rounded-xl p-4 flex gap-3 text-emerald-800 text-sm font-medium">
             <Lock className="w-5 h-5 shrink-0 text-emerald-600 mt-0.5" />
             <div>
               <p className="font-bold">We Do Not Sell Your Data</p>
@@ -39,10 +39,10 @@ const privacySections: Section[] = [
       icon: Database,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             To power our real-time coordination ecosystem, we collect data across three primary layers:
           </p>
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div>
               <h5 className="font-bold text-slate-900 text-sm">A. Account & Profile Information</h5>
               <p className="text-slate-600 text-xs mt-1">Includes registered names, email addresses, verified credentials, portfolios, base rates, declared skills, and avatar images.</p>
@@ -65,10 +65,10 @@ const privacySections: Section[] = [
       icon: Eye,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Your data is processed strictly to coordinate, improve, and protect the platform features:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
             <li><strong>AI-Driven Matchmaking:</strong> Our Postgres semantic algorithms parse freelancer skill tags and client project descriptions. The matches are updated dynamically without exposing private contact credentials, preventing preemptive system circumvention.</li>
             <li><strong>Escrow Transactions:</strong> Verified billing identifiers coordinate directly with secure escrow pools through our payment processor.</li>
             <li><strong>Service Notifications:</strong> Critical updates (funding of milestone, new task card creation, chat ping, or dispute raise) trigger instant client/freelancer notification loops.</li>
@@ -82,10 +82,10 @@ const privacySections: Section[] = [
       icon: Lock,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Security is important to us. We use industry-standard technical and organizational security measures designed to protect personal information:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-6 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-3 text-sm">
             <li><strong>Encryption at Rest:</strong> We employ industry-standard encryption to help protect stored data, including user databases, canvas assets, and profiles.</li>
             <li><strong>Encryption in Transit:</strong> Data transmitted between your device and our services is protected using industry-standard transport encryption (e.g., TLS).</li>
             <li><strong>Security Best Practices:</strong> We follow industry-standard security practices including encryption in transit and at rest, and we are working toward formal third-party security certifications as we scale. Our infrastructure is hosted on trusted cloud providers with physical and network security controls.</li>
@@ -100,10 +100,10 @@ const privacySections: Section[] = [
       icon: History,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             We retain active data only for as long as necessary to maintain operational continuity, provide coordinate workspace safety, and adhere to legal tax filings:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
             <li><strong>Active Workspaces:</strong> Completed workspace canvases (Kanban status history, finalized notes) remain archived on your client and freelancer dashboard for reference unless both sides explicitly consent to delete the archive.</li>
             <li><strong>Financial Records:</strong> Transactional logs, escrow allocations, and platform fee billing details are retained for a minimum of seven (7) years to comply with standard audit and taxation requirements.</li>
             <li><strong>Account Deletion:</strong> Upon filing a profile deletion request under account settings, we will use reasonable efforts to delete your public profile and matches from the database, typically within a few business days. Cached analytical weights are generally purged within 30 days, subject to applicable retention obligations.</li>
@@ -117,18 +117,18 @@ const privacySections: Section[] = [
       icon: Cookie,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             To preserve a clean and premium user experience, we keep cookies strictly functional.
           </p>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer uses cookies to:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
             <li>Keep you securely authenticated in your active session.</li>
             <li>Preserve workspace layout preferences (such as collapsed sidebars or preferred canvas grid viewports).</li>
             <li>Protect our API endpoints against CSRF (Cross-Site Request Forgery) injections.</li>
           </ul>
-          <div className="bg-slate-100 border border-slate-200 rounded-2xl p-4 flex gap-3 text-slate-700 text-xs">
+          <div className="bg-slate-100 border border-slate-200 rounded-xl p-4 flex gap-3 text-slate-700 text-xs">
             <ShieldAlert className="w-5 h-5 shrink-0 text-slate-500 mt-0.5" />
             <div>
               <p className="font-bold">No Retargeting Trackers</p>
@@ -144,10 +144,10 @@ const privacySections: Section[] = [
     icon: Globe,
     content: (
       <>
-        <p className="text-slate-600 leading-relaxed mb-4">
+        <p className="text-slate-600 leading-relaxed mb-2">
           Growlancer is an India-first platform, and your data is protected in accordance with applicable Indian data protection law, including the Digital Personal Data Protection (DPDP) Act, 2023. We extend the following rights to all users regardless of location:
         </p>
-        <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4 text-sm">
+        <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
           <li><strong>Right to Access:</strong> You may request a copy of the personal data we hold about you in a structured, portable format.</li>
           <li><strong>Right to Correction:</strong> You may request correction of inaccurate or incomplete personal information.</li>
           <li><strong>Right to Erasure:</strong> You may request deletion of your personal data, subject to legal retention requirements (e.g., financial records retained for 7 years).</li>
@@ -171,10 +171,10 @@ const privacySections: Section[] = [
       icon: HelpCircle,
       content: (
         <>
-          <p className="text-slate-600 leading-relaxed mb-4">
+          <p className="text-slate-600 leading-relaxed mb-2">
             If you have questions, comments, or seek to file an appeal regarding the processing of data in a disputed contract workspace, please contact our designated Data Protection Officer (DPO).
           </p>
-          <div className="bg-slate-900 rounded-3xl p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
+          <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-2 mt-6">
             <div>
               <h5 className="font-bold text-sm">Have a privacy question?</h5>
               <p className="text-xs text-slate-400 mt-1">Create a support ticket and we'll get back to you — all requests are handled securely.</p>
@@ -248,7 +248,7 @@ export function PrivacyPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-4">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-2">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Shield className="w-3.5 h-3.5" />
             Privacy Policy
@@ -264,10 +264,10 @@ export function PrivacyPage() {
       </section>
 
       {/* Legal Structure Grid */}
-      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-2">
         {/* Sticky Sidebar Outline */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 space-y-2 bg-white rounded-3xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
+          <div className="sticky top-24 space-y-2 bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
             <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Outline Navigation</h3>
             <div className="space-y-1">
               {sections.map((section) => {
@@ -303,10 +303,10 @@ export function PrivacyPage() {
               <section
                 key={section.id}
                 id={section.id}
-                className="bg-white rounded-[2rem] border border-slate-200/60 p-6 sm:p-8 shadow-sm scroll-mt-24 hover:shadow-md transition-shadow duration-300"
+                className="bg-white rounded-[2rem] border border-slate-200/60 p-3 sm:p-4 shadow-sm scroll-mt-24 hover:shadow-md transition-shadow duration-300"
               >
-                <div className="flex items-center gap-3 mb-6 pb-3 border-b border-slate-100">
-                  <div className="h-10 w-10 bg-emerald-100/80 rounded-2xl flex items-center justify-center text-emerald-700 shrink-0">
+                <div className="flex items-center gap-3 mb-3 pb-3 border-b border-slate-100">
+                  <div className="h-10 w-10 bg-emerald-100/80 rounded-xl flex items-center justify-center text-emerald-700 shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
                   <h2 className="font-display font-black text-xl text-slate-900 leading-tight">

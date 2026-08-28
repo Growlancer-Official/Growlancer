@@ -125,27 +125,27 @@ export function StatusPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 sm:px-6 py-12">
+      <main className="mx-auto max-w-4xl px-4 sm:px-6 py-6">
         <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">System status</h1>
         <p className="text-slate-600 mb-8">
           Honest pre-launch checks — no fabricated uptime percentages. Last checked:{' '}
           {lastUpdated || '…'}
         </p>
 
-        <div className={`rounded-2xl border px-6 py-4 mb-10 ${overallColor}`}>
+        <div className={`rounded-xl border px-6 py-4 mb-10 ${overallColor}`}>
           <p className="font-semibold">{overallLabel}</p>
         </div>
 
-        <section className="space-y-4 mb-12">
+        <section className="space-y-2 mb-12">
           {systems.length === 0 && overall === 'checking' ? (
-            <div className="flex justify-center py-12">
+            <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600" />
             </div>
           ) : (
             systems.map((sys) => {
               const Icon = sys.icon;
               return (
-                <div key={sys.name} className="bg-white rounded-xl border border-slate-100 p-5 flex items-start gap-4">
+                <div key={sys.name} className="bg-white rounded-xl border border-slate-100 p-3 flex items-start gap-2">
                   <Icon className={`w-6 h-6 shrink-0 mt-0.5 ${sys.color}`} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-slate-900">{sys.name}</p>
@@ -159,7 +159,7 @@ export function StatusPage() {
         </section>
 
         <section>
-          <h2 className="font-display text-xl font-bold text-slate-900 mb-4">Recent incidents</h2>
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2">Recent incidents</h2>
           <div className="space-y-3">
             {incidents.map((inc) => (
               <div key={inc.title} className="bg-white rounded-xl border border-slate-100 p-4">

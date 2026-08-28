@@ -78,7 +78,7 @@ export function ConfirmModal({
         onClick={isLoading ? undefined : onClose}
       />
       <div
-        className="relative bg-white rounded-3xl p-5 sm:p-8 max-w-md w-full my-auto max-h-[calc(100vh-2rem)] overflow-y-auto shadow-2xl animate-scale-in border border-slate-100"
+        className="relative bg-white rounded-xl p-3 sm:p-4 max-w-md w-full my-auto max-h-[calc(100vh-2rem)] overflow-y-auto shadow-2xl animate-scale-in border border-slate-100"
       >
         <button
           onClick={isLoading ? undefined : onClose}
@@ -88,11 +88,11 @@ export function ConfirmModal({
           <X className="w-5 h-5 text-slate-400" />
         </button>
 
-        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl ${styles.icon} mb-6`}>
+        <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${styles.icon} mb-3`}>
           <AlertTriangle className="w-8 h-8" />
         </div>
 
-        <h2 className="font-display text-2xl font-bold text-slate-900 mb-2">{title}</h2>
+        <h2 className="font-display text-lg font-bold text-slate-900 mb-2">{title}</h2>
         <p className="text-slate-600 mb-8 leading-relaxed text-sm">{message}</p>
 
         <div className="flex gap-3">

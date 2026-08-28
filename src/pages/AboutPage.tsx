@@ -94,11 +94,11 @@ export function AboutPage() {
       </header>
 
       {/* Hero section */}
-      <section className="relative py-20 sm:py-28 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
+      <section className="relative py-10 sm:py-28 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             Our Mission
@@ -115,8 +115,8 @@ export function AboutPage() {
 
       {/* Stats Panel */}
       <section className="relative -mt-10 z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
-        <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-8 sm:p-10 shadow-xl">
-          <div className="text-center space-y-2 mb-8">
+        <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-4 sm:p-10 shadow-xl">
+          <div className="text-center space-y-2 mb-2">
             <h2 className="text-xs font-black uppercase text-emerald-600 tracking-widest flex items-center justify-center gap-1.5">
               <TrendingUp className="w-4 h-4" /> Live Platform Metrics
             </h2>
@@ -125,11 +125,11 @@ export function AboutPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className={`bg-cream/45 rounded-3xl p-6 border border-slate-100 flex flex-col justify-between items-center text-center transition-all hover:scale-102 hover:shadow-md ${
+                className={`bg-cream/45 rounded-xl p-3 border border-slate-100 flex flex-col justify-between items-center text-center transition-all hover:scale-102 hover:shadow-md ${
                   !ready ? 'animate-pulse' : ''
                 }`}
               >
@@ -149,8 +149,8 @@ export function AboutPage() {
 
       {/* Vision & Narrative */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-24">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+          <div className="space-y-3">
             <span className="inline-flex items-center gap-1 text-xs font-black uppercase text-emerald-600 tracking-wider">
               <Zap className="w-3.5 h-3.5" /> Bridging the Gaps
             </span>
@@ -166,16 +166,16 @@ export function AboutPage() {
           </div>
           <div className="relative">
             <div className="absolute inset-0 bg-emerald-600/10 rounded-[3rem] blur-3xl -rotate-6"></div>
-            <div className="relative bg-white rounded-[3rem] p-8 border border-slate-200/50 shadow-lg space-y-4">
+            <div className="relative bg-white rounded-[3rem] p-4 border border-slate-200/50 shadow-lg space-y-2">
               <div className="flex gap-1.5">
                 <span className="w-3 h-3 rounded-full bg-red-400"></span>
                 <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
                 <span className="w-3 h-3 rounded-full bg-green-400"></span>
               </div>
-              <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/30 text-xs font-mono text-slate-600">
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/30 text-xs font-mono text-slate-600">
                 <LiveCodeTerminal lines={terminalLines} className="space-y-2" />
               </div>
-              <div className="flex items-center gap-3 bg-emerald-50 rounded-2xl p-4 border border-emerald-100">
+              <div className="flex items-center gap-3 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span className="text-xs font-bold text-emerald-800">
                   100% Escrow and Deliverable IP Protection Guaranteed.
@@ -205,18 +205,18 @@ export function AboutPage() {
         </div>
 
         <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 rounded-[1.25rem] sm:rounded-[2rem] p-[1.5px] shadow-xl shadow-slate-900/30">
-          <div className="bg-[#0B1120] rounded-[calc(1.25rem-1.5px)] sm:rounded-[calc(2rem-1.5px)] p-5 sm:p-8 md:p-10 relative overflow-hidden">
+          <div className="bg-[#0B1120] rounded-[calc(1.25rem-1.5px)] sm:rounded-[calc(2rem-1.5px)] p-3 sm:p-4 md:p-10 relative overflow-hidden">
             {/* Decorative background */}
             <div className="absolute top-0 right-0 w-[300px] sm:w-[500px] h-[300px] sm:h-[500px] bg-gradient-to-br from-emerald-500/5 to-teal-500/5 rounded-full blur-3xl -mr-40 -mt-40"></div>
             <div className="absolute bottom-0 left-0 w-[200px] sm:w-[400px] h-[200px] sm:h-[400px] bg-gradient-to-tr from-emerald-600/5 to-teal-600/5 rounded-full blur-3xl -ml-32 -mb-32"></div>
             <div className="hidden sm:block absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiMxMEI5ODEiIGZpbGwtb3BhY2l0eT0iMC4wMyI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-40"></div>
 
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-10 items-center">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-3 lg:gap-10 items-center">
               {/* Founder Image — Left Side */}
               <div className="lg:col-span-2 flex justify-center lg:justify-end">
                 <div className="relative">
                   {/* Image Container — Clean & Professional */}
-                  <div className="w-56 h-64 sm:w-60 sm:h-72 md:w-72 md:h-80 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-black/40 bg-slate-800/30">
+                  <div className="w-56 h-64 sm:w-60 sm:h-72 md:w-72 md:h-80 rounded-xl overflow-hidden border border-white/10 shadow-2xl shadow-black/40 bg-slate-800/30">
                     <img 
                       src="/Founder.png" 
                       alt="MOHAMMAD MIRAN KHAN — Founder & CEO of Growlancer"
@@ -311,15 +311,15 @@ export function AboutPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {values.map((val, index) => {
             const Icon = val.icon;
             return (
               <div
                 key={index}
-                className="bg-white rounded-[2rem] p-8 border border-slate-200/50 shadow-sm flex flex-col sm:flex-row gap-6 transition-all duration-300 hover:shadow-md hover:border-emerald-500/20 group"
+                className="bg-white rounded-[2rem] p-4 border border-slate-200/50 shadow-sm flex flex-col sm:flex-row gap-3 transition-all duration-300 hover:shadow-md hover:border-emerald-500/20 group"
               >
-                <div className={`h-14 w-14 rounded-2xl flex items-center justify-center shrink-0 ${val.iconColor} group-hover:scale-110 transition-transform`}>
+                <div className={`h-14 w-14 rounded-xl flex items-center justify-center shrink-0 ${val.iconColor} group-hover:scale-110 transition-transform`}>
                   <Icon className="w-7 h-7" />
                 </div>
                 <div className="space-y-2">
@@ -338,18 +338,18 @@ export function AboutPage() {
 
       {/* CTA Join Mission */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-28">
-        <div className="bg-emerald-600 rounded-[3rem] p-8 sm:p-14 text-center text-white relative overflow-hidden shadow-xl shadow-emerald-950/20">
+        <div className="bg-emerald-600 rounded-[3rem] p-4 sm:p-14 text-center text-white relative overflow-hidden shadow-xl shadow-emerald-950/20">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/20 rounded-full blur-2xl -mr-16 -mt-16"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/10 rounded-full blur-2xl -ml-16 -mb-16"></div>
 
-          <div className="relative max-w-xl mx-auto space-y-6">
+          <div className="relative max-w-xl mx-auto space-y-3">
             <h2 className="font-display text-3xl sm:text-4xl font-black tracking-tight leading-none">
               Ready to experience modern co-working?
             </h2>
             <p className="text-emerald-100 text-sm leading-relaxed max-w-md mx-auto">
               Join thousands of clients and freelancers who have already bridged dashboard gaps and secured their contracts through active escrow.
             </p>
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
               <Link
                 to="/signup"
                 className="w-full sm:w-auto inline-flex h-12 px-8 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all active:scale-95 shadow-md shadow-emerald-950/20"

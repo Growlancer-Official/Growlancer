@@ -43,7 +43,7 @@ function Row() {
 /** Stat card skeleton */
 function StatCard() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5">
+    <div className="bg-white rounded-xl border border-slate-100 p-3">
       <Bar className="h-3 w-24 mb-2" />
       <Bar className="h-7 w-20 mb-1" />
       <Bar className="h-2.5 w-32" />
@@ -54,7 +54,7 @@ function StatCard() {
 /** Table row skeleton */
 function TableRow({ columns = 4 }: { columns?: number }) {
   return (
-    <div className="flex items-center gap-4 px-5 py-4 border-b border-slate-50">
+    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-50">
       <div className="flex items-center gap-3 flex-1">
         <div className="h-8 w-8 rounded-lg bg-slate-200 animate-pulse shrink-0" />
         <div className="flex-1 space-y-1.5">
@@ -74,9 +74,9 @@ function TableRow({ columns = 4 }: { columns?: number }) {
 /** Card skeleton for grid layouts */
 function CardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
       <div className="aspect-video bg-slate-100 animate-pulse" />
-      <div className="p-5 space-y-3">
+      <div className="p-3 space-y-3">
         <Bar className="h-3 w-24" />
         <Bar className="h-4 w-full" />
         <Bar className="h-4 w-3/4" />
@@ -92,7 +92,7 @@ function CardSkeleton() {
 /** Full-page skeleton with sidebar-like layout */
 function FullPageSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="space-y-2">
         <Bar className="h-7 w-64" />
@@ -100,23 +100,23 @@ function FullPageSkeleton() {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
           <StatCard key={i} />
         ))}
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Left */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="bg-slate-50 rounded-2xl p-6 space-y-4">
+        <div className="lg:col-span-2 space-y-2">
+          <div className="bg-slate-50 rounded-xl p-3 space-y-2">
             <Bar className="h-5 w-48" />
             {Array.from({ length: 3 }).map((_, i) => (
               <Row key={i} />
             ))}
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+          <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-2">
             <Bar className="h-5 w-40" />
             {Array.from({ length: 4 }).map((_, i) => (
               <Row key={i} />
@@ -124,14 +124,14 @@ function FullPageSkeleton() {
           </div>
         </div>
         {/* Right */}
-        <div className="space-y-4">
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-3">
+        <div className="space-y-2">
+          <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-3">
             <Bar className="h-5 w-32" />
             {Array.from({ length: 4 }).map((_, i) => (
               <Bar key={i} className="h-12 w-full rounded-xl" />
             ))}
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-3">
+          <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-3">
             <Bar className="h-5 w-28" />
             <Bar className="h-3 w-full" />
             <Bar className="h-3 w-2/3" />
@@ -145,7 +145,7 @@ function FullPageSkeleton() {
 /** Stats-grid skeleton */
 function StatsGridSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
       {Array.from({ length: count }).map((_, i) => (
         <StatCard key={i} />
       ))}
@@ -156,7 +156,7 @@ function StatsGridSkeleton({ count = 4 }: { count?: number }) {
 /** Table skeleton */
 function TableSkeleton({ rows = 5, columns = 4 }: { rows?: number; columns?: number }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
       <div className="px-5 py-4 border-b border-slate-100">
         <div className="flex items-center justify-between">
           <Bar className="h-5 w-40" />
@@ -184,7 +184,7 @@ function ListSkeleton({ count = 5 }: { count?: number }) {
 /** Card grid skeleton */
 function CardGridSkeleton({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {Array.from({ length: count }).map((_, i) => (
         <CardSkeleton key={i} />
       ))}
@@ -195,7 +195,7 @@ function CardGridSkeleton({ count = 6 }: { count?: number }) {
 /** Chat/Inbox skeleton */
 function ChatSkeleton() {
   return (
-    <div className="flex h-[calc(100vh-12rem)] bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <div className="flex h-[calc(100vh-12rem)] bg-white rounded-xl border border-slate-100 overflow-hidden">
       {/* Left panel */}
       <div className="w-80 lg:w-96 border-r border-slate-100 p-3 space-y-2">
         <Bar className="h-9 w-full rounded-lg" />
@@ -216,7 +216,7 @@ function ChatSkeleton() {
         <div className="p-4 border-b border-slate-100">
           <Bar className="h-5 w-32" />
         </div>
-        <div className="flex-1 p-5 space-y-4">
+        <div className="flex-1 p-3 space-y-2">
           {[1, 2, 3].map((i) => (
             <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
               <div className={`space-y-2 ${i % 2 === 0 ? '' : ''}`}>
@@ -237,7 +237,7 @@ function ChatSkeleton() {
 /** Chart skeleton */
 function ChartSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-4">
+    <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-2">
       <Bar className="h-5 w-40" />
       <div className="h-48 flex items-end gap-2">
         {Array.from({ length: 12 }).map((_, i) => (
@@ -255,15 +255,15 @@ function ChartSkeleton() {
 /** Profile settings skeleton */
 function ProfileSkeleton() {
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="max-w-2xl mx-auto space-y-3">
+      <div className="flex items-center gap-2">
         <div className="h-20 w-20 rounded-full bg-slate-200 animate-pulse" />
         <div className="space-y-2">
           <Bar className="h-5 w-40" />
           <Bar className="h-3 w-60" />
         </div>
       </div>
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 space-y-5">
+      <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-2.5">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="space-y-1.5">
             <Bar className="h-3 w-24" />
@@ -289,7 +289,7 @@ export function RouteFallback() {
 /** Dashboard Suspense fallback (lightweight page-level) */
 export function DashboardFallback() {
   return (
-    <div className="p-8 max-w-[100rem] mx-auto">
+    <div className="p-4 max-w-[100rem] mx-auto">
       <FullPageSkeleton />
     </div>
   );
@@ -298,7 +298,7 @@ export function DashboardFallback() {
 /** Client dashboard Suspense fallback */
 export function ClientDashboardFallback() {
   return (
-    <div className="p-8 max-w-[100rem] mx-auto">
+    <div className="p-4 max-w-[100rem] mx-auto">
       <FullPageSkeleton />
     </div>
   );
@@ -307,32 +307,32 @@ export function ClientDashboardFallback() {
 /** Admin dashboard Suspense fallback */
 export function AdminDashboardFallback() {
   return (
-    <div className="flex items-start gap-6 animate-pulse">
+    <div className="flex items-start gap-3 animate-pulse">
       {/* Main content area with dark theme */}
-      <div className="flex-1 space-y-6">
+      <div className="flex-1 space-y-3">
         {/* Header */}
         <div className="space-y-2">
           <div className="h-4 w-32 bg-slate-700 rounded" />
           <div className="h-8 w-64 bg-slate-700 rounded" />
         </div>
         {/* Stat cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="p-6 rounded-3xl" style={{ background: '#1E293B' }}>
-              <div className="h-3 w-24 bg-slate-700 rounded mb-4" />
+            <div key={i} className="p-3 rounded-xl" style={{ background: '#1E293B' }}>
+              <div className="h-3 w-24 bg-slate-700 rounded mb-2" />
               <div className="h-8 w-20 bg-slate-700 rounded" />
             </div>
           ))}
         </div>
         {/* Table + sidebar */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-2">
           <div className="xl:col-span-2">
             <div className="rounded-[2rem] overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
-              <div className="p-6 border-b border-white/5">
+              <div className="p-3 border-b border-white/5">
                 <div className="h-5 w-40 bg-slate-700 rounded" />
               </div>
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-4 p-4 border-b border-white/5">
+                <div key={i} className="flex items-center gap-2 p-4 border-b border-white/5">
                   <div className="h-8 w-8 rounded-lg bg-slate-700" />
                   <div className="flex-1">
                     <div className="h-4 w-32 bg-slate-700 rounded mb-1" />
@@ -343,9 +343,9 @@ export function AdminDashboardFallback() {
             </div>
           </div>
           <div className="space-y-8">
-            <div className="rounded-[2rem] p-6" style={{ background: '#1E293B', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
+            <div className="rounded-[2rem] p-3" style={{ background: '#1E293B', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-start gap-4 p-4">
+                <div key={i} className="flex items-start gap-2 p-4">
                   <div className="h-8 w-8 rounded-lg bg-slate-700 shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3 w-36 bg-slate-700 rounded" />

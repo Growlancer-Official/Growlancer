@@ -38,7 +38,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-3 lg:p-4">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-md animate-fade-in"
@@ -56,7 +56,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
         {/* Close Button - Fixed Position */}
         <button
           onClick={onCloseRef.current}
-          className="absolute top-5 right-5 z-20 p-2.5 rounded-full bg-white/90 hover:bg-white shadow-lg hover:shadow-xl border border-slate-200/50 transition-all duration-200 hover:scale-105"
+          className="absolute top-3 right-5 z-20 p-2.5 rounded-full bg-white/90 hover:bg-white shadow-lg hover:shadow-xl border border-slate-200/50 transition-all duration-200 hover:scale-105"
           aria-label="Close modal"
         >
           <X className="w-5 h-5 text-slate-600 hover:text-slate-900 transition-colors" />
@@ -64,10 +64,10 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
 
         {/* Scrollable Content Area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
-          <div className="p-3 sm:p-5 lg:p-7 pt-8 pb-8 pr-8">
+          <div className="p-3 sm:p-3 lg:p-7 pt-8 pb-8 pr-8">
             {title && (
-              <div className="mb-3 sm:mb-4">
-                <h1 className="font-display text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              <div className="mb-3 sm:mb-2">
+                <h1 className="font-display text-lg sm:text-xl font-bold tracking-tight text-slate-900">
                   {title}
                 </h1>
               </div>

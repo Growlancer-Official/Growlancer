@@ -108,7 +108,7 @@ export function IndustrySelect({
 
       {/* Panel */}
       {open && (
-        <div className="absolute z-50 mt-2 w-full bg-white rounded-2xl border border-slate-200 shadow-xl shadow-slate-900/10 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute z-50 mt-2 w-full bg-white rounded-xl border border-slate-200 shadow-xl shadow-slate-900/10 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           {/* Search */}
           <div className="p-3 border-b border-slate-100">
             <div className="relative">

@@ -113,11 +113,11 @@ export function ServicesCatalogPage() {
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white py-12">
+      <section className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white py-6">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <h1 className="font-display text-3xl sm:text-4xl font-bold mb-3">Browse Services</h1>
-          <p className="text-slate-300 text-lg mb-6">Discover pre-packaged services from top freelancers — order instantly.</p>
-          <div className="mb-6">
+          <p className="text-slate-300 text-lg mb-3">Discover pre-packaged services from top freelancers — order instantly.</p>
+          <div className="mb-3">
             <TipNote tone="protection" title="Every order is protected" compact>
               Pay through <strong>Growlancer Escrow</strong> — your money is held safely and released to the freelancer only after you approve the completed work. Delivery times and free revisions are shown on every card, and many services are <strong>price-negotiable</strong> with tips welcome.
             </TipNote>
@@ -167,7 +167,7 @@ export function ServicesCatalogPage() {
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-white border-b border-slate-200 py-4">
-          <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 flex flex-wrap items-end gap-4">
+          <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 flex flex-wrap items-end gap-2">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Max Price</label>
               <input
@@ -194,9 +194,9 @@ export function ServicesCatalogPage() {
       )}
 
       {/* Results */}
-      <section className="py-8 pb-16 sm:pb-20">
+      <section className="py-4 pb-16 sm:pb-20">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3">
             <p className="text-sm text-slate-500">
               {loading ? 'Searching...' : `${services.length} service${services.length !== 1 ? 's' : ''} found`}
             </p>
@@ -210,23 +210,23 @@ export function ServicesCatalogPage() {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-20">
+            <div className="flex items-center justify-center py-10">
               <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
             </div>
           ) : services.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
-              <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <div className="text-center py-10 bg-white rounded-xl border border-slate-100">
+              <Package className="w-12 h-12 text-slate-300 mx-auto mb-2" />
               <h3 className="text-lg font-bold text-slate-900 mb-2">No services found</h3>
-              <p className="text-slate-500 mb-6">Try adjusting your search or filters.</p>
+              <p className="text-slate-500 mb-3">Try adjusting your search or filters.</p>
               <button onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setMaxPrice(''); }} className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Clear Filters</button>
             </div>
           ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
               {services.map((service) => (
                 <Link
                   key={service.id}
                   to={`/services/${service.id}`}
-                  className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
+                  className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
                 >
                   {/* Thumbnail */}
                   <div className="aspect-video bg-gradient-to-br from-slate-100 to-slate-50 relative overflow-hidden">
@@ -294,12 +294,12 @@ export function ServicesCatalogPage() {
             </div>
           ) : (
             /* List View */
-            <div className="space-y-4">
+            <div className="space-y-2">
               {services.map((service) => (
                 <Link
                   key={service.id}
                   to={`/services/${service.id}`}
-                  className="flex bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all group"
+                  className="flex bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all group"
                 >
                   <div className="w-48 h-36 bg-slate-100 flex-shrink-0 relative overflow-hidden">
                     {service.image_url ? (
@@ -308,12 +308,12 @@ export function ServicesCatalogPage() {
                       <div className="w-full h-full flex items-center justify-center"><Package className="w-8 h-8 text-slate-300" /></div>
                     )}
                   </div>
-                  <div className="flex-1 p-5">
+                  <div className="flex-1 p-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="font-semibold text-slate-900 mb-1 group-hover:text-emerald-600 transition-colors">{service.title}</h3>
                         <p className="text-sm text-slate-500 line-clamp-2 mb-3">{service.description}</p>
-                        <div className="flex items-center gap-4 text-xs text-slate-400">
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
                           <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{service.delivery_days} days</span>
                           <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{service.views || 0} views</span>
                           <span className="flex items-center gap-1"><ShoppingCart className="w-3 h-3" />{service.orders || 0} orders</span>

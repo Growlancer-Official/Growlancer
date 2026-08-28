@@ -48,16 +48,16 @@ export function CookiesPage() {
               to recognize you when you visit our platform.
             </p>
 
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">What Are Cookies?</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">What Are Cookies?</h2>
             <p className="text-slate-600 mb-8">
               Cookies are small data files stored on your device when you visit a website. 
               They help websites remember your preferences and improve your browsing experience.
             </p>
 
-            <h2 className="text-2xl font-bold text-slate-900 mb-6">Types of Cookies We Use</h2>
-            <div className="space-y-6 mb-8">
+            <h2 className="text-2xl font-bold text-slate-900 mb-3">Types of Cookies We Use</h2>
+            <div className="space-y-3 mb-8">
               {cookieTypes.map((type, i) => (
-                <div key={i} className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200/60">
+                <div key={i} className="bg-white rounded-xl p-3 shadow-sm border border-slate-200/60">
                   <div className="flex items-center gap-3 mb-3">
                     <div className="h-10 w-10 bg-emerald-100 rounded-xl flex items-center justify-center">
                       <type.icon className="w-5 h-5 text-emerald-600" />
@@ -74,14 +74,14 @@ export function CookiesPage() {
               We do not currently use marketing or advertising cookies, and we do not deploy third-party behavioral tracking pixels. Essential cookies are required for the platform to function; functional and analytics cookies are non-essential and can be managed through your browser settings where applicable. If we ever introduce marketing cookies in the future, this policy will be updated accordingly.
             </p>
 
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Managing Cookies</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Managing Cookies</h2>
             <p className="text-slate-600 mb-8">
               You can manage cookies through your browser settings where applicable. Note that disabling certain cookies 
               may affect the functionality of our platform. For more information, visit 
               <a href="https://www.aboutcookies.org" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline"> aboutcookies.org</a>.
             </p>
 
-            <h2 className="text-2xl font-bold text-slate-900 mb-4">Changes to This Policy</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Changes to This Policy</h2>
             <p className="text-slate-600">
               We may update this policy from time to time. Changes will be posted on this page with an updated date.
             </p>

@@ -79,15 +79,15 @@ function RoleCard({
 
   return (
     <div
-      className={`bg-white rounded-3xl border-2 transition-all duration-300 ${
+      className={`bg-white rounded-xl border-2 transition-all duration-300 ${
         isExpanded ? 'border-emerald-300 shadow-lg' : 'border-slate-200 hover:border-slate-300 shadow-sm'
       }`}
     >
       {/* Card Header */}
-      <div className="p-6 sm:p-8">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-4">
-            <div className={`h-14 w-14 rounded-2xl ${c.bg} flex items-center justify-center shadow-md shrink-0`}>
+      <div className="p-3 sm:p-4">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2">
+            <div className={`h-14 w-14 rounded-xl ${c.bg} flex items-center justify-center shadow-md shrink-0`}>
               <RoleIcon icon={role.icon} className="w-7 h-7 text-white" />
             </div>
             <div>
@@ -165,7 +165,7 @@ function RoleCard({
           </div>
 
           {/* Skills Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
                 <Target className="w-4 h-4 text-emerald-600" />
@@ -344,7 +344,7 @@ function ApplicationForm({
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <div className="bg-white rounded-[2.5rem] w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-100 sticky top-0 bg-white z-10 rounded-t-[2.5rem]">
+        <div className="flex items-center justify-between p-3 border-b border-slate-100 sticky top-0 bg-white z-10 rounded-t-[2.5rem]">
           <div className="flex items-center gap-3">
             <div className={`h-10 w-10 rounded-xl ${c.bg} flex items-center justify-center`}>
               <RoleIcon icon={role.icon} className="w-5 h-5 text-white" />
@@ -363,9 +363,9 @@ function ApplicationForm({
         </div>
 
         {/* Body */}
-        <div className="p-6">
+        <div className="p-3">
           {step === 'success' ? (
-            <div className="text-center py-8 space-y-6">
+            <div className="text-center py-4 space-y-3">
               <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto shadow-inner">
                 <CheckCircle className="w-10 h-10 text-emerald-600" />
               </div>
@@ -377,7 +377,7 @@ function ApplicationForm({
                   <span className="font-bold text-slate-700">{email}</span> within 5–7 business days.
                 </p>
               </div>
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 max-w-sm mx-auto text-left">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 max-w-sm mx-auto text-left">
                 <h5 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">What happens next?</h5>
                 <ol className="space-y-2 text-sm text-slate-600">
                   <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Application review (3–5 days)</li>
@@ -406,7 +406,7 @@ function ApplicationForm({
                   <User className="w-3.5 h-3.5" />
                   Personal Information
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Full Name <span className="text-red-400">*</span>
@@ -462,7 +462,7 @@ function ApplicationForm({
                   <GraduationCap className="w-3.5 h-3.5" />
                   Education &amp; Background
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">College / University (optional)</label>
                     <input
@@ -516,7 +516,7 @@ function ApplicationForm({
                   <Link2 className="w-3.5 h-3.5" />
                   Portfolio &amp; Links
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       LinkedIn Profile <span className="text-red-400">*</span>
@@ -666,7 +666,7 @@ function ApplicationForm({
                   <Calendar className="w-3.5 h-3.5" />
                   Availability
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div>
                     <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Weekly Hours</label>
                     <div className="flex items-center gap-3">
@@ -707,7 +707,7 @@ function ApplicationForm({
               <button
                 type="submit"
                 disabled={step === 'submitting'}
-                className={`w-full h-12 ${c.bg} hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-2xl shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-[0.99] transition-all text-sm`}
+                className={`w-full h-12 ${c.bg} hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-[0.99] transition-all text-sm`}
               >
                 {step === 'submitting' ? (
                   <>
@@ -775,7 +775,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
     <div className="border-b border-slate-200 last:border-b-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-4 text-left gap-4"
+        className="w-full flex items-center justify-between py-4 text-left gap-2"
       >
         <span className="font-semibold text-sm text-slate-900">{question}</span>
         {open ? (
@@ -845,7 +845,7 @@ export function InternshipsPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -ml-20 -mb-20" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent" />
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             Growlancer Internship Program
@@ -858,7 +858,7 @@ export function InternshipsPage() {
             Join a pre-launch startup's core development team. Ship real features, learn from a founder,
             and build a portfolio that stands out. No fluff, no coffee fetching — just meaningful engineering work.
           </p>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-400">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm text-slate-400">
             <span className="flex items-center gap-1.5"><Clock className="w-4 h-4 text-emerald-400" /> 8–12 weeks</span>
             <span className="flex items-center gap-1.5"><Globe className="w-4 h-4 text-emerald-400" /> Remote (India)</span>
             <span className="flex items-center gap-1.5"><Users className="w-4 h-4 text-emerald-400" /> 3–4 interns per cohort</span>
@@ -869,10 +869,10 @@ export function InternshipsPage() {
 
       {/* Program Overview */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-lg p-6 sm:p-8">
-          <h2 className="font-display text-2xl font-bold text-slate-900 mb-6">About the Program</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-3 sm:p-4">
+          <h2 className="font-display text-2xl font-bold text-slate-900 mb-3">About the Program</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="space-y-2">
               <p className="text-sm text-slate-600 leading-relaxed">
                 Growlancer is an AI-powered freelancing marketplace currently in pre-launch. We're building a platform
                 that uses intelligent matching, escrow payments, and collaborative workspaces to make freelancing
@@ -885,7 +885,7 @@ export function InternshipsPage() {
                 and realtime infrastructure.
               </p>
             </div>
-            <div className="bg-slate-50 rounded-2xl border border-slate-200 p-5 space-y-3">
+            <div className="bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-3">
               <h3 className="font-bold text-sm text-slate-900">Tech Stack You'll Work With</h3>
               <div className="flex flex-wrap gap-2">
                 {['React 18', 'TypeScript', 'TailwindCSS', 'Vite', 'Supabase', 'PostgreSQL', 'Deno', 'GitHub Actions', 'PenTool'].map((t) => (
@@ -912,7 +912,7 @@ export function InternshipsPage() {
           </span>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3">
           {INTERNSHIP_ROLES.map((role) => (
             <RoleCard
               key={role.id}
@@ -931,10 +931,10 @@ export function InternshipsPage() {
           <h2 className="font-display text-2xl font-bold text-slate-900">Why Join Growlancer's Internship?</h2>
           <p className="text-slate-500 text-sm mt-2">More than just an internship — it's a launchpad for your career.</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
           {programBenefits.map((benefit, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md transition-shadow">
-              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-4">
+            <div key={i} className="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-md transition-shadow">
+              <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-2">
                 <benefit.icon className="w-5 h-5 text-emerald-600" />
               </div>
               <h3 className="font-bold text-sm text-slate-900 mb-1">{benefit.title}</h3>
@@ -946,9 +946,9 @@ export function InternshipsPage() {
 
       {/* How It Works */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 sm:p-10 text-white">
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-4 sm:p-10 text-white">
           <h2 className="font-display text-2xl font-bold mb-8 text-center">Application Process</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { step: '1', title: 'Submit Application', desc: 'Fill out the form with your background, portfolio, and motivation.' },
               { step: '2', title: 'Virtual Interview', desc: 'Chat with the founder about your work, approach, and fit. Single round, no technical assessment.' },
@@ -973,7 +973,7 @@ export function InternshipsPage() {
           <h2 className="font-display text-2xl font-bold text-slate-900">Frequently Asked Questions</h2>
           <p className="text-slate-500 text-sm mt-2">Everything you need to know about the internship program.</p>
         </div>
-        <div className="bg-white rounded-3xl border border-slate-200 divide-y divide-slate-200 px-6">
+        <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-200 px-6">
           {FAQS.map((faq, i) => (
             <FAQItem key={i} question={faq.q} answer={faq.a} />
           ))}

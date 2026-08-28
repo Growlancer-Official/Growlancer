@@ -50,9 +50,9 @@ export function PricingPage() {
       </header>
 
       {/* Hero */}
-      <section className="py-10 sm:py-14">
+      <section className="py-5 sm:py-14">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 text-center">
-          <h1 className="font-display text-4xl sm:text-5xl font-bold text-slate-900 mb-6">
+          <h1 className="font-display text-4xl sm:text-5xl font-bold text-slate-900 mb-3">
             Simple, Transparent Pricing
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -60,8 +60,8 @@ export function PricingPage() {
             Premium plan ({formatCurrency(299)}/month) for AI + productivity tools. No hidden fees, no pay-to-win.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl mx-auto mt-8">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-5 text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto mt-8">
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-left">
               <p className="text-xs font-bold uppercase tracking-widest text-emerald-700 mb-1">
                 For Clients
               </p>
@@ -71,7 +71,7 @@ export function PricingPage() {
                 project amount.
               </p>
             </div>
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-left">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-left">
               <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">
                 For Freelancers
               </p>
@@ -96,7 +96,7 @@ export function PricingPage() {
       {/* For Clients — Platform Fee */}
       <section className="pb-14 sm:pb-20">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="text-center mb-8">
+          <div className="text-center mb-2">
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
               For Clients — One Flat Fee
             </h2>
@@ -107,20 +107,20 @@ export function PricingPage() {
           </div>
 
           <div className="max-w-md mx-auto">
-            <div className="rounded-3xl p-8 bg-slate-900 text-white shadow-xl">
-              <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-4">
+            <div className="rounded-xl p-4 bg-slate-900 text-white shadow-xl">
+              <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-2">
                 <ShieldCheck className="w-3 h-3" />
                 ONE FLAT RATE FOR EVERYONE
               </div>
               <h3 className="font-display text-2xl font-bold mb-2">Platform Fee</h3>
-              <p className="text-sm text-slate-400 mb-6">
+              <p className="text-sm text-slate-400 mb-3">
                 Paid by the client on successful payments only
               </p>
-              <div className="mb-6">
+              <div className="mb-3">
                 <span className="font-display text-4xl sm:text-5xl font-bold">5%</span>
                 <p className="text-sm mt-1 text-slate-400">of the project amount, per payment</p>
               </div>
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3 mb-2">
                 {clientFeatures.map((feature, fIndex) => (
                   <li key={fIndex} className="flex items-start gap-3">
                     <Check className="w-5 h-5 flex-shrink-0 text-emerald-400" />
@@ -145,8 +145,8 @@ export function PricingPage() {
       {/* For Freelancers — Pro Subscription */}
       <section className="pb-14 sm:pb-20">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-4">
+          <div className="text-center mb-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2">
               <Sparkles className="w-4 h-4" />
               FOR FREELANCERS
             </div>
@@ -163,44 +163,44 @@ export function PricingPage() {
           </div>
 
           {loadingPlans ? (
-            <div className="flex justify-center py-12">
+            <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
             </div>
           ) : plans.length === 0 ? (
-            <div className="text-center py-10 text-slate-500">
+            <div className="text-center py-5 text-slate-500">
               <p>Pro plans are being prepared — check back soon.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 max-w-5xl mx-auto">
               {plans.map((plan) => {
                 const isFree = plan.price === 0;
                 const isPopular = plan.ai_priority && !isFree;
                 return (
                   <div
                     key={plan.id}
-                    className={`relative flex flex-col rounded-3xl p-8 ${
+                    className={`relative flex flex-col rounded-xl p-4 ${
                       isPopular
                         ? 'bg-slate-900 text-white shadow-xl md:scale-105'
                         : 'bg-white border border-slate-200 shadow-sm'
                     }`}
                   >
                     {isPopular && (
-                      <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-4 w-fit">
+                      <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-2 w-fit">
                         <Crown className="w-3 h-3" />
                         MOST POPULAR
                       </div>
                     )}
                     {isFree && (
-                      <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full mb-4 w-fit">
+                      <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full mb-2 w-fit">
                         <Zap className="w-3 h-3" />
                         START FREE
                       </div>
                     )}
                     <h3 className="font-display text-2xl font-bold mb-2">{plan.name}</h3>
-                    <p className={`text-sm mb-6 ${isPopular ? 'text-slate-400' : 'text-slate-600'}`}>
+                    <p className={`text-sm mb-3 ${isPopular ? 'text-slate-400' : 'text-slate-600'}`}>
                       {plan.description}
                     </p>
-                    <div className="mb-6">
+                    <div className="mb-3">
                       <div className="flex items-baseline gap-1">
                         <span className="font-display text-4xl font-bold">
                           {formatCurrency(plan.price)}
@@ -220,7 +220,7 @@ export function PricingPage() {
                         </p>
                       )}
                     </div>
-                    <ul className="space-y-3 mb-8 flex-1">
+                    <ul className="space-y-3 mb-2 flex-1">
                       <li className="flex items-start gap-3">
                         <Check className={`w-5 h-5 flex-shrink-0 ${isPopular ? 'text-emerald-400' : 'text-emerald-500'}`} />
                         <span className={`text-sm ${isPopular ? 'text-slate-300' : 'text-slate-600'}`}>
@@ -306,8 +306,8 @@ export function PricingPage() {
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 text-center mb-10">
             Pricing Questions, Answered
           </h2>
-          <div className="space-y-4">
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="space-y-2">
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Who pays the platform fee?</h3>
               <p className="text-sm text-slate-600">
                 The <strong>client</strong>. A flat 5% fee is charged on each successful payment.
@@ -315,7 +315,7 @@ export function PricingPage() {
                 never deducted from freelancer earnings.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Do freelancers pay anything to use Growlancer?</h3>
               <p className="text-sm text-slate-600">
                 No. Creating a profile, building 3-tier packages, applying to projects, and
@@ -327,7 +327,7 @@ export function PricingPage() {
                 your ranking, visibility or matching.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">How does pricing work for Team Projects (multiple freelancers)?</h3>
               <p className="text-sm text-slate-600">
                 In a Team Project, every freelancer has their own <strong>independent contract</strong> —
@@ -337,7 +337,7 @@ export function PricingPage() {
                 the project.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">What does the 5% fee include?</h3>
               <p className="text-sm text-slate-600">
                 Escrow protection, secure payments (Razorpay & PayPal), AI-powered matching,
@@ -346,7 +346,7 @@ export function PricingPage() {
                 is no listing fee and no hidden charge anywhere.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Is the Premium plan worth it for me?</h3>
               <p className="text-sm text-slate-600">
                 Premium is optional and purely about speed and AI help: unlimited AI writing, AI
@@ -355,7 +355,7 @@ export function PricingPage() {
                 merit-based for everyone. Cancel anytime, no lock-in.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">What is the 2% payout processing fee?</h3>
               <p className="text-sm text-slate-600">
                 When a freelancer withdraws wallet funds, the payment processor (Razorpay/PayPal)
@@ -365,7 +365,7 @@ export function PricingPage() {
                 displayed before you confirm.
               </p>
             </div>
-            <div className="bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Is AI free for clients?</h3>
               <p className="text-sm text-slate-600">
                 Yes — <strong>clients get AI features free for lifetime</strong>: AI freelancer
@@ -380,7 +380,7 @@ export function PricingPage() {
       {/* How we make money — full transparency */}
       <section className="pb-16 sm:pb-20 pt-8 border-t border-slate-100">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="text-center mb-8">
+          <div className="text-center mb-2">
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
               How We Make Money
             </h2>
@@ -388,8 +388,8 @@ export function PricingPage() {
               Short and honest: we earn only when work succeeds.
             </p>
           </div>
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm">
-            <ul className="space-y-4">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+            <ul className="space-y-2">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
                 <p className="text-sm text-slate-600">
@@ -420,22 +420,22 @@ export function PricingPage() {
       {/* Trust Badges */}
       <section className="pb-16 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 2xl:px-12">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="flex items-center gap-4 bg-white rounded-2xl p-6 border border-slate-200">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-slate-200">
               <ShieldCheck className="w-8 h-8 text-emerald-500" />
               <div>
                 <p className="font-bold text-slate-900">100% Secure</p>
                 <p className="text-sm text-slate-600">Escrow protected</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-slate-200">
               <Zap className="w-8 h-8 text-orange-500" />
               <div>
                 <p className="font-bold text-slate-900">Instant Match</p>
                 <p className="text-sm text-slate-600">AI-powered in seconds</p>
               </div>
             </div>
-            <div className="flex items-center gap-4 bg-white rounded-2xl p-6 border border-slate-200">
+            <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-slate-200">
               <Check className="w-8 h-8 text-blue-500" />
               <div>
                 <p className="font-bold text-slate-900">No Hidden Fees</p>
