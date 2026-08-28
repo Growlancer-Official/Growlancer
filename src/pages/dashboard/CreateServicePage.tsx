@@ -292,6 +292,8 @@ export function CreateServicePage() {
       category: formData.category,
       // Basic tier price feeds the legacy `price` column (cards/search).
       price: basic.price,
+      delivery_days: basic.delivery_days,
+      revisions: basic.revisions,
       price_type: 'package' as const,
       currency: 'INR',
       packages: publishedPackages,
