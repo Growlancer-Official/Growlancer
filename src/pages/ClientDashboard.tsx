@@ -171,77 +171,77 @@ export default function ClientDashboard() {
   ];
 
   return (
-    <div className="p-6 lg:p-8 max-w-[100rem] mx-auto">
+    <div className="max-w-[100rem] mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <div>
-          <h1 className="font-display text-2xl sm:text-3xl font-bold text-slate-900">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900">
             Welcome back, {user?.name || 'Client'}!
           </h1>
-          <p className="text-slate-600 mt-2">Manage your projects and freelancers all in one place.</p>
+          <p className="text-slate-600 text-xs sm:text-sm mt-0.5">Manage your projects and freelancers all in one place.</p>
         </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
         {statCards.map((stat, index) => (
           <div
             key={index}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:-translate-y-1 transition-all duration-300 transform animate-scale-in"
+            className="bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300"
           >
-            <div className="flex items-center justify-between mb-4">
-              <div className={`h-12 w-12 rounded-2xl ${stat.color} flex items-center justify-center animate-workflow-glow`}>
-                <stat.icon className="w-6 h-6" />
+            <div className="flex items-center justify-between mb-2">
+              <div className={`h-8 w-8 rounded-lg ${stat.color} flex items-center justify-center`}>
+                <stat.icon className="w-4 h-4" />
               </div>
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stat.value}</p>
-            <p className="text-slate-600 text-sm">{stat.label}</p>
+            <p className="text-lg sm:text-2xl font-bold text-slate-900">{stat.value}</p>
+            <p className="text-slate-600 text-[11px] sm:text-xs">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-8">
-        <h2 className="text-xl font-semibold text-slate-900 mb-6">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4 mb-4">
+        <h2 className="text-sm font-semibold text-slate-900 mb-3">Quick Actions</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {quickActions.map((action) => (
             <Link
               key={action.path}
               to={action.path}
-              className="flex flex-col items-center p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 transform"
+              className="flex flex-col items-center p-3 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
             >
-              <div className={`w-12 h-12 ${action.color} rounded-xl flex items-center justify-center mb-3 transition-transform duration-300 hover:rotate-6`}>
-                <action.icon className="w-6 h-6 text-white" />
+              <div className={`w-8 h-8 ${action.color} rounded-lg flex items-center justify-center mb-2`}>
+                <action.icon className="w-4 h-4 text-white" />
               </div>
-              <span className="text-sm font-medium text-slate-700">{action.label}</span>
+              <span className="text-xs font-medium text-slate-700">{action.label}</span>
             </Link>
           ))}
         </div>
       </div>
 
       {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Recent Projects */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">Your Projects</h3>
+        <div className="bg-white rounded-xl p-4 border border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-slate-900">Your Projects</h3>
             <Link to="/client/projects" className="text-emerald-600 font-medium text-sm hover:underline">
               View All →
             </Link>
           </div>
 
           {recentProjects.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {recentProjects.slice(0, 4).map((project) => (
                 <Link
                   key={project.id}
                   to={`/client/projects?id=${project.id}`}
-                  className="block p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors"
+                  className="block p-3 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-slate-900 truncate">{project.title}</h4>
-                      <p className="text-sm text-slate-500 mt-1 line-clamp-1">{project.description}</p>
+                      <h4 className="font-medium text-slate-900 text-sm truncate">{project.title}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{project.description}</p>
                     </div>
                     <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${
                       project.status === 'open' ? 'bg-emerald-100 text-emerald-700' :
@@ -251,11 +251,11 @@ export default function ClientDashboard() {
                       {project.status}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-sm text-slate-500">
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs text-slate-500">
                       Budget: {formatBudgetRange(project.budget_min, project.budget_max)}
                     </span>
-                    <span className="text-xs text-slate-400">
+                    <span className="text-[10px] text-slate-400">
                       {safeFormatDate(project.created_at)}
                     </span>
                   </div>
@@ -263,45 +263,45 @@ export default function ClientDashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-10">
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <Briefcase className="w-7 h-7 text-slate-300" />
+            <div className="text-center py-6">
+              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Briefcase className="w-5 h-5 text-slate-300" />
               </div>
-              <p className="text-slate-600 mb-4 max-w-xs mx-auto text-sm">You haven't posted any projects yet. Start by creating your first project.</p>
+              <p className="text-slate-600 mb-3 max-w-xs mx-auto text-xs">No projects yet. Create your first one.</p>
               <Link
                 to="/client/post"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+                className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-emerald-600 text-white font-semibold text-xs rounded-lg hover:bg-emerald-700 transition-colors"
               >
-                <Plus className="w-5 h-5" />
-                Post Your First Project
+                <Plus className="w-3.5 h-3.5" />
+                Post Project
               </Link>
             </div>
           )}
         </div>
 
         {/* Active Contracts */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">Active Contracts</h3>
+        <div className="bg-white rounded-xl p-4 border border-slate-100">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-slate-900">Active Contracts</h3>
             <Link to="/client/contracts" className="text-emerald-600 font-medium text-sm hover:underline">
               View All →
             </Link>
           </div>
 
           {recentContracts.length > 0 ? (
-            <div className="space-y-4">
+            <div className="space-y-2">
               {recentContracts.slice(0, 4).map((contract) => (
                 <Link
                   key={contract.id}
                   to={`/client/contracts?id=${contract.id}`}
-                  className="block p-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors"
+                  className="block p-3 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-slate-900 truncate">
+                      <h4 className="font-medium text-slate-900 text-sm truncate">
                         {contract.projects?.title || 'Project'}
                       </h4>
-                      <p className="text-sm text-slate-500 mt-1">
+                      <p className="text-xs text-slate-500 mt-0.5">
                         Freelancer: {contract.freelancer_profile?.name || 'Unknown'}
                       </p>
                     </div>
@@ -314,8 +314,8 @@ export default function ClientDashboard() {
                       {contract.status}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mt-3">
-                    <span className="text-sm font-medium text-slate-900">
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-xs font-medium text-slate-900">
                       {formatCurrency(safeNumber(contract.amount))}
                     </span>
                     {contract.escrow_funded ? (
@@ -332,24 +332,24 @@ export default function ClientDashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-10">
-              <div className="w-14 h-14 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                <Handshake className="w-7 h-7 text-slate-300" />
+            <div className="text-center py-6">
+              <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center mx-auto mb-2">
+                <Handshake className="w-5 h-5 text-slate-300" />
               </div>
-              <p className="text-slate-600 mb-4 max-w-xs mx-auto text-sm">No active contracts yet. Accept a proposal or invite a freelancer to get started.</p>
-              <div className="flex gap-3 justify-center">
+              <p className="text-slate-600 mb-3 max-w-xs mx-auto text-xs">No active contracts yet.</p>
+              <div className="flex gap-2 justify-center">
                 <Link
                   to="/client/proposals"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded-lg hover:bg-emerald-700 transition-colors"
                 >
-                  <FileText className="w-4 h-4" />
+                  <FileText className="w-3.5 h-3.5" />
                   Review Proposals
                 </Link>
                 <Link
                   to="/client/matches"
-                  className="inline-flex items-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition-colors text-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 text-slate-700 rounded-lg font-medium hover:bg-slate-50 transition-colors text-xs"
                 >
-                  <Users className="w-4 h-4" />
+                  <Users className="w-3.5 h-3.5" />
                   Find Talent
                 </Link>
               </div>
@@ -359,35 +359,35 @@ export default function ClientDashboard() {
       </div>
 
       {/* Bottom Section - AI & Help */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-2xl p-6 text-white shadow-lg hover:shadow-emerald-500/20 hover:-translate-y-0.5 transition-all duration-300 transform animate-workflow-flow">
-          <div className="flex items-center gap-3 mb-4">
-            <Sparkles className="w-6 h-6 animate-workflow-pulse" />
-            <h3 className="text-lg font-semibold flex items-center gap-1.5">
-              AI-Powered Talent Matching <span className="flex h-2 w-2 rounded-full bg-emerald-300 animate-ping"></span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
+        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-xl p-4 text-white shadow-md">
+          <div className="flex items-center gap-2.5 mb-2">
+            <Sparkles className="w-4 h-4 animate-workflow-pulse" />
+            <h3 className="text-sm font-semibold flex items-center gap-1.5">
+              AI Talent Matching <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-300 animate-ping"></span>
             </h3>
           </div>
-          <p className="text-emerald-100 mb-4">
-            Let our AI find the perfect freelancers for your projects based on skills, experience, and reviews.
+          <p className="text-emerald-100 text-xs mb-3">
+            Find perfect freelancers based on skills, experience, and reviews.
           </p>
           <Link
             to="/client/matches"
-            className="inline-block bg-white text-emerald-600 px-4 py-2 rounded-lg font-medium hover:bg-emerald-50 hover:scale-105 active:scale-95 transition-all duration-200"
+            className="inline-block bg-white text-emerald-600 px-3 py-1.5 rounded-lg font-medium text-xs hover:bg-emerald-50 transition-all duration-200"
           >
-            View AI Matches — Free
+            View Matches
           </Link>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border border-slate-100">
-          <h3 className="text-lg font-semibold text-slate-900 mb-4">Need Help?</h3>
-          <p className="text-slate-600 mb-4">
-            Use our AI Assistant or Help Center for any questions.
+        <div className="bg-white rounded-xl p-4 border border-slate-100">
+          <h3 className="text-sm font-semibold text-slate-900 mb-2">Need Help?</h3>
+          <p className="text-slate-600 text-xs mb-3">
+            Use our AI Assistant or Help Center.
           </p>
-          <div className="flex flex-col gap-2">
-            <Link to="/client/ai-assistant" className="text-emerald-600 font-medium hover:underline">
+          <div className="flex flex-col gap-1">
+            <Link to="/client/ai-assistant" className="text-emerald-600 font-medium text-xs hover:underline">
               Chat with AI Assistant →
             </Link>
-            <Link to="/help-center" className="text-emerald-600 font-medium hover:underline">
+            <Link to="/help-center" className="text-emerald-600 font-medium text-xs hover:underline">
               Visit Help Center →
             </Link>
           </div>
