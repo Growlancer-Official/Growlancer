@@ -851,20 +851,20 @@ export function WorkspacePage() {
 
   if (contracts.length === 0) {
     return (
-      <div className="space-y-3 max-w-[100rem] mx-auto px-4 py-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Laptop className="w-6 h-6 text-white" />
+      <div className="space-y-1.5 max-w-[100rem] mx-auto px-4 py-4">
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Laptop className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Workspace</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">Workspace</h1>
             <p className="text-slate-500">Manage your active projects</p>
           </div>
         </div>
 
         <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <Briefcase className="w-10 h-10 text-slate-400" />
+            <Briefcase className="w-7 h-7 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No active contracts</h3>
           <p className="text-slate-500 max-w-md mx-auto mb-3">
@@ -876,15 +876,15 @@ export function WorkspacePage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Top Banner / Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
-            <Laptop className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+            <Laptop className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Collaboration Workspace</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">Collaboration Workspace</h1>
             <p className="text-sm text-slate-500">
               Co-working with <span className="font-semibold text-slate-700">{selectedContract?.client?.name}</span>
               {(selectedContract?.client as any)?.verification_status === 'verified' && (
@@ -985,18 +985,18 @@ export function WorkspacePage() {
 
       {/* Platform Policy — protect both sides (full-width, client-consistent design) */}
       <div className="rounded-xl overflow-hidden border border-blue-200 shadow-sm">
-        <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-5 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5 text-white" />
+        <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-2.5 py-4 flex items-center gap-1.5">
+          <div className="w-7 h-7 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+            <Shield className="w-3.5 h-3.5 text-white" />
           </div>
           <div>
             <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
             <p className="text-[11px] text-emerald-100">Your earnings and work are always protected — everything stays on the platform</p>
           </div>
         </div>
-        <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="bg-blue-50/60 px-2.5 py-4 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
               <Shield className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1008,7 +1008,7 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-amber-100 flex items-center justify-center shrink-0 mt-0.5">
               <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1017,7 +1017,7 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
               <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1027,7 +1027,7 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1036,7 +1036,7 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
               <RotateCcw className="w-3.5 h-3.5 text-indigo-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1046,7 +1046,7 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
               <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1056,7 +1056,7 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
               <FileText className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1065,7 +1065,7 @@ export function WorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1078,7 +1078,7 @@ export function WorkspacePage() {
       </div>
 
       {selectedContract && (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
           {/* Load Earlier Messages */}
           {hasMoreMessages && (
             <button
@@ -1092,8 +1092,8 @@ export function WorkspacePage() {
           {/* Dispute Alert Banner */}
           {selectedContract.status === 'disputed' && (
             <div className="bg-red-50/90 border border-red-200 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-2 animate-scale-in">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
+              <div className="flex items-start gap-1.5">
+                <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
                 <div>
                   <h4 className="font-bold text-red-900">Contract Frozen Under Active Dispute</h4>
                   <p className="text-xs text-red-700 mt-1 leading-relaxed max-w-2xl">
@@ -1108,8 +1108,8 @@ export function WorkspacePage() {
           {/* Extra Revision Request Banner */}
           {pendingRevision && (
             <div className="bg-blue-50/90 border border-blue-200 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-2 animate-scale-in">
-              <div className="flex items-start gap-3">
-                <RotateCcw className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
+              <div className="flex items-start gap-1.5">
+                <RotateCcw className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
                 <div>
                   <h4 className="font-bold text-blue-900">Extra Revision Request</h4>
                   <p className="text-xs text-blue-700 mt-1 leading-relaxed max-w-2xl">
@@ -1159,8 +1159,8 @@ export function WorkspacePage() {
           {/* Cancellation Request Banner */}
           {pendingCancellation && (
             <div className="bg-amber-50/90 border border-amber-200 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-2 animate-scale-in">
-              <div className="flex items-start gap-3">
-                <RotateCcw className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
+              <div className="flex items-start gap-1.5">
+                <RotateCcw className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
                 <div>
                   <h4 className="font-bold text-amber-900">Client Requested Cancellation</h4>
                   <p className="text-xs text-amber-700 mt-1 leading-relaxed max-w-2xl">
@@ -1193,14 +1193,14 @@ export function WorkspacePage() {
 
           {/* TAB 1: Chat & Assets Hub */}
           {activeTab === 'chat' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
               {/* Left Column - Chat Room */}
               <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
                 {/* Chat Header */}
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
-                      <MessageSquare className="w-5 h-5" />
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
+                      <MessageSquare className="w-3.5 h-3.5" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900">Project Chat Room</h4>
@@ -1243,10 +1243,10 @@ export function WorkspacePage() {
                     <button
                       type="button"
                       onClick={() => setShowUploadModal(true)}
-                      className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
+                      className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
                       title="Upload deliverable files"
                     >
-                      <Paperclip className="w-5 h-5" />
+                      <Paperclip className="w-3.5 h-3.5" />
                     </button>
                     <input
                       type="text"
@@ -1258,12 +1258,12 @@ export function WorkspacePage() {
                     <button
                       type="submit"
                       disabled={!newMessage.trim() || sendingMessage}
-                      className="w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-7 h-7 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {sendingMessage ? (
-                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
-                        <Send className="w-5 h-5" />
+                        <Send className="w-3.5 h-3.5" />
                       )}
                     </button>
                   </div>
@@ -1293,11 +1293,11 @@ export function WorkspacePage() {
                 </div>
 
                 {/* Uploaded Files List */}
-                <div className="flex-1 overflow-y-auto space-y-3 pr-1">
+                <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
                   {contractFiles.length > 0 ? (
                     contractFiles.map((file) => (
-                      <div key={file.id} className="flex items-center gap-3 p-3 bg-slate-50/80 border border-slate-100 rounded-xl hover:border-slate-200 transition-all shadow-sm">
-                        <div className="w-10 h-10 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
+                      <div key={file.id} className="flex items-center gap-1.5 p-3 bg-slate-50/80 border border-slate-100 rounded-xl hover:border-slate-200 transition-all shadow-sm">
+                        <div className="w-7 h-7 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
                           {fileUploadService.getFileIcon(file.file_type)}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -1328,7 +1328,7 @@ export function WorkspacePage() {
                     ))
                   ) : (
                     <div className="text-center py-12 text-slate-400">
-                      <FileText className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+                      <FileText className="w-8 h-8 mx-auto mb-2 text-slate-300" />
                       <p className="text-xs">No files shared yet.</p>
                       <p className="text-[10px] text-slate-400 max-w-[200px] mx-auto mt-1">Upload code, templates, or assets for real-time client verification.</p>
                     </div>
@@ -1340,13 +1340,13 @@ export function WorkspacePage() {
 
           {/* TAB 2: Real-Time Shared Canvas */}
           {activeTab === 'canvas' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5">
               {/* Shared Live Task Board */}
               <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-2 flex flex-col h-[600px]">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                      <ClipboardList className="w-5 h-5 text-emerald-600" />
+                      <ClipboardList className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Live Task Board</span>
                     </h3>
                     <p className="text-xs text-slate-500">Shared checklist synced in real-time</p>
@@ -1482,7 +1482,7 @@ export function WorkspacePage() {
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-emerald-600" />
+                      <FileText className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Co-Working Scratchpad</span>
                     </h3>
                     <p className="text-xs text-slate-500">Shared collaborative project pad</p>
@@ -1525,11 +1525,11 @@ export function WorkspacePage() {
 
           {/* TAB 3: Milestones & Escrow Timeline */}
           {activeTab === 'milestones' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5 animate-fade-in">
               {/* Financial Dashboard details (Left 2 spans) */}
-              <div className="lg:col-span-2 space-y-3">
+              <div className="lg:col-span-2 space-y-1.5">
                 {/* Project Milestone Card */}
-                <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm">
+                <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-sm">
                   <div className="flex items-start justify-between mb-2 pb-3 border-b border-slate-100">
                     <div>
                       <h3 className="font-semibold text-slate-900 text-lg">
@@ -1589,7 +1589,7 @@ export function WorkspacePage() {
                   {(selectedContract as any).escrow && (
                     <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between text-xs mb-2">
                       <div className="flex items-center gap-2">
-                        <ShieldCheck className="w-5 h-5 text-emerald-600" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                         <div>
                           <p className="font-semibold text-slate-900">Escrow Security active</p>
                           <p className="text-[10px] text-slate-500">Funds are held by Growlancer until you finish mockups and deliverables.</p>
@@ -1605,16 +1605,16 @@ export function WorkspacePage() {
                 {/* Auto-release protection — delivered milestones can never be held hostage */}
                 {milestones.length > 0 && (
                   <div className="rounded-xl overflow-hidden border border-violet-200 shadow-sm">
-                    <div className="bg-gradient-to-r from-violet-600 to-emerald-600 px-5 py-3.5 flex items-center gap-3">
+                    <div className="bg-gradient-to-r from-violet-600 to-emerald-600 px-2.5 py-3.5 flex items-center gap-1.5">
                       <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-                        <ShieldCheck className="w-5 h-5 text-white" />
+                        <ShieldCheck className="w-3.5 h-3.5 text-white" />
                       </div>
                       <div>
                         <p className="font-bold text-white text-xs">Your Payment Is Protected — Auto-Release Is Active</p>
                         <p className="text-[10px] text-violet-100">Delivered milestones release to your wallet automatically — a client can never hold your payment</p>
                       </div>
                     </div>
-                    <div className="bg-violet-50/70 px-5 py-3.5">
+                    <div className="bg-violet-50/70 px-2.5 py-3.5">
                       <p className="text-xs text-slate-700 leading-relaxed">
                         Once you deliver a milestone, the client can review and release it sooner — but if they don't
                         respond within the <span className="font-bold">review window</span>, the escrow{' '}
@@ -1628,7 +1628,7 @@ export function WorkspacePage() {
                 )}
 
                 {/* Milestones list */}
-                <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm">
+                <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-sm">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-slate-900">Contract Milestones</h3>
                     <span className="text-xs text-slate-500">
@@ -1637,7 +1637,7 @@ export function WorkspacePage() {
                   </div>
 
                   {milestones.length > 0 ? (
-                    <div className="space-y-3">
+                    <div className="space-y-1.5">
                       {milestones.map((milestone, idx) => (
                         <div
                           key={idx}
@@ -1649,7 +1649,7 @@ export function WorkspacePage() {
                               : 'bg-slate-50/50 border-slate-100'
                           }`}
                         >
-                          <div className="flex items-start gap-3">
+                          <div className="flex items-start gap-1.5">
                             <button
                               onClick={() => handleMilestoneStatusChange(idx, ['delivered', 'completed'].includes(milestone.status) ? 'pending' : 'delivered')}
                               disabled={selectedContract.status === 'disputed'}
@@ -1675,7 +1675,7 @@ export function WorkspacePage() {
                               {milestone.description && (
                                 <p className="text-[10px] text-slate-500 leading-relaxed mb-2">{milestone.description}</p>
                               )}
-                              <div className="flex items-center gap-3 text-[10px]">
+                              <div className="flex items-center gap-1.5 text-[10px]">
                                 <span className={`px-2 py-0.5 rounded-md border font-medium uppercase tracking-wider ${
                                   milestone.status === 'delivered'
                                     ? 'bg-violet-50 border-violet-100 text-violet-700'
@@ -1707,11 +1707,11 @@ export function WorkspacePage() {
                     </div>
                   ) : (
                     <div className="text-center py-3 border border-dashed border-slate-200 rounded-xl">
-                      <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+                      <AlertCircle className="w-7 h-7 text-slate-300 mx-auto mb-2" />
                       <p className="text-xs text-slate-500">Full contract escrow — no milestones</p>
 
                       {workStarted && selectedContract.escrow_funded && selectedContract.status !== 'disputed' && selectedContract.status !== 'completed' && (
-                        <div className="mt-4 space-y-3">
+                        <div className="mt-4 space-y-1.5">
                           {selectedContract.delivered_at ? (
                             <div className="mx-auto max-w-sm p-3.5 bg-violet-50 border border-violet-200 rounded-xl">
                               <p className="text-xs font-bold text-violet-800 flex items-center justify-center gap-1.5">
@@ -1746,7 +1746,7 @@ export function WorkspacePage() {
               <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-2 flex flex-col h-[600px]">
                 <div className="pb-3 border-b border-slate-100">
                   <h3 className="font-semibold text-slate-900 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-emerald-600" />
+                    <Clock className="w-3.5 h-3.5 text-emerald-600" />
                     <span>Project Event Timeline</span>
                   </h3>
                   <p className="text-xs text-slate-500">Co-working log feed</p>
@@ -1796,7 +1796,7 @@ export function WorkspacePage() {
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
           <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl animate-scale-in border border-slate-100">
-            <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center justify-between mb-2.5">
               <h3 className="font-display text-lg font-bold text-slate-900">Upload Project Deliverable</h3>
               <button 
                 onClick={() => setShowUploadModal(false)}
@@ -1834,7 +1834,7 @@ export function WorkspacePage() {
                 />
               </div>
 
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-1.5 pt-2">
                 <button
                   type="button"
                   onClick={() => setShowUploadModal(false)}

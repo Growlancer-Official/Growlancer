@@ -185,15 +185,15 @@ export function ProposalsPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
-            <FileText className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <FileText className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">My Proposals</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">My Proposals</h1>
             <p className="text-slate-500">
               {proposals.length} proposal{proposals.length !== 1 ? 's' : ''} submitted
             </p>
@@ -202,7 +202,7 @@ export function ProposalsPage() {
 
         <Link
           to="/dashboard/feed"
-          className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2"
+          className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2"
         >
           <FileText className="w-4 h-4" />
           Submit New Proposal
@@ -216,36 +216,36 @@ export function ProposalsPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+        <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-orange-600">{pendingCount}</p>
+              <p className="text-lg font-bold text-orange-600">{pendingCount}</p>
               <p className="text-sm text-slate-500">Pending Review</p>
             </div>
-            <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
-              <Clock className="w-6 h-6 text-orange-500" />
+            <div className="w-8 h-8 bg-orange-50 rounded-xl flex items-center justify-center">
+              <Clock className="w-4 h-4 text-orange-500" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+        <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-emerald-600">{acceptedCount}</p>
+              <p className="text-lg font-bold text-emerald-600">{acceptedCount}</p>
               <p className="text-sm text-slate-500">Accepted</p>
             </div>
-            <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-              <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+            <div className="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             </div>
           </div>
         </div>
-        <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+        <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-2xl font-bold text-slate-600">{rejectedCount}</p>
+              <p className="text-lg font-bold text-slate-600">{rejectedCount}</p>
               <p className="text-sm text-slate-500">Not Selected</p>
             </div>
-            <div className="w-12 h-12 bg-slate-50 rounded-xl flex items-center justify-center">
-              <XCircle className="w-6 h-6 text-slate-500" />
+            <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center">
+              <XCircle className="w-4 h-4 text-slate-500" />
             </div>
           </div>
         </div>
@@ -337,12 +337,12 @@ export function ProposalsPage() {
             return (
               <div
                 key={proposal.id}
-                className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm"
+                className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm"
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-1.5">
                   {/* Project Info */}
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-1.5 mb-3">
                       <h3 className="font-display text-lg font-bold text-slate-900">
                         {proposal.project?.title || 'Project'}
                       </h3>
@@ -424,7 +424,7 @@ export function ProposalsPage() {
                         <button
                           onClick={() => setWithdrawConfirm(proposal.id)}
                           disabled={withdrawingProposal === proposal.id}
-                          className="px-6 py-3 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                          className="px-3 py-3 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
                         >
                           {withdrawingProposal === proposal.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -441,7 +441,7 @@ export function ProposalsPage() {
                     {proposal.status === 'accepted' && (
                       <Link
                         to="/dashboard/contracts"
-                        className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                        className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
                       >
                         View Contract
                         <ArrowRight className="w-4 h-4" />
@@ -469,7 +469,7 @@ export function ProposalsPage() {
               <button
                 onClick={() => { setLoadingMore(true); fetchProposals(true); }}
                 disabled={loadingMore}
-                className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
               >
                 {loadingMore ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
@@ -483,7 +483,7 @@ export function ProposalsPage() {
       ) : (
         <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <FileText className="w-10 h-10 text-slate-400" />
+            <FileText className="w-7 h-7 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
             {activeTab === 'pending'
@@ -501,7 +501,7 @@ export function ProposalsPage() {
           </p>
           <Link
             to="/dashboard/feed"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
           >
             Browse Projects
             <ArrowRight className="w-4 h-4" />

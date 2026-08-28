@@ -74,20 +74,20 @@ export function SkillCertificationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Skill Certifications</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Skill Certifications</h1>
           <p className="text-slate-500 mt-1">Earn verified badges to showcase your expertise to clients</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
-          <Award className="w-5 h-5 text-emerald-600" />
+          <Award className="w-3.5 h-3.5 text-emerald-600" />
           <span className="text-sm font-bold text-emerald-700">{certifications.length} Badges Earned</span>
         </div>
       </div>
 
       {/* Learn & Earn — mature platform promise */}
       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white shadow-sm">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5 text-white" />
+        <div className="flex items-start gap-1.5">
+          <div className="w-7 h-7 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-white" />
           </div>
           <div className="space-y-1">
             <p className="font-bold text-sm">Learn. Get Certified. Earn More.</p>
@@ -108,21 +108,21 @@ export function SkillCertificationsPage() {
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <div className="bg-white rounded-xl border border-slate-100 p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-100 rounded-xl"><Award className="w-6 h-6 text-emerald-600" /></div>
-            <div><p className="text-2xl font-bold text-slate-900">{certifications.length}</p><p className="text-sm text-slate-500">Badges Earned</p></div>
+          <div className="flex items-center gap-1.5">
+            <div className="p-3 bg-emerald-100 rounded-xl"><Award className="w-4 h-4 text-emerald-600" /></div>
+            <div><p className="text-lg font-bold text-slate-900">{certifications.length}</p><p className="text-sm text-slate-500">Badges Earned</p></div>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-blue-100 rounded-xl"><BrainCircuit className="w-6 h-6 text-blue-600" /></div>
-            <div><p className="text-2xl font-bold text-slate-900">{tests.length}</p><p className="text-sm text-slate-500">Tests Available</p></div>
+          <div className="flex items-center gap-1.5">
+            <div className="p-3 bg-blue-100 rounded-xl"><BrainCircuit className="w-4 h-4 text-blue-600" /></div>
+            <div><p className="text-lg font-bold text-slate-900">{tests.length}</p><p className="text-sm text-slate-500">Tests Available</p></div>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 p-5">
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-amber-100 rounded-xl"><TrendingUp className="w-6 h-6 text-amber-600" /></div>
-            <div><p className="text-2xl font-bold text-slate-900">{certifications.filter((c) => c.level === 'expert' || c.level === 'advanced').length}</p><p className="text-sm text-slate-500">Advanced+ Badges</p></div>
+          <div className="flex items-center gap-1.5">
+            <div className="p-3 bg-amber-100 rounded-xl"><TrendingUp className="w-4 h-4 text-amber-600" /></div>
+            <div><p className="text-lg font-bold text-slate-900">{certifications.filter((c) => c.level === 'expert' || c.level === 'advanced').length}</p><p className="text-sm text-slate-500">Advanced+ Badges</p></div>
           </div>
         </div>
       </div>
@@ -162,7 +162,7 @@ export function SkillCertificationsPage() {
             return (
               <div key={test.id} className={`bg-white rounded-xl border p-5 ${isLocked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:shadow-md'} transition-all`}>
                 <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
                     <div className={`p-2.5 rounded-xl ${levelInfo.bgColor}`}><Icon className={`w-5 h-5 ${levelInfo.color}`} /></div>
                     <div>
                       <h3 className="font-bold text-slate-900">{test.skill}</h3>
@@ -198,19 +198,19 @@ export function SkillCertificationsPage() {
         <div>
           {filteredCerts.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
-              <Award className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+              <Award className="w-8 h-8 text-slate-300 mx-auto mb-2" />
               <h3 className="text-lg font-bold text-slate-900 mb-2">No certifications yet</h3>
               <p className="text-slate-500 mb-3">Take skill tests to earn verified badges.</p>
-              <button onClick={() => setActiveTab('available')} className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">Browse Tests</button>
+              <button onClick={() => setActiveTab('available')} className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">Browse Tests</button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {filteredCerts.map((cert) => {
                 const badgeInfo = skillCertificationService.getBadgeInfo(cert);
                 return (
                   <div key={cert.id} className="bg-white rounded-xl border border-slate-100 p-5 flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${badgeInfo.bgColor}`}>{badgeInfo.icon}</div>
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xl ${badgeInfo.bgColor}`}>{badgeInfo.icon}</div>
                       <div>
                         <h3 className="font-bold text-slate-900">{cert.skill}</h3>
                         <p className="text-sm text-slate-500">{badgeInfo.label} • Score: {badgeInfo.scorePercent}%</p>

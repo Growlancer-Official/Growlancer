@@ -88,14 +88,14 @@ export function ClientContestsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-8">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">My Contests</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">My Contests</h1>
           <p className="text-slate-500 mt-1">Manage your design and development contests</p>
         </div>
         <Link
           to="/client/contests/create"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-3.5 h-3.5" />
           Create Contest
         </Link>
       </div>
@@ -108,9 +108,9 @@ export function ClientContestsPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-1.5 mb-2">
             <div className="p-2 bg-emerald-100 rounded-xl">
-              <Trophy className="w-5 h-5 text-emerald-600" />
+              <Trophy className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <span className="text-sm text-slate-500 font-medium">Total Contests</span>
           </div>
@@ -118,9 +118,9 @@ export function ClientContestsPage() {
         </div>
 
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-1.5 mb-2">
             <div className="p-2 bg-green-100 rounded-xl">
-              <Clock className="w-5 h-5 text-green-600" />
+              <Clock className="w-3.5 h-3.5 text-green-600" />
             </div>
             <span className="text-sm text-slate-500 font-medium">Active</span>
           </div>
@@ -128,9 +128,9 @@ export function ClientContestsPage() {
         </div>
 
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-1.5 mb-2">
             <div className="p-2 bg-emerald-100 rounded-xl">
-              <IndianRupee className="w-5 h-5 text-emerald-600" />
+              <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <span className="text-sm text-slate-500 font-medium">Total Prizes</span>
           </div>
@@ -138,9 +138,9 @@ export function ClientContestsPage() {
         </div>
 
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-1.5 mb-2">
             <div className="p-2 bg-blue-100 rounded-xl">
-              <Users className="w-5 h-5 text-blue-600" />
+              <Users className="w-3.5 h-3.5 text-blue-600" />
             </div>
             <span className="text-sm text-slate-500 font-medium">Submissions</span>
           </div>
@@ -183,9 +183,9 @@ export function ClientContestsPage() {
           <p className="text-slate-500 mb-3">Create your first contest to start receiving submissions</p>
           <Link
             to="/client/contests/create"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+            className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-3.5 h-3.5" />
             Create Contest
           </Link>
         </div>
@@ -198,7 +198,7 @@ export function ClientContestsPage() {
             <div key={contest.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-1.5 mb-2">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(contest.status)}`}>
                       {contest.status.charAt(0).toUpperCase() + contest.status.slice(1)}
                     </span>
@@ -271,14 +271,14 @@ export function ClientContestsPage() {
                     className="p-3 bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-600 rounded-xl transition-colors"
                     title="View"
                   >
-                    <Eye className="w-5 h-5" />
+                    <Eye className="w-3.5 h-3.5" />
                   </Link>
                   <button
                     onClick={() => setDeleteConfirm(contest.id)}
                     className="p-3 bg-slate-100 hover:bg-red-100 text-slate-600 hover:text-red-600 rounded-xl transition-colors"
                     title="Delete"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>

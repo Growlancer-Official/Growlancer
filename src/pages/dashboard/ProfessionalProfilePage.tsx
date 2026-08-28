@@ -889,15 +889,15 @@ export function ProfessionalProfilePage() {
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-            <User className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+            <User className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Professional Profile</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">Professional Profile</h1>
             <p className="text-slate-500 text-sm">Complete your profile to get better AI matches</p>
           </div>
         </div>
@@ -910,7 +910,7 @@ export function ProfessionalProfilePage() {
             ) : (
               <>
                 <button onClick={() => setIsEditing(false)} className="px-4 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm">Cancel</button>
-                <button onClick={handleProfileSave} disabled={saving} className="px-5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2 text-sm">
+                <button onClick={handleProfileSave} disabled={saving} className="px-2.5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2 text-sm">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Changes
                 </button>
@@ -940,11 +940,11 @@ export function ProfessionalProfilePage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-1.5">
         {/* ── LEFT SIDEBAR: Profile Card + Tab Navigation ── */}
         <div className="lg:col-span-1 space-y-2">
           {/* Profile Card */}
-          <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm text-center">
+          <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm text-center">
             <div className="relative w-24 h-24 mx-auto mb-2">
               {profile?.avatar ? (
                 <div className="w-full h-full rounded-full overflow-hidden">
@@ -953,7 +953,7 @@ export function ProfessionalProfilePage() {
                 </div>
               ) : (
                 <div className="w-full h-full rounded-full bg-slate-100 flex items-center justify-center">
-                  <User className="w-10 h-10 text-slate-400" />
+                  <User className="w-7 h-7 text-slate-400" />
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleAvatarUpload} className="hidden" />
@@ -1017,10 +1017,10 @@ export function ProfessionalProfilePage() {
             <nav className="space-y-0.5">
               {tabs.map(({ id, label, icon: Icon, desc }) => (
                 <button key={id} onClick={() => { setActiveTab(id); if (id === 'profile') setIsEditing(false); }}
-                  className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-xl font-medium transition-all text-left ${
+                  className={`flex items-center gap-1.5 w-full px-3 py-2.5 rounded-xl font-medium transition-all text-left ${
                     activeTab === id ? 'bg-emerald-50 text-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50'
                   }`}>
-                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <Icon className="w-3.5 h-3.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{label}</p>
                     <p className="text-[10px] text-slate-400 truncate">{desc}</p>
@@ -1032,13 +1032,13 @@ export function ProfessionalProfilePage() {
         </div>
 
         {/* ── RIGHT CONTENT ── */}
-        <div className="lg:col-span-3 space-y-3">
+        <div className="lg:col-span-3 space-y-1.5">
 
           {/* ═══ PROFILE TAB ═══ */}
           {activeTab === 'profile' && (
             <>
               {/* Bio */}
-              <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+              <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                 <h3 className="font-display text-lg font-bold text-slate-900 mb-2">About</h3>
                 {isEditing ? (
                   <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
@@ -1052,7 +1052,7 @@ export function ProfessionalProfilePage() {
               {isEditing && (
                 <>
                   {/* Title */}
-                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Professional Title</h3>
                     <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
@@ -1060,7 +1060,7 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Professional Info */}
-                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Professional Info</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <div>
@@ -1121,7 +1121,7 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Categories + Free-text Skills */}
-                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Categories & Skills</h3>
                     <p className="text-xs text-slate-500 mb-2">
                       Pick up to 3 categories — Growlancer matches you to projects by category. Add your own skills freely.
@@ -1156,7 +1156,7 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Languages */}
-                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Languages</h3>
                     <div className="flex gap-2 mb-3">
                       <input type="text" value={languageInput} onChange={(e) => setLanguageInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
@@ -1174,7 +1174,7 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Education */}
-                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Education</h3>
                     <textarea rows={2} value={formData.education} onChange={(e) => setFormData({ ...formData, education: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
@@ -1182,7 +1182,7 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Certifications */}
-                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                  <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                     <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Certifications</h3>
                     <div className="flex gap-2 mb-3">
                       <input type="text" value={certInput} onChange={(e) => setCertInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCert())}
@@ -1200,9 +1200,9 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Availability */}
-                  <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
+                  <div className="flex items-center gap-1.5 p-4 bg-slate-50 rounded-xl">
                     <input type="checkbox" checked={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.checked })}
-                      className="w-5 h-5 text-emerald-600 rounded border-slate-300 cursor-pointer" />
+                      className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 cursor-pointer" />
                     <label className="flex-1 text-sm font-medium text-slate-700 cursor-pointer">I'm available to take new projects</label>
                   </div>
                 </>
@@ -1212,9 +1212,9 @@ export function ProfessionalProfilePage() {
               {!isEditing && (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
-                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Professional Info</h3>
-                      <div className="space-y-3">
+                      <div className="space-y-1.5">
                         <div><span className="text-xs text-slate-400">Title</span><p className="font-medium">{formData.title || 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Base Rate</span><p className="font-medium">{formData.hourly_rate ? formatCurrency(Number(formData.hourly_rate)) : 'Not set'}</p></div>
                         <div><span className="text-xs text-slate-400">Experience</span><p className="font-medium">{formData.experience ? `${formData.experience} years` : 'Not set'}</p></div>
@@ -1222,7 +1222,7 @@ export function ProfessionalProfilePage() {
                         <div><span className="text-xs text-slate-400">Portfolio</span><p className="font-medium">{formData.portfolio_url ? <a href={formData.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">{formData.portfolio_url}</a> : 'Not set'}</p></div>
                       </div>
                     </div>
-                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Education & Certs</h3>
                       <div className="space-y-2">
                         <div>
@@ -1253,7 +1253,7 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
-                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Categories</h3>
                       <div className="flex flex-wrap gap-2">
                         {selectedCategoryNames.length > 0 ? selectedCategoryNames.map(c => <span key={c} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm">{c}</span>) : <p className="text-slate-400">No categories selected</p>}
@@ -1262,7 +1262,7 @@ export function ProfessionalProfilePage() {
                         <p className="text-xs text-slate-400 mt-2">Pick categories to get AI-matched to projects</p>
                       )}
                     </div>
-                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Skills</h3>
                       <div className="flex flex-wrap gap-2">
                         {formData.skills.length > 0 ? [...formData.skills].sort((a, b) => a.localeCompare(b)).map(s => <span key={s} className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm">{s}</span>) : <p className="text-slate-400">No skills added</p>}
@@ -1271,7 +1271,7 @@ export function ProfessionalProfilePage() {
                         <p className="text-xs text-slate-400 mt-2">Add skills to get better AI project matches</p>
                       )}
                     </div>
-                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Languages</h3>
                       <div className="flex flex-wrap gap-2">
                         {formData.languages.length > 0 ? formData.languages.map(l => <span key={l} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm">{l}</span>) : <p className="text-slate-400">No languages added</p>}
@@ -1285,29 +1285,29 @@ export function ProfessionalProfilePage() {
               )}
 
               {/* Bottom Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-6 border border-emerald-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <Star className="w-5 h-5 text-emerald-600" />
+              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-3 border border-emerald-100 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
+                  <div className="flex items-start gap-1.5">
+                    <div className="w-7 h-7 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                      <Star className="w-3.5 h-3.5 text-emerald-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-sm mb-1">Complete Your Profile</h4>
                       <p className="text-xs text-slate-500 leading-relaxed">A 100% complete profile gets 5x more client invitations. Add skills, portfolio, and certifications.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                  <div className="flex items-start gap-1.5">
+                    <div className="w-7 h-7 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-sm mb-1">Verify Your Skills</h4>
                       <p className="text-xs text-slate-500 leading-relaxed">Take skill tests to earn verified badges. Clients trust verified freelancers 3x more.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <Bell className="w-5 h-5 text-emerald-600" />
+                  <div className="flex items-start gap-1.5">
+                    <div className="w-7 h-7 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                      <Bell className="w-3.5 h-3.5 text-emerald-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-sm mb-1">Stay Active</h4>
@@ -1324,9 +1324,9 @@ export function ProfessionalProfilePage() {
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-emerald-600" /> Account Settings
+                  <Settings className="w-3.5 h-3.5 text-emerald-600" /> Account Settings
                 </h2>
-                <form onSubmit={handleAccountSave} className="space-y-3">
+                <form onSubmit={handleAccountSave} className="space-y-1.5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
@@ -1410,17 +1410,17 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
                   <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                      {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Changes</>}
+                    <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                      {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</> : <><Save className="w-3.5 h-3.5" /> Save Changes</>}
                     </button>
                   </div>
                 </form>
               </div>
 
               {/* Account Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-blue-100 shadow-sm">
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-3 border border-blue-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Settings className="w-4 h-4 text-blue-600" />
                     </div>
@@ -1429,7 +1429,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Adding your timezone helps clients know your availability hours for real-time collaboration.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Globe className="w-4 h-4 text-blue-600" />
                     </div>
@@ -1438,7 +1438,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Set your preferred language to receive AI matches and notifications in your language.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Shield className="w-4 h-4 text-blue-600" />
                     </div>
@@ -1454,10 +1454,10 @@ export function ProfessionalProfilePage() {
 
           {/* ═══ SECURITY TAB ═══ */}
           {activeTab === 'security' && (
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Lock className="w-5 h-5 text-emerald-600" /> Change Password
+                  <Lock className="w-3.5 h-3.5 text-emerald-600" /> Change Password
                 </h2>
                 <form onSubmit={handlePasswordChange} className="space-y-2">
                   <p className="text-sm text-slate-500 bg-slate-50 rounded-xl p-4">
@@ -1481,7 +1481,7 @@ export function ProfessionalProfilePage() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                     </div>
                   </div>
-                  <label className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl cursor-pointer">
+                  <label className="flex items-center gap-1.5 p-4 bg-slate-50 rounded-xl cursor-pointer">
                     <input
                       type="checkbox"
                       checked={signOutOthers}
@@ -1493,7 +1493,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-xs text-slate-500">Log out every other device after the password change</p>
                     </div>
                   </label>
-                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                     {saving ? 'Updating...' : 'Update Password'}
                   </button>
                 </form>
@@ -1502,13 +1502,13 @@ export function ProfessionalProfilePage() {
               {/* 2FA */}
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-emerald-600" /> Two-Factor Authentication
+                  <Shield className="w-3.5 h-3.5 text-emerald-600" /> Two-Factor Authentication
                 </h2>
                 <p className="text-slate-600 mb-2">{twoFactorEnabled ? '2FA is enabled. Your account is more secure.' : 'Add an extra layer of security with 2FA.'}</p>
                 {!showQrCode && !showRecoveryCodes && (
                   twoFactorEnabled ? (
-                    <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
-                      <Shield className="w-6 h-6 text-emerald-600" />
+                    <div className="flex items-center gap-1.5 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
+                      <Shield className="w-4 h-4 text-emerald-600" />
                       <div className="flex-1"><p className="font-medium text-emerald-800">2FA is Active</p><p className="text-sm text-emerald-600">Protected by two-factor authentication</p></div>
                       {!confirmDisable2FA ? (
                         <button onClick={handleDisable2FA} disabled={twoFactorLoading} className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors">Disable</button>
@@ -1534,8 +1534,8 @@ export function ProfessionalProfilePage() {
                     </div>
                   ) : (
                     <button onClick={handleSetup2FA} disabled={twoFactorLoading}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                      {twoFactorLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
+                      className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                      {twoFactorLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <QrCode className="w-3.5 h-3.5" />}
                       {twoFactorLoading ? 'Setting up...' : 'Enable Two-Factor Authentication'}
                     </button>
                   )
@@ -1560,14 +1560,14 @@ export function ProfessionalProfilePage() {
                         <input type="text" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="000000" maxLength={6}
                           className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-center text-lg font-mono tracking-widest" />
                         <button onClick={handleVerify2FA} disabled={twoFactorLoading || twoFactorCode.length !== 6}
-                          className="px-6 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">{twoFactorLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify'}</button>
+                          className="px-3 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">{twoFactorLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Verify'}</button>
                       </div>
                     </div>
                   </div>
                 )}
                 {showRecoveryCodes && (
                   <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-5 h-5 text-amber-600" /><p className="font-medium text-amber-800">Recovery Codes</p></div>
+                    <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-3.5 h-3.5 text-amber-600" /><p className="font-medium text-amber-800">Recovery Codes</p></div>
                     <p className="text-sm text-amber-700 mb-3">Save these codes in a secure place.</p>
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       {recoveryCodes.map((code, i) => <code key={i} className="p-2 bg-white border border-amber-300 rounded-lg text-sm font-mono text-center">{code}</code>)}
@@ -1582,12 +1582,12 @@ export function ProfessionalProfilePage() {
               {/* Active Sessions */}
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <Monitor className="w-5 h-5 text-emerald-600" /> Active Sessions
+                  <Monitor className="w-3.5 h-3.5 text-emerald-600" /> Active Sessions
                 </h2>
                 <p className="text-sm text-slate-600 mb-2">You have {activeSessions} active session{activeSessions !== 1 ? 's' : ''}</p>
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <Monitor className="w-5 h-5 text-slate-400" />
+                  <div className="flex items-center gap-1.5">
+                    <Monitor className="w-3.5 h-3.5 text-slate-400" />
                     <div><p className="font-medium text-slate-900">Current Session</p><p className="text-sm text-slate-500">{sessionInfo}</p></div>
                   </div>
                   <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> Active now</span>
@@ -1595,9 +1595,9 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Security Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-6 border border-amber-100 shadow-sm">
+              <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-3 border border-amber-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Lock className="w-4 h-4 text-amber-600" />
                     </div>
@@ -1606,7 +1606,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Use a mix of letters, numbers, and symbols. Never reuse passwords across different sites.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Shield className="w-4 h-4 text-amber-600" />
                     </div>
@@ -1615,7 +1615,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Two-factor authentication adds an extra layer of security. Highly recommended for all accounts.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Monitor className="w-4 h-4 text-amber-600" />
                     </div>
@@ -1634,7 +1634,7 @@ export function ProfessionalProfilePage() {
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-emerald-600" /> Notification Preferences
+                  <Bell className="w-3.5 h-3.5 text-emerald-600" /> Notification Preferences
                 </h2>
                 <div className="space-y-2 mb-3">
                   {Object.entries(notifications).map(([key, value]) => (
@@ -1653,16 +1653,16 @@ export function ProfessionalProfilePage() {
                   ))}
                 </div>
                 <div className="flex justify-end">
-                  <button onClick={handleNotificationsSave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                    {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Preferences</>}
+                  <button onClick={handleNotificationsSave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                    {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</> : <><Save className="w-3.5 h-3.5" /> Save Preferences</>}
                   </button>
                 </div>
               </div>
 
               {/* Notifications Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-purple-50 to-white rounded-xl p-6 border border-purple-100 shadow-sm">
+              <div className="bg-gradient-to-br from-purple-50 to-white rounded-xl p-3 border border-purple-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Bell className="w-4 h-4 text-purple-600" />
                     </div>
@@ -1671,7 +1671,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Enable push notifications to get instant updates about new proposals, messages, and projects.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Mail className="w-4 h-4 text-purple-600" />
                     </div>
@@ -1680,7 +1680,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Email notifications ensure you never miss important updates even when you're away from the platform.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Settings className="w-4 h-4 text-purple-600" />
                     </div>
@@ -1699,9 +1699,9 @@ export function ProfessionalProfilePage() {
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-emerald-600" /> Privacy Settings
+                  <Globe className="w-3.5 h-3.5 text-emerald-600" /> Privacy Settings
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Profile Visibility</label>
                     <select value={privacy.profileVisibility} onChange={(e) => setPrivacy({ ...privacy, profileVisibility: e.target.value as any })}
@@ -1720,21 +1720,21 @@ export function ProfessionalProfilePage() {
                     <div key={key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                       <div><p className="font-medium text-slate-900">{label}</p><p className="text-sm text-slate-600">{desc}</p></div>
                       <input type="checkbox" checked={(privacy as any)[key]} onChange={(e) => setPrivacy({ ...privacy, [key]: e.target.checked })}
-                        className="w-5 h-5 text-emerald-600 rounded border-slate-300 cursor-pointer" />
+                        className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 cursor-pointer" />
                     </div>
                   ))}
                   <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <button onClick={handlePrivacySave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                      {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Privacy Settings</>}
+                    <button onClick={handlePrivacySave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                      {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</> : <><Save className="w-3.5 h-3.5" /> Save Privacy Settings</>}
                     </button>
                   </div>
                 </div>
               </div>
 
               {/* Privacy Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-sky-50 to-white rounded-xl p-6 border border-sky-100 shadow-sm">
+              <div className="bg-gradient-to-br from-sky-50 to-white rounded-xl p-3 border border-sky-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Globe className="w-4 h-4 text-sky-600" />
                     </div>
@@ -1743,7 +1743,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Choose who can discover your profile. Public profiles get the most client matches.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Eye className="w-4 h-4 text-sky-600" />
                     </div>
@@ -1752,7 +1752,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Showing your online status helps clients know when you're available for quick responses.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Mail className="w-4 h-4 text-sky-600" />
                     </div>
@@ -1771,24 +1771,24 @@ export function ProfessionalProfilePage() {
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <IndianRupee className="w-5 h-5 text-emerald-600" /> Payout Methods
+                  <IndianRupee className="w-3.5 h-3.5 text-emerald-600" /> Payout Methods
                 </h2>
                 {payoutMethodsLoading && (
-                  <div className="flex items-center justify-center py-4 mb-3"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /><span className="ml-3 text-sm text-slate-500">Loading...</span></div>
+                  <div className="flex items-center justify-center py-4 mb-3"><Loader2 className="w-4 h-4 animate-spin text-emerald-600" /><span className="ml-3 text-sm text-slate-500">Loading...</span></div>
                 )}
                 {payoutMethodsError && (
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-3 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5 text-red-600" /><p className="text-sm text-red-700">{payoutMethodsError}</p>
+                    <AlertCircle className="w-3.5 h-3.5 text-red-600" /><p className="text-sm text-red-700">{payoutMethodsError}</p>
                     <button onClick={() => void fetchPayoutMethods()} className="ml-auto text-xs text-red-600 font-medium underline">Retry</button>
                   </div>
                 )}
                 {!payoutMethodsLoading && payoutMethods.length > 0 ? (
-                  <div className="space-y-3 mb-3">
+                  <div className="space-y-1.5 mb-3">
                     {payoutMethods.map(method => (
                       <div key={method.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${method.type === 'paypal' ? 'bg-blue-100' : method.type === 'upi' ? 'bg-violet-100' : 'bg-green-100'}`}>
-                            {method.type === 'paypal' ? <span className="text-blue-600 font-bold text-sm">P</span> : method.type === 'upi' ? <span className="text-violet-600 font-bold text-sm">U</span> : <Briefcase className="w-5 h-5 text-green-600" />}
+                        <div className="flex items-center gap-1.5">
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${method.type === 'paypal' ? 'bg-blue-100' : method.type === 'upi' ? 'bg-violet-100' : 'bg-green-100'}`}>
+                            {method.type === 'paypal' ? <span className="text-blue-600 font-bold text-sm">P</span> : method.type === 'upi' ? <span className="text-violet-600 font-bold text-sm">U</span> : <Briefcase className="w-3.5 h-3.5 text-green-600" />}
                           </div>
                           <div><p className="font-medium text-slate-900">{method.type === 'paypal' ? 'PayPal' : method.type === 'upi' ? `UPI — ${method.upi_id || ''}` : `Bank — ${method.bank_name || ''}`}</p>
                           <p className="text-sm text-slate-500">{method.type === 'paypal' ? method.email : method.type === 'upi' ? method.upi_id : `${method.account_holder_name || ''} ••••${method.account_number?.slice(-4) || ''}`}</p></div>
@@ -1811,7 +1811,7 @@ export function ProfessionalProfilePage() {
                   </div>
                 ) : !payoutMethodsLoading ? (
                   <div className="text-center py-4 text-slate-500 mb-3">
-                    <IndianRupee className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                    <IndianRupee className="w-8 h-8 mx-auto mb-3 text-slate-300" />
                     <p className="font-medium">No payout methods added yet</p>
                     <p className="text-sm">Add a payout method to receive payments</p>
                   </div>
@@ -1871,7 +1871,7 @@ export function ProfessionalProfilePage() {
                       <div className="flex gap-2">
                         <button onClick={() => setShowAddPayout(false)} className="flex-1 px-4 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
                         <button onClick={handleAddPayout} disabled={addingPayout} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50">
-                          {addingPayout ? <Loader2 className="w-5 h-5 animate-spin" /> : <IndianRupee className="w-5 h-5" />}
+                          {addingPayout ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <IndianRupee className="w-3.5 h-3.5" />}
                           {addingPayout ? 'Adding...' : 'Add Method'}
                         </button>
                       </div>
@@ -1880,15 +1880,15 @@ export function ProfessionalProfilePage() {
                 ) : (
                   <button onClick={() => setShowAddPayout(true)} disabled={payoutMethodsLoading}
                     className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 hover:text-emerald-600 hover:border-emerald-300 transition-all w-full justify-center disabled:opacity-50">
-                    <IndianRupee className="w-5 h-5" /> Add Payout Method
+                    <IndianRupee className="w-3.5 h-3.5" /> Add Payout Method
                   </button>
                 )}
               </div>
 
               {/* Payout Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border border-green-100 shadow-sm">
+              <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-3 border border-green-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <IndianRupee className="w-4 h-4 text-green-600" />
                     </div>
@@ -1897,7 +1897,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">Set up your preferred payout method to receive payments quickly once a project milestone is completed.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <CreditCard className="w-4 h-4 text-green-600" />
                     </div>
@@ -1906,7 +1906,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-[11px] text-slate-500 leading-relaxed">You can add multiple payout methods and set one as default for automatic payments.</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Shield className="w-4 h-4 text-green-600" />
                     </div>
@@ -1924,12 +1924,12 @@ export function ProfessionalProfilePage() {
           {activeTab === 'deletion' && (
             <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
               <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                <Trash2 className="w-5 h-5 text-red-500" /> Delete Account
+                <Trash2 className="w-3.5 h-3.5 text-red-500" /> Delete Account
               </h2>
               {deletionStep === 'initial' && (
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-5 h-5 text-red-600" /><p className="font-medium text-red-800">Warning: This cannot be undone</p></div>
+                    <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-3.5 h-3.5 text-red-600" /><p className="font-medium text-red-800">Warning: This cannot be undone</p></div>
                     <p className="text-sm text-red-700">Deleting your account will permanently remove all your data including projects, contracts, messages, and payment history.</p>
                   </div>
                   <div>
@@ -1937,30 +1937,30 @@ export function ProfessionalProfilePage() {
                     <textarea rows={3} value={deletionReason} onChange={(e) => setDeletionReason(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all resize-none" placeholder="Help us improve..." />
                   </div>
                   <div className="p-4 bg-slate-50 rounded-xl">
-                    <label className="flex items-start gap-3 cursor-pointer">
+                    <label className="flex items-start gap-1.5 cursor-pointer">
                       <input type="checkbox" checked={acceptedTerms} onChange={(e) => setAcceptedTerms(e.target.checked)} className="mt-1 w-4 h-4 text-red-600 rounded border-slate-300 cursor-pointer" />
                       <div><p className="font-medium text-slate-900">I understand this action is irreversible</p><p className="text-sm text-slate-500">I confirm permanent deletion</p></div>
                     </label>
                   </div>
-                  <button onClick={() => setDeletionStep('confirm')} disabled={!acceptedTerms} className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
-                    <Trash2 className="w-5 h-5" /> Continue with Deletion
+                  <button onClick={() => setDeletionStep('confirm')} disabled={!acceptedTerms} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
+                    <Trash2 className="w-3.5 h-3.5" /> Continue with Deletion
                   </button>
                 </div>
               )}
               {deletionStep === 'confirm' && (
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <AlertTriangle className="w-5 h-5 text-red-600 mb-2" />
+                    <AlertTriangle className="w-3.5 h-3.5 text-red-600 mb-2" />
                     <p className="font-medium text-red-800">Final Confirmation</p>
                     <p className="text-sm text-red-700 mt-1">Type <strong>DELETE</strong> below to confirm</p>
                   </div>
                   <input type="text" value={deletionConfirm} onChange={(e) => setDeletionConfirm(e.target.value)} placeholder="Type DELETE to confirm"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-center text-lg font-bold" />
-                  <div className="flex gap-3">
-                    <button onClick={() => { setDeletionStep('initial'); setDeletionConfirm(''); }} className="flex-1 px-6 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
+                  <div className="flex gap-1.5">
+                    <button onClick={() => { setDeletionStep('initial'); setDeletionConfirm(''); }} className="flex-1 px-3 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
                     <button onClick={handleRequestDeletion} disabled={deletionConfirm !== 'DELETE'}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
-                      {(deletionStep as string) === 'processing' ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
+                      {(deletionStep as string) === 'processing' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
                       Permanently Delete Account
                     </button>
                   </div>

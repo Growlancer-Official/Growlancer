@@ -360,12 +360,12 @@ export function IdentityVerificationPage() {
 
   // Status renderers
   const renderNoneState = () => (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Info card */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
         <div className="flex items-start gap-2">
           <div className="p-2 bg-amber-100 rounded-xl shrink-0">
-            <ShieldAlert className="w-6 h-6 text-amber-600" />
+            <ShieldAlert className="w-4 h-4 text-amber-600" />
           </div>
           <div>
             <h3 className="font-semibold text-amber-900 mb-1">Identity Verification Required</h3>
@@ -384,9 +384,9 @@ export function IdentityVerificationPage() {
           { icon: Upload, label: 'Higher Limits', desc: 'Increased withdrawal and contract limits' },
           { icon: CheckCircle2, label: 'Priority Support', desc: 'Access to faster support responses' },
         ].map((benefit) => (
-          <div key={benefit.label} className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
+          <div key={benefit.label} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
             <div className="p-2 bg-emerald-100 rounded-xl w-fit mb-3">
-              <benefit.icon className="w-5 h-5 text-emerald-600" />
+              <benefit.icon className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <h4 className="font-semibold text-slate-900 mb-1">{benefit.label}</h4>
             <p className="text-sm text-slate-500">{benefit.desc}</p>
@@ -397,9 +397,9 @@ export function IdentityVerificationPage() {
       {!showForm ? (
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
+          className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
         >
-          <Upload className="w-5 h-5" />
+          <Upload className="w-3.5 h-3.5" />
           Start Verification
         </button>
       ) : (
@@ -481,7 +481,7 @@ export function IdentityVerificationPage() {
                   {formData.document_file ? (
                     <div className="space-y-2">
                       <div className="flex items-center justify-center">
-                        <FileText className="w-10 h-10 text-emerald-600" />
+                        <FileText className="w-7 h-7 text-emerald-600" />
                       </div>
                       <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file.name}</p>
                       <button
@@ -541,7 +541,7 @@ export function IdentityVerificationPage() {
                     {formData.document_file_back ? (
                       <div className="space-y-2">
                         <div className="flex items-center justify-center">
-                          <FileText className="w-10 h-10 text-emerald-600" />
+                          <FileText className="w-7 h-7 text-emerald-600" />
                         </div>
                         <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file_back.name}</p>
                         <button
@@ -584,7 +584,7 @@ export function IdentityVerificationPage() {
                 <summary className="text-sm text-slate-500 cursor-pointer hover:text-slate-700">
                   Or paste document URL instead
                 </summary>
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-1.5">
                   <div>
                     <label className="block text-xs text-slate-500 mb-1">Front side URL</label>
                     <input
@@ -650,7 +650,7 @@ export function IdentityVerificationPage() {
           </div>
 
           {/* Consent */}
-          <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+          <label className="flex items-start gap-1.5 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
             <input
               type="checkbox"
               checked={consentAgreed}
@@ -671,16 +671,16 @@ export function IdentityVerificationPage() {
 
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+              <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-1.5 pt-2">
             <button
               type="submit"
               disabled={submitting || !consentAgreed}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? (
                 <>
@@ -745,7 +745,7 @@ export function IdentityVerificationPage() {
             <div key={step.label} className="flex items-center">
               <div className="flex flex-col items-center">
                 <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all ${
+                  className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
                     step.done
                       ? 'bg-emerald-500 border-emerald-500 text-white'
                       : step.current
@@ -753,7 +753,7 @@ export function IdentityVerificationPage() {
                       : 'bg-slate-100 border-slate-200 text-slate-400'
                   }`}
                 >
-                  {step.done ? <CheckCircle2 className="w-5 h-5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
+                  {step.done ? <CheckCircle2 className="w-3.5 h-3.5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
                 </div>
                 <span className={`text-xs mt-2 font-medium ${step.current ? 'text-amber-700' : step.done ? 'text-emerald-700' : 'text-slate-400'}`}>
                   {step.label}
@@ -766,8 +766,8 @@ export function IdentityVerificationPage() {
           ))}
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 inline-flex items-center gap-3">
-          <Loader2 className="w-5 h-5 text-amber-600 animate-spin" />
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 inline-flex items-center gap-1.5">
+          <Loader2 className="w-3.5 h-3.5 text-amber-600 animate-spin" />
           <span className="text-sm font-medium text-amber-800">Under Review</span>
         </div>
         {verification?.created_at && (
@@ -788,8 +788,8 @@ export function IdentityVerificationPage() {
       </div>
       <h2 className="text-xl font-bold text-slate-900 mb-2">Identity Verified</h2>
       <p className="text-slate-500 mb-2">Your identity has been successfully verified.</p>
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 inline-flex items-center gap-3">
-        <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 inline-flex items-center gap-1.5">
+        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
         <span className="text-sm font-medium text-emerald-800">Verified</span>
       </div>
       {verification?.verified_at && (
@@ -819,7 +819,7 @@ export function IdentityVerificationPage() {
       !!verification?.blocked_until && !isKycBlocked(verification);
     const canResubmit = attemptsLeft > 0 || blockExpired;
     return (
-      <div className="space-y-3">
+      <div className="space-y-1.5">
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
           <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-2">
             <XCircle className="w-8 h-8 text-red-600" />
@@ -843,7 +843,7 @@ export function IdentityVerificationPage() {
           {verification?.rejection_reason && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-3">
               <div className="flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason</p>
                   <p className="text-sm text-red-700">{verification.rejection_reason}</p>
@@ -855,7 +855,7 @@ export function IdentityVerificationPage() {
           {canResubmit ? (
             <button
               onClick={handleResubmit}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+              className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
             >
               <RefreshCw className="w-4 h-4" />
               {blockExpired ? 'Submit New Verification' : `Resubmit Verification (${attemptsLeft} left)`}
@@ -957,7 +957,7 @@ export function IdentityVerificationPage() {
             </div>
 
             {/* Consent */}
-            <label className="flex items-start gap-3 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+            <label className="flex items-start gap-1.5 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
               <input
                 type="checkbox"
                 checked={consentAgreed}
@@ -976,16 +976,16 @@ export function IdentityVerificationPage() {
 
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-                <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
 
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-1.5 pt-2">
               <button
                 type="submit"
                 disabled={submitting || !consentAgreed}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>
@@ -1028,14 +1028,14 @@ export function IdentityVerificationPage() {
         {/* Live countdown */}
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-3">
           <p className="text-sm font-medium text-amber-800 mb-2">Cooldown Remaining</p>
-          <p className="text-3xl font-bold text-amber-900 font-mono">
+          <p className="text-xl font-bold text-amber-900 font-mono">
             {formatKycCooldown(blockedDisplayMs)}
           </p>
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
           <div className="flex items-start gap-2">
-            <Shield className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <Shield className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-800 mb-1">Why was I blocked?</p>
               <p className="text-xs text-blue-700 leading-relaxed">
@@ -1057,15 +1057,15 @@ export function IdentityVerificationPage() {
   // Error state
   if (error && pageStatus === 'idle' && verificationStatus === 'none' && !showForm) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Identity Verification</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">Identity Verification</h1>
             <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
           </div>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <AlertCircle className="w-7 h-7 text-red-500 mx-auto mb-3" />
           <p className="text-red-700 mb-2">{error}</p>
           <button
             onClick={fetchStatus}
@@ -1080,15 +1080,15 @@ export function IdentityVerificationPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Identity Verification</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Identity Verification</h1>
           <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
         </div>
         <div className="p-2 bg-emerald-100 rounded-xl">
-          <Shield className="w-6 h-6 text-emerald-600" />
+          <Shield className="w-4 h-4 text-emerald-600" />
         </div>
       </div>
 

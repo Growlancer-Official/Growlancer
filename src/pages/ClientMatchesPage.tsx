@@ -179,10 +179,10 @@ export function ClientMatchesPage() {
   // CASE 1: User has NO projects at all
   if (!loading && clientProjects.length === 0 && !projectId) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-1.5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">AI Talent Matches</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">AI Talent Matches</h1>
             <p className="text-slate-500 mt-1">
               Get AI-powered freelancer recommendations based on your project requirements
             </p>
@@ -191,7 +191,7 @@ export function ClientMatchesPage() {
 
         <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm">
           <div className="h-20 w-20 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-3">
-            <Briefcase className="w-10 h-10 text-emerald-600" />
+            <Briefcase className="w-7 h-7 text-emerald-600" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No Projects Yet</h3>
           <p className="text-slate-500 mb-8 max-w-md mx-auto">
@@ -201,9 +201,9 @@ export function ClientMatchesPage() {
             to="/client/post"
             className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
           >
-            <Plus className="w-5 h-5" />
+            <Plus className="w-3.5 h-3.5" />
             Create Your First Project
-            <ArrowRight className="w-5 h-5" />
+            <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       </div>
@@ -213,9 +213,9 @@ export function ClientMatchesPage() {
   // CASE 2: User has projects but NO project selected
   if (!projectId) {
     return (
-      <div className="space-y-3">
+      <div className="space-y-1.5">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">AI Talent Matches</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">AI Talent Matches</h1>
           <p className="text-slate-500 mt-1">
             Select a project to view AI-powered freelancer recommendations
           </p>
@@ -224,16 +224,16 @@ export function ClientMatchesPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h3 className="font-display font-bold text-slate-900 mb-2">Your Projects</h3>
           {clientProjects.length > 0 ? (
-            <div className="grid gap-3">
+            <div className="grid gap-1.5">
               {clientProjects.map((p) => (
                 <Link
                   key={p.id}
                   to={`/client/matches?project_id=${p.id}`}
                   className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-emerald-400 hover:bg-emerald-50/50 transition-all group"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
                     <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                      <Briefcase className="w-5 h-5 text-emerald-600" />
+                      <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
                     </div>
                     <div className="text-left">
                       <p className="font-medium text-slate-900">{p.title}</p>
@@ -242,7 +242,7 @@ export function ClientMatchesPage() {
                       </p>
                     </div>
                   </div>
-                  <Sparkles className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                  <Sparkles className="w-3.5 h-3.5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
                 </Link>
               ))}
             </div>
@@ -251,7 +251,7 @@ export function ClientMatchesPage() {
               <p className="text-slate-500 mb-2">No projects found</p>
               <Link
                 to="/client/post"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+                className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Post a New Project
@@ -266,7 +266,7 @@ export function ClientMatchesPage() {
   // CASE 3: Project selected — show matches
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
@@ -278,7 +278,7 @@ export function ClientMatchesPage() {
               ← All Projects
             </Link>
           </div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">
+          <h1 className="font-display text-lg font-bold text-slate-900">
             {currentProject?.title || 'AI Talent Matches'}
           </h1>
           <p className="text-slate-500 text-sm mt-1">
@@ -287,7 +287,7 @@ export function ClientMatchesPage() {
               : 'No skills set — edit project to add skills for better matches'}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
           <Link
             to={`/client/post?edit=${projectId}`}
             className="px-4 py-2.5 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
@@ -341,17 +341,17 @@ export function ClientMatchesPage() {
               Searching for: {currentProject.skills_required.join(', ')}
             </p>
           ) : null}
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-1.5 justify-center">
             <button
               onClick={handleGenerateMatches}
               disabled={generating}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               {generating ? 'Generating...' : 'Generate Matches'}
             </button>
             <Link
               to={`/client/post?edit=${projectId}`}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
             >
               Edit Project Skills
             </Link>
@@ -389,12 +389,12 @@ export function ClientMatchesPage() {
               )}
 
               {/* Freelancer Info */}
-              <div className="flex items-center gap-3 mb-2">
-                <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                   {match.freelancer.avatar ? (
                     <img src={match.freelancer.avatar} alt={match.freelancer.name} className="w-full h-full object-cover" />
                   ) : (
-                    <User className="w-6 h-6 text-slate-400" />
+                    <User className="w-4 h-4 text-slate-400" />
                   )}
                 </div>
                 <div>
@@ -524,17 +524,17 @@ export function ClientMatchesPage() {
           <p className="text-slate-500 mb-2">
             You've skipped all {matches.length} match{matches.length !== 1 ? 'es' : ''}. Regenerate to find new freelancers.
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex gap-1.5 justify-center">
             <button
               onClick={() => setSkipped(new Set())}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
             >
               Show Skipped
             </button>
             <button
               onClick={handleGenerateMatches}
               disabled={generating}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               {generating ? 'Generating...' : 'Regenerate Matches'}
             </button>

@@ -56,14 +56,14 @@ function InviteMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
-        <MoreVertical className="w-5 h-5 text-slate-400" />
+        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
       </button>
 
       {open && (
         <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-white rounded-xl border border-slate-200 shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1">
           <button
             onClick={() => { setOpen(false); onResend(); }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            className="w-full flex items-center gap-1.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
           >
             <RefreshCw className="w-4 h-4 text-slate-400" />
             <span>Resend Invite</span>
@@ -71,7 +71,7 @@ function InviteMenu({
           <div className="h-px bg-slate-100 my-1.5 mx-3" />
           <button
             onClick={() => { setOpen(false); onCancel(); }}
-            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+            className="w-full flex items-center gap-1.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
           >
             <X className="w-4 h-4" />
             <span>Cancel Invite</span>
@@ -157,18 +157,18 @@ export function ClientInvitesPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Invites</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Invites</h1>
           <p className="text-slate-500 mt-1">Manage invitations sent to freelancers</p>
         </div>
         <Link
           to="/client/matches"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
-          <Send className="w-5 h-5" />
+          <Send className="w-3.5 h-3.5" />
           Send New Invite
         </Link>
       </div>
@@ -198,8 +198,8 @@ export function ClientInvitesPage() {
       {/* Invites List */}
       {filteredInvites.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-            <MailCheck className="w-10 h-10 text-slate-300" />
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2.5">
+            <MailCheck className="w-7 h-7 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No invites yet' : `No ${filter} invites`}
@@ -212,9 +212,9 @@ export function ClientInvitesPage() {
           {filter === 'all' ? (
             <Link
               to="/client/matches"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-3.5 h-3.5" />
               Send an Invite
             </Link>
           ) : (
@@ -239,7 +239,7 @@ export function ClientInvitesPage() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                       {invite.freelancer?.avatar ? (
                         <img 
                           src={invite.freelancer.avatar} 
@@ -251,7 +251,7 @@ export function ClientInvitesPage() {
                           }}
                         />
                       ) : (
-                        <MailCheck className="w-6 h-6 text-slate-400" />
+                        <MailCheck className="w-4 h-4 text-slate-400" />
                       )}
                     </div>
                     <div>

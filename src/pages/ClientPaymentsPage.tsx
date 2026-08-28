@@ -394,18 +394,18 @@ export function ClientPaymentsPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Payments</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Payments</h1>
           <p className="text-slate-500 mt-1">Manage your transactions, wallet, and payment methods</p>
         </div>
         <Link
           to="/client/workspace?fund=1"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-3.5 h-3.5" />
           Fund Escrow
         </Link>
       </div>
@@ -419,9 +419,9 @@ export function ClientPaymentsPage() {
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 rounded-xl p-6 text-white shadow-lg shadow-emerald-600/20 relative overflow-hidden">
         <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute right-10 bottom-4 w-6 h-6 bg-white/10 rounded-full" />
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 relative">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 relative">
           <div className="flex items-center gap-2 flex-1">
-            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
               <Wallet className="w-7 h-7 text-white" />
             </div>
             <div>
@@ -435,10 +435,10 @@ export function ClientPaymentsPage() {
                   className="[&_svg]:text-emerald-100 [&_svg]:hover:text-white"
                 />
               </p>
-              <div className="flex items-center gap-3">
-                <p className="text-3xl font-bold mt-1">
+              <div className="flex items-center gap-1.5">
+                <p className="text-xl font-bold mt-1">
                   {walletLoading ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-emerald-100 inline" />
+                    <Loader2 className="w-4 h-4 animate-spin text-emerald-100 inline" />
                   ) : (
                     formatCurrency(walletBalance)
                   )}
@@ -450,23 +450,23 @@ export function ClientPaymentsPage() {
               </p>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col sm:flex-row gap-1.5">
             <button
               onClick={() => {
                 setAddFundsError(null);
                 setTopupSuccess(null);
                 setShowAddFunds(true);
               }}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-md"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-md"
             >
-              <PlusCircle className="w-5 h-5" />
+              <PlusCircle className="w-3.5 h-3.5" />
               Add Funds
             </button>
             <a
               href="#wallet-txn"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white/15 hover:bg-white/25 text-white font-semibold rounded-xl transition-all"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white/15 hover:bg-white/25 text-white font-semibold rounded-xl transition-all"
             >
-              <ArrowDownLeft className="w-5 h-5" />
+              <ArrowDownLeft className="w-3.5 h-3.5" />
               Wallet Activity
             </a>
           </div>
@@ -487,7 +487,7 @@ export function ClientPaymentsPage() {
                 onClick={() => setShowAddFunds(false)}
                 className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
-                <X className="w-5 h-5" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
             <div className="p-3">
@@ -497,13 +497,13 @@ export function ClientPaymentsPage() {
 
               {addFundsError && (
                 <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
+                  <AlertCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
                   <p className="text-sm text-red-700">{addFundsError}</p>
                 </div>
               )}
               {topupSuccess && (
                 <div className="mb-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
                   <p className="text-sm text-emerald-700">{topupSuccess}</p>
                 </div>
               )}
@@ -521,7 +521,7 @@ export function ClientPaymentsPage() {
                   placeholder="1000"
                 />
               </div>
-              <div className="flex items-center gap-2 mb-5">
+              <div className="flex items-center gap-2 mb-2.5">
                 {[500, 1000, 2500, 5000, 10000].map((amt) => (
                   <button
                     key={amt}
@@ -570,17 +570,17 @@ export function ClientPaymentsPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
               Total Spent
             </h3>
             <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <IndianRupee className="w-5 h-5" />
+              <IndianRupee className="w-3.5 h-3.5" />
             </div>
           </div>
-          <p className="text-3xl font-bold tracking-tight">
+          <p className="text-xl font-bold tracking-tight">
             {formatCurrency(
               transactions
                 .filter((t) => t.type === 'debit' && t.status === 'completed')
@@ -595,10 +595,10 @@ export function ClientPaymentsPage() {
               In Escrow
             </h3>
             <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-              <CreditCard className="w-5 h-5" />
+              <CreditCard className="w-3.5 h-3.5" />
             </div>
           </div>
-          <p className="text-3xl font-bold tracking-tight">
+          <p className="text-xl font-bold tracking-tight">
             {formatCurrency(
               transactions
                 .filter((t) => t.source === 'escrow' && t.status === 'pending')
@@ -613,10 +613,10 @@ export function ClientPaymentsPage() {
               Refunds
             </h3>
             <div className="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
-              <ArrowDownLeft className="w-5 h-5" />
+              <ArrowDownLeft className="w-3.5 h-3.5" />
             </div>
           </div>
-          <p className="text-3xl font-bold tracking-tight">
+          <p className="text-xl font-bold tracking-tight">
             {formatCurrency(
               transactions
                 .filter((t) => t.source === 'refund' && t.status === 'completed')
@@ -630,7 +630,7 @@ export function ClientPaymentsPage() {
       <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-emerald-600" />
+            <Shield className="w-3.5 h-3.5 text-emerald-600" />
             Saved Payment Cards
           </h2>
         </div>
@@ -638,14 +638,14 @@ export function ClientPaymentsPage() {
         {/* Loading */}
         {savedCardsLoading && (
           <div className="flex items-center justify-center py-3">
-            <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
             <span className="ml-2 text-sm text-slate-500">Loading saved cards...</span>
           </div>
         )}
 
         {/* Saved cards list */}
         {!savedCardsLoading && savedCards.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-3">
             {savedCards.map((card) => (
               <div
                 key={card.id}
@@ -653,7 +653,7 @@ export function ClientPaymentsPage() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-emerald-600" />
+                    <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
                     <div>
                       <span className="font-medium text-slate-900 text-sm">
                         {card.card_network || 'Card'} •••• {card.card_last_four}
@@ -708,7 +708,7 @@ export function ClientPaymentsPage() {
 
         {!savedCardsLoading && savedCards.length === 0 && (
           <div className="text-center py-4 text-slate-500 mb-2">
-            <Shield className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+            <Shield className="w-8 h-8 mx-auto mb-3 text-slate-300" />
             <p className="font-medium">No saved cards yet</p>
             <p className="text-sm mt-1">Save a card during your next escrow payment for one-click checkout</p>
           </div>
@@ -736,7 +736,7 @@ export function ClientPaymentsPage() {
         {/* Loading */}
         {paymentMethodsLoading && (
           <div className="flex items-center justify-center py-3">
-            <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+            <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
             <span className="ml-2 text-sm text-slate-500">Loading payment methods...</span>
           </div>
         )}
@@ -744,7 +744,7 @@ export function ClientPaymentsPage() {
         {/* Error */}
         {paymentMethodsError && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-2 flex items-center gap-2">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+            <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
             <p className="text-sm text-red-700">{paymentMethodsError}</p>
             <button
               onClick={() => void fetchPaymentMethods()}
@@ -757,7 +757,7 @@ export function ClientPaymentsPage() {
 
         {/* Method list */}
         {!paymentMethodsLoading && paymentMethods.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mb-2">
             {paymentMethods.map((method) => (
               <div
                 key={method.id}
@@ -770,11 +770,11 @@ export function ClientPaymentsPage() {
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {method.type === 'card' ? (
-                      <CreditCard className="w-5 h-5 text-blue-600" />
+                      <CreditCard className="w-3.5 h-3.5 text-blue-600" />
                     ) : method.type === 'paypal' ? (
-                      <IndianRupee className="w-5 h-5 text-blue-500" />
+                      <IndianRupee className="w-3.5 h-3.5 text-blue-500" />
                     ) : (
-                      <Building2 className="w-5 h-5 text-green-600" />
+                      <Building2 className="w-3.5 h-3.5 text-green-600" />
                     )}
                     <span className="font-medium text-slate-900 text-sm capitalize">{method.type.replace('_', ' ')}</span>
                     {method.is_default && (
@@ -853,7 +853,7 @@ export function ClientPaymentsPage() {
 
         {!paymentMethodsLoading && paymentMethods.length === 0 && !showAddPaymentMethod && (
           <div className="text-center py-4 text-slate-500">
-            <CreditCard className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+            <CreditCard className="w-8 h-8 mx-auto mb-3 text-slate-300" />
             <p className="font-medium">No payment method references saved</p>
             <p className="text-sm mt-1">Add a payment method for record-keeping purposes</p>
           </div>
@@ -1016,9 +1016,9 @@ export function ClientPaymentsPage() {
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {addingPaymentMethod ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   ) : (
-                    <PlusCircle className="w-5 h-5" />
+                    <PlusCircle className="w-3.5 h-3.5" />
                   )}
                   {addingPaymentMethod ? 'Adding...' : 'Save Method'}
                 </button>
@@ -1060,8 +1060,8 @@ export function ClientPaymentsPage() {
       {/* Transactions List */}
       {filteredTransactions.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-            <CreditCard className="w-10 h-10 text-slate-300" />
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2.5">
+            <CreditCard className="w-7 h-7 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No transactions yet' : `No ${filter} transactions`}
@@ -1074,9 +1074,9 @@ export function ClientPaymentsPage() {
           {filter === 'all' && (
             <Link
               to="/client/contracts"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <FileText className="w-5 h-5" />
+              <FileText className="w-3.5 h-3.5" />
               View Contracts
             </Link>
           )}
@@ -1087,16 +1087,16 @@ export function ClientPaymentsPage() {
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-100">
                 <tr>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-3 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Transaction
                   </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-3 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="text-left px-3 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="text-right px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  <th className="text-right px-3 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Amount
                   </th>
                 </tr>
@@ -1104,8 +1104,8 @@ export function ClientPaymentsPage() {
               <tbody className="divide-y divide-slate-100">
                 {filteredTransactions.map((transaction) => (
                   <tr key={transaction.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
+                    <td className="px-3 py-4">
+                      <div className="flex items-center gap-1.5">
                         <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-600">
                           {getSourceIcon(transaction.source)}
                         </div>
@@ -1121,13 +1121,13 @@ export function ClientPaymentsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
+                    <td className="px-3 py-4 text-sm text-slate-600">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         {safeFormatDate(transaction.created_at)}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-3 py-4">
                       <span
                         className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${getStatusColor(
                           transaction.status
@@ -1136,7 +1136,7 @@ export function ClientPaymentsPage() {
                         {transaction.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
+                    <td className="px-3 py-4 text-right">
                       <span
                         className={`font-bold ${
                           transaction.type === 'credit' ? 'text-emerald-600' : 'text-slate-900'
@@ -1164,16 +1164,16 @@ export function ClientPaymentsPage() {
         </div>
         {invoices.length === 0 && !invoicesLoading ? (
           <div className="p-12 text-center text-slate-400">
-            <FileText className="w-12 h-12 mx-auto mb-3 opacity-40" />
+            <FileText className="w-8 h-8 mx-auto mb-3 opacity-40" />
             <p className="text-sm">No invoices yet — they appear here once you release escrow on a contract.</p>
           </div>
         ) : (
           <div className="divide-y divide-slate-100">
             {invoices.map((inv: any) => (
               <div key={inv.id} className="p-5 flex items-center justify-between gap-2 hover:bg-slate-50/60 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-5 h-5" />
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <div className="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>

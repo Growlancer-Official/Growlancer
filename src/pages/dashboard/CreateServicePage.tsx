@@ -363,7 +363,7 @@ export function CreateServicePage() {
         {/* Service Image */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Image className="w-5 h-5 text-emerald-600" />
+            <Image className="w-3.5 h-3.5 text-emerald-600" />
             Service Image
           </h2>
           <div className="space-y-1">
@@ -385,7 +385,7 @@ export function CreateServicePage() {
         {/* Basic Information */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Briefcase className="w-5 h-5 text-emerald-600" />
+            <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
             Basic Information
           </h2>
 
@@ -462,7 +462,7 @@ export function CreateServicePage() {
         {/* Pricing & Delivery — FINAL MODEL: 3 package tiers + addons */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <IndianRupee className="w-5 h-5 text-emerald-600" />
+            <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
             Packages & Pricing
           </h2>
 
@@ -752,7 +752,7 @@ export function CreateServicePage() {
         {/* Service Features */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-emerald-600" />
+            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
             Service Features
           </h2>
 
@@ -771,7 +771,7 @@ export function CreateServicePage() {
                 onClick={handleAddFeature}
                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -808,7 +808,7 @@ export function CreateServicePage() {
         {/* Tags */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Tag className="w-5 h-5 text-emerald-600" />
+            <Tag className="w-3.5 h-3.5 text-emerald-600" />
             Search Tags
           </h2>
 
@@ -827,7 +827,7 @@ export function CreateServicePage() {
                 onClick={handleCustomTag}
                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -874,7 +874,7 @@ export function CreateServicePage() {
         {/* Requirements */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Shield className="w-5 h-5 text-emerald-600" />
+            <Shield className="w-3.5 h-3.5 text-emerald-600" />
             Client Requirements
           </h2>
 
@@ -912,9 +912,9 @@ export function CreateServicePage() {
               </>
             ) : (
               <>
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle className="w-3.5 h-3.5" />
                 {isEditMode ? 'Save Changes' : 'Publish Service'}
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </>
             )}
           </button>

@@ -269,7 +269,7 @@ export function DisputeResolutionPage() {
 
   if (selectedDispute) {
     return (
-      <div className="max-w-4xl mx-auto space-y-3">
+      <div className="max-w-4xl mx-auto space-y-1.5">
         {/* Back button */}
         <button
           onClick={handleBack}
@@ -283,7 +283,7 @@ export function DisputeResolutionPage() {
         <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
             <div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-1.5 mb-2">
                 <h2 className="text-xl font-bold text-slate-900">Dispute #{selectedDispute.id.slice(0, 8)}</h2>
                 {getStatusBadge(selectedDispute.status, (selectedDispute as any).decision)}
               </div>
@@ -304,7 +304,7 @@ export function DisputeResolutionPage() {
           </div>
 
           {/* Quick info chips */}
-          <div className="flex flex-wrap gap-3 text-sm">
+          <div className="flex flex-wrap gap-1.5 text-sm">
             <span className="inline-flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg text-slate-600">
               <Scale className="w-4 h-4 text-slate-400" />
               Reason: {REASON_LABELS[selectedDispute.reason] || selectedDispute.reason}
@@ -347,11 +347,11 @@ export function DisputeResolutionPage() {
           }`}>
             <div className="flex items-center gap-2 mb-3">
               {selectedDispute.status === 'resolved_released' ? (
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
               ) : selectedDispute.status === 'cancelled' ? (
-                <Ban className="w-5 h-5 text-slate-400" />
+                <Ban className="w-3.5 h-3.5 text-slate-400" />
               ) : (
-                <XCircle className="w-5 h-5 text-rose-500" />
+                <XCircle className="w-3.5 h-3.5 text-rose-500" />
               )}
               <h3 className="font-semibold text-slate-900">
                 {selectedDispute.status === 'cancelled' ? 'Dispute Dismissed' : 'Resolution Outcome'}
@@ -377,7 +377,7 @@ export function DisputeResolutionPage() {
         {/* Messages */}
         <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
           <div className="flex items-center gap-2 mb-2">
-            <MessageCircle className="w-5 h-5 text-slate-400" />
+            <MessageCircle className="w-3.5 h-3.5 text-slate-400" />
             <h3 className="font-semibold text-slate-900">Discussion Thread</h3>
           </div>
 
@@ -387,7 +387,7 @@ export function DisputeResolutionPage() {
               <p>No messages yet. Start the conversation.</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-80 overflow-y-auto mb-2 pr-1">
+            <div className="space-y-1.5 max-h-80 overflow-y-auto mb-2 pr-1">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -448,16 +448,16 @@ export function DisputeResolutionPage() {
   /* ================================================================ */
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Dispute Resolution</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Dispute Resolution</h1>
           <p className="text-slate-500 mt-1">
             Track and manage your contract disputes
           </p>
         </div>
-        <div className="flex items-center gap-3 text-sm">
+        <div className="flex items-center gap-1.5 text-sm">
           <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg font-medium">
             <Clock className="w-4 h-4" />
             {pendingCount} Active
@@ -475,24 +475,24 @@ export function DisputeResolutionPage() {
       </TipNote>
 
       {/* Outcome cards — what each decision means for both sides */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1.5">
         <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 mb-2" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mb-2" />
           <p className="text-xs font-bold text-emerald-900 mb-1">Freelancer Favour — Work Delivered</p>
           <p className="text-[11px] text-emerald-700 leading-relaxed">The full escrow is released to the freelancer's wallet. Contract completes.</p>
         </div>
         <div className="bg-rose-50 border border-rose-100 rounded-xl p-4">
-          <XCircle className="w-5 h-5 text-rose-600 mb-2" />
+          <XCircle className="w-3.5 h-3.5 text-rose-600 mb-2" />
           <p className="text-xs font-bold text-rose-900 mb-1">Client Favour — No Work Done</p>
           <p className="text-[11px] text-rose-700 leading-relaxed">The full escrow is refunded back to the client. Contract cancelled — freelancer gets nothing.</p>
         </div>
         <div className="bg-violet-50 border border-violet-100 rounded-xl p-4">
-          <Scale className="w-5 h-5 text-violet-600 mb-2" />
+          <Scale className="w-3.5 h-3.5 text-violet-600 mb-2" />
           <p className="text-xs font-bold text-violet-900 mb-1">Split — Partial Work</p>
           <p className="text-[11px] text-violet-700 leading-relaxed">Client gets a partial refund and the freelancer is paid for the work actually delivered.</p>
         </div>
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-          <Ban className="w-5 h-5 text-slate-600 mb-2" />
+          <Ban className="w-3.5 h-3.5 text-slate-600 mb-2" />
           <p className="text-xs font-bold text-slate-900 mb-1">Dismissed — No Wrongdoing</p>
           <p className="text-[11px] text-slate-600 leading-relaxed">Work resumes normally — escrow stays locked to the contract for the agreed payment.</p>
         </div>
@@ -553,7 +553,7 @@ export function DisputeResolutionPage() {
               No disputes match this filter.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-1.5">
               {filteredDisputes.map((dispute) => {
                 return (
                   <button
@@ -563,7 +563,7 @@ export function DisputeResolutionPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-3 mb-1.5">
+                        <div className="flex items-center gap-1.5 mb-1.5">
                           <h3 className="font-semibold text-slate-900 truncate">
                             Dispute #{dispute.id.slice(0, 8)}
                           </h3>
@@ -576,7 +576,7 @@ export function DisputeResolutionPage() {
                           {' — '}
                           {dispute.description || 'No description'}
                         </p>
-                        <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                        <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400">
                           <span className="flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5" />
                             {formatDate(dispute.created_at)}
@@ -589,7 +589,7 @@ export function DisputeResolutionPage() {
                           )}
                         </div>
                       </div>
-                      <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-500 transition-colors flex-shrink-0 mt-1" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-emerald-500 transition-colors flex-shrink-0 mt-1" />
                     </div>
                   </button>
                 );

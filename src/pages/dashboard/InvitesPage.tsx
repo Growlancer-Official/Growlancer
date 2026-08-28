@@ -275,15 +275,15 @@ export function InvitesPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
-            <Mail className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <Mail className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Project Invites</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">Project Invites</h1>
             <p className="text-slate-500 mt-1">
               Clients have invited you to {pendingCount} project{pendingCount !== 1 ? 's' : ''}
             </p>
@@ -307,9 +307,9 @@ export function InvitesPage() {
 
       {/* New Invite Alert */}
       {newInviteAlert && (
-        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-center gap-3 animate-in slide-in-from-top">
-          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-            <Mail className="w-5 h-5 text-purple-600" />
+        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 flex items-center gap-1.5 animate-in slide-in-from-top">
+          <div className="w-7 h-7 bg-purple-100 rounded-full flex items-center justify-center">
+            <Mail className="w-3.5 h-3.5 text-purple-600" />
           </div>
           <div className="flex-1">
             <p className="font-medium text-purple-900">{newInviteAlert}</p>
@@ -388,12 +388,12 @@ export function InvitesPage() {
           {filteredInvites.map((invite) => (
             <div
               key={invite.id}
-              className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm"
+              className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm"
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-1.5">
                 {/* Client Avatar */}
                 <div className="flex-shrink-0">
-                  <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden">
+                  <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden">
                     {invite.profiles?.avatar ? (
                       <img
                         src={invite.profiles.avatar}
@@ -414,7 +414,7 @@ export function InvitesPage() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-1.5 mb-2">
                         <h3 className="font-display text-lg font-bold text-slate-900">
                           {invite.projects.title}
                         </h3>
@@ -454,7 +454,7 @@ export function InvitesPage() {
                       </div>
 
                       {/* Project Details */}
-                      <div className="flex items-center gap-3 text-sm">
+                      <div className="flex items-center gap-1.5 text-sm">
                         <span className="flex items-center gap-1 text-slate-600">
                           <Wallet className="w-4 h-4 text-slate-400" />
                           {formatBudgetRange(invite.projects.budget_min, invite.projects.budget_max)}
@@ -484,7 +484,7 @@ export function InvitesPage() {
                           <button
                             onClick={() => handleAcceptInvite(invite.id)}
                             disabled={processingInvite === invite.id}
-                            className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                           >
                             {processingInvite === invite.id ? (
                               <Loader2 className="w-4 h-4 animate-spin" />
@@ -496,7 +496,7 @@ export function InvitesPage() {
                           <button
                             onClick={() => handleDeclineInvite(invite.id)}
                             disabled={processingInvite === invite.id}
-                            className="px-6 py-3 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
+                            className="px-3 py-3 border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
                           >
                             Decline
                           </button>
@@ -504,7 +504,7 @@ export function InvitesPage() {
                       ) : invite.status === 'accepted' ? (
                         <Link
                           to="/dashboard/contracts"
-                          className="px-6 py-3 bg-emerald-50 text-emerald-700 font-medium rounded-xl hover:bg-emerald-100 transition-colors inline-flex items-center gap-2"
+                          className="px-3 py-3 bg-emerald-50 text-emerald-700 font-medium rounded-xl hover:bg-emerald-100 transition-colors inline-flex items-center gap-2"
                         >
                           View Contract
                           <ArrowRight className="w-4 h-4" />
@@ -520,7 +520,7 @@ export function InvitesPage() {
       ) : (
         <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <Mail className="w-10 h-10 text-slate-400" />
+            <Mail className="w-7 h-7 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
             {activeTab === 'pending'
@@ -539,7 +539,7 @@ export function InvitesPage() {
           {activeTab === 'pending' && (
             <Link
               to="/dashboard/feed"
-              className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="mt-6 inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               Browse Projects
               <ArrowRight className="w-4 h-4" />

@@ -799,15 +799,15 @@ export function ClientWorkspacePage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Top Banner / Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
-            <Briefcase className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+            <Briefcase className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Collaboration Workspace</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">Collaboration Workspace</h1>
             <p className="text-sm text-slate-500">
               Working with <span className="font-semibold text-slate-700">{selectedContract?.freelancer?.name || 'Freelancer'}</span>
               {(selectedContract?.freelancer as any)?.verification_status === 'verified' && (
@@ -959,18 +959,18 @@ export function ClientWorkspacePage() {
 
       {/* Platform Policy — protect both sides (full-width) */}
       <div className="rounded-xl overflow-hidden border border-blue-200 shadow-sm">
-        <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-5 py-4 flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-            <Shield className="w-5 h-5 text-white" />
+        <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-2.5 py-4 flex items-center gap-1.5">
+          <div className="w-7 h-7 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
+            <Shield className="w-3.5 h-3.5 text-white" />
           </div>
           <div>
             <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
             <p className="text-[11px] text-emerald-100">Everything stays on the platform — payments are always protected</p>
           </div>
         </div>
-        <div className="bg-blue-50/60 px-5 py-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="bg-blue-50/60 px-2.5 py-4 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -979,7 +979,7 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -989,7 +989,7 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
               <Clock className="w-3.5 h-3.5 text-violet-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1000,7 +1000,7 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
               <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1011,7 +1011,7 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
               <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1021,7 +1021,7 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
               <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1031,7 +1031,7 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
               <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1042,7 +1042,7 @@ export function ClientWorkspacePage() {
             </p>
           </div>
           <div className="flex items-start gap-2.5">
-            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
               <Shield className="w-3.5 h-3.5 text-slate-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
@@ -1054,18 +1054,18 @@ export function ClientWorkspacePage() {
       </div>
 
       {selectedContract && (
-        <div className="space-y-3">
+        <div className="space-y-1.5">
 
 
 
               {/* Chat & Assets Tab */}
               {activeTab === 'chat' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
                   {/* Messages */}
                   <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
-                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl flex items-center gap-3">
-                      <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
-                        <MessageSquare className="w-5 h-5" />
+                    <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl flex items-center gap-1.5">
+                      <div className="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-3.5 h-3.5" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-slate-900">Project Chat Room</h4>
@@ -1229,7 +1229,7 @@ export function ClientWorkspacePage() {
 
               {/* Co-Working Canvas Tab */}
               {activeTab === 'canvas' && (
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-1.5">
                   {/* Live Task Board */}
                   <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
@@ -1286,7 +1286,7 @@ export function ClientWorkspacePage() {
 
               {/* Milestones & Escrow Tab */}
               {activeTab === 'milestones' && (
-                <div className="space-y-3">
+                <div className="space-y-1.5">
                   {/* Timeline */}
                   <div className="bg-white rounded-xl border border-slate-200/80 p-6">
                     <h3 className="text-lg font-semibold text-slate-900 mb-2">
@@ -1343,7 +1343,7 @@ export function ClientWorkspacePage() {
                     </div>
 
                     {/* Auto-release window control (client) */}
-                    <div className="mb-5 p-4 rounded-xl bg-violet-50/60 border border-violet-200">
+                    <div className="mb-2.5 p-4 rounded-xl bg-violet-50/60 border border-violet-200">
                       <p className="text-sm font-medium text-slate-900 flex items-center gap-2">
                         <Clock className="h-4 w-4 text-violet-600" />
                         Auto-Release Window
@@ -1373,13 +1373,13 @@ export function ClientWorkspacePage() {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-1.5">
                       {milestones.map((milestone, idx) => (
                         <div
                           key={idx}
                           className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5">
                             <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
                               milestone.status === 'completed'
                                 ? 'border-green-500 bg-green-50'
@@ -1455,7 +1455,7 @@ export function ClientWorkspacePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       <div className="p-4 bg-slate-50 rounded-lg">
                         <p className="text-sm text-slate-500 mb-1">Total Amount</p>
-                        <p className="text-2xl font-bold text-slate-900">
+                        <p className="text-lg font-bold text-slate-900">
                           {formatCurrency(selectedContract.amount)}
                         </p>
                       </div>
@@ -1480,11 +1480,11 @@ export function ClientWorkspacePage() {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3 mt-6">
+                    <div className="flex flex-wrap items-center gap-1.5 mt-6">
                       {needsFunding && (
                         <button
                           onClick={() => void openFundEscrow()}
-                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+                          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
                         >
                           <IndianRupee className="h-5 w-5 mr-2" />
                           Fund Escrow
@@ -1494,7 +1494,7 @@ export function ClientWorkspacePage() {
                         <button
                           onClick={() => void handleReleaseEscrow()}
                           disabled={releasingEscrow}
-                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors font-semibold"
+                          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors font-semibold"
                         >
                           {releasingEscrow ? (
                             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -1507,7 +1507,7 @@ export function ClientWorkspacePage() {
                       {selectedContract.status !== 'disputed' && !isFrozen && selectedContract.escrow_funded && (
                         <button
                           onClick={() => setShowDisputeModal(true)}
-                          className="inline-flex items-center px-6 py-3 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-medium"
+                          className="inline-flex items-center px-3 py-3 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors font-medium"
                         >
                           <AlertCircle className="h-5 w-5 mr-2" />
                           Raise Dispute
@@ -1517,7 +1517,7 @@ export function ClientWorkspacePage() {
                         <button
                           onClick={() => setShowRefundModal(true)}
                           disabled={!!activeRefund}
-                          className="inline-flex items-center px-6 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-colors font-medium"
+                          className="inline-flex items-center px-3 py-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 disabled:opacity-50 transition-colors font-medium"
                         >
                           <RotateCcw className="h-5 w-5 mr-2" />
                           {activeRefund ? 'Refund In Progress' : 'Cancel Project / Request Refund'}
@@ -1526,7 +1526,7 @@ export function ClientWorkspacePage() {
                       {selectedContract.status !== 'disputed' && !isFrozen && selectedContract.status !== 'completed' && !activeRevision && (
                         <button
                           onClick={() => setShowRevisionModal(true)}
-                          className="inline-flex items-center px-6 py-3 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors font-medium"
+                          className="inline-flex items-center px-3 py-3 bg-emerald-50 text-emerald-700 rounded-xl hover:bg-emerald-100 transition-colors font-medium"
                         >
                           <RefreshCw className="h-5 w-5 mr-2" />
                           Request Extra Revision
@@ -1544,10 +1544,10 @@ export function ClientWorkspacePage() {
                           <h3 className="text-lg font-semibold text-slate-900">Extra Revisions</h3>
                         </div>
                       </div>
-                      <div className="space-y-3">
+                      <div className="space-y-1.5">
                         {revisionRequests.map((req) => (
                           <div key={req.id} className="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
-                            <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-start justify-between gap-1.5">
                               <div className="min-w-0">
                                 <p className="text-sm font-medium text-slate-900">
                                   {req.revision_count} revision{req.revision_count > 1 ? 's' : ''} ·{' '}
@@ -1624,7 +1624,7 @@ export function ClientWorkspacePage() {
                           <div className="relative">
                             <div className="absolute left-3 top-0 bottom-0 w-0.5 bg-slate-200" />
                             {refundHistory.map((ev, idx) => (
-                              <div key={idx} className="relative flex items-start gap-3 pb-4 last:pb-0">
+                              <div key={idx} className="relative flex items-start gap-1.5 pb-4 last:pb-0">
                                 <div className="relative z-10 w-6 h-6 rounded-full bg-amber-100 flex items-center justify-center">
                                   <RotateCcw className="h-3 w-3 text-amber-600" />
                                 </div>
@@ -1651,7 +1651,7 @@ export function ClientWorkspacePage() {
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between p-3 border-b border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900">Upload File</h3>
               <button
                 onClick={() => {
@@ -1721,7 +1721,7 @@ export function ClientWorkspacePage() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-1.5 p-3 border-t border-slate-200">
               <button
                 onClick={() => {
                   setShowUploadModal(false)
@@ -1755,7 +1755,7 @@ export function ClientWorkspacePage() {
       {showDisputeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between p-3 border-b border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900">Raise a Dispute</h3>
               <button
                 onClick={() => {
@@ -1800,7 +1800,7 @@ export function ClientWorkspacePage() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-1.5 p-3 border-t border-slate-200">
               <button
                 onClick={() => {
                   setShowDisputeModal(false)
@@ -1832,7 +1832,7 @@ export function ClientWorkspacePage() {
       {showRefundModal && selectedContract && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <div className="flex items-center justify-between p-3 border-b border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900">Cancel Project / Request Refund</h3>
               <button
                 onClick={() => {
@@ -1909,7 +1909,7 @@ export function ClientWorkspacePage() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-1.5 p-3 border-t border-slate-200">
               <button
                 onClick={() => {
                   setShowRefundModal(false)
@@ -1941,7 +1941,7 @@ export function ClientWorkspacePage() {
       {showRevisionModal && selectedContract && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 sticky top-0 bg-white z-10">
+            <div className="flex items-center justify-between p-4 sm:p-3 border-b border-slate-200 sticky top-0 bg-white z-10">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900">Request Extra Revision</h3>
               <button
                 onClick={() => setShowRevisionModal(false)}
@@ -1988,7 +1988,7 @@ export function ClientWorkspacePage() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-slate-200">
+            <div className="flex items-center justify-end gap-1.5 p-4 sm:p-3 border-t border-slate-200">
               <button
                 onClick={() => setShowRevisionModal(false)}
                 className="px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
@@ -2016,7 +2016,7 @@ export function ClientWorkspacePage() {
       {showFundEscrow && selectedContract && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
-            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 sticky top-0 bg-white z-10">
+            <div className="flex items-center justify-between p-4 sm:p-3 border-b border-slate-200 sticky top-0 bg-white z-10">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900">Fund Escrow</h3>
               <button
                 onClick={() => setShowFundEscrow(false)}
@@ -2026,7 +2026,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="px-4 sm:px-5 pt-4">
+            <div className="px-4 sm:px-2.5 pt-4">
               <p className="text-sm text-slate-500 mb-3">
                 Fund the escrow account for{' '}
                 <span className="font-semibold text-slate-900">
@@ -2177,7 +2177,7 @@ function TasksSection({
       </div>
 
       {/* Task Columns */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
         {['todo', 'in_progress', 'completed'].map(status => (
           <div
             key={status}

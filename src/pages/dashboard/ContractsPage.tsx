@@ -485,22 +485,22 @@ export function ContractsPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-            <Handshake className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <Handshake className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">My Contracts</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">My Contracts</h1>
             <p className="text-slate-500">
               {activeCount} active contract{activeCount !== 1 ? 's' : ''}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
           <InfoTip
             title="How contracts & money work"
             text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlancer."
@@ -606,13 +606,13 @@ export function ContractsPage() {
             return (
               <div
                 key={contract.id}
-                className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedContract(selectedContract?.id === contract.id ? null : contract)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     {/* Header */}
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-1.5 mb-3">
                       <h3 className="font-display text-lg font-bold text-slate-900">
                         {contract.project?.title || 'Project'}
                       </h3>
@@ -718,7 +718,7 @@ export function ContractsPage() {
                                     : 'bg-slate-50'
                                 }`}
                               >
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-1.5">
                                   <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                                     isCompleted
                                       ? 'bg-emerald-500 text-white'
@@ -806,7 +806,7 @@ export function ContractsPage() {
                               : 'Full contract escrow'}
                           </span>
                         </div>
-                        <div className="grid grid-cols-3 gap-3 mt-2">
+                        <div className="grid grid-cols-3 gap-1.5 mt-2">
                           <div>
                             <p className="text-xs text-slate-500">Funded</p>
                             <p className="text-sm font-bold text-slate-900">{formatCurrency(balance.fundedAmount)}</p>
@@ -824,7 +824,7 @@ export function ContractsPage() {
                     )}
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5">
                       <Link
                         to={`/dashboard/workspace?contract=${contract.id}`}
                         className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-2"
@@ -867,7 +867,7 @@ export function ContractsPage() {
               <button
                 onClick={() => { setLoadingMore(true); fetchContracts(true); }}
                 disabled={loadingMore}
-                className="flex items-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+                className="flex items-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
               >
                 {loadingMore ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
@@ -881,7 +881,7 @@ export function ContractsPage() {
       ) : (
         <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
-            <Handshake className="w-10 h-10 text-slate-400" />
+            <Handshake className="w-7 h-7 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
             {activeTab === 'active'
@@ -903,7 +903,7 @@ export function ContractsPage() {
           </p>
           <Link
             to="/dashboard/feed"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
           >
             Browse Projects
             <ArrowRight className="w-4 h-4" />
@@ -921,9 +921,9 @@ export function ContractsPage() {
             className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
+            <div className="flex items-center gap-1.5 mb-2">
+              <div className="w-7 h-7 bg-red-100 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
               </div>
               <h3 className="text-lg font-bold text-slate-900">Dispute Milestone</h3>
             </div>
@@ -948,7 +948,7 @@ export function ContractsPage() {
               />
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button
                 onClick={() => { setDisputeModal(null); setDisputeReason(''); }}
                 className="flex-1 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-lg transition-colors text-sm"
@@ -996,9 +996,9 @@ export function ContractsPage() {
               {/* Header */}
               <div className="p-3 bg-gradient-to-r from-slate-800 to-slate-900 rounded-t-2xl">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
                     <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center">
-                      <FileText className="w-5 h-5 text-white" />
+                      <FileText className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div>
                       <h3 className="font-display text-lg font-bold text-white">Contract Details</h3>
@@ -1016,7 +1016,7 @@ export function ContractsPage() {
 
               <div className="p-3 space-y-2.5">
                 {/* Status + Parties */}
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-1.5">
                   {getStatusBadge(cc.status || 'active')}
                   {cBalance && <EscrowStatusBadge balance={cBalance} />}
                   <span className="text-sm text-slate-500">
@@ -1028,7 +1028,7 @@ export function ContractsPage() {
                 </div>
 
                 {/* Money breakdown */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5">
                   <div className="p-4 bg-slate-50 rounded-xl">
                     <p className="text-xs text-slate-500 mb-1">Contract Value</p>
                     <p className="text-lg font-bold text-slate-900">{formatCurrency(cc.amount)}</p>
@@ -1063,7 +1063,7 @@ export function ContractsPage() {
                           : 'Full contract escrow'}
                       </span>
                     </div>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-3 gap-1.5">
                       <div>
                         <p className="text-xs text-slate-500">Funded</p>
                         <p className="text-sm font-bold text-emerald-700">{formatCurrency(cBalance.fundedAmount)}</p>
@@ -1081,7 +1081,7 @@ export function ContractsPage() {
                 )}
 
                 {/* Timeline */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 text-sm">
                   <div className="p-3 bg-slate-50 rounded-xl">
                     <p className="text-xs text-slate-500 mb-0.5">Created</p>
                     <p className="font-medium text-slate-800">{safeFormatDate(cc.created_at) || '—'}</p>
@@ -1111,7 +1111,7 @@ export function ContractsPage() {
                               isDone ? 'bg-emerald-50 border-emerald-100' : 'bg-slate-50 border-slate-100'
                             }`}
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5">
                               <span
                                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                                   isDone ? 'bg-emerald-500 text-white' : 'bg-slate-300 text-white'
@@ -1130,7 +1130,7 @@ export function ContractsPage() {
                 )}
 
                 {/* CTA */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row gap-1.5 pt-2">
                   <Link
                     to={`/dashboard/workspace?contract=${cc.id}`}
                     className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -1189,9 +1189,9 @@ export function ContractsPage() {
               {/* Header */}
               <div className="p-3 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-t-2xl">
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-1.5">
                     <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
-                      <Shield className="w-6 h-6 text-white" />
+                      <Shield className="w-4 h-4 text-white" />
                     </div>
                     <div>
                       <h3 className="font-display text-lg font-bold text-white">Escrow Details</h3>
@@ -1209,7 +1209,7 @@ export function ContractsPage() {
 
               <div className="p-3">
                 {/* Contract breakdown */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-1.5 mb-2.5">
                   <div className="p-4 bg-slate-50 rounded-xl">
                     <p className="text-xs text-slate-500 mb-1">Contract Value</p>
                     <p className="text-lg font-bold text-slate-900">{formatCurrency(ec.amount)}</p>
@@ -1270,7 +1270,7 @@ export function ContractsPage() {
                 </div>
 
                 {/* Funded / Held / Released */}
-                <div className="grid grid-cols-3 gap-3 mb-2.5">
+                <div className="grid grid-cols-3 gap-1.5 mb-2.5">
                   <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
                     <p className="text-xs text-emerald-600 font-medium mb-1">Funded</p>
                     <p className="text-lg font-bold text-emerald-700">{formatCurrency(funded)}</p>
@@ -1304,7 +1304,7 @@ export function ContractsPage() {
                               : 'bg-slate-50 border-slate-100'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-1.5">
                             <span
                               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
                                 isReleased

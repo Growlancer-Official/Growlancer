@@ -232,18 +232,18 @@ export function ClientFreelancerSearchPage() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Find Talent</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Find Talent</h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
           <TipNote tone="protection" compact className="mt-3 max-w-2xl">
             <strong>Verified</strong> and <strong>Pro</strong> badges show real, checked freelancers — contact them
             here and hiring happens only inside Growlancer, with escrow protection on every payment.
           </TipNote>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-1.5">
           <button onClick={() => setShowFilters(!showFilters)} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">
             <Filter className="w-4 h-4" /> Filters
           </button>
@@ -277,14 +277,14 @@ export function ClientFreelancerSearchPage() {
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <Layers className="w-5 h-5 text-emerald-600" />
+            <Layers className="w-3.5 h-3.5 text-emerald-600" />
             <span className="font-bold text-slate-900">Browse Categories</span>
             <span className="text-xs text-slate-400 font-medium">A-Z</span>
           </div>
           {showCategories ? (
-            <ChevronUp className="w-5 h-5 text-slate-400" />
+            <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-slate-400" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
           )}
         </button>
 
@@ -298,7 +298,7 @@ export function ClientFreelancerSearchPage() {
       </div>
 
       {/* Search Bar */}
-      <div className="flex gap-3">
+      <div className="flex gap-1.5">
         <div className="flex-1 relative">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name, skill, or title..." className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" />
@@ -339,16 +339,16 @@ export function ClientFreelancerSearchPage() {
         <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-600" /></div>
       ) : freelancers.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-xl border border-slate-100">
-          <Search className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+          <Search className="w-8 h-8 text-slate-300 mx-auto mb-2" />
           <h3 className="text-lg font-bold text-slate-900 mb-2">No freelancers found</h3>
           <p className="text-slate-500">Try adjusting your filters.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           {freelancers.map((f) => (
-            <div key={f.id} className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all">
-              <div className="flex items-start gap-3 mb-3">
-                <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+            <div key={f.id} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-md transition-all">
+              <div className="flex items-start gap-1.5 mb-3">
+                <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                   {f.profile?.avatar ? <img src={f.profile.avatar} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">{(f.profile?.name || f.title || 'U')[0]}</div>}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -364,7 +364,7 @@ export function ClientFreelancerSearchPage() {
                 </div>
               </div>
               {f.seller_level && <div className="mb-2">{getSellerLevelBadge(f.seller_level)}</div>}
-              <div className="flex items-center gap-3 text-sm mb-3">
+              <div className="flex items-center gap-1.5 text-sm mb-3">
                 {f.rating && f.rating > 0 ? <span className="flex items-center gap-1 font-semibold"><Star className="w-4 h-4 text-amber-400 fill-amber-400" />{f.rating.toFixed(1)}<span className="text-slate-400 font-normal">({f.total_reviews || 0})</span></span> : <span className="text-slate-400 text-xs">New</span>}
                 {f.completion_rate != null && <span className="flex items-center gap-1 text-slate-500"><span className="w-1.5 h-1.5 bg-emerald-400 rounded-full" />{f.completion_rate}% completion</span>}
               </div>
@@ -407,7 +407,7 @@ export function ClientFreelancerSearchPage() {
 
             {contactLoadingProjects ? (
               <div className="py-4 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+                <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
               </div>
             ) : clientProjects.length === 0 ? (
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 mb-2">
@@ -438,7 +438,7 @@ export function ClientFreelancerSearchPage() {
               </>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button onClick={() => setContactFreelancer(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>
               <button
                 onClick={handleSendInvite}
@@ -459,7 +459,7 @@ export function ClientFreelancerSearchPage() {
           <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 mb-2">Save This Search</h3>
             <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under 500" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button onClick={() => setShowSaveModal(false)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>
               <button onClick={handleSaveSearch} disabled={!saveName.trim()} className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50">Save Search</button>
             </div>

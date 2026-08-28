@@ -160,7 +160,7 @@ export function PortfolioPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Portfolio</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Portfolio</h1>
           <p className="text-slate-500 mt-1">Showcase your best work to potential clients</p>
         </div>
         <button
@@ -168,7 +168,7 @@ export function PortfolioPage() {
             resetForm();
             setShowForm(true);
           }}
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
         >
           <Plus className="w-4 h-4" />
           Add Project
@@ -188,7 +188,7 @@ export function PortfolioPage() {
               {editingId ? 'Edit Project' : 'New Project'}
             </h2>
             <button onClick={resetForm} className="text-slate-400 hover:text-slate-600 transition-colors">
-              <X className="w-5 h-5" />
+              <X className="w-3.5 h-3.5" />
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-2.5">
@@ -295,18 +295,18 @@ export function PortfolioPage() {
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-2">
+            <div className="flex justify-end gap-1.5 pt-2">
               <button
                 type="button"
                 onClick={resetForm}
-                className="px-5 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
+                className="px-2.5 py-2.5 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={saving || !formTitle.trim()}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
+                className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold"
               >
                 {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                 {editingId ? 'Update' : 'Add to Portfolio'}
@@ -331,14 +331,14 @@ export function PortfolioPage() {
               resetForm();
               setShowForm(true);
             }}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+            className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
           >
             <Plus className="w-4 h-4" />
             Add Your First Project
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5">
           {items.map((item) => (
             <div
               key={item.id}
@@ -355,7 +355,7 @@ export function PortfolioPage() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
-                    <Image className="w-12 h-12 text-slate-300" />
+                    <Image className="w-8 h-8 text-slate-300" />
                   </div>
                 )}
                 {item.is_featured && (
@@ -460,7 +460,7 @@ export function PortfolioPage() {
               onClick={() => setPreviewIndex(null)}
               className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-3.5 h-3.5" />
             </button>
             {items[previewIndex].image_url && (
               <img
@@ -484,7 +484,7 @@ export function PortfolioPage() {
                   }}
                   className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white shadow-sm transition-colors"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
@@ -497,7 +497,7 @@ export function PortfolioPage() {
                   }}
                   className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white shadow-sm transition-colors"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>

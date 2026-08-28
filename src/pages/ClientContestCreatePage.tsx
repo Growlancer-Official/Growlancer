@@ -91,7 +91,7 @@ export function ClientContestCreatePage() {
   return (
     <div className="max-w-4xl mx-auto">
       <div className="mb-3">
-        <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">Create Contest</h1>
+        <h1 className="font-display text-xl font-bold text-slate-900 mb-2">Create Contest</h1>
         <p className="text-slate-500">Post a design or development contest and receive competing submissions from talented freelancers</p>
       </div>
 
@@ -103,11 +103,11 @@ export function ClientContestCreatePage() {
         After creating the contest you'll <strong>fund the prize pool</strong> (1st + 2nd + 3rd + a 5% platform fee) from your wallet. The money is held in escrow — freelancers can only submit once it's funded, so everyone knows the prize is real. When you award winners, their prizes are <strong>released instantly</strong> to their wallets. Fair for you, fair for freelancers.
       </TipNote>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-1.5">
         {/* Basic Information */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <FileText className="w-5 h-5 text-emerald-600" />
+            <FileText className="w-3.5 h-3.5 text-emerald-600" />
             Contest Details
           </h2>
 
@@ -174,7 +174,7 @@ export function ClientContestCreatePage() {
         {/* Prize & Timeline */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <IndianRupee className="w-5 h-5 text-emerald-600" />
+            <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
             Prizes & Timeline
           </h2>
 
@@ -249,7 +249,7 @@ export function ClientContestCreatePage() {
         {/* Skills */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Tag className="w-5 h-5 text-emerald-600" />
+            <Tag className="w-3.5 h-3.5 text-emerald-600" />
             Required Skills
           </h2>
 
@@ -268,7 +268,7 @@ export function ClientContestCreatePage() {
                 onClick={handleCustomSkill}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
               >
-                <Plus className="w-5 h-5" />
+                <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -317,14 +317,14 @@ export function ClientContestCreatePage() {
           <button
             type="button"
             onClick={() => navigate('/client/contests')}
-            className="px-6 py-3 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+            className="px-3 py-3 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -333,9 +333,9 @@ export function ClientContestCreatePage() {
               </>
             ) : (
               <>
-                <CheckCircle className="w-5 h-5" />
+                <CheckCircle className="w-3.5 h-3.5" />
                 Create Contest
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </>
             )}
           </button>

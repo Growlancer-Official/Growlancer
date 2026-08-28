@@ -76,14 +76,14 @@ function ProposalMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
-        <MoreVertical className="w-5 h-5 text-slate-400" />
+        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
       </button>
 
       {open && (
         <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white rounded-xl border border-slate-200 shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1">
           <Link
             to={`/freelancer/${freelancerId}`}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             onClick={() => setOpen(false)}
           >
             <ExternalLink className="w-4 h-4 text-slate-400" />
@@ -93,7 +93,7 @@ function ProposalMenu({
           {status === 'hired' && (
             <>
               <div className="h-px bg-slate-100 my-1.5 mx-3" />
-              <div className="flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-700 font-medium">
+              <div className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-emerald-700 font-medium">
                 <CheckCircle className="w-4 h-4" />
                 <span>Hired — contract created</span>
               </div>
@@ -105,14 +105,14 @@ function ProposalMenu({
               <div className="h-px bg-slate-100 my-1.5 mx-3" />
               <button
                 onClick={() => { setOpen(false); onAccept(); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 transition-colors"
+                className="w-full flex items-center gap-1.5 px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50 transition-colors"
               >
                 <CheckCircle className="w-4 h-4" />
                 <span>Accept & Hire</span>
               </button>
               <button
                 onClick={() => { setOpen(false); onReject(); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                className="w-full flex items-center gap-1.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
               >
                 <XCircle className="w-4 h-4" />
                 <span>Reject</span>
@@ -275,15 +275,15 @@ export function ClientProposalsPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Proposals</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">Proposals</h1>
           <p className="text-slate-500 mt-1">Review and manage proposals from freelancers</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 rounded-xl">
-          <FileText className="w-5 h-5" />
+          <FileText className="w-3.5 h-3.5" />
           <span className="font-bold">{proposals.length} Proposals</span>
         </div>
       </div>
@@ -317,8 +317,8 @@ export function ClientProposalsPage() {
       {/* Proposals List */}
       {filteredProposals.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-            <FileText className="w-10 h-10 text-slate-300" />
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2.5">
+            <FileText className="w-7 h-7 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No proposals yet' : `No ${filter} proposals`}
@@ -331,9 +331,9 @@ export function ClientProposalsPage() {
           {filter === 'all' ? (
             <Link
               to="/client/post"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-3.5 h-3.5" />
               Post a Project
             </Link>
           ) : (
@@ -360,11 +360,11 @@ export function ClientProposalsPage() {
                     title="View freelancer profile"
                     className="shrink-0"
                   >
-                    <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-emerald-400 transition-all">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-emerald-400 transition-all">
                       {proposal.freelancer?.avatar ? (
                         <img src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
                       ) : (
-                        <User className="w-6 h-6 text-slate-400" />
+                        <User className="w-4 h-4 text-slate-400" />
                       )}
                     </div>
                   </Link>
@@ -379,7 +379,7 @@ export function ClientProposalsPage() {
                         {proposal.freelancer?.is_pro && <ProBadge size="xs" />}
                       </span>
                     </Link>
-                    <div className="flex items-center gap-3 text-sm text-slate-500">
+                    <div className="flex items-center gap-1.5 text-sm text-slate-500">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span>
@@ -500,7 +500,7 @@ export function ClientProposalsPage() {
           <button
             onClick={() => fetchProposals(true)}
             disabled={loadingMore}
-            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+            className="px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
           >
             {loadingMore ? 'Loading...' : 'Load More Proposals'}
           </button>

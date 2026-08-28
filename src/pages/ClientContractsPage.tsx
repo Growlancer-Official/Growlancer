@@ -177,10 +177,10 @@ export function ClientContractsPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-1.5 font-display text-2xl font-bold text-slate-900">
+          <h1 className="flex items-center gap-1.5 font-display text-lg font-bold text-slate-900">
             Contracts
             <InfoTip
               title="How contracts work for you"
@@ -190,7 +190,7 @@ export function ClientContractsPage() {
           <p className="text-slate-500 mt-1">Manage active and completed contracts with freelancers</p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl">
-          <Handshake className="w-5 h-5" />
+          <Handshake className="w-3.5 h-3.5" />
           <span className="font-bold">{contracts.length} Contracts</span>
         </div>
       </div>
@@ -220,8 +220,8 @@ export function ClientContractsPage() {
 
       {filteredContracts.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-            <Handshake className="w-10 h-10 text-slate-300" />
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2.5">
+            <Handshake className="w-7 h-7 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No contracts yet' : `No ${filter} contracts`}
@@ -232,19 +232,19 @@ export function ClientContractsPage() {
               : `You don't have any ${filter} contracts at the moment.`}
           </p>
           {filter === 'all' ? (
-            <div className="flex gap-3 justify-center">
+            <div className="flex gap-1.5 justify-center">
               <Link
                 to="/client/proposals"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+                className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
               >
-                <FileText className="w-5 h-5" />
+                <FileText className="w-3.5 h-3.5" />
                 View Proposals
               </Link>
               <Link
                 to="/client/matches"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
+                className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
               >
-                <Users className="w-5 h-5" />
+                <Users className="w-3.5 h-3.5" />
                 Find Freelancers
               </Link>
             </div>
@@ -268,11 +268,11 @@ export function ClientContractsPage() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                       {contract.freelancer?.avatar ? (
                         <img src={contract.freelancer.avatar} alt={contract.freelancer.name} />
                       ) : (
-                        <User className="w-6 h-6 text-slate-400" />
+                        <User className="w-4 h-4 text-slate-400" />
                       )}
                     </div>
                     <div>
@@ -372,7 +372,7 @@ export function ClientContractsPage() {
           <button
             onClick={() => fetchContracts(true)}
             disabled={loadingMore}
-            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+            className="px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
           >
             {loadingMore ? 'Loading...' : 'Load More Contracts'}
           </button>

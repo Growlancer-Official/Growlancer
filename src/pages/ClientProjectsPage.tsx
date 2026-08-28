@@ -42,14 +42,14 @@ function ProjectMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
-        <MoreVertical className="w-5 h-5 text-slate-400" />
+        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
       </button>
 
       {open && (
         <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white rounded-xl border border-slate-200 shadow-xl py-1.5 animate-in fade-in slide-in-from-top-1">
           <Link
             to={`/projects/${projectId}`}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             onClick={() => setOpen(false)}
           >
             <Eye className="w-4 h-4 text-slate-400" />
@@ -57,7 +57,7 @@ function ProjectMenu({
           </Link>
           <Link
             to={`/client/matches?project_id=${projectId}`}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             onClick={() => setOpen(false)}
           >
             <Eye className="w-4 h-4 text-slate-400" />
@@ -65,7 +65,7 @@ function ProjectMenu({
           </Link>
           <Link
             to={`/client/proposals`}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
             onClick={() => setOpen(false)}
           >
             <CheckCircle2 className="w-4 h-4 text-slate-400" />
@@ -75,7 +75,7 @@ function ProjectMenu({
             <>
               <Link
                 to={`/client/post?edit=${projectId}`}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+                className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-50 transition-colors"
                 onClick={() => setOpen(false)}
               >
                 <Edit3 className="w-4 h-4 text-slate-400" />
@@ -84,7 +84,7 @@ function ProjectMenu({
               {isInProgress && (
                 <button
                   onClick={() => { setOpen(false); onComplete(projectId); }}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors"
+                  className="w-full flex items-center gap-1.5 px-4 py-2.5 text-sm text-emerald-600 hover:bg-emerald-50 transition-colors"
                 >
                   <CheckCircle className="w-4 h-4 text-emerald-400" />
                   <span>Mark Complete</span>
@@ -93,7 +93,7 @@ function ProjectMenu({
               <div className="h-px bg-slate-100 my-1.5 mx-3" />
               <button
                 onClick={() => { setOpen(false); onClose(projectId); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                className="w-full flex items-center gap-1.5 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
               >
                 <X className="w-4 h-4 text-red-400" />
                 <span>Close Project</span>
@@ -105,7 +105,7 @@ function ProjectMenu({
               <div className="h-px bg-slate-100 my-1.5 mx-3" />
               <button
                 onClick={() => { setOpen(false); onReopen(projectId); }}
-                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
+                className="w-full flex items-center gap-1.5 px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 transition-colors"
               >
                 <RefreshCw className="w-4 h-4 text-blue-400" />
                 <span>Reopen Project</span>
@@ -295,18 +295,18 @@ export function ClientProjectsPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">My Projects</h1>
+          <h1 className="font-display text-lg font-bold text-slate-900">My Projects</h1>
           <p className="text-slate-500 mt-1">Manage your posted projects and track progress</p>
         </div>
         <Link
           to="/client/post"
-          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
-          <Plus className="w-5 h-5" />
+          <Plus className="w-3.5 h-3.5" />
           Post New Project
         </Link>
       </div>
@@ -336,8 +336,8 @@ export function ClientProjectsPage() {
       {/* Projects Grid */}
       {filteredProjects.length === 0 ? (
         <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
-            <Briefcase className="w-10 h-10 text-slate-300" />
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-2.5">
+            <Briefcase className="w-7 h-7 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
@@ -350,9 +350,9 @@ export function ClientProjectsPage() {
           {filter === 'all' ? (
             <Link
               to="/client/post"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <Plus className="w-5 h-5" />
+              <Plus className="w-3.5 h-3.5" />
               Post Your First Project
             </Link>
           ) : (
@@ -374,7 +374,7 @@ export function ClientProjectsPage() {
             >
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-2">
+                  <div className="flex items-center gap-1.5 mb-2">
                     <h3 className="font-display text-lg font-bold text-slate-900">{project.title}</h3>
                     <span
                       className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${getStatusColor(
@@ -451,7 +451,7 @@ export function ClientProjectsPage() {
           <button
             onClick={() => fetchProjects(true)}
             disabled={loadingMore}
-            className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+            className="px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
           >
             {loadingMore ? 'Loading...' : 'Load More Projects'}
           </button>
@@ -462,7 +462,7 @@ export function ClientProjectsPage() {
       {showCloseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-xl mb-5 mx-auto">
+            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-xl mb-2.5 mx-auto">
               <AlertTriangle className="w-8 h-8 text-orange-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Close Project</h3>
@@ -470,7 +470,7 @@ export function ClientProjectsPage() {
               This will mark the project as cancelled. Freelancers will no longer be able to apply.
               Active contracts will continue in your workspace.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button
                 onClick={() => setShowCloseModal(null)}
                 disabled={closingId !== null}
@@ -494,7 +494,7 @@ export function ClientProjectsPage() {
       {showCompleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-xl mb-5 mx-auto">
+            <div className="flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-xl mb-2.5 mx-auto">
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Mark Project Complete</h3>
@@ -502,7 +502,7 @@ export function ClientProjectsPage() {
               This will mark the project as completed. Escrow funds will be released to the freelancer.
               This action cannot be undone.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button
                 onClick={() => setShowCompleteModal(null)}
                 disabled={completingId !== null}
@@ -526,7 +526,7 @@ export function ClientProjectsPage() {
       {showReopenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-xl mb-5 mx-auto">
+            <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-xl mb-2.5 mx-auto">
               <RefreshCw className="w-8 h-8 text-blue-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Reopen Project</h3>
@@ -534,7 +534,7 @@ export function ClientProjectsPage() {
               This will reopen the project with status "Open". Freelancers will be able to apply again.
               AI matches will be regenerated.
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-1.5">
               <button
                 onClick={() => setShowReopenModal(null)}
                 disabled={reopeningId !== null}

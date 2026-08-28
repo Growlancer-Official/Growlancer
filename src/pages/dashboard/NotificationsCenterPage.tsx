@@ -250,7 +250,7 @@ export function NotificationsCenterPage() {
             {notificationService.getNotificationIcon(notification.type)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-1.5">
               <p className={`text-sm ${notification.read ? 'text-slate-700' : 'font-semibold text-slate-900'}`}>
                 {notification.title}
               </p>
@@ -259,7 +259,7 @@ export function NotificationsCenterPage() {
               )}
             </div>
             <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{notification.message}</p>
-            <div className="flex items-center gap-3 mt-2.5">
+            <div className="flex items-center gap-1.5 mt-2.5">
               <span className="text-xs text-slate-400 flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {formatTime(notification.created_at)}
@@ -294,7 +294,7 @@ export function NotificationsCenterPage() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3 mt-3 ml-14 flex-wrap">
+        <div className="flex items-center gap-1.5 mt-3 ml-14 flex-wrap">
           {!notification.read && (
             <button
               onClick={() => handleMarkAsRead(notification.id)}
@@ -345,7 +345,7 @@ export function NotificationsCenterPage() {
 
     return sections.map(section => (
       <div key={section.label}>
-        <div className="px-5 py-2.5 bg-slate-50 border-b border-slate-100">
+        <div className="px-2.5 py-2.5 bg-slate-50 border-b border-slate-100">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
             {section.label}
           </span>
@@ -364,12 +364,12 @@ export function NotificationsCenterPage() {
     <div className="max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <BellRing className="w-6 h-6 text-white" />
+        <div className="flex items-center gap-1.5">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <BellRing className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Notifications</h1>
+            <h1 className="font-display text-lg font-bold text-slate-900">Notifications</h1>
             <p className="text-sm text-slate-500">
               {unreadCount > 0
                 ? `You have ${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
@@ -406,7 +406,7 @@ export function NotificationsCenterPage() {
 
       {/* Tabs + Filter */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-1.5">
           <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
             {TABS.map(tab => (
               <button
@@ -421,7 +421,7 @@ export function NotificationsCenterPage() {
                 <tab.icon className="w-4 h-4" />
                 {tab.label}
                 {tab.id === 'unread' && unreadCount > 0 && (
-                  <span className="w-5 h-5 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                  <span className="w-3.5 h-3.5 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center">
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </span>
                 )}
@@ -471,19 +471,19 @@ export function NotificationsCenterPage() {
             <div className="py-20 text-center">
               {activeTab === 'archived' ? (
                 <>
-                  <Archive className="w-14 h-14 text-slate-200 mx-auto mb-3" />
+                  <Archive className="w-8 h-8 text-slate-200 mx-auto mb-3" />
                   <p className="text-slate-500 font-semibold">No archived notifications</p>
                   <p className="text-xs text-slate-400 mt-1">Archived notifications will appear here</p>
                 </>
               ) : activeTab === 'unread' ? (
                 <>
-                  <BellOff className="w-14 h-14 text-slate-200 mx-auto mb-3" />
+                  <BellOff className="w-8 h-8 text-slate-200 mx-auto mb-3" />
                   <p className="text-slate-500 font-semibold">All caught up!</p>
                   <p className="text-xs text-slate-400 mt-1">No unread notifications right now</p>
                 </>
               ) : (
                 <>
-                  <Bell className="w-14 h-14 text-slate-200 mx-auto mb-3" />
+                  <Bell className="w-8 h-8 text-slate-200 mx-auto mb-3" />
                   <p className="text-slate-500 font-semibold">No notifications yet</p>
                   <p className="text-xs text-slate-400 mt-1">
                     Payment, escrow, contract and message updates will show up here in real time

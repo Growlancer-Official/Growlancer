@@ -165,7 +165,7 @@ export function ReauthDialog({
           className="absolute top-4 right-4 p-2 rounded-lg text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors"
           aria-label="Close"
         >
-          <X className="w-5 h-5" />
+          <X className="w-3.5 h-3.5" />
         </button>
 
         <div className="flex justify-center mb-2.5">

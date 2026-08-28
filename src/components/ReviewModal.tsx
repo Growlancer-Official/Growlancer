@@ -96,7 +96,7 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
             <p className="text-xs text-slate-500 mt-0.5">{projectTitle || 'Contract'}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-            <X className="w-5 h-5" />
+            <X className="w-3.5 h-3.5" />
           </button>
         </div>
 

@@ -85,7 +85,7 @@ export function ConfirmModal({
           disabled={isLoading}
           className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 transition-colors disabled:opacity-50"
         >
-          <X className="w-5 h-5 text-slate-400" />
+          <X className="w-3.5 h-3.5 text-slate-400" />
         </button>
 
         <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${styles.icon} mb-3`}>
