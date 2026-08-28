@@ -45,6 +45,29 @@ async function removeStoragePrefix(adminClient: any, bucket: string, prefix: str
   }
 }
 
+// ─── Rate Limiting ──────────────────────────────────────────────────────────
+// delete-account is destructive. A stolen session could repeatedly call
+// this to cause churn. Max 3 attempts per user per hour.
+const RATE_LIMIT_MAX = 3;
+const RATE_LIMIT_WINDOW_MS = 3600000;
+const ROUTE = 'delete-account';
+
+async function checkDeleteRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW_MS);
+  try { await supabaseClient.rpc('cleanup_expired_rate_limits'); } catch { /* non-critical */ }
+  const { count, error } = await supabaseClient
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('identifier', identifier)
+    .eq('route', ROUTE)
+    .gte('window_start', windowStart.toISOString());
+  if (error) return true;
+  if (count !== null && count >= RATE_LIMIT_MAX) return false;
+  await supabaseClient.from('rate_limits').insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
+  return true;
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
@@ -74,6 +97,19 @@ Deno.serve(async (req) => {
     if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
         status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 2b. Rate limit: max 3 delete attempts per user per hour
+    const rateCheckClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    );
+    const rateAllowed = await checkDeleteRateLimit(rateCheckClient, user.id);
+    if (!rateAllowed) {
+      return new Response(JSON.stringify({ error: 'Too many deletion attempts. Please try again later.' }), {
+        status: 429,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

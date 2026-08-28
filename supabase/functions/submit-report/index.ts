@@ -102,6 +102,30 @@ async function sendReportEmail(payload: {
   });
 }
 
+// ─── Rate Limiting ──────────────────────────────────────────────────────────
+// submit-report is a public endpoint that inserts into user_reports and
+// sends emails via Brevo. Without rate limiting, an attacker could spam
+// thousands of reports flooding the inbox and burning Brevo quota.
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const ROUTE = 'submit-report';
+
+async function checkReportRateLimit(supabaseClient: any, identifier: string): Promise<boolean> {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW_MS);
+  try { await supabaseClient.rpc('cleanup_expired_rate_limits'); } catch { /* non-critical */ }
+  const { count, error } = await supabaseClient
+    .from('rate_limits')
+    .select('*', { count: 'exact', head: true })
+    .eq('identifier', identifier)
+    .eq('route', ROUTE)
+    .gte('window_start', windowStart.toISOString());
+  if (error) return true;
+  if (count !== null && count >= RATE_LIMIT_MAX) return false;
+  await supabaseClient.from('rate_limits').insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
+  return true;
+}
+
 // ─── Handler ─────────────────────────────────────────────────────────────────
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get('origin')
@@ -123,6 +147,16 @@ Deno.serve(async (req: Request) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     { auth: { persistSession: false } },
   )
+
+  // Rate limit by IP (public endpoint — no JWT required)
+  const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
+  const rateAllowed = await checkReportRateLimit(supabaseClient, clientIP);
+  if (!rateAllowed) {
+    return new Response(JSON.stringify({ error: 'Too many reports — please try again later.' }), {
+      status: 429,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
 
   try {
     const body = await req.json()
