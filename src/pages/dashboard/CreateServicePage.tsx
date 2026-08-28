@@ -272,19 +272,21 @@ export function CreateServicePage() {
       setLoading(false);
       return;
     }
-    // Higher tiers are optional, but if present they must be valid.
-    const invalidTier = formData.packages.find((p) => p.tier !== 'basic' && p.price > 0 && (!Number.isFinite(p.price) || p.price < 0));
-    if (invalidTier) {
-      toast.error('Invalid package price', `${TIER_META[invalidTier.tier].label} package price must be a valid amount.`);
+    // Validate Standard and Premium tiers — price must be higher than the tier below.
+    const standard = formData.packages.find((p) => p.tier === 'standard');
+    const premium = formData.packages.find((p) => p.tier === 'premium');
+    if (standard && standard.price > 0 && standard.price <= basic.price) {
+      toast.error('Standard price too low', 'Standard must cost more than Basic.');
       setLoading(false);
       return;
     }
-
-    // Only keep tiers the freelancer actually filled (price > 0) so empty
-    // optional tiers don't create ₹0 cards. Basic is always kept.
-    const publishedPackages = formData.packages.filter(
-      (p) => p.tier === 'basic' || (p.price > 0 && p.title.trim())
-    );
+    if (premium && premium.price > 0 && premium.price <= (standard?.price || basic.price)) {
+      toast.error('Premium price too low', 'Premium must cost more than Standard.');
+      setLoading(false);
+      return;
+    }
+    // All three tiers are always published (price 0 = free upgrade placeholder).
+    const publishedPackages = formData.packages;
 
     const payload = {
       title: formData.title,

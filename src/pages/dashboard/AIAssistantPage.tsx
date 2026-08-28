@@ -10,7 +10,7 @@ export function AIAssistantPage() {
   const [tab, setTab] = useState<Tab>('assistant');
 
   return (
-    <div className="h-[calc(100vh-8rem)] flex flex-col">
+    <div className="flex-1 min-h-0 flex flex-col">
       {/* Tabs — AI Assistant and AI Support are TWO different chats, always separate */}
       <div className="mb-3 flex items-center gap-2">
         <button
