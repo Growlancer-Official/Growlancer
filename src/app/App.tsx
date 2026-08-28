@@ -298,6 +298,8 @@ function App() {
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />
                 <Route path="time-tracking" element={<TimeTrackingPage />} />
+                <Route path="contests" element={<ContestsPage />} />
+                <Route path="help-center" element={<HelpCenterPage />} />
                 <Route path="tickets" element={<SupportTicketsPage />} />
               </Route>
 
@@ -337,6 +339,7 @@ function App() {
                 <Route path="reviews" element={<ClientReviewsPage />} />
                 <Route path="contests" element={<ClientContestsPage />} />
                 <Route path="contests/create" element={<ClientContestCreatePage />} />
+                <Route path="help-center" element={<HelpCenterPage />} />
                 <Route path="tickets" element={<SupportTicketsPage />} />
               </Route>
 

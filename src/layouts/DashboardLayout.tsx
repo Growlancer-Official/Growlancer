@@ -72,7 +72,7 @@ const sidebarGroups: SidebarGroup[] = [
     links: [
       { id: 'services', path: '/dashboard/services', icon: Package, label: 'Services' },
       { id: 'portfolio', path: '/dashboard/portfolio', icon: Image, label: 'Portfolio' },
-      { id: 'contests', path: '/contests', icon: Trophy, label: 'Contests' },
+      { id: 'contests', path: '/dashboard/contests', icon: Trophy, label: 'Contests' },
     ],
   },
   {
@@ -100,8 +100,7 @@ const accountLinks: SidebarLink[] = [
 ];
 
 const supportLinks: SidebarLink[] = [
-  { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },
-  { id: 'help-center', path: '/help-center', icon: HelpCircle, label: 'Help Center' },
+  { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },      { id: 'help-center', path: '/dashboard/help-center', icon: HelpCircle, label: 'Help Center' },
   { id: 'tickets', path: '/dashboard/tickets', icon: Ticket, label: 'Support Tickets' },
 ];
 export function DashboardLayout() {

@@ -96,7 +96,7 @@ const accountLinks: SidebarLink[] = [
 
 const supportLinks: SidebarLink[] = [
   { id: 'ai-support', path: '/client/ai-assistant', icon: Headphones, label: 'AI Support' },
-  { id: 'help-center', path: '/help-center', icon: HelpCircle, label: 'Help Center' },
+  { id: 'help-center', path: '/client/help-center', icon: HelpCircle, label: 'Help Center' },
   { id: 'tickets', path: '/client/tickets', icon: Ticket, label: 'Support Tickets' },
 ];
 
