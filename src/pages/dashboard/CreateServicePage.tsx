@@ -521,9 +521,12 @@ export function CreateServicePage() {
                         <label className="block text-xs font-medium text-slate-600 mb-1">Delivery (days)</label>
                         <input
                           type="number"
-                          min="1"
+                          min="0"
                           value={pkg.delivery_days}
-                          onChange={(e) => updatePackage(pkg.tier, { delivery_days: parseInt(e.target.value) || 1 })}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            updatePackage(pkg.tier, { delivery_days: v === '' ? 0 : Math.max(0, parseInt(v) || 0) });
+                          }}
                           className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
                         />
                       </div>
@@ -533,7 +536,10 @@ export function CreateServicePage() {
                           type="number"
                           min="0"
                           value={pkg.revisions}
-                          onChange={(e) => updatePackage(pkg.tier, { revisions: parseInt(e.target.value) || 0 })}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            updatePackage(pkg.tier, { revisions: v === '' ? 0 : Math.max(0, parseInt(v) || 0) });
+                          }}
                           className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
                         />
                       </div>
