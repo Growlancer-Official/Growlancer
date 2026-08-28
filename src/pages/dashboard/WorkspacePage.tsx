@@ -851,7 +851,7 @@ export function WorkspacePage() {
 
   if (contracts.length === 0) {
     return (
-      <div className="space-y-6 max-w-[100rem] mx-auto px-4 py-8">
+      <div className="space-y-3 max-w-[100rem] mx-auto px-4 py-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Laptop className="w-6 h-6 text-white" />
@@ -862,12 +862,12 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
             <Briefcase className="w-10 h-10 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No active contracts</h3>
-          <p className="text-slate-500 max-w-md mx-auto mb-6">
+          <p className="text-slate-500 max-w-md mx-auto mb-3">
             You don't have any active contracts. Submit proposals to get hired and start working!
           </p>
         </div>
@@ -876,9 +876,9 @@ export function WorkspacePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Top Banner / Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-2xl shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <Laptop className="w-6 h-6 text-white" />
@@ -984,7 +984,7 @@ export function WorkspacePage() {
       </div>
 
       {/* Platform Policy — protect both sides (full-width, client-consistent design) */}
-      <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm">
+      <div className="rounded-xl overflow-hidden border border-blue-200 shadow-sm">
         <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-5 py-4 flex items-center gap-3">
           <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
             <Shield className="w-5 h-5 text-white" />
@@ -1078,7 +1078,7 @@ export function WorkspacePage() {
       </div>
 
       {selectedContract && (
-        <div className="space-y-6">
+        <div className="space-y-3">
           {/* Load Earlier Messages */}
           {hasMoreMessages && (
             <button
@@ -1091,7 +1091,7 @@ export function WorkspacePage() {
           )}
           {/* Dispute Alert Banner */}
           {selectedContract.status === 'disputed' && (
-            <div className="bg-red-50/90 border border-red-200 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-scale-in">
+            <div className="bg-red-50/90 border border-red-200 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-2 animate-scale-in">
               <div className="flex items-start gap-3">
                 <AlertCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
                 <div>
@@ -1107,7 +1107,7 @@ export function WorkspacePage() {
 
           {/* Extra Revision Request Banner */}
           {pendingRevision && (
-            <div className="bg-blue-50/90 border border-blue-200 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-scale-in">
+            <div className="bg-blue-50/90 border border-blue-200 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-2 animate-scale-in">
               <div className="flex items-start gap-3">
                 <RotateCcw className="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
                 <div>
@@ -1158,7 +1158,7 @@ export function WorkspacePage() {
 
           {/* Cancellation Request Banner */}
           {pendingCancellation && (
-            <div className="bg-amber-50/90 border border-amber-200 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-scale-in">
+            <div className="bg-amber-50/90 border border-amber-200 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-2 animate-scale-in">
               <div className="flex items-start gap-3">
                 <RotateCcw className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5 animate-workflow-pulse" />
                 <div>
@@ -1193,9 +1193,9 @@ export function WorkspacePage() {
 
           {/* TAB 1: Chat & Assets Hub */}
           {activeTab === 'chat' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
               {/* Left Column - Chat Room */}
-              <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
                 {/* Chat Header */}
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                   <div className="flex items-center gap-3">
@@ -1210,7 +1210,7 @@ export function WorkspacePage() {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                <div className="flex-1 overflow-y-auto p-4 space-y-2">
                   {messages.map((message) => (
                     <div
                       key={message.id}
@@ -1221,7 +1221,7 @@ export function WorkspacePage() {
                           <p className="text-xs text-slate-500 mb-1 ml-1">{message.sender?.name || 'Client'}</p>
                         )}
                         <div
-                          className={`p-3 rounded-2xl ${
+                          className={`p-3 rounded-xl ${
                             message.sender_id === user?.id
                               ? 'bg-emerald-600 text-white rounded-br-none'
                               : 'bg-slate-100 text-slate-900 rounded-bl-none'
@@ -1271,7 +1271,7 @@ export function WorkspacePage() {
               </div>
 
               {/* Right Column - Deliverables & Assets Locker */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-5 h-[600px] flex flex-col">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-5 h-[600px] flex flex-col">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900">Shared Asset Locker</h3>
@@ -1340,9 +1340,9 @@ export function WorkspacePage() {
 
           {/* TAB 2: Real-Time Shared Canvas */}
           {activeTab === 'canvas' && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               {/* Shared Live Task Board */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-2 flex flex-col h-[600px]">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900 flex items-center gap-2">
@@ -1374,7 +1374,7 @@ export function WorkspacePage() {
                 </form>
 
                 {/* Shared Task Columns / Lists */}
-                <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                <div className="flex-1 overflow-y-auto space-y-2 pr-1">
                   {/* Todo List */}
                   <div>
                     <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -1478,7 +1478,7 @@ export function WorkspacePage() {
               </div>
 
               {/* Collaborative Scratchpad / Notes */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-2 flex flex-col h-[600px]">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900 flex items-center gap-2">
@@ -1512,7 +1512,7 @@ export function WorkspacePage() {
                   value={notesText}
                   onChange={(e) => handleNoteChange(e.target.value)}
                   placeholder="Collaborate on project outlines, tech stack details, credentials, or custom deadlines. Synced instantly on both sides..."
-                  className="flex-1 w-full p-4 bg-slate-50/50 border border-slate-200 rounded-2xl text-xs leading-relaxed focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none resize-none font-mono"
+                  className="flex-1 w-full p-4 bg-slate-50/50 border border-slate-200 rounded-xl text-xs leading-relaxed focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 focus:outline-none resize-none font-mono"
                 />
                 
                 <p className="text-[10px] text-slate-400 leading-normal flex items-start gap-1">
@@ -1525,12 +1525,12 @@ export function WorkspacePage() {
 
           {/* TAB 3: Milestones & Escrow Timeline */}
           {activeTab === 'milestones' && (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 animate-fade-in">
               {/* Financial Dashboard details (Left 2 spans) */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-3">
                 {/* Project Milestone Card */}
-                <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
-                  <div className="flex items-start justify-between mb-4 pb-3 border-b border-slate-100">
+                <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm">
+                  <div className="flex items-start justify-between mb-2 pb-3 border-b border-slate-100">
                     <div>
                       <h3 className="font-semibold text-slate-900 text-lg">
                         {selectedContract.project?.title || 'Project'}
@@ -1564,7 +1564,7 @@ export function WorkspacePage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4 mb-6">
+                  <div className="grid grid-cols-3 gap-2 mb-3">
                     <div className="p-4 bg-slate-50 border border-slate-100 rounded-xl">
                       <p className="text-[10px] text-slate-500 mb-1">Contract Budget</p>
                       <p className="text-lg font-bold text-slate-950">{formatCurrency(selectedContract.amount)}</p>
@@ -1587,7 +1587,7 @@ export function WorkspacePage() {
 
                   {/* Escrow Details Banner */}
                   {(selectedContract as any).escrow && (
-                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between text-xs mb-4">
+                    <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center justify-between text-xs mb-2">
                       <div className="flex items-center gap-2">
                         <ShieldCheck className="w-5 h-5 text-emerald-600" />
                         <div>
@@ -1604,7 +1604,7 @@ export function WorkspacePage() {
 
                 {/* Auto-release protection — delivered milestones can never be held hostage */}
                 {milestones.length > 0 && (
-                  <div className="rounded-2xl overflow-hidden border border-violet-200 shadow-sm">
+                  <div className="rounded-xl overflow-hidden border border-violet-200 shadow-sm">
                     <div className="bg-gradient-to-r from-violet-600 to-emerald-600 px-5 py-3.5 flex items-center gap-3">
                       <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
                         <ShieldCheck className="w-5 h-5 text-white" />
@@ -1628,8 +1628,8 @@ export function WorkspacePage() {
                 )}
 
                 {/* Milestones list */}
-                <div className="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-sm">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm">
+                  <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-slate-900">Contract Milestones</h3>
                     <span className="text-xs text-slate-500">
                       {milestones.filter(m => m.status === 'completed').length} of {milestones.length} Completed
@@ -1706,7 +1706,7 @@ export function WorkspacePage() {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-6 border border-dashed border-slate-200 rounded-xl">
+                    <div className="text-center py-3 border border-dashed border-slate-200 rounded-xl">
                       <AlertCircle className="w-10 h-10 text-slate-300 mx-auto mb-2" />
                       <p className="text-xs text-slate-500">Full contract escrow — no milestones</p>
 
@@ -1743,7 +1743,7 @@ export function WorkspacePage() {
               </div>
 
               {/* Chronological Project Timeline (Right Column) */}
-              <div className="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-2 flex flex-col h-[600px]">
                 <div className="pb-3 border-b border-slate-100">
                   <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                     <Clock className="w-5 h-5 text-emerald-600" />
@@ -1758,7 +1758,7 @@ export function WorkspacePage() {
                   
                   {getTimelineEvents().length > 0 ? (
                     getTimelineEvents().map(event => (
-                      <div key={event.id} className="relative flex items-start gap-4 animate-scale-in">
+                      <div key={event.id} className="relative flex items-start gap-2 animate-scale-in">
                         {/* Timeline event icon */}
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 z-10 shadow-md ${event.color}`}>
                           <event.icon className="w-4 h-4" />
@@ -1795,7 +1795,7 @@ export function WorkspacePage() {
 
       {showUploadModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl animate-scale-in border border-slate-100">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl animate-scale-in border border-slate-100">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-display text-lg font-bold text-slate-900">Upload Project Deliverable</h3>
               <button 
@@ -1806,8 +1806,8 @@ export function WorkspacePage() {
               </button>
             </div>
 
-            <form onSubmit={handleFileUpload} className="space-y-4">
-              <div className="border-2 border-dashed border-slate-300 rounded-2xl p-6 hover:border-emerald-500 hover:bg-emerald-50/20 transition-all cursor-pointer">
+            <form onSubmit={handleFileUpload} className="space-y-2">
+              <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 hover:border-emerald-500 hover:bg-emerald-50/20 transition-all cursor-pointer">
                 <input
                   type="file"
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}

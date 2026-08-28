@@ -364,9 +364,9 @@ const handleSubmit = async () => {
   if (error && !test) {
     return (
       <div className="max-w-2xl mx-auto mt-8 text-center">
-        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-2" />
         <h2 className="text-xl font-bold text-slate-900 mb-2">Test Not Found</h2>
-        <p className="text-slate-500 mb-6">{error}</p>
+        <p className="text-slate-500 mb-3">{error}</p>
         <button onClick={() => navigate('/dashboard/certifications')} className="px-6 py-3 bg-emerald-600 text-white rounded-xl font-medium hover:bg-emerald-700">
           Back to Certifications
         </button>
@@ -383,7 +383,7 @@ const handleSubmit = async () => {
   const answeredCount = answers.filter((a) => a >= 0).length;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-3">
       {/* Back button */}
       <button
         onClick={() => navigate('/dashboard/certifications')}
@@ -395,12 +395,12 @@ const handleSubmit = async () => {
 
       {/* Blocked Phase (anti-cheat / cooldown) */}
       {phase === 'blocked' && (
-        <div className="bg-white rounded-2xl border border-red-200 p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white rounded-xl border border-red-200 p-8 text-center">
+          <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mx-auto mb-3">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
           <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Test Blocked</h1>
-          <p className="text-slate-600 mb-6 max-w-md mx-auto">
+          <p className="text-slate-600 mb-3 max-w-md mx-auto">
             {blockedMsg || 'You are not eligible to take this test right now.'}
           </p>
           <div className="flex justify-center gap-3">
@@ -416,7 +416,7 @@ const handleSubmit = async () => {
 
       {/* Intro Phase */}
       {phase === 'intro' && !eligibilityLoaded && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
           <Loader2 className="w-10 h-10 animate-spin text-emerald-600 mx-auto" />
           <p className="text-slate-500 mt-4">Checking test eligibility…</p>
         </div>
@@ -424,12 +424,12 @@ const handleSubmit = async () => {
 
       {/* Intro Phase — blocked by eligibility */}
       {phase === 'intro' && eligibilityLoaded && !eligibilityAllowed && (
-        <div className="bg-white rounded-2xl border border-red-200 p-8 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white rounded-xl border border-red-200 p-8 text-center">
+          <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mx-auto mb-3">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
           <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Test Not Available</h1>
-          <p className="text-slate-600 mb-6 max-w-md mx-auto">{blockedMsg}</p>
+          <p className="text-slate-600 mb-3 max-w-md mx-auto">{blockedMsg}</p>
           <button
             onClick={() => navigate('/dashboard/certifications')}
             className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
@@ -441,13 +441,13 @@ const handleSubmit = async () => {
 
       {/* Intro Phase */}
       {phase === 'intro' && eligibilityLoaded && eligibilityAllowed && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-          <div className={`w-16 h-16 rounded-2xl ${levelInfo.bgColor} flex items-center justify-center mx-auto mb-6`}>
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+          <div className={`w-16 h-16 rounded-xl ${levelInfo.bgColor} flex items-center justify-center mx-auto mb-3`}>
             <Award className={`w-8 h-8 ${levelInfo.color}`} />
           </div>
           <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">{test.skill}</h1>
-          <p className="text-slate-500 mb-6">{test.description}</p>
-          <div className="grid grid-cols-3 gap-4 mb-8 max-w-sm mx-auto">
+          <p className="text-slate-500 mb-3">{test.description}</p>
+          <div className="grid grid-cols-3 gap-2 mb-8 max-w-sm mx-auto">
             <div className="p-3 bg-slate-50 rounded-xl">
               <p className="text-lg font-bold text-slate-900">{test.question_count}</p>
               <p className="text-xs text-slate-500">Questions</p>
@@ -461,12 +461,12 @@ const handleSubmit = async () => {
               <p className="text-xs text-slate-500">Passing</p>
             </div>
           </div>
-          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-6`}>
+          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-3`}>
             {levelInfo.icon} {levelInfo.label}
           </div>
 
           {/* Anti-cheat policy notice */}
-          <div className="max-w-md mx-auto mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-left">
+          <div className="max-w-md mx-auto mb-3 p-4 rounded-xl bg-amber-50 border border-amber-200 text-left">
             <p className="text-xs font-semibold text-amber-800 flex items-center gap-1.5 mb-1.5">
               <AlertCircle className="w-4 h-4 flex-shrink-0" /> Test Integrity Rules
             </p>
@@ -486,9 +486,9 @@ const handleSubmit = async () => {
 
       {/* Taking Phase */}
       {phase === 'taking' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8">
+        <div className="bg-white rounded-xl border border-slate-200 p-8">
           {/* Anti-cheat observation banner */}
-          <div className={`mb-6 flex items-start gap-2.5 p-3 rounded-xl border ${showViolationWarning ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'} transition-colors`}>
+          <div className={`mb-3 flex items-start gap-2.5 p-3 rounded-xl border ${showViolationWarning ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'} transition-colors`}>
             {showViolationWarning ? (
               <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
             ) : (
@@ -507,7 +507,7 @@ const handleSubmit = async () => {
             </div>
           </div>
           {/* Progress & Timer */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-500">Question {currentQuestion + 1} of {questions.length}</span>
               <span className="text-xs text-slate-400">({answeredCount}/{questions.length} answered)</span>
@@ -519,12 +519,12 @@ const handleSubmit = async () => {
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-slate-100 rounded-full h-2 mb-6">
+          <div className="w-full bg-slate-100 rounded-full h-2 mb-3">
             <div className="bg-emerald-600 h-2 rounded-full transition-all" style={{ width: `${(answeredCount / questions.length) * 100}%` }} />
           </div>
 
           {/* Question */}
-          <h2 className="text-lg font-semibold text-slate-900 mb-6">
+          <h2 className="text-lg font-semibold text-slate-900 mb-3">
             {questions[currentQuestion]?.text}
           </h2>
 
@@ -584,8 +584,8 @@ const handleSubmit = async () => {
 
       {/* Complete Phase */}
       {phase === 'complete' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 ${
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3 ${
             passed ? 'bg-emerald-100' : 'bg-red-100'
           }`}>
             {recording ? (
@@ -599,13 +599,13 @@ const handleSubmit = async () => {
           <h2 className="text-2xl font-bold text-slate-900 mb-2">
             {passed ? 'Congratulations!' : 'Keep Practicing'}
           </h2>
-          <p className="text-slate-500 mb-6">
+          <p className="text-slate-500 mb-3">
             {passed
               ? `You passed the ${test.skill} assessment!`
               : `You scored ${score}%, but needed ${test.passing_score}% to pass.`}
           </p>
           {!passed && cooldownNotice && (
-            <div className="max-w-sm mx-auto mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200">
+            <div className="max-w-sm mx-auto mb-3 p-3 rounded-xl bg-amber-50 border border-amber-200">
               <p className="text-xs text-amber-700 font-medium flex items-center justify-center gap-1.5">
                 <Clock className="w-4 h-4 flex-shrink-0" /> {cooldownNotice}
               </p>
@@ -616,7 +616,7 @@ const handleSubmit = async () => {
             <span className="text-slate-400">Score</span>
           </div>
           {passed && (
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-6`}>
+            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-3`}>
               <Award className="w-5 h-5" />
               {levelInfo.icon} {test.skill} — {levelInfo.label}
             </div>

@@ -485,9 +485,9 @@ export function ContractsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
             <Handshake className="w-6 h-6 text-white" />
@@ -597,7 +597,7 @@ export function ContractsPage() {
       {/* Contracts List */}
       {filteredContracts.length > 0 ? (
         <>
-          <div className="space-y-4">
+          <div className="space-y-2">
             {filteredContracts.map((contract) => {
             const contractMilestones = milestones(contract.milestones);
             const escrowState = escrowBalances[contract.id];
@@ -606,10 +606,10 @@ export function ContractsPage() {
             return (
               <div
                 key={contract.id}
-                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setSelectedContract(selectedContract?.id === contract.id ? null : contract)}
               >
-                <div className="flex items-start justify-between gap-4">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex-1">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-3">
@@ -621,7 +621,7 @@ export function ContractsPage() {
                     </div>
 
                     {/* Client Info */}
-                    <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
+                    <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
                         Client: <span className="font-medium text-slate-700 flex items-center gap-1">
@@ -642,7 +642,7 @@ export function ContractsPage() {
                     </div>
 
                     {/* Financial Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 mb-2">
                       <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-xs text-slate-500 mb-1">Contract Value</p>
                         <p className="text-lg font-bold text-slate-900">{formatCurrency(contract.amount)}</p>
@@ -691,14 +691,14 @@ export function ContractsPage() {
 
                     {/* Milestone Progress Bar */}
                     {contractMilestones.length > 0 && (
-                      <div className="mb-4">
+                      <div className="mb-2">
                         <MilestoneProgressBar milestones={contractMilestones} />
                       </div>
                     )}
 
                     {/* Milestones */}
                     {contractMilestones.length > 0 && (
-                      <div className="mb-4">
+                      <div className="mb-2">
                         <p className="text-sm font-medium text-slate-700 mb-2">Milestones</p>
                         <div className="space-y-2">
                           {contractMilestones.map((milestone, idx) => {
@@ -797,7 +797,7 @@ export function ContractsPage() {
 
                     {/* Escrow Balance Summary */}
                     {balance && (
-                      <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                      <div className="mb-2 p-3 bg-slate-50 rounded-lg">
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-slate-600 font-medium">Escrow Summary</span>
                           <span className="text-xs text-slate-400">
@@ -879,8 +879,8 @@ export function ContractsPage() {
           )}
         </>
       ) : (
-        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
             <Handshake className="w-10 h-10 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
@@ -892,7 +892,7 @@ export function ContractsPage() {
               ? 'No completed contracts yet'
               : 'No contracts'}
           </h3>
-          <p className="text-slate-500 max-w-md mx-auto mb-6">
+          <p className="text-slate-500 max-w-md mx-auto mb-3">
             {activeTab === 'active'
               ? 'You have no active contracts. Submit proposals to get hired!'
               : activeTab === 'pending'
@@ -918,24 +918,24 @@ export function ContractsPage() {
           onClick={() => { setDisputeModal(null); setDisputeReason(''); }}
         >
           <div
-            className="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl"
+            className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-2">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
               <h3 className="text-lg font-bold text-slate-900">Dispute Milestone</h3>
             </div>
 
-            <p className="text-sm text-slate-600 mb-4">
+            <p className="text-sm text-slate-600 mb-2">
               Are you sure you want to dispute milestone "{milestones(
                 contracts.find((c) => c.id === disputeModal.contractId)?.milestones
               )[disputeModal.idx]?.title || `Milestone ${disputeModal.idx + 1}`}"?
               This will create a dispute case that needs resolution.
             </p>
 
-            <div className="mb-4">
+            <div className="mb-2">
               <label className="block text-sm font-medium text-slate-700 mb-2">
                 Reason for Dispute
               </label>
@@ -990,12 +990,12 @@ export function ContractsPage() {
             onClick={() => setContractModalContract(null)}
           >
             <div
-              className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="p-6 bg-gradient-to-r from-slate-800 to-slate-900 rounded-t-2xl">
-                <div className="flex items-start justify-between gap-4">
+              <div className="p-3 bg-gradient-to-r from-slate-800 to-slate-900 rounded-t-2xl">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 bg-white/15 rounded-xl flex items-center justify-center">
                       <FileText className="w-5 h-5 text-white" />
@@ -1014,7 +1014,7 @@ export function ContractsPage() {
                 </div>
               </div>
 
-              <div className="p-6 space-y-5">
+              <div className="p-3 space-y-2.5">
                 {/* Status + Parties */}
                 <div className="flex flex-wrap items-center gap-3">
                   {getStatusBadge(cc.status || 'active')}
@@ -1183,12 +1183,12 @@ export function ContractsPage() {
             onClick={() => setEscrowModalContract(null)}
           >
             <div
-              className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+              className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}
-              <div className="p-6 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-t-2xl">
-                <div className="flex items-start justify-between gap-4">
+              <div className="p-3 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-t-2xl">
+                <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
                     <div className="w-11 h-11 bg-white/20 rounded-xl flex items-center justify-center">
                       <Shield className="w-6 h-6 text-white" />
@@ -1207,9 +1207,9 @@ export function ContractsPage() {
                 </div>
               </div>
 
-              <div className="p-6">
+              <div className="p-3">
                 {/* Contract breakdown */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2.5">
                   <div className="p-4 bg-slate-50 rounded-xl">
                     <p className="text-xs text-slate-500 mb-1">Contract Value</p>
                     <p className="text-lg font-bold text-slate-900">{formatCurrency(ec.amount)}</p>
@@ -1225,7 +1225,7 @@ export function ContractsPage() {
                 </div>
 
                 {/* Full-payout note — the 5% fee is the client's, never yours */}
-                <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl mb-5">
+                <div className="flex items-start gap-2 p-3 bg-emerald-50 border border-emerald-100 rounded-xl mb-2.5">
                   <Shield className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                   <p className="text-xs text-emerald-700 leading-relaxed">
                     <strong>100% of your contract value goes to your wallet.</strong> The 5% platform fee is paid by the
@@ -1234,7 +1234,7 @@ export function ContractsPage() {
                 </div>
 
                 {/* Escrow status + funding progress */}
-                <div className="mb-5">
+                <div className="mb-2.5">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-medium text-slate-700">Escrow Status</p>
                     <EscrowStatusBadge balance={balance} />
@@ -1270,7 +1270,7 @@ export function ContractsPage() {
                 </div>
 
                 {/* Funded / Held / Released */}
-                <div className="grid grid-cols-3 gap-3 mb-5">
+                <div className="grid grid-cols-3 gap-3 mb-2.5">
                   <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl">
                     <p className="text-xs text-emerald-600 font-medium mb-1">Funded</p>
                     <p className="text-lg font-bold text-emerald-700">{formatCurrency(funded)}</p>
@@ -1288,7 +1288,7 @@ export function ContractsPage() {
                 {/* Milestones breakdown */}
                 <p className="text-sm font-medium text-slate-700 mb-2">Milestone Breakdown</p>
                 {escrowMilestones.length > 0 ? (
-                  <div className="space-y-2 mb-5">
+                  <div className="space-y-2 mb-2.5">
                     {escrowMilestones.map((m, idx) => {
                       const mStatus = String(m.status || 'pending').toLowerCase();
                       const isReleased = ['completed', 'approved', 'released', 'paid'].includes(mStatus);
@@ -1333,7 +1333,7 @@ export function ContractsPage() {
                     })}
                   </div>
                 ) : (
-                  <div className="text-sm text-slate-500 text-center py-4 bg-slate-50 rounded-xl mb-5">
+                  <div className="text-sm text-slate-500 text-center py-4 bg-slate-50 rounded-xl mb-2.5">
                     This contract has no milestones — the full amount is protected as a single escrow.
                   </div>
                 )}

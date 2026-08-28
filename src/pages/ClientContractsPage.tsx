@@ -177,7 +177,7 @@ export function ClientContractsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="flex items-center gap-1.5 font-display text-2xl font-bold text-slate-900">
@@ -219,14 +219,14 @@ export function ClientContractsPage() {
       </div>
 
       {filteredContracts.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-white rounded-2xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
             <Handshake className="w-10 h-10 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No contracts yet' : `No ${filter} contracts`}
           </h3>
-          <p className="text-slate-500 max-w-sm mx-auto mb-6">
+          <p className="text-slate-500 max-w-sm mx-auto mb-3">
             {filter === 'all'
               ? 'Contracts are created when you accept a proposal or a freelancer accepts your invite. Then you can manage milestones, escrow, and payments here.'
               : `You don't have any ${filter} contracts at the moment.`}
@@ -258,16 +258,16 @@ export function ClientContractsPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-2">
           {filteredContracts.map((contract) => {
             const escrow = getEscrow(contract);
             return (
               <div
                 key={contract.id}
-                className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow"
+                className="bg-white p-6 rounded-xl border border-slate-100 hover:shadow-md transition-shadow"
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
                     <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                       {contract.freelancer?.avatar ? (
                         <img src={contract.freelancer.avatar} alt={contract.freelancer.name} />
@@ -297,7 +297,7 @@ export function ClientContractsPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 text-sm">
                   <div className="flex items-center gap-2 text-slate-600">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-medium text-slate-900">

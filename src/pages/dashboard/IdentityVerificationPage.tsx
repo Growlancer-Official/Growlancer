@@ -360,10 +360,10 @@ export function IdentityVerificationPage() {
 
   // Status renderers
   const renderNoneState = () => (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Info card */}
-      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6">
-        <div className="flex items-start gap-4">
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
+        <div className="flex items-start gap-2">
           <div className="p-2 bg-amber-100 rounded-xl shrink-0">
             <ShieldAlert className="w-6 h-6 text-amber-600" />
           </div>
@@ -378,13 +378,13 @@ export function IdentityVerificationPage() {
       </div>
 
       {/* Benefits */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         {[
           { icon: ShieldCheck, label: 'Build Trust', desc: 'Verified badge on your profile' },
           { icon: Upload, label: 'Higher Limits', desc: 'Increased withdrawal and contract limits' },
           { icon: CheckCircle2, label: 'Priority Support', desc: 'Access to faster support responses' },
         ].map((benefit) => (
-          <div key={benefit.label} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+          <div key={benefit.label} className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
             <div className="p-2 bg-emerald-100 rounded-xl w-fit mb-3">
               <benefit.icon className="w-5 h-5 text-emerald-600" />
             </div>
@@ -403,7 +403,7 @@ export function IdentityVerificationPage() {
           Start Verification
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
           <h3 className="text-lg font-semibold text-slate-900">Submit Your Documents</h3>
 
           {/* Document Type */}
@@ -456,7 +456,7 @@ export function IdentityVerificationPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Upload Document</label>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {/* FRONT side */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
@@ -720,17 +720,17 @@ export function IdentityVerificationPage() {
       { label: 'Verified', done: false, current: false },
     ];
     return (
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
-        <div className="p-3 bg-amber-100 rounded-2xl w-fit mx-auto mb-4">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+        <div className="p-3 bg-amber-100 rounded-xl w-fit mx-auto mb-2">
           <Clock className="w-8 h-8 text-amber-600" />
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h2>
-        <p className="text-slate-500 mb-6">
+        <p className="text-slate-500 mb-3">
           Your documents are being <span className="font-semibold text-slate-700">auto-verified</span> against standard
           formats. Verification completes <span className="font-semibold text-amber-700">in seconds</span> —
           your status updates here in real time, no refresh needed.
         </p>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-6 flex items-start gap-2 text-left">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex items-start gap-2 text-left">
           <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-700 leading-relaxed">
             If your document number doesn't match the expected format, your submission is rejected
@@ -740,7 +740,7 @@ export function IdentityVerificationPage() {
         </div>
 
         {/* Status Stepper */}
-        <div className="flex items-center justify-center gap-0 mb-6">
+        <div className="flex items-center justify-center gap-0 mb-3">
           {steps.map((step, idx) => (
             <div key={step.label} className="flex items-center">
               <div className="flex flex-col items-center">
@@ -760,7 +760,7 @@ export function IdentityVerificationPage() {
                 </span>
               </div>
               {idx < steps.length - 1 && (
-                <div className={`w-12 sm:w-16 h-0.5 mb-6 mx-1 ${step.done ? 'bg-emerald-500' : 'bg-slate-200'}`} />
+                <div className={`w-12 sm:w-16 h-0.5 mb-3 mx-1 ${step.done ? 'bg-emerald-500' : 'bg-slate-200'}`} />
               )}
             </div>
           ))}
@@ -782,12 +782,12 @@ export function IdentityVerificationPage() {
   };
 
   const renderVerifiedState = () => (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
-      <div className="p-3 bg-emerald-100 rounded-2xl w-fit mx-auto mb-4">
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+      <div className="p-3 bg-emerald-100 rounded-xl w-fit mx-auto mb-2">
         <ShieldCheck className="w-8 h-8 text-emerald-600" />
       </div>
       <h2 className="text-xl font-bold text-slate-900 mb-2">Identity Verified</h2>
-      <p className="text-slate-500 mb-4">Your identity has been successfully verified.</p>
+      <p className="text-slate-500 mb-2">Your identity has been successfully verified.</p>
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 inline-flex items-center gap-3">
         <CheckCircle2 className="w-5 h-5 text-emerald-600" />
         <span className="text-sm font-medium text-emerald-800">Verified</span>
@@ -819,18 +819,18 @@ export function IdentityVerificationPage() {
       !!verification?.blocked_until && !isKycBlocked(verification);
     const canResubmit = attemptsLeft > 0 || blockExpired;
     return (
-      <div className="space-y-6">
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
-          <div className="p-3 bg-red-100 rounded-2xl w-fit mx-auto mb-4">
+      <div className="space-y-3">
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+          <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-2">
             <XCircle className="w-8 h-8 text-red-600" />
           </div>
           <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Rejected</h2>
-          <p className="text-slate-500 mb-4">
+          <p className="text-slate-500 mb-2">
             Your identity verification was not approved. Please review the reason below and resubmit.
           </p>
 
           {/* Attempts remaining badge */}
-          <div className="flex items-center justify-center gap-2 mb-4">
+          <div className="flex items-center justify-center gap-2 mb-2">
             <span className={`px-3 py-1 rounded-full text-xs font-bold ${
               attemptsLeft <= 1 ? 'bg-red-100 text-red-700' :
               attemptsLeft <= 2 ? 'bg-amber-100 text-amber-700' :
@@ -841,7 +841,7 @@ export function IdentityVerificationPage() {
           </div>
 
           {verification?.rejection_reason && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-6">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-3">
               <div className="flex items-start gap-2">
                 <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
                 <div>
@@ -870,7 +870,7 @@ export function IdentityVerificationPage() {
         </div>
 
         {showForm && canResubmit && (
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
             <h3 className="text-lg font-semibold text-slate-900">Resubmit Your Documents</h3>
 
             <div>
@@ -1015,18 +1015,18 @@ export function IdentityVerificationPage() {
 
   // 🚫 Blocked state — 24-hour cooldown with live countdown
   const renderBlockedState = () => (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
-        <div className="p-3 bg-red-100 rounded-2xl w-fit mx-auto mb-4">
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+        <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-2">
           <Clock className="w-8 h-8 text-red-600" />
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Temporarily Blocked</h2>
-        <p className="text-slate-500 mb-6">
+        <p className="text-slate-500 mb-3">
           You have used all {KYC_MAX_ATTEMPTS} verification attempts. To protect your account security,
           you can try again after the cooldown period ends.
         </p>
 
         {/* Live countdown */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-6">
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-3">
           <p className="text-sm font-medium text-amber-800 mb-2">Cooldown Remaining</p>
           <p className="text-3xl font-bold text-amber-900 font-mono">
             {formatKycCooldown(blockedDisplayMs)}
@@ -1057,16 +1057,16 @@ export function IdentityVerificationPage() {
   // Error state
   if (error && pageStatus === 'idle' && verificationStatus === 'none' && !showForm) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-display text-2xl font-bold text-slate-900">Identity Verification</h1>
             <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
           </div>
         </div>
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
           <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-3" />
-          <p className="text-red-700 mb-4">{error}</p>
+          <p className="text-red-700 mb-2">{error}</p>
           <button
             onClick={fetchStatus}
             className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
@@ -1080,7 +1080,7 @@ export function IdentityVerificationPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

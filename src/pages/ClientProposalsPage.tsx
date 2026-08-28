@@ -275,7 +275,7 @@ export function ClientProposalsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -316,14 +316,14 @@ export function ClientProposalsPage() {
 
       {/* Proposals List */}
       {filteredProposals.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-white rounded-2xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
             <FileText className="w-10 h-10 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No proposals yet' : `No ${filter} proposals`}
           </h3>
-          <p className="text-slate-500 max-w-sm mx-auto mb-6">
+          <p className="text-slate-500 max-w-sm mx-auto mb-3">
             {filter === 'all'
               ? 'Post a project to start receiving proposals from interested freelancers.'
               : `You don't have any ${filter} proposals at the moment.`}
@@ -347,14 +347,14 @@ export function ClientProposalsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4">
+          <div className="grid gap-2">
             {filteredProposals.map((proposal) => (
             <div
               key={proposal.id}
-              className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-xl border border-slate-100 hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-4">
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
                   <Link
                     to={`/freelancer/${proposal.freelancer_id}`}
                     title="View freelancer profile"
@@ -423,7 +423,7 @@ export function ClientProposalsPage() {
               </div>
 
               {proposal.project && (
-                <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                <div className="mb-2 p-3 bg-slate-50 rounded-lg">
                   <p className="text-sm text-slate-600">
                     <span className="font-medium">Project:</span> {proposal.project.title}
                   </p>
@@ -433,11 +433,11 @@ export function ClientProposalsPage() {
                 </div>
               )}
 
-              <div className="mb-4 p-4 bg-slate-50 rounded-lg">
+              <div className="mb-2 p-4 bg-slate-50 rounded-lg">
                 <p className="text-sm text-slate-700 line-clamp-3">{proposal.cover_letter}</p>
               </div>
 
-              <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
+              <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
                 <div className="flex items-center gap-2">
                   <IndianRupee className="w-4 h-4" />
                   <span className="font-bold text-slate-900">{formatCurrency(proposal.bid_amount ?? proposal.proposed_rate ?? 0)}</span>

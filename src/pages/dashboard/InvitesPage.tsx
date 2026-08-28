@@ -275,9 +275,9 @@ export function InvitesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20">
             <Mail className="w-6 h-6 text-white" />
@@ -384,13 +384,13 @@ export function InvitesPage() {
 
       {/* Invites List */}
       {filteredInvites.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {filteredInvites.map((invite) => (
             <div
               key={invite.id}
-              className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm"
+              className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm"
             >
-              <div className="flex items-start gap-6">
+              <div className="flex items-start gap-3">
                 {/* Client Avatar */}
                 <div className="flex-shrink-0">
                   <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden">
@@ -412,7 +412,7 @@ export function InvitesPage() {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="font-display text-lg font-bold text-slate-900">
@@ -421,12 +421,12 @@ export function InvitesPage() {
                         {getStatusBadge(invite.status)}
                       </div>
                       
-                      <p className="text-slate-600 mb-4">
+                      <p className="text-slate-600 mb-2">
                         {invite.projects.description}
                       </p>
 
                       {/* Client Info */}
-                      <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
                         <span className="flex items-center gap-1">
                           <User className="w-4 h-4" />
                           Invited by <span className="font-medium text-slate-700 flex items-center gap-1">
@@ -454,7 +454,7 @@ export function InvitesPage() {
                       </div>
 
                       {/* Project Details */}
-                      <div className="flex items-center gap-6 text-sm">
+                      <div className="flex items-center gap-3 text-sm">
                         <span className="flex items-center gap-1 text-slate-600">
                           <Wallet className="w-4 h-4 text-slate-400" />
                           {formatBudgetRange(invite.projects.budget_min, invite.projects.budget_max)}
@@ -518,8 +518,8 @@ export function InvitesPage() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
             <Mail className="w-10 h-10 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">

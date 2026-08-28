@@ -99,7 +99,7 @@ export function ClientReviewsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Reviews</h1>
           <p className="text-slate-500 mt-1">Reviews from freelancers you've worked with</p>
@@ -112,13 +112,13 @@ export function ClientReviewsPage() {
       </TipNote>
 
       {/* Stats */}
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 flex items-center gap-6">
+      <div className="bg-white rounded-xl border border-slate-100 p-6 flex items-center gap-3">
         <div className="text-center">
           <p className="text-4xl font-bold text-slate-900">{averageRating > 0 ? averageRating.toFixed(1) : '—'}</p>
           <RatingStars rating={averageRating} />
           <p className="text-sm text-slate-500 mt-1">{totalReviews} review{totalReviews !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex-1 grid grid-cols-4 gap-4">
+        <div className="flex-1 grid grid-cols-4 gap-2">
           {[
             { label: 'Quality', key: 'quality_rating' },
             { label: 'Communication', key: 'communication_rating' },
@@ -143,16 +143,16 @@ export function ClientReviewsPage() {
 
       {/* Reviews List */}
       {reviews.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
-          <Star className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
+          <Star className="w-12 h-12 text-slate-300 mx-auto mb-2" />
           <h3 className="text-lg font-bold text-slate-900 mb-2">No reviews yet</h3>
           <p className="text-slate-500">Reviews from freelancers will appear here after completed projects.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {reviews.map((review) => (
-            <div key={review.id} className="bg-white rounded-2xl border border-slate-100 p-6">
-              <div className="flex items-start gap-4">
+            <div key={review.id} className="bg-white rounded-xl border border-slate-100 p-6">
+              <div className="flex items-start gap-2">
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0">
                   {review.reviewer?.avatar ? (
                     <img src={review.reviewer.avatar} alt="" className="w-full h-full rounded-full object-cover" />
@@ -171,7 +171,7 @@ export function ClientReviewsPage() {
                   {review.review_text && (
                     <p className="text-sm text-slate-600 mb-3">{review.review_text}</p>
                   )}
-                  <div className="flex items-center gap-4 text-xs text-slate-400">
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
                     <span>Quality: {review.quality_rating}/5</span>
                     <span>Communication: {review.communication_rating}/5</span>
                     <span>Timeliness: {review.timeliness_rating}/5</span>
@@ -190,9 +190,9 @@ export function ClientReviewsPage() {
       {/* Reply Modal */}
       {replyModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setReplyModal(null)}>
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Reply to Review</h3>
-            <textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} placeholder="Write your reply..." rows={4} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Reply to Review</h3>
+            <textarea value={replyText} onChange={(e) => setReplyText(e.target.value)} placeholder="Write your reply..." rows={4} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-2 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             <div className="flex gap-3">
               <button onClick={() => setReplyModal(null)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>
               <button onClick={() => handleReply(replyModal)} disabled={!replyText.trim() || submittingReply} className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2">

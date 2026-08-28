@@ -54,11 +54,11 @@ export function ContestsPage() {
       <section className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 text-white py-20">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm font-semibold mb-3">
               <Trophy className="w-4 h-4" />
               CONTESTS & COMPETITIONS
             </div>
-            <h1 className="font-display text-4xl md:text-5xl font-extrabold mb-6">
+            <h1 className="font-display text-4xl md:text-5xl font-extrabold mb-3">
               Compete. Create. <span className="text-emerald-200">Win.</span>
             </h1>
             <p className="text-emerald-100 text-lg mb-8">
@@ -77,7 +77,7 @@ export function ContestsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search contests by title, category, or skills..."
-                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-300/50 shadow-xl"
+                className="w-full pl-12 pr-4 py-4 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-300/50 shadow-xl"
               />
             </div>
           </div>
@@ -86,8 +86,8 @@ export function ContestsPage() {
 
       {/* Stats Banner */}
       <section className="bg-white border-b border-slate-200">
-        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div className="text-center">
               <p className="text-3xl font-extrabold text-emerald-600">{contests.length}</p>
               <p className="text-sm text-slate-500 font-medium">Active Contests</p>
@@ -117,7 +117,7 @@ export function ContestsPage() {
       {/* Filters */}
       <section className="bg-white border-b border-slate-200 sticky top-0 z-30">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
               className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-sm font-semibold transition-colors"
@@ -173,21 +173,21 @@ export function ContestsPage() {
           </div>
         ) : filteredContests.length === 0 ? (
           <div className="text-center py-20">
-            <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-2" />
             <h3 className="text-xl font-bold text-slate-900 mb-2">No contests found</h3>
             <p className="text-slate-500">Try adjusting your filters or check back later for new contests.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredContests.map((contest) => (
               <Link
                 key={contest.id}
                 to={`/contests/${contest.id}`}
-                className="group bg-white rounded-2xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-emerald-200 transition-all duration-300"
+                className="group bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-xl hover:border-emerald-200 transition-all duration-300"
               >
                 {/* Header */}
-                <div className="p-6 pb-4">
-                  <div className="flex items-start justify-between mb-4">
+                <div className="p-3 pb-4">
+                  <div className="flex items-start justify-between mb-2">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${getContestTypeColor(contest.contest_type)}`}>
                       {contest.contest_type.charAt(0).toUpperCase() + contest.contest_type.slice(1)}
                     </span>
@@ -200,13 +200,13 @@ export function ContestsPage() {
                   <h3 className="font-display text-xl font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors line-clamp-2">
                     {contest.title}
                   </h3>
-                  <p className="text-slate-500 text-sm line-clamp-2 mb-4">
+                  <p className="text-slate-500 text-sm line-clamp-2 mb-2">
                     {contest.description}
                   </p>
 
                   {/* Skills */}
                   {contest.skills_required && contest.skills_required.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-2 mb-2">
                       {contest.skills_required.slice(0, 3).map((skill) => (
                         <span key={skill} className="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded-lg font-medium">
                           {skill}
@@ -232,7 +232,7 @@ export function ContestsPage() {
                         {contest.client?.name || 'Client'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center gap-2 text-sm">
                       <div className="flex items-center gap-1 text-slate-500">
                         <Users className="w-4 h-4" />
                         {contest.submission_count}
@@ -253,7 +253,7 @@ export function ContestsPage() {
       {/* CTA Section */}
       <section className="bg-gradient-to-r from-emerald-600 to-teal-600 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-display text-3xl font-extrabold text-white mb-4">
+          <h2 className="font-display text-3xl font-extrabold text-white mb-2">
             Ready to Compete?
           </h2>
           <p className="text-emerald-100 mb-8 text-lg">
@@ -261,7 +261,7 @@ export function ContestsPage() {
           </p>
           <Link
             to="/signup"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-emerald-600 font-bold rounded-2xl hover:bg-emerald-50 transition-all shadow-xl"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-white text-emerald-600 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-xl"
           >
             <Sparkles className="w-5 h-5" />
             Get Started Free

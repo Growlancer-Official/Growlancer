@@ -154,8 +154,8 @@ export function ClientPostTeamProjectPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-4 flex items-center gap-1">
+    <div className="max-w-4xl mx-auto px-4 py-4">
+      <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-2 flex items-center gap-1">
         ← Back to Team Projects
       </button>
 
@@ -165,19 +165,19 @@ export function ClientPostTeamProjectPage() {
         </div>
         <h1 className="font-display text-2xl font-bold text-slate-900">Post a Team Project</h1>
       </div>
-      <p className="text-slate-600 mb-6">
+      <p className="text-slate-600 mb-3">
         Hire a whole team for bigger projects — Designer, Developer, Writer — all in one place. Each freelancer has their <strong>own protected escrow</strong>.
       </p>
 
-      <TipNote tone="info" className="mb-6">
+      <TipNote tone="info" className="mb-3">
         <strong>How it works:</strong> each role gets an <strong>independent contract</strong> — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate "team fee".
       </TipNote>
 
-      <form onSubmit={handleCreateProject} className="space-y-6">
+      <form onSubmit={handleCreateProject} className="space-y-3">
         {/* Project basics */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
-          <h2 className="font-semibold text-slate-900 mb-4">Project Details</h2>
-          <div className="space-y-4">
+        <div className="bg-white rounded-xl p-6 border border-slate-200 shadow-sm">
+          <h2 className="font-semibold text-slate-900 mb-2">Project Details</h2>
+          <div className="space-y-2">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Project Title *</label>
               <input
@@ -212,7 +212,7 @@ export function ClientPostTeamProjectPage() {
         </div>
 
         {/* Roles */}
-        <div className="space-y-4">
+        <div className="space-y-2">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-slate-900">Team Roles</h2>
             <button
@@ -225,7 +225,7 @@ export function ClientPostTeamProjectPage() {
           </div>
 
           {roles.map((role, idx) => (
-            <div key={role.key} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm space-y-4">
+            <div key={role.key} className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Role {idx + 1}</span>
                 <button type="button" onClick={() => removeRole(role.key)} disabled={roles.length <= 1} className="text-slate-400 hover:text-red-500 disabled:opacity-30">
@@ -233,7 +233,7 @@ export function ClientPostTeamProjectPage() {
                 </button>
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">Role Title *</label>
                   <input

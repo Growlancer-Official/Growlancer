@@ -232,9 +232,9 @@ export function ClientFreelancerSearchPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Find Talent</h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
@@ -271,7 +271,7 @@ export function ClientFreelancerSearchPage() {
       )}
 
       {/* Browse Categories - A-Z Accordion */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
         <button
           onClick={() => setShowCategories(!showCategories)}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
@@ -307,8 +307,8 @@ export function ClientFreelancerSearchPage() {
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
             <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="All">All Categories</option>
               {categories.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
@@ -338,15 +338,15 @@ export function ClientFreelancerSearchPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-600" /></div>
       ) : freelancers.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-2xl border border-slate-100">
-          <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+        <div className="text-center py-20 bg-white rounded-xl border border-slate-100">
+          <Search className="w-12 h-12 text-slate-300 mx-auto mb-2" />
           <h3 className="text-lg font-bold text-slate-900 mb-2">No freelancers found</h3>
           <p className="text-slate-500">Try adjusting your filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
           {freelancers.map((f) => (
-            <div key={f.id} className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all">
+            <div key={f.id} className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all">
               <div className="flex items-start gap-3 mb-3">
                 <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                   {f.profile?.avatar ? <img src={f.profile.avatar} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">{(f.profile?.name || f.title || 'U')[0]}</div>}
@@ -401,16 +401,16 @@ export function ClientFreelancerSearchPage() {
       {/* Contact (Invite) Modal */}
       {contactFreelancer && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setContactFreelancer(null)}>
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-lg font-bold text-slate-900 mb-1">Contact {contactFreelancer.profile?.name || 'Freelancer'}</h3>
-            <p className="text-sm text-slate-500 mb-4">Send a project invite — they'll respond in real time.</p>
+            <p className="text-sm text-slate-500 mb-2">Send a project invite — they'll respond in real time.</p>
 
             {contactLoadingProjects ? (
-              <div className="py-8 flex items-center justify-center">
+              <div className="py-4 flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
               </div>
             ) : clientProjects.length === 0 ? (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 mb-4">
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 mb-2">
                 You need a posted project to invite a freelancer.{' '}
                 <button onClick={() => navigate('/client/post-project')} className="font-semibold underline">Post a project</button> first.
               </div>
@@ -420,7 +420,7 @@ export function ClientFreelancerSearchPage() {
                 <select
                   value={selectedProject}
                   onChange={(e) => setSelectedProject(e.target.value)}
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   {clientProjects.map((p) => (
                     <option key={p.id} value={p.id}>{p.title}</option>
@@ -433,7 +433,7 @@ export function ClientFreelancerSearchPage() {
                   rows={3}
                   maxLength={500}
                   placeholder="Why do you want to work with them?"
-                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                  className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
                 />
               </>
             )}
@@ -456,9 +456,9 @@ export function ClientFreelancerSearchPage() {
       {/* Save Search Modal */}
       {showSaveModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSaveModal(false)}>
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900 mb-4">Save This Search</h3>
-            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under 500" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
+          <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Save This Search</h3>
+            <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under 500" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             <div className="flex gap-3">
               <button onClick={() => setShowSaveModal(false)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>
               <button onClick={handleSaveSearch} disabled={!saveName.trim()} className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50">Save Search</button>

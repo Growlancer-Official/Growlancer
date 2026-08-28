@@ -351,7 +351,7 @@ export function CreateServicePage() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">
+        <h1 className="font-display text-xl font-bold text-slate-900 mb-2">
           {isEditMode ? 'Edit Service' : 'Create New Service'}
         </h1>
         <p className="text-slate-500">{isEditMode
@@ -359,10 +359,10 @@ export function CreateServicePage() {
           : 'Create a professional service offering to attract clients and grow your business'}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Service Image */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Image className="w-5 h-5 text-emerald-600" />
             Service Image
           </h2>
@@ -383,13 +383,13 @@ export function CreateServicePage() {
         </div>
 
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-emerald-600" />
             Basic Information
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Service Title *</label>
               <div className="flex items-start gap-2">
@@ -460,13 +460,13 @@ export function CreateServicePage() {
         </div>
 
         {/* Pricing & Delivery — FINAL MODEL: 3 package tiers + addons */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <IndianRupee className="w-5 h-5 text-emerald-600" />
             Packages & Pricing
           </h2>
 
-          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-2.5 mb-5">
+          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-2.5 mb-2.5">
             <Shield className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm font-semibold text-slate-900">3 tiers — free for every freelancer, no subscription needed</p>
@@ -479,13 +479,13 @@ export function CreateServicePage() {
           </div>
 
           {/* Package tiers */}
-          <div className="space-y-4">
+          <div className="space-y-2">
             {formData.packages.map((pkg) => {
               const meta = TIER_META[pkg.tier];
               const isBasic = pkg.tier === 'basic';
               return (
-                <div key={pkg.tier} className={`rounded-2xl border p-5 ${meta.accent}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <div key={pkg.tier} className={`rounded-xl border p-5 ${meta.accent}`}>
+                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div>
                       <h3 className="font-bold text-slate-900 flex items-center gap-2">
                         {meta.label}
@@ -693,7 +693,7 @@ export function CreateServicePage() {
           </div>
 
           {/* 💡 Tip + Negotiable — professional ways to win more orders */}
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2">
             <div className="p-4 rounded-xl border border-slate-200 bg-white">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -750,13 +750,13 @@ export function CreateServicePage() {
         </div>
 
         {/* Service Features */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-emerald-600" />
             Service Features
           </h2>
 
-          <div className="mb-4">
+          <div className="mb-2">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -806,13 +806,13 @@ export function CreateServicePage() {
         </div>
 
         {/* Tags */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Tag className="w-5 h-5 text-emerald-600" />
             Search Tags
           </h2>
 
-          <div className="mb-4">
+          <div className="mb-2">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -832,7 +832,7 @@ export function CreateServicePage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-2">
             {popularTags.map((tag) => (
               <button
                 key={tag}
@@ -872,8 +872,8 @@ export function CreateServicePage() {
         </div>
 
         {/* Requirements */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Shield className="w-5 h-5 text-emerald-600" />
             Client Requirements
           </h2>
@@ -892,7 +892,7 @@ export function CreateServicePage() {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => navigate('/dashboard/services')}

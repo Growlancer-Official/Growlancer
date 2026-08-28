@@ -394,7 +394,7 @@ export function ClientPaymentsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -416,12 +416,12 @@ export function ClientPaymentsPage() {
       </TipNote>
 
       {/* Wallet — add funds to test the escrow workflow */}
-      <div className="bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 rounded-2xl p-6 text-white shadow-lg shadow-emerald-600/20 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 rounded-xl p-6 text-white shadow-lg shadow-emerald-600/20 relative overflow-hidden">
         <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute right-10 bottom-4 w-6 h-6 bg-white/10 rounded-full" />
-        <div className="flex flex-col sm:flex-row sm:items-center gap-6 relative">
-          <div className="flex items-center gap-4 flex-1">
-            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 relative">
+          <div className="flex items-center gap-2 flex-1">
+            <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
               <Wallet className="w-7 h-7 text-white" />
             </div>
             <div>
@@ -480,7 +480,7 @@ export function ClientPaymentsPage() {
             className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"
             onClick={() => setShowAddFunds(false)}
           />
-          <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 pb-0">
               <h2 className="font-display text-xl font-bold text-slate-900">Add Funds to Wallet</h2>
               <button
@@ -490,19 +490,19 @@ export function ClientPaymentsPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6">
-              <p className="text-sm text-slate-500 mb-4">
+            <div className="p-3">
+              <p className="text-sm text-slate-500 mb-2">
                 Add money to your Growlancer wallet, then fund escrow instantly from it.
               </p>
 
               {addFundsError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-5 h-5 text-red-600 mt-0.5 shrink-0" />
                   <p className="text-sm text-red-700">{addFundsError}</p>
                 </div>
               )}
               {topupSuccess && (
-                <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2">
+                <div className="mb-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2">
                   <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5 shrink-0" />
                   <p className="text-sm text-emerald-700">{topupSuccess}</p>
                 </div>
@@ -570,9 +570,9 @@ export function ClientPaymentsPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
               Total Spent
             </h3>
@@ -589,8 +589,8 @@ export function ClientPaymentsPage() {
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
               In Escrow
             </h3>
@@ -607,8 +607,8 @@ export function ClientPaymentsPage() {
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
+        <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+          <div className="flex items-center justify-between mb-2">
             <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
               Refunds
             </h3>
@@ -627,8 +627,8 @@ export function ClientPaymentsPage() {
       </div>
 
       {/* ===== Razorpay Saved Cards Section ===== */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <div className="flex items-center justify-between mb-6">
+      <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+        <div className="flex items-center justify-between mb-3">
           <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
             <Shield className="w-5 h-5 text-emerald-600" />
             Saved Payment Cards
@@ -637,7 +637,7 @@ export function ClientPaymentsPage() {
 
         {/* Loading */}
         {savedCardsLoading && (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-3">
             <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
             <span className="ml-2 text-sm text-slate-500">Loading saved cards...</span>
           </div>
@@ -645,7 +645,7 @@ export function ClientPaymentsPage() {
 
         {/* Saved cards list */}
         {!savedCardsLoading && savedCards.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             {savedCards.map((card) => (
               <div
                 key={card.id}
@@ -707,7 +707,7 @@ export function ClientPaymentsPage() {
         )}
 
         {!savedCardsLoading && savedCards.length === 0 && (
-          <div className="text-center py-8 text-slate-500 mb-4">
+          <div className="text-center py-4 text-slate-500 mb-2">
             <Shield className="w-12 h-12 mx-auto mb-3 text-slate-300" />
             <p className="font-medium">No saved cards yet</p>
             <p className="text-sm mt-1">Save a card during your next escrow payment for one-click checkout</p>
@@ -717,7 +717,7 @@ export function ClientPaymentsPage() {
         <div className="h-px bg-slate-200 my-4" />
 
         {/* ===== Manual Payment Method References ===== */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2">
           <h3 className="font-display text-base font-bold text-slate-900 flex items-center gap-2">
             <CreditCard className="w-4 h-4 text-slate-400" />
             Payment Method References
@@ -735,7 +735,7 @@ export function ClientPaymentsPage() {
 
         {/* Loading */}
         {paymentMethodsLoading && (
-          <div className="flex items-center justify-center py-6">
+          <div className="flex items-center justify-center py-3">
             <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
             <span className="ml-2 text-sm text-slate-500">Loading payment methods...</span>
           </div>
@@ -743,7 +743,7 @@ export function ClientPaymentsPage() {
 
         {/* Error */}
         {paymentMethodsError && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-4 flex items-center gap-2">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-2 flex items-center gap-2">
             <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
             <p className="text-sm text-red-700">{paymentMethodsError}</p>
             <button
@@ -757,7 +757,7 @@ export function ClientPaymentsPage() {
 
         {/* Method list */}
         {!paymentMethodsLoading && paymentMethods.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
             {paymentMethods.map((method) => (
               <div
                 key={method.id}
@@ -852,7 +852,7 @@ export function ClientPaymentsPage() {
         )}
 
         {!paymentMethodsLoading && paymentMethods.length === 0 && !showAddPaymentMethod && (
-          <div className="text-center py-8 text-slate-500">
+          <div className="text-center py-4 text-slate-500">
             <CreditCard className="w-12 h-12 mx-auto mb-3 text-slate-300" />
             <p className="font-medium">No payment method references saved</p>
             <p className="text-sm mt-1">Add a payment method for record-keeping purposes</p>
@@ -862,8 +862,8 @@ export function ClientPaymentsPage() {
         {/* Add Payment Method Form */}
         {showAddPaymentMethod && (
           <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl">
-            <h3 className="font-medium text-slate-900 mb-4">Add Payment Method</h3>
-            <div className="space-y-4">
+            <h3 className="font-medium text-slate-900 mb-2">Add Payment Method</h3>
+            <div className="space-y-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Method Type</label>
                 <select
@@ -886,7 +886,7 @@ export function ClientPaymentsPage() {
 
               {newPaymentMethod.type === 'card' && (
                 <>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Card Brand</label>
                       <input
@@ -956,7 +956,7 @@ export function ClientPaymentsPage() {
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Bank Name</label>
                       <input
@@ -1029,7 +1029,7 @@ export function ClientPaymentsPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div id="wallet-txn" className="flex items-center gap-4 border-b border-slate-200">
+      <div id="wallet-txn" className="flex items-center gap-2 border-b border-slate-200">
         {(['all', 'credit', 'debit'] as const).map((f) => (
           <button
             key={f}
@@ -1059,14 +1059,14 @@ export function ClientPaymentsPage() {
 
       {/* Transactions List */}
       {filteredTransactions.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-white rounded-2xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
             <CreditCard className="w-10 h-10 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No transactions yet' : `No ${filter} transactions`}
           </h3>
-          <p className="text-slate-500 max-w-sm mx-auto mb-6">
+          <p className="text-slate-500 max-w-sm mx-auto mb-3">
             {filter === 'all'
               ? 'When you fund escrow for a contract or make payments, your transaction history will appear here.'
               : `You don't have any ${filter} transactions at the moment.`}
@@ -1082,7 +1082,7 @@ export function ClientPaymentsPage() {
           )}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-100">
+        <div className="bg-white rounded-xl border border-slate-100">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-slate-50 border-b border-slate-100">
@@ -1154,8 +1154,8 @@ export function ClientPaymentsPage() {
       )}
 
       {/* Invoices & Receipts — auto-generated on escrow release */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between gap-4">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
+        <div className="p-3 border-b border-slate-100 flex items-center justify-between gap-2">
           <div>
             <h3 className="font-display text-lg font-bold text-slate-900">Invoices & Receipts</h3>
             <p className="text-sm text-slate-500 mt-0.5">Tax-ready invoices generated automatically when escrow is released</p>
@@ -1170,7 +1170,7 @@ export function ClientPaymentsPage() {
         ) : (
           <div className="divide-y divide-slate-100">
             {invoices.map((inv: any) => (
-              <div key={inv.id} className="p-5 flex items-center justify-between gap-4 hover:bg-slate-50/60 transition-colors">
+              <div key={inv.id} className="p-5 flex items-center justify-between gap-2 hover:bg-slate-50/60 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
                     <FileText className="w-5 h-5" />
@@ -1181,7 +1181,7 @@ export function ClientPaymentsPage() {
                     <p className="text-[10px] text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <div className="text-right">
                     <p className="font-bold text-slate-900">{formatInvoiceAmount(inv.total)}</p>
                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : inv.status === 'refunded' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>

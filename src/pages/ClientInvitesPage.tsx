@@ -157,7 +157,7 @@ export function ClientInvitesPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -197,14 +197,14 @@ export function ClientInvitesPage() {
 
       {/* Invites List */}
       {filteredInvites.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-white rounded-2xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
             <MailCheck className="w-10 h-10 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No invites yet' : `No ${filter} invites`}
           </h3>
-          <p className="text-slate-500 max-w-sm mx-auto mb-6">
+          <p className="text-slate-500 max-w-sm mx-auto mb-3">
             {filter === 'all'
               ? 'Browse AI-matched freelancers and send them personalized project invitations.'
               : `You don't have any ${filter} invites at the moment.`}
@@ -227,18 +227,18 @@ export function ClientInvitesPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-2">
           {filteredInvites.map((invite) => {
             const expired = isExpired(invite.expires_at);
             return (
               <div
                 key={invite.id}
-                className={`bg-white p-6 rounded-2xl border ${
+                className={`bg-white p-6 rounded-xl border ${
                   expired ? 'border-slate-200 opacity-60' : 'border-slate-100'
                 } hover:shadow-md transition-shadow`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
                     <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                       {invite.freelancer?.avatar ? (
                         <img 
@@ -276,7 +276,7 @@ export function ClientInvitesPage() {
                 </div>
 
                 {invite.project && (
-                  <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                  <div className="mb-2 p-3 bg-slate-50 rounded-lg">
                     <p className="text-sm text-slate-600">
                       <span className="font-medium">Project:</span> {invite.project.title}
                     </p>
@@ -284,12 +284,12 @@ export function ClientInvitesPage() {
                 )}
 
                 {invite.message && (
-                  <div className="mb-4 p-3 bg-slate-50 rounded-lg">
+                  <div className="mb-2 p-3 bg-slate-50 rounded-lg">
                     <p className="text-sm text-slate-600 italic">"{invite.message}"</p>
                   </div>
                 )}
 
-                <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
+                <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     <span>Sent: {new Date(invite.created_at).toLocaleDateString()}</span>

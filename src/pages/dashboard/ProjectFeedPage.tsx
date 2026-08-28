@@ -80,8 +80,8 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+        <div className="p-3 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center">
               <Send className="w-5 h-5 text-emerald-600" />
@@ -99,7 +99,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-3 space-y-3">
           {/* Bid-Free Rate Section */}
           <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
             <div className="flex items-center gap-2 mb-3">
@@ -782,9 +782,9 @@ export function ProjectFeedPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Sparkles className="w-6 h-6 text-white" />
@@ -881,15 +881,15 @@ export function ProjectFeedPage() {
       {/* Project Cards */}
       {filteredMatches.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 gap-2">
             {filteredMatches
               .slice((page - 1) * pageSize, page * pageSize)
               .map((match) => (
             <div
               key={match.id}
-              className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all"
+              className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
                   {/* Header */}
                   <div className="flex items-center gap-3 mb-3">
@@ -906,12 +906,12 @@ export function ProjectFeedPage() {
                   </div>
 
                   {/* Description */}
-                  <p className="text-slate-600 mb-4 line-clamp-2">
+                  <p className="text-slate-600 mb-2 line-clamp-2">
                     {match.project?.description || ''}
                   </p>
 
                   {/* Meta Info */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
+                  <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 mb-2">
                     <span className="flex items-center gap-1">
                       <Wallet className="w-4 h-4" />
                       {formatBudgetRange(match.project?.budget_min, match.project?.budget_max)}
@@ -934,7 +934,7 @@ export function ProjectFeedPage() {
 
                   {/* Skills */}
                   {match.project?.skills_required && match.project.skills_required.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap mb-4">
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
                       {match.project.skills_required.slice(0, 5).map((skill) => (
                         <span
                           key={skill}
@@ -1049,8 +1049,8 @@ export function ProjectFeedPage() {
           />
         </>
       ) : !hasProfile ? (
-        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center shadow-sm max-w-2xl mx-auto">
-          <div className="w-20 h-20 bg-violet-50 text-violet-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="bg-white rounded-xl p-12 border border-slate-100 text-center shadow-sm max-w-2xl mx-auto">
+          <div className="w-20 h-20 bg-violet-50 text-violet-600 rounded-full flex items-center justify-center mx-auto mb-3">
             <Sparkles className="w-10 h-10 animate-pulse" />
           </div>
           <h3 className="font-display text-2xl font-bold text-slate-900 mb-3">
@@ -1068,14 +1068,14 @@ export function ProjectFeedPage() {
           </Link>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
             <Sparkles className="w-10 h-10 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
             No matches found
           </h3>
-          <p className="text-slate-500 max-w-md mx-auto mb-6">
+          <p className="text-slate-500 max-w-md mx-auto mb-3">
             {searchQuery || selectedCategory !== 'all'
               ? 'Try adjusting your search or filters to find more projects.'
               : 'Complete your profile with more skills to get better AI-powered matches.'}

@@ -268,32 +268,32 @@ export function ClientDashboardLayout() {
         className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 p-6 transform transition-transform duration-300 ease-out lg:hidden ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex h-full flex-col overflow-hidden">
-        <div className="flex items-center justify-between mb-6">
-          <Link to="/" className="flex items-center gap-3">
+        <div className="flex items-center justify-between mb-4">
+          <Link to="/" className="flex items-center gap-2">
             <img
               src="/UpdatedLogo.webp"
               alt="Growlancer"
-              className="h-10 w-10 rounded-xl shadow-lg"
+              className="h-8 w-8 rounded-lg shadow-lg"
             />
             <div>
-              <h1 className="font-display text-lg font-bold leading-none">Growlancer</h1>
-              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
+              <h1 className="font-display text-sm font-bold leading-none">Growlancer</h1>
+              <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
             </div>
           </Link>
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="inline-flex items-center justify-center h-10 w-10 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all"
+            className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all"
             aria-label="Close navigation"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto">
-          <nav className="space-y-1">
+          <nav className="space-y-0.5">
             {sidebarGroups.map((group) => (
-              <div key={group.label} className="mb-2">
-                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              <div key={group.label} className="mb-0.5">
+                <div className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-400">
                   {group.label}
                 </div>
                 {group.links.map((link) => {
@@ -319,14 +319,14 @@ export function ClientDashboardLayout() {
                       key={link.id}
                       to={link.path}
                       onClick={() => setMobileNavOpen(false)}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 ${
+                      className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
                         isActive(link.path)
                           ? 'bg-slate-100 text-emerald-600 shadow-sm border border-emerald-100'
                           : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                       }`}
                     >
-                      <link.icon className="w-4 h-4" />
-                      <span className="font-medium text-sm">{link.label}</span>
+                      <link.icon className="w-3.5 h-3.5" />
+                      <span className="font-medium text-[11px]">{link.label}</span>
                       {badgeCount && (
                         <span className={`ml-auto text-white text-[10px] min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center font-bold ${
                           link.id === 'notifications' ? 'bg-blue-500' : 'bg-orange-500'
@@ -343,18 +343,18 @@ export function ClientDashboardLayout() {
             <Link
               to="/client/post"
               onClick={() => setMobileNavOpen(false)}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 mt-1 ${
+              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 mt-0.5 ${
                 isActive('/client/post')
                   ? 'bg-orange-600 text-white shadow-sm'
                   : 'bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100'
               }`}
             >
-              <PlusCircle className="w-4 h-4" />
-              <span className="font-bold text-sm">Post a Project</span>
+              <PlusCircle className="w-3.5 h-3.5" />
+              <span className="font-bold text-[11px]">Post a Project</span>
             </Link>
 
-            <div className="mb-1">
-              <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+            <div className="mb-0.5">
+              <div className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-400">
                 ACCOUNT
               </div>
               {accountLinks.map((link) => (
@@ -362,57 +362,56 @@ export function ClientDashboardLayout() {
                   key={link.id}
                   to={link.path}
                   onClick={() => setMobileNavOpen(false)}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
                     isActive(link.path)
                       ? 'bg-slate-100 text-emerald-600 shadow-sm border border-emerald-100'
                       : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                   }`}
                 >
-                  <link.icon className="w-4 h-4" />
-                  <span className="font-medium text-sm">{link.label}</span>
+                  <link.icon className="w-3.5 h-3.5" />
+                  <span className="font-medium text-[11px]">{link.label}</span>
                 </Link>
               ))}
-            </div>
-
-            <div className="mb-1">
-              <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+            </div>            <div className="mb-0.5">
+              <div className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-400">
                 SUPPORT
+
               </div>
               {supportLinks.map((link) => (
                 <Link
                   key={link.id}
                   to={link.path}
                   onClick={() => setMobileNavOpen(false)}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 ${
+                  className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
                     isActive(link.path)
                       ? 'bg-slate-100 text-emerald-600 shadow-sm border border-emerald-100'
                       : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                   }`}
                 >
-                  <link.icon className="w-4 h-4" />
-                  <span className="font-medium text-sm">{link.label}</span>
+                  <link.icon className="w-3.5 h-3.5" />
+                  <span className="font-medium text-[11px]">{link.label}</span>
                 </Link>
               ))}
             </div>
 
-            <div className="mt-3 pt-3 border-t border-slate-200 space-y-1">
+            <div className="mt-2 pt-2 border-t border-slate-200 space-y-0.5">
               <Link
                 to="/"
                 onClick={() => setMobileNavOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-all duration-200"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-slate-700 hover:bg-slate-50 hover:text-emerald-600 transition-all duration-200"
               >
-                <Home className="w-4 h-4" />
-                <span className="font-medium text-sm">Homepage</span>
+                <Home className="w-3.5 h-3.5" />
+                <span className="font-medium text-[11px]">Homepage</span>
               </Link>
               <button
                 onClick={() => {
                   logout();
                   setMobileNavOpen(false);
                 }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
               >
-                <LogOut className="w-4 h-4" />
-                <span className="font-medium text-sm">Logout</span>
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="font-medium text-[11px]">Logout</span>
               </button>
             </div>
           </nav>
@@ -421,26 +420,26 @@ export function ClientDashboardLayout() {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 sticky top-0 h-screen hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
+      <aside className="w-56 sticky top-0 h-screen hidden lg:flex flex-col p-3 z-50 overflow-y-auto bg-white border-r border-slate-200">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 mb-6 px-2">
+        <Link to="/" className="flex items-center gap-2 mb-4 px-1.5">
           <img 
             src="/UpdatedLogo.webp" 
             alt="Growlancer" 
-            className="h-8 w-8 rounded-lg shadow-md"
+            className="h-7 w-7 rounded-lg shadow-md"
           />
           <div>
-            <h1 className="font-display text-sm font-bold leading-none">Growlancer</h1>
-            <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
+            <h1 className="font-display text-xs font-bold leading-none">Growlancer</h1>
+            <span className="text-[8px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
           </div>
         </Link>
 
         
         {/* Navigation */}
-        <nav className="flex-1 space-y-0.5">
+        <nav className="flex-1 space-y-0">
           {sidebarGroups.map((group) => (
-            <div key={group.label} className="mb-1">
-              <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+            <div key={group.label} className="mb-0.5">
+              <div className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-400">
                 {group.label}
               </div>
               {group.links.map((link) => {
@@ -465,14 +464,14 @@ export function ClientDashboardLayout() {
                   <Link
                     key={link.id}
                     to={link.path}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 ${
+                    className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
                       isActive(link.path)
                         ? 'bg-white text-emerald-600 shadow-md border border-emerald-100'
                         : 'text-slate-500 hover:bg-white hover:text-emerald-600'
                     }`}
                   >
-                    <link.icon className="w-4 h-4" />
-                    <span className="font-medium text-sm">{link.label}</span>
+                    <link.icon className="w-3.5 h-3.5" />
+                    <span className="font-medium text-[11px]">{link.label}</span>
                     {badgeCount && (
                       <span className={`ml-auto text-white text-[10px] min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center font-bold ${
                         link.id === 'notifications' ? 'bg-blue-500' : 'bg-orange-500'
@@ -489,52 +488,52 @@ export function ClientDashboardLayout() {
           {/* Post Project CTA */}
           <Link
             to="/client/post"
-            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 mt-1 ${
+            className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 mt-0.5 ${
               isActive('/client/post')
                 ? 'bg-orange-600 text-white shadow-md'
                 : 'bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100'
             }`}
           >
-            <PlusCircle className="w-4 h-4" />
-            <span className="font-bold text-sm">Post a Project</span>
+            <PlusCircle className="w-3.5 h-3.5" />
+            <span className="font-bold text-[11px]">Post a Project</span>
           </Link>
 
-          <div className="mb-1">
-            <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+          <div className="mb-0.5">
+            <div className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-400">
               ACCOUNT
             </div>
             {accountLinks.map((link) => (
               <Link
                 key={link.id}
                 to={link.path}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 ${
+                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
                   isActive(link.path)
                     ? 'bg-white text-emerald-600 shadow-md border border-emerald-100'
                     : 'text-slate-500 hover:bg-white hover:text-emerald-600'
                 }`}
               >
-                <link.icon className="w-4 h-4" />
-                <span className="font-medium text-sm">{link.label}</span>
+                <link.icon className="w-3.5 h-3.5" />
+                <span className="font-medium text-[11px]">{link.label}</span>
               </Link>
             ))}
           </div>
 
-          <div className="mb-1">
-            <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest text-slate-400">
+          <div className="mb-0.5">
+            <div className="px-2.5 py-1 text-[8px] font-bold uppercase tracking-widest text-slate-400">
               SUPPORT
             </div>
             {supportLinks.map((link) => (
               <Link
                 key={link.id}
                 to={link.path}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-200 ${
+                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg transition-all duration-200 ${
                   isActive(link.path)
                     ? 'bg-white text-emerald-600 shadow-md border border-emerald-100'
                     : 'text-slate-500 hover:bg-white hover:text-emerald-600'
                 }`}
               >
-                <link.icon className="w-4 h-4" />
-                <span className="font-medium text-sm">{link.label}</span>
+                <link.icon className="w-3.5 h-3.5" />
+                <span className="font-medium text-[11px]">{link.label}</span>
               </Link>
             ))}
           </div>
@@ -542,20 +541,20 @@ export function ClientDashboardLayout() {
 
 
         {/* Logout & Home */}
-        <div className="mt-4 pt-4 border-t border-slate-200 space-y-1">
+        <div className="mt-3 pt-3 border-t border-slate-200 space-y-0.5">
           <Link
             to="/"
-            className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 hover:bg-white hover:text-emerald-600 transition-all duration-200"
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-slate-500 hover:bg-white hover:text-emerald-600 transition-all duration-200"
           >
-            <Home className="w-5 h-5" />
-            <span className="font-medium">Homepage</span>
+            <Home className="w-3.5 h-3.5" />
+            <span className="font-medium text-[11px]">Homepage</span>
           </Link>
           <button
             onClick={logout}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
+            className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 transition-all duration-200"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Logout</span>
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="font-medium text-[11px]">Logout</span>
           </button>
         </div>
       </aside>

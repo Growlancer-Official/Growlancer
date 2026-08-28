@@ -39,8 +39,8 @@ export function ClientTeamProjectsPage() {
   if (loading) return <LoadingSkeleton variant="full-page" />;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="flex items-start justify-between gap-4 flex-wrap mb-6">
+    <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="flex items-start justify-between gap-2 flex-wrap mb-3">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
@@ -60,18 +60,18 @@ export function ClientTeamProjectsPage() {
         </Link>
       </div>
 
-      <TipNote tone="info" compact className="mb-6">
+      <TipNote tone="info" compact className="mb-3">
         Each role gets its own <strong>independent contract</strong> (own escrow / milestones / dispute). One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee.
       </TipNote>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm mb-6">
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm mb-3">
           {error}
         </div>
       )}
 
       {projects.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-300">
+        <div className="text-center py-16 bg-white rounded-xl border border-dashed border-slate-300">
           <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <h2 className="text-lg font-semibold text-slate-800 mb-1">No team projects yet</h2>
           <p className="text-slate-500 text-sm mb-5">
@@ -89,7 +89,7 @@ export function ClientTeamProjectsPage() {
               <Link
                 key={p.id}
                 to={`/client/team-projects/${p.id}`}
-                className="block bg-white rounded-2xl border border-slate-200 shadow-sm p-5 hover:border-violet-300 hover:shadow-md transition-all group"
+                className="block bg-white rounded-xl border border-slate-200 shadow-sm p-5 hover:border-violet-300 hover:shadow-md transition-all group"
               >
                 <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">

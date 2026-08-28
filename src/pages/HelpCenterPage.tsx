@@ -123,7 +123,7 @@ export function HelpCenterPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-6">
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <LifeBuoy className="w-3.5 h-3.5" />
             Knowledge Base
@@ -146,7 +146,7 @@ export function HelpCenterPage() {
                 setSearchTerm(e.target.value);
                 setExpandedFAQIndex(null); // Reset expand on search
               }}
-              className="w-full h-14 pl-12 pr-4 bg-white/95 text-slate-800 border border-slate-200 rounded-2xl text-lg font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all shadow-xl"
+              className="w-full h-14 pl-12 pr-4 bg-white/95 text-slate-800 border border-slate-200 rounded-xl text-lg font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all shadow-xl"
             />
           </div>
         </div>
@@ -165,7 +165,7 @@ export function HelpCenterPage() {
                   setActiveCategory(cat.name);
                   setExpandedFAQIndex(null);
                 }}
-                className={`w-full flex items-center gap-3 p-3 rounded-2xl text-left font-bold text-sm transition-all ${
+                className={`w-full flex items-center gap-3 p-3 rounded-xl text-left font-bold text-sm transition-all ${
                   activeCategory === cat.name
                     ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/20'
                     : 'bg-white hover:bg-slate-50 text-slate-600 border border-slate-200/40'
@@ -179,8 +179,8 @@ export function HelpCenterPage() {
         </div>
 
         {/* FAQs Accordion Panel */}
-        <div className="lg:col-span-3 space-y-4">
-          <div className="flex justify-between items-center mb-4">
+        <div className="lg:col-span-3 space-y-2">
+          <div className="flex justify-between items-center mb-2">
             <h2 className="font-display text-xl font-extrabold text-slate-900">
               {activeCategory} FAQs ({filteredFAQs.length})
             </h2>
@@ -192,7 +192,7 @@ export function HelpCenterPage() {
           </div>
 
           {filteredFAQs.length === 0 ? (
-            <div className="bg-white rounded-3xl border border-slate-200/50 p-12 text-center shadow-sm space-y-4">
+            <div className="bg-white rounded-3xl border border-slate-200/50 p-12 text-center shadow-sm space-y-2">
               <MessageSquare className="w-12 h-12 text-slate-300 mx-auto" />
               <h4 className="font-bold text-slate-800">No matching questions found</h4>
               <p className="text-slate-500 text-sm max-w-sm mx-auto">
@@ -206,11 +206,11 @@ export function HelpCenterPage() {
                 return (
                   <div
                     key={index}
-                    className="bg-white rounded-2xl border border-slate-200/60 overflow-hidden shadow-sm transition-all hover:border-emerald-500/20"
+                    className="bg-white rounded-xl border border-slate-200/60 overflow-hidden shadow-sm transition-all hover:border-emerald-500/20"
                   >
                     <button
                       onClick={() => handleToggleFAQ(index)}
-                      className="w-full p-5 text-left font-bold text-slate-900 flex justify-between items-center gap-4 hover:bg-slate-50/50 transition-colors"
+                      className="w-full p-5 text-left font-bold text-slate-900 flex justify-between items-center gap-2 hover:bg-slate-50/50 transition-colors"
                     >
                       <span className="leading-snug">{faq.question}</span>
                       <ChevronDown
@@ -231,7 +231,7 @@ export function HelpCenterPage() {
           )}
 
           {/* AI Support Banner */}
-          <div className="mt-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-[2rem] p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl shadow-emerald-600/10">
+          <div className="mt-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-[2rem] p-6 text-white flex flex-col sm:flex-row items-center justify-between gap-2 shadow-xl shadow-emerald-600/10">
             <div>
               <h4 className="font-bold text-lg leading-tight">Need more help?</h4>
               <p className="text-emerald-100 text-xs mt-1">Our AI support assistant is available 24/7 to answer your questions instantly.</p>

@@ -182,8 +182,8 @@ export function PortfolioPage() {
 
       {/* Add / Edit Form */}
       {showForm && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-3">
             <h2 className="text-xl font-semibold text-slate-900">
               {editingId ? 'Edit Project' : 'New Project'}
             </h2>
@@ -191,8 +191,8 @@ export function PortfolioPage() {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <form onSubmit={handleSubmit} className="space-y-2.5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
               {/* Title */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-slate-700 mb-1.5">Title *</label>
@@ -318,12 +318,12 @@ export function PortfolioPage() {
 
       {/* Portfolio Grid */}
       {items.length === 0 && !showForm ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-16 text-center shadow-sm">
-          <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-xl border border-slate-100 p-16 text-center shadow-sm">
+          <div className="w-16 h-16 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-2">
             <Image className="w-8 h-8 text-emerald-600" />
           </div>
           <h3 className="text-xl font-semibold text-slate-900 mb-2">No portfolio items yet</h3>
-          <p className="text-slate-500 mb-6 max-w-md mx-auto">
+          <p className="text-slate-500 mb-3 max-w-md mx-auto">
             Showcase your best work to stand out to potential clients. Add your first project now.
           </p>
           <button
@@ -338,11 +338,11 @@ export function PortfolioPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {items.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all group"
+              className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all group"
             >
               {/* Thumbnail */}
               <div className="relative aspect-video bg-slate-50 overflow-hidden">
@@ -453,7 +453,7 @@ export function PortfolioPage() {
           onClick={() => setPreviewIndex(null)}
         >
           <div
-            className="relative max-w-4xl w-full bg-white rounded-2xl overflow-hidden"
+            className="relative max-w-4xl w-full bg-white rounded-xl overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -469,7 +469,7 @@ export function PortfolioPage() {
                 className="w-full max-h-[70vh] object-contain bg-slate-50"
               />
             )}
-            <div className="p-6">
+            <div className="p-3">
               <h3 className="text-xl font-semibold text-slate-900">{items[previewIndex].title}</h3>
               {items[previewIndex].description && (
                 <p className="text-slate-500 mt-2">{items[previewIndex].description}</p>

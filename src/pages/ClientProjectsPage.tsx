@@ -295,7 +295,7 @@ export function ClientProjectsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -335,14 +335,14 @@ export function ClientProjectsPage() {
 
       {/* Projects Grid */}
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-16 px-4 bg-white rounded-2xl border border-slate-100">
-          <div className="w-20 h-20 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <div className="text-center py-16 px-4 bg-white rounded-xl border border-slate-100">
+          <div className="w-20 h-20 bg-slate-100 rounded-xl flex items-center justify-center mx-auto mb-5">
             <Briefcase className="w-10 h-10 text-slate-300" />
           </div>
           <h3 className="text-xl font-bold text-slate-900 mb-2">
             {filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
           </h3>
-          <p className="text-slate-500 max-w-sm mx-auto mb-6">
+          <p className="text-slate-500 max-w-sm mx-auto mb-3">
             {filter === 'all'
               ? 'Post your first project and start receiving proposals from talented freelancers.'
               : `You don't have any ${filter} projects at the moment.`}
@@ -366,13 +366,13 @@ export function ClientProjectsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-4">
+          <div className="grid gap-2">
             {filteredProjects.map((project) => (
             <div
               key={project.id}
-              className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-xl border border-slate-100 hover:shadow-md transition-shadow"
             >
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h3 className="font-display text-lg font-bold text-slate-900">{project.title}</h3>
@@ -389,7 +389,7 @@ export function ClientProjectsPage() {
                 <ProjectMenu projectId={project.id} projectStatus={project.status} onClose={setShowCloseModal} onComplete={setShowCompleteModal} onReopen={setShowReopenModal} />
               </div>
 
-              <div className="flex flex-wrap gap-4 text-sm text-slate-500 mb-4">
+              <div className="flex flex-wrap gap-2 text-sm text-slate-500 mb-2">
                 <div className="flex items-center gap-2">
                   <IndianRupee className="w-4 h-4" />
                   <span>{formatBudgetRange(project.budget_min, project.budget_max)}</span>
@@ -408,7 +408,7 @@ export function ClientProjectsPage() {
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-2">
                 {project.skills_required.slice(0, 4).map((skill) => (
                   <span
                     key={skill}
@@ -461,12 +461,12 @@ export function ClientProjectsPage() {
       {/* Close Project Modal */}
       {showCloseModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-2xl mb-5 mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-xl mb-5 mx-auto">
               <AlertTriangle className="w-8 h-8 text-orange-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Close Project</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
               This will mark the project as cancelled. Freelancers will no longer be able to apply.
               Active contracts will continue in your workspace.
             </p>
@@ -493,12 +493,12 @@ export function ClientProjectsPage() {
       {/* Complete Project Modal */}
       {showCompleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-2xl mb-5 mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-center w-16 h-16 bg-emerald-100 rounded-xl mb-5 mx-auto">
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Mark Project Complete</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
               This will mark the project as completed. Escrow funds will be released to the freelancer.
               This action cannot be undone.
             </p>
@@ -525,12 +525,12 @@ export function ClientProjectsPage() {
       {/* Reopen Project Modal */}
       {showReopenModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-2xl mb-5 mx-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-center w-16 h-16 bg-blue-100 rounded-xl mb-5 mx-auto">
               <RefreshCw className="w-8 h-8 text-blue-600" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Reopen Project</h3>
-            <p className="text-sm text-slate-500 text-center mb-6">
+            <p className="text-sm text-slate-500 text-center mb-3">
               This will reopen the project with status "Open". Freelancers will be able to apply again.
               AI matches will be regenerated.
             </p>

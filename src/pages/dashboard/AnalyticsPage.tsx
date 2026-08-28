@@ -71,7 +71,7 @@ export function AnalyticsPage() {
     trendLabel?: string;
     color: string;
   }) => (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all">
+    <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm hover:shadow-md transition-all">
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-slate-500 mb-1">{label}</p>
@@ -100,7 +100,7 @@ export function AnalyticsPage() {
   return (
     <div className="max-w-[100rem] mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2">
             Analytics
@@ -145,7 +145,7 @@ export function AnalyticsPage() {
       {data && (
         <>
           {/* Earnings & Contracts Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
             <MetricCard
               icon={IndianRupee}
               label="Total Earnings"
@@ -176,8 +176,8 @@ export function AnalyticsPage() {
           </div>
 
           {/* Earnings Chart */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Earnings Overview</h2>
                 <p className="text-sm text-slate-500">Monthly earnings for the past 6 months</p>
@@ -217,7 +217,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Proposals & Reviews Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
             <MetricCard
               icon={FileText}
               label="Proposals"
@@ -251,7 +251,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Performance Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
             <MetricCard
               icon={Clock}
               label="On-Time Delivery"
@@ -280,24 +280,24 @@ export function AnalyticsPage() {
           </div>
 
           {/* Project Matches */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-2">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">AI Project Matches</h2>
                 <p className="text-sm text-slate-500">Projects matched to your skills</p>
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
               <div className="flex-1 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-4">
-                <p className="text-3xl font-bold text-violet-600">{data.newMatches}</p>
+                <p className="text-xl font-bold text-violet-600">{data.newMatches}</p>
                 <p className="text-sm text-violet-600/70">New Matches</p>
               </div>
               <div className="flex-1 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4">
-                <p className="text-3xl font-bold text-blue-600">{data.totalMatches}</p>
+                <p className="text-xl font-bold text-blue-600">{data.totalMatches}</p>
                 <p className="text-sm text-blue-600/70">Total Matches</p>
               </div>
               <div className="flex-1 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4">
-                <p className="text-3xl font-bold text-emerald-600">
+                <p className="text-xl font-bold text-emerald-600">
                   {data.totalProposals > 0 ? Math.round((data.acceptedProposals / data.totalProposals) * 100) : 0}%
                 </p>
                 <p className="text-sm text-emerald-600/70">Proposal Acceptance</p>

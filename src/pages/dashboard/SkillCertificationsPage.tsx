@@ -72,7 +72,7 @@ export function SkillCertificationsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Skill Certifications</h1>
           <p className="text-slate-500 mt-1">Earn verified badges to showcase your expertise to clients</p>
@@ -84,7 +84,7 @@ export function SkillCertificationsPage() {
       </div>
 
       {/* Learn & Earn — mature platform promise */}
-      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-5 text-white shadow-sm">
+      <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white shadow-sm">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
             <Sparkles className="w-5 h-5 text-white" />
@@ -106,20 +106,20 @@ export function SkillCertificationsPage() {
       </TipNote>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-emerald-100 rounded-xl"><Award className="w-6 h-6 text-emerald-600" /></div>
             <div><p className="text-2xl font-bold text-slate-900">{certifications.length}</p><p className="text-sm text-slate-500">Badges Earned</p></div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
+        <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-blue-100 rounded-xl"><BrainCircuit className="w-6 h-6 text-blue-600" /></div>
             <div><p className="text-2xl font-bold text-slate-900">{tests.length}</p><p className="text-sm text-slate-500">Tests Available</p></div>
           </div>
         </div>
-        <div className="bg-white rounded-2xl border border-slate-100 p-5">
+        <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-amber-100 rounded-xl"><TrendingUp className="w-6 h-6 text-amber-600" /></div>
             <div><p className="text-2xl font-bold text-slate-900">{certifications.filter((c) => c.level === 'expert' || c.level === 'advanced').length}</p><p className="text-sm text-slate-500">Advanced+ Badges</p></div>
@@ -128,7 +128,7 @@ export function SkillCertificationsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-4 border-b border-slate-200">
+      <div className="flex items-center gap-2 border-b border-slate-200">
         <button onClick={() => setActiveTab('available')} className={`pb-3 text-sm font-medium relative ${activeTab === 'available' ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>
           Available Tests
           {activeTab === 'available' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600" />}
@@ -153,14 +153,14 @@ export function SkillCertificationsPage() {
 
       {/* Available Tests */}
       {activeTab === 'available' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
           {filteredTests.map((test) => {
             const Icon = getSkillIcon(test.skill);
             const levelInfo = CERTIFICATION_LEVELS[test.difficulty];
             const isLocked = (test as any).locked;
 
             return (
-              <div key={test.id} className={`bg-white rounded-2xl border p-5 ${isLocked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:shadow-md'} transition-all`}>
+              <div key={test.id} className={`bg-white rounded-xl border p-5 ${isLocked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:shadow-md'} transition-all`}>
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className={`p-2.5 rounded-xl ${levelInfo.bgColor}`}><Icon className={`w-5 h-5 ${levelInfo.color}`} /></div>
@@ -173,8 +173,8 @@ export function SkillCertificationsPage() {
                     {levelInfo.icon} {levelInfo.label}
                   </span>
                 </div>
-                <p className="text-sm text-slate-600 mb-4">{test.description}</p>
-                <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
+                <p className="text-sm text-slate-600 mb-2">{test.description}</p>
+                <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
                   <span>{test.question_count} questions • {test.time_limit_minutes} min</span>
                   <span>Pass: {test.passing_score}%</span>
                 </div>
@@ -197,10 +197,10 @@ export function SkillCertificationsPage() {
       {activeTab === 'earned' && (
         <div>
           {filteredCerts.length === 0 ? (
-            <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
-              <Award className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+            <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
+              <Award className="w-12 h-12 text-slate-300 mx-auto mb-2" />
               <h3 className="text-lg font-bold text-slate-900 mb-2">No certifications yet</h3>
-              <p className="text-slate-500 mb-6">Take skill tests to earn verified badges.</p>
+              <p className="text-slate-500 mb-3">Take skill tests to earn verified badges.</p>
               <button onClick={() => setActiveTab('available')} className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">Browse Tests</button>
             </div>
           ) : (
@@ -208,8 +208,8 @@ export function SkillCertificationsPage() {
               {filteredCerts.map((cert) => {
                 const badgeInfo = skillCertificationService.getBadgeInfo(cert);
                 return (
-                  <div key={cert.id} className="bg-white rounded-2xl border border-slate-100 p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                  <div key={cert.id} className="bg-white rounded-xl border border-slate-100 p-5 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-xl ${badgeInfo.bgColor}`}>{badgeInfo.icon}</div>
                       <div>
                         <h3 className="font-bold text-slate-900">{cert.skill}</h3>

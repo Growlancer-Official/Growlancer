@@ -783,7 +783,7 @@ export function ClientWorkspacePage() {
   if (!selectedContract && contracts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[80vh] text-slate-500">
-        <Briefcase className="h-16 w-16 mb-4 text-slate-300" />
+        <Briefcase className="h-16 w-16 mb-2 text-slate-300" />
         <h2 className="text-2xl font-semibold mb-2">No Active Contracts</h2>
         <p>You don't have any active contracts yet.</p>
       </div>
@@ -799,9 +799,9 @@ export function ClientWorkspacePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Top Banner / Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-2xl shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <Briefcase className="w-6 h-6 text-white" />
@@ -958,7 +958,7 @@ export function ClientWorkspacePage() {
       </div>
 
       {/* Platform Policy — protect both sides (full-width) */}
-      <div className="rounded-2xl overflow-hidden border border-blue-200 shadow-sm">
+      <div className="rounded-xl overflow-hidden border border-blue-200 shadow-sm">
         <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-5 py-4 flex items-center gap-3">
           <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
             <Shield className="w-5 h-5 text-white" />
@@ -1054,15 +1054,15 @@ export function ClientWorkspacePage() {
       </div>
 
       {selectedContract && (
-        <div className="space-y-6">
+        <div className="space-y-3">
 
 
 
               {/* Chat & Assets Tab */}
               {activeTab === 'chat' && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   {/* Messages */}
-                  <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+                  <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl flex items-center gap-3">
                       <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
                         <MessageSquare className="w-5 h-5" />
@@ -1072,7 +1072,7 @@ export function ClientWorkspacePage() {
                         <p className="text-xs text-slate-500">Secure real-time correspondence with {selectedContract.freelancer?.name}</p>
                       </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
                         {messages.length === 0 && (
                           <div className="flex flex-col items-center justify-center h-full text-slate-400">
                             <MessageSquare className="h-12 w-12 mb-3 opacity-50" />
@@ -1085,7 +1085,7 @@ export function ClientWorkspacePage() {
                             className={`flex ${msg.sender_id === user?.id ? 'justify-end' : 'justify-start'}`}
                           >
                             <div
-                              className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                              className={`max-w-[80%] rounded-xl px-4 py-2.5 ${
                                 msg.sender_id === user?.id
                                   ? 'bg-emerald-600 text-white rounded-br-md'
                                   : 'bg-slate-100 text-slate-900 rounded-bl-md'
@@ -1151,7 +1151,7 @@ export function ClientWorkspacePage() {
                     </div>
 
                   {/* Shared Assets */}
-                  <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+                  <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-slate-900 flex items-center gap-2">
@@ -1229,9 +1229,9 @@ export function ClientWorkspacePage() {
 
               {/* Co-Working Canvas Tab */}
               {activeTab === 'canvas' && (
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
                   {/* Live Task Board */}
-                  <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                  <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <h3 className="font-semibold text-slate-900 flex items-center gap-2">
                         <ClipboardList className="h-4 w-4" />
@@ -1252,7 +1252,7 @@ export function ClientWorkspacePage() {
                   </div>
 
                   {/* Collaborative Scratchpad */}
-                  <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col">
+                  <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-slate-900 flex items-center gap-2">
@@ -1286,16 +1286,16 @@ export function ClientWorkspacePage() {
 
               {/* Milestones & Escrow Tab */}
               {activeTab === 'milestones' && (
-                <div className="space-y-6">
+                <div className="space-y-3">
                   {/* Timeline */}
-                  <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                  <div className="bg-white rounded-xl border border-slate-200/80 p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
                       Contract Timeline
                     </h3>
                     <div className="relative">
                       <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200" />
                       {getTimelineEvents().map((event, idx) => (
-                        <div key={idx} className="relative flex items-start gap-4 pb-6 last:pb-0">
+                        <div key={idx} className="relative flex items-start gap-2 pb-6 last:pb-0">
                           <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center ${
                             event.status === 'completed'
                               ? 'bg-green-100'
@@ -1326,8 +1326,8 @@ export function ClientWorkspacePage() {
                   </div>
 
                   {/* Milestones */}
-                  <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
-                    <div className="flex items-center justify-between mb-4">
+                  <div className="bg-white rounded-xl border border-slate-200/80 p-6">
+                    <div className="flex items-center justify-between mb-2">
                       <h3 className="text-lg font-semibold text-slate-900">
                         Milestones
                       </h3>
@@ -1335,7 +1335,7 @@ export function ClientWorkspacePage() {
                         {milestoneProgress.completed} of {milestoneProgress.total} completed
                       </span>
                     </div>
-                    <div className="w-full bg-slate-200 rounded-full h-2.5 mb-4">
+                    <div className="w-full bg-slate-200 rounded-full h-2.5 mb-2">
                       <div
                         className="bg-emerald-600 h-2.5 rounded-full transition-all duration-500"
                         style={{ width: `${milestoneProgress.percent}%` }}
@@ -1448,11 +1448,11 @@ export function ClientWorkspacePage() {
                   </div>
 
                   {/* Escrow Actions */}
-                  <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                  <div className="bg-white rounded-xl border border-slate-200/80 p-6">
+                    <h3 className="text-lg font-semibold text-slate-900 mb-2">
                       Escrow & Payment
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       <div className="p-4 bg-slate-50 rounded-lg">
                         <p className="text-sm text-slate-500 mb-1">Total Amount</p>
                         <p className="text-2xl font-bold text-slate-900">
@@ -1537,8 +1537,8 @@ export function ClientWorkspacePage() {
 
                   {/* Extra Revision Panel */}
                   {revisionRequests.length > 0 && (
-                    <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
-                      <div className="flex items-center justify-between mb-4">
+                    <div className="bg-white rounded-xl border border-slate-200/80 p-6">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <RefreshCw className="h-5 w-5 text-emerald-600" />
                           <h3 className="text-lg font-semibold text-slate-900">Extra Revisions</h3>
@@ -1583,8 +1583,8 @@ export function ClientWorkspacePage() {
 
                   {/* Refunds & Cancellation Panel */}
                   {(refundRequests.length > 0 || selectedContract.cancellation_status === 'pending_freelancer') && (
-                    <div className="bg-white rounded-2xl border border-slate-200/80 p-6">
-                      <div className="flex items-center justify-between mb-4">
+                    <div className="bg-white rounded-xl border border-slate-200/80 p-6">
+                      <div className="flex items-center justify-between mb-2">
                         <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                           <RotateCcw className="h-5 w-5 text-amber-500" />
                           Refund & Cancellation
@@ -1597,7 +1597,7 @@ export function ClientWorkspacePage() {
                       </div>
 
                       {refundRequests.map(req => (
-                        <div key={req.id} className="p-4 bg-slate-50 rounded-xl mb-4">
+                        <div key={req.id} className="p-4 bg-slate-50 rounded-xl mb-2">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div>
                               <p className="text-sm font-semibold text-slate-900">{req.reason}</p>
@@ -1650,7 +1650,7 @@ export function ClientWorkspacePage() {
       {/* File Upload Modal */}
       {showUploadModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900">Upload File</h3>
               <button
@@ -1666,7 +1666,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-3 space-y-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   File
@@ -1754,7 +1754,7 @@ export function ClientWorkspacePage() {
       {/* Raise Dispute Modal */}
       {showDisputeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900">Raise a Dispute</h3>
               <button
@@ -1768,7 +1768,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-3 space-y-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Reason <span className="text-red-500">*</span>
@@ -1831,7 +1831,7 @@ export function ClientWorkspacePage() {
       {/* Request Refund / Cancel Project Modal */}
       {showRefundModal && selectedContract && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between p-6 border-b border-slate-200">
               <h3 className="text-lg font-semibold text-slate-900">Cancel Project / Request Refund</h3>
               <button
@@ -1845,7 +1845,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-3 space-y-2">
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
                 {selectedContract.freelancer_started_at || (milestones.some(m => ['released', 'paid', 'completed', 'approved'].includes(m.status)))
                   ? 'Work has started on this project. The freelancer must accept your cancellation; if they decline, the case goes to dispute resolution. Released milestones are never refunded.'
@@ -1940,7 +1940,7 @@ export function ClientWorkspacePage() {
       {/* Request Extra Revision Modal — compact & responsive */}
       {showRevisionModal && selectedContract && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 sticky top-0 bg-white z-10">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900">Request Extra Revision</h3>
               <button
@@ -1950,7 +1950,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-4 sm:p-5 space-y-4">
+            <div className="p-4 sm:p-5 space-y-2">
               <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 sm:p-4 text-xs sm:text-sm text-emerald-800 leading-relaxed">
                 <p className="font-medium flex items-center gap-1.5">
                   <Info className="h-4 w-4 shrink-0" />
@@ -2015,7 +2015,7 @@ export function ClientWorkspacePage() {
       {/* Fund Escrow Modal — compact & responsive */}
       {showFundEscrow && selectedContract && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
             <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-200 sticky top-0 bg-white z-10">
               <h3 className="text-base sm:text-lg font-semibold text-slate-900">Fund Escrow</h3>
               <button
@@ -2153,7 +2153,7 @@ function TasksSection({
   return (
     <div>
       {/* Add Task */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-2">
         <input
           type="text"
           value={taskInput}

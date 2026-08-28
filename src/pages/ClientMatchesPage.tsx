@@ -179,8 +179,8 @@ export function ClientMatchesPage() {
   // CASE 1: User has NO projects at all
   if (!loading && clientProjects.length === 0 && !projectId) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div>
             <h1 className="font-display text-2xl font-bold text-slate-900">AI Talent Matches</h1>
             <p className="text-slate-500 mt-1">
@@ -190,7 +190,7 @@ export function ClientMatchesPage() {
         </div>
 
         <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm">
-          <div className="h-20 w-20 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-6">
+          <div className="h-20 w-20 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-3">
             <Briefcase className="w-10 h-10 text-emerald-600" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No Projects Yet</h3>
@@ -213,7 +213,7 @@ export function ClientMatchesPage() {
   // CASE 2: User has projects but NO project selected
   if (!projectId) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-3">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">AI Talent Matches</h1>
           <p className="text-slate-500 mt-1">
@@ -221,8 +221,8 @@ export function ClientMatchesPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 p-6">
-          <h3 className="font-display font-bold text-slate-900 mb-4">Your Projects</h3>
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <h3 className="font-display font-bold text-slate-900 mb-2">Your Projects</h3>
           {clientProjects.length > 0 ? (
             <div className="grid gap-3">
               {clientProjects.map((p) => (
@@ -247,8 +247,8 @@ export function ClientMatchesPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-slate-500 mb-4">No projects found</p>
+            <div className="text-center py-4">
+              <p className="text-slate-500 mb-2">No projects found</p>
               <Link
                 to="/client/post"
                 className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
@@ -266,9 +266,9 @@ export function ClientMatchesPage() {
   // CASE 3: Project selected — show matches
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <Link
@@ -328,8 +328,8 @@ export function ClientMatchesPage() {
 
       {/* Empty State — No matches generated yet */}
       {!loading && matches.length === 0 && (
-        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-          <Sparkles className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+        <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+          <Sparkles className="w-16 h-16 text-slate-300 mx-auto mb-2" />
           <h3 className="font-display text-lg font-bold text-slate-900 mb-2">No Matches Found</h3>
           <p className="text-slate-500 mb-2 max-w-md mx-auto">
             {currentProject?.skills_required?.length 
@@ -337,7 +337,7 @@ export function ClientMatchesPage() {
               : 'Add skills to your project first so our AI can find matching freelancers.'}
           </p>
           {currentProject?.skills_required?.length ? (
-            <p className="text-xs text-slate-400 mb-6">
+            <p className="text-xs text-slate-400 mb-3">
               Searching for: {currentProject.skills_required.join(', ')}
             </p>
           ) : null}
@@ -361,14 +361,14 @@ export function ClientMatchesPage() {
 
       {/* Match Cards */}
       {!loading && visibleMatches.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           {visibleMatches.map((match) => (
             <div
               key={match.id}
-              className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-xl border border-slate-100 hover:shadow-md transition-shadow"
             >
               {/* Match Score Badge */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold">
                   <Sparkles className="w-4 h-4" />
                   {match.match_score}% Match
@@ -382,14 +382,14 @@ export function ClientMatchesPage() {
 
               {/* AI Match Reason */}
               {match.match_reason && (
-                <p className="mb-4 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
+                <p className="mb-2 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
                   <span className="font-semibold text-slate-600">Why matched: </span>
                   {match.match_reason}
                 </p>
               )}
 
               {/* Freelancer Info */}
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-2">
                 <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                   {match.freelancer.avatar ? (
                     <img src={match.freelancer.avatar} alt={match.freelancer.name} className="w-full h-full object-cover" />
@@ -412,7 +412,7 @@ export function ClientMatchesPage() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
+              <div className="grid grid-cols-2 gap-2 mb-2 text-sm">
                 <div className="flex items-center gap-2 text-slate-600">
                   <IndianRupee className="w-4 h-4" />
                   <span>{formatCurrency(match.freelancer.hourly_rate || 0)}</span>
@@ -424,7 +424,7 @@ export function ClientMatchesPage() {
               </div>
 
               {/* Skills */}
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mb-2">
                 {match.freelancer.skills?.slice(0, 3).map((skill) => (
                   <span
                     key={skill}
@@ -441,7 +441,7 @@ export function ClientMatchesPage() {
               </div>
 
               {/* Score Breakdown */}
-              <div className="space-y-2 mb-4 text-sm">
+              <div className="space-y-2 mb-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Skills</span>
                   <div className="flex items-center gap-2">
@@ -518,10 +518,10 @@ export function ClientMatchesPage() {
 
       {/* All Skipped */}
       {!loading && visibleMatches.length === 0 && matches.length > 0 && (
-        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200">
-          <XCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+        <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
+          <XCircle className="w-16 h-16 text-slate-300 mx-auto mb-2" />
           <h3 className="font-display text-lg font-medium text-slate-900 mb-2">All matches skipped</h3>
-          <p className="text-slate-500 mb-4">
+          <p className="text-slate-500 mb-2">
             You've skipped all {matches.length} match{matches.length !== 1 ? 'es' : ''}. Regenerate to find new freelancers.
           </p>
           <div className="flex gap-3 justify-center">

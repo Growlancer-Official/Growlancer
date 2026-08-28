@@ -90,28 +90,28 @@ export function ClientContestCreatePage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="mb-6">
+      <div className="mb-3">
         <h1 className="font-display text-3xl font-bold text-slate-900 mb-2">Create Contest</h1>
         <p className="text-slate-500">Post a design or development contest and receive competing submissions from talented freelancers</p>
       </div>
 
-      <TipNote tone="tip" title="Tips for a successful contest" compact className="mb-6">
+      <TipNote tone="tip" title="Tips for a successful contest" compact className="mb-3">
         Set a <strong>clear brief</strong> with specific deliverables so freelancers know exactly what to submit. A <strong>fair prize</strong> attracts quality entries — 2nd/3rd prizes are optional but encourage more submissions. The <strong>deadline</strong> controls how long entries are accepted, then you review and award the winner. Skills shown help freelancers decide if they're a fit.
       </TipNote>
 
-      <TipNote tone="protection" title="Escrow protection — how your prize is secured" compact className="mb-6">
+      <TipNote tone="protection" title="Escrow protection — how your prize is secured" compact className="mb-3">
         After creating the contest you'll <strong>fund the prize pool</strong> (1st + 2nd + 3rd + a 5% platform fee) from your wallet. The money is held in escrow — freelancers can only submit once it's funded, so everyone knows the prize is real. When you award winners, their prizes are <strong>released instantly</strong> to their wallets. Fair for you, fair for freelancers.
       </TipNote>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <FileText className="w-5 h-5 text-emerald-600" />
             Contest Details
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Contest Title *</label>
               <input
@@ -136,7 +136,7 @@ export function ClientContestCreatePage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Category *</label>
                 <select
@@ -172,14 +172,14 @@ export function ClientContestCreatePage() {
         </div>
 
         {/* Prize & Timeline */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <IndianRupee className="w-5 h-5 text-emerald-600" />
             Prizes & Timeline
           </h2>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">1st Prize ({currencySymbol()}) *</label>
                 <input
@@ -218,7 +218,7 @@ export function ClientContestCreatePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">End Date *</label>
                 <input
@@ -247,13 +247,13 @@ export function ClientContestCreatePage() {
         </div>
 
         {/* Skills */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Tag className="w-5 h-5 text-emerald-600" />
             Required Skills
           </h2>
 
-          <div className="mb-4">
+          <div className="mb-2">
             <div className="flex gap-2">
               <input
                 type="text"
@@ -273,7 +273,7 @@ export function ClientContestCreatePage() {
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-2 mb-2">
             {skills.map((skill) => (
               <button
                 key={skill}
@@ -313,7 +313,7 @@ export function ClientContestCreatePage() {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => navigate('/client/contests')}

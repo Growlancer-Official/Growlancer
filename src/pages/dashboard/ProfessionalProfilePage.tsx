@@ -889,7 +889,7 @@ export function ProfessionalProfilePage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -940,12 +940,12 @@ export function ProfessionalProfilePage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         {/* ── LEFT SIDEBAR: Profile Card + Tab Navigation ── */}
-        <div className="lg:col-span-1 space-y-4">
+        <div className="lg:col-span-1 space-y-2">
           {/* Profile Card */}
-          <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm text-center">
-            <div className="relative w-24 h-24 mx-auto mb-4">
+          <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm text-center">
+            <div className="relative w-24 h-24 mx-auto mb-2">
               {profile?.avatar ? (
                 <div className="w-full h-full rounded-full overflow-hidden">
                   <img src={profile.avatar} alt={formData.name} className="w-full h-full object-cover object-top"
@@ -974,10 +974,10 @@ export function ProfessionalProfilePage() {
               {isPro && <ProBadge size="xs" />}
             </h2>
             <p className="text-sm text-slate-500 mb-1">{formData.title || 'Freelancer'}</p>
-            <p className="text-xs text-slate-400 mb-4">{profile?.role === 'freelancer' ? 'Freelancer Account' : 'User Account'}</p>
+            <p className="text-xs text-slate-400 mb-2">{profile?.role === 'freelancer' ? 'Freelancer Account' : 'User Account'}</p>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 mb-4">
+            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 mb-2">
               <div>
                 <p className="text-lg font-bold text-slate-900">{freelancerProfile?.rating ? Number(freelancerProfile.rating).toFixed(1) : '—'}</p>
                 <p className="text-[10px] text-slate-500">Rating</p>
@@ -993,7 +993,7 @@ export function ProfessionalProfilePage() {
             </div>
 
             {/* Completion Bar */}
-            <div className="mb-4">
+            <div className="mb-2">
               <div className="flex items-center justify-between mb-1.5">
                 <span className="text-xs font-semibold text-slate-600">Profile</span>
                 <span className="text-xs font-bold text-emerald-600">{profileCompletion}%</span>
@@ -1013,7 +1013,7 @@ export function ProfessionalProfilePage() {
           </div>
 
           {/* Tab Navigation */}
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-2 sticky top-4">
+          <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-2 sticky top-4">
             <nav className="space-y-0.5">
               {tabs.map(({ id, label, icon: Icon, desc }) => (
                 <button key={id} onClick={() => { setActiveTab(id); if (id === 'profile') setIsEditing(false); }}
@@ -1032,14 +1032,14 @@ export function ProfessionalProfilePage() {
         </div>
 
         {/* ── RIGHT CONTENT ── */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 space-y-3">
 
           {/* ═══ PROFILE TAB ═══ */}
           {activeTab === 'profile' && (
             <>
               {/* Bio */}
-              <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                <h3 className="font-display text-lg font-bold text-slate-900 mb-4">About</h3>
+              <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">About</h3>
                 {isEditing ? (
                   <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     rows={4} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
@@ -1052,17 +1052,17 @@ export function ProfessionalProfilePage() {
               {isEditing && (
                 <>
                   {/* Title */}
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Professional Title</h3>
+                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Professional Title</h3>
                     <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                       placeholder="e.g., Full Stack Developer, UI/UX Designer" />
                   </div>
 
                   {/* Professional Info */}
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Professional Info</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Professional Info</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Base Rate ({currencySymbol()})</label>
                         <div className="relative">
@@ -1121,14 +1121,14 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Categories + Free-text Skills */}
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Categories & Skills</h3>
-                    <p className="text-xs text-slate-500 mb-4">
+                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Categories & Skills</h3>
+                    <p className="text-xs text-slate-500 mb-2">
                       Pick up to 3 categories — Growlancer matches you to projects by category. Add your own skills freely.
                     </p>
 
                     {/* Category → Skills picker (145 categories, no subcategory/skill hierarchy) */}
-                    <div className="mb-4 p-4 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="mb-2 p-4 bg-slate-50 rounded-xl border border-slate-200">
                       <CategoryPicker
                         mode="freelancer"
                         maxCategories={3}
@@ -1156,8 +1156,8 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Languages */}
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Languages</h3>
+                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Languages</h3>
                     <div className="flex gap-2 mb-3">
                       <input type="text" value={languageInput} onChange={(e) => setLanguageInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
                         className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g., English, Spanish" />
@@ -1174,16 +1174,16 @@ export function ProfessionalProfilePage() {
                   </div>
 
                   {/* Education */}
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Education</h3>
+                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Education</h3>
                     <textarea rows={2} value={formData.education} onChange={(e) => setFormData({ ...formData, education: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
                       placeholder="e.g., B.S. Computer Science, MIT" />
                   </div>
 
                   {/* Certifications */}
-                  <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-4">Certifications</h3>
+                  <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
+                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Certifications</h3>
                     <div className="flex gap-2 mb-3">
                       <input type="text" value={certInput} onChange={(e) => setCertInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCert())}
                         className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g., AWS Certified" />
@@ -1211,8 +1211,8 @@ export function ProfessionalProfilePage() {
               {/* View Mode: Display info */}
               {!isEditing && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
+                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Professional Info</h3>
                       <div className="space-y-3">
                         <div><span className="text-xs text-slate-400">Title</span><p className="font-medium">{formData.title || 'Not set'}</p></div>
@@ -1222,9 +1222,9 @@ export function ProfessionalProfilePage() {
                         <div><span className="text-xs text-slate-400">Portfolio</span><p className="font-medium">{formData.portfolio_url ? <a href={formData.portfolio_url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline">{formData.portfolio_url}</a> : 'Not set'}</p></div>
                       </div>
                     </div>
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Education & Certs</h3>
-                      <div className="space-y-4">
+                      <div className="space-y-2">
                         <div>
                           <span className="text-xs text-slate-400">Education</span>
                           <p className="font-medium mt-1">{formData.education || 'Not set yet'}</p>
@@ -1252,8 +1252,8 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
+                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Categories</h3>
                       <div className="flex flex-wrap gap-2">
                         {selectedCategoryNames.length > 0 ? selectedCategoryNames.map(c => <span key={c} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm">{c}</span>) : <p className="text-slate-400">No categories selected</p>}
@@ -1262,7 +1262,7 @@ export function ProfessionalProfilePage() {
                         <p className="text-xs text-slate-400 mt-2">Pick categories to get AI-matched to projects</p>
                       )}
                     </div>
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Skills</h3>
                       <div className="flex flex-wrap gap-2">
                         {formData.skills.length > 0 ? [...formData.skills].sort((a, b) => a.localeCompare(b)).map(s => <span key={s} className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm">{s}</span>) : <p className="text-slate-400">No skills added</p>}
@@ -1271,7 +1271,7 @@ export function ProfessionalProfilePage() {
                         <p className="text-xs text-slate-400 mt-2">Add skills to get better AI project matches</p>
                       )}
                     </div>
-                    <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm">
+                    <div className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Languages</h3>
                       <div className="flex flex-wrap gap-2">
                         {formData.languages.length > 0 ? formData.languages.map(l => <span key={l} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm">{l}</span>) : <p className="text-slate-400">No languages added</p>}
@@ -1285,8 +1285,8 @@ export function ProfessionalProfilePage() {
               )}
 
               {/* Bottom Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-6 border border-emerald-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-6 border border-emerald-100 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="flex items-start gap-3">
                     <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Star className="w-5 h-5 text-emerald-600" />
@@ -1322,12 +1322,12 @@ export function ProfessionalProfilePage() {
           {/* ═══ ACCOUNT TAB ═══ */}
           {activeTab === 'account' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
                   <Settings className="w-5 h-5 text-emerald-600" /> Account Settings
                 </h2>
-                <form onSubmit={handleAccountSave} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <form onSubmit={handleAccountSave} className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
                       <input type="text" value={accountData.name} onChange={(e) => setAccountData({ ...accountData, name: e.target.value })}
@@ -1381,7 +1381,7 @@ export function ProfessionalProfilePage() {
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Username</label>
                       <input type="text" value={accountData.username} onChange={(e) => setAccountData({ ...accountData, username: e.target.value })}
@@ -1393,7 +1393,7 @@ export function ProfessionalProfilePage() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="+1 (555) 000-0000" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2"><Clock className="w-4 h-4" /> Timezone</label>
                       <select value={accountData.timezone} onChange={(e) => setAccountData({ ...accountData, timezone: e.target.value })}
@@ -1418,8 +1418,8 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Account Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 border border-blue-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-blue-100 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Settings className="w-4 h-4 text-blue-600" />
@@ -1454,16 +1454,16 @@ export function ProfessionalProfilePage() {
 
           {/* ═══ SECURITY TAB ═══ */}
           {activeTab === 'security' && (
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <div className="space-y-3">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
                   <Lock className="w-5 h-5 text-emerald-600" /> Change Password
                 </h2>
-                <form onSubmit={handlePasswordChange} className="space-y-4">
+                <form onSubmit={handlePasswordChange} className="space-y-2">
                   <p className="text-sm text-slate-500 bg-slate-50 rounded-xl p-4">
                     For security, you'll be asked to confirm your identity before the password is changed.
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">New Password</label>
                       <div className="relative">
@@ -1500,11 +1500,11 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* 2FA */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
                   <Shield className="w-5 h-5 text-emerald-600" /> Two-Factor Authentication
                 </h2>
-                <p className="text-slate-600 mb-4">{twoFactorEnabled ? '2FA is enabled. Your account is more secure.' : 'Add an extra layer of security with 2FA.'}</p>
+                <p className="text-slate-600 mb-2">{twoFactorEnabled ? '2FA is enabled. Your account is more secure.' : 'Add an extra layer of security with 2FA.'}</p>
                 {!showQrCode && !showRecoveryCodes && (
                   twoFactorEnabled ? (
                     <div className="flex items-center gap-3 p-4 bg-emerald-50 rounded-xl border border-emerald-200">
@@ -1541,7 +1541,7 @@ export function ProfessionalProfilePage() {
                   )
                 )}
                 {showQrCode && (
-                  <div className="space-y-4">
+                  <div className="space-y-2">
                     <div className="flex justify-center p-6 bg-white border-2 border-dashed border-slate-200 rounded-xl">
                       <div className="text-center">
                         {qrCodeUrl ? <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" /> : <div className="w-48 h-48 bg-slate-100 rounded-lg flex items-center justify-center"><QrCode className="w-16 h-16 text-slate-400" /></div>}
@@ -1580,11 +1580,11 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Active Sessions */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
                   <Monitor className="w-5 h-5 text-emerald-600" /> Active Sessions
                 </h2>
-                <p className="text-sm text-slate-600 mb-4">You have {activeSessions} active session{activeSessions !== 1 ? 's' : ''}</p>
+                <p className="text-sm text-slate-600 mb-2">You have {activeSessions} active session{activeSessions !== 1 ? 's' : ''}</p>
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                   <div className="flex items-center gap-3">
                     <Monitor className="w-5 h-5 text-slate-400" />
@@ -1595,8 +1595,8 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Security Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl p-6 border border-amber-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-6 border border-amber-100 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Lock className="w-4 h-4 text-amber-600" />
@@ -1632,15 +1632,15 @@ export function ProfessionalProfilePage() {
           {/* ═══ NOTIFICATIONS TAB ═══ */}
           {activeTab === 'notifications' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
                   <Bell className="w-5 h-5 text-emerald-600" /> Notification Preferences
                 </h2>
-                <div className="space-y-4 mb-6">
+                <div className="space-y-2 mb-3">
                   {Object.entries(notifications).map(([key, value]) => (
                     <div key={key} className="p-4 border border-slate-200 rounded-xl">
                       <p className="font-medium text-slate-900 mb-3 capitalize">{key}</p>
-                      <div className="flex flex-wrap gap-4">
+                      <div className="flex flex-wrap gap-2">
                         {Object.entries(value).map(([type, enabled]) => (
                           <label key={type} className="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" checked={enabled} onChange={(e) => setNotifications({ ...notifications, [key]: { ...value, [type]: e.target.checked } })}
@@ -1660,8 +1660,8 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Notifications Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-6 border border-purple-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-purple-50 to-white rounded-xl p-6 border border-purple-100 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Bell className="w-4 h-4 text-purple-600" />
@@ -1697,11 +1697,11 @@ export function ProfessionalProfilePage() {
           {/* ═══ PRIVACY TAB ═══ */}
           {activeTab === 'privacy' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
                   <Globe className="w-5 h-5 text-emerald-600" /> Privacy Settings
                 </h2>
-                <div className="space-y-6">
+                <div className="space-y-3">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Profile Visibility</label>
                     <select value={privacy.profileVisibility} onChange={(e) => setPrivacy({ ...privacy, profileVisibility: e.target.value as any })}
@@ -1732,8 +1732,8 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Privacy Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-sky-50 to-white rounded-2xl p-6 border border-sky-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-sky-50 to-white rounded-xl p-6 border border-sky-100 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Globe className="w-4 h-4 text-sky-600" />
@@ -1769,21 +1769,21 @@ export function ProfessionalProfilePage() {
           {/* ═══ PAYOUT TAB ═══ */}
           {activeTab === 'payout' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
                   <IndianRupee className="w-5 h-5 text-emerald-600" /> Payout Methods
                 </h2>
                 {payoutMethodsLoading && (
-                  <div className="flex items-center justify-center py-8 mb-6"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /><span className="ml-3 text-sm text-slate-500">Loading...</span></div>
+                  <div className="flex items-center justify-center py-4 mb-3"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /><span className="ml-3 text-sm text-slate-500">Loading...</span></div>
                 )}
                 {payoutMethodsError && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-6 flex items-center gap-2">
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-3 flex items-center gap-2">
                     <AlertCircle className="w-5 h-5 text-red-600" /><p className="text-sm text-red-700">{payoutMethodsError}</p>
                     <button onClick={() => void fetchPayoutMethods()} className="ml-auto text-xs text-red-600 font-medium underline">Retry</button>
                   </div>
                 )}
                 {!payoutMethodsLoading && payoutMethods.length > 0 ? (
-                  <div className="space-y-3 mb-6">
+                  <div className="space-y-3 mb-3">
                     {payoutMethods.map(method => (
                       <div key={method.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                         <div className="flex items-center gap-3">
@@ -1810,7 +1810,7 @@ export function ProfessionalProfilePage() {
                     ))}
                   </div>
                 ) : !payoutMethodsLoading ? (
-                  <div className="text-center py-8 text-slate-500 mb-6">
+                  <div className="text-center py-4 text-slate-500 mb-3">
                     <IndianRupee className="w-12 h-12 mx-auto mb-3 text-slate-300" />
                     <p className="font-medium">No payout methods added yet</p>
                     <p className="text-sm">Add a payout method to receive payments</p>
@@ -1819,8 +1819,8 @@ export function ProfessionalProfilePage() {
 
                 {showAddPayout ? (
                   <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl">
-                    <h3 className="font-medium text-slate-900 mb-4">Add Payout Method</h3>
-                    <div className="space-y-4">
+                    <h3 className="font-medium text-slate-900 mb-2">Add Payout Method</h3>
+                    <div className="space-y-2">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Method Type</label>
                         <select value={newPayout.type} onChange={(e) => setNewPayout({ ...newPayout, type: e.target.value as any })}
@@ -1851,7 +1851,7 @@ export function ProfessionalProfilePage() {
                             <label className="block text-sm font-medium text-slate-700 mb-2">Account Holder Name <span className="text-red-400">*</span></label>
                             <input type="text" value={newPayout.accountHolderName} onChange={(e) => setNewPayout({ ...newPayout, accountHolderName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <div>
                               <label className="block text-sm font-medium text-slate-700 mb-2">Bank Name</label>
                               <input type="text" value={newPayout.bankName} onChange={(e) => setNewPayout({ ...newPayout, bankName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g. HDFC Bank" />
@@ -1886,8 +1886,8 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Payout Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl p-6 border border-green-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border border-green-100 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <IndianRupee className="w-4 h-4 text-green-600" />
@@ -1922,12 +1922,12 @@ export function ProfessionalProfilePage() {
 
           {/* ═══ DELETION TAB ═══ */}
           {activeTab === 'deletion' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+            <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
                 <Trash2 className="w-5 h-5 text-red-500" /> Delete Account
               </h2>
               {deletionStep === 'initial' && (
-                <div className="space-y-6">
+                <div className="space-y-3">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
                     <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-5 h-5 text-red-600" /><p className="font-medium text-red-800">Warning: This cannot be undone</p></div>
                     <p className="text-sm text-red-700">Deleting your account will permanently remove all your data including projects, contracts, messages, and payment history.</p>
@@ -1948,7 +1948,7 @@ export function ProfessionalProfilePage() {
                 </div>
               )}
               {deletionStep === 'confirm' && (
-                <div className="space-y-6">
+                <div className="space-y-3">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
                     <AlertTriangle className="w-5 h-5 text-red-600 mb-2" />
                     <p className="font-medium text-red-800">Final Confirmation</p>
@@ -1967,7 +1967,7 @@ export function ProfessionalProfilePage() {
                 </div>
               )}
               {deletionStep === 'processing' && (
-                <div className="text-center py-8"><Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto mb-4" /><p className="font-medium text-slate-900">Processing your deletion request...</p></div>
+                <div className="text-center py-4"><Loader2 className="w-8 h-8 animate-spin text-red-600 mx-auto mb-2" /><p className="font-medium text-slate-900">Processing your deletion request...</p></div>
               )}
             </div>
           )}

@@ -86,7 +86,7 @@ export function ClientContestsPage() {
   return (
     <div className="max-w-[100rem] mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-8">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">My Contests</h1>
           <p className="text-slate-500 mt-1">Manage your design and development contests</p>
@@ -101,13 +101,13 @@ export function ClientContestsPage() {
       </div>
 
       {/* Contests guide — plain-language */}
-      <TipNote tone="info" title="How contests work" compact className="mb-6">
+      <TipNote tone="info" title="How contests work" compact className="mb-3">
         Post a <strong>prize</strong> and a brief, then <strong>fund the prize</strong> (escrowed + 5% fee) — freelancers can only submit once the prize is protected. After the deadline the contest moves to <strong>Judging</strong>, you pick 1st/2nd/3rd, and prizes are released to the winners' wallets in real time. Entries, votes and results are all public for transparency.
       </TipNote>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-8">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-emerald-100 rounded-xl">
               <Trophy className="w-5 h-5 text-emerald-600" />
@@ -117,7 +117,7 @@ export function ClientContestsPage() {
           <p className="text-2xl font-extrabold text-slate-900">{stats.total}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-green-100 rounded-xl">
               <Clock className="w-5 h-5 text-green-600" />
@@ -127,7 +127,7 @@ export function ClientContestsPage() {
           <p className="text-2xl font-extrabold text-slate-900">{stats.active}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-emerald-100 rounded-xl">
               <IndianRupee className="w-5 h-5 text-emerald-600" />
@@ -137,7 +137,7 @@ export function ClientContestsPage() {
           <p className="text-2xl font-extrabold text-slate-900">{formatCurrency(stats.totalPrize)}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3 mb-2">
             <div className="p-2 bg-blue-100 rounded-xl">
               <Users className="w-5 h-5 text-blue-600" />
@@ -149,7 +149,7 @@ export function ClientContestsPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-2 mb-6">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         <Filter className="w-4 h-4 text-slate-400" />
         {(['all', 'active', 'judging', 'completed', 'draft'] as StatusFilter[]).map((status) => (
           <button
@@ -177,10 +177,10 @@ export function ClientContestsPage() {
           <Loader2 className="animate-spin h-12 w-12 text-emerald-600" />
         </div>
       ) : filteredContests.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+          <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-2" />
           <h3 className="text-xl font-bold text-slate-900 mb-2">No contests yet</h3>
-          <p className="text-slate-500 mb-6">Create your first contest to start receiving submissions</p>
+          <p className="text-slate-500 mb-3">Create your first contest to start receiving submissions</p>
           <Link
             to="/client/contests/create"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
@@ -191,12 +191,12 @@ export function ClientContestsPage() {
         </div>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="space-y-2">
             {filteredContests
               .slice((page - 1) * pageSize, page * pageSize)
               .map((contest) => (
-            <div key={contest.id} className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div key={contest.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(contest.status)}`}>
@@ -225,7 +225,7 @@ export function ClientContestsPage() {
                   
                   <p className="text-slate-500 text-sm mt-1 line-clamp-1">{contest.description}</p>
                   
-                  <div className="flex flex-wrap items-center gap-4 mt-3 text-sm">
+                  <div className="flex flex-wrap items-center gap-2 mt-3 text-sm">
                     <div className="flex items-center gap-1 text-slate-500">
                       <Calendar className="w-4 h-4" />
                       Ends {new Date(contest.end_date).toLocaleDateString()}

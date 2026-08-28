@@ -161,9 +161,9 @@ export function ClientTeamProjectDetailPage() {
   if (error || !project) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+        <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-2" />
         <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Could not load this team project</h1>
-        <p className="text-slate-500 mb-6">{error || 'Not found'}</p>
+        <p className="text-slate-500 mb-3">{error || 'Not found'}</p>
         <Link to="/client/team-projects" className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold transition-all hover:bg-emerald-700">
           <ArrowLeft className="w-4 h-4" /> Back to Team Projects
         </Link>
@@ -172,12 +172,12 @@ export function ClientTeamProjectDetailPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8">
-      <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-4 flex items-center gap-1">
+    <div className="max-w-5xl mx-auto px-4 py-4">
+      <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-2 flex items-center gap-1">
         <ArrowLeft className="w-4 h-4" /> Back to Team Projects
       </button>
 
-      <div className="flex items-start justify-between gap-4 mb-2 flex-wrap">
+      <div className="flex items-start justify-between gap-2 mb-2 flex-wrap">
         <div>
           <div className="flex items-center gap-3 mb-1">
             <div className="w-10 h-10 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
@@ -197,12 +197,12 @@ export function ClientTeamProjectDetailPage() {
         </Link>
       </div>
 
-      {project.description && <p className="text-slate-600 whitespace-pre-wrap mb-6">{project.description}</p>}
+      {project.description && <p className="text-slate-600 whitespace-pre-wrap mb-3">{project.description}</p>}
 
       {/* Roles grid */}
-      <div className="grid gap-4 sm:grid-cols-2 mb-8">
+      <div className="grid gap-2 sm:grid-cols-2 mb-8">
         {roles.length === 0 && (
-          <div className="sm:col-span-2 text-center py-10 bg-white rounded-2xl border border-dashed border-slate-300">
+          <div className="sm:col-span-2 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
             <p className="text-slate-500 mb-3">No roles yet — add the team roles you need.</p>
             <Link to={`/client/team-projects/create?edit=${project.id}`} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm font-medium transition-colors hover:bg-emerald-700">
               <Plus className="w-4 h-4" /> Add First Role
@@ -213,7 +213,7 @@ export function ClientTeamProjectDetailPage() {
           const meta = ROLE_STATUS_META[role.status] || ROLE_STATUS_META.open;
           const contract = contracts[role.id];
           return (
-            <div key={role.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-3">
+            <div key={role.id} className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-slate-900">{role.role_title}</h3>
                 <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${meta.cls}`}>{meta.label}</span>
@@ -287,9 +287,9 @@ export function ClientTeamProjectDetailPage() {
       </div>
 
       {/* Transparency breakdown */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <h2 className="font-semibold text-slate-900 mb-1">Spend Breakdown</h2>
-        <p className="text-xs text-slate-500 mb-4">
+        <p className="text-xs text-slate-500 mb-2">
           Har contract independent — 5% commission har contract par, koi alag team fee nahi.
         </p>
         <div className="overflow-x-auto">

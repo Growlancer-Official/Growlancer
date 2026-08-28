@@ -221,15 +221,15 @@ export function ClientPostProjectPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-emerald-600" />
             Basic Information
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-2">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Project Title *</label>
               <div className="flex items-start gap-2">
@@ -289,7 +289,7 @@ export function ClientPostProjectPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Experience Level *</label>
                 <select
@@ -317,8 +317,8 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Budget */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <IndianRupee className="w-5 h-5 text-emerald-600" />
             Budget
           </h2>
@@ -352,12 +352,12 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Category + Skills (145 categories only, free-text skills) */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-emerald-600" />
             Category & Skills
           </h2>
-          <p className="text-sm text-slate-500 mb-4">
+          <p className="text-sm text-slate-500 mb-2">
             Pick the category for your project, then type the skills you need. Growlancer matches freelancers by category.
           </p>
 
@@ -406,8 +406,8 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Visibility */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-4">Project Visibility</h2>
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-2">Project Visibility</h2>
           <div className="space-y-3">
             {[
               { value: 'public', label: 'Public - Visible to all freelancers', desc: 'Get maximum exposure and proposals' },
@@ -440,7 +440,7 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-4">
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => navigate('/client/projects')}

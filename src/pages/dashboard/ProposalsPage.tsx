@@ -185,9 +185,9 @@ export function ProposalsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <FileText className="w-6 h-6 text-white" />
@@ -215,7 +215,7 @@ export function ProposalsPage() {
       </TipNote>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
         <div className="bg-white rounded-xl p-5 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
@@ -330,16 +330,16 @@ export function ProposalsPage() {
       {/* Proposals List */}
       {filteredProposals.length > 0 ? (
         <>
-          <div className="space-y-4">
+          <div className="space-y-2">
             {filteredProposals.map((proposal) => {
             const daysSince = getDaysSinceSubmitted(proposal.created_at);
             
             return (
               <div
                 key={proposal.id}
-                className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm"
+                className="bg-white rounded-xl p-6 border border-slate-100 shadow-sm"
               >
-                <div className="flex items-start gap-6">
+                <div className="flex items-start gap-3">
                   {/* Project Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
@@ -349,12 +349,12 @@ export function ProposalsPage() {
                       {getStatusBadge(proposal.status)}
                     </div>
 
-                    <p className="text-slate-600 mb-4 line-clamp-2">
+                    <p className="text-slate-600 mb-2 line-clamp-2">
                       {proposal.project?.description || 'No description provided'}
                     </p>
 
                     {/* Meta Info */}
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500 mb-4">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 mb-2">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
                         Client: <span className="font-medium text-slate-700 flex items-center gap-1">
@@ -386,7 +386,7 @@ export function ProposalsPage() {
                     </div>
 
                     {/* Proposal Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
                       <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                         <p className="text-xs text-emerald-600 mb-1 font-medium">Your Rate</p>
                         <p className="text-lg font-bold text-slate-900">
@@ -481,8 +481,8 @@ export function ProposalsPage() {
           )}
         </>
       ) : (
-        <div className="bg-white rounded-2xl p-12 border border-slate-100 text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
             <FileText className="w-10 h-10 text-slate-400" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">
@@ -492,7 +492,7 @@ export function ProposalsPage() {
               ? 'No accepted proposals yet'
               : 'No rejected proposals'}
           </h3>
-          <p className="text-slate-500 max-w-md mx-auto mb-6">
+          <p className="text-slate-500 max-w-md mx-auto mb-3">
             {activeTab === 'pending'
               ? 'You have no proposals waiting for client review. Browse projects and submit proposals.'
               : activeTab === 'accepted'

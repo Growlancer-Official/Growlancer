@@ -245,7 +245,7 @@ export function NotificationsCenterPage() {
           !notification.read ? 'bg-blue-50/40' : ''
         } ${isAnimatingOut ? 'opacity-0 -translate-y-2 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}
       >
-        <div className="flex items-start gap-4">
+        <div className="flex items-start gap-2">
           <div className={`w-11 h-11 rounded-full flex items-center justify-center text-lg flex-shrink-0 ${notificationService.getNotificationColor(notification.type)}`}>
             {notificationService.getNotificationIcon(notification.type)}
           </div>
@@ -363,9 +363,9 @@ export function NotificationsCenterPage() {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <BellRing className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -400,12 +400,12 @@ export function NotificationsCenterPage() {
       </div>
 
       {/* Notifications guide — plain-language */}
-      <TipNote tone="info" title="Stay on top of everything" compact className="mb-4">
+      <TipNote tone="info" title="Stay on top of everything" compact className="mb-2">
         Payment, escrow, contract, message and review updates arrive here <strong>in real time</strong>. Every notification has a <strong>reference ID</strong> — copy it and quote it when contacting support for faster help. Use <strong>Archive</strong> to tidy up, and enable push notifications below for instant alerts on this device.
       </TipNote>
 
       {/* Tabs + Filter */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
           <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
             {TABS.map(tab => (

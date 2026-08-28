@@ -231,7 +231,7 @@ export function ServicesPage() {
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">My Services</h1>
           <p className="text-slate-500 mt-1">Manage your service offerings</p>
@@ -251,8 +251,8 @@ export function ServicesPage() {
       </TipNote>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-emerald-100 rounded-xl">
               <Package className="w-6 h-6 text-emerald-600" />
@@ -263,7 +263,7 @@ export function ServicesPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-blue-100 rounded-xl">
               <Eye className="w-6 h-6 text-blue-600" />
@@ -276,7 +276,7 @@ export function ServicesPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-orange-100 rounded-xl">
               <ShoppingBag className="w-6 h-6 text-orange-600" />
@@ -289,7 +289,7 @@ export function ServicesPage() {
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-2xl border border-slate-100">
+        <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-3">
             <div className="p-3 bg-purple-100 rounded-xl">
               <Star className="w-6 h-6 text-purple-600" />
@@ -308,7 +308,7 @@ export function ServicesPage() {
 
       {/* 💬 Negotiable-Price Offers — live */}
       {offers.length > 0 && (
-        <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
           <button
             onClick={() => setShowOffers(!showOffers)}
             className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
@@ -382,7 +382,7 @@ export function ServicesPage() {
       )}
 
       {/* Categories Section - A-Z Accordion */}
-      <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
         <button
           onClick={() => setShowCategories(!showCategories)}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
@@ -409,7 +409,7 @@ export function ServicesPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-2">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
@@ -447,7 +447,7 @@ export function ServicesPage() {
       {/* Services Grid */}
       {filteredServices.length === 0 ? (
         <div className="text-center py-12">
-          <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+          <Package className="w-16 h-16 text-slate-300 mx-auto mb-2" />
           <h3 className="text-lg font-semibold text-slate-900 mb-2">No services found</h3>
           <p className="text-slate-500">
             {searchTerm || filterStatus !== 'all'
@@ -457,13 +457,13 @@ export function ServicesPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {filteredServices
               .slice((page - 1) * pageSize, page * pageSize)
               .map(service => (
             <div
               key={service.id}
-              className="bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg transition-shadow"
+              className="bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-lg transition-shadow"
             >
               {/* Cover Image */}
               {'image_url' in service && (service as unknown as Record<string, unknown>).image_url ? (
@@ -476,8 +476,8 @@ export function ServicesPage() {
                   />
                 </div>
               ) : null}
-              <div className="p-6">
-                <div className="flex items-start justify-between mb-4">
+              <div className="p-3">
+                <div className="flex items-start justify-between mb-2">
                   <div className="flex-1">
                     <span className="inline-block px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 mb-2">
                       {service.category}
@@ -490,9 +490,9 @@ export function ServicesPage() {
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-500 line-clamp-3 mb-4">{service.description}</p>
+                <p className="text-sm text-slate-500 line-clamp-3 mb-2">{service.description}</p>
 
-                <div className="flex items-center gap-4 mb-3 text-sm text-slate-500">
+                <div className="flex items-center gap-2 mb-3 text-sm text-slate-500">
                   <div className="flex items-center gap-1">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-semibold text-slate-900">
@@ -527,13 +527,13 @@ export function ServicesPage() {
                   </div>
                 ) : null}
                 {Number(service.extra_revision_price) > 0 && (
-                  <p className="text-[11px] text-amber-600 mb-4">
+                  <p className="text-[11px] text-amber-600 mb-2">
                     Extra revision: {formatCurrency(Number(service.extra_revision_price))} each (beyond free revisions)
                   </p>
                 )}
 
                 {service.tags && service.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-2 mb-2">
                     {service.tags.slice(0, 3).map(tag => (
                       <span
                         key={tag}

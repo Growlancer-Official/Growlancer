@@ -269,7 +269,7 @@ export function DisputeResolutionPage() {
 
   if (selectedDispute) {
     return (
-      <div className="max-w-4xl mx-auto space-y-6">
+      <div className="max-w-4xl mx-auto space-y-3">
         {/* Back button */}
         <button
           onClick={handleBack}
@@ -280,8 +280,8 @@ export function DisputeResolutionPage() {
         </button>
 
         {/* Header Card */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+        <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
             <div>
               <div className="flex items-center gap-3 mb-2">
                 <h2 className="text-xl font-bold text-slate-900">Dispute #{selectedDispute.id.slice(0, 8)}</h2>
@@ -325,7 +325,7 @@ export function DisputeResolutionPage() {
         </div>
 
         {/* Description */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+        <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
           <h3 className="font-semibold text-slate-900 mb-2">Description</h3>
           <p className="text-slate-600 text-sm leading-relaxed">
             {selectedDispute.description || 'No description provided.'}
@@ -342,7 +342,7 @@ export function DisputeResolutionPage() {
 
         {/* Resolution Outcome (terminal statuses) */}
         {TERMINAL_STATUSES.includes(selectedDispute.status) && (
-          <div className={`bg-white rounded-2xl border p-6 shadow-sm ${
+          <div className={`bg-white rounded-xl border p-6 shadow-sm ${
             selectedDispute.status === 'resolved_released' ? 'border-emerald-100' : selectedDispute.status === 'cancelled' ? 'border-slate-100' : 'border-rose-100'
           }`}>
             <div className="flex items-center gap-2 mb-3">
@@ -375,26 +375,26 @@ export function DisputeResolutionPage() {
         )}
 
         {/* Messages */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-4">
+        <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+          <div className="flex items-center gap-2 mb-2">
             <MessageCircle className="w-5 h-5 text-slate-400" />
             <h3 className="font-semibold text-slate-900">Discussion Thread</h3>
           </div>
 
           {messages.length === 0 ? (
-            <div className="text-center py-8 text-slate-400 text-sm">
+            <div className="text-center py-4 text-slate-400 text-sm">
               <MessageCircle className="w-8 h-8 mx-auto mb-2 opacity-40" />
               <p>No messages yet. Start the conversation.</p>
             </div>
           ) : (
-            <div className="space-y-3 max-h-80 overflow-y-auto mb-4 pr-1">
+            <div className="space-y-3 max-h-80 overflow-y-auto mb-2 pr-1">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
                   className={`flex ${msg.user_id === user?.id ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm ${
+                    className={`max-w-[75%] rounded-xl px-4 py-2.5 text-sm ${
                       msg.user_id === user?.id
                         ? 'bg-emerald-500 text-white rounded-br-md'
                         : 'bg-slate-100 text-slate-800 rounded-bl-md'
@@ -448,9 +448,9 @@ export function DisputeResolutionPage() {
   /* ================================================================ */
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Dispute Resolution</h1>
           <p className="text-slate-500 mt-1">
@@ -476,22 +476,22 @@ export function DisputeResolutionPage() {
 
       {/* Outcome cards — what each decision means for both sides */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-4">
+        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 mb-2" />
           <p className="text-xs font-bold text-emerald-900 mb-1">Freelancer Favour — Work Delivered</p>
           <p className="text-[11px] text-emerald-700 leading-relaxed">The full escrow is released to the freelancer's wallet. Contract completes.</p>
         </div>
-        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4">
+        <div className="bg-rose-50 border border-rose-100 rounded-xl p-4">
           <XCircle className="w-5 h-5 text-rose-600 mb-2" />
           <p className="text-xs font-bold text-rose-900 mb-1">Client Favour — No Work Done</p>
           <p className="text-[11px] text-rose-700 leading-relaxed">The full escrow is refunded back to the client. Contract cancelled — freelancer gets nothing.</p>
         </div>
-        <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4">
+        <div className="bg-violet-50 border border-violet-100 rounded-xl p-4">
           <Scale className="w-5 h-5 text-violet-600 mb-2" />
           <p className="text-xs font-bold text-violet-900 mb-1">Split — Partial Work</p>
           <p className="text-[11px] text-violet-700 leading-relaxed">Client gets a partial refund and the freelancer is paid for the work actually delivered.</p>
         </div>
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4">
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
           <Ban className="w-5 h-5 text-slate-600 mb-2" />
           <p className="text-xs font-bold text-slate-900 mb-1">Dismissed — No Wrongdoing</p>
           <p className="text-[11px] text-slate-600 leading-relaxed">Work resumes normally — escrow stays locked to the contract for the agreed payment.</p>
@@ -500,12 +500,12 @@ export function DisputeResolutionPage() {
 
       {/* Empty state */}
       {disputes.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-100 p-16 text-center shadow-sm">
-          <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="bg-white rounded-xl border border-slate-100 p-16 text-center shadow-sm">
+          <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2">
             <Shield className="w-8 h-8 text-emerald-500" />
           </div>
           <h3 className="text-lg font-semibold text-slate-900 mb-2">No Disputes</h3>
-          <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6">
+          <p className="text-slate-500 text-sm max-w-sm mx-auto mb-3">
             You have no disputes on your contracts. If an issue arises, you can raise a
             dispute directly from the contract workspace.
           </p>
@@ -559,9 +559,9 @@ export function DisputeResolutionPage() {
                   <button
                     key={dispute.id}
                     onClick={() => handleSelectDispute(dispute)}
-                    className="w-full text-left bg-white rounded-2xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition-all group"
+                    className="w-full text-left bg-white rounded-xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition-all group"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-3 mb-1.5">
                           <h3 className="font-semibold text-slate-900 truncate">
