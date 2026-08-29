@@ -399,7 +399,7 @@ const handleSubmit = async () => {
           <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mx-auto mb-3">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Test Blocked</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 mb-2">Test Blocked</h1>
           <p className="text-slate-600 mb-3 max-w-md mx-auto">
             {blockedMsg || 'You are not eligible to take this test right now.'}
           </p>
@@ -428,7 +428,7 @@ const handleSubmit = async () => {
           <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mx-auto mb-3">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">Test Not Available</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 mb-2">Test Not Available</h1>
           <p className="text-slate-600 mb-3 max-w-md mx-auto">{blockedMsg}</p>
           <button
             onClick={() => navigate('/dashboard/certifications')}
@@ -445,7 +445,7 @@ const handleSubmit = async () => {
           <div className={`w-16 h-16 rounded-xl ${levelInfo.bgColor} flex items-center justify-center mx-auto mb-3`}>
             <Award className={`w-8 h-8 ${levelInfo.color}`} />
           </div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">{test.skill}</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 mb-2">{test.skill}</h1>
           <p className="text-slate-500 mb-3">{test.description}</p>
           <div className="grid grid-cols-3 gap-3 mb-8 max-w-sm mx-auto">
             <div className="p-3 bg-slate-50 rounded-xl">
@@ -596,7 +596,7 @@ const handleSubmit = async () => {
               <XCircle className="w-10 h-10 text-red-500" />
             )}
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+          <h2 className="text-xl font-bold text-slate-900 mb-2">
             {passed ? 'Congratulations!' : 'Keep Practicing'}
           </h2>
           <p className="text-slate-500 mb-3">

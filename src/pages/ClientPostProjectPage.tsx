@@ -213,7 +213,7 @@ export function ClientPostProjectPage() {
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-4">
       <div className="mb-3">
-        <h1 className="font-display text-lg sm:text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+        <h1 className="font-display text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
           <div className="p-2 bg-emerald-100 rounded-xl"><Briefcase className="w-5 h-5 text-emerald-600" /></div>
           {editProjectId ? 'Edit Project' : 'Post New Project'} <InfoTip title="Post a project" text="Set a clear title, budget and description so freelancers know exactly what you need. The category and skills help AI match you with the best freelancers. After posting, proposals arrive in real time — review, shortlist and hire with escrow protection on every payment." /></h1>
         <p className="text-slate-500 text-xs sm:text-sm">
