@@ -211,36 +211,36 @@ export function ClientPostProjectPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-4">
-        <h1 className="font-display text-xl font-bold text-slate-900 mb-2">
+    <div className="max-w-4xl mx-auto px-2 sm:px-4">
+      <div className="mb-3">
+        <h1 className="font-display text-lg sm:text-xl font-bold text-slate-900 mb-1">
           {editProjectId ? 'Edit Project' : 'Post New Project'}
         </h1>
-        <p className="text-slate-500">
+        <p className="text-slate-500 text-xs sm:text-sm">
           {editProjectId
             ? 'Update your project details and regenerate AI matches'
             : 'Fill in the details to post your project and get matched with talented freelancers'}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-            <Briefcase className="w-5 h-5 text-emerald-600" />
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-100">
+          <h2 className="font-display text-sm sm:text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-emerald-600" />
             Basic Information
           </h2>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Project Title *</label>
-              <div className="flex items-start gap-3">
+              <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5">Project Title *</label>
+              <div className="flex items-start gap-2">
                 <input
                   type="text"
                   required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                  className="flex-1 px-3 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm"
                   placeholder="e.g., Build a React Native Mobile App"
                 />
                 <AIGenerateModal
@@ -264,13 +264,13 @@ export function ClientPostProjectPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Description *</label>
+              <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5">Description *</label>
               <textarea
                 required
-                rows={6}
+                rows={4}
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
+                className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none text-sm"
                 placeholder="Describe your project in detail. Include requirements, deliverables, and any specific skills needed..."
               />
               <div className="mt-2 flex items-center gap-3">
@@ -291,7 +291,7 @@ export function ClientPostProjectPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Experience Level *</label>
                 <select
@@ -319,14 +319,14 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Budget */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-            <IndianRupee className="w-5 h-5 text-emerald-600" />
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-100">
+          <h2 className="font-display text-sm sm:text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <IndianRupee className="w-4 h-4 text-emerald-600" />
             Budget
           </h2>
 
           <div className="max-w-md">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Enter Your Budget ({currencySymbol()}) *</label>
+            <label className="block text-xs sm:text-sm font-medium text-slate-700 mb-1.5">Enter Your Budget ({currencySymbol()}) *</label>
             <input
               type="number"
               required
@@ -334,7 +334,7 @@ export function ClientPostProjectPage() {
               max="100000"
               value={formData.budget}
               onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              className="w-full px-3 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-sm"
               placeholder="e.g., 10000"
             />
             <p className="text-xs text-slate-400 mt-1.5">
@@ -354,9 +354,9 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Category + Skills (145 categories only, free-text skills) */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-            <Sparkles className="w-5 h-5 text-emerald-600" />
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-100">
+          <h2 className="font-display text-sm sm:text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
             Category & Skills
           </h2>
           <p className="text-sm text-slate-500 mb-2">
@@ -408,8 +408,8 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Visibility */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-xl font-bold text-slate-900 mb-2">Project Visibility</h2>
+        <div className="bg-white p-3 sm:p-4 rounded-xl border border-slate-100">
+          <h2 className="font-display text-sm sm:text-base font-bold text-slate-900 mb-2">Project Visibility</h2>
           <div className="space-y-4">
             {[
               { value: 'public', label: 'Public - Visible to all freelancers', desc: 'Get maximum exposure and proposals' },
@@ -442,18 +442,18 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={() => navigate('/client/projects')}
-            className="px-6 py-3 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+            className="px-4 py-2.5 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm"
           >
             {loading ? (
               <>
