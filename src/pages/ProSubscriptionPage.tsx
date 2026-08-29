@@ -146,20 +146,15 @@ export function ProSubscriptionPage() {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
 
-  // Single flat plan — only show the paid ₹299/month plan as a card.
-  // Free plan info lives in the comparison table below.
-  const paidPlans = plans.filter((p) => p.price > 0);
-  // Deduplicate by name (old DB may have duplicate ₹299 plans)
-  const seenNames = new Set<string>();
-  const uniquePaidPlans = paidPlans.filter((p) => {
-    if (seenNames.has(p.name)) return false;
-    seenNames.add(p.name);
-    return true;
-  });
-  const displayPlans = uniquePaidPlans.length > 0 ? uniquePaidPlans : plans.filter((p) => p.price > 0).slice(0, 1);
+  // Single flat plan — ONLY show the canonical premium_monthly plan.
+  // Explicit ID check + is_active guard so stray seed rows never leak into UI.
+  const canonicalPlan = plans.find((p) => p.id === 'premium_monthly' && p.price > 0 && p.is_active);
+  // Defensive: fallback to any single active paid plan if canonical is missing
+  const fallbackPlan = !canonicalPlan ? plans.find((p) => p.price > 0 && p.is_active) : null;
+  const displayPlans = canonicalPlan ? [canonicalPlan] : fallbackPlan ? [fallbackPlan] : [];
   // For comparison table: Free vs Premium (two columns)
   const freePlan = plans.find((p) => p.price === 0);
-  const premiumPlan = plans.find((p) => p.price > 0 && p.interval === 'month');
+  const premiumPlan = canonicalPlan || fallbackPlan || plans.find((p) => p.price > 0 && p.interval === 'month');
   const comparisonPlans = [freePlan, premiumPlan].filter(Boolean) as typeof plans;
 
   // Build comparison rows from plan features.

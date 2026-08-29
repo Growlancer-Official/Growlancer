@@ -4,6 +4,13 @@
 
 DO $$
 BEGIN
+  -- Guard: skip seed data in production to prevent fake wallets/portfolio
+  -- from leaking to real users. This migration is for local/staging QA only.
+  IF current_setting('app.environment', true) = 'production' THEN
+    RAISE NOTICE 'Skipping seed data in production environment';
+    RETURN;
+  END IF;
+
   PERFORM set_config('app.bypass_privilege_check', 'true', true);
 
   -- ═══ SERVICES for Wyman (Full Stack Developer) ═══
@@ -74,12 +81,9 @@ BEGIN
     ('a1b2c3d4-e5f6-7890-abcd-ef1234567890', 250000, 'INR')
   ON CONFLICT (user_id) DO UPDATE SET balance = EXCLUDED.balance;
 
-  -- ═══ SUBSCRIPTION PLANS ═══
-  INSERT INTO subscription_plans (id, name, price, interval, features, is_active, role, created_at)
-  VALUES
-    ('pro-monthly', 'Pro Monthly', 299, 'month',
-     '["Priority in search results", "AI-powered proposal writer", "Advanced analytics dashboard", "Priority support", "100 connects/month"]'::jsonb,
-     true, 'freelancer', now())
-  ON CONFLICT (id) DO UPDATE SET name = 'Pro Monthly', price = 299, is_active = true;
+  -- ⚠️ SUBSCRIPTION PLANS intentionally NOT seeded here.
+  -- The single canonical plan (premium_monthly, ₹299) is seeded by the
+  -- base migration. Test-data seeds must NEVER touch subscription_plans
+  -- to avoid duplicate/incorrect plans with pay-to-win features.
 
 END $$;
