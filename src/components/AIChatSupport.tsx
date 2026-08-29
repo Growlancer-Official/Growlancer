@@ -11,6 +11,7 @@ import {
   Check,
   Copy,
   Globe,
+  Headphones,
   Loader2,
   Mail,
   Send,
@@ -377,6 +378,49 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     await getStreamingAIResponse(userMessage.content);
 
     setLoading(false);
+  };
+
+  // ── Guided support flow: escalate to human support ──
+  const handleEscalate = async () => {
+    if (!user?.id) return;
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `escalate-${Date.now()}`,
+        role: 'assistant',
+        content: '🔄 Connecting you with our support team...\n\nI\'m creating a support ticket on your behalf. Our team typically responds within 24 hours. You can track the status in your Support Tickets page.',
+        timestamp: new Date(),
+      },
+    ]);
+
+    try {
+      await ticketService.create({
+        subject: ticketContext?.subject || 'Support Escalation',
+        description: ticketContext?.description || 'User escalated from AI support guided flow.',
+        category: (ticketContext?.category as any) || 'general',
+        priority: (ticketContext?.priority as any) || 'normal',
+      });
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `escalate-done-${Date.now()}`,
+          role: 'assistant',
+          content: '✅ **Support ticket created!**\n\nOur team will review your case and get back to you via email within 24 hours. You can also check the status anytime from your **Support Tickets** page.',
+          timestamp: new Date(),
+        },
+      ]);
+    } catch (err) {
+      console.error('Failed to create support ticket:', err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `escalate-fail-${Date.now()}`,
+          role: 'assistant',
+          content: '⚠️ I couldn\'t create a ticket automatically. Please try again or contact us directly at **support@growlancer.com**.',
+          timestamp: new Date(),
+        },
+      ]);
+    }
   };
 
   // ── Guided support flow: pick a topic ──
