@@ -193,7 +193,7 @@ export function ProposalsPage() {
             <FileText className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">My Proposals <InfoTip text="All your submitted proposals — track status, view client feedback." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><FileText className="w-5 h-5 text-emerald-600" /></div>My Proposals <InfoTip text="All your submitted proposals — track status, view client feedback." /></h1>
             <p className="text-slate-500">
               {proposals.length} proposal{proposals.length !== 1 ? 's' : ''} submitted
             </p>

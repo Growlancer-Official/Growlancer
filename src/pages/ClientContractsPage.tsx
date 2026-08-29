@@ -174,7 +174,8 @@ export function ClientContractsPage() {
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
+            <div className="p-2 bg-emerald-100 rounded-xl"><Handshake className="w-5 h-5 text-emerald-600" /></div>
             Contracts
             <InfoTip
               title="How contracts work for you"

@@ -233,7 +233,7 @@ export function ServicesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">My Services <InfoTip text="Your listed service packages. Edit pricing, manage visibility." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Package className="w-5 h-5 text-emerald-600" /></div>My Services <InfoTip text="Your listed service packages. Edit pricing, manage visibility." /></h1>
           <p className="text-slate-500 mt-1">Manage your service offerings</p>
         </div>
         <button

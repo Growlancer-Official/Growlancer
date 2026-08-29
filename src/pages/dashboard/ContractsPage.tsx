@@ -493,7 +493,7 @@ export function ContractsPage() {
             <Handshake className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">My Contracts <InfoTip text="Track all your active, pending, and completed contracts with clients." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Handshake className="w-5 h-5 text-emerald-600" /></div>My Contracts <InfoTip text="Track all your active, pending, and completed contracts with clients." /></h1>
             <p className="text-slate-500">
               {activeCount} active contract{activeCount !== 1 ? 's' : ''}
             </p>

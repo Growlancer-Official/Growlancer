@@ -46,7 +46,7 @@ export function ClientTeamProjectsPage() {
             <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Team Projects <InfoTip text="Multi-freelancer projects with independent contracts per role." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Users className="w-5 h-5 text-emerald-600" /></div>Team Projects <InfoTip text="Multi-freelancer projects with independent contracts per role." /></h1>
           </div>
           <p className="text-slate-600 mt-1">
             Hire a whole team for bigger projects — each freelancer has their own protected escrow.

@@ -112,7 +112,7 @@ export default function SupportTicketsPage() {
             <Headphones className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Support Tickets <InfoTip text="Track your support requests and responses from our team." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Headphones className="w-5 h-5 text-emerald-600" /></div>Support Tickets <InfoTip text="Track your support requests and responses from our team." /></h1>
             <p className="text-slate-500 text-xs">Get help from our support team</p>
           </div>
         </div>

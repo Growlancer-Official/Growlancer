@@ -283,7 +283,7 @@ export function InvitesPage() {
             <Mail className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Project Invites <InfoTip text="Clients inviting you to their projects. Accept or decline." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Mail className="w-5 h-5 text-emerald-600" /></div>Project Invites <InfoTip text="Clients inviting you to their projects. Accept or decline." /></h1>
             <p className="text-slate-500 mt-1">
               Clients have invited you to {pendingCount} project{pendingCount !== 1 ? 's' : ''}
             </p>

@@ -394,7 +394,7 @@ export function ClientPaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Payments <InfoTip text="Track all payments, escrow funding, and withdrawal history." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Wallet className="w-5 h-5 text-emerald-600" /></div>Payments <InfoTip text="Track all payments, escrow funding, and withdrawal history." /></h1>
           <p className="text-slate-500 mt-1">Manage your transactions, wallet, and payment methods</p>
         </div>
         <Link
