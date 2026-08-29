@@ -182,7 +182,7 @@ export function ClientMatchesPage() {
       <div className="space-y-1.5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900">AI Talent Matches</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">AI Talent Matches <InfoTip text="AI-matched freelancers based on your project requirements." /></h1>
             <p className="text-slate-500 mt-1">
               Get AI-powered freelancer recommendations based on your project requirements
             </p>
@@ -215,7 +215,7 @@ export function ClientMatchesPage() {
     return (
       <div className="space-y-1.5">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">AI Talent Matches</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">AI Talent Matches <InfoTip text="AI-matched freelancers based on your project requirements." /></h1>
           <p className="text-slate-500 mt-1">
             Select a project to view AI-powered freelancer recommendations
           </p>

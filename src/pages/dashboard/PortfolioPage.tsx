@@ -160,7 +160,7 @@ export function PortfolioPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">Portfolio</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Portfolio <InfoTip text="Showcase your best work to attract more clients." /></h1>
           <p className="text-slate-500 mt-1">Showcase your best work to potential clients</p>
         </div>
         <button

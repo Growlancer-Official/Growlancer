@@ -163,7 +163,7 @@ export function ClientPostTeamProjectPage() {
         <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
           <Users className="w-6 h-6" />
         </div>
-        <h1 className="font-display text-2xl font-bold text-slate-900">Post a Team Project</h1>
+        <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-1.5">Post a Team Project <InfoTip text="Hire multiple freelancers for a large project with separate contracts." /></h1>
       </div>
       <p className="text-slate-600 mb-3">
         Hire a whole team for bigger projects — Designer, Developer, Writer — all in one place. Each freelancer has their <strong>own protected escrow</strong>.

@@ -394,7 +394,7 @@ export function ClientPaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">Payments</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Payments <InfoTip text="Track all payments, escrow funding, and withdrawal history." /></h1>
           <p className="text-slate-500 mt-1">Manage your transactions, wallet, and payment methods</p>
         </div>
         <Link
@@ -476,7 +476,7 @@ export function ClientPaymentsPage() {
           />
           <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 pb-0">
-              <h2 className="font-display text-xl font-bold text-slate-900">Add Funds to Wallet</h2>
+              <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Add Funds to Wallet <InfoTip text="Add money to your wallet for instant escrow funding." /></h2>
               <button
                 onClick={() => setShowAddFunds(false)}
                 className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -1151,7 +1151,7 @@ export function ClientPaymentsPage() {
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
         <div className="p-3 border-b border-slate-100 flex items-center justify-between gap-3">
           <div>
-            <h3 className="font-display text-xl font-bold text-slate-900">Invoices & Receipts</h3>
+            <h3 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Invoices & Receipts <InfoTip text="Download invoices for all transactions and payments." /></h3>
             <p className="text-sm text-slate-500 mt-0.5">Tax-ready invoices generated automatically when escrow is released</p>
           </div>
           {invoicesLoading && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}

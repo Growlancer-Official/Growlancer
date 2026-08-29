@@ -790,7 +790,7 @@ export function ProjectFeedPage() {
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900">AI Project Feed</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">AI Project Feed <InfoTip text="Projects matched to your skills by AI. Apply before deadlines." /></h1>
             <p className="text-slate-500 text-xs sm:text-xs">
               {skills.length > 0 
                 ? `${matches.length} projects matched to your ${skills.length} skills` 

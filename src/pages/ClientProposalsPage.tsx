@@ -276,7 +276,7 @@ export function ClientProposalsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">Proposals</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Proposals <InfoTip text="Review proposals from freelancers for your posted projects." /></h1>
           <p className="text-slate-500 mt-1">Review and manage proposals from freelancers</p>
         </div>
         <div className="flex items-center gap-3 px-4 py-2 bg-orange-50 text-orange-700 rounded-xl">

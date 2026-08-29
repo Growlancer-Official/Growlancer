@@ -897,7 +897,7 @@ export function ProfessionalProfilePage() {
             <User className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900">Professional Profile</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Professional Profile <InfoTip text="Your public profile visible to clients. Keep it updated." /></h1>
             <p className="text-slate-500 text-sm">Complete your profile to get better AI matches</p>
           </div>
         </div>

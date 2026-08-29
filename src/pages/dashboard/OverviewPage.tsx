@@ -576,7 +576,7 @@ export function OverviewPage() {
           {/* Recent Activity */}
           <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-100">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xs sm:text-sm font-semibold text-slate-900">Recent Activity</h2>
+              <h2 className="text-xs sm:text-sm font-semibold text-slate-900 flex items-center gap-1.5">Recent Activity <InfoTip text="Your latest contracts, proposals, and project updates appear here." /></h2>
               <Link
                 to={isFreelancer ? '/dashboard/contracts' : '/client/contracts'}
                 className="text-emerald-600 font-medium text-sm hover:underline"
@@ -629,7 +629,7 @@ export function OverviewPage() {
         <div className="space-y-4">
           {/* Quick Actions */}
           <div className="bg-white rounded-xl p-3 border border-slate-100">
-            <h3 className="font-semibold text-slate-900 text-xs mb-2">Quick Actions</h3>
+            <h3 className="font-semibold text-slate-900 text-xs mb-2 flex items-center gap-1.5">Quick Actions <InfoTip text="Jump to key pages — find projects, manage proposals, check earnings." /></h3>
             <div className="space-y-2">
               {isFreelancer ? (
                 <>
@@ -801,7 +801,7 @@ export function OverviewPage() {
           {/* Notifications */}
           <div className="bg-white rounded-xl p-3 border border-slate-100">
             <div className="flex items-center justify-between mb-1.5">
-              <h3 className="font-semibold text-slate-900 text-xs">Notifications</h3>
+              <h3 className="font-semibold text-slate-900 text-xs flex items-center gap-1.5">Notifications <InfoTip text="Real-time alerts for contract updates, payments, and messages." /></h3>
               {stats.unreadNotifications > 0 && (
                 <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                   {stats.unreadNotifications}
@@ -833,7 +833,7 @@ export function OverviewPage() {
               <Bot className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs font-bold">AI Assistant</h3>
+              <h3 className="text-xs font-bold flex items-center gap-1.5">AI Assistant <InfoTip text="Ask anything about proposals, contracts, escrow, or career growth in any language." tone="emerald" /></h3>
               <p className="text-emerald-100 text-[10px]">
                 {isFreelancer ? 'Proposals, contracts, escrow, career help' : 'Hiring, contracts, escrow, project help'}
               </p>
@@ -859,7 +859,7 @@ export function OverviewPage() {
               <Headphones className="w-4 h-4 text-orange-600" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-slate-900">Support & Help</h3>
+              <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">Support & Help <InfoTip text="Get guided help for payments, verification, disputes, and account issues." /></h3>
               <p className="text-slate-500 text-[10px]">Payments, verification, disputes, account issues</p>
             </div>
           </div>

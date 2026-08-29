@@ -158,7 +158,7 @@ export function ClientInvitesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">Invites</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Invites <InfoTip text="Invites you've sent to freelancers and their response status." /></h1>
           <p className="text-slate-500 mt-1">Manage invitations sent to freelancers</p>
         </div>
         <Link

@@ -112,7 +112,7 @@ export default function SupportTicketsPage() {
             <Headphones className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900">Support Tickets</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Support Tickets <InfoTip text="Track your support requests and responses from our team." /></h1>
             <p className="text-slate-500 text-xs">Get help from our support team</p>
           </div>
         </div>
@@ -132,7 +132,7 @@ export default function SupportTicketsPage() {
       {showForm && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg font-bold text-slate-900">Create Support Ticket</h2>
+            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-1.5">Create Support Ticket <InfoTip text="Describe your issue and our team will respond within 24 hours." /></h2>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
               <ChevronUp className="w-5 h-5" />
             </button>

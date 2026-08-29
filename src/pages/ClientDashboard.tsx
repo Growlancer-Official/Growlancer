@@ -5,6 +5,7 @@ import {
   Handshake, LayoutDashboard, Plus, Users, TrendingUp, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { InfoTip } from '../components/InfoTip';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { formatCurrency } from '../lib/currency';
 import {
@@ -175,7 +176,7 @@ export default function ClientDashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
-        <h2 className="text-xs font-semibold text-slate-900 mb-3">Quick Actions</h2>
+        <h2 className="text-xs font-semibold text-slate-900 mb-3 flex items-center gap-1.5">Quick Actions <InfoTip text="Jump to key actions — post projects, search talent, check payments." /></h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {quickActions.map((action) => (
             <Link

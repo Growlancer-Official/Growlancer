@@ -176,7 +176,7 @@ export function AnalyticsPage() {
           <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Earnings Overview</h2>
+                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-1.5">Earnings Overview <InfoTip text="Revenue trends and monthly earnings breakdown." /></h2>
                 <p className="text-sm text-slate-500">Monthly earnings for the past 6 months</p>
               </div>
               <BarChart3 className="w-5 h-5 text-slate-400" />
@@ -280,7 +280,7 @@ export function AnalyticsPage() {
           <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">AI Project Matches</h2>
+                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-1.5">AI Project Matches <InfoTip text="How well your profile matches available projects." /></h2>
                 <p className="text-sm text-slate-500">Projects matched to your skills</p>
               </div>
             </div>

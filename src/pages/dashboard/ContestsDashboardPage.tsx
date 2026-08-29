@@ -59,7 +59,7 @@ export function ContestsDashboardPage() {
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900">Contests</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Contests <InfoTip text="Design, writing, and development contests with cash prizes." /></h1>
             <p className="text-slate-500 text-xs">Compete in design and development contests to win prizes</p>
           </div>
         </div>

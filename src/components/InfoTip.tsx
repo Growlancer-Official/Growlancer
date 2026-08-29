@@ -18,12 +18,48 @@ interface InfoTipProps {
  * InfoTip — a small ⓘ icon that reveals a polished, industry-standard hover
  * tooltip. Uses a React portal + fixed positioning so the tooltip is never
  * clipped by overflow-hidden parents or sidebar boundaries.
+ *
+ * Hover logic uses a timeout to prevent flickering: when the mouse leaves the
+ * icon, a short delay (150ms) before closing gives the user time to move to
+ * the tooltip. Moving the tooltip cancels the pending close.
  */
 export function InfoTip({ text, title, align = 'right', className = '', tone = 'slate' }: InfoTipProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const iconRef = useRef<HTMLSpanElement>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimer = useCallback(() => {
+    if (closeTimer.current) {
+      clearTimeout(closeTimer.current);
+      closeTimer.current = null;
+    }
+  }, []);
+
+  const scheduleClose = useCallback(() => {
+    clearCloseTimer();
+    closeTimer.current = setTimeout(() => setOpen(false), 150);
+  }, [clearCloseTimer]);
+
+  // Cleanup timer on unmount
+  useEffect(() => () => clearCloseTimer(), [clearCloseTimer]);
+
+  const handleIconEnter = useCallback(() => {
+    clearCloseTimer();
+    setOpen(true);
+  }, [clearCloseTimer]);
+
+  const handleIconLeave = useCallback(() => {
+    scheduleClose();
+  }, [scheduleClose]);
+
+  const handleTooltipEnter = useCallback(() => {
+    clearCloseTimer();
+  }, [clearCloseTimer]);
+
+  const handleTooltipLeave = useCallback(() => {
+    scheduleClose();
+  }, [scheduleClose]);
 
   const calcPosition = useCallback(() => {
     if (!iconRef.current) return;
@@ -37,7 +73,6 @@ export function InfoTip({ text, title, align = 'right', className = '', tone = '
     } else if (align === 'center') {
       left = rect.left + rect.width / 2 - tooltipW / 2;
     } else {
-      // right — but clamp to viewport
       left = rect.right - tooltipW;
     }
 
@@ -56,7 +91,7 @@ export function InfoTip({ text, title, align = 'right', className = '', tone = '
     }
 
     setPos({ top, left });
-  }, [align]);
+  }, [align, title]);
 
   useEffect(() => {
     if (open) {
@@ -79,8 +114,8 @@ export function InfoTip({ text, title, align = 'right', className = '', tone = '
     <span
       ref={iconRef}
       className={`relative inline-flex items-center align-middle ${className}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={handleIconEnter}
+      onMouseLeave={handleIconLeave}
       onFocus={() => setOpen(true)}
       onBlur={() => setOpen(false)}
     >
@@ -90,12 +125,11 @@ export function InfoTip({ text, title, align = 'right', className = '', tone = '
       />
       {open && createPortal(
         <div
-          ref={tooltipRef}
           role="tooltip"
-          className="fixed z-[9999] w-60 rounded-xl bg-slate-900 text-white shadow-2xl border border-slate-700/50 animate-in fade-in duration-150"
+          className="fixed z-[9999] w-60 rounded-xl bg-slate-900 text-white shadow-2xl border border-slate-700/50 transition-opacity duration-100"
           style={{ top: pos.top, left: pos.left }}
-          onMouseEnter={() => setOpen(true)}
-          onMouseLeave={() => setOpen(false)}
+          onMouseEnter={handleTooltipEnter}
+          onMouseLeave={handleTooltipLeave}
         >
           {title && (
             <span className="block px-3 pt-2.5 pb-1 text-xs font-bold uppercase tracking-wide text-emerald-300">
