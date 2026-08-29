@@ -36,7 +36,9 @@ export function ClientTeamProjectsPage() {
     void load();
   }, [load]);
 
-  if (loading) return <LoadingSkeleton variant="full-page" />;
+  if (loading) return (
+        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
+      );;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-4">
