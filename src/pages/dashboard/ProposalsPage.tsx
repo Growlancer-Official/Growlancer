@@ -193,7 +193,7 @@ export function ProposalsPage() {
             <FileText className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><FileText className="w-5 h-5 text-emerald-600" /></div>My Proposals <InfoTip text="All your submitted proposals — track status, view client feedback." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><FileText className="w-5 h-5 text-emerald-600" /></div>My Proposals <InfoTip title="What each status means" text="Pending Review — the client hasn't responded yet. Accepted — the client selected your proposal; a contract is created from this workspace. Hired — escrow is ready to be funded and work has started. You can withdraw a pending proposal anytime, but once accepted it's locked in." /></h1>
             <p className="text-slate-500">
               {proposals.length} proposal{proposals.length !== 1 ? 's' : ''} submitted
             </p>
@@ -208,9 +208,6 @@ export function ProposalsPage() {
           Submit New Proposal
         </Link>
       </div>
-
-      {/* Proposal lifecycle — plain-language guide */}
-      <InfoTip title="What each status means" text="Pending Review — the client hasn't responded yet. Accepted — the client selected your proposal; a contract is created from this workspace. Hired — escrow is ready to be funded and work has started. You can withdraw a pending proposal anytime, but once accepted it's locked in." />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">

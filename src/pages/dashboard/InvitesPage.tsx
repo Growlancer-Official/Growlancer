@@ -283,7 +283,7 @@ export function InvitesPage() {
             <Mail className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Mail className="w-5 h-5 text-emerald-600" /></div>Project Invites <InfoTip text="Clients inviting you to their projects. Accept or decline." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Mail className="w-5 h-5 text-emerald-600" /></div>Project Invites <InfoTip title="How invites work" text="A client personally invited you to their project. Accept — a contract is created with escrow protection and you can start working. Decline — the invite is closed and the client is notified. Invites expire after the deadline shown on each card." /></h1>
             <p className="text-slate-500 mt-1">
               Clients have invited you to {pendingCount} project{pendingCount !== 1 ? 's' : ''}
             </p>
@@ -299,9 +299,6 @@ export function InvitesPage() {
           </div>
         )}
       </div>
-
-      {/* Invite lifecycle — plain-language guide */}
-      <InfoTip title="How invites work" text="A client personally invited you to their project. Accept — a contract is created with escrow protection and you can start working. Decline — the invite is closed and the client is notified. Invites expire after the deadline shown on each card." />
 
       {/* New Invite Alert */}
       {newInviteAlert && (

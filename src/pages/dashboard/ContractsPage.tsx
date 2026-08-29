@@ -493,7 +493,7 @@ export function ContractsPage() {
             <Handshake className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Handshake className="w-5 h-5 text-emerald-600" /></div>My Contracts <InfoTip text="Track all your active, pending, and completed contracts with clients." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Handshake className="w-5 h-5 text-emerald-600" /></div>My Contracts <InfoTip title="How contracts & money work" text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlancer." /></h1>
             <p className="text-slate-500">
               {activeCount} active contract{activeCount !== 1 ? 's' : ''}
             </p>
@@ -501,10 +501,6 @@ export function ContractsPage() {
         </div>
 
         <div className="flex items-center gap-1.5">
-          <InfoTip
-            title="How contracts & money work"
-            text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlancer."
-          />
           <div className="px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
             <p className="text-xs text-emerald-600">Total Earnings</p>
             <p className="text-xl font-bold text-emerald-700">{formatCurrency(totalEarnings)}</p>

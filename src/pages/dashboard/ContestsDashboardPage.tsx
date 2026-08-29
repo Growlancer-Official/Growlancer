@@ -59,7 +59,7 @@ export function ContestsDashboardPage() {
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Trophy className="w-5 h-5 text-emerald-600" /></div>Contests <InfoTip text="Design, writing, and development contests with cash prizes." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Trophy className="w-5 h-5 text-emerald-600" /></div>Contests <InfoTip title="How contests work" text="Clients fund prizes in escrow — submit your best work, win prizes, and earn verified badges. No work outside Growlancer, ever. Browse active contests below and submit before the deadline." /></h1>
             <p className="text-slate-500 text-xs">Compete in design and development contests to win prizes</p>
           </div>
         </div>
@@ -68,8 +68,6 @@ export function ContestsDashboardPage() {
           <span className="text-xs font-bold text-amber-700">{contests.length} Active</span>
         </div>
       </div>
-
-      <InfoTip title="Information" text="How contests work: Clients fund prizes in escrow — submit your best work, win prizes, and earn verified badges. No work outside Growlancer, ever." />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">

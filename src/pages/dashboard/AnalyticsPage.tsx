@@ -137,9 +137,6 @@ export function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Metrics guide — plain-language */}
-      <InfoTip title="How to read your analytics" text="Total Earnings is what you've earned from completed work · Pending Payouts is escrow money waiting to be released after client approval · Success Rate shows how reliably you finish contracts — clients see this, so keep it high. Hover any card's ⓘ for details." />
-
       {data && (
         <>
           {/* Earnings & Contracts Row */}

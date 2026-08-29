@@ -160,7 +160,7 @@ export function PortfolioPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Image className="w-5 h-5 text-emerald-600" /></div>Portfolio <InfoTip text="Showcase your best work to attract more clients." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Image className="w-5 h-5 text-emerald-600" /></div>Portfolio <InfoTip title="Showcase work that wins clients" text="Add 3-5 of your best completed projects with clear titles and descriptions — clients view this on your public profile before contacting you. Feature your standout work with the star button. Updates appear on your public profile in real time." /></h1>
           <p className="text-slate-500 mt-1">Showcase your best work to potential clients</p>
         </div>
         <button
@@ -174,9 +174,6 @@ export function PortfolioPage() {
           Add Project
         </button>
       </div>
-
-      {/* Portfolio guide — plain-language */}
-      <InfoTip title="Showcase work that wins clients" text="Add 3-5 of your best completed projects with clear titles and descriptions — clients view this on your public profile before contacting you. Feature your standout work with the ★ button. Updates appear on your public profile in real time." />
 
       {/* Add / Edit Form */}
       {showForm && (

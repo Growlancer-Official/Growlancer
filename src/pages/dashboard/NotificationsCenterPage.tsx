@@ -369,7 +369,7 @@ export function NotificationsCenterPage() {
             <BellRing className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Bell className="w-5 h-5 text-emerald-600" /></div>Notifications <InfoTip text="All your alerts in one place — contracts, payments, messages." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Bell className="w-5 h-5 text-emerald-600" /></div>Notifications <InfoTip title="Stay on top of everything" text="Payment, escrow, contract, message and review updates arrive here in real time. Every notification has a reference ID — copy it and quote it when contacting support for faster help. Use Archive to tidy up, and enable push notifications below for instant alerts on this device." /></h1>
             <p className="text-sm text-slate-500">
               {unreadCount > 0
                 ? `You have ${unreadCount} unread notification${unreadCount === 1 ? '' : 's'}`
@@ -398,9 +398,6 @@ export function NotificationsCenterPage() {
           )}
         </div>
       </div>
-
-      {/* Notifications guide — plain-language */}
-      <InfoTip title="Stay on top of everything" text="Payment, escrow, contract, message and review updates arrive here in real time. Every notification has a reference ID — copy it and quote it when contacting support for faster help. Use Archive to tidy up, and enable push notifications below for instant alerts on this device." />
 
       {/* Tabs + Filter */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">

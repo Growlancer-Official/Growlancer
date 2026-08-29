@@ -670,7 +670,7 @@ export function WalletPage() {
             <Wallet className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Wallet className="w-5 h-5 text-emerald-600" /></div>Wallet <InfoTip text="Your earnings balance. Withdraw to bank or use for platform services." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Wallet className="w-5 h-5 text-emerald-600" /></div>Wallet <InfoTip title="How your wallet works" text="Your earnings from completed contracts appear here in real time. Withdraw to your saved bank/UPI anytime — a small 2% processor fee applies on withdrawal. Escrow funds move to your wallet only after the client approves your work or the auto-release window passes." /></h1>
             <p className="text-slate-500 text-sm">Manage your earnings, withdrawals, and payout methods</p>
           </div>
         </div>
@@ -812,7 +812,7 @@ export function WalletPage() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-            <h3 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-1.5">Quick Actions <InfoTip text="Add funds, withdraw earnings, or view recent transactions." /></h3>
+            <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Quick Actions</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setActiveTab('withdraw')}
@@ -852,7 +852,7 @@ export function WalletPage() {
           {/* Recent Transactions */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
             <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Recent Withdrawals <InfoTip text="Past withdrawal requests and their processing status." /></h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Recent Withdrawals</h3>
               {withdrawals.length > 5 && (
                 <button
                   onClick={() => setActiveTab('transactions')}
@@ -942,7 +942,7 @@ export function WalletPage() {
           {/* Header + Filters */}
           <div className="p-3 border-b border-slate-100">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <h3 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Transaction History <InfoTip text="Complete ledger of all payments, escrow, and withdrawals." /></h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Transaction History</h3>
 
               {/* Status filter */}
               <div className="flex items-center gap-3">
@@ -1371,7 +1371,7 @@ export function WalletPage() {
           {/* Left side — Saved Methods */}
           <div className="lg:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm">
             <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Saved Payout Methods <InfoTip text="Manage your bank accounts and UPI IDs for withdrawals." /></h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Saved Payout Methods</h3>
               <button
                 onClick={() => {
                   setAddingMethod(!addingMethod);
@@ -1707,7 +1707,7 @@ export function WalletPage() {
           <div className="p-3 border-b border-slate-100">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Invoices & Receipts <InfoTip text="Download invoices for tax records and payment proof." /></h3>
+                <h3 className="font-display text-xl font-bold text-slate-900">Invoices & Receipts</h3>
                 <p className="text-sm text-slate-500 mt-0.5">Automatically generated when escrow is released</p>
               </div>
               {invoicesLoading && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}

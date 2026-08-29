@@ -452,7 +452,7 @@ export function DisputeResolutionPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Scale className="w-5 h-5 text-emerald-600" /></div>Dispute Resolution <InfoTip text="Active disputes and resolution status with clients." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Scale className="w-5 h-5 text-emerald-600" /></div>Dispute Resolution <InfoTip title="How dispute resolution works" text="A dispute freezes the escrow money until our review team decides the case — funds are never moved without a decision. You can message and upload evidence in the meantime. Once decided, one of these outcomes happens automatically: full release to freelancer, full refund to client, or a fair split." /></h1>
           <p className="text-slate-500 mt-1">
             Track and manage your contract disputes
           </p>
@@ -468,9 +468,6 @@ export function DisputeResolutionPage() {
           </span>
         </div>
       </div>
-
-      {/* Dispute guide — plain-language */}
-      <InfoTip title="How dispute resolution works — where your money goes" text="A dispute freezes the escrow money until our review team decides the case — funds are never moved without a decision. You can message and upload evidence in the meantime. Once decided, one of these outcomes happens automatically:" />
 
       {/* Outcome cards — what each decision means for both sides */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1.5">

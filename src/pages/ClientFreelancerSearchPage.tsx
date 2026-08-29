@@ -236,9 +236,8 @@ export function ClientFreelancerSearchPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Search className="w-5 h-5 text-emerald-600" /></div>Find Talent <InfoTip text="Search freelancers by skills, ratings, and availability." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Search className="w-5 h-5 text-emerald-600" /></div>Find Talent <InfoTip title="Verified & Pro badges" text="Verified and Pro badges show real, checked freelancers — contact them here and hiring happens only inside Growlancer, with escrow protection on every payment." /></h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
-          <InfoTip title="Information" text="Verified and Pro badges show real, checked freelancers — contact them here and hiring happens only inside Growlancer, with escrow protection on every payment." />
         </div>
         <div className="flex items-center gap-1.5">
           <button onClick={() => setShowFilters(!showFilters)} className="inline-flex items-center justify-center gap-3 px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">

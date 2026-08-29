@@ -394,7 +394,7 @@ export function ClientPaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Wallet className="w-5 h-5 text-emerald-600" /></div>Payments <InfoTip text="Track all payments, escrow funding, and withdrawal history." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Wallet className="w-5 h-5 text-emerald-600" /></div>Payments <InfoTip title="How your money moves on Growlancer" text="Fund escrow from your wallet or card before work starts — money is held safely and only released to the freelancer after you approve the completed work. Every transaction is recorded here in real time, and invoices are generated automatically when escrow is released." /></h1>
           <p className="text-slate-500 mt-1">Manage your transactions, wallet, and payment methods</p>
         </div>
         <Link
@@ -405,9 +405,6 @@ export function ClientPaymentsPage() {
           Fund Escrow
         </Link>
       </div>
-
-      {/* How payments work — plain-language guide */}
-      <InfoTip title="How your money moves on Growlancer" text="Fund escrow from your wallet or card before work starts — money is held safely and only released to the freelancer after you approve the completed work. Every transaction is recorded here in real time, and invoices are generated automatically when escrow is released." />
 
       {/* Wallet — add funds to test the escrow workflow */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 rounded-xl p-6 text-white shadow-lg shadow-emerald-600/20 relative overflow-hidden">
@@ -476,7 +473,7 @@ export function ClientPaymentsPage() {
           />
           <div className="relative w-full max-w-md bg-white rounded-xl shadow-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between p-6 pb-0">
-              <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Add Funds to Wallet <InfoTip text="Add money to your wallet for instant escrow funding." /></h2>
+              <h2 className="font-display text-xl font-bold text-slate-900">Add Funds to Wallet</h2>
               <button
                 onClick={() => setShowAddFunds(false)}
                 className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
@@ -1151,7 +1148,7 @@ export function ClientPaymentsPage() {
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
         <div className="p-3 border-b border-slate-100 flex items-center justify-between gap-3">
           <div>
-            <h3 className="font-display text-xl font-bold text-slate-900 flex items-center gap-1.5">Invoices & Receipts <InfoTip text="Download invoices for all transactions and payments." /></h3>
+            <h3 className="font-display text-xl font-bold text-slate-900">Invoices & Receipts</h3>
             <p className="text-sm text-slate-500 mt-0.5">Tax-ready invoices generated automatically when escrow is released</p>
           </div>
           {invoicesLoading && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}

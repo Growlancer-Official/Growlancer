@@ -897,7 +897,7 @@ export function ProfessionalProfilePage() {
             <User className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><User className="w-5 h-5 text-emerald-600" /></div>Professional Profile <InfoTip text="Your public profile visible to clients. Keep it updated." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><User className="w-5 h-5 text-emerald-600" /></div>Professional Profile <InfoTip title="A complete profile wins more work" text="Clients see this profile before deciding to hire you. Fill every section — title, bio, skills, rate, portfolio — and the completion bar above turns green. A 100% profile gets higher AI match scores, shows your Verified and Pro badges, and ranks higher in client search. Changes save instantly and sync across all your sessions in real time." /></h1>
             <p className="text-slate-500 text-sm">Complete your profile to get better AI matches</p>
           </div>
         </div>
@@ -919,9 +919,6 @@ export function ProfessionalProfilePage() {
           </div>
         )}
       </div>
-
-      {/* Profile guide — plain-language */}
-      <InfoTip title="A complete profile wins more work" text="Clients see this profile before deciding to hire you. Fill every section — title, bio, skills, rate, portfolio — and the completion bar above turns green. A 100% profile gets higher AI match scores, shows your Verified and Pro badges, and ranks higher in client search. Changes save instantly and sync across all your sessions in real time." />
 
       {/* Email verification recommendation — hidden automatically once confirmed */}
       <EmailVerificationBanner />

@@ -92,7 +92,7 @@ export function ClientContestsPage() {
             <Trophy className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Trophy className="w-5 h-5 text-emerald-600" /></div>My Contests <InfoTip text="Create and manage contests to find the best creative talent." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Trophy className="w-5 h-5 text-emerald-600" /></div>My Contests <InfoTip title="How contests work" text="Post a prize and a brief, then fund the prize (escrowed + 5% fee) — freelancers can only submit once the prize is protected. After the deadline the contest moves to Judging, you pick 1st/2nd/3rd, and prizes are released to the winners' wallets in real time. Entries, votes and results are all public for transparency." /></h1>
             <p className="text-slate-500 text-xs">Manage your design and development contests</p>
           </div>
         </div>
@@ -104,8 +104,6 @@ export function ClientContestsPage() {
           Create Contest
         </Link>
       </div>
-
-      <InfoTip title="How contests work" text="Post a prize and a brief, then fund the prize (escrowed + 5% fee) — freelancers can only submit once the prize is protected. After the deadline the contest moves to Judging, you pick 1st/2nd/3rd, and prizes are released to the winners' wallets in real time. Entries, votes and results are all public for transparency." />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -276,7 +276,7 @@ export function ClientProposalsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><FileText className="w-5 h-5 text-emerald-600" /></div>Proposals <InfoTip text="Review proposals from freelancers for your posted projects." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><FileText className="w-5 h-5 text-emerald-600" /></div>Proposals <InfoTip title="Accepting a proposal" text="When you click Accept & Hire, a contract and workspace are created instantly with escrow protection built in — you only pay when you fund the escrow, and funds are released to the freelancer only after you approve the completed work." /></h1>
           <p className="text-slate-500 mt-1">Review and manage proposals from freelancers</p>
         </div>
         <div className="flex items-center gap-3 px-4 py-2 bg-orange-50 text-orange-700 rounded-xl">
@@ -284,9 +284,6 @@ export function ClientProposalsPage() {
           <span className="font-bold">{proposals.length} Proposals</span>
         </div>
       </div>
-
-      {/* Accept & Hire — plain-language guide */}
-      <InfoTip title="Accepting a proposal" text="When you click Accept &amp; Hire, a contract and workspace are created instantly with escrow protection built in — you only pay when you fund the escrow, and funds are released to the freelancer only after you approve the completed work." />
 
       {actionError && (
         <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-2">{actionError}</p>

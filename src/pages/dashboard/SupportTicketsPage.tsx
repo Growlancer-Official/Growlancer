@@ -112,7 +112,7 @@ export default function SupportTicketsPage() {
             <Headphones className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Headphones className="w-5 h-5 text-emerald-600" /></div>Support Tickets <InfoTip text="Track your support requests and responses from our team." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Headphones className="w-5 h-5 text-emerald-600" /></div>Support Tickets <InfoTip title="How support works" text="Submit a ticket and our team responds within 24 hours. For instant help with common questions, try the AI Assistant in your sidebar. Each ticket has a status — Open means our team is reviewing it, Resolved means it's been addressed." /></h1>
             <p className="text-slate-500 text-xs">Get help from our support team</p>
           </div>
         </div>
@@ -125,14 +125,11 @@ export default function SupportTicketsPage() {
         </button>
       </div>
 
-      {/* Tip */}
-      <InfoTip title="Information" text="How it works: Submit a ticket and our team responds within 24 hours. For instant help with common questions, try the AI Assistant in your sidebar." />
-
       {/* Create Form */}
       {showForm && (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-1.5">Create Support Ticket <InfoTip text="Describe your issue and our team will respond within 24 hours." /></h2>
+            <h2 className="font-display text-lg font-bold text-slate-900">Create Support Ticket</h2>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
               <ChevronUp className="w-5 h-5" />
             </button>
