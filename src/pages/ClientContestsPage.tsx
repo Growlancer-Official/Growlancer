@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Clock, IndianRupee, Eye, Filter, Loader2, Lock, Medal, Plus, ShieldCheck, Trash2, Trophy, Users } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { Pagination } from '../components/Pagination';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../components/Toast';
 import { formatCurrency } from '../lib/currency';
 import { ConfirmModal } from '../components/ConfirmModal';
-import { TipNote } from '../components/TipNote';
 import { supabase } from '../lib/supabase';
 import { contestService, type Contest, getTimeRemaining } from '../lib/contests';
 
@@ -105,9 +105,7 @@ export function ClientContestsPage() {
         </Link>
       </div>
 
-      <TipNote tone="info" title="How contests work" compact>
-        Post a <strong>prize</strong> and a brief, then <strong>fund the prize</strong> (escrowed + 5% fee) — freelancers can only submit once the prize is protected. After the deadline the contest moves to <strong>Judging</strong>, you pick 1st/2nd/3rd, and prizes are released to the winners' wallets in real time. Entries, votes and results are all public for transparency.
-      </TipNote>
+      <InfoTip title="How contests work" text="Post a prize and a brief, then fund the prize (escrowed + 5% fee) — freelancers can only submit once the prize is protected. After the deadline the contest moves to Judging, you pick 1st/2nd/3rd, and prizes are released to the winners' wallets in real time. Entries, votes and results are all public for transparency." />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

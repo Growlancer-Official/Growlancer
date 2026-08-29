@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Bot, Headphones } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { AIChatSupport } from '../components/AIChatSupport';
-import { TipNote } from '../components/TipNote';
 import { CLIENT_SUPPORT_TOPICS } from '../lib/supportTopics';
 
 type Tab = 'assistant' | 'support';
@@ -38,11 +38,7 @@ export function ClientAIAssistantPage() {
       </div>
 
       {tab === 'support' && (
-        <TipNote tone="info" title="Support vs. AI Assistant" compact className="mb-3">
-          This is <strong>Growlancer Support</strong> — for payments, refunds, escrow, verification, disputes and
-          hiring issues. Pick a topic below and follow the guided flow; for anything else use the{' '}
-          <strong>AI Assistant</strong> tab. The two chats stay completely separate.
-        </TipNote>
+        <InfoTip title="Support vs. AI Assistant" text="This is Growlancer Support — for payments, refunds, escrow, verification, disputes and hiring issues. Pick a topic below and follow the guided flow; for anything else use the{' '} AI Assistant tab. The two chats stay completely separate." />
       )}
 
       <div className="flex-1 min-h-0">

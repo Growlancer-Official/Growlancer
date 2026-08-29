@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { formatCurrency, currencySymbol } from '../lib/currency';
 import { teamProjectsService, type TeamRoleSuggestion } from '../lib/teamProjects';
 import { ArrowRight, Loader2, Plus, Sparkles, Trash2, Users, CheckCircle2, AlertCircle } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { useToast } from '../components/Toast';
-import { TipNote } from '../components/TipNote';
 
 interface RoleDraft {
   key: string;
@@ -169,9 +169,7 @@ export function ClientPostTeamProjectPage() {
         Hire a whole team for bigger projects — Designer, Developer, Writer — all in one place. Each freelancer has their <strong>own protected escrow</strong>.
       </p>
 
-      <TipNote tone="info" className="mb-3">
-        <strong>How it works:</strong> each role gets an <strong>independent contract</strong> — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate "team fee".
-      </TipNote>
+      <InfoTip title="Information" text="How it works: each role gets an independent contract — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate &quot;team fee&quot;." />
 
       <form onSubmit={handleCreateProject} className="space-y-4">
         {/* Project basics */}

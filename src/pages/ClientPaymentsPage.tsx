@@ -9,10 +9,9 @@ import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCir
 import { formatCurrency, safeFormatDate, safeNumber } from '../utils/date';
 import { currencySymbol } from '../lib/currency';
 import { withdrawalService } from '../lib/withdrawal';
+import { InfoTip } from '../components/InfoTip';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { RazorpayCheckout } from '../components/RazorpayCheckout';
-import { InfoTip } from '../components/InfoTip';
-import { TipNote } from '../components/TipNote';
 
 interface Transaction {
   id: string;
@@ -408,9 +407,7 @@ export function ClientPaymentsPage() {
       </div>
 
       {/* How payments work — plain-language guide */}
-      <TipNote tone="info" title="How your money moves on Growlancer" compact>
-        Fund escrow from your wallet or card before work starts — money is held safely and only released to the freelancer after you approve the completed work. Every transaction is recorded here in real time, and invoices are generated automatically when escrow is released.
-      </TipNote>
+      <InfoTip title="How your money moves on Growlancer" text="Fund escrow from your wallet or card before work starts — money is held safely and only released to the freelancer after you approve the completed work. Every transaction is recorded here in real time, and invoices are generated automatically when escrow is released." />
 
       {/* Wallet — add funds to test the escrow workflow */}
       <div className="bg-gradient-to-br from-emerald-600 via-emerald-600 to-teal-600 rounded-xl p-6 text-white shadow-lg shadow-emerald-600/20 relative overflow-hidden">

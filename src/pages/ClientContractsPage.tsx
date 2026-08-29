@@ -5,11 +5,10 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { formatCurrency } from '../lib/currency';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { ProBadge } from '../components/ProBadge';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { VerifiedBadge } from '../components/VerifiedBadge';
-import { InfoTip } from '../components/InfoTip';
-import { TipNote } from '../components/TipNote';
 
 interface Contract {
   id: string;
@@ -190,11 +189,7 @@ export function ClientContractsPage() {
         </div>
       </div>
 
-      <TipNote tone="protection" title="Your money is protected until you approve" compact>
-        A contract is only active after escrow is funded. The freelancer can't touch the funds — they release only when you
-        approve the delivered work. If you're not satisfied, request a revision or raise a dispute instead of paying outside
-        the platform. Never pay a freelancer directly; it voids Growlancer's protection.
-      </TipNote>
+      <InfoTip title="Your money is protected until you approve" text="A contract is only active after escrow is funded. The freelancer can't touch the funds — they release only when you approve the delivered work. If you're not satisfied, request a revision or raise a dispute instead of paying outside the platform. Never pay a freelancer directly; it voids Growlancer's protection." />
 
       <div className="flex gap-3 border-b border-slate-200">
         {(['all', 'active', 'completed', 'pending'] as const).map((f) => (

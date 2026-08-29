@@ -26,6 +26,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
+import { InfoTip } from '../../components/InfoTip';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -33,8 +34,6 @@ import { requireKycForAction } from '../../lib/kycGate';
 import { withdrawalService, type Withdrawal, type PayoutMethod } from '../../lib/withdrawal';
 import { PLATFORM_CONFIG } from '../../lib/config';
 import { safeFormatDate } from '../../utils/date';
-import { InfoTip } from '../../components/InfoTip';
-import { TipNote } from '../../components/TipNote';
 import { currencySymbol } from '../../lib/currency';
 
 // ────────────────────────────────────────
@@ -1131,11 +1130,7 @@ export function WalletPage() {
               <h3 className="font-display text-xl font-bold text-slate-900 mb-3">
                 Withdraw Funds
               </h3>
-              <TipNote tone="info" title="How withdrawals work" compact className="mb-2.5">
-                Enter the amount you want to move out of Growlancer and pick your saved payout method (UPI or bank).
-                A small processing fee ({' '}<span className="font-semibold">{(WITHDRAWAL_FEE_RATE * 100).toFixed(1)}%</span>{' '})
-                applies and is shown before you confirm. Your withdrawal appears here in real time with its status.
-              </TipNote>
+              <InfoTip title="How withdrawals work" text="Enter the amount you want to move out of Growlancer and pick your saved payout method (UPI or bank). A small processing fee ({' '}{(WITHDRAWAL_FEE_RATE * 100).toFixed(1)}%{' '}) applies and is shown before you confirm. Your withdrawal appears here in real time with its status." />
 
               {/* Error */}
               {withdrawError && (

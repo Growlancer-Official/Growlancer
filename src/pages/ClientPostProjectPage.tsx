@@ -4,13 +4,13 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
 import { formatCurrency, currencySymbol } from '../lib/currency';
 import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Sparkles, CheckCircle2 } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryPicker } from '../components/CategoryPicker';
 import { IndustrySelect } from '../components/IndustrySelect';
-import { TipNote } from '../components/TipNote';
 import AIGenerateModal from '../components/AIGenerateModal';
 
 export function ClientPostProjectPage() {
@@ -344,12 +344,7 @@ export function ClientPostProjectPage() {
           </div>
 
           <div className="mt-4">
-            <TipNote tone="protection" title="How you'll pay — always protected" compact>
-              You only pay once a contract starts, and the money goes into{' '}
-              <span className="font-semibold">Growlancer Escrow</span> — never directly to the freelancer. It's released
-              only after you approve the completed work (a small platform fee applies at payment).
-              This keeps your money safe on every project.
-            </TipNote>
+            <InfoTip title="How you'll pay — always protected" text="You only pay once a contract starts, and the money goes into{' '} Growlancer Escrow — never directly to the freelancer. It's released only after you approve the completed work (a small platform fee applies at payment). This keeps your money safe on every project." />
           </div>
         </div>
 

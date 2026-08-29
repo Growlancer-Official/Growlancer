@@ -2,8 +2,8 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, Ban, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Loader2, MessageCircle, Scale, Send, Shield, User, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { InfoTip } from '../../components/InfoTip';
 import { PageSkeleton } from '../../components/PageSkeleton';
-import { TipNote } from '../../components/TipNote';
 import { disputeService } from '../../lib/disputeService';
 import type { DisputeCase } from '../../lib/disputeService';
 import { supabase } from '../../lib/supabase';
@@ -470,9 +470,7 @@ export function DisputeResolutionPage() {
       </div>
 
       {/* Dispute guide — plain-language */}
-      <TipNote tone="warning" title="How dispute resolution works — where your money goes" compact>
-        A dispute <strong>freezes the escrow money</strong> until our review team decides the case — funds are never moved without a decision. You can message and upload evidence in the meantime. Once decided, one of these outcomes happens automatically:
-      </TipNote>
+      <InfoTip title="How dispute resolution works — where your money goes" text="A dispute freezes the escrow money until our review team decides the case — funds are never moved without a decision. You can message and upload evidence in the meantime. Once decided, one of these outcomes happens automatically:" />
 
       {/* Outcome cards — what each decision means for both sides */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1.5">

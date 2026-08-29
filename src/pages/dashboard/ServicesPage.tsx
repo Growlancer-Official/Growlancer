@@ -21,9 +21,9 @@ import {
   Trash2,
   XCircle,
 } from 'lucide-react';
+import { InfoTip } from '../../components/InfoTip';
 import { Pagination } from '../../components/Pagination';
 import { PageSkeleton } from '../../components/PageSkeleton';
-import { TipNote } from '../../components/TipNote';
 import { safeLower } from '../../utils/date';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
@@ -246,9 +246,7 @@ export function ServicesPage() {
       </div>
 
       {/* Services guide — plain-language */}
-      <TipNote tone="tip" title="Get more orders from your services" compact>
-        Views grow when clients browse, orders count after a service purchase is completed, and your rating updates after each review — all in real time. The <strong>Price Offers</strong> panel shows clients' negotiable offers on your services; accepting one lets the client order at that agreed price. Edit any service with the pencil icon — changes go live instantly.
-      </TipNote>
+      <InfoTip title="Get more orders from your services" text="Views grow when clients browse, orders count after a service purchase is completed, and your rating updates after each review — all in real time. The Price Offers panel shows clients' negotiable offers on your services; accepting one lets the client order at that agreed price. Edit any service with the pencil icon — changes go live instantly." />
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">

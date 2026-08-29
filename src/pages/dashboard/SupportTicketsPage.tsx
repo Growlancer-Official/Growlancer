@@ -1,3 +1,4 @@
+import { InfoTip } from '../../components/InfoTip';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useState, useEffect, useCallback } from 'react';
 import {
@@ -6,7 +7,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ticketService, type SupportTicket, type TicketCategory, type TicketPriority } from '../../lib/supportTicketService';
-import { TipNote } from '../../components/TipNote';
 
 const CATEGORIES: { value: TicketCategory; label: string; desc: string }[] = [
   { value: 'general', label: 'General', desc: 'Platform questions, how-to, general help' },
@@ -126,10 +126,7 @@ export default function SupportTicketsPage() {
       </div>
 
       {/* Tip */}
-      <TipNote tone="info" compact>
-        <strong>How it works:</strong> Submit a ticket and our team responds within 24 hours. For
-        instant help with common questions, try the <strong>AI Assistant</strong> in your sidebar.
-      </TipNote>
+      <InfoTip title="Information" text="How it works: Submit a ticket and our team responds within 24 hours. For instant help with common questions, try the AI Assistant in your sidebar." />
 
       {/* Create Form */}
       {showForm && (

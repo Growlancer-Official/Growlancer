@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { teamProjectsService, type TeamProject } from '../lib/teamProjects';
 import { ArrowRight, Plus, Users } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { PageSkeleton } from '../components/PageSkeleton';
-import { TipNote } from '../components/TipNote';
 
 const STATUS_META: Record<string, { label: string; cls: string }> = {
   open:        { label: 'Open',        cls: 'bg-emerald-100 text-emerald-700' },
@@ -60,9 +60,7 @@ export function ClientTeamProjectsPage() {
         </Link>
       </div>
 
-      <TipNote tone="info" compact className="mb-3">
-        Each role gets its own <strong>independent contract</strong> (own escrow / milestones / dispute). One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee.
-      </TipNote>
+      <InfoTip title="Information" text="Each role gets its own independent contract (own escrow / milestones / dispute). One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee." />
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm mb-3">

@@ -6,10 +6,10 @@ import { formatCurrency } from '../lib/currency';
 import { useAuth } from '../context/AuthContext';
 import { inviteFreelancerToProject } from '../lib/workflowService';
 import { CheckCircle2, IndianRupee, MapPin, RefreshCw, Send, Sparkles, Star, User, XCircle, Plus, Briefcase, ArrowRight, Loader2 } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
-import { TipNote } from '../components/TipNote';
 
 export function ClientMatchesPage() {
   const { user } = useAuth();
@@ -312,9 +312,7 @@ export function ClientMatchesPage() {
       </div>
 
       {/* AI matching — plain-language guide */}
-      <TipNote tone="info" title="How AI matching works" compact>
-        Our engine scores freelancers against your project's skills, experience and budget — higher scores mean a stronger fit. <strong>Invite</strong> the freelancers you like; when they accept, a contract + workspace is created instantly with escrow protection. <strong>Regenerate</strong> anytime to refresh the list in real time.
-      </TipNote>
+      <InfoTip title="How AI matching works" text="Our engine scores freelancers against your project's skills, experience and budget — higher scores mean a stronger fit. Invite the freelancers you like; when they accept, a contract + workspace is created instantly with escrow protection. Regenerate anytime to refresh the list in real time." />
 
       {/* Loading State */}
       {loading && (

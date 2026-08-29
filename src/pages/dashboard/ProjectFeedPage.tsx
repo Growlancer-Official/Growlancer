@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useCategories } from '../../hooks/useCategories';
 import { ArrowRight, Briefcase, CheckCircle2, Clock, Loader2, Search, Send, Sparkles, Star, Wallet, X, Zap } from 'lucide-react';
+import { InfoTip } from '../../components/InfoTip';
 import { useToast } from '../../components/Toast';
-import { TipNote } from '../../components/TipNote';
 import { formatBudgetRange, safeLower } from '../../utils/date';
 import { formatCurrency, currencySymbol } from '../../lib/currency';
 import { Pagination } from '../../components/Pagination';
@@ -827,9 +827,7 @@ export function ProjectFeedPage() {
       </div>
 
       {/* Feed guide — plain-language */}
-      <TipNote tone="tip" title="How to win projects here" compact>
-        Each card shows how well the project fits your profile (<strong>% Match</strong>). Tap <strong>Apply Now</strong> with your rate and a short cover message — the client reviews proposals in real time. Once you're hired, the button becomes <strong>Contract Active</strong> and work happens in the workspace with escrow protection. Matching improves as you complete your profile.
-      </TipNote>
+      <InfoTip title="How to win projects here" text="Each card shows how well the project fits your profile (% Match). Tap Apply Now with your rate and a short cover message — the client reviews proposals in real time. Once you're hired, the button becomes Contract Active and work happens in the workspace with escrow protection. Matching improves as you complete your profile." />
 
       {/* New Match Alert */}
       {newMatchAlert && (

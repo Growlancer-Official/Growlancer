@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Loader2, Mail, MessageSquare, Star, User, Wallet, XCircle } from 'lucide-react';
+import { InfoTip } from '../../components/InfoTip';
 import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { PageSkeleton } from '../../components/PageSkeleton';
-import { TipNote } from '../../components/TipNote';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, dbFunctions, uniqueChannelName } from '../../lib/supabase';
 import { formatBudgetRange, safeFormatDate } from '../../utils/date';
@@ -301,9 +301,7 @@ export function InvitesPage() {
       </div>
 
       {/* Invite lifecycle — plain-language guide */}
-      <TipNote tone="tip" title="How invites work" compact>
-        A client personally invited you to their project. <strong>Accept</strong> — a contract is created with escrow protection and you can start working. <strong>Decline</strong> — the invite is closed and the client is notified. Invites expire after the deadline shown on each card.
-      </TipNote>
+      <InfoTip title="How invites work" text="A client personally invited you to their project. Accept — a contract is created with escrow protection and you can start working. Decline — the invite is closed and the client is notified. Invites expire after the deadline shown on each card." />
 
       {/* New Invite Alert */}
       {newInviteAlert && (

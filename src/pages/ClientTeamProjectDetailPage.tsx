@@ -5,10 +5,10 @@ import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currency';
 import { teamProjectsService, type TeamProject, type TeamRole, TEAM_COMMISSION_RATE } from '../lib/teamProjects';
 import { AlertCircle, ArrowLeft, CheckCircle2, Plus, RefreshCw, UserCheck, Users } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
 import { PageSkeleton } from '../components/PageSkeleton';
-import { TipNote } from '../components/TipNote';
 
 const ROLE_STATUS_META: Record<string, { label: string; cls: string }> = {
   open:     { label: 'Open',     cls: 'bg-emerald-100 text-emerald-700' },
@@ -339,9 +339,7 @@ export function ClientTeamProjectDetailPage() {
             </tfoot>
           </table>
         </div>
-        <TipNote tone="info" compact className="mt-4">
-          Ek role ka contract dispute/cancel ho jaaye to baaki roles ke contracts par koi effect nahi — sab independent escrow ke saath protected hain.
-        </TipNote>
+        <InfoTip title="Information" text="Ek role ka contract dispute/cancel ho jaaye to baaki roles ke contracts par koi effect nahi — sab independent escrow ke saath protected hain." />
       </div>
 
       <ConfirmModal

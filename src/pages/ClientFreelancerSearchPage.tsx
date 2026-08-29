@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Award, Bell, BellOff, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, MessageSquare, Plus, Search, Star, Trash2 } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -12,7 +13,6 @@ import { VerifiedBadge } from '../components/VerifiedBadge';
 import { invitesService } from '../lib/dataService';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { safeLower } from '../utils/date';
-import { TipNote } from '../components/TipNote';
 
 interface FreelancerResult {
   id: string;
@@ -238,10 +238,7 @@ export function ClientFreelancerSearchPage() {
         <div>
           <h1 className="font-display text-xl font-bold text-slate-900">Find Talent</h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
-          <TipNote tone="protection" compact className="mt-3 max-w-2xl">
-            <strong>Verified</strong> and <strong>Pro</strong> badges show real, checked freelancers — contact them
-            here and hiring happens only inside Growlancer, with escrow protection on every payment.
-          </TipNote>
+          <InfoTip title="Information" text="Verified and Pro badges show real, checked freelancers — contact them here and hiring happens only inside Growlancer, with escrow protection on every payment." />
         </div>
         <div className="flex items-center gap-1.5">
           <button onClick={() => setShowFilters(!showFilters)} className="inline-flex items-center justify-center gap-3 px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">

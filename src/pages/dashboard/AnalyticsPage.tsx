@@ -1,9 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, IndianRupee, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users } from 'lucide-react';
+import { InfoTip } from '../../components/InfoTip';
 import { useToast } from '../../components/Toast';
 import { PageSkeleton } from '../../components/PageSkeleton';
-import { TipNote } from '../../components/TipNote';
-import { InfoTip } from '../../components/InfoTip';
 import { useAuth } from '../../context/AuthContext';
 import { analyticsService, type AnalyticsData } from '../../lib/analyticsService';
 import { supabase } from '../../lib/supabase';
@@ -138,9 +137,7 @@ export function AnalyticsPage() {
       </div>
 
       {/* Metrics guide — plain-language */}
-      <TipNote tone="info" title="How to read your analytics" compact>
-        <strong>Total Earnings</strong> is what you've earned from completed work · <strong>Pending Payouts</strong> is escrow money waiting to be released after client approval · <strong>Success Rate</strong> shows how reliably you finish contracts — clients see this, so keep it high. Hover any card's ⓘ for details.
-      </TipNote>
+      <InfoTip title="How to read your analytics" text="Total Earnings is what you've earned from completed work · Pending Payouts is escrow money waiting to be released after client approval · Success Rate shows how reliably you finish contracts — clients see this, so keep it high. Hover any card's ⓘ for details." />
 
       {data && (
         <>

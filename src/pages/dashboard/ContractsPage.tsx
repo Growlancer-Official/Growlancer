@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, X } from 'lucide-react';
+import { InfoTip } from '../../components/InfoTip';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
@@ -11,8 +12,6 @@ import { milestoneService, getMilestoneProgress } from '../../lib/contractMilest
 import { safeFormatDate } from '../../utils/date';
 import type { MilestoneItem } from '../../lib/contractMilestones';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../../lib/contractStatuses';
-import { InfoTip } from '../../components/InfoTip';
-import { TipNote } from '../../components/TipNote';
 
 type ContractWithDetails = Tables<'contracts'> & {
   project?: Tables<'projects'> | null;
@@ -518,11 +517,7 @@ export function ContractsPage() {
       </div>
 
       {/* How-it-works strip — hover the funding badges on any contract for details */}
-      <TipNote tone="protection" title="Your money is always protected" compact>
-        The{' '}<span className="font-semibold">funding badges</span> on each contract (Not Funded / Partially Funded / Fully Funded)
-        tell you exactly where escrow stands. Work confidently — payment releases to your wallet only after the client
-        approves your work, or automatically once the review window passes.
-      </TipNote>
+      <InfoTip title="Your money is always protected" text="The{' '}funding badges on each contract (Not Funded / Partially Funded / Fully Funded) tell you exactly where escrow stands. Work confidently — payment releases to your wallet only after the client approves your work, or automatically once the review window passes." />
 
       {/* Tabs — workflow order: All → Active → Pending → Completed */}
       <div className="flex items-center gap-3 border-b border-slate-200 overflow-x-auto">

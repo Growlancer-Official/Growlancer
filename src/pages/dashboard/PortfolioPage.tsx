@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Edit3, ExternalLink, Image, Loader2, Plus, Save, Star, StarOff, Tag, Trash2, X,  } from 'lucide-react';
+import { InfoTip } from '../../components/InfoTip';
 import { PageSkeleton } from '../../components/PageSkeleton';
-import { TipNote } from '../../components/TipNote';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -176,9 +176,7 @@ export function PortfolioPage() {
       </div>
 
       {/* Portfolio guide — plain-language */}
-      <TipNote tone="tip" title="Showcase work that wins clients" compact>
-        Add 3-5 of your <strong>best completed projects</strong> with clear titles and descriptions — clients view this on your public profile before contacting you. <strong>Feature</strong> your standout work with the ★ button. Updates appear on your public profile in real time.
-      </TipNote>
+      <InfoTip title="Showcase work that wins clients" text="Add 3-5 of your best completed projects with clear titles and descriptions — clients view this on your public profile before contacting you. Feature your standout work with the ★ button. Updates appear on your public profile in real time." />
 
       {/* Add / Edit Form */}
       {showForm && (

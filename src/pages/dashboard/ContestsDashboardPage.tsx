@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { Clock, IndianRupee, Trophy, Users, Search, Filter, ArrowRight, Loader2 } from 'lucide-react';
 import { contestService, type Contest, getTimeRemaining } from '../../lib/contests';
 import { formatCurrency } from '../../lib/currency';
+import { InfoTip } from '../../components/InfoTip';
 import { PageSkeleton } from '../../components/PageSkeleton';
-import { TipNote } from '../../components/TipNote';
 import { safeLower } from '../../utils/date';
 
 type ContestType = 'all' | 'design' | 'development' | 'writing' | 'marketing' | 'other';
@@ -69,9 +69,7 @@ export function ContestsDashboardPage() {
         </div>
       </div>
 
-      <TipNote tone="info" compact>
-        <strong>How contests work:</strong> Clients fund prizes in escrow — submit your best work, win prizes, and earn verified badges. No work outside Growlancer, ever.
-      </TipNote>
+      <InfoTip title="Information" text="How contests work: Clients fund prizes in escrow — submit your best work, win prizes, and earn verified badges. No work outside Growlancer, ever." />
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
