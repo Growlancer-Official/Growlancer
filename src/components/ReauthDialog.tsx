@@ -119,8 +119,8 @@ export function ReauthDialog({
   }, [user?.email]);
 
   const verifyOtp = useCallback(async () => {
-    if (!user?.email || otp.trim().length !== 6) {
-      setError('Please enter the 6-digit code.');
+    if (!user?.email || otp.trim().length < 6 || otp.trim().length > 8) {
+      setError('Please enter the code from your email (6-8 digits).');
       return;
     }
     setPhase('verifying');
@@ -280,7 +280,7 @@ export function ReauthDialog({
                       <input
                         type="text"
                         value={otp}
-                        onChange={e => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                        onChange={e => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 8))}
                         inputMode="numeric"
                         autoComplete="one-time-code"
                         placeholder="000000"

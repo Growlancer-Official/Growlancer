@@ -20,7 +20,8 @@ import { validateEmail } from '../../utils/validation';
 // rate limiting, full error handling.
 // ═══════════════════════════════════════════════════════════════
 
-const OTP_LENGTH = 6;
+const OTP_LENGTH_MIN = 6;
+const OTP_LENGTH_MAX = 8;
 const OTP_ATTEMPT_LIMIT = 5;
 const OTP_RESEND_COOLDOWN_S = 30;
 
@@ -96,8 +97,9 @@ export function OtpLoginPage() {
     busyRef.current = true;
     setError(null);
 
-    if (otp.trim().length !== OTP_LENGTH) {
-      setError(`Please enter the ${OTP_LENGTH}-digit code.`);
+    const code = otp.trim();
+    if (code.length < OTP_LENGTH_MIN || code.length > OTP_LENGTH_MAX) {
+      setError(`Please enter the ${OTP_LENGTH_MIN}-digit code.`);
       busyRef.current = false;
       return;
     }
@@ -293,7 +295,7 @@ export function OtpLoginPage() {
                   <input
                     type="text"
                     value={otp}
-                    onChange={e => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, OTP_LENGTH))}
+                    onChange={e => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, OTP_LENGTH_MAX))}
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     autoFocus
@@ -303,7 +305,7 @@ export function OtpLoginPage() {
 
                   <button
                     type="submit"
-                    disabled={otp.length !== OTP_LENGTH}
+                    disabled={otp.trim().length < OTP_LENGTH_MIN}
                     className="w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <ShieldCheck className="w-4 h-4" /> Verify & Sign In
