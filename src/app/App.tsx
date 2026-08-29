@@ -99,6 +99,7 @@ const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVer
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
 const SkillTestPage = lazy(() => import('@pages/dashboard/SkillTestPage').then(m => ({ default: m.SkillTestPage })));
 const TimeTrackingPage = lazy(() => import('@pages/dashboard/TimeTrackingPage').then(m => ({ default: m.TimeTrackingPage })));
+const ContestsDashboardPage = lazy(() => import('@pages/dashboard/ContestsDashboardPage').then(m => ({ default: m.ContestsDashboardPage })));
 
 
 // Dashboard Pages - Client
@@ -299,7 +300,7 @@ function App() {
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />
                 <Route path="time-tracking" element={<TimeTrackingPage />} />
-                <Route path="contests" element={<ContestsPage />} />
+                <Route path="contests" element={<ContestsDashboardPage />} />
                 <Route path="help-center" element={<HelpCenterPage />} />
               </Route>
 

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, CheckCircle2, Clock, CreditCard, IndianRupee, FileText, Handshake, Plus, Sparkles, Users,  } from 'lucide-react';
+import { Briefcase, CheckCircle2, Clock, CreditCard, IndianRupee, FileText, Handshake, Plus, Users,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { formatCurrency } from '../lib/currency';
@@ -354,41 +354,7 @@ export default function ClientDashboard() {
         </div>
       </div>
 
-      {/* Bottom Section - AI & Help */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
-        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-xl p-3 text-white shadow-md">
-          <div className="flex items-center gap-3 mb-1.5">
-            <Sparkles className="w-4 h-4 animate-workflow-pulse" />
-            <h3 className="text-xs font-semibold flex items-center gap-1.5">
-              AI Talent Matching <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-300 animate-ping"></span>
-            </h3>
-          </div>
-          <p className="text-emerald-100 text-xs mb-2">
-            Find perfect freelancers based on skills, experience, and reviews.
-          </p>
-          <Link
-            to="/client/matches"
-            className="inline-block bg-white text-emerald-600 px-2.5 py-1 rounded-lg font-medium text-xs hover:bg-emerald-50 transition-all duration-200"
-          >
-            View Matches
-          </Link>
-        </div>
 
-        <div className="bg-white rounded-xl p-3 border border-slate-100">
-          <h3 className="text-xs font-semibold text-slate-900 mb-1.5">Need Help?</h3>
-          <p className="text-slate-600 text-xs mb-2">
-            Use our AI Assistant or Help Center.
-          </p>
-          <div className="flex flex-col gap-0.5">
-            <Link to="/client/ai-assistant" className="text-emerald-600 font-medium text-xs hover:underline">
-              Chat with AI Assistant →
-            </Link>
-            <Link to="/help-center" className="text-emerald-600 font-medium text-xs hover:underline">
-              Visit Help Center →
-            </Link>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

@@ -26,7 +26,6 @@ import {
   Trophy,
   HelpCircle,
   Ticket,
-  Headphones,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -94,7 +93,6 @@ const accountLinks: SidebarLink[] = [
 ];
 
 const supportLinks: SidebarLink[] = [
-  { id: 'ai-support', path: '/client/ai-assistant', icon: Headphones, label: 'AI Support' },
   { id: 'help-center', path: '/client/help-center', icon: HelpCircle, label: 'Help Center' },
 ];
 

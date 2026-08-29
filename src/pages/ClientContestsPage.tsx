@@ -84,12 +84,17 @@ export function ClientContestsPage() {
   }, [user, fetchContests]);
 
   return (
-    <div className="max-w-[100rem] mx-auto">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-8">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">My Contests</h1>
-          <p className="text-slate-500 mt-1">Manage your design and development contests</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900">My Contests</h1>
+            <p className="text-slate-500 text-xs">Manage your design and development contests</p>
+          </div>
         </div>
         <Link
           to="/client/contests/create"
@@ -100,56 +105,43 @@ export function ClientContestsPage() {
         </Link>
       </div>
 
-      {/* Contests guide — plain-language */}
-      <TipNote tone="info" title="How contests work" compact className="mb-3">
+      <TipNote tone="info" title="How contests work" compact>
         Post a <strong>prize</strong> and a brief, then <strong>fund the prize</strong> (escrowed + 5% fee) — freelancers can only submit once the prize is protected. After the deadline the contest moves to <strong>Judging</strong>, you pick 1st/2nd/3rd, and prizes are released to the winners' wallets in real time. Entries, votes and results are all public for transparency.
       </TipNote>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="p-2 bg-emerald-100 rounded-xl">
-              <Trophy className="w-4 h-4 text-emerald-600" />
-            </div>
-            <span className="text-sm text-slate-500 font-medium">Total Contests</span>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="bg-white p-3 rounded-xl border border-slate-100">
+          <div className="flex items-center gap-1.5">
+            <div className="p-2 bg-emerald-100 rounded-lg"><Trophy className="w-3.5 h-3.5 text-emerald-600" /></div>
+            <div><p className="text-lg font-bold text-slate-900">{stats.total}</p><p className="text-xs text-slate-500">Total</p></div>
           </div>
-          <p className="text-2xl font-extrabold text-slate-900">{stats.total}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="p-2 bg-green-100 rounded-xl">
-              <Clock className="w-4 h-4 text-green-600" />
-            </div>
-            <span className="text-sm text-slate-500 font-medium">Active</span>
+        <div className="bg-white p-3 rounded-xl border border-slate-100">
+          <div className="flex items-center gap-1.5">
+            <div className="p-2 bg-green-100 rounded-lg"><Clock className="w-3.5 h-3.5 text-green-600" /></div>
+            <div><p className="text-lg font-bold text-slate-900">{stats.active}</p><p className="text-xs text-slate-500">Active</p></div>
           </div>
-          <p className="text-2xl font-extrabold text-slate-900">{stats.active}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="p-2 bg-emerald-100 rounded-xl">
-              <IndianRupee className="w-4 h-4 text-emerald-600" />
-            </div>
-            <span className="text-sm text-slate-500 font-medium">Total Prizes</span>
+        <div className="bg-white p-3 rounded-xl border border-slate-100">
+          <div className="flex items-center gap-1.5">
+            <div className="p-2 bg-emerald-100 rounded-lg"><IndianRupee className="w-3.5 h-3.5 text-emerald-600" /></div>
+            <div><p className="text-lg font-bold text-slate-900">{formatCurrency(stats.totalPrize)}</p><p className="text-xs text-slate-500">Prizes</p></div>
           </div>
-          <p className="text-2xl font-extrabold text-slate-900">{formatCurrency(stats.totalPrize)}</p>
         </div>
 
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="p-2 bg-blue-100 rounded-xl">
-              <Users className="w-4 h-4 text-blue-600" />
-            </div>
-            <span className="text-sm text-slate-500 font-medium">Submissions</span>
+        <div className="bg-white p-3 rounded-xl border border-slate-100">
+          <div className="flex items-center gap-1.5">
+            <div className="p-2 bg-blue-100 rounded-lg"><Users className="w-3.5 h-3.5 text-blue-600" /></div>
+            <div><p className="text-lg font-bold text-slate-900">{stats.totalSubmissions}</p><p className="text-xs text-slate-500">Submissions</p></div>
           </div>
-          <p className="text-2xl font-extrabold text-slate-900">{stats.totalSubmissions}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-3">
+      <div className="flex flex-wrap items-center gap-2">
         <Filter className="w-4 h-4 text-slate-400" />
         {(['all', 'active', 'judging', 'completed', 'draft'] as StatusFilter[]).map((status) => (
           <button
@@ -173,14 +165,14 @@ export function ClientContestsPage() {
 
       {/* Contests List */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="animate-spin h-12 w-12 text-emerald-600" />
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="animate-spin h-8 w-8 text-emerald-600" />
         </div>
       ) : filteredContests.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
-          <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-2" />
-          <h3 className="text-xl font-bold text-slate-900 mb-2">No contests yet</h3>
-          <p className="text-slate-500 mb-3">Create your first contest to start receiving submissions</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+          <Trophy className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+          <h3 className="text-lg font-bold text-slate-900 mb-1">No contests yet</h3>
+          <p className="text-slate-500 text-xs mb-3">Create your first contest to start receiving submissions</p>
           <Link
             to="/client/contests/create"
             className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
@@ -191,11 +183,11 @@ export function ClientContestsPage() {
         </div>
       ) : (
         <>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {filteredContests
               .slice((page - 1) * pageSize, page * pageSize)
               .map((contest) => (
-            <div key={contest.id} className="bg-white rounded-xl border border-slate-200 p-6 hover:shadow-lg transition-all">
+            <div key={contest.id} className="bg-white rounded-xl border border-slate-200 p-4 hover:shadow-md transition-all">
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-2">

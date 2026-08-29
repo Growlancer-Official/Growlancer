@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, CheckCircle, IndianRupee, FileText, Loader2, Plus, Tag, X } from 'lucide-react';
+import { ArrowRight, CheckCircle, IndianRupee, FileText, Loader2, Plus, Tag, Trophy, X } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { currencySymbol } from '../lib/currency';
 import { TipNote } from '../components/TipNote';
@@ -89,23 +89,28 @@ export function ClientContestCreatePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <div className="mb-3">
-        <h1 className="font-display text-xl font-bold text-slate-900 mb-2">Create Contest</h1>
-        <p className="text-slate-500">Post a design or development contest and receive competing submissions from talented freelancers</p>
+    <div className="max-w-4xl mx-auto space-y-3">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
+          <Trophy className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="font-display text-xl font-bold text-slate-900">Create Contest</h1>
+          <p className="text-slate-500 text-xs">Post a design or development contest and receive competing submissions</p>
+        </div>
       </div>
 
-      <TipNote tone="tip" title="Tips for a successful contest" compact className="mb-3">
+      <TipNote tone="tip" title="Tips for a successful contest" compact>
         Set a <strong>clear brief</strong> with specific deliverables so freelancers know exactly what to submit. A <strong>fair prize</strong> attracts quality entries — 2nd/3rd prizes are optional but encourage more submissions. The <strong>deadline</strong> controls how long entries are accepted, then you review and award the winner. Skills shown help freelancers decide if they're a fit.
       </TipNote>
 
-      <TipNote tone="protection" title="Escrow protection — how your prize is secured" compact className="mb-3">
+      <TipNote tone="protection" title="Escrow protection — how your prize is secured" compact>
         After creating the contest you'll <strong>fund the prize pool</strong> (1st + 2nd + 3rd + a 5% platform fee) from your wallet. The money is held in escrow — freelancers can only submit once it's funded, so everyone knows the prize is real. When you award winners, their prizes are <strong>released instantly</strong> to their wallets. Fair for you, fair for freelancers.
       </TipNote>
 
-      <form onSubmit={handleSubmit} className="space-y-1.5">
+      <form onSubmit={handleSubmit} className="space-y-3">
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <FileText className="w-4 h-4 text-emerald-600" />
             Contest Details
@@ -172,7 +177,7 @@ export function ClientContestCreatePage() {
         </div>
 
         {/* Prize & Timeline */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <IndianRupee className="w-4 h-4 text-emerald-600" />
             Prizes & Timeline
@@ -247,7 +252,7 @@ export function ClientContestCreatePage() {
         </div>
 
         {/* Skills */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Tag className="w-4 h-4 text-emerald-600" />
             Required Skills
