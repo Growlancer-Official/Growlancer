@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Info } from 'lucide-react';
 
 interface InfoTipProps {
@@ -15,21 +16,59 @@ interface InfoTipProps {
 
 /**
  * InfoTip — a small ⓘ icon that reveals a polished, industry-standard hover
- * tooltip. Use it next to any label, stat or button whose meaning isn't
- * 100% obvious so freelancers and clients never have to guess.
- *
- * Implementation notes:
- * - Plain CSS hover (group-hover) — no portal needed, z-50 keeps it on top.
- * - The tooltip is absolutely positioned so it can sit beside inline text
- *   without breaking layout; it never intercepts clicks.
+ * tooltip. Uses a React portal + fixed positioning so the tooltip is never
+ * clipped by overflow-hidden parents or sidebar boundaries.
  */
 export function InfoTip({ text, title, align = 'right', className = '', tone = 'slate' }: InfoTipProps) {
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const iconRef = useRef<HTMLSpanElement>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
-  const alignClass =
-    align === 'left' ? 'left-0' :
-    align === 'center' ? 'left-1/2 -translate-x-1/2' :
-    'right-0';
+  const calcPosition = useCallback(() => {
+    if (!iconRef.current) return;
+    const rect = iconRef.current.getBoundingClientRect();
+    const tooltipW = 240; // w-60 = 15rem = 240px
+    const gap = 6;
+
+    let left: number;
+    if (align === 'left') {
+      left = rect.left;
+    } else if (align === 'center') {
+      left = rect.left + rect.width / 2 - tooltipW / 2;
+    } else {
+      // right — but clamp to viewport
+      left = rect.right - tooltipW;
+    }
+
+    // Clamp horizontal to viewport
+    const vw = window.innerWidth;
+    if (left < 8) left = 8;
+    if (left + tooltipW > vw - 8) left = vw - tooltipW - 8;
+
+    // Position below the icon
+    let top = rect.bottom + gap;
+
+    // If tooltip would overflow viewport bottom, show above
+    const tooltipH = title ? 120 : 80;
+    if (top + tooltipH > window.innerHeight - 8) {
+      top = rect.top - gap - tooltipH;
+    }
+
+    setPos({ top, left });
+  }, [align]);
+
+  useEffect(() => {
+    if (open) {
+      calcPosition();
+      window.addEventListener('scroll', calcPosition, true);
+      window.addEventListener('resize', calcPosition);
+      return () => {
+        window.removeEventListener('scroll', calcPosition, true);
+        window.removeEventListener('resize', calcPosition);
+      };
+    }
+  }, [open, calcPosition]);
 
   const toneClass =
     tone === 'emerald' ? 'text-emerald-500 hover:text-emerald-700' :
@@ -38,7 +77,8 @@ export function InfoTip({ text, title, align = 'right', className = '', tone = '
 
   return (
     <span
-      className={`relative inline-flex items-center group align-middle ${className}`}
+      ref={iconRef}
+      className={`relative inline-flex items-center align-middle ${className}`}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
       onFocus={() => setOpen(true)}
@@ -48,21 +88,26 @@ export function InfoTip({ text, title, align = 'right', className = '', tone = '
         className={`w-4 h-4 cursor-help transition-colors duration-150 ${toneClass}`}
         aria-hidden="true"
       />
-      <span
-        role="tooltip"
-        className={`pointer-events-none absolute top-full mt-1.5 z-50 w-60 rounded-xl bg-slate-900 text-white shadow-xl transition-all duration-150 ${
-          open ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-0.5'
-        } ${alignClass}`}
-      >
-        {title && (
-          <span className="block px-3 pt-2.5 pb-1 text-xs font-bold uppercase tracking-wide text-emerald-300">
-            {title}
+      {open && createPortal(
+        <div
+          ref={tooltipRef}
+          role="tooltip"
+          className="fixed z-[9999] w-60 rounded-xl bg-slate-900 text-white shadow-2xl border border-slate-700/50 animate-in fade-in duration-150"
+          style={{ top: pos.top, left: pos.left }}
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+        >
+          {title && (
+            <span className="block px-3 pt-2.5 pb-1 text-xs font-bold uppercase tracking-wide text-emerald-300">
+              {title}
+            </span>
+          )}
+          <span className="block px-3 py-2 text-xs leading-relaxed font-normal text-slate-100">
+            {text}
           </span>
-        )}
-        <span className="block px-3 py-2 text-xs leading-relaxed font-normal text-slate-100">
-          {text}
-        </span>
-      </span>
+        </div>,
+        document.body
+      )}
     </span>
   );
 }
