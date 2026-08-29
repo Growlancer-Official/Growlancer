@@ -119,8 +119,8 @@ export function ReauthDialog({
   }, [user?.email]);
 
   const verifyOtp = useCallback(async () => {
-    if (!user?.email || otp.trim().length < 6 || otp.trim().length > 8) {
-      setError('Please enter the code from your email (6-8 digits).');
+    if (!user?.email || otp.trim().length !== 8) {
+      setError('Please enter the 8-digit code from your email.');
       return;
     }
     setPhase('verifying');

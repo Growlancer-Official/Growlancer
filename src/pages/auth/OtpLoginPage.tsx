@@ -15,13 +15,12 @@ import { validateEmail } from '../../utils/validation';
 
 // ═══════════════════════════════════════════════════════════════
 // OTP Login — Continue with OTP
-// Email → receive 6-digit code → verify → login → correct dashboard.
+// Email → receive 8-digit code → verify → login → correct dashboard.
 // Features: countdown timer, resend with cooldown, attempt limit,
 // rate limiting, full error handling.
 // ═══════════════════════════════════════════════════════════════
 
-const OTP_LENGTH_MIN = 6;
-const OTP_LENGTH_MAX = 8;
+const OTP_LENGTH = 8;
 const OTP_ATTEMPT_LIMIT = 5;
 const OTP_RESEND_COOLDOWN_S = 30;
 
@@ -98,8 +97,8 @@ export function OtpLoginPage() {
     setError(null);
 
     const code = otp.trim();
-    if (code.length < OTP_LENGTH_MIN || code.length > OTP_LENGTH_MAX) {
-      setError(`Please enter the ${OTP_LENGTH_MIN}-digit code.`);
+    if (code.length !== OTP_LENGTH) {
+      setError(`Please enter the 8-digit code sent to your email.`);
       busyRef.current = false;
       return;
     }
@@ -198,7 +197,10 @@ export function OtpLoginPage() {
                     Sign in with OTP
                   </h1>
                   <p className="text-sm text-slate-500">
-                    We'll send a 6-digit code to your email. Enter it to sign in instantly.
+                    We'll send an 8-digit code to your email. Enter it to sign in instantly.
+                  </p>
+                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    <strong>Note:</strong> If you signed up with GitHub or LinkedIn, use those buttons above to log in — OTP login is only for email signups.
                   </p>
                 </div>
 
@@ -279,7 +281,7 @@ export function OtpLoginPage() {
                     Enter your code
                   </h1>
                   <p className="text-sm text-slate-500">
-                    We sent a 6-digit code to{' '}
+                    We sent an 8-digit code to{' '}
                     <span className="font-semibold text-slate-700">{sentEmail}</span>
                   </p>
                 </div>
@@ -295,17 +297,17 @@ export function OtpLoginPage() {
                   <input
                     type="text"
                     value={otp}
-                    onChange={e => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, OTP_LENGTH_MAX))}
+                    onChange={e => setOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, OTP_LENGTH))}
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     autoFocus
-                    placeholder="000000"
+                    placeholder="00000000"
                     className="w-full h-14 px-4 text-center text-2xl font-mono tracking-[0.4em] bg-white border border-slate-200 rounded-xl outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
                   />
 
                   <button
                     type="submit"
-                    disabled={otp.trim().length < OTP_LENGTH_MIN}
+                    disabled={otp.trim().length !== OTP_LENGTH}
                     className="w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <ShieldCheck className="w-4 h-4" /> Verify & Sign In
