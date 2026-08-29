@@ -253,7 +253,7 @@ export default function SupportTicketsPage() {
             return (
               <div
                 key={ticket.id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm"
               >
                 <button
                   onClick={() => toggleExpand(ticket.id)}
@@ -264,7 +264,7 @@ export default function SupportTicketsPage() {
                       <MessageSquare className="w-5 h-5 text-slate-500" />
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-slate-900 truncate">{ticket.subject}</h3>
+                      <h3 className="font-semibold text-slate-900">{ticket.subject}</h3>
                       <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500">
                         <span className={`px-2 py-0.5 rounded-full font-medium ${status.color}`}>
                           {status.label}

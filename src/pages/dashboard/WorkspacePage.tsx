@@ -1300,8 +1300,8 @@ export function WorkspacePage() {
                         <div className="w-7 h-7 bg-white border border-slate-100 rounded-lg flex items-center justify-center text-xl flex-shrink-0 shadow-sm">
                           {fileUploadService.getFileIcon(file.file_type)}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-semibold text-slate-900 truncate">{file.file_name}</p>
+                        <div className="flex-1 min-w-0 break-words">
+                          <p className="text-xs font-semibold text-slate-900">{file.file_name}</p>
                           <p className="text-xs text-slate-500">
                             {fileUploadService.formatFileSize(file.file_size)} • {file.uploaded_by === user?.id ? 'You' : 'Client'}
                           </p>
@@ -1665,7 +1665,7 @@ export function WorkspacePage() {
                               {['delivered', 'completed'].includes(milestone.status) && <Check className="w-3.5 h-3.5" />}
                             </button>
                             
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 break-words">
                               <div className="flex items-center justify-between mb-0.5">
                                 <h4 className={`font-semibold text-xs ${['delivered', 'completed'].includes(milestone.status) ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
                                   {milestone.title}

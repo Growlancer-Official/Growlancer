@@ -894,7 +894,7 @@ export function WalletPage() {
                         }`}
                       />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 break-words">
                       <p className="font-medium text-slate-900">
                         Withdrawal — {w.method === 'paypal' ? 'PayPal' : w.method === 'razorpay_payout' ? 'Bank / UPI' : w.method}
                       </p>
@@ -1217,7 +1217,7 @@ export function WalletPage() {
                                 <Landmark className="w-4 h-4 text-slate-600" />
                               )}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="flex-1 min-w-0 break-words">
                               <p className="font-medium text-slate-900 text-sm">
                                 {method.type === 'paypal'
                                   ? 'PayPal'
@@ -1426,7 +1426,7 @@ export function WalletPage() {
                     </div>
 
                     {/* Details */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 break-words">
                       <div className="flex items-center gap-3">
                         <p className="font-semibold text-slate-900">
                           {method.type === 'paypal'
@@ -1734,7 +1734,7 @@ export function WalletPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>
-                      <p className="text-xs text-slate-500 truncate">{inv.project_title || 'Contract work'}</p>
+                      <p className="text-xs text-slate-500">{inv.project_title || 'Contract work'}</p>
                       <p className="text-xs text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
                     </div>
                   </div>

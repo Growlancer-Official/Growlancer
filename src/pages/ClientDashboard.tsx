@@ -239,9 +239,9 @@ export default function ClientDashboard() {
                   className="block p-2 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-slate-900 text-xs sm:text-xs truncate">{project.title}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{project.description}</p>
+                    <div className="flex-1 min-w-0 break-words">
+                      <h4 className="font-medium text-slate-900 text-xs sm:text-xs">{project.title}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-3">{project.description}</p>
                     </div>
                     <span className={`ml-3 px-2 py-1 text-xs font-medium rounded-full ${
                       project.status === 'open' ? 'bg-emerald-100 text-emerald-700' :
@@ -296,8 +296,8 @@ export default function ClientDashboard() {
                   className="block p-2 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 transition-colors"
                 >
                   <div className="flex justify-between items-start">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-slate-900 text-xs sm:text-xs truncate">
+                    <div className="flex-1 min-w-0 break-words">
+                      <h4 className="font-medium text-slate-900 text-xs sm:text-xs">
                         {contract.projects?.title || 'Project'}
                       </h4>
                       <p className="text-xs text-slate-500 mt-0.5">

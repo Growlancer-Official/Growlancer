@@ -1177,7 +1177,7 @@ export function ClientPaymentsPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>
-                    <p className="text-xs text-slate-500 truncate">{inv.project_title || 'Contract work'}</p>
+                    <p className="text-xs text-slate-500">{inv.project_title || 'Contract work'}</p>
                     <p className="text-xs text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
                   </div>
                 </div>

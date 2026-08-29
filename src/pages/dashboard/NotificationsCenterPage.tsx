@@ -249,7 +249,7 @@ export function NotificationsCenterPage() {
           <div className={`w-11 h-11 rounded-full flex items-center justify-center text-lg flex-shrink-0 ${notificationService.getNotificationColor(notification.type)}`}>
             {notificationService.getNotificationIcon(notification.type)}
           </div>
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 break-words">
             <div className="flex items-start justify-between gap-1.5">
               <p className={`text-sm ${notification.read ? 'text-slate-700' : 'font-semibold text-slate-900'}`}>
                 {notification.title}

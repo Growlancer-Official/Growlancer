@@ -478,13 +478,13 @@ export function OverviewPage() {
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {quickStats.slice(0, 4).map((stat, index) => (
           <div key={index} className="bg-white p-2.5 sm:p-3 rounded-xl shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
-            <p className="flex items-center gap-1 text-slate-500 text-xs sm:text-xs font-medium truncate">
+            <p className="flex items-center gap-1 text-slate-500 text-xs sm:text-xs font-medium">
               {stat.label}
               {stat.hint && <InfoTip text={stat.hint} />}
             </p>
             <p className="text-xl font-bold text-slate-900 mt-0.5">{stat.value}</p>
             {stat.change && (
-              <p className={`text-[10px] sm:text-xs mt-0.5 truncate ${
+              <p className={`text-[10px] sm:text-xs mt-0.5 ${
                 stat.changeType === 'positive' ? 'text-emerald-600' :
                 stat.changeType === 'negative' ? 'text-red-600' : 'text-slate-500'
               }`}>
@@ -533,7 +533,7 @@ export function OverviewPage() {
                       <div className="flex justify-between items-start gap-3">
                         <div className="min-w-0 flex-1">
                           <h4 className="font-medium text-xs sm:text-xs">{project.title}</h4>
-                          <p className="text-emerald-100 text-xs mt-0.5 line-clamp-1">{project.description}</p>
+                          <p className="text-emerald-100 text-xs mt-0.5 line-clamp-3">{project.description}</p>
                         </div>
                         <div className="text-right">
                           <p className="font-semibold">{formatBudgetRange(project.budget_min, project.budget_max)}</p>
@@ -596,9 +596,9 @@ export function OverviewPage() {
                     }`}>
                       <activity.icon className="w-4 h-4" />
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 break-words">
                       <p className="font-medium text-slate-900 text-xs sm:text-xs">{activity.title}</p>
-                      <p className="text-xs text-slate-500 truncate">{activity.description}</p>
+                      <p className="text-xs text-slate-500">{activity.description}</p>
                     </div>
                     <span className="text-xs text-slate-400">
                       {safeFormatDate(activity.timestamp)}

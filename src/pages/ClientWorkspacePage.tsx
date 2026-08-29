@@ -1183,8 +1183,8 @@ export function ClientWorkspacePage() {
                             className="p-4 border-b border-slate-200 hover:bg-slate-100 transition-colors"
                           >
                             <div className="flex items-start justify-between">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-900 truncate">
+                              <div className="flex-1 min-w-0 break-words">
+                                <p className="text-sm font-medium text-slate-900">
                                   {file.file_name || file.name}
                                 </p>
                                 {file.description && (
@@ -1553,7 +1553,7 @@ export function ClientWorkspacePage() {
                                   {req.revision_count} revision{req.revision_count > 1 ? 's' : ''} ·{' '}
                                   <span className="text-emerald-600 font-semibold">{formatCurrency(Number(req.total_amount))}</span>
                                 </p>
-                                <p className="text-xs text-slate-500 mt-1 line-clamp-2">{req.reason}</p>
+                                <p className="text-xs text-slate-500 mt-1 line-clamp-4">{req.reason}</p>
                               </div>
                               <div className="flex flex-col items-end gap-3 shrink-0">
                                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${req.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : req.status === 'accepted' ? 'bg-blue-100 text-blue-700' : req.status === 'pending_freelancer' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>

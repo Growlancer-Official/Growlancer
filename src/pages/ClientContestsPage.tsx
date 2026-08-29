@@ -223,7 +223,7 @@ export function ClientContestsPage() {
                     {contest.title}
                   </Link>
                   
-                  <p className="text-slate-500 text-sm mt-1 line-clamp-1">{contest.description}</p>
+                  <p className="text-slate-500 text-sm mt-1 line-clamp-3">{contest.description}</p>
                   
                   <div className="flex flex-wrap items-center gap-3 mt-3 text-sm">
                     <div className="flex items-center gap-1 text-slate-500">

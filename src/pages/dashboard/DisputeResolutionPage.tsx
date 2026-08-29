@@ -564,12 +564,12 @@ export function DisputeResolutionPage() {
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-1.5">
-                          <h3 className="font-semibold text-slate-900 truncate">
+                          <h3 className="font-semibold text-slate-900">
                             Dispute #{dispute.id.slice(0, 8)}
                           </h3>
                           {getStatusBadge(dispute.status, (dispute as any).decision)}
                         </div>
-                        <p className="text-sm text-slate-500 line-clamp-1">
+                        <p className="text-sm text-slate-500 line-clamp-3">
                           <span className="font-medium text-slate-600">
                             {REASON_LABELS[dispute.reason] || dispute.reason}
                           </span>

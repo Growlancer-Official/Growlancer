@@ -411,7 +411,7 @@ export function InvitesPage() {
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 break-words">
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-1.5 mb-2">

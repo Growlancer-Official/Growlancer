@@ -1021,7 +1021,7 @@ export function ProfessionalProfilePage() {
                     activeTab === id ? 'bg-emerald-50 text-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50'
                   }`}>
                   <Icon className="w-4 h-4 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 break-words">
                     <p className="text-sm font-semibold">{label}</p>
                     <p className="text-xs text-slate-400 truncate">{desc}</p>
                   </div>

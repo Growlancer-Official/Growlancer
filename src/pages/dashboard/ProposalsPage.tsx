@@ -252,7 +252,7 @@ export function ProposalsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-3 border-b border-slate-200">
+      <div className="flex items-center gap-3 border-b border-slate-200 overflow-x-auto">
         <button
           onClick={() => setActiveTab('pending')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
@@ -349,7 +349,7 @@ export function ProposalsPage() {
                       {getStatusBadge(proposal.status)}
                     </div>
 
-                    <p className="text-slate-600 mb-2 line-clamp-2">
+                    <p className="text-slate-600 mb-2 line-clamp-4">
                       {proposal.project?.description || 'No description provided'}
                     </p>
 

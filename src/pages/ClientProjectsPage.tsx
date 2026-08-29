@@ -384,7 +384,7 @@ export function ClientProjectsPage() {
                       {project.status}
                     </span>
                   </div>
-                  <p className="text-slate-600 text-sm line-clamp-2">{project.description}</p>
+                  <p className="text-slate-600 text-sm line-clamp-4">{project.description}</p>
                 </div>
                 <ProjectMenu projectId={project.id} projectStatus={project.status} onClose={setShowCloseModal} onComplete={setShowCompleteModal} onReopen={setShowReopenModal} />
               </div>

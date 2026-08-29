@@ -906,7 +906,7 @@ export function ProjectFeedPage() {
                   </div>
 
                   {/* Description */}
-                  <p className="text-slate-600 mb-1.5 line-clamp-2 text-xs">
+                  <p className="text-slate-600 mb-1.5 line-clamp-4 text-xs">
                     {match.project?.description || ''}
                   </p>
 

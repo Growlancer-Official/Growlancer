@@ -312,7 +312,7 @@ export function ClientPostTeamProjectPage() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-semibold text-slate-800 truncate">{s.name}</p>
-                            <p className="text-xs text-slate-500 truncate">
+                            <p className="text-xs text-slate-500">
                               {s.match_score}% match{s.skill_score >= 70 ? ' · strong skill overlap' : ''}
                               {s.verification_status === 'verified' ? ' · ✓ verified' : ''}
                             </p>

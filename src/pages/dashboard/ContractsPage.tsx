@@ -524,7 +524,7 @@ export function ContractsPage() {
       </TipNote>
 
       {/* Tabs — workflow order: All → Active → Pending → Completed */}
-      <div className="flex items-center gap-3 border-b border-slate-200">
+      <div className="flex items-center gap-3 border-b border-slate-200 overflow-x-auto">
         <button
           onClick={() => { userTouchedFilter.current = true; setActiveTab('all'); }}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${

@@ -2105,9 +2105,9 @@ export function ClientSettingsPage() {
                             ? <Shield className="w-4 h-4 text-emerald-600" />
                             : <CreditCard className="w-4 h-4 text-emerald-600" />}
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="flex-1 min-w-0 break-words">
                           <p className="font-medium text-slate-900 text-sm truncate">{orderTypeLabel(order.order_type)}</p>
-                          <p className="text-xs text-slate-500 truncate">
+                          <p className="text-xs text-slate-500">
                             {order.description || 'Razorpay payment'} ·{' '}
                             {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                           </p>

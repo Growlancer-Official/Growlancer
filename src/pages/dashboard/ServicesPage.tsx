@@ -308,7 +308,7 @@ export function ServicesPage() {
 
       {/* 💬 Negotiable-Price Offers — live */}
       {offers.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
+        <div className="bg-white rounded-xl border border-slate-100">
           <button
             onClick={() => setShowOffers(!showOffers)}
             className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
@@ -382,7 +382,7 @@ export function ServicesPage() {
       )}
 
       {/* Categories Section - A-Z Accordion */}
-      <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-100">
         <button
           onClick={() => setShowCategories(!showCategories)}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
@@ -463,7 +463,7 @@ export function ServicesPage() {
               .map(service => (
             <div
               key={service.id}
-              className="bg-white rounded-xl border border-slate-100 overflow-hidden hover:shadow-lg transition-shadow"
+              className="bg-white rounded-xl border border-slate-100 hover:shadow-lg transition-shadow"
             >
               {/* Cover Image */}
               {'image_url' in service && (service as unknown as Record<string, unknown>).image_url ? (
@@ -482,7 +482,7 @@ export function ServicesPage() {
                     <span className="inline-block px-2 py-1 text-xs font-semibold rounded-lg bg-slate-100 text-slate-600 mb-2">
                       {service.category}
                     </span>
-                    <h3 className="font-semibold text-slate-900 line-clamp-2">{service.title}</h3>
+                    <h3 className="font-semibold text-slate-900 line-clamp-4">{service.title}</h3>
                   </div>
                   <div className="flex items-center gap-1 ml-2">
                     <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />

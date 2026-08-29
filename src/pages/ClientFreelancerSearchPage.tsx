@@ -271,7 +271,7 @@ export function ClientFreelancerSearchPage() {
       )}
 
       {/* Browse Categories - A-Z Accordion */}
-      <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-100">
         <button
           onClick={() => setShowCategories(!showCategories)}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
@@ -351,16 +351,16 @@ export function ClientFreelancerSearchPage() {
                 <div className="w-8 h-8 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                   {f.profile?.avatar ? <img src={f.profile.avatar} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">{(f.profile?.name || f.title || 'U')[0]}</div>}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 break-words">
                   <div className="flex items-center gap-3">
-                    <h3 className="font-bold text-slate-900 truncate flex items-center gap-1.5">
+                    <h3 className="font-bold text-slate-900 flex items-center gap-1.5">
                       {f.profile?.name || f.title || 'Freelancer'}
                       {f.profile?.is_pro && <ProBadge size="xs" />}
                       {f.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                     </h3>
                     {f.availability && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />Available</span>}
                   </div>
-                  {f.title && <p className="text-sm text-slate-500 truncate">{f.title}</p>}
+                  {f.title && <p className="text-sm text-slate-500">{f.title}</p>}
                 </div>
               </div>
               {f.seller_level && <div className="mb-2">{getSellerLevelBadge(f.seller_level)}</div>}

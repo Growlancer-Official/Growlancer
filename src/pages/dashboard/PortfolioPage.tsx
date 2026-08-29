@@ -342,7 +342,7 @@ export function PortfolioPage() {
           {items.map((item) => (
             <div
               key={item.id}
-              className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-md transition-all group"
+              className="bg-white rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-all group"
             >
               {/* Thumbnail */}
               <div className="relative aspect-video bg-slate-50 overflow-hidden">
@@ -394,9 +394,9 @@ export function PortfolioPage() {
 
               {/* Info */}
               <div className="p-5">
-                <h3 className="font-semibold text-slate-900 mb-1 line-clamp-1">{item.title}</h3>
+                <h3 className="font-semibold text-slate-900 mb-1 line-clamp-3">{item.title}</h3>
                 {item.description && (
-                  <p className="text-sm text-slate-500 mb-3 line-clamp-2">{item.description}</p>
+                  <p className="text-sm text-slate-500 mb-3 line-clamp-4">{item.description}</p>
                 )}
 
                 {/* Tags */}
