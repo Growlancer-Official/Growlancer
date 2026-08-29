@@ -251,7 +251,7 @@ export function TimeTrackingPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
+    <div className="max-w-5xl mx-auto space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-slate-900">Time Tracking</h1>
@@ -311,7 +311,7 @@ export function TimeTrackingPage() {
 
           {/* Timer Tab */}
           {activeTab === 'timer' && (
-            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+            <div className="bg-white rounded-xl border border-slate-200 p-4 text-center">
               <div className="text-4xl sm:text-5xl md:text-6xl font-mono font-bold text-slate-900 mb-6 tracking-wider">{formatElapsed(elapsed)}</div>
               {isTracking && (
                 <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What are you working on?" className="w-full max-w-md px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 text-center focus:outline-none focus:ring-2 focus:ring-emerald-500" />
@@ -332,7 +332,7 @@ export function TimeTrackingPage() {
 
           {/* Manual Entry Tab */}
           {activeTab === 'manual' && (
-            <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-md">
+            <div className="bg-white rounded-xl border border-slate-200 p-4 max-w-md">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Hours</label>

@@ -1090,7 +1090,7 @@ export function WalletPage() {
         <div className="max-w-2xl mx-auto">
           {/* Success state */}
           {withdrawSuccess ? (
-            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center">
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center">
               <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <CheckCircle2 className="w-8 h-8 text-emerald-600" />
               </div>

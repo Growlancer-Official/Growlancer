@@ -395,7 +395,7 @@ const handleSubmit = async () => {
 
       {/* Blocked Phase (anti-cheat / cooldown) */}
       {phase === 'blocked' && (
-        <div className="bg-white rounded-xl border border-red-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-red-200 p-4 text-center">
           <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mx-auto mb-3">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
@@ -416,7 +416,7 @@ const handleSubmit = async () => {
 
       {/* Intro Phase */}
       {phase === 'intro' && !eligibilityLoaded && (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 text-center">
           <Loader2 className="w-10 h-10 animate-spin text-emerald-600 mx-auto" />
           <p className="text-slate-500 mt-4">Checking test eligibility…</p>
         </div>
@@ -424,7 +424,7 @@ const handleSubmit = async () => {
 
       {/* Intro Phase — blocked by eligibility */}
       {phase === 'intro' && eligibilityLoaded && !eligibilityAllowed && (
-        <div className="bg-white rounded-xl border border-red-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-red-200 p-4 text-center">
           <div className="w-16 h-16 rounded-xl bg-red-100 flex items-center justify-center mx-auto mb-3">
             <XCircle className="w-8 h-8 text-red-500" />
           </div>
@@ -441,7 +441,7 @@ const handleSubmit = async () => {
 
       {/* Intro Phase */}
       {phase === 'intro' && eligibilityLoaded && eligibilityAllowed && (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 text-center">
           <div className={`w-16 h-16 rounded-xl ${levelInfo.bgColor} flex items-center justify-center mx-auto mb-3`}>
             <Award className={`w-8 h-8 ${levelInfo.color}`} />
           </div>
@@ -584,7 +584,7 @@ const handleSubmit = async () => {
 
       {/* Complete Phase */}
       {phase === 'complete' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 text-center">
           <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-3 ${
             passed ? 'bg-emerald-100' : 'bg-red-100'
           }`}>

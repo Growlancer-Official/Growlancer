@@ -229,7 +229,7 @@ export function ServicesPage() {
   }
 
   return (
-    <div className="space-y-8 pb-20 lg:pb-0">
+    <div className="space-y-4 pb-20 lg:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>

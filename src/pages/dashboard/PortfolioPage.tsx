@@ -156,7 +156,7 @@ export function PortfolioPage() {
   }
 
   return (
-    <div className="max-w-[100rem] mx-auto space-y-8">
+    <div className="max-w-[100rem] mx-auto space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

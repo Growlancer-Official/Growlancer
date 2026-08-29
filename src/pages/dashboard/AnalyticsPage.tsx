@@ -98,7 +98,7 @@ export function AnalyticsPage() {
   );
 
   return (
-    <div className="max-w-[100rem] mx-auto space-y-8">
+    <div className="max-w-[100rem] mx-auto space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
@@ -176,7 +176,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Earnings Chart */}
-          <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+          <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Earnings Overview</h2>
@@ -280,7 +280,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Project Matches */}
-          <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
+          <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">AI Project Matches</h2>

@@ -1056,7 +1056,7 @@ export function ProjectFeedPage() {
           <h3 className="font-display text-2xl font-bold text-slate-900 mb-3">
             Unlock Your Real-Time Matchmaker Feed!
           </h3>
-          <p className="text-slate-600 max-w-md mx-auto mb-8 text-sm leading-relaxed">
+          <p className="text-slate-600 max-w-md mx-auto mb-4 text-sm leading-relaxed">
             Growlancer uses a state-of-the-art match scoring engine to hook you up with high-paying client contracts automatically. To unlock your matching projects, you need to complete your professional profile setup first.
           </p>
           <Link

@@ -1322,7 +1322,7 @@ export function ProfessionalProfilePage() {
           {/* ═══ ACCOUNT TAB ═══ */}
           {activeTab === 'account' && (
             <>
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
                   <Settings className="w-4 h-4 text-emerald-600" /> Account Settings
                 </h2>
@@ -1455,7 +1455,7 @@ export function ProfessionalProfilePage() {
           {/* ═══ SECURITY TAB ═══ */}
           {activeTab === 'security' && (
             <div className="space-y-1.5">
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
                   <Lock className="w-4 h-4 text-emerald-600" /> Change Password
                 </h2>
@@ -1500,7 +1500,7 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* 2FA */}
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
                   <Shield className="w-4 h-4 text-emerald-600" /> Two-Factor Authentication
                 </h2>
@@ -1580,7 +1580,7 @@ export function ProfessionalProfilePage() {
               </div>
 
               {/* Active Sessions */}
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
                   <Monitor className="w-4 h-4 text-emerald-600" /> Active Sessions
                 </h2>
@@ -1632,7 +1632,7 @@ export function ProfessionalProfilePage() {
           {/* ═══ NOTIFICATIONS TAB ═══ */}
           {activeTab === 'notifications' && (
             <>
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
                   <Bell className="w-4 h-4 text-emerald-600" /> Notification Preferences
                 </h2>
@@ -1697,7 +1697,7 @@ export function ProfessionalProfilePage() {
           {/* ═══ PRIVACY TAB ═══ */}
           {activeTab === 'privacy' && (
             <>
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
                   <Globe className="w-4 h-4 text-emerald-600" /> Privacy Settings
                 </h2>
@@ -1769,7 +1769,7 @@ export function ProfessionalProfilePage() {
           {/* ═══ PAYOUT TAB ═══ */}
           {activeTab === 'payout' && (
             <>
-              <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+              <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
                   <IndianRupee className="w-4 h-4 text-emerald-600" /> Payout Methods
                 </h2>
@@ -1922,7 +1922,7 @@ export function ProfessionalProfilePage() {
 
           {/* ═══ DELETION TAB ═══ */}
           {activeTab === 'deletion' && (
-            <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
+            <div className="bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
               <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
                 <Trash2 className="w-4 h-4 text-red-500" /> Delete Account
               </h2>

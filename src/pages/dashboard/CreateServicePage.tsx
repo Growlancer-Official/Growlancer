@@ -350,7 +350,7 @@ export function CreateServicePage() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-8">
+      <div className="mb-4">
         <h1 className="font-display text-xl font-bold text-slate-900 mb-2">
           {isEditMode ? 'Edit Service' : 'Create New Service'}
         </h1>
@@ -361,7 +361,7 @@ export function CreateServicePage() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Service Image */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100 p-4">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Image className="w-4 h-4 text-emerald-600" />
             Service Image
@@ -383,7 +383,7 @@ export function CreateServicePage() {
         </div>
 
         {/* Basic Information */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100 p-4">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Briefcase className="w-4 h-4 text-emerald-600" />
             Basic Information
@@ -460,7 +460,7 @@ export function CreateServicePage() {
         </div>
 
         {/* Pricing & Delivery — FINAL MODEL: 3 package tiers + addons */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100 p-4">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <IndianRupee className="w-4 h-4 text-emerald-600" />
             Packages & Pricing
@@ -750,7 +750,7 @@ export function CreateServicePage() {
         </div>
 
         {/* Service Features */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100 p-4">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Sparkles className="w-4 h-4 text-emerald-600" />
             Service Features
@@ -806,7 +806,7 @@ export function CreateServicePage() {
         </div>
 
         {/* Tags */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100 p-4">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Tag className="w-4 h-4 text-emerald-600" />
             Search Tags
@@ -872,7 +872,7 @@ export function CreateServicePage() {
         </div>
 
         {/* Requirements */}
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 rounded-xl border border-slate-100 p-4">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Shield className="w-4 h-4 text-emerald-600" />
             Client Requirements

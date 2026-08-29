@@ -480,7 +480,7 @@ export function ProSubscriptionPage() {
         <section className="bg-white py-24 border-y border-slate-100">
           <div className="max-w-[100rem] mx-auto px-4">
             <div className="text-center mb-16">
-              <h2 className="font-display text-3xl font-extrabold mb-2">What Premium Unlocks</h2>
+              <h2 className="font-display text-xl font-extrabold mb-2">What Premium Unlocks</h2>
               <p className="text-slate-500">
                 Fair and honest: Premium is purely AI + productivity tools. Your packages, proposals,
                 visibility and matching score are <strong>identical</strong> with or without it — everything on this
@@ -531,7 +531,7 @@ export function ProSubscriptionPage() {
         {/* Plan Comparison Table */}
         <section className="py-24">
           <div className="max-w-5xl mx-auto px-4">
-            <h2 className="font-display text-3xl font-extrabold text-center mb-16">
+            <h2 className="font-display text-xl font-extrabold text-center mb-16">
               Compare Plans
             </h2>
             <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
@@ -571,7 +571,7 @@ export function ProSubscriptionPage() {
                 <Sparkles className="w-4 h-4" />
                 Pre-Launch Phase
               </div>
-              <h2 className="font-display text-3xl font-extrabold mb-2">
+              <h2 className="font-display text-xl font-extrabold mb-2">
                 Be Among the First
               </h2>
               <p className="text-slate-500 max-w-2xl mx-auto">
@@ -592,7 +592,7 @@ export function ProSubscriptionPage() {
               </p>
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              <div className="space-y-8">
+              <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
                     <div className="text-emerald-600 mb-2">

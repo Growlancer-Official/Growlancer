@@ -194,7 +194,7 @@ export function ClientMatchesPage() {
             <Briefcase className="w-7 h-7 text-emerald-600" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No Projects Yet</h3>
-          <p className="text-slate-500 mb-8 max-w-md mx-auto">
+          <p className="text-slate-500 mb-4 max-w-md mx-auto">
             Create your first project with the skills you need, and our AI will find the perfect freelancers for you.
           </p>
           <Link
@@ -221,7 +221,7 @@ export function ClientMatchesPage() {
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-4">
           <h3 className="font-display font-bold text-slate-900 mb-2">Your Projects</h3>
           {clientProjects.length > 0 ? (
             <div className="grid gap-1.5">

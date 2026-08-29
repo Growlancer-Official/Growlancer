@@ -403,7 +403,7 @@ export function IdentityVerificationPage() {
           Start Verification
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3">
           <h3 className="text-lg font-semibold text-slate-900">Submit Your Documents</h3>
 
           {/* Document Type */}
@@ -720,7 +720,7 @@ export function IdentityVerificationPage() {
       { label: 'Verified', done: false, current: false },
     ];
     return (
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
         <div className="p-3 bg-amber-100 rounded-xl w-fit mx-auto mb-2">
           <Clock className="w-8 h-8 text-amber-600" />
         </div>
@@ -782,7 +782,7 @@ export function IdentityVerificationPage() {
   };
 
   const renderVerifiedState = () => (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
       <div className="p-3 bg-emerald-100 rounded-xl w-fit mx-auto mb-2">
         <ShieldCheck className="w-8 h-8 text-emerald-600" />
       </div>
@@ -820,7 +820,7 @@ export function IdentityVerificationPage() {
     const canResubmit = attemptsLeft > 0 || blockExpired;
     return (
       <div className="space-y-1.5">
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
           <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-2">
             <XCircle className="w-8 h-8 text-red-600" />
           </div>
@@ -870,7 +870,7 @@ export function IdentityVerificationPage() {
         </div>
 
         {showForm && canResubmit && (
-          <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-6 space-y-5">
+          <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3">
             <h3 className="text-lg font-semibold text-slate-900">Resubmit Your Documents</h3>
 
             <div>
@@ -1015,7 +1015,7 @@ export function IdentityVerificationPage() {
 
   // 🚫 Blocked state — 24-hour cooldown with live countdown
   const renderBlockedState = () => (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-8 text-center max-w-lg mx-auto">
+    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
         <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-2">
           <Clock className="w-8 h-8 text-red-600" />
         </div>

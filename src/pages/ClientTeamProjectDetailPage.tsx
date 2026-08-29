@@ -200,7 +200,7 @@ export function ClientTeamProjectDetailPage() {
       {project.description && <p className="text-slate-600 whitespace-pre-wrap mb-3">{project.description}</p>}
 
       {/* Roles grid */}
-      <div className="grid gap-3 sm:grid-cols-2 mb-8">
+      <div className="grid gap-3 sm:grid-cols-2 mb-4">
         {roles.length === 0 && (
           <div className="sm:col-span-2 text-center py-10 bg-white rounded-xl border border-dashed border-slate-300">
             <p className="text-slate-500 mb-3">No roles yet — add the team roles you need.</p>

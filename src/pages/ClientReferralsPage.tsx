@@ -31,7 +31,7 @@ export function ClientReferralsPage() {
   };
 
   return (
-    <div className="space-y-8 pb-20 lg:pb-0">
+    <div className="space-y-4 pb-20 lg:pb-0">
       {loading && (
         <div className="flex justify-center py-4">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600" />
@@ -47,7 +47,7 @@ export function ClientReferralsPage() {
         <div className="lg:col-span-2 bg-white p-8 rounded-[2rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.12)] relative overflow-hidden">
           <div className="relative z-10">
             <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest mb-2">Share Your Link</h3>
-            <div className="flex flex-col sm:flex-row items-stretch gap-1.5 mb-8">
+            <div className="flex flex-col sm:flex-row items-stretch gap-1.5 mb-4">
               <div className="flex-1 bg-slate-50 px-2.5 py-3.5 rounded-xl border border-slate-200 flex items-center justify-between font-mono text-xl font-bold text-slate-800">
                 {referralCode}
                 <button
@@ -187,9 +187,9 @@ export function ClientReferralsPage() {
       </section>
 
       {/* Middle Row: Validation & Active Stats */}
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+      <section className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2 bg-white rounded-[2rem] p-8 border border-slate-100">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="font-display text-xl font-bold">Referral Validation Rules</h3>
             <div className="flex items-center gap-1.5 py-1 px-3 bg-slate-50 rounded-lg">
               <Bell className="text-orange-500 text-sm w-4 h-4" />
@@ -197,7 +197,7 @@ export function ClientReferralsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ul className="space-y-1.5">
               <li className="flex items-start gap-3">
                 <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
@@ -241,7 +241,7 @@ export function ClientReferralsPage() {
 
         {/* Top Referrers Leaderboard */}
         <aside className="bg-white rounded-[2rem] p-8 border border-slate-100">
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-4">
             <h3 className="font-display text-xl font-bold">Top Clients</h3>
             <Trophy className="w-4 h-4 text-orange-500" />
           </div>

@@ -373,8 +373,8 @@ export function OverviewPage() {
 
   if (error) {
     return (
-      <div className="p-6 lg:p-8 max-w-[100rem] mx-auto">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-8 text-center">
+      <div className="space-y-4">
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
           <p className="text-red-700 font-medium mb-4">{error}</p>
           <button
             onClick={fetchDashboardData}

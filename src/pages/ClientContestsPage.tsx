@@ -169,7 +169,7 @@ export function ClientContestsPage() {
           <Loader2 className="animate-spin h-8 w-8 text-emerald-600" />
         </div>
       ) : filteredContests.length === 0 ? (
-        <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 text-center">
           <Trophy className="w-12 h-12 text-slate-300 mx-auto mb-2" />
           <h3 className="text-lg font-bold text-slate-900 mb-1">No contests yet</h3>
           <p className="text-slate-500 text-xs mb-3">Create your first contest to start receiving submissions</p>
