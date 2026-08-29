@@ -1,5 +1,6 @@
 import React, { useState, startTransition, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '../routes';
 import { 
   Activity, AlertCircle, ArrowRight, BadgeCheck, BarChart3, 
@@ -30,6 +31,28 @@ const CARD_CLASS = 'rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm';
 // ═══════════════════════════════════════════════════════════════
 function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
   const [videoFailed, setVideoFailed] = useState(false);
+  const { isAuthenticated, role } = useAuth();
+  const navigate = useNavigate();
+
+  const handleStartHiring = () => {
+    if (isAuthenticated && role === 'client') {
+      navigate('/client/post');
+    } else if (isAuthenticated && role === 'freelancer') {
+      navigate('/dashboard/feed');
+    } else {
+      onOpenSignup('client');
+    }
+  };
+
+  const handleStartFreelancing = () => {
+    if (isAuthenticated && role === 'freelancer') {
+      navigate('/dashboard/feed');
+    } else if (isAuthenticated && role === 'client') {
+      navigate('/client/post');
+    } else {
+      onOpenSignup('freelancer');
+    }
+  };
 
   return (
     <section className="relative overflow-hidden">
@@ -56,17 +79,17 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-200">
               <button 
-                onClick={() => onOpenSignup('client')} 
+                onClick={handleStartHiring}
                 className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
               >
-                Start Hiring
+                {isAuthenticated ? (role === 'client' ? 'Post a Project' : 'Browse Projects') : 'Start Hiring'}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </button>
               <button 
-                onClick={() => onOpenSignup('freelancer')} 
+                onClick={handleStartFreelancing}
                 className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
               >
-                Start Freelancing
+                {isAuthenticated ? (role === 'freelancer' ? 'Browse Projects' : 'Post a Project') : 'Start Freelancing'}
                 <Sparkles className="ml-2 w-4 h-4 text-emerald-500" />
               </button>
             </div>
@@ -149,7 +172,12 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                     </div>
                     <div className="mt-5 flex items-center gap-3">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-emerald-400 text-xs font-medium">Live AI Matching Engine</span>
+                      <button
+                        onClick={() => isAuthenticated ? navigate(role === 'client' ? '/client/matches' : '/dashboard/feed') : onOpenSignup('client')}
+                        className="text-emerald-400 text-xs font-medium hover:text-emerald-300 transition-colors cursor-pointer"
+                      >
+                        Live AI Matching Engine — Try Now →
+                      </button>
                     </div>
                   </div>
                 )}

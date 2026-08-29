@@ -164,13 +164,63 @@ export function PricingPage() {
 
           {loadingPlans ? (
             <div className="flex justify-center py-6">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600"></div>
+              <div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
             </div>
           ) : plans.length === 0 ? (
-            <div className="text-center py-5 text-slate-500">
-              <p>Pro plans are being prepared — check back soon.</p>
+          /* Fallback: show hardcoded plans when DB has none */
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl mx-auto">
+              {/* Free Plan */}
+              <div className="flex flex-col rounded-xl p-4 bg-white border border-slate-200 shadow-sm">
+                <div className="inline-flex items-center gap-1 text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full mb-2 w-fit">
+                  <Zap className="w-3.5 h-3.5" />
+                  START FREE
+                </div>
+                <h3 className="font-display text-2xl font-bold mb-2">Free</h3>
+                <p className="text-sm text-slate-600 mb-3">Essential AI tools to get started</p>
+                <div className="mb-3">
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl font-bold">{formatCurrency(0)}</span>
+                    <span className="text-sm font-bold text-slate-400">/month</span>
+                  </div>
+                  <p className="text-sm text-emerald-600 font-medium mt-1">No card required</p>
+                </div>
+                <ul className="space-y-2 mb-3 flex-1">
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-600">10 AI messages/month</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-600">AI writing — 5 generations per day</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-600">AI-powered project matching</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-600">Personalized AI assistant</span></li>
+                </ul>
+                <Link to="/dashboard" className="block w-full py-3 rounded-xl font-bold text-center bg-slate-900 text-white hover:bg-slate-800 transition-colors">Get Started Free</Link>
+              </div>
+              {/* Premium Plan */}
+              <div className="flex flex-col rounded-xl p-4 bg-slate-900 text-white shadow-xl md:scale-105">
+                <div className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-2 w-fit">
+                  <Crown className="w-3.5 h-3.5" />
+                  MOST POPULAR
+                </div>
+                <h3 className="font-display text-2xl font-bold mb-2">Premium</h3>
+                <p className="text-sm text-slate-400 mb-3">AI writing, AI assistant, profile optimization & analytics</p>
+                <div className="mb-3">
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-display text-4xl font-bold">{formatCurrency(299)}</span>
+                    <span className="text-sm font-bold text-slate-400">/month</span>
+                  </div>
+                </div>
+                <ul className="space-y-2 mb-3 flex-1">
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Unlimited AI messages</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Unlimited AI writing</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">AI-powered project matching</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Priority AI responses</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Advanced analytics</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Priority support 24/7</span></li>
+                </ul>
+                <Link to="/dashboard/pro" className="block w-full py-3 rounded-xl font-bold text-center bg-emerald-500 text-slate-900 hover:bg-emerald-400 transition-colors">Try Premium Free</Link>
+              </div>
             </div>
+          </>
           ) : (
+          <>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl mx-auto">
               {plans.map((plan) => {
                 const isFree = plan.price === 0;
@@ -286,6 +336,7 @@ export function PricingPage() {
                 );
               })}
             </div>
+          </>
           )}
 
           <div className="text-center mt-8">
