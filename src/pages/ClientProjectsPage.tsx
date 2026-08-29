@@ -4,8 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels, tables } from '../lib/supabase';
 import { formatBudgetRange } from '../utils/date';
 import { PageSkeleton } from '../components/PageSkeleton';
-import { TipNote } from '../components/TipNote';
-import { AlertTriangle, Briefcase, CheckCircle, CheckCircle2, Clock, IndianRupee, Edit3, Eye, MoreVertical, Plus, RefreshCw, X } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
+import { AlertTriangle, Briefcase, CheckCircle, CheckCircle2, Clock, IndianRupee, Edit3, Eye, FolderKanban, MoreVertical, Plus, RefreshCw, X } from 'lucide-react';
 
 /* ── Dropdown menu for each project card ── */
 function ProjectMenu({
@@ -296,7 +296,7 @@ export function ClientProjectsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">My Projects</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><FolderKanban className="w-5 h-5 text-emerald-600" /></div>My Projects <InfoTip title="From post to completed — your project journey" text="Open — freelancers can apply and you can invite AI matches. In Progress — a freelancer is hired and working under escrow. Completed — work delivered and approved. Cancelled — you closed it (active contracts continue safely). Use the menu on any project to see proposals, AI matches, edit, or change status — all in real time." /></h1>
           <p className="text-slate-500 mt-1">Manage your posted projects and track progress</p>
         </div>
         <Link
@@ -308,10 +308,6 @@ export function ClientProjectsPage() {
         </Link>
       </div>
 
-      {/* Projects guide — plain-language */}
-      <TipNote tone="info" title="From post to completed — your project journey" compact>
-        <strong>Open</strong> — freelancers can apply and you can invite AI matches. <strong>In Progress</strong> — a freelancer is hired and working under escrow. <strong>Completed</strong> — work delivered and approved. <strong>Cancelled</strong> — you closed it (active contracts continue safely). Use the ⋮ menu on any project to see proposals, AI matches, edit, or change status — all in real time.
-      </TipNote>
 
       {/* Filter Tabs */}
       <div className="flex gap-3 border-b border-slate-200">

@@ -6,6 +6,7 @@ import { notificationPreferencesService } from '../lib/notificationPreferences';
 import { avatarPackService } from '../lib/avatarPack';
 import { formatCurrency } from '../utils/date';
 import { inviteService, type UserInvitation } from '../lib/inviteService';
+import { InfoTip } from '../components/InfoTip';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { ReauthDialog } from '../components/ReauthDialog';
 import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../lib/reauth';
@@ -46,6 +47,7 @@ import {
   Trash2,
   User,
   UserPlus,
+  Settings,
   X,
   XCircle,
 } from 'lucide-react';
@@ -1101,7 +1103,7 @@ export function ClientSettingsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900">Settings</h1>
+          <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Settings className="w-5 h-5 text-emerald-600" /></div>Settings <InfoTip title="Account settings" text="Manage your email, password, payment methods, notification preferences and privacy settings. Changes save in real time and sync across all your sessions." /></h1>
           <p className="text-slate-500 mt-1">Manage your account settings and preferences</p>
         </div>
       </div>
