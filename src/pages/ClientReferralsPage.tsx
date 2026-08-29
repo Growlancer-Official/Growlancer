@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import { Award, Bell, ClipboardCheck, Copy, MailCheck, ShieldCheck, Sparkles, Trophy, Zap,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReferralsData, shareReferralLink } from '../hooks/useReferralsData';
-import { TipNote } from '../components/TipNote';
+import { InfoTip } from '../components/InfoTip';
 
 function tierFromCount(count: number) {
   if (count >= 25) return { label: 'Elite', next: null, progress: 100, target: 25 };
@@ -38,10 +38,7 @@ export function ClientReferralsPage() {
           <PageSkeleton showStats={false} cards={false} />
         </div>
       )}
-      {/* Referral guide — plain-language */}
-      <TipNote tone="info" title="How client referrals work" compact>
-        Share your <strong>referral code</strong> (only the code gets copied). A referral counts when the new client <strong>verifies their email</strong> and <strong>posts a valid project</strong>. More valid referrals unlock higher tiers — <strong>Pro (10)</strong> and <strong>Elite (25)</strong> — with faster AI matching and better talent recommendations. Self-referrals or account farming are detected automatically and lead to suspension.
-      </TipNote>
+
 
       {/* Hero: Referral Link & Tier */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">

@@ -148,6 +148,7 @@ export default function ClientDashboard() {
           <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
             <div className="p-2 bg-emerald-100 rounded-xl"><LayoutDashboard className="w-5 h-5 text-emerald-600" /></div>
             Welcome back, {user?.name || 'Client'}!
+            <InfoTip title="Your dashboard" text="This is your client command center — contracts, proposals, AI matches and payments all in one place. Everything updates in real time as freelancers respond to your projects." />
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             Manage your projects and freelancers all in one place.

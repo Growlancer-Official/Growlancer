@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Pagination } from '../components/Pagination';
-import { TipNote } from '../components/TipNote';
+import { InfoTip } from '../components/InfoTip';
 import { useAuth } from '../context/AuthContext';
 import { useReferralsData } from '../hooks/useReferralsData';
 
@@ -120,10 +120,7 @@ export function ReferralsPage() {
 
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
-      {/* How referrals work — plain-language guide */}
-      <TipNote tone="info" title="How referrals work" compact>
-        Share your <strong>referral code</strong> with friends — it's the only thing that gets copied, not the full link. A referral counts as <strong>valid</strong> when the friend verifies their email, completes their profile, and sends their first proposal. Self-referrals or multiple accounts to farm rewards are flagged automatically and lead to permanent suspension.
-      </TipNote>
+
 
       {/* Hero: Referral Stats & Code */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-3">

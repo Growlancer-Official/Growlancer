@@ -6,7 +6,7 @@ import { safeFormatDate } from '../utils/date';
 import { formatCurrency } from '../lib/currency';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
 import { ProBadge } from '../components/ProBadge';
-import { TipNote } from '../components/TipNote';
+import { InfoTip } from '../components/InfoTip';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
 import {
@@ -240,15 +240,7 @@ export function ProSubscriptionPage() {
 
 
 
-          {/* No lock-in note — one flat plan, cancel anytime */}
-          <div className="max-w-5xl mx-auto px-4 mb-8">
-            <TipNote tone="tip" title="No lock-in — cancel anytime" compact>
-              Premium is <strong>{formatCurrency(299)}/month, flat</strong> — one simple plan, no tiers, no teams, no annual
-              commitment. Pay with wallet balance or Razorpay (UPI, cards, net banking). Your Pro badge stays
-              active the whole time and billing is managed right here in real time. Your packages, proposals and
-              visibility stay exactly the same before and after — Premium is purely extra AI + productivity tools.
-            </TipNote>
-          </div>
+
 
           {/* Plan Card — single ₹299/month plan */}
           <div

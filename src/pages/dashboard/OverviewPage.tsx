@@ -467,6 +467,7 @@ export function OverviewPage() {
             Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
             {user?.verificationStatus === 'verified' && <VerifiedBadge size="sm" />}
             {isFreelancer && isPro && <ProBadge size="md" />}
+            <InfoTip title="Your dashboard" text="This is your personal command center — contracts, proposals, earnings, AI matches and notifications all in one place. Everything updates in real time as activity happens across the platform." />
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
             {isFreelancer

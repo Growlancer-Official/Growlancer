@@ -3,8 +3,9 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Layers, Plus, Shield, Sparkles, Tag, Trash2, X, Zap } from 'lucide-react';
+import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Layers, Package, Plus, Shield, Sparkles, Tag, Trash2, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
+import { InfoTip } from '../../components/InfoTip';
 import { useCategories } from '../../hooks/useCategories';
 import { ImageUpload } from '../../components/ImageUpload';
 import AIGenerateModal from '../../components/AIGenerateModal';
@@ -352,9 +353,7 @@ export function CreateServicePage() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-4">
-        <h1 className="font-display text-xl font-bold text-slate-900 mb-2">
-          {isEditMode ? 'Edit Service' : 'Create New Service'}
-        </h1>
+        <h1 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Package className="w-5 h-5 text-emerald-600" /></div>{isEditMode ? 'Edit Service' : 'Create New Service'} <InfoTip title="Create a service" text="Fill in a clear title, description, category and packages. Basic package is required — Standard and Premium are optional extras. Set realistic delivery times and include revisions. Publish to make it visible to clients instantly." /></h1>
         <p className="text-slate-500">{isEditMode
           ? 'Update your service — changes go live instantly for clients'
           : 'Create a professional service offering to attract clients and grow your business'}</p>

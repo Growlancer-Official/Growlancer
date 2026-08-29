@@ -5,6 +5,7 @@ import { identityVerificationService, documentNeedsBack, KYC_MAX_ATTEMPTS, getRe
 import { supabase } from '../../lib/supabase';
 import type { IdentityVerification } from '../../lib/identityVerification';
 import { PageSkeleton } from '../../components/PageSkeleton';
+import { InfoTip } from '../../components/InfoTip';
 import { AlertCircle,
   CheckCircle2,
   Clock,
@@ -1084,11 +1085,8 @@ export function IdentityVerificationPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900">Identity Verification</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Shield className="w-5 h-5 text-emerald-600" /></div>Identity Verification <InfoTip title="Why verify?" text="Verified freelancers get a trust badge on their profile, higher AI match scores, and priority in client search. Upload a government-issued ID and a selfie — our team reviews within 24 hours. Your documents are encrypted and never shared." /></h1>
           <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
-        </div>
-        <div className="p-2 bg-emerald-100 rounded-xl">
-          <Shield className="w-4 h-4 text-emerald-600" />
         </div>
       </div>
 
