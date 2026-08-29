@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, clearSupabaseAuthStorage, uniqueChannelName } from '../../lib/supabase';
 import { CacheManager } from '../../lib/services/cacheManager';
@@ -875,9 +875,7 @@ export function ProfessionalProfilePage() {
 
   // ── Render ──
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   const tabs = [

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Bot, Briefcase, Check, CreditCard, FileText, Handshake, Headphones, MessageSquare, Plus, Sparkles, Trophy, Users, Wallet, Zap,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { formatBudgetRange, safeFormatDate, safeLower, safeNumber } from '../../utils/date';
@@ -368,9 +369,7 @@ export function OverviewPage() {
   }, [fetchDashboardData, user, role]);
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   if (error) {

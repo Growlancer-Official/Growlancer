@@ -7,7 +7,7 @@ import { TipNote } from '../../components/TipNote';
 import { formatBudgetRange, safeLower } from '../../utils/date';
 import { formatCurrency, currencySymbol } from '../../lib/currency';
 import { Pagination } from '../../components/Pagination';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import AIGenerateModal from '../../components/AIGenerateModal';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -778,9 +778,7 @@ export function ProjectFeedPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

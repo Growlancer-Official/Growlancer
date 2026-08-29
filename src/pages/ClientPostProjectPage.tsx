@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { formatCurrency, currencySymbol } from '../lib/currency';
 import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Sparkles, CheckCircle2 } from 'lucide-react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';
 import { CategoryPicker } from '../components/CategoryPicker';
@@ -204,7 +205,7 @@ export function ClientPostProjectPage() {
   if (fetchingEditData) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        <PageSkeleton showStats={false} cards={false} />
       </div>
     );
   }

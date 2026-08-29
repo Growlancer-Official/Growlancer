@@ -5,7 +5,7 @@ import {
   Handshake, LayoutDashboard, Plus, Users, TrendingUp, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { formatCurrency } from '../lib/currency';
 import {
   projectsService,
@@ -106,9 +106,7 @@ export default function ClientDashboard() {
   }, [fetchDashboardData, user?.id]);
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   if (error) {

@@ -4,7 +4,7 @@ import { ArrowRight, Calendar, CheckCircle2, ChevronDown, Clock, FileText, Loade
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { formatBudgetRange } from '../../utils/date';
 import { formatCurrency } from '../../lib/currency';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -181,9 +181,7 @@ export function ProposalsPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

@@ -7,7 +7,7 @@ import { teamProjectsService, type TeamProject, type TeamRole, TEAM_COMMISSION_R
 import { AlertCircle, ArrowLeft, CheckCircle2, Plus, RefreshCw, UserCheck, Users } from 'lucide-react';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { TipNote } from '../components/TipNote';
 
 const ROLE_STATUS_META: Record<string, { label: string; cls: string }> = {
@@ -156,9 +156,7 @@ export function ClientTeamProjectDetailPage() {
     { amount: 0, commission: 0, total: 0 }
   );
 
-  if (loading) return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+  if (loading) return <PageSkeleton />;;
 
   if (error || !project) {
     return (

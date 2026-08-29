@@ -1,3 +1,4 @@
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { useState, useEffect, useCallback } from 'react';
 import {
   Headphones, Plus, ChevronDown, ChevronUp, MessageSquare,
@@ -230,7 +231,7 @@ export default function SupportTicketsPage() {
       {/* Tickets List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="w-7 h-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+          <PageSkeleton showStats={false} cards={false} />
         </div>
       ) : tickets.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-xl border border-slate-200 shadow-sm">

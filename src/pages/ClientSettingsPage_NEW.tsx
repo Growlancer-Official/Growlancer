@@ -6,7 +6,7 @@ import { notificationPreferencesService } from '../lib/notificationPreferences';
 import { avatarPackService } from '../lib/avatarPack';
 import { formatCurrency } from '../utils/date';
 import { inviteService, type UserInvitation } from '../lib/inviteService';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { ReauthDialog } from '../components/ReauthDialog';
 import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../lib/reauth';
 import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
@@ -1093,9 +1093,7 @@ export function ClientSettingsPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

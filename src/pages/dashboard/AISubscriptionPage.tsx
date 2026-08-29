@@ -6,6 +6,7 @@
 // separate AI-only subscription flow (₹399/₹499 tiers, yearly options) was
 // removed. This route now just forwards to the single Premium page.
 // ═══════════════════════════════════════════════════════════════════════════
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,7 +19,7 @@ export function AISubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      <PageSkeleton showStats={false} cards={false} />
     </div>
   );
 }

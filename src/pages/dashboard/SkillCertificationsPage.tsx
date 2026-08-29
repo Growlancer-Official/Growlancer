@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Award, BarChart3, BrainCircuit, CheckCircle2, Code, Lock, Palette, Search, Server, Sparkles, TrendingUp,  } from 'lucide-react';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { TipNote } from '../../components/TipNote';
 import { useAuth } from '../../context/AuthContext';
 import { realtimeChannels } from '../../lib/supabase';
@@ -66,9 +66,7 @@ export function SkillCertificationsPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

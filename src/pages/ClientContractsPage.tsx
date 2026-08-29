@@ -6,7 +6,7 @@ import { formatCurrency } from '../lib/currency';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
 import { ProBadge } from '../components/ProBadge';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { InfoTip } from '../components/InfoTip';
 import { TipNote } from '../components/TipNote';
@@ -168,9 +168,7 @@ export function ClientContractsPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

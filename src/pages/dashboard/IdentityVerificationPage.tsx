@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { identityVerificationService, documentNeedsBack, KYC_MAX_ATTEMPTS, getRemainingKycAttempts, isKycBlocked, formatKycCooldown, getKycBlockedMsLeft, type VerificationUpload } from '../../lib/identityVerification';
 import { supabase } from '../../lib/supabase';
 import type { IdentityVerification } from '../../lib/identityVerification';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { AlertCircle,
   CheckCircle2,
   Clock,
@@ -1051,9 +1051,7 @@ export function IdentityVerificationPage() {
 
   // Loading state
   if (pageStatus === 'loading') {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   // Error state

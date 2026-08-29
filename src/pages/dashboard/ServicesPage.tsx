@@ -22,7 +22,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { Pagination } from '../../components/Pagination';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { TipNote } from '../../components/TipNote';
 import { safeLower } from '../../utils/date';
 import { useAuth } from '../../context/AuthContext';
@@ -225,9 +225,7 @@ export function ServicesPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

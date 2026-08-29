@@ -26,7 +26,7 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { requireKycForAction } from '../../lib/kycGate';
@@ -655,9 +655,7 @@ export function WalletPage() {
   // =============================================
 
   if (overviewLoading && activeTab === 'overview') {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   // =============================================

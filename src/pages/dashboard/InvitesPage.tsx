@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AlertCircle, ArrowRight, Briefcase, Calendar, CheckCircle2, Clock, Loader2, Mail, MessageSquare, Star, User, Wallet, XCircle } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { TipNote } from '../../components/TipNote';
 import { useAuth } from '../../context/AuthContext';
 import { supabase, dbFunctions, uniqueChannelName } from '../../lib/supabase';
@@ -271,9 +271,7 @@ export function InvitesPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

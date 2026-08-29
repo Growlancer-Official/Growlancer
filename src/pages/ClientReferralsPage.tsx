@@ -1,3 +1,4 @@
+import { PageSkeleton } from '../components/PageSkeleton';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Award, Bell, ClipboardCheck, Copy, MailCheck, ShieldCheck, Sparkles, Trophy, Zap,  } from 'lucide-react';
@@ -34,7 +35,7 @@ export function ClientReferralsPage() {
     <div className="space-y-4 pb-20 lg:pb-0">
       {loading && (
         <div className="flex justify-center py-4">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600" />
+          <PageSkeleton showStats={false} cards={false} />
         </div>
       )}
       {/* Referral guide — plain-language */}

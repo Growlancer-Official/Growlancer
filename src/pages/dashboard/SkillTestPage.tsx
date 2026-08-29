@@ -9,7 +9,7 @@ import {
   Loader2,
   XCircle,
 } from 'lucide-react';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import {
   AVAILABLE_SKILL_TESTS,
@@ -375,9 +375,7 @@ const handleSubmit = async () => {
   }
 
   if (!test) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   const levelInfo = CERTIFICATION_LEVELS[test.difficulty];

@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertTriangle, ArrowLeft, Ban, Calendar, CheckCircle2, ChevronRight, Clock, FileText, Loader2, MessageCircle, Scale, Send, Shield, User, XCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { TipNote } from '../../components/TipNote';
 import { disputeService } from '../../lib/disputeService';
 import type { DisputeCase } from '../../lib/disputeService';
@@ -260,9 +260,7 @@ export function DisputeResolutionPage() {
   /* ================================================================ */
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   /* ================================================================ */

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels, tables } from '../lib/supabase';
 import { formatBudgetRange } from '../utils/date';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { TipNote } from '../components/TipNote';
 import { AlertTriangle, Briefcase, CheckCircle, CheckCircle2, Clock, IndianRupee, Edit3, Eye, MoreVertical, Plus, RefreshCw, X } from 'lucide-react';
 
@@ -288,9 +288,7 @@ export function ClientProjectsPage() {
 
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

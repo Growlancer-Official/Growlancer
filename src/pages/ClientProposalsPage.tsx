@@ -5,7 +5,7 @@ import { supabase, realtimeChannels } from '../lib/supabase';
 import { formatCurrency } from '../lib/currency';
 import { hireFreelancerFromProposal, rejectProposal } from '../lib/workflowService';
 import { CheckCircle, Clock, ExternalLink, Eye, FileText, IndianRupee, MoreVertical, Plus, Star, User, XCircle } from 'lucide-react';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { PageSkeleton } from '../components/PageSkeleton';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
@@ -268,9 +268,7 @@ export function ClientProposalsPage() {
   };
 
   if (loading) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   return (

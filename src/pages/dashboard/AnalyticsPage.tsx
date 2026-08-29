@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, IndianRupee, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users } from 'lucide-react';
 import { useToast } from '../../components/Toast';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
+import { PageSkeleton } from '../../components/PageSkeleton';
 import { TipNote } from '../../components/TipNote';
 import { InfoTip } from '../../components/InfoTip';
 import { useAuth } from '../../context/AuthContext';
@@ -46,9 +46,7 @@ export function AnalyticsPage() {
   }, [fetchAnalytics, user]);
 
   if (loading && !data) {
-    return (
-        <div className="flex items-center justify-center py-20"><div className="h-7 w-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" /></div>
-      );;
+    return <PageSkeleton />;;
   }
 
   const formatCurrency = (amount: number) =>
