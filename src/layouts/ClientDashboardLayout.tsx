@@ -31,7 +31,6 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
-import { ClientDashboardFallback } from '../components/LoadingSkeleton';
 import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
@@ -655,7 +654,7 @@ export function ClientDashboardLayout() {
 
         {/* Page Content */}
         <div className="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 max-w-[100rem] mx-auto w-full overflow-x-hidden break-words">
-          <Suspense fallback={<ClientDashboardFallback />}>
+          <Suspense>
             <Outlet />
           </Suspense>
         </div>
