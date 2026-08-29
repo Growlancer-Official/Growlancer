@@ -276,7 +276,7 @@ export function TimeTrackingPage() {
       )}
 
       {contracts.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
           <Timer className="w-12 h-12 text-slate-300 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-slate-900 mb-2">No hourly contracts</h3>
           <p className="text-slate-500">Time tracking is available for hourly contracts.</p>
@@ -311,7 +311,7 @@ export function TimeTrackingPage() {
 
           {/* Timer Tab */}
           {activeTab === 'timer' && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center">
+            <div className="bg-white rounded-xl border border-slate-200 p-8 text-center">
               <div className="text-4xl sm:text-5xl md:text-6xl font-mono font-bold text-slate-900 mb-6 tracking-wider">{formatElapsed(elapsed)}</div>
               {isTracking && (
                 <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What are you working on?" className="w-full max-w-md px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-4 text-center focus:outline-none focus:ring-2 focus:ring-emerald-500" />
@@ -332,7 +332,7 @@ export function TimeTrackingPage() {
 
           {/* Manual Entry Tab */}
           {activeTab === 'manual' && (
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 max-w-md">
+            <div className="bg-white rounded-xl border border-slate-200 p-6 max-w-md">
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Hours</label>
@@ -359,7 +359,7 @@ export function TimeTrackingPage() {
               {loading ? (
                 <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /></div>
               ) : timeEntries.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-2xl border border-slate-100">
+                <div className="text-center py-12 bg-white rounded-xl border border-slate-100">
                   <Clock className="w-10 h-10 text-slate-300 mx-auto mb-3" />
                   <p className="text-slate-500">No time entries yet</p>
                 </div>

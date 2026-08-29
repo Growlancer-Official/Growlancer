@@ -153,7 +153,7 @@ export function ClientReferralsPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-emerald-100 transition-all group">
+          <div className="bg-white p-6 rounded-xl border border-slate-100 hover:border-emerald-100 transition-all group">
             <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-2.5 group-hover:scale-110 transition-transform">
               <Zap className="w-4 h-4" />
             </div>
@@ -163,7 +163,7 @@ export function ClientReferralsPage() {
               <span className="font-bold text-emerald-600">under 15 seconds</span>.
             </p>
           </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-emerald-100 transition-all group">
+          <div className="bg-white p-6 rounded-xl border border-slate-100 hover:border-emerald-100 transition-all group">
             <div className="h-12 w-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 mb-2.5 group-hover:scale-110 transition-transform">
               <Sparkles className="w-4 h-4" />
             </div>
@@ -173,7 +173,7 @@ export function ClientReferralsPage() {
               <span className="font-bold text-orange-600">Top 1%</span> of freelancers who match your exact stack and culture.
             </p>
           </div>
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 hover:border-emerald-100 transition-all group">
+          <div className="bg-white p-6 rounded-xl border border-slate-100 hover:border-emerald-100 transition-all group">
             <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center text-white mb-2.5 group-hover:scale-110 transition-transform">
               <ShieldCheck className="w-4 h-4" />
             </div>

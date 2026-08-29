@@ -126,7 +126,7 @@ export default function SupportTicketsPage() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-display text-xl font-bold text-slate-900">Create Support Ticket</h2>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
@@ -227,8 +227,8 @@ export default function SupportTicketsPage() {
           <div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
         </div>
       ) : tickets.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="w-16 h-16 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
             <LifeBuoy className="w-8 h-8 text-emerald-600" />
           </div>
           <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No tickets yet</h3>
@@ -253,7 +253,7 @@ export default function SupportTicketsPage() {
             return (
               <div
                 key={ticket.id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-sm"
+                className="bg-white rounded-xl border border-slate-200 shadow-sm"
               >
                 <button
                   onClick={() => toggleExpand(ticket.id)}

@@ -1130,7 +1130,7 @@ export function ClientSettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Sidebar Navigation */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-2xl border border-slate-100 p-4 sticky top-4">
+          <div className="bg-white rounded-xl border border-slate-100 p-4 sticky top-4">
             <nav className="space-y-1">
               {[
                 { id: 'company', label: 'Company Profile', icon: Building2 },
@@ -1163,7 +1163,7 @@ export function ClientSettingsPage() {
           {/* Company Profile Tab */}
           {activeTab === 'company' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Building2 className="w-5 h-5 text-emerald-600" />
                   Company Profile
@@ -1333,7 +1333,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* Company Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 border border-blue-100 shadow-sm">
+              <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border border-blue-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
@@ -1370,7 +1370,7 @@ export function ClientSettingsPage() {
           {/* Account Tab */}
           {activeTab === 'account' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <User className="w-5 h-5 text-emerald-600" />
                   Account Information
@@ -1474,7 +1474,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* ── Change Email Address ── */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
                   <Mail className="w-5 h-5 text-emerald-600" /> Change Email Address
                 </h2>
@@ -1523,7 +1523,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* ── Invite User ── */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
                   <UserPlus className="w-5 h-5 text-emerald-600" /> Invite User
                 </h2>
@@ -1626,7 +1626,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* Account Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-indigo-50 to-white rounded-2xl p-6 border border-indigo-100 shadow-sm">
+              <div className="bg-gradient-to-br from-indigo-50 to-white rounded-xl p-6 border border-indigo-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-indigo-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
@@ -1663,7 +1663,7 @@ export function ClientSettingsPage() {
           {/* Security Tab */}
           {activeTab === 'security' && (
             <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Lock className="w-5 h-5 text-emerald-600" /> Change Password
                 </h2>
@@ -1702,7 +1702,7 @@ export function ClientSettingsPage() {
                 </form>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
                   <Shield className="w-5 h-5 text-emerald-600" /> Two-Factor Authentication
                 </h2>
@@ -1792,7 +1792,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* Security Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-amber-50 to-white rounded-2xl p-6 border border-amber-100 shadow-sm">
+              <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-6 border border-amber-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
@@ -1829,7 +1829,7 @@ export function ClientSettingsPage() {
           {/* Notifications Tab */}
           {activeTab === 'notifications' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Bell className="w-5 h-5 text-emerald-600" /> Notification Preferences
                 </h2>
@@ -1859,7 +1859,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* Notifications Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-6 border border-purple-100 shadow-sm">
+              <div className="bg-gradient-to-br from-purple-50 to-white rounded-xl p-6 border border-purple-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
@@ -1896,7 +1896,7 @@ export function ClientSettingsPage() {
           {/* Privacy Tab */}
           {activeTab === 'privacy' && (
             <>
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Globe className="w-5 h-5 text-emerald-600" /> Privacy Settings
                 </h2>
@@ -1935,7 +1935,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* Privacy Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-sky-50 to-white rounded-2xl p-6 border border-sky-100 shadow-sm">
+              <div className="bg-gradient-to-br from-sky-50 to-white rounded-xl p-6 border border-sky-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
@@ -1972,7 +1972,7 @@ export function ClientSettingsPage() {
           {/* Billing Tab */}
           {activeTab === 'billing' && (
             <div className="space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-3">
                     <CreditCard className="w-5 h-5 text-emerald-600" /> Payment Methods
@@ -2042,7 +2042,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* Other payment methods — UPI / Net Banking / Wallets at Razorpay checkout */}
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h3 className="font-display text-base font-bold text-slate-900 mb-1 flex items-center gap-3">
                   <Wallet className="w-5 h-5 text-emerald-600" /> Other Payment Methods
                 </h3>
@@ -2090,7 +2090,7 @@ export function ClientSettingsPage() {
                 </div>
               </div>
 
-              <div className="bg-white p-6 rounded-2xl border border-slate-100">
+              <div className="bg-white p-6 rounded-xl border border-slate-100">
                 <h3 className="font-display text-base font-bold text-slate-900 mb-4 flex items-center gap-3">
                   <Receipt className="w-5 h-5 text-emerald-600" /> Billing History
                 </h3>
@@ -2131,7 +2131,7 @@ export function ClientSettingsPage() {
               </div>
 
               {/* Billing Tips — fills blank space */}
-              <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl p-6 border border-green-100 shadow-sm">
+              <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-6 border border-green-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="flex items-start gap-3">
                     <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
@@ -2166,7 +2166,7 @@ export function ClientSettingsPage() {
           )}
           {/* Deletion Tab */}
           {activeTab === 'deletion' && (
-            <div className="bg-white p-6 rounded-2xl border border-slate-100">
+            <div className="bg-white p-6 rounded-xl border border-slate-100">
               <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                 <Trash2 className="w-5 h-5 text-red-500" />
                 Delete Account

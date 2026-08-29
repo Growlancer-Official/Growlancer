@@ -277,7 +277,7 @@ export function ClientDashboardLayout() {
             />
             <div>
               <h1 className="font-display text-sm font-bold leading-none">Growlancer</h1>
-              <span className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
+              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Client Dashboard</span>
             </div>
           </Link>
           <button

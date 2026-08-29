@@ -189,7 +189,7 @@ export function ClientMatchesPage() {
           </div>
         </div>
 
-        <div className="text-center py-16 bg-white rounded-3xl border border-slate-200 shadow-sm">
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-200 shadow-sm">
           <div className="h-20 w-20 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-3">
             <Briefcase className="w-7 h-7 text-emerald-600" />
           </div>
