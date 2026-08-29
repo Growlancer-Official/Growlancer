@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels, tables } from '../lib/supabase';
 import { formatBudgetRange } from '../utils/date';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { TipNote } from '../components/TipNote';
 import { AlertTriangle, Briefcase, CheckCircle, CheckCircle2, Clock, IndianRupee, Edit3, Eye, MoreVertical, Plus, RefreshCw, X } from 'lucide-react';
 
@@ -287,11 +288,7 @@ export function ClientProjectsPage() {
 
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-      </div>
-    );
+    return <LoadingSkeleton variant="full-page" />;
   }
 
   return (

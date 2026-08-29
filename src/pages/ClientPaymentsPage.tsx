@@ -9,6 +9,7 @@ import { AlertCircle, ArrowDownLeft, ArrowUpRight, Building2, Calendar, CheckCir
 import { formatCurrency, safeFormatDate, safeNumber } from '../utils/date';
 import { currencySymbol } from '../lib/currency';
 import { withdrawalService } from '../lib/withdrawal';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { RazorpayCheckout } from '../components/RazorpayCheckout';
 import { InfoTip } from '../components/InfoTip';
 import { TipNote } from '../components/TipNote';
@@ -386,11 +387,7 @@ export function ClientPaymentsPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-      </div>
-    );
+    return <LoadingSkeleton variant="full-page" />;
   }
 
   return (

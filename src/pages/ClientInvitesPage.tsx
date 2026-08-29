@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { invitesService } from '../lib/dataService';
 import { Calendar, Clock, MailCheck, MoreVertical, Plus, RefreshCw, Send, X } from 'lucide-react';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { useToast } from '../components/Toast';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
@@ -149,11 +150,7 @@ export function ClientInvitesPage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-      </div>
-    );
+    return <LoadingSkeleton variant="full-page" />;
   }
 
   return (

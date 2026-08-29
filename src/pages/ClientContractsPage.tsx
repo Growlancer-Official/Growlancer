@@ -6,6 +6,7 @@ import { formatCurrency } from '../lib/currency';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../lib/contractStatuses';
 import { AlertCircle, Calendar, Clock, FileText, Handshake, IndianRupee, Laptop, User, Users,  } from 'lucide-react';
 import { ProBadge } from '../components/ProBadge';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { InfoTip } from '../components/InfoTip';
 import { TipNote } from '../components/TipNote';
@@ -31,13 +32,7 @@ function getEscrow(c: Contract) {
   return Array.isArray(c.escrow) ? c.escrow[0] : c.escrow;
 }
 
-function PageSpinner() {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600" />
-    </div>
-  );
-}
+
 
 export function ClientContractsPage() {
   const { user } = useAuth();
@@ -173,14 +168,14 @@ export function ClientContractsPage() {
   };
 
   if (loading) {
-    return <PageSpinner />;
+    return <LoadingSkeleton variant="full-page" />;
   }
 
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-1.5 font-display text-xl font-bold text-slate-900">
+          <h1 className="font-display text-xl font-bold text-slate-900">
             Contracts
             <InfoTip
               title="How contracts work for you"

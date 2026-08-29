@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Briefcase, CheckCircle2, Clock, CreditCard, IndianRupee, FileText, Handshake, Plus, Sparkles, Users,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { formatCurrency } from '../lib/currency';
 import {
   projectsService,
@@ -113,11 +114,7 @@ export default function ClientDashboard() {
   }, [fetchDashboardData, user?.id]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-      </div>
-    );
+    return <LoadingSkeleton variant="full-page" />;
   }
 
   if (error) {
