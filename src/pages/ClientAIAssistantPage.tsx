@@ -50,12 +50,6 @@ export function ClientAIAssistantPage() {
             chatMode="support"
             title="Client AI Support"
             supportTopics={CLIENT_SUPPORT_TOPICS}
-            ticketContext={{
-              category: 'general',
-              priority: 'normal',
-              subject: 'Support Request',
-              description: 'User is seeking help from AI support',
-            }}
           />
         )}
       </div>

@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
-import { ticketService } from '../lib/supportTicketService';
 import { useToast } from './Toast';
 import { TipNote } from './TipNote';
 import type { SupportOption, SupportTopic } from '../lib/supportTopics';
@@ -34,23 +33,16 @@ interface AIChatSupportProps {
   context?: 'freelancer' | 'client';
   title?: string;
   /** Explicit mode override — when set, this takes priority over the
-   * auto-detection that derives chatMode from ticketContext.
-   * 'assistant' → message storage key uses 'assistant'
-   * 'support'   → message storage key uses 'support'
-   * When omitted, chatMode = ticketContext ? 'support' : 'assistant'. */
+   * 'assistant' → free-typing mode, general help
+   * 'support'   → guided topic flow, account/payment help
+   * When omitted, defaults to 'assistant'. */
   chatMode?: 'assistant' | 'support';
-  ticketContext?: {
-    category?: string;
-    priority?: string;
-    subject?: string;
-    description?: string;
-  };
   /** Preloaded support topics (role-aware). When provided in support mode,
    * the user clicks a topic and follows a guided flow instead of free-typing. */
   supportTopics?: SupportTopic[];
 }
 
-export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', chatMode: explicitMode, ticketContext, supportTopics = [] }: AIChatSupportProps) {
+export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', chatMode: explicitMode, supportTopics = [] }: AIChatSupportProps) {
   const { user } = useAuth();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -80,7 +72,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   // KEY ISOLATION: AI Assistant and AI Support are DIFFERENT chats and must
   // never share history. The key includes both the role (freelancer/client)
   // and the mode (assistant vs support) so the two never cross-contaminate.
-  const chatMode = explicitMode || (ticketContext ? 'support' : 'assistant');
+  const chatMode = explicitMode || 'assistant';
   // Stable per-render key factory — deps are only the context/mode, so the
   // key never changes identity mid-chat and hooks deps stay clean.
   const CHAT_STORAGE_KEY = useCallback((uid: string) => `growlancer_ai_chat_v2_${context}_${chatMode}_${uid}`, [context, chatMode]);
@@ -217,13 +209,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             user_id: user.id,
             user_role: context,
             messages: history,
-            context: ticketContext ? {
-              ticket_category: ticketContext.category,
-              ticket_priority: ticketContext.priority,
-              ticket_subject: ticketContext.subject,
-              ticket_description: ticketContext.description,
-              skills: [],
-            } : undefined,
+            context: undefined,
           }),
           signal: abortControllerRef.current.signal,
         }
@@ -380,49 +366,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     setLoading(false);
   };
 
-  // ── Guided support flow: escalate to human support ──
-  const handleEscalate = async () => {
-    if (!user?.id) return;
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: `escalate-${Date.now()}`,
-        role: 'assistant',
-        content: '🔄 Connecting you with our support team...\n\nI\'m creating a support ticket on your behalf. Our team typically responds within 24 hours. You can track the status in your Support Tickets page.',
-        timestamp: new Date(),
-      },
-    ]);
-
-    try {
-      await ticketService.create({
-        subject: ticketContext?.subject || 'Support Escalation',
-        description: ticketContext?.description || 'User escalated from AI support guided flow.',
-        category: (ticketContext?.category as any) || 'general',
-        priority: (ticketContext?.priority as any) || 'normal',
-      });
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `escalate-done-${Date.now()}`,
-          role: 'assistant',
-          content: '✅ **Support ticket created!**\n\nOur team will review your case and get back to you via email within 24 hours. You can also check the status anytime from your **Support Tickets** page.',
-          timestamp: new Date(),
-        },
-      ]);
-    } catch (err) {
-      console.error('Failed to create support ticket:', err);
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `escalate-fail-${Date.now()}`,
-          role: 'assistant',
-          content: '⚠️ I couldn\'t create a ticket automatically. Please try again or contact us directly at **support@growlancer.com**.',
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  };
-
   // ── Guided support flow: pick a topic ──
   const handlePickTopic = (topic: SupportTopic) => {
     if (loading || !user) return;
@@ -455,11 +398,6 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       },
     ]);
 
-    if (option.escalate) {
-      setFlowEnded(true);
-      void handleEscalate();
-      return;
-    }
     if (option.done) {
       setFlowEnded(true);
       setMessages((prev) => [
@@ -499,7 +437,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `📧 **Verification email sent to ${user.email}.** Open the link in your inbox to verify, then come back and tap **Escalate to a Human** again — our team responds within 24 hours.`,
+        content: `📧 **Verification email sent to ${user.email}.** Open the link in your inbox to verify, then come back and continue chatting — I'm here to help!`,
         timestamp: new Date(),
       }]);
     } catch (err) {
@@ -608,23 +546,12 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             This is your <strong>AI Assistant</strong> — great for day-to-day questions about{' '}
             {context === 'freelancer' ? 'proposals, contracts, escrow and growing your business' : 'hiring, contracts, escrow and managing projects'}.
             For account, payment or dispute issues use the <strong>AI Support</strong> chat or tap{' '}
-            <strong>Escalate to a Human</strong> below — your conversations stay separate and private.
+            <strong>AI Support</strong> tab for account, payment or dispute issues — your conversations stay separate and private.
           </TipNote>
         )}
       </div>
 
-      {/* Ticket Context Banner */}
-      {ticketContext && (
-        <div className="px-6 py-2.5 bg-amber-50 border-b border-amber-100">
-          <div className="flex items-center gap-3 text-xs text-amber-700">
-            <span className="font-semibold">Assisting with ticket:</span>
-            <span className="truncate">{ticketContext.subject}</span>
-            <span className="px-1.5 py-0.5 bg-amber-100 rounded text-xs font-medium">
-              {ticketContext.category}
-            </span>
-          </div>
-        </div>
-      )}
+
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-4">
@@ -668,9 +595,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             <p className="text-sm text-slate-500">
               I can help in any language — English, Hindi, Spanish, and more.
               <br />
-              {ticketContext
-                ? `I'm here to help with your ${ticketContext.category} support request.`
-                : `Ask me about ${context === 'freelancer' ? 'freelancing, projects, or career growth' : 'hiring, project management, or finding talent'}.`}
+              {`Ask me about ${context === 'freelancer' ? 'freelancing, projects, or career growth' : 'hiring, project management, or finding talent'}.`}
             </p>
           </div>
         )}
