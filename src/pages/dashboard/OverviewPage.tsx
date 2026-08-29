@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Bot, Briefcase, Check, CreditCard, FileText, Handshake, Headphones, MessageSquare, Plus, Sparkles, Trophy, Users, Wallet, Zap,  } from 'lucide-react';
+import { ArrowRight, Bot, Briefcase, Check, CreditCard, FileText, Handshake, Headphones, LayoutDashboard, MessageSquare, Plus, Sparkles, Trophy, Users, Wallet, Zap,  } from 'lucide-react';
 import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
@@ -462,7 +462,8 @@ export function OverviewPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-3 flex-wrap">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+            <div className="p-2 bg-emerald-100 rounded-xl"><LayoutDashboard className="w-5 h-5 text-emerald-600" /></div>
             Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
             {user?.verificationStatus === 'verified' && <VerifiedBadge size="sm" />}
             {isFreelancer && isPro && <ProBadge size="md" />}

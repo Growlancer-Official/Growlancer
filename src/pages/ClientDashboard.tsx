@@ -145,7 +145,8 @@ export default function ClientDashboard() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-3 flex-wrap">
+          <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+            <div className="p-2 bg-emerald-100 rounded-xl"><LayoutDashboard className="w-5 h-5 text-emerald-600" /></div>
             Welcome back, {user?.name || 'Client'}!
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
@@ -176,7 +177,7 @@ export default function ClientDashboard() {
 
       {/* Quick Actions */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 p-4">
-        <h2 className="text-xs font-semibold text-slate-900 mb-3 flex items-center gap-1.5">Quick Actions <InfoTip text="Jump to key actions — post projects, search talent, check payments." /></h2>
+        <h2 className="text-xs font-semibold text-slate-900 mb-3">Quick Actions</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {quickActions.map((action) => (
             <Link

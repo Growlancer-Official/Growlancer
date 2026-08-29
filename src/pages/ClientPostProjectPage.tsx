@@ -213,7 +213,8 @@ export function ClientPostProjectPage() {
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-4">
       <div className="mb-3">
-        <h1 className="font-display text-lg sm:text-xl font-bold text-slate-900 mb-1">
+        <h1 className="font-display text-lg sm:text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+          <div className="p-2 bg-emerald-100 rounded-xl"><Briefcase className="w-5 h-5 text-emerald-600" /></div>
           {editProjectId ? 'Edit Project' : 'Post New Project'}
         </h1>
         <p className="text-slate-500 text-xs sm:text-sm">

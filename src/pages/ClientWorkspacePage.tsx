@@ -782,10 +782,25 @@ export function ClientWorkspacePage() {
 
   if (!selectedContract && contracts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[80vh] text-slate-500">
-        <Briefcase className="h-16 w-16 mb-2 text-slate-300" />
-        <h2 className="text-2xl font-semibold mb-2">No Active Contracts</h2>
-        <p>You don't have any active contracts yet.</p>
+      <div className="space-y-4">
+        <div className="flex items-center gap-1.5">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <Briefcase className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900">Workspace</h1>
+            <p className="text-slate-500">Manage your active projects</p>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl p-12 border border-slate-100 text-center">
+          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
+            <Briefcase className="w-7 h-7 text-slate-400" />
+          </div>
+          <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No Active Contracts</h3>
+          <p className="text-slate-500 max-w-md mx-auto mb-3">
+            You don't have any active contracts yet. Post a project and hire a freelancer to get started!
+          </p>
+        </div>
       </div>
     )
   }
