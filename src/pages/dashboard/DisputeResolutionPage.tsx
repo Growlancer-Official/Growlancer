@@ -387,7 +387,7 @@ export function DisputeResolutionPage() {
               <p>No messages yet. Start the conversation.</p>
             </div>
           ) : (
-            <div className="space-y-1.5 max-h-80 overflow-y-auto mb-2 pr-1">
+            <div className="space-y-1.5 mb-2 pr-1">
               {messages.map((msg) => (
                 <div
                   key={msg.id}

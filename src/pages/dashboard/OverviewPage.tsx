@@ -625,7 +625,7 @@ export function OverviewPage() {
         </div>
 
         {/* Right Column - 1/3 */}
-        <div className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+        <div className="space-y-4">
           {/* Quick Actions */}
           <div className="bg-white rounded-xl p-3 border border-slate-100">
             <h3 className="font-semibold text-slate-900 text-xs mb-2">Quick Actions</h3>

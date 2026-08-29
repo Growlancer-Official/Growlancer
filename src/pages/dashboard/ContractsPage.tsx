@@ -1100,7 +1100,7 @@ export function ContractsPage() {
                 {cMilestones.length > 0 && (
                   <div>
                     <p className="text-sm font-medium text-slate-700 mb-2">Milestones ({cMilestones.length})</p>
-                    <div className="space-y-4 max-h-44 overflow-y-auto pr-1">
+                    <div className="space-y-4 pr-1">
                       {cMilestones.map((m, idx) => {
                         const mStatus = String(m.status || 'pending').toLowerCase();
                         const isDone = ['completed', 'approved', 'released', 'paid'].includes(mStatus);

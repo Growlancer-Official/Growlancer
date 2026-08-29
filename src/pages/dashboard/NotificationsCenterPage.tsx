@@ -462,7 +462,7 @@ export function NotificationsCenterPage() {
         </div>
 
         {/* List */}
-        <div className="divide-y divide-slate-100 max-h-[65vh] overflow-y-auto">
+        <div className="divide-y divide-slate-100">
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="w-7 h-7 text-slate-300 animate-spin" />
