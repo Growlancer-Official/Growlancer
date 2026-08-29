@@ -321,10 +321,14 @@ export function AuthCallbackPage() {
             // clear, actionable error instead (the login redirect was a big part
             // of the 'OAuth login works but bounces back to login' bug).
             if (isProviderOAuth) {
-              devLog('[AuthCallback] OAuth signup callback without session — showing error');
+              devLog('[AuthCallback] OAuth signup callback without session — showing error', {
+                hasCode: !!searchParams.get('code'),
+                error: searchParams.get('error'),
+              });
               setStatus('error');
               setErrorMessage(
-                'Your GitHub/LinkedIn sign-in did not complete. Please try signing in again.'
+                'Your GitHub/LinkedIn sign-in did not complete. This usually means the redirect URL is not configured correctly. Add ' +
+                window.location.origin + '/auth/callback to your Supabase Dashboard → Authentication → URL Configuration → Redirect URLs.'
               );
               return;
             }
@@ -339,9 +343,18 @@ export function AuthCallbackPage() {
           }
 
           // For OAuth (unknown), try one more thing — check URL hash directly
-          devLog('[AuthCallback] All session recovery failed — showing error');
+          devLog('[AuthCallback] All session recovery failed — showing error', {
+            hasCode: !!searchParams.get('code'),
+            hasError: !!searchParams.get('error'),
+            hasHash: !!window.location.hash,
+          });
+          const isOAuthProvider = isProviderOAuth;
           setStatus('error');
-          setErrorMessage('No session found. Please try logging in again.');
+          setErrorMessage(
+            isOAuthProvider
+              ? 'LinkedIn/GitHub sign-in session could not be established. This usually means the redirect URL is not configured in the Supabase Dashboard. Please try again, or use email sign-in instead.'
+              : 'No session found. Please try logging in again.'
+          );
           return;
         }
 

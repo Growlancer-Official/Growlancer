@@ -1029,6 +1029,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       const redirectTo = `${window.location.origin}/auth/callback`;
+      devLog('[Auth] OAuth signInWithOAuth — provider:', provider, 'redirectTo:', redirectTo);
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: { redirectTo },
@@ -1036,7 +1037,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         devWarn('[Auth] OAuth error:', error.message);
-        return { success: false, error: error.message };
+        // Surface actionable diagnostics so the user knows whether this is
+        // a Supabase Dashboard config issue vs. a provider-side issue.
+        const isRedirect = error.message?.toLowerCase().includes('redirect');
+        const hint = isRedirect
+          ? ' The redirect URL may not be configured in the Supabase Dashboard (Authentication → URL Configuration → Redirect URLs). Add: ' + redirectTo
+          : '';
+        return { success: false, error: error.message + hint };
       }
 
       // OAuth redirects the browser. The library calls window.location.assign
@@ -1046,6 +1053,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data?.url) {
         devLog('[Auth] OAuth initiated for provider:', provider, 'role:', role, 'url:', data.url);
         window.location.href = data.url;
+      } else {
+        devWarn('[Auth] OAuth returned no URL — provider may not be configured. Check Supabase Dashboard.');
+        return { success: false, error: `OAuth could not start. The ${provider} provider may not be configured correctly in the Supabase Dashboard.` };
       }
       return { success: true, url: data?.url };
     } catch (error) {
