@@ -208,19 +208,19 @@ function PlatformStats() {
       {stats.map((s, i) => (
         <div key={i} className="p-5 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">{s.title}</h3>
+            <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{s.title}</h3>
             <s.icon className={`w-4 h-4 ${s.color}`} />
           </div>
           <div className="flex items-end justify-between">
             <span className="text-2xl font-bold text-white">{s.value}</span>
             {s.change && (
-              <div className={`flex items-center gap-0.5 text-[10px] font-bold ${s.up ? 'text-emerald-400' : 'text-red-400'}`}>
-                {s.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+              <div className={`flex items-center gap-0.5 text-xs font-bold ${s.up ? 'text-emerald-400' : 'text-red-400'}`}>
+                {s.up ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
                 <span>{s.change}</span>
               </div>
             )}
           </div>
-          {s.sub && <p className="text-[9px] text-slate-500 mt-1">{s.sub}</p>}
+          {s.sub && <p className="text-[10px] text-slate-500 mt-1">{s.sub}</p>}
         </div>
       ))}
     </section>
@@ -304,7 +304,7 @@ function UserManagementTable() {
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
         <h2 className="font-bold text-sm">Recent Users</h2>
         <select value={roleFilter} onChange={e => setRoleFilter(e.target.value as any)}
-          className="bg-slate-800 border-none text-[9px] font-bold uppercase rounded-lg px-2 py-1 text-slate-300 cursor-pointer">
+          className="bg-slate-800 border-none text-[10px] font-bold uppercase rounded-lg px-2 py-1 text-slate-300 cursor-pointer">
           <option value="all">All</option>
           <option value="client">Clients</option>
           <option value="freelancer">Freelancers</option>
@@ -312,7 +312,7 @@ function UserManagementTable() {
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead><tr className="text-slate-500 uppercase text-[9px] font-bold tracking-widest border-b border-white/5">
+          <thead><tr className="text-slate-500 uppercase text-[10px] font-bold tracking-widest border-b border-white/5">
             <th className="px-4 py-3">User</th><th className="px-4 py-3">Role</th>
             <th className="px-4 py-3">Status</th><th className="px-4 py-3 text-right">Actions</th>
           </tr></thead>
@@ -323,23 +323,23 @@ function UserManagementTable() {
             ) : users.map(u => (
               <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-slate-700 flex items-center justify-center text-[9px] font-bold text-white shrink-0 overflow-hidden cursor-pointer"
+                  <div className="flex items-center gap-3">
+                    <div className="h-7 w-7 rounded-lg bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shrink-0 overflow-hidden cursor-pointer"
                       onClick={() => handleViewProfile(u.id)} title="View profile">
                       {u.avatar ? <img src={u.avatar} className="h-full w-full object-cover" alt={u.name} /> : getUserInitials(u.name)}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-bold text-white text-[11px] truncate max-w-[140px]">{u.name}</p>
-                      <p className="text-[9px] text-slate-500 truncate max-w-[140px]">{u.email}</p>
+                      <p className="font-bold text-white text-xs truncate max-w-[140px]">{u.name}</p>
+                      <p className="text-[10px] text-slate-500 truncate max-w-[140px]">{u.email}</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`text-[9px] font-bold uppercase ${u.role === 'freelancer' ? 'text-emerald-400' : 'text-blue-400'}`}>{u.role}</span>
+                  <span className={`text-[10px] font-bold uppercase ${u.role === 'freelancer' ? 'text-emerald-400' : 'text-blue-400'}`}>{u.role}</span>
                   {u.is_pro && <span className="ml-1 text-[7px] bg-amber-500/20 text-amber-500 px-1 py-0.5 rounded-full uppercase font-bold">PRO</span>}
                 </td>
                 <td className="px-4 py-3">
-                  <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded-full uppercase ${u.onboarding_completed ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                  <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase ${u.onboarding_completed ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
                     {u.onboarding_completed ? 'Active' : 'Pending'}
                   </span>
                 </td>
@@ -347,22 +347,22 @@ function UserManagementTable() {
                   <div className="flex items-center justify-end gap-0.5">
                     <button onClick={() => handleViewProfile(u.id)}
                       className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-white transition-colors" title="View Profile">
-                      <Eye className="w-3 h-3" />
+                      <Eye className="w-3.5 h-3.5" />
                     </button>
                     <button onClick={() => handleSendEmail(u.email)}
                       className="p-1.5 hover:bg-white/5 rounded-lg text-slate-400 hover:text-emerald-400 transition-colors" title="Send Email">
-                      <Mail className="w-3 h-3" />
+                      <Mail className="w-3.5 h-3.5" />
                     </button>
                     <button onClick={() => handleTogglePro(u.id, u.is_pro, u.name)}
                       disabled={actionLoading === `pro-${u.id}`}
                       className={`p-1.5 rounded-lg transition-colors ${u.is_pro ? 'text-amber-400 hover:bg-amber-500/10' : 'text-slate-400 hover:text-amber-400 hover:bg-amber-500/10'}`}
                       title={u.is_pro ? 'Remove Pro' : 'Grant Pro'}>
-                      {actionLoading === `pro-${u.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Star className="w-3 h-3" />}
+                      {actionLoading === `pro-${u.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Star className="w-3.5 h-3.5" />}
                     </button>
                     <button onClick={() => handleSuspend(u.id, u.name)}
                       disabled={actionLoading === `suspend-${u.id}`}
                       className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Suspend User">
-                      {actionLoading === `suspend-${u.id}` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Ban className="w-3 h-3" />}
+                      {actionLoading === `suspend-${u.id}` ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </td>
@@ -372,7 +372,7 @@ function UserManagementTable() {
         </table>
       </div>
       <div className="p-3 border-t border-white/5 text-center">
-        <a href="/admin/users" className="text-[9px] font-bold text-emerald-400 hover:underline uppercase">View All Users →</a>
+        <a href="/admin/users" className="text-[10px] font-bold text-emerald-400 hover:underline uppercase">View All Users →</a>
       </div>
 
       {confirmDialog && (
@@ -453,22 +453,22 @@ function DisputeResolution() {
   return (
     <section className="rounded-[2rem] overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <h2 className="font-bold text-sm">Disputes</h2>
           {disputes.filter(d => d.status === 'pending' || d.status === 'under_review').length > 0 && (
-            <span className="bg-red-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full">
+            <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
               {disputes.filter(d => d.status === 'pending' || d.status === 'under_review').length}
             </span>
           )}
         </div>
         <button onClick={fetchDisputes} className="p-1 hover:bg-white/5 rounded-lg text-slate-400 transition-colors">
-          <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
       <div className="flex items-center gap-1 px-4 py-2 border-b border-white/5">
         {['all', 'pending', 'under_review', 'resolved'].map(s => (
           <button key={s} onClick={() => setFilter(s as any)}
-            className={`px-2 py-1 text-[8px] font-bold uppercase rounded-lg transition-all ${
+            className={`px-2 py-1 text-[10px] font-bold uppercase rounded-lg transition-all ${
               filter === s ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-500 hover:text-slate-300'
             }`}>{s.replace('_', ' ')}</button>
         ))}
@@ -482,27 +482,27 @@ function DisputeResolution() {
           <div key={d.id} className="p-4 hover:bg-white/[0.02] transition-colors">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[9px] font-bold text-slate-500 uppercase">#{d.id.slice(0, 6)}</span>
-                  <span className={`px-1.5 py-0.5 text-[8px] font-bold rounded-full uppercase ${statusColors[d.status] || ''}`}>
+                <div className="flex items-center gap-3 mb-1">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase">#{d.id.slice(0, 6)}</span>
+                  <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full uppercase ${statusColors[d.status] || ''}`}>
                     {d.status.replace('_', ' ')}
                   </span>
-                  {d.contract?.amount && <span className="text-[9px] text-orange-400 font-bold">{formatCurrency(d.contract.amount)}</span>}
+                  {d.contract?.amount && <span className="text-[10px] text-orange-400 font-bold">{formatCurrency(d.contract.amount)}</span>}
                 </div>
-                <p className="text-[11px] text-white font-medium truncate">{d.reason}</p>
-                <p className="text-[9px] text-slate-500 mt-0.5">{formatRelativeTime(d.created_at)}</p>
+                <p className="text-xs text-white font-medium truncate">{d.reason}</p>
+                <p className="text-[10px] text-slate-500 mt-0.5">{formatRelativeTime(d.created_at)}</p>
               </div>
               {d.status !== 'resolved' && d.status !== 'dismissed' && (
                 <div className="flex gap-1 shrink-0">
                   <button onClick={() => handleAction(d.id, 'resolved', 'Released to freelancer per admin')}
                     disabled={actionLoading === d.id}
                     className="p-1.5 hover:bg-emerald-500/10 rounded-lg text-emerald-400 transition-colors" title="Release Funds">
-                    {actionLoading === d.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <CheckCircle2 className="w-3 h-3" />}
+                    {actionLoading === d.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                   </button>
                   <button onClick={() => handleAction(d.id, 'dismissed', 'Refunded to client per admin')}
                     disabled={actionLoading === d.id}
                     className="p-1.5 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Refund Client">
-                    <XCircle className="w-3 h-3" />
+                    <XCircle className="w-3.5 h-3.5" />
                   </button>
                 </div>
               )}
@@ -678,15 +678,15 @@ function AIRiskAnalysis() {
   return (
     <section className="rounded-[2rem] overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
       <div className="p-4 border-b border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Zap className={`w-4 h-4 ${accentColor === 'red' ? 'text-red-400' : accentColor === 'amber' ? 'text-amber-400' : 'text-emerald-400'}`} />
           <h2 className="font-bold text-sm">AI Risk Analysis</h2>
         </div>
         {!loading && risks.length > 0 && (
-          <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full uppercase ${severityColors[worst.severity] || ''}`}>{worst.severity}</span>
+          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase ${severityColors[worst.severity] || ''}`}>{worst.severity}</span>
         )}
       </div>
-      <div className="p-3 space-y-2 max-h-[280px] overflow-y-auto">
+      <div className="p-3 space-y-4 max-h-[280px] overflow-y-auto">
         {loading ? new Array(3).fill(0).map((_, i) => (
           <div key={i} className="flex items-start gap-3 p-3 bg-white/5 rounded-xl animate-pulse">
             <div className="h-6 w-6 rounded-lg bg-slate-700" />
@@ -695,19 +695,19 @@ function AIRiskAnalysis() {
         )) : risks.map(r => (
           <div key={r.id} className={`flex items-start gap-3 p-3 rounded-xl border ${getSeverityBorder(r.severity)} ${getSeverityBg(r.severity)}`}>
             <div className={`h-6 w-6 rounded-lg ${r.iconBg} flex items-center justify-center shrink-0`}>
-              <r.icon className={`w-3 h-3 ${r.iconColor}`} />
+              <r.icon className={`w-3.5 h-3.5 ${r.iconColor}`} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <p className="text-[11px] font-bold text-white">{r.title}</p>
+                <p className="text-xs font-bold text-white">{r.title}</p>
                 {r.severity === 'critical' && <span className="text-[7px] bg-red-500/20 text-red-500 px-1 py-0.5 rounded-full uppercase font-bold">URGENT</span>}
               </div>
-              <p className="text-[9px] text-slate-500 mt-0.5">{r.description}</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">{r.description}</p>
             </div>
           </div>
         ))}
       </div>
-      <button onClick={fetchRisks} className="w-full py-2 border-t border-white/5 text-[9px] font-bold uppercase tracking-wider text-slate-500 hover:bg-white/5 transition-colors flex items-center justify-center gap-1">
+      <button onClick={fetchRisks} className="w-full py-2 border-t border-white/5 text-[10px] font-bold uppercase tracking-wider text-slate-500 hover:bg-white/5 transition-colors flex items-center justify-center gap-1">
         <RefreshCw className={`w-2.5 h-2.5 ${loading ? 'animate-spin' : ''}`} /> Re-analyze
       </button>
     </section>
@@ -837,7 +837,7 @@ function LiveActivityFeed() {
         <h2 className="font-bold text-sm">Live Feed</h2>
         <div className="flex items-center gap-1.5">
           <span className={`h-1.5 w-1.5 rounded-full animate-pulse ${connectionStatus === 'connected' ? 'bg-emerald-400' : connectionStatus === 'connecting' ? 'bg-amber-400' : 'bg-red-400'}`} />
-          <span className="text-[8px] text-slate-500 font-bold uppercase">
+          <span className="text-[10px] text-slate-500 font-bold uppercase">
             {connectionStatus === 'connected' ? 'LIVE' : connectionStatus === 'connecting' ? 'CONNECTING' : 'DISCONNECTED'}
           </span>
         </div>
@@ -855,12 +855,12 @@ function LiveActivityFeed() {
             <div className={`h-1.5 w-1.5 rounded-full mt-1.5 shrink-0 ${dotColors[a.type] || 'bg-slate-500'}`} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
-                <span className={`text-[8px] font-bold uppercase ${dotColors[a.type]?.replace('bg-', 'text-') || 'text-slate-400'}`}>
+                <span className={`text-[10px] font-bold uppercase ${dotColors[a.type]?.replace('bg-', 'text-') || 'text-slate-400'}`}>
                   {activityLabels[a.type] || a.type.replace(/_/g, ' ')}
                 </span>
-                <span className="text-[9px] text-slate-500">· {formatRelativeTime(a.created_at)}</span>
+                <span className="text-[10px] text-slate-500">· {formatRelativeTime(a.created_at)}</span>
               </div>
-              <p className="text-[10px] text-slate-300 truncate">{a.description}</p>
+              <p className="text-xs text-slate-300 truncate">{a.description}</p>
             </div>
           </div>
         ))}
@@ -888,29 +888,29 @@ export function AdminDashboard() {
 
       {/* Quick Actions Bar */}
       <div className="flex items-center gap-3 flex-wrap">
-        <a href="/admin/users" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
-          <Users className="w-3 h-3" /> Users
+        <a href="/admin/users" className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+          <Users className="w-3.5 h-3.5" /> Users
         </a>
-        <a href="/admin/projects" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
-          <Briefcase className="w-3 h-3" /> Projects
+        <a href="/admin/projects" className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+          <Briefcase className="w-3.5 h-3.5" /> Projects
         </a>
-        <a href="/admin/contracts" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
-          <Handshake className="w-3 h-3" /> Contracts
+        <a href="/admin/contracts" className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+          <Handshake className="w-3.5 h-3.5" /> Contracts
         </a>
-        <a href="/admin/payments" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
-          <IndianRupee className="w-3 h-3" /> Payments
+        <a href="/admin/payments" className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+          <IndianRupee className="w-3.5 h-3.5" /> Payments
         </a>
-        <a href="/admin/disputes" className="px-3 py-1.5 bg-red-500/10 rounded-lg text-[9px] font-bold uppercase text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-1.5">
-          <Scale className="w-3 h-3" /> Disputes
+        <a href="/admin/disputes" className="px-3 py-1.5 bg-red-500/10 rounded-lg text-[10px] font-bold uppercase text-red-400 hover:bg-red-500/20 transition-colors flex items-center gap-1.5">
+          <Scale className="w-3.5 h-3.5" /> Disputes
         </a>
-        <a href="/admin/subscriptions" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
-          <Star className="w-3 h-3" /> Subscriptions
+        <a href="/admin/subscriptions" className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+          <Star className="w-3.5 h-3.5" /> Subscriptions
         </a>
-        <a href="/admin/identity-verification" className="px-3 py-1.5 bg-emerald-500/10 rounded-lg text-[9px] font-bold uppercase text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5">
-          <ShieldCheck className="w-3 h-3" /> Verification
+        <a href="/admin/identity-verification" className="px-3 py-1.5 bg-emerald-500/10 rounded-lg text-[10px] font-bold uppercase text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5" /> Verification
         </a>
-        <a href="/admin/reports" className="px-3 py-1.5 bg-white/5 rounded-lg text-[9px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
-          <TrendingUp className="w-3 h-3" /> Reports
+        <a href="/admin/reports" className="px-3 py-1.5 bg-white/5 rounded-lg text-[10px] font-bold uppercase text-slate-300 hover:bg-white/10 transition-colors flex items-center gap-1.5">
+          <TrendingUp className="w-3.5 h-3.5" /> Reports
         </a>
       </div>
 

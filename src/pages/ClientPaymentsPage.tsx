@@ -398,14 +398,14 @@ export function ClientPaymentsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">Payments</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">Payments</h1>
           <p className="text-slate-500 mt-1">Manage your transactions, wallet, and payment methods</p>
         </div>
         <Link
           to="/client/workspace?fund=1"
-          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
           Fund Escrow
         </Link>
       </div>
@@ -420,7 +420,7 @@ export function ClientPaymentsPage() {
         <div className="absolute -right-8 -top-8 w-40 h-40 bg-white/10 rounded-full" />
         <div className="absolute right-10 bottom-4 w-6 h-6 bg-white/10 rounded-full" />
         <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 relative">
-          <div className="flex items-center gap-2 flex-1">
+          <div className="flex items-center gap-3 flex-1">
             <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
               <Wallet className="w-7 h-7 text-white" />
             </div>
@@ -443,7 +443,7 @@ export function ClientPaymentsPage() {
                     formatCurrency(walletBalance)
                   )}
                 </p>
-                <span className="text-[11px] bg-white/20 px-2 py-0.5 rounded-full font-medium">INR</span>
+                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-medium">INR</span>
               </div>
               <p className="text-emerald-100/90 text-sm mt-1">
                 Use your wallet to fund escrow — no card needed each time
@@ -457,16 +457,16 @@ export function ClientPaymentsPage() {
                 setTopupSuccess(null);
                 setShowAddFunds(true);
               }}
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-md"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-white text-emerald-700 font-bold rounded-xl hover:bg-emerald-50 transition-all shadow-md"
             >
-              <PlusCircle className="w-3.5 h-3.5" />
+              <PlusCircle className="w-4 h-4" />
               Add Funds
             </button>
             <a
               href="#wallet-txn"
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white/15 hover:bg-white/25 text-white font-semibold rounded-xl transition-all"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-white/15 hover:bg-white/25 text-white font-semibold rounded-xl transition-all"
             >
-              <ArrowDownLeft className="w-3.5 h-3.5" />
+              <ArrowDownLeft className="w-4 h-4" />
               Wallet Activity
             </a>
           </div>
@@ -487,7 +487,7 @@ export function ClientPaymentsPage() {
                 onClick={() => setShowAddFunds(false)}
                 className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-4 h-4" />
               </button>
             </div>
             <div className="p-3">
@@ -496,14 +496,14 @@ export function ClientPaymentsPage() {
               </p>
 
               {addFundsError && (
-                <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-                  <AlertCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
+                <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                  <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
                   <p className="text-sm text-red-700">{addFundsError}</p>
                 </div>
               )}
               {topupSuccess && (
-                <div className="mb-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2">
-                  <CheckCircle className="w-3.5 h-3.5 text-emerald-600 mt-0.5 shrink-0" />
+                <div className="mb-2 p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
+                  <CheckCircle className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                   <p className="text-sm text-emerald-700">{topupSuccess}</p>
                 </div>
               )}
@@ -517,11 +517,11 @@ export function ClientPaymentsPage() {
                   max={100000}
                   value={addFundsAmount}
                   onChange={(e) => setAddFundsAmount(e.target.value)}
-                  className="w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                  className="w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xl font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                   placeholder="1000"
                 />
               </div>
-              <div className="flex items-center gap-2 mb-2.5">
+              <div className="flex items-center gap-3 mb-2.5">
                 {[500, 1000, 2500, 5000, 10000].map((amt) => (
                   <button
                     key={amt}
@@ -559,7 +559,7 @@ export function ClientPaymentsPage() {
               />
 
               <div className="mt-4 p-3 bg-slate-50 rounded-xl">
-                <p className="text-xs text-slate-500 flex items-center gap-2">
+                <p className="text-xs text-slate-500 flex items-center gap-3">
                   <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
                   Payments are processed securely by Razorpay. Wallet funds never expire and can be used to fund escrow on any contract.
                 </p>
@@ -573,11 +573,11 @@ export function ClientPaymentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">
               Total Spent
             </h3>
             <div className="h-10 w-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-              <IndianRupee className="w-3.5 h-3.5" />
+              <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <p className="text-xl font-bold tracking-tight">
@@ -591,11 +591,11 @@ export function ClientPaymentsPage() {
 
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">
               In Escrow
             </h3>
             <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-              <CreditCard className="w-3.5 h-3.5" />
+              <CreditCard className="w-4 h-4" />
             </div>
           </div>
           <p className="text-xl font-bold tracking-tight">
@@ -609,11 +609,11 @@ export function ClientPaymentsPage() {
 
         <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+            <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">
               Refunds
             </h3>
             <div className="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
-              <ArrowDownLeft className="w-3.5 h-3.5" />
+              <ArrowDownLeft className="w-4 h-4" />
             </div>
           </div>
           <p className="text-xl font-bold tracking-tight">
@@ -629,8 +629,8 @@ export function ClientPaymentsPage() {
       {/* ===== Razorpay Saved Cards Section ===== */}
       <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-3">
+            <Shield className="w-4 h-4 text-emerald-600" />
             Saved Payment Cards
           </h2>
         </div>
@@ -638,7 +638,7 @@ export function ClientPaymentsPage() {
         {/* Loading */}
         {savedCardsLoading && (
           <div className="flex items-center justify-center py-3">
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+            <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
             <span className="ml-2 text-sm text-slate-500">Loading saved cards...</span>
           </div>
         )}
@@ -652,13 +652,13 @@ export function ClientPaymentsPage() {
                 className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
+                  <div className="flex items-center gap-3">
+                    <CreditCard className="w-4 h-4 text-emerald-600" />
                     <div>
                       <span className="font-medium text-slate-900 text-sm">
                         {card.card_network || 'Card'} •••• {card.card_last_four}
                       </span>
-                      <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium uppercase">
+                      <span className="ml-2 text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium uppercase">
                         {card.card_type || 'Card'}
                       </span>
                     </div>
@@ -696,8 +696,8 @@ export function ClientPaymentsPage() {
                 </div>
 
                 <div className="mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
-                  <p className="text-[10px] text-emerald-700 font-medium flex items-center gap-1">
-                    <CheckCircle className="w-3 h-3" />
+                  <p className="text-xs text-emerald-700 font-medium flex items-center gap-1">
+                    <CheckCircle className="w-4 h-4" />
                     One-click pay enabled — cards are tokenized via Razorpay
                   </p>
                 </div>
@@ -718,14 +718,14 @@ export function ClientPaymentsPage() {
 
         {/* ===== Manual Payment Method References ===== */}
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-display text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="font-display text-base font-bold text-slate-900 flex items-center gap-3">
             <CreditCard className="w-4 h-4 text-slate-400" />
             Payment Method References
           </h3>
           {!showAddPaymentMethod && (
             <button
               onClick={() => setShowAddPaymentMethod(true)}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-all"
             >
               <PlusCircle className="w-4 h-4" />
               Add Reference
@@ -736,15 +736,15 @@ export function ClientPaymentsPage() {
         {/* Loading */}
         {paymentMethodsLoading && (
           <div className="flex items-center justify-center py-3">
-            <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-600" />
+            <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />
             <span className="ml-2 text-sm text-slate-500">Loading payment methods...</span>
           </div>
         )}
 
         {/* Error */}
         {paymentMethodsError && (
-          <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-2 flex items-center gap-2">
-            <AlertCircle className="w-3.5 h-3.5 text-red-600 flex-shrink-0" />
+          <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-2 flex items-center gap-3">
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
             <p className="text-sm text-red-700">{paymentMethodsError}</p>
             <button
               onClick={() => void fetchPaymentMethods()}
@@ -768,17 +768,17 @@ export function ClientPaymentsPage() {
                 }`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     {method.type === 'card' ? (
-                      <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                      <CreditCard className="w-4 h-4 text-blue-600" />
                     ) : method.type === 'paypal' ? (
-                      <IndianRupee className="w-3.5 h-3.5 text-blue-500" />
+                      <IndianRupee className="w-4 h-4 text-blue-500" />
                     ) : (
-                      <Building2 className="w-3.5 h-3.5 text-green-600" />
+                      <Building2 className="w-4 h-4 text-green-600" />
                     )}
                     <span className="font-medium text-slate-900 text-sm capitalize">{method.type.replace('_', ' ')}</span>
                     {method.is_default && (
-                      <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium">
+                      <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium">
                         Default
                       </span>
                     )}
@@ -792,7 +792,7 @@ export function ClientPaymentsPage() {
                         className="text-xs px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50"
                       >
                         {deletingPaymentMethodId === method.id ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           'Confirm'
                         )}
@@ -863,7 +863,7 @@ export function ClientPaymentsPage() {
         {showAddPaymentMethod && (
           <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl">
             <h3 className="font-medium text-slate-900 mb-2">Add Payment Method</h3>
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Method Type</label>
                 <select
@@ -886,7 +886,7 @@ export function ClientPaymentsPage() {
 
               {newPaymentMethod.type === 'card' && (
                 <>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Card Brand</label>
                       <input
@@ -956,7 +956,7 @@ export function ClientPaymentsPage() {
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Bank Name</label>
                       <input
@@ -985,7 +985,7 @@ export function ClientPaymentsPage() {
                 </>
               )}
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <input
                   type="checkbox"
                   id="makeDefault"
@@ -1000,7 +1000,7 @@ export function ClientPaymentsPage() {
                 </label>
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <button
                   onClick={() => {
                     setShowAddPaymentMethod(false);
@@ -1013,12 +1013,12 @@ export function ClientPaymentsPage() {
                 <button
                   onClick={handleAddPaymentMethod}
                   disabled={addingPaymentMethod}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 flex items-center justify-center gap-3 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {addingPaymentMethod ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    <PlusCircle className="w-3.5 h-3.5" />
+                    <PlusCircle className="w-4 h-4" />
                   )}
                   {addingPaymentMethod ? 'Adding...' : 'Save Method'}
                 </button>
@@ -1029,7 +1029,7 @@ export function ClientPaymentsPage() {
       </div>
 
       {/* Filter Tabs */}
-      <div id="wallet-txn" className="flex items-center gap-2 border-b border-slate-200">
+      <div id="wallet-txn" className="flex items-center gap-3 border-b border-slate-200">
         {(['all', 'credit', 'debit'] as const).map((f) => (
           <button
             key={f}
@@ -1043,14 +1043,14 @@ export function ClientPaymentsPage() {
             {f.charAt(0).toUpperCase() + f.slice(1)}
           </button>
         ))}
-        <button className="ml-auto flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors">
+        <button className="ml-auto flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors">
           <Filter className="w-4 h-4" />
           Filter
         </button>
         <button
           type="button"
           onClick={exportCsv}
-          className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+          className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
         >
           <Download className="w-4 h-4" />
           Export
@@ -1074,9 +1074,9 @@ export function ClientPaymentsPage() {
           {filter === 'all' && (
             <Link
               to="/client/contracts"
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-4 h-4" />
               View Contracts
             </Link>
           )}
@@ -1122,7 +1122,7 @@ export function ClientPaymentsPage() {
                       </div>
                     </td>
                     <td className="px-3 py-4 text-sm text-slate-600">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <Calendar className="w-4 h-4" />
                         {safeFormatDate(transaction.created_at)}
                       </div>
@@ -1155,9 +1155,9 @@ export function ClientPaymentsPage() {
 
       {/* Invoices & Receipts — auto-generated on escrow release */}
       <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
-        <div className="p-3 border-b border-slate-100 flex items-center justify-between gap-2">
+        <div className="p-3 border-b border-slate-100 flex items-center justify-between gap-3">
           <div>
-            <h3 className="font-display text-lg font-bold text-slate-900">Invoices & Receipts</h3>
+            <h3 className="font-display text-xl font-bold text-slate-900">Invoices & Receipts</h3>
             <p className="text-sm text-slate-500 mt-0.5">Tax-ready invoices generated automatically when escrow is released</p>
           </div>
           {invoicesLoading && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
@@ -1170,21 +1170,21 @@ export function ClientPaymentsPage() {
         ) : (
           <div className="divide-y divide-slate-100">
             {invoices.map((inv: any) => (
-              <div key={inv.id} className="p-5 flex items-center justify-between gap-2 hover:bg-slate-50/60 transition-colors">
+              <div key={inv.id} className="p-5 flex items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <div className="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <FileText className="w-3.5 h-3.5" />
+                  <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
                     <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>
                     <p className="text-xs text-slate-500 truncate">{inv.project_title || 'Contract work'}</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
+                    <p className="text-xs text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-3 flex-shrink-0">
                   <div className="text-right">
                     <p className="font-bold text-slate-900">{formatInvoiceAmount(inv.total)}</p>
-                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : inv.status === 'refunded' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : inv.status === 'refunded' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
                       {inv.status}
                     </span>
                   </div>
@@ -1192,7 +1192,7 @@ export function ClientPaymentsPage() {
                     onClick={() => void openInvoice(inv.id)}
                     className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
                   >
-                    <Download className="w-3.5 h-3.5" /> View / PDF
+                    <Download className="w-4 h-4" /> View / PDF
                   </button>
                 </div>
               </div>

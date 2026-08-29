@@ -170,7 +170,7 @@ export function FreelancersSearchPage() {
             </div>
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className="px-5 py-3.5 bg-white/20 hover:bg-white/30 rounded-xl flex items-center gap-2 font-medium transition-colors"
+              className="px-5 py-3.5 bg-white/20 hover:bg-white/30 rounded-xl flex items-center gap-3 font-medium transition-colors"
             >
               <Filter className="w-5 h-5" />
               Filters
@@ -187,7 +187,7 @@ export function FreelancersSearchPage() {
               onClick={() => setShowCategories(!showCategories)}
               className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Layers className="w-5 h-5 text-emerald-600" />
                 <span className="font-bold text-slate-900">Browse Categories</span>
                 <span className="text-xs text-slate-400 font-medium">A-Z</span>
@@ -214,7 +214,7 @@ export function FreelancersSearchPage() {
       {showFilters && (
         <div className="bg-white border-b border-slate-200 py-6">
           <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
               {/* Category */}
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
@@ -271,7 +271,7 @@ export function FreelancersSearchPage() {
 
               {/* Availability */}
               <div className="flex items-end">
-                <label className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors w-full">
+                <label className="flex items-center gap-3 px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors w-full">
                   <input
                     type="checkbox"
                     checked={availabilityOnly}
@@ -286,17 +286,17 @@ export function FreelancersSearchPage() {
             {/* Skill Filters */}
             <div className="mt-4">
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Skills</label>
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-3 mb-2">
                 {selectedSkills.map((skill) => (
                   <span key={skill} className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 text-sm rounded-full font-medium">
                     {skill}
                     <button onClick={() => removeSkillFilter(skill)} className="hover:text-emerald-900">
-                      <X className="w-3 h-3" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </span>
                 ))}
               </div>
-              <div className="flex gap-2 max-w-md">
+              <div className="flex gap-3 max-w-md">
                 <input
                   type="text"
                   value={skillInput}
@@ -352,7 +352,7 @@ export function FreelancersSearchPage() {
                   className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
                 >
                   {/* Header */}
-                  <div className="flex items-start gap-2 mb-2">
+                  <div className="flex items-start gap-3 mb-2">
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                       {freelancer.profile?.avatar ? (
                         <img src={freelancer.profile.avatar} alt="" className="w-full h-full object-cover" />
@@ -363,12 +363,12 @@ export function FreelancersSearchPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-3 mb-1">
                         <h3 className="font-bold text-slate-900 truncate group-hover:text-emerald-600 transition-colors">
                           {freelancer.profile?.name || 'Freelancer'}
                         </h3>
                         {freelancer.availability && (
-                          <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full flex-shrink-0">
+                          <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full flex-shrink-0">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
                             Available
                           </span>
@@ -381,7 +381,7 @@ export function FreelancersSearchPage() {
                   </div>
 
                   {/* Rating & Stats */}
-                  <div className="flex items-center gap-2 mb-2 text-sm">
+                  <div className="flex items-center gap-3 mb-2 text-sm">
                     {freelancer.rating && freelancer.rating > 0 ? (
                       <span className="flex items-center gap-1 font-semibold text-slate-900">
                         <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
@@ -393,7 +393,7 @@ export function FreelancersSearchPage() {
                     )}
                     {freelancer.completion_rate && freelancer.completion_rate > 0 && (
                       <span className="flex items-center gap-1 text-slate-500">
-                        <Clock className="w-3.5 h-3.5" />
+                        <Clock className="w-4 h-4" />
                         {Math.round(freelancer.completion_rate)}% completion
                       </span>
                     )}
@@ -418,13 +418,13 @@ export function FreelancersSearchPage() {
                     <div className="flex items-center gap-3 text-xs text-slate-500">
                       {freelancer.location && (
                         <span className="flex items-center gap-1">
-                          <MapPin className="w-3 h-3" />
+                          <MapPin className="w-3.5 h-3.5" />
                           {freelancer.location}
                         </span>
                       )}
                       {freelancer.languages && freelancer.languages.length > 0 && (
                         <span className="flex items-center gap-1">
-                          <Globe className="w-3 h-3" />
+                          <Globe className="w-3.5 h-3.5" />
                           {freelancer.languages[0]}
                         </span>
                       )}
@@ -448,7 +448,7 @@ export function FreelancersSearchPage() {
           <div className="bg-white rounded-[2.5rem] p-4 sm:p-12 text-center border border-slate-200 shadow-sm">
             <h2 className="font-display text-3xl font-bold text-slate-900 mb-2">Can't find the right freelancer?</h2>
             <p className="text-slate-600 mb-2 max-w-lg mx-auto">Post a project and let our AI match you with the perfect freelancer based on skills, experience, and budget.</p>
-            <Link to="/signup" className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-colors">
+            <Link to="/signup" className="inline-flex items-center justify-center gap-3 h-12 px-8 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-colors">
               Post a Project <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

@@ -104,7 +104,7 @@ export function HelpCenterPage() {
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-3">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -124,8 +124,8 @@ export function HelpCenterPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <LifeBuoy className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-3 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <LifeBuoy className="w-4 h-4" />
             Knowledge Base
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
@@ -153,9 +153,9 @@ export function HelpCenterPage() {
       </section>
 
       {/* Main FAQ Interface */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-2">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-3">
         {/* Sidebar Filters */}
-        <div className="lg:col-span-1 space-y-2">
+        <div className="lg:col-span-1 space-y-4">
           <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Topic Categories</h3>
           <div className="space-y-1">
             {categories.map((cat) => (
@@ -179,7 +179,7 @@ export function HelpCenterPage() {
         </div>
 
         {/* FAQs Accordion Panel */}
-        <div className="lg:col-span-3 space-y-2">
+        <div className="lg:col-span-3 space-y-4">
           <div className="flex justify-between items-center mb-2">
             <h2 className="font-display text-xl font-extrabold text-slate-900">
               {activeCategory} FAQs ({filteredFAQs.length})
@@ -192,7 +192,7 @@ export function HelpCenterPage() {
           </div>
 
           {filteredFAQs.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200/50 p-12 text-center shadow-sm space-y-2">
+            <div className="bg-white rounded-xl border border-slate-200/50 p-12 text-center shadow-sm space-y-4">
               <MessageSquare className="w-12 h-12 text-slate-300 mx-auto" />
               <h4 className="font-bold text-slate-800">No matching questions found</h4>
               <p className="text-slate-500 text-sm max-w-sm mx-auto">
@@ -210,7 +210,7 @@ export function HelpCenterPage() {
                   >
                     <button
                       onClick={() => handleToggleFAQ(index)}
-                      className="w-full p-3 text-left font-bold text-slate-900 flex justify-between items-center gap-2 hover:bg-slate-50/50 transition-colors"
+                      className="w-full p-3 text-left font-bold text-slate-900 flex justify-between items-center gap-3 hover:bg-slate-50/50 transition-colors"
                     >
                       <span className="leading-snug">{faq.question}</span>
                       <ChevronDown
@@ -231,7 +231,7 @@ export function HelpCenterPage() {
           )}
 
           {/* AI Support Banner */}
-          <div className="mt-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-[2rem] p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-2 shadow-xl shadow-emerald-600/10">
+          <div className="mt-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-[2rem] p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl shadow-emerald-600/10">
             <div>
               <h4 className="font-bold text-lg leading-tight">Need more help?</h4>
               <p className="text-emerald-100 text-xs mt-1">Our AI support assistant is available 24/7 to answer your questions instantly.</p>

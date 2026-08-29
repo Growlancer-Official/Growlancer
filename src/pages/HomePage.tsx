@@ -37,12 +37,12 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/40 via-white to-white pointer-events-none" />
       
       <div className={`${CONTAINER} relative pt-12 sm:pt-16 lg:pt-20 pb-10 sm:pb-14 lg:pb-16`}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-10 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-10 items-center">
           {/* ── Left Content ── */}
           <div className="lg:col-span-6 lg:pr-4">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white ring-1 ring-slate-200 px-3 py-1.5 shadow-sm opacity-0 translate-y-2 animate-fade-up">
+            <div className="inline-flex items-center gap-3 rounded-full bg-white ring-1 ring-slate-200 px-3 py-1.5 shadow-sm opacity-0 translate-y-2 animate-fade-up">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[11px] font-medium text-slate-600">Growlancer · AI-Powered Freelancing Marketplace</span>
+              <span className="text-xs font-medium text-slate-600">Growlancer · AI-Powered Freelancing Marketplace</span>
             </div>
 
             <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 opacity-0 translate-y-2 animate-fade-up animation-delay-80 font-display leading-[1.1]">
@@ -94,7 +94,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                 { label: 'For teams', title: 'One workspace', desc: 'Escrow, files, feedback' },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl bg-white ring-1 ring-slate-200/70 p-3.5 shadow-sm hover:shadow-md hover:ring-emerald-200/50 transition-all duration-200">
-                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">{item.label}</div>
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{item.label}</div>
                   <div className="mt-1 text-sm font-semibold tracking-tight text-slate-900">{item.title}</div>
                   <div className="mt-0.5 text-xs text-slate-500">{item.desc}</div>
                 </div>
@@ -143,13 +143,13 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                       ].map((stat) => (
                         <div key={stat.label} className="bg-white/10 rounded-xl p-2.5 text-center">
                           <div className="text-xl font-bold text-emerald-400">{stat.value}</div>
-                          <div className="text-[10px] text-white/60">{stat.label}</div>
+                          <div className="text-xs text-white/60">{stat.label}</div>
                         </div>
                       ))}
                     </div>
-                    <div className="mt-5 flex items-center gap-2">
+                    <div className="mt-5 flex items-center gap-3">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span className="text-emerald-400 text-[11px] font-medium">Live AI Matching Engine</span>
+                      <span className="text-emerald-400 text-xs font-medium">Live AI Matching Engine</span>
                     </div>
                   </div>
                 )}
@@ -176,7 +176,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                       <Icon className="w-5 h-5" />
                     </div>
                     <div className="text-xs font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors">{label}</div>
-                    <div className="text-[10px] text-slate-500 mt-0.5 leading-tight">{desc}</div>
+                    <div className="text-xs text-slate-500 mt-0.5 leading-tight">{desc}</div>
                   </div>
                 );
               })}
@@ -219,7 +219,7 @@ function HowItWorksSection() {
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-2 mb-10 lg:mb-12">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-10 lg:mb-12">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">How it works</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -234,7 +234,7 @@ function HowItWorksSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 lg:gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-3">
           {steps.map((step) => (
             <div key={step.number} className="group relative rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 hover:shadow-lg hover:ring-emerald-200/50 transition-all duration-300">
               <div className="flex items-center justify-between mb-2">
@@ -331,7 +331,7 @@ function WhyDifferentSection() {
         </div>
 
         {/* Comparison Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 mb-14 lg:mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-14 lg:mb-16">
           {comparisons.map((item, i) => (
             <div key={i} className={`${CARD_CLASS} overflow-hidden hover:shadow-md transition-all duration-200`}>
               <div className="p-4 bg-emerald-50/60">
@@ -340,7 +340,7 @@ function WhyDifferentSection() {
                     <item.icon className="text-emerald-600 w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Growlancer</div>
+                    <div className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Growlancer</div>
                     <div className="text-sm font-medium text-slate-800">{item.growlancer}</div>
                   </div>
                 </div>
@@ -351,7 +351,7 @@ function WhyDifferentSection() {
                     <X className="text-slate-400 w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Traditional</div>
+                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Traditional</div>
                     <div className="text-sm text-slate-500">{item.traditional}</div>
                   </div>
                 </div>
@@ -361,7 +361,7 @@ function WhyDifferentSection() {
         </div>
 
         {/* Pillar Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 lg:gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-3">
           {pillars.map((pillar, i) => {
             const Icon = pillar.icon;
             return (
@@ -370,7 +370,7 @@ function WhyDifferentSection() {
                 className={`group bg-white rounded-xl p-3 lg:p-7 border border-slate-200/60 shadow-sm hover:shadow-lg ${pillar.border} transition-all duration-300 relative overflow-hidden`}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${pillar.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                <div className="relative flex items-start gap-2">
+                <div className="relative flex items-start gap-3">
                   <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${pillar.iconBg} group-hover:scale-110 transition-transform duration-300`}>
                     <Icon className="w-6 h-6" />
                   </div>
@@ -395,7 +395,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-3">
           {/* Left Content */}
           <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4 lg:p-10">
             <div>
@@ -417,7 +417,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
                 { icon: MessagesSquare, title: 'Collaborate easily', desc: 'Files, feedback, and updates stay connected to the project.' },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:bg-emerald-50/50 hover:ring-emerald-200/50 transition-all duration-200">
-                  <div className="flex items-center gap-2 mb-1.5">
+                  <div className="flex items-center gap-3 mb-1.5">
                     <Icon className="text-slate-600 w-4 h-4" />
                     <div className="text-sm font-semibold text-slate-900">{title}</div>
                   </div>
@@ -448,7 +448,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
             <div className="absolute -top-16 -right-20 h-56 w-56 rounded-full bg-emerald-600/20" />
             <div className="absolute -bottom-16 -left-20 h-56 w-56 rounded-full bg-orange-500/15" />
             <div className="relative">
-              <div className="text-[10px] font-semibold text-white/50 uppercase tracking-widest">Freelancer-first detail</div>
+              <div className="text-xs font-semibold text-white/50 uppercase tracking-widest">Freelancer-first detail</div>
               <div className="mt-2 text-xl sm:text-2xl font-bold tracking-tight font-display">Signal-based matching</div>
               <p className="mt-3 text-sm text-white/70 leading-relaxed">
                 Your availability, focus areas, and recent work matter. Growlancer prioritizes fit over volume.
@@ -461,7 +461,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
                   { icon: CheckSquare, title: 'Workflow readiness', desc: 'Milestones and deliverables reduce misalignment.' },
                 ].map(({ icon: Icon, title, desc }) => (
                   <div key={title} className="rounded-xl bg-white/10 ring-1 ring-white/10 p-3.5 hover:bg-white/15 transition-colors">
-                    <div className="flex items-center justify-between gap-2 mb-1">
+                    <div className="flex items-center justify-between gap-3 mb-1">
                       <div className="text-sm font-medium text-white">{title}</div>
                       <Icon className="text-white/60 w-4 h-4" />
                     </div>
@@ -485,7 +485,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-3">
           {/* Left Card */}
           <div className="lg:col-span-5 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4 flex flex-col">
             <div className="flex items-center gap-3 mb-2">
@@ -493,7 +493,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
                 <Timer className="text-orange-600 w-5 h-5" />
               </div>
               <div>
-                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">For clients</div>
+                <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">For clients</div>
                 <div className="text-lg font-bold tracking-tight text-slate-900">Stop wasting time hiring</div>
               </div>
             </div>
@@ -505,7 +505,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
                 { bold: 'Hire quickly', text: 'with milestones and escrow ready to go.' },
                 { bold: 'Track projects easily', text: 'with a shared workspace for delivery.' },
               ].map(({ bold, text }) => (
-                <li key={bold} className="flex gap-2.5">
+                <li key={bold} className="flex gap-3.5">
                   <CheckCircle2 className="text-emerald-600 w-4 h-4 mt-0.5 flex-shrink-0" />
                   <div><span className="font-semibold text-slate-800">{bold}</span>{text}</div>
                 </li>
@@ -513,29 +513,29 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
             </ul>
 
             {/* Trust strip */}
-            <div className="mt-5 grid grid-cols-3 gap-2">
+            <div className="mt-5 grid grid-cols-3 gap-3">
               {[
                 { icon: ShieldCheck, label: 'Escrow protection' },
                 { icon: Zap, label: 'Real-time updates' },
                 { icon: BadgeCheck, label: 'KYC-verified talent' },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="rounded-lg bg-slate-50 ring-1 ring-slate-200/70 px-2 py-2.5 flex items-center justify-center gap-1.5">
-                  <Icon className="text-emerald-600 w-3.5 h-3.5 flex-shrink-0" />
-                  <span className="text-[11px] font-semibold text-slate-600 leading-tight">{label}</span>
+                  <Icon className="text-emerald-600 w-4 h-4 flex-shrink-0" />
+                  <span className="text-xs font-semibold text-slate-600 leading-tight">{label}</span>
                 </div>
               ))}
             </div>
 
             {/* Live platform metrics — flex-1 fills the remaining card height (no blank space) */}
             <div className="mt-4 flex-1 flex flex-col justify-center rounded-xl bg-gradient-to-br from-emerald-50 via-teal-50/60 to-white ring-1 ring-emerald-100/70 px-4 py-3.5">
-              <div className="flex items-center gap-2 mb-2.5">
+              <div className="flex items-center gap-3 mb-2.5">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
-                <span className="text-[10px] font-semibold text-emerald-700 uppercase tracking-wider">Live platform metrics</span>
+                <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Live platform metrics</span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 {[
                   { value: metrics[0]?.value ?? '…', label: 'Members' },
                   { value: metrics[1]?.value ?? '…', label: 'Escrow protected' },
@@ -543,7 +543,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
                 ].map(({ value, label }) => (
                   <div key={label} className="rounded-lg bg-white/90 ring-1 ring-emerald-100/70 py-2.5 px-1 text-center">
                     <div className="text-base sm:text-lg font-bold text-slate-900 leading-none">{value}</div>
-                    <div className="text-[10px] text-slate-500 mt-1.5 leading-tight">{label}</div>
+                    <div className="text-xs text-slate-500 mt-1.5 leading-tight">{label}</div>
                   </div>
                 ))}
               </div>
@@ -569,7 +569,7 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
           {/* Right Content */}
           <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4">
             <div>
-              <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Client workflow preview</div>
+              <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Client workflow preview</div>
               <h3 className="mt-2 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-display">
                 From brief to escrow, without tool chaos
               </h3>
@@ -597,8 +597,8 @@ function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 
             </div>
 
             <div className="mt-5 rounded-xl bg-emerald-50 ring-1 ring-emerald-100/70 p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-3">
                   <Zap className="text-emerald-600 w-4 h-4" />
                   <span className="text-sm font-semibold text-slate-800">Real-time ready by design</span>
                 </div>
@@ -625,8 +625,8 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
       <div className={CONTAINER}>
         {/* Error banner */}
         {error && !loading && (
-          <div className="mb-3 flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs">
-            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          <div className="mb-3 flex items-center gap-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>Could not load live category data.</span>
             <button onClick={refresh} className="ml-auto text-xs font-medium text-amber-700 underline hover:text-amber-800 whitespace-nowrap">
               Retry
@@ -634,7 +634,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
           </div>
         )}
 
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-2 mb-2 lg:mb-10">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-2 lg:mb-10">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Categories</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -653,14 +653,14 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
               className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
             >
               View All
-              <ArrowRight className="ml-2 w-3.5 h-3.5" />
+              <ArrowRight className="ml-2 w-4 h-4" />
             </Link>
             <button 
               onClick={() => onOpenSignup('client')} 
               className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
             >
               Hire talent
-              <ArrowRight className="ml-2 w-3.5 h-3.5" />
+              <ArrowRight className="ml-2 w-4 h-4" />
             </button>
           </div>
         </div>
@@ -672,7 +672,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
         <div className="mt-6 text-center">
           <Link
             to={ROUTES.CATEGORIES}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-600 font-semibold rounded-xl border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all text-sm shadow-sm"
+            className="inline-flex items-center gap-3 px-5 py-2.5 bg-white text-emerald-600 font-semibold rounded-xl border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all text-sm shadow-sm"
           >
             <Layers className="w-4 h-4" />
             Explore All {categories.length} Categories
@@ -760,9 +760,9 @@ function LiveServicesSection() {
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-2 mb-2 lg:mb-10">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-2 lg:mb-10">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">
+            <div className="inline-flex items-center gap-3 text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -781,16 +781,16 @@ function LiveServicesSection() {
             className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
           >
             Browse All Services
-            <ArrowRight className="ml-2 w-3.5 h-3.5" />
+            <ArrowRight className="ml-2 w-4 h-4" />
           </Link>
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className={`${CARD_CLASS} animate-pulse`}>
                 <div className="aspect-video bg-slate-100" />
-                <div className="p-4 space-y-2">
+                <div className="p-4 space-y-4">
                   <div className="h-3.5 bg-slate-100 rounded w-3/4" />
                   <div className="h-3 bg-slate-100 rounded w-1/2" />
                 </div>
@@ -803,7 +803,7 @@ function LiveServicesSection() {
             <p className="text-slate-500 text-sm">No services published yet — be the first to list one!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3">
             {services.map((service) => (
               <Link
                 key={service.id}
@@ -828,12 +828,12 @@ function LiveServicesSection() {
                   </div>
                 )}
                 <div className="p-4">
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-3">
                     <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 group-hover:text-emerald-700 transition-colors">
                       {service.title}
                     </h3>
                     <span className="flex items-center gap-0.5 font-bold text-emerald-700 text-sm shrink-0">
-                      <IndianRupee className="w-3.5 h-3.5" />
+                      <IndianRupee className="w-4 h-4" />
                       {Number(service.price).toLocaleString('en-IN')}
                     </span>
                   </div>
@@ -842,7 +842,7 @@ function LiveServicesSection() {
                       {service.freelancer?.avatar ? (
                         <img src={service.freelancer.avatar} alt="" className="w-5 h-5 rounded-full object-cover" />
                       ) : (
-                        <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 text-[10px] font-bold flex items-center justify-center">
+                        <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 text-xs font-bold flex items-center justify-center">
                           {(service.freelancer?.name || 'F')[0]}
                         </span>
                       )}
@@ -850,8 +850,8 @@ function LiveServicesSection() {
                         {service.freelancer?.name || 'Freelancer'}
                       </span>
                     </span>
-                    <span className="flex items-center gap-1 text-[11px] text-slate-400 shrink-0">
-                      <Clock3 className="w-3 h-3" />
+                    <span className="flex items-center gap-1 text-xs text-slate-400 shrink-0">
+                      <Clock3 className="w-3.5 h-3.5" />
                       {timeAgo(service.created_at)}
                     </span>
                   </div>
@@ -893,7 +893,7 @@ function FeaturesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3">
           {features.map((feat) => {
             const styles = colorStyles[feat.color as keyof typeof colorStyles];
             return (
@@ -1048,7 +1048,7 @@ function TrustSection() {
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-3">
           <div className="lg:col-span-5">
             <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Trust</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
@@ -1062,7 +1062,7 @@ function TrustSection() {
               <div className="flex items-start gap-3">
                 <Eye className="text-emerald-600 w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">Platform philosophy</div>
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Platform philosophy</div>
                   <div className="mt-1 text-sm font-semibold text-slate-800">Clarity beats hype.</div>
                   <div className="mt-1 text-xs text-slate-500">
                     We avoid vanity metrics and focus on workflow transparency and safer collaboration.
@@ -1072,7 +1072,7 @@ function TrustSection() {
             </div>
           </div>
 
-          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { icon: Eye, title: 'Transparency', desc: 'See fit reasons and key signals behind each recommendation.', bg: 'bg-slate-50 ring-slate-200 text-slate-600' },
               { icon: LockKeyhole, title: 'Escrow safety', desc: 'Milestones + secure escrow support a safer payment flow.', bg: 'bg-emerald-50 ring-emerald-100 text-emerald-600' },
@@ -1178,10 +1178,10 @@ function WaitlistSection() {
           <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-emerald-600/10" />
 
           <div className="relative p-4 sm:p-10 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-2">
-                  <Sparkles className="w-3 h-3" />
+                <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
+                  <Sparkles className="w-3.5 h-3.5" />
                   EARLY ACCESS
                 </div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-display">
@@ -1235,7 +1235,7 @@ function WaitlistSection() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="inline-flex items-center justify-center h-12 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-semibold text-slate-900 disabled:opacity-50 gap-2 whitespace-nowrap text-sm"
+                      className="inline-flex items-center justify-center h-12 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-semibold text-slate-900 disabled:opacity-50 gap-3 whitespace-nowrap text-sm"
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1273,7 +1273,7 @@ function CTASection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'cl
           <div className="absolute -bottom-28 -left-28 h-80 w-80 rounded-full bg-orange-500/15" />
 
           <div className="relative p-4 sm:p-10 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
               <div className="lg:col-span-7">
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-display">
                   Start your freelancing journey today.

@@ -35,7 +35,7 @@ export function WaitlistPage() {
           </p>
 
           {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
               <Clock className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
               <h3 className="text-sm font-bold text-slate-900 mb-1">Early Access</h3>
@@ -63,7 +63,7 @@ export function WaitlistPage() {
           {/* Navigation */}
           <button
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home

@@ -363,7 +363,7 @@ export function IdentityVerificationPage() {
     <div className="space-y-1.5">
       {/* Info card */}
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
-        <div className="flex items-start gap-2">
+        <div className="flex items-start gap-3">
           <div className="p-2 bg-amber-100 rounded-xl shrink-0">
             <ShieldAlert className="w-4 h-4 text-amber-600" />
           </div>
@@ -378,7 +378,7 @@ export function IdentityVerificationPage() {
       </div>
 
       {/* Benefits */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
           { icon: ShieldCheck, label: 'Build Trust', desc: 'Verified badge on your profile' },
           { icon: Upload, label: 'Higher Limits', desc: 'Increased withdrawal and contract limits' },
@@ -386,7 +386,7 @@ export function IdentityVerificationPage() {
         ].map((benefit) => (
           <div key={benefit.label} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
             <div className="p-2 bg-emerald-100 rounded-xl w-fit mb-3">
-              <benefit.icon className="w-3.5 h-3.5 text-emerald-600" />
+              <benefit.icon className="w-4 h-4 text-emerald-600" />
             </div>
             <h4 className="font-semibold text-slate-900 mb-1">{benefit.label}</h4>
             <p className="text-sm text-slate-500">{benefit.desc}</p>
@@ -397,9 +397,9 @@ export function IdentityVerificationPage() {
       {!showForm ? (
         <button
           onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
+          className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
         >
-          <Upload className="w-3.5 h-3.5" />
+          <Upload className="w-4 h-4" />
           Start Verification
         </button>
       ) : (
@@ -456,13 +456,13 @@ export function IdentityVerificationPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Upload Document</label>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {/* FRONT side */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-semibold text-slate-600">Front side {formData.document_type === 'pan' || formData.document_type === 'other' ? '(only required)' : ''}</span>
+                  <span className="text-xs font-medium text-slate-600">Front side {formData.document_type === 'pan' || formData.document_type === 'other' ? '(only required)' : ''}</span>
                   {!formData.document_file && (
-                    <span className="text-[10px] font-bold text-red-500">Required</span>
+                    <span className="text-xs font-bold text-red-500">Required</span>
                   )}
                 </div>
                 <div
@@ -479,7 +479,7 @@ export function IdentityVerificationPage() {
                   onDrop={(e) => handleDrop(e, 'front')}
                 >
                   {formData.document_file ? (
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <div className="flex items-center justify-center">
                         <FileText className="w-7 h-7 text-emerald-600" />
                       </div>
@@ -489,12 +489,12 @@ export function IdentityVerificationPage() {
                         onClick={() => removeFile('front')}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <X className="w-4 h-4" />
                         Remove
                       </button>
                     </div>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <Upload className="w-8 h-8 text-slate-400 mx-auto" />
                       <p className="text-xs font-medium text-slate-700">Drag & drop front image</p>
                       <button
@@ -520,9 +520,9 @@ export function IdentityVerificationPage() {
               {documentNeedsBack(formData.document_type) && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-semibold text-slate-600">Back side</span>
+                    <span className="text-xs font-medium text-slate-600">Back side</span>
                     {!formData.document_file_back && (
-                      <span className="text-[10px] font-bold text-red-500">Required</span>
+                      <span className="text-xs font-bold text-red-500">Required</span>
                     )}
                   </div>
                   <div
@@ -539,7 +539,7 @@ export function IdentityVerificationPage() {
                     onDrop={(e) => handleDrop(e, 'back')}
                   >
                     {formData.document_file_back ? (
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         <div className="flex items-center justify-center">
                           <FileText className="w-7 h-7 text-emerald-600" />
                         </div>
@@ -549,12 +549,12 @@ export function IdentityVerificationPage() {
                           onClick={() => removeFile('back')}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         >
-                          <X className="w-3.5 h-3.5" />
+                          <X className="w-4 h-4" />
                           Remove
                         </button>
                       </div>
                     ) : (
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         <Upload className="w-8 h-8 text-slate-400 mx-auto" />
                         <p className="text-xs font-medium text-slate-700">Drag & drop back image</p>
                         <button
@@ -670,8 +670,8 @@ export function IdentityVerificationPage() {
           </label>
 
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-              <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
@@ -680,7 +680,7 @@ export function IdentityVerificationPage() {
             <button
               type="submit"
               disabled={submitting || !consentAgreed}
-              className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {uploading ? (
                 <>
@@ -730,7 +730,7 @@ export function IdentityVerificationPage() {
           formats. Verification completes <span className="font-semibold text-amber-700">in seconds</span> —
           your status updates here in real time, no refresh needed.
         </p>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex items-start gap-2 text-left">
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex items-start gap-3 text-left">
           <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-700 leading-relaxed">
             If your document number doesn't match the expected format, your submission is rejected
@@ -753,7 +753,7 @@ export function IdentityVerificationPage() {
                       : 'bg-slate-100 border-slate-200 text-slate-400'
                   }`}
                 >
-                  {step.done ? <CheckCircle2 className="w-3.5 h-3.5" /> : <span className="text-sm font-bold">{idx + 1}</span>}
+                  {step.done ? <CheckCircle2 className="w-4 h-4" /> : <span className="text-sm font-bold">{idx + 1}</span>}
                 </div>
                 <span className={`text-xs mt-2 font-medium ${step.current ? 'text-amber-700' : step.done ? 'text-emerald-700' : 'text-slate-400'}`}>
                   {step.label}
@@ -767,7 +767,7 @@ export function IdentityVerificationPage() {
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 inline-flex items-center gap-1.5">
-          <Loader2 className="w-3.5 h-3.5 text-amber-600 animate-spin" />
+          <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
           <span className="text-sm font-medium text-amber-800">Under Review</span>
         </div>
         {verification?.created_at && (
@@ -789,7 +789,7 @@ export function IdentityVerificationPage() {
       <h2 className="text-xl font-bold text-slate-900 mb-2">Identity Verified</h2>
       <p className="text-slate-500 mb-2">Your identity has been successfully verified.</p>
       <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 inline-flex items-center gap-1.5">
-        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
         <span className="text-sm font-medium text-emerald-800">Verified</span>
       </div>
       {verification?.verified_at && (
@@ -801,11 +801,11 @@ export function IdentityVerificationPage() {
       )}
       <Link
         to={postVerifyRedirect}
-        className="mt-6 inline-flex items-center justify-center gap-2 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+        className="mt-6 inline-flex items-center justify-center gap-3 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
       >
         Continue to Dashboard
       </Link>
-      <p className="text-[11px] text-slate-400 mt-3">
+      <p className="text-xs text-slate-400 mt-3">
         You can now use the full platform — payments, projects, matches and more are unlocked.
       </p>
     </div>
@@ -830,7 +830,7 @@ export function IdentityVerificationPage() {
           </p>
 
           {/* Attempts remaining badge */}
-          <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="flex items-center justify-center gap-3 mb-2">
             <span className={`px-3 py-1 rounded-full text-xs font-bold ${
               attemptsLeft <= 1 ? 'bg-red-100 text-red-700' :
               attemptsLeft <= 2 ? 'bg-amber-100 text-amber-700' :
@@ -842,8 +842,8 @@ export function IdentityVerificationPage() {
 
           {verification?.rejection_reason && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-3">
-              <div className="flex items-start gap-2">
-                <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason</p>
                   <p className="text-sm text-red-700">{verification.rejection_reason}</p>
@@ -855,7 +855,7 @@ export function IdentityVerificationPage() {
           {canResubmit ? (
             <button
               onClick={handleResubmit}
-              className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+              className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
             >
               <RefreshCw className="w-4 h-4" />
               {blockExpired ? 'Submit New Verification' : `Resubmit Verification (${attemptsLeft} left)`}
@@ -975,8 +975,8 @@ export function IdentityVerificationPage() {
             </label>
 
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
-                <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5" />
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
@@ -985,7 +985,7 @@ export function IdentityVerificationPage() {
               <button
                 type="submit"
                 disabled={submitting || !consentAgreed}
-                className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {submitting ? (
                   <>
@@ -1034,8 +1034,8 @@ export function IdentityVerificationPage() {
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
-          <div className="flex items-start gap-2">
-            <Shield className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3">
+            <Shield className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
             <div>
               <p className="text-sm font-medium text-blue-800 mb-1">Why was I blocked?</p>
               <p className="text-xs text-blue-700 leading-relaxed">
@@ -1060,7 +1060,7 @@ export function IdentityVerificationPage() {
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-display text-lg font-bold text-slate-900">Identity Verification</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">Identity Verification</h1>
             <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
           </div>
         </div>
@@ -1069,7 +1069,7 @@ export function IdentityVerificationPage() {
           <p className="text-red-700 mb-2">{error}</p>
           <button
             onClick={fetchStatus}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+            className="inline-flex items-center gap-3 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
             Retry
@@ -1084,7 +1084,7 @@ export function IdentityVerificationPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">Identity Verification</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">Identity Verification</h1>
           <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
         </div>
         <div className="p-2 bg-emerald-100 rounded-xl">

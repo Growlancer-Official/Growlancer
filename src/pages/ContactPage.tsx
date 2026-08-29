@@ -13,7 +13,7 @@ export function ContactPage() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -33,8 +33,8 @@ export function ContactPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+          <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <Sparkles className="w-4 h-4 animate-pulse" />
             AI Support
           </span>
           <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tight leading-none">
@@ -48,14 +48,14 @@ export function ContactPage() {
 
       {/* Main Content */}
       <main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
           {/* Left: Context selector + Info cards */}
-          <div className="lg:col-span-1 space-y-2">
+          <div className="lg:col-span-1 space-y-4">
             {/* Role Context Selector */}
             {!user && (
               <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
                 <h3 className="text-sm font-bold text-slate-900 mb-3">I need help as a...</h3>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={() => setChatContext('freelancer')}
                     className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
@@ -121,7 +121,7 @@ export function ContactPage() {
 
             {/* Quick Links */}
             <div className="bg-gradient-to-br from-slate-50 to-emerald-50/50 border border-slate-200 rounded-xl p-3 space-y-3 shadow-sm">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Headphones className="w-4 h-4 text-emerald-600" />
                 <h4 className="font-bold text-slate-900 text-sm">Quick Resources</h4>
               </div>

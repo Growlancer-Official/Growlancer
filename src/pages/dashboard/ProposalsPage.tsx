@@ -144,28 +144,28 @@ export function ProposalsPage() {
       case 'pending':
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 text-sm font-medium rounded-full">
-            <Clock className="w-3 h-3" />
+            <Clock className="w-3.5 h-3.5" />
             Pending Review
           </span>
         );
       case 'accepted':
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full">
-            <CheckCircle2 className="w-3 h-3" />
+            <CheckCircle2 className="w-3.5 h-3.5" />
             Accepted
           </span>
         );
       case 'hired':
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-emerald-600 text-white text-sm font-medium rounded-full">
-            <CheckCircle2 className="w-3 h-3" />
+            <CheckCircle2 className="w-3.5 h-3.5" />
             Hired
           </span>
         );
       case 'rejected':
         return (
           <span className="flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 text-sm font-medium rounded-full">
-            <XCircle className="w-3 h-3" />
+            <XCircle className="w-3.5 h-3.5" />
             Not Selected
           </span>
         );
@@ -187,13 +187,13 @@ export function ProposalsPage() {
   return (
     <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-1.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <FileText className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-lg font-bold text-slate-900">My Proposals</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">My Proposals</h1>
             <p className="text-slate-500">
               {proposals.length} proposal{proposals.length !== 1 ? 's' : ''} submitted
             </p>
@@ -202,7 +202,7 @@ export function ProposalsPage() {
 
         <Link
           to="/dashboard/feed"
-          className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-2"
+          className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center gap-3"
         >
           <FileText className="w-4 h-4" />
           Submit New Proposal
@@ -215,14 +215,14 @@ export function ProposalsPage() {
       </TipNote>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-lg font-bold text-orange-600">{pendingCount}</p>
+              <p className="text-xl font-bold text-orange-600">{pendingCount}</p>
               <p className="text-sm text-slate-500">Pending Review</p>
             </div>
-            <div className="w-8 h-8 bg-orange-50 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
               <Clock className="w-4 h-4 text-orange-500" />
             </div>
           </div>
@@ -230,10 +230,10 @@ export function ProposalsPage() {
         <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-lg font-bold text-emerald-600">{acceptedCount}</p>
+              <p className="text-xl font-bold text-emerald-600">{acceptedCount}</p>
               <p className="text-sm text-slate-500">Accepted</p>
             </div>
-            <div className="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
             </div>
           </div>
@@ -241,10 +241,10 @@ export function ProposalsPage() {
         <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-lg font-bold text-slate-600">{rejectedCount}</p>
+              <p className="text-xl font-bold text-slate-600">{rejectedCount}</p>
               <p className="text-sm text-slate-500">Not Selected</p>
             </div>
-            <div className="w-8 h-8 bg-slate-50 rounded-xl flex items-center justify-center">
+            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center">
               <XCircle className="w-4 h-4 text-slate-500" />
             </div>
           </div>
@@ -252,7 +252,7 @@ export function ProposalsPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      <div className="flex items-center gap-3 border-b border-slate-200">
         <button
           onClick={() => setActiveTab('pending')}
           className={`px-4 py-3 text-sm font-medium transition-colors relative ${
@@ -330,7 +330,7 @@ export function ProposalsPage() {
       {/* Proposals List */}
       {filteredProposals.length > 0 ? (
         <>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {filteredProposals.map((proposal) => {
             const daysSince = getDaysSinceSubmitted(proposal.created_at);
             
@@ -343,7 +343,7 @@ export function ProposalsPage() {
                   {/* Project Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 mb-3">
-                      <h3 className="font-display text-lg font-bold text-slate-900">
+                      <h3 className="font-display text-xl font-bold text-slate-900">
                         {proposal.project?.title || 'Project'}
                       </h3>
                       {getStatusBadge(proposal.status)}
@@ -354,7 +354,7 @@ export function ProposalsPage() {
                     </p>
 
                     {/* Meta Info */}
-                    <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 mb-2">
+                    <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 mb-2">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
                         Client: <span className="font-medium text-slate-700 flex items-center gap-1">
@@ -362,7 +362,7 @@ export function ProposalsPage() {
                           {(proposal.project?.client as any)?.verification_status === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
                           {(proposal.project?.client as any)?.rating && Number((proposal.project?.client as any).rating) > 0 && (
                             <span className="flex items-center gap-1 text-xs">
-                              <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                              <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                               <span className="font-semibold text-slate-700">{Number((proposal.project?.client as any).rating).toFixed(1)}</span>
                               <span className="text-slate-400">({(proposal.project?.client as any).total_reviews || 0})</span>
                             </span>
@@ -386,22 +386,22 @@ export function ProposalsPage() {
                     </div>
 
                     {/* Proposal Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-2">
                       <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                         <p className="text-xs text-emerald-600 mb-1 font-medium">Your Rate</p>
-                        <p className="text-lg font-bold text-slate-900">
+                        <p className="text-xl font-bold text-slate-900">
                           {proposal.proposed_rate ? formatCurrency(proposal.proposed_rate) : 'N/A'}
                         </p>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-xs text-slate-500 mb-1">Duration</p>
-                        <p className="text-lg font-bold text-slate-900">
+                        <p className="text-xl font-bold text-slate-900">
                           {proposal.estimated_duration} days
                         </p>
                       </div>
                       <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-xs text-slate-500 mb-1">Client Budget</p>
-                        <p className="text-lg font-bold text-slate-900">
+                        <p className="text-xl font-bold text-slate-900">
                           {formatBudgetRange(proposal.project?.budget_min, proposal.project?.budget_max)}
                         </p>
                       </div>
@@ -409,7 +409,7 @@ export function ProposalsPage() {
 
                     {/* Your Message */}
                     <div className="p-4 bg-slate-50 rounded-xl">
-                      <div className="flex items-center gap-2 mb-2">
+                      <div className="flex items-center gap-3 mb-2">
                         <MessageSquare className="w-4 h-4 text-slate-400" />
                         <span className="text-sm font-medium text-slate-700">Your proposal message:</span>
                       </div>
@@ -418,13 +418,13 @@ export function ProposalsPage() {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex flex-col gap-2 flex-shrink-0">
+                  <div className="flex flex-col gap-3 flex-shrink-0">
                     {proposal.status === 'pending' && (
                       <>
                         <button
                           onClick={() => setWithdrawConfirm(proposal.id)}
                           disabled={withdrawingProposal === proposal.id}
-                          className="px-3 py-3 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                          className="px-3 py-3 border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-3"
                         >
                           {withdrawingProposal === proposal.id ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -441,7 +441,7 @@ export function ProposalsPage() {
                     {proposal.status === 'accepted' && (
                       <Link
                         to="/dashboard/contracts"
-                        className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                        className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-3"
                       >
                         View Contract
                         <ArrowRight className="w-4 h-4" />
@@ -469,7 +469,7 @@ export function ProposalsPage() {
               <button
                 onClick={() => { setLoadingMore(true); fetchProposals(true); }}
                 disabled={loadingMore}
-                className="flex items-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
+                className="flex items-center gap-3 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all disabled:opacity-50"
               >
                 {loadingMore ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Loading...</>
@@ -501,7 +501,7 @@ export function ProposalsPage() {
           </p>
           <Link
             to="/dashboard/feed"
-            className="inline-flex items-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+            className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
           >
             Browse Projects
             <ArrowRight className="w-4 h-4" />

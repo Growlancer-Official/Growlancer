@@ -136,7 +136,7 @@ export function ServicesCatalogPage() {
                 className="w-full pl-12 pr-4 py-3.5 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
             </div>
-            <button onClick={() => setShowFilters(!showFilters)} className="px-5 py-3.5 bg-white/20 hover:bg-white/30 rounded-xl flex items-center gap-2 font-medium transition-colors">
+            <button onClick={() => setShowFilters(!showFilters)} className="px-5 py-3.5 bg-white/20 hover:bg-white/30 rounded-xl flex items-center gap-3 font-medium transition-colors">
               <Filter className="w-5 h-5" /> Filters
             </button>
           </div>
@@ -167,7 +167,7 @@ export function ServicesCatalogPage() {
       {/* Filters Panel */}
       {showFilters && (
         <div className="bg-white border-b border-slate-200 py-4">
-          <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 flex flex-wrap items-end gap-2">
+          <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 flex flex-wrap items-end gap-3">
             <div>
               <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Max Price</label>
               <input
@@ -181,7 +181,7 @@ export function ServicesCatalogPage() {
                 className="w-32 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="flex items-center gap-3 ml-auto">
               <button onClick={() => setViewMode('grid')} className={`p-2 rounded-lg ${viewMode === 'grid' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-400 hover:text-slate-600'}`}>
                 <Grid3X3 className="w-5 h-5" />
               </button>
@@ -244,19 +244,19 @@ export function ServicesCatalogPage() {
 
                   <div className="p-4">
                     {/* Freelancer Info */}
-                    <div className="flex items-center gap-2 mb-3">
+                    <div className="flex items-center gap-3 mb-3">
                       <div className="w-6 h-6 rounded-full bg-slate-100 overflow-hidden">
                         {service.freelancer?.avatar ? (
                           <img src={service.freelancer.avatar} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-[8px] font-bold text-slate-400">
+                          <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-slate-400">
                             {(service.freelancer?.full_name || 'U')[0]}
                           </div>
                         )}
                       </div>
                       <span className="text-xs text-slate-500 truncate">{service.freelancer?.full_name || 'Freelancer'}</span>
                       {service.freelancer?.seller_level && service.freelancer.seller_level.includes('top_rated') && (
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />
+                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400 flex-shrink-0" />
                       )}
                     </div>
 
@@ -268,7 +268,7 @@ export function ServicesCatalogPage() {
                     {service.tags && service.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {service.tags.slice(0, 2).map((tag) => (
-                          <span key={tag} className="px-1.5 py-0.5 bg-slate-50 text-slate-500 text-[10px] rounded border border-slate-100">
+                          <span key={tag} className="px-1.5 py-0.5 bg-slate-50 text-slate-500 text-xs rounded border border-slate-100">
                             {tag}
                           </span>
                         ))}
@@ -278,10 +278,10 @@ export function ServicesCatalogPage() {
                     {/* Footer */}
                     <div className="flex items-center justify-between pt-3 border-t border-slate-100">
                       <div className="flex items-center gap-3 text-xs text-slate-400">
-                        <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{service.views || 0}</span>
-                        <span className="flex items-center gap-1"><ShoppingCart className="w-3 h-3" />{service.orders || 0}</span>
+                        <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{service.views || 0}</span>
+                        <span className="flex items-center gap-1"><ShoppingCart className="w-3.5 h-3.5" />{service.orders || 0}</span>
                         {service.rating && service.rating > 0 && (
-                          <span className="flex items-center gap-0.5"><Star className="w-3 h-3 text-amber-400 fill-amber-400" />{Number(service.rating).toFixed(1)}</span>
+                          <span className="flex items-center gap-0.5"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{Number(service.rating).toFixed(1)}</span>
                         )}
                       </div>
                       <span className="text-lg font-bold text-emerald-600">
@@ -294,7 +294,7 @@ export function ServicesCatalogPage() {
             </div>
           ) : (
             /* List View */
-            <div className="space-y-2">
+            <div className="space-y-4">
               {services.map((service) => (
                 <Link
                   key={service.id}
@@ -313,11 +313,11 @@ export function ServicesCatalogPage() {
                       <div className="flex-1">
                         <h3 className="font-semibold text-slate-900 mb-1 group-hover:text-emerald-600 transition-colors">{service.title}</h3>
                         <p className="text-sm text-slate-500 line-clamp-2 mb-3">{service.description}</p>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{service.delivery_days} days</span>
-                          <span className="flex items-center gap-1"><Eye className="w-3 h-3" />{service.views || 0} views</span>
-                          <span className="flex items-center gap-1"><ShoppingCart className="w-3 h-3" />{service.orders || 0} orders</span>
-                          {service.rating && <span className="flex items-center gap-0.5"><Star className="w-3 h-3 text-amber-400 fill-amber-400" />{Number(service.rating).toFixed(1)}</span>}
+                        <div className="flex items-center gap-3 text-xs text-slate-400">
+                          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{service.delivery_days} days</span>
+                          <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{service.views || 0} views</span>
+                          <span className="flex items-center gap-1"><ShoppingCart className="w-3.5 h-3.5" />{service.orders || 0} orders</span>
+                          {service.rating && <span className="flex items-center gap-0.5"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{Number(service.rating).toFixed(1)}</span>}
                         </div>
                       </div>
                       <div className="text-right ml-4">

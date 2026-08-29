@@ -22,9 +22,9 @@ interface VerifiedBadgeProps {
  */
 export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', tone = 'green' }: VerifiedBadgeProps) {
   const sizes = {
-    xs: { icon: 'w-3 h-3', pill: 'text-[9px] px-1.5 py-0.5 gap-0.5', label: 'text-[9px]', tooltip: 'text-[10px] px-2 py-1' },
-    sm: { icon: 'w-3.5 h-3.5', pill: 'text-[10px] px-2 py-0.5 gap-1', label: 'text-[10px]', tooltip: 'text-[10px] px-2.5 py-1' },
-    md: { icon: 'w-4 h-4', pill: 'text-[11px] px-2.5 py-1 gap-1', label: 'text-[11px]', tooltip: 'text-[11px] px-3 py-1.5' },
+    xs: { icon: 'w-3.5 h-3.5', pill: 'text-[10px] px-1.5 py-0.5 gap-0.5', label: 'text-[10px]', tooltip: 'text-xs px-2 py-1' },
+    sm: { icon: 'w-4 h-4', pill: 'text-xs px-2 py-0.5 gap-1', label: 'text-xs', tooltip: 'text-xs px-2.5 py-1' },
+    md: { icon: 'w-4 h-4', pill: 'text-xs px-2.5 py-1 gap-1', label: 'text-xs', tooltip: 'text-xs px-3 py-1.5' },
   }[size];
 
   const gradient = tone === 'blue'

@@ -76,7 +76,7 @@ function ProposalMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
-        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
+        <MoreVertical className="w-4 h-4 text-slate-400" />
       </button>
 
       {open && (
@@ -279,11 +279,11 @@ export function ClientProposalsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">Proposals</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">Proposals</h1>
           <p className="text-slate-500 mt-1">Review and manage proposals from freelancers</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 rounded-xl">
-          <FileText className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-3 px-4 py-2 bg-orange-50 text-orange-700 rounded-xl">
+          <FileText className="w-4 h-4" />
           <span className="font-bold">{proposals.length} Proposals</span>
         </div>
       </div>
@@ -298,7 +298,7 @@ export function ClientProposalsPage() {
       )}
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-3 border-b border-slate-200">
         {(['all', 'pending', 'accepted', 'rejected'] as const).map((f) => (
           <button
             key={f}
@@ -331,9 +331,9 @@ export function ClientProposalsPage() {
           {filter === 'all' ? (
             <Link
               to="/client/post"
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               Post a Project
             </Link>
           ) : (
@@ -347,14 +347,14 @@ export function ClientProposalsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-2">
+          <div className="grid gap-3">
             {filteredProposals.map((proposal) => (
             <div
               key={proposal.id}
               className="bg-white p-6 rounded-xl border border-slate-100 hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-2">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Link
                     to={`/freelancer/${proposal.freelancer_id}`}
                     title="View freelancer profile"
@@ -405,7 +405,7 @@ export function ClientProposalsPage() {
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <span
                     className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${getStatusColor(
                       proposal.status
@@ -437,35 +437,35 @@ export function ClientProposalsPage() {
                 <p className="text-sm text-slate-700 line-clamp-3">{proposal.cover_letter}</p>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+                <div className="flex items-center gap-3">
                   <IndianRupee className="w-4 h-4" />
                   <span className="font-bold text-slate-900">{formatCurrency(proposal.bid_amount ?? proposal.proposed_rate ?? 0)}</span>
                   {proposal.project && proposal.project.budget_max > 0 && (
                     (proposal.bid_amount ?? proposal.proposed_rate ?? 0) > proposal.project.budget_max ? (
-                      <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-[11px] font-semibold rounded-full">Above your budget</span>
+                      <span className="ml-1 px-2 py-0.5 bg-amber-100 text-amber-700 text-xs font-semibold rounded-full">Above your budget</span>
                     ) : (
-                      <span className="ml-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[11px] font-semibold rounded-full">Within budget</span>
+                      <span className="ml-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-full">Within budget</span>
                     )
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4" />
                   <span>{proposal.estimated_duration}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4" />
                   <span>Submitted {new Date(proposal.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
 
               {proposal.status === 'pending' && (
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     disabled={actionId === proposal.id}
                     onClick={() => handleAccept(proposal)}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50"
                   >
                     <CheckCircle className="w-4 h-4" />
                     {actionId === proposal.id ? 'Hiring…' : 'Accept & Hire'}
@@ -474,14 +474,14 @@ export function ClientProposalsPage() {
                     type="button"
                     disabled={actionId === proposal.id}
                     onClick={() => handleReject(proposal.id)}
-                    className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                    className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
                   >
                     <XCircle className="w-4 h-4" />
                     Reject
                   </button>
                   <Link
                     to="/client/matches"
-                    className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
                   >
                     <Eye className="w-4 h-4" />
                     Find more talent

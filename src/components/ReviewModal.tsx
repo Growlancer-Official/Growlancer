@@ -96,11 +96,11 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
             <p className="text-xs text-slate-500 mt-0.5">{projectTitle || 'Contract'}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-            <X className="w-3.5 h-3.5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-3 space-y-2.5">
+        <div className="p-3 space-y-4.5">
           {error && (
             <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>
           )}
@@ -110,7 +110,7 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
             <StarRow value={rating} onChange={setRating} />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               { label: 'Communication', v: communication, set: setCommunication },
               { label: 'Quality of work', v: quality, set: setQuality },
@@ -126,7 +126,7 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
 
           <div>
             <p className="text-sm font-semibold text-slate-800 mb-2">Would you work with them again?</p>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               {[true, false].map((yes) => (
                 <button
                   key={String(yes)}
@@ -156,7 +156,7 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
               placeholder={`Share your experience working with ${revieweeName}...`}
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
             />
-            <p className="text-[11px] text-slate-400 mt-1 text-right">{comment.length}/1000</p>
+            <p className="text-xs text-slate-400 mt-1 text-right">{comment.length}/1000</p>
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -169,7 +169,7 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-3"
             >
               {submitting ? (
                 <>

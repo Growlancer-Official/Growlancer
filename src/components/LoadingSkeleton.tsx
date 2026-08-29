@@ -32,7 +32,7 @@ function Row() {
   return (
     <div className="flex items-center gap-3">
       <div className="h-10 w-10 rounded-xl bg-slate-200 animate-pulse shrink-0" />
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-4">
         <Bar className="h-3 w-3/4" />
         <Bar className="h-2.5 w-1/2" />
       </div>
@@ -54,7 +54,7 @@ function StatCard() {
 /** Table row skeleton */
 function TableRow({ columns = 4 }: { columns?: number }) {
   return (
-    <div className="flex items-center gap-2 px-5 py-4 border-b border-slate-50">
+    <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-50">
       <div className="flex items-center gap-3 flex-1">
         <div className="h-8 w-8 rounded-lg bg-slate-200 animate-pulse shrink-0" />
         <div className="flex-1 space-y-1.5">
@@ -80,7 +80,7 @@ function CardSkeleton() {
         <Bar className="h-3 w-24" />
         <Bar className="h-4 w-full" />
         <Bar className="h-4 w-3/4" />
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Bar className="h-6 w-16 rounded-full" />
           <Bar className="h-6 w-16 rounded-full" />
         </div>
@@ -94,13 +94,13 @@ function FullPageSkeleton() {
   return (
     <div className="space-y-3">
       {/* Header */}
-      <div className="space-y-2">
+      <div className="space-y-4">
         <Bar className="h-7 w-64" />
         <Bar className="h-4 w-96" />
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
           <StatCard key={i} />
         ))}
@@ -109,14 +109,14 @@ function FullPageSkeleton() {
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Left */}
-        <div className="lg:col-span-2 space-y-2">
-          <div className="bg-slate-50 rounded-xl p-3 space-y-2">
+        <div className="lg:col-span-2 space-y-4">
+          <div className="bg-slate-50 rounded-xl p-3 space-y-4">
             <Bar className="h-5 w-48" />
             {Array.from({ length: 3 }).map((_, i) => (
               <Row key={i} />
             ))}
           </div>
-          <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-2">
+          <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-4">
             <Bar className="h-5 w-40" />
             {Array.from({ length: 4 }).map((_, i) => (
               <Row key={i} />
@@ -124,7 +124,7 @@ function FullPageSkeleton() {
           </div>
         </div>
         {/* Right */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-3">
             <Bar className="h-5 w-32" />
             {Array.from({ length: 4 }).map((_, i) => (
@@ -145,7 +145,7 @@ function FullPageSkeleton() {
 /** Stats-grid skeleton */
 function StatsGridSkeleton({ count = 4 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
       {Array.from({ length: count }).map((_, i) => (
         <StatCard key={i} />
       ))}
@@ -197,7 +197,7 @@ function ChatSkeleton() {
   return (
     <div className="flex h-[calc(100vh-12rem)] bg-white rounded-xl border border-slate-100 overflow-hidden">
       {/* Left panel */}
-      <div className="w-80 lg:w-96 border-r border-slate-100 p-3 space-y-2">
+      <div className="w-80 lg:w-96 border-r border-slate-100 p-3 space-y-4">
         <Bar className="h-9 w-full rounded-lg" />
         <div className="space-y-1 mt-3">
           {Array.from({ length: 6 }).map((_, i) => (
@@ -216,10 +216,10 @@ function ChatSkeleton() {
         <div className="p-4 border-b border-slate-100">
           <Bar className="h-5 w-32" />
         </div>
-        <div className="flex-1 p-3 space-y-2">
+        <div className="flex-1 p-3 space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className={`flex ${i % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
-              <div className={`space-y-2 ${i % 2 === 0 ? '' : ''}`}>
+              <div className={`space-y-4 ${i % 2 === 0 ? '' : ''}`}>
                 <Bar className={`h-12 w-48 ${i % 2 === 0 ? '' : ''}`} />
                 <Bar className={`h-3 w-16 ${i % 2 === 0 ? 'ml-auto' : ''}`} />
               </div>
@@ -237,9 +237,9 @@ function ChatSkeleton() {
 /** Chart skeleton */
 function ChartSkeleton() {
   return (
-    <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-2">
+    <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-4">
       <Bar className="h-5 w-40" />
-      <div className="h-48 flex items-end gap-2">
+      <div className="h-48 flex items-end gap-3">
         {Array.from({ length: 12 }).map((_, i) => (
           <div
             key={i}
@@ -256,14 +256,14 @@ function ChartSkeleton() {
 function ProfileSkeleton() {
   return (
     <div className="max-w-2xl mx-auto space-y-3">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <div className="h-20 w-20 rounded-full bg-slate-200 animate-pulse" />
-        <div className="space-y-2">
+        <div className="space-y-4">
           <Bar className="h-5 w-40" />
           <Bar className="h-3 w-60" />
         </div>
       </div>
-      <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-2.5">
+      <div className="bg-white rounded-xl border border-slate-100 p-3 space-y-4.5">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="space-y-1.5">
             <Bar className="h-3 w-24" />
@@ -311,7 +311,7 @@ export function AdminDashboardFallback() {
       {/* Main content area with dark theme */}
       <div className="flex-1 space-y-3">
         {/* Header */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           <div className="h-4 w-32 bg-slate-700 rounded" />
           <div className="h-8 w-64 bg-slate-700 rounded" />
         </div>
@@ -325,14 +325,14 @@ export function AdminDashboardFallback() {
           ))}
         </div>
         {/* Table + sidebar */}
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
           <div className="xl:col-span-2">
             <div className="rounded-[2rem] overflow-hidden" style={{ background: '#1E293B', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
               <div className="p-3 border-b border-white/5">
                 <div className="h-5 w-40 bg-slate-700 rounded" />
               </div>
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2 p-4 border-b border-white/5">
+                <div key={i} className="flex items-center gap-3 p-4 border-b border-white/5">
                   <div className="h-8 w-8 rounded-lg bg-slate-700" />
                   <div className="flex-1">
                     <div className="h-4 w-32 bg-slate-700 rounded mb-1" />
@@ -345,9 +345,9 @@ export function AdminDashboardFallback() {
           <div className="space-y-8">
             <div className="rounded-[2rem] p-3" style={{ background: '#1E293B', border: '1px solid rgba(255, 255, 255, 0.05)' }}>
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="flex items-start gap-2 p-4">
+                <div key={i} className="flex items-start gap-3 p-4">
                   <div className="h-8 w-8 rounded-lg bg-slate-700 shrink-0" />
-                  <div className="flex-1 space-y-2">
+                  <div className="flex-1 space-y-4">
                     <div className="h-3 w-36 bg-slate-700 rounded" />
                     <div className="h-2.5 w-full bg-slate-700 rounded" />
                   </div>

@@ -385,7 +385,7 @@ export function ServiceDetailPage() {
       {/* Back Navigation */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
-          <Link to="/services" className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors">
+          <Link to="/services" className="flex items-center gap-3 text-sm text-slate-500 hover:text-emerald-600 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Back to Services
           </Link>
@@ -406,22 +406,22 @@ export function ServiceDetailPage() {
       )}
 
       <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-2">
+          <div className="lg:col-span-2 space-y-4">
             {/* Service Header */}
             <div>
-              <div className="flex items-center gap-2 text-sm text-slate-500 mb-3">
+              <div className="flex items-center gap-3 text-sm text-slate-500 mb-3">
                 <Link to="/categories" className="hover:text-emerald-600">{service.category}</Link>
                 {service.subcategory && (
                   <>
-                    <ChevronRight className="w-3 h-3" />
+                    <ChevronRight className="w-3.5 h-3.5" />
                     <span>{service.subcategory}</span>
                   </>
                 )}
               </div>
               <h1 className="font-display text-3xl font-bold text-slate-900">{service.title}</h1>
-              <div className="flex flex-wrap items-center gap-2 mt-3 text-sm text-slate-500">
+              <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-slate-500">
                 <span className="flex items-center gap-1">
                   <Clock className="w-4 h-4" />
                   {service.delivery_time} delivery
@@ -453,7 +453,7 @@ export function ServiceDetailPage() {
             {service.tags && service.tags.length > 0 && (
               <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
                 <h2 className="text-lg font-semibold text-slate-900 mb-3">Tags</h2>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-3">
                   {service.tags.map((tag) => (
                     <span
                       key={tag}
@@ -469,7 +469,7 @@ export function ServiceDetailPage() {
             {/* Revision Policy — transparent to the client */}
             {(typeof service.revisions === 'number' && service.revisions > 0) || Number(service.extra_revision_price) > 0 ? (
               <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
-                <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-emerald-600" />
                   Revision Policy
                 </h2>
@@ -525,7 +525,7 @@ export function ServiceDetailPage() {
               <p className="text-sm font-bold text-slate-900 mb-3">Choose a package</p>
 
               {/* Tier comparison — Fiverr-style cards */}
-              <div className="space-y-2.5">
+              <div className="space-y-4.5">
                 {publishedPackages.map((pkg) => {
                   const selected = selectedPackage?.tier === pkg.tier;
                   const isStd = pkg.tier === 'standard';
@@ -543,11 +543,11 @@ export function ServiceDetailPage() {
                           : 'border-slate-200 bg-white hover:border-emerald-300'
                       }`}
                     >
-                      <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center justify-between gap-3">
                         <p className="font-bold text-slate-900">
                           {pkg.title || pkg.tier}
                           {isStd && (
-                            <span className="ml-1.5 align-middle text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">POPULAR</span>
+                            <span className="ml-1.5 align-middle text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">POPULAR</span>
                           )}
                         </p>
                         <p className="text-lg font-bold text-emerald-600">{formatCurrency(Number(pkg.price) || 0)}</p>
@@ -559,7 +559,7 @@ export function ServiceDetailPage() {
                         <ul className="mt-2 space-y-1">
                           {pkg.deliverables.slice(0, 4).map((d, i) => (
                             <li key={i} className="flex items-start gap-1.5 text-xs text-slate-600">
-                              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                               {d}
                             </li>
                           ))}
@@ -574,17 +574,17 @@ export function ServiceDetailPage() {
               {addonsList.length > 0 && (
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <p className="text-xs font-bold text-slate-700 mb-2">Add-ons (optional)</p>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {addonsList.map((addon) => {
                       const checked = selectedAddonIds.includes(addon.id);
                       return (
                         <label
                           key={addon.id}
-                          className={`flex items-center justify-between gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-all ${
+                          className={`flex items-center justify-between gap-3 rounded-lg border px-3 py-2 cursor-pointer transition-all ${
                             checked ? 'border-violet-300 bg-violet-50/50' : 'border-slate-200 bg-white hover:border-violet-200'
                           }`}
                         >
-                          <span className="flex items-center gap-2 text-sm text-slate-700">
+                          <span className="flex items-center gap-3 text-sm text-slate-700">
                             <input
                               type="checkbox"
                               checked={checked}
@@ -682,7 +682,7 @@ export function ServiceDetailPage() {
               <button
                 onClick={handleContinueToOrder}
                 disabled={addingToCart}
-                className="w-full mt-5 flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold shadow-lg shadow-emerald-600/25"
+                className="w-full mt-5 flex items-center justify-center gap-3 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold shadow-lg shadow-emerald-600/25"
               >
                 {addingToCart ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -697,19 +697,19 @@ export function ServiceDetailPage() {
                 <button
                   onClick={() => setShowOfferModal(true)}
                   disabled={pendingOffer || submittingOffer}
-                  className="w-full mt-3 flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded-xl hover:bg-violet-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="w-full mt-3 flex items-center justify-center gap-3 px-5 py-2.5 text-sm font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded-xl hover:bg-violet-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   <BadgePercent className="w-4 h-4" />
                   {pendingOffer ? 'Offer Pending' : 'Make an Offer'}
                 </button>
               )}
 
-              <div className="mt-4 space-y-2 text-sm text-slate-500">
-                <div className="flex items-center gap-2">
+              <div className="mt-4 space-y-4 text-sm text-slate-500">
+                <div className="flex items-center gap-3">
                   <Shield className="w-4 h-4 text-emerald-500" />
                   Payment protected by escrow
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
                   Satisfaction guaranteed
                 </div>
@@ -732,7 +732,7 @@ export function ServiceDetailPage() {
                     </button>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1.5">Your offer ({currencySymbol()}) *</label>
                       <input
@@ -755,7 +755,7 @@ export function ServiceDetailPage() {
                       />
                     </div>
                     <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                      <p className="text-[11px] text-blue-700 leading-relaxed">
+                      <p className="text-xs text-blue-700 leading-relaxed">
                         Offers are protected by Growlancer policy: the freelancer decides the agreed price,
                         payment is always processed through escrow, and no work starts before funding.
                       </p>
@@ -763,7 +763,7 @@ export function ServiceDetailPage() {
                     <button
                       onClick={submitOffer}
                       disabled={submittingOffer || !offerAmount}
-                      className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold"
+                      className="w-full inline-flex items-center justify-center gap-3 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold"
                     >
                       {submittingOffer ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       {submittingOffer ? 'Sending...' : 'Send Offer'}
@@ -815,7 +815,7 @@ export function ServiceDetailPage() {
                   ))}
                 </div>
 
-                <div className="mt-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all shadow-md shadow-emerald-600/20">
+                <div className="mt-4 flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 active:scale-[0.98] transition-all shadow-md shadow-emerald-600/20">
                   <MessageSquare className="w-4 h-4" />
                   Contact Me
                   <ChevronRight className="w-4 h-4" />

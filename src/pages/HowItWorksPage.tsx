@@ -66,7 +66,7 @@ export function HowItWorksPage() {
       {/* Premium Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -85,8 +85,8 @@ export function HowItWorksPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <TrendingUp className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-3 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <TrendingUp className="w-4 h-4" />
             How it works
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
@@ -124,7 +124,7 @@ export function HowItWorksPage() {
 
       {/* Steps Visualizer */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {steps.map((step, idx) => (
             <div 
               key={idx} 
@@ -142,22 +142,22 @@ export function HowItWorksPage() {
 
       {/* Symmetrical Feature comparison */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
-        <div className="bg-white rounded-[2.5rem] border border-slate-200/50 p-4 sm:p-12 shadow-sm space-y-2">
-          <div className="text-center space-y-2">
+        <div className="bg-white rounded-[2.5rem] border border-slate-200/50 p-4 sm:p-12 shadow-sm space-y-4">
+          <div className="text-center space-y-4">
             <h3 className="font-display text-2xl font-extrabold text-slate-900">Why Growlancer is superior</h3>
             <p className="text-xs text-slate-500">We replace outdated transaction mechanisms with live synchronization.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-2">
+            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-4">
               <h4 className="font-bold text-slate-900 text-sm">Escrow Milestones</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">Payment is securely locked. Disputes are handled by structured, joint-release arbitration sliders.</p>
             </div>
-            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-2">
+            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-4">
               <h4 className="font-bold text-slate-900 text-sm">Real-Time Sync Canvas</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">Shared boards and scratchpads stay live-synced in milliseconds. Skip email status threads entirely.</p>
             </div>
-            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-2">
+            <div className="p-3 border border-slate-100 rounded-xl bg-slate-50/50 space-y-4">
               <h4 className="font-bold text-slate-900 text-sm">AI Matchmaking</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">Bids spam is eliminated. Smart profiles automatically link requirements directly to verified talent.</p>
             </div>
@@ -175,7 +175,7 @@ export function HowItWorksPage() {
             <p className="text-emerald-100 text-xs max-w-md mx-auto leading-relaxed">
               Create a free account to join the state-of-the-art real-time collaboration canvas.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Link
                 to="/signup"
                 state={{ role: 'client' }}

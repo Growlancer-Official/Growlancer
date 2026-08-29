@@ -31,12 +31,12 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
             {/* Trust Badges */}
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-lg ring-1 ring-emerald-200/50">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                <span className="text-[11px] font-medium text-emerald-700">Udyam Registered</span>
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span className="text-xs font-medium text-emerald-700">Udyam Registered</span>
               </div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg ring-1 ring-slate-200">
-                <Sparkles className="w-3.5 h-3.5 text-slate-500" />
-                <span className="text-[11px] font-medium text-slate-600">India-First</span>
+                <Sparkles className="w-4 h-4 text-slate-500" />
+                <span className="text-xs font-medium text-slate-600">India-First</span>
               </div>
             </div>
           </div>
@@ -102,9 +102,9 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
             {/* Trust & Payment Badges */}
             <div className="flex flex-col sm:flex-row items-center gap-4">
               {/* Payment Methods */}
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-3">
                 <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-xl ring-1 ring-slate-200 flex-wrap justify-center">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payments</span>
+                  <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Payments</span>
                   {/* Razorpay (primary) */}
                   <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Razorpay" style={{ marginTop: 2 }}>
                     <defs>
@@ -121,12 +121,12 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                       <path fill="#003087" d="M7.016 19.198h-4.2a.562.562 0 0 1-.555-.65L5.093.584A.692.692 0 0 1 5.776 0h7.222c3.417 0 5.904 2.488 5.846 5.5-.006.25-.027.5-.066.747A6.794 6.794 0 0 1 12.071 12H8.743a.69.69 0 0 0-.682.583l-.325 2.056-.013.083-.692 4.39-.015.087z"/>
                       <path fill="#009cde" d="M19.79 6.142c-.01.087-.01.175-.023.261a7.76 7.76 0 0 1-7.695 6.598H9.007l-.283 1.795-.013.083-.692 4.39-.134.843-.014.088H6.86l-.497 3.15a.562.562 0 0 0 .555.65h3.612c.34 0 .63-.249.683-.585l.952-6.031a.692.692 0 0 1 .683-.584h2.126a6.793 6.793 0 0 0 6.707-5.752c.306-1.95-.466-3.744-1.89-4.906z"/>
                     </svg>
-                    <span className="text-[8px] font-bold uppercase tracking-wide text-amber-700 bg-amber-100 ring-1 ring-amber-200 rounded px-1 py-px">Coming</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wide text-amber-700 bg-amber-100 ring-1 ring-amber-200 rounded px-1 py-px">Coming</span>
                   </span>
                   {/* UPI */}
-                  <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 rounded px-1.5 py-0.5">UPI</span>
+                  <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 ring-1 ring-emerald-200 rounded px-1.5 py-0.5">UPI</span>
                   {/* Visa */}
-                  <span className="text-[10px] font-black italic text-blue-800">VISA</span>
+                  <span className="text-xs font-black italic text-blue-800">VISA</span>
                   {/* Mastercard */}
                   <svg className="h-4 w-7 shrink-0" viewBox="0 0 24 16" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mastercard">
                     <rect width="24" height="16" rx="3" fill="#fff"/>
@@ -135,21 +135,21 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                     <path d="M12 4.2a5 5 0 0 1 0 7.6 5 5 0 0 1 0-7.6z" fill="#FF5F00"/>
                   </svg>
                   {/* Net Banking */}
-                  <span className="text-[10px] font-medium text-slate-600">Net Banking</span>
+                  <span className="text-xs font-medium text-slate-600">Net Banking</span>
                   <span className="text-slate-300 text-xs">|</span>
-                  <span className="inline-flex items-center gap-1 text-[10px] text-slate-500"><ShieldCheck className="w-3 h-3 text-emerald-600" /> SSL Secured</span>
+                  <span className="inline-flex items-center gap-1 text-xs text-slate-500"><ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> SSL Secured</span>
                 </div>
-                <span className="text-[10px] text-slate-400">All payments are protected by Razorpay escrow</span>
+                <span className="text-xs text-slate-400">All payments are protected by Razorpay escrow</span>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <button 
                   onClick={() => onOpenSignup?.('client')} 
                   className="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   Get Started
-                  <ArrowRight className="ml-1.5 w-3.5 h-3.5" />
+                  <ArrowRight className="ml-1.5 w-4 h-4" />
                 </button>
                 <button 
                   onClick={() => onOpenSignup?.('freelancer')} 

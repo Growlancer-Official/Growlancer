@@ -76,7 +76,7 @@ export function PaymentCallbackPage() {
       action: (
         <Link
           to={ROUTES.HOME}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+          className="inline-flex items-center justify-center gap-3 rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
@@ -90,7 +90,7 @@ export function PaymentCallbackPage() {
       action: (
         <Link
           to={ROUTES.HOME}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+          className="inline-flex items-center justify-center gap-3 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Home
@@ -104,7 +104,7 @@ export function PaymentCallbackPage() {
       action: (
         <Link
           to={ROUTES.HOME}
-          className="inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+          className="inline-flex items-center justify-center gap-3 rounded-full bg-slate-900 px-6 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Return Home

@@ -59,7 +59,7 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
           className="absolute top-3 right-5 z-20 p-2.5 rounded-full bg-white/90 hover:bg-white shadow-lg hover:shadow-xl border border-slate-200/50 transition-all duration-200 hover:scale-105"
           aria-label="Close modal"
         >
-          <X className="w-3.5 h-3.5 text-slate-600 hover:text-slate-900 transition-colors" />
+          <X className="w-4 h-4 text-slate-600 hover:text-slate-900 transition-colors" />
         </button>
 
         {/* Scrollable Content Area */}

@@ -180,9 +180,9 @@ export function ClientMatchesPage() {
   if (!loading && clientProjects.length === 0 && !projectId) {
     return (
       <div className="space-y-1.5">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="font-display text-lg font-bold text-slate-900">AI Talent Matches</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">AI Talent Matches</h1>
             <p className="text-slate-500 mt-1">
               Get AI-powered freelancer recommendations based on your project requirements
             </p>
@@ -199,11 +199,11 @@ export function ClientMatchesPage() {
           </p>
           <Link
             to="/client/post"
-            className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+            className="inline-flex items-center justify-center gap-3 px-8 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" />
             Create Your First Project
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </div>
@@ -215,7 +215,7 @@ export function ClientMatchesPage() {
     return (
       <div className="space-y-1.5">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">AI Talent Matches</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">AI Talent Matches</h1>
           <p className="text-slate-500 mt-1">
             Select a project to view AI-powered freelancer recommendations
           </p>
@@ -233,7 +233,7 @@ export function ClientMatchesPage() {
                 >
                   <div className="flex items-center gap-1.5">
                     <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-                      <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
+                      <Briefcase className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div className="text-left">
                       <p className="font-medium text-slate-900">{p.title}</p>
@@ -242,7 +242,7 @@ export function ClientMatchesPage() {
                       </p>
                     </div>
                   </div>
-                  <Sparkles className="w-3.5 h-3.5 text-slate-300 group-hover:text-emerald-500 transition-colors" />
+                  <Sparkles className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors" />
                 </Link>
               ))}
             </div>
@@ -251,7 +251,7 @@ export function ClientMatchesPage() {
               <p className="text-slate-500 mb-2">No projects found</p>
               <Link
                 to="/client/post"
-                className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+                className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
               >
                 <Plus className="w-4 h-4" />
                 Post a New Project
@@ -268,9 +268,9 @@ export function ClientMatchesPage() {
   return (
     <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-3 mb-1">
             <Link
               to="/client/matches"
               className="text-sm text-slate-400 hover:text-slate-600 transition-colors"
@@ -278,7 +278,7 @@ export function ClientMatchesPage() {
               ← All Projects
             </Link>
           </div>
-          <h1 className="font-display text-lg font-bold text-slate-900">
+          <h1 className="font-display text-xl font-bold text-slate-900">
             {currentProject?.title || 'AI Talent Matches'}
           </h1>
           <p className="text-slate-500 text-sm mt-1">
@@ -297,13 +297,13 @@ export function ClientMatchesPage() {
           <button
             onClick={handleGenerateMatches}
             disabled={generating}
-            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <RefreshCw className={`w-4 h-4 ${generating ? 'animate-spin' : ''}`} />
             {generating ? 'Matching...' : 'Generate Matches'}
           </button>
           {matches.length > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm">
+            <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-sm">
               <Sparkles className="w-4 h-4" />
               <span className="font-bold">{visibleMatches.length} Matches</span>
             </div>
@@ -330,7 +330,7 @@ export function ClientMatchesPage() {
       {!loading && matches.length === 0 && (
         <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
           <Sparkles className="w-16 h-16 text-slate-300 mx-auto mb-2" />
-          <h3 className="font-display text-lg font-bold text-slate-900 mb-2">No Matches Found</h3>
+          <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No Matches Found</h3>
           <p className="text-slate-500 mb-2 max-w-md mx-auto">
             {currentProject?.skills_required?.length 
               ? 'No freelancers match your project skills yet. Try adding more skills or adjusting your requirements.'
@@ -345,13 +345,13 @@ export function ClientMatchesPage() {
             <button
               onClick={handleGenerateMatches}
               disabled={generating}
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               {generating ? 'Generating...' : 'Generate Matches'}
             </button>
             <Link
               to={`/client/post?edit=${projectId}`}
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
             >
               Edit Project Skills
             </Link>
@@ -361,7 +361,7 @@ export function ClientMatchesPage() {
 
       {/* Match Cards */}
       {!loading && visibleMatches.length > 0 && (
-        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {visibleMatches.map((match) => (
             <div
               key={match.id}
@@ -369,12 +369,12 @@ export function ClientMatchesPage() {
             >
               {/* Match Score Badge */}
               <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold">
+                <div className="flex items-center gap-3 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold">
                   <Sparkles className="w-4 h-4" />
                   {match.match_score}% Match
                 </div>
                 {match.ai_score != null && (
-                  <span className="text-[10px] font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-200 rounded-full px-2 py-0.5">
+                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 ring-1 ring-blue-200 rounded-full px-2 py-0.5">
                     AI Score {match.ai_score}
                   </span>
                 )}
@@ -383,7 +383,7 @@ export function ClientMatchesPage() {
               {/* AI Match Reason */}
               {match.match_reason && (
                 <p className="mb-2 text-xs text-slate-500 bg-slate-50 border border-slate-100 rounded-lg px-3 py-2">
-                  <span className="font-semibold text-slate-600">Why matched: </span>
+                  <span className="font-medium text-slate-600">Why matched: </span>
                   {match.match_reason}
                 </p>
               )}
@@ -412,19 +412,19 @@ export function ClientMatchesPage() {
               </div>
 
               {/* Stats */}
-              <div className="grid grid-cols-2 gap-2 mb-2 text-sm">
-                <div className="flex items-center gap-2 text-slate-600">
+              <div className="grid grid-cols-2 gap-3 mb-2 text-sm">
+                <div className="flex items-center gap-3 text-slate-600">
                   <IndianRupee className="w-4 h-4" />
                   <span>{formatCurrency(match.freelancer.hourly_rate || 0)}</span>
                 </div>
-                <div className="flex items-center gap-2 text-slate-600">
+                <div className="flex items-center gap-3 text-slate-600">
                   <MapPin className="w-4 h-4" />
                   <span>{match.freelancer.location || 'Remote'}</span>
                 </div>
               </div>
 
               {/* Skills */}
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-3 mb-2">
                 {match.freelancer.skills?.slice(0, 3).map((skill) => (
                   <span
                     key={skill}
@@ -441,10 +441,10 @@ export function ClientMatchesPage() {
               </div>
 
               {/* Score Breakdown */}
-              <div className="space-y-2 mb-2 text-sm">
+              <div className="space-y-4 mb-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Skills</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-emerald-500 rounded-full" 
@@ -456,7 +456,7 @@ export function ClientMatchesPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Experience</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-blue-500 rounded-full" 
@@ -468,7 +468,7 @@ export function ClientMatchesPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-slate-500">Budget</span>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className="w-16 h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-purple-500 rounded-full" 
@@ -481,12 +481,12 @@ export function ClientMatchesPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 {invitedFreelancers.has(match.freelancer_id) ? (
                   <button
                     type="button"
                     disabled
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 text-slate-500 font-bold rounded-lg cursor-not-allowed"
+                    className="flex-1 flex items-center justify-center gap-3 px-4 py-2 bg-slate-100 text-slate-500 font-bold rounded-lg cursor-not-allowed"
                   >
                     <CheckCircle2 className="w-4 h-4" />
                     Invited
@@ -496,7 +496,7 @@ export function ClientMatchesPage() {
                     type="button"
                     disabled={inviteBusy === match.freelancer_id}
                     onClick={() => handleInvite(match.freelancer_id)}
-                    className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50"
+                    className="flex-1 inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50"
                   >
                     <Send className="w-4 h-4" />
                     {inviteBusy === match.freelancer_id ? 'Sending…' : 'Invite'}
@@ -505,7 +505,7 @@ export function ClientMatchesPage() {
                 <button
                   type="button"
                   onClick={() => setSkipped((s) => new Set(s).add(match.freelancer_id))}
-                  className="flex items-center justify-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex items-center justify-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
                 >
                   <XCircle className="w-4 h-4" />
                   Skip
@@ -527,14 +527,14 @@ export function ClientMatchesPage() {
           <div className="flex gap-1.5 justify-center">
             <button
               onClick={() => setSkipped(new Set())}
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-colors"
             >
               Show Skipped
             </button>
             <button
               onClick={handleGenerateMatches}
               disabled={generating}
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
               {generating ? 'Generating...' : 'Regenerate Matches'}
             </button>

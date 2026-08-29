@@ -85,9 +85,9 @@ export function AnalyticsPage() {
       {trend && trendLabel && (
         <div className="flex items-center gap-1 mt-3 text-xs">
           {trend === 'up' ? (
-            <ArrowUp className="w-3 h-3 text-emerald-500" />
+            <ArrowUp className="w-3.5 h-3.5 text-emerald-500" />
           ) : trend === 'down' ? (
-            <ArrowDown className="w-3 h-3 text-red-500" />
+            <ArrowDown className="w-3.5 h-3.5 text-red-500" />
           ) : null}
           <span className={trend === 'up' ? 'text-emerald-600' : trend === 'down' ? 'text-red-500' : 'text-slate-400'}>
             {trendLabel}
@@ -100,9 +100,9 @@ export function AnalyticsPage() {
   return (
     <div className="max-w-[100rem] mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <h1 className="font-display text-2xl font-bold text-slate-900 flex items-center gap-3">
             Analytics
             <InfoTip
               title="About these numbers"
@@ -111,7 +111,7 @@ export function AnalyticsPage() {
           </h1>
           <p className="text-slate-500 mt-1">Track your performance and growth</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={fetchAnalytics}
             className="p-2.5 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors"
@@ -145,7 +145,7 @@ export function AnalyticsPage() {
       {data && (
         <>
           {/* Earnings & Contracts Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <MetricCard
               icon={IndianRupee}
               label="Total Earnings"
@@ -184,7 +184,7 @@ export function AnalyticsPage() {
               </div>
               <BarChart3 className="w-5 h-5 text-slate-400" />
             </div>
-            <div className="h-48 flex items-end gap-2">
+            <div className="h-48 flex items-end gap-3">
               {data.earningsByMonth.length > 0 ? (
                 data.earningsByMonth.map((month, idx) => {
                   const maxAmount = Math.max(...data.earningsByMonth.map((m) => m.amount), 1);
@@ -204,7 +204,7 @@ export function AnalyticsPage() {
                           style={{ height: `${heightPercent}%` }}
                         />
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium">{monthLabel}</span>
+                      <span className="text-xs text-slate-400 font-medium">{monthLabel}</span>
                     </div>
                   );
                 })
@@ -217,7 +217,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Proposals & Reviews Row */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <MetricCard
               icon={FileText}
               label="Proposals"
@@ -251,7 +251,7 @@ export function AnalyticsPage() {
           </div>
 
           {/* Performance Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             <MetricCard
               icon={Clock}
               label="On-Time Delivery"
@@ -287,7 +287,7 @@ export function AnalyticsPage() {
                 <p className="text-sm text-slate-500">Projects matched to your skills</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="flex-1 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-4">
                 <p className="text-xl font-bold text-violet-600">{data.newMatches}</p>
                 <p className="text-sm text-violet-600/70">New Matches</p>

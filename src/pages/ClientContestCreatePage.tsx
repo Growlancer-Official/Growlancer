@@ -106,12 +106,12 @@ export function ClientContestCreatePage() {
       <form onSubmit={handleSubmit} className="space-y-1.5">
         {/* Basic Information */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <FileText className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <FileText className="w-4 h-4 text-emerald-600" />
             Contest Details
           </h2>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Contest Title *</label>
               <input
@@ -136,7 +136,7 @@ export function ClientContestCreatePage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Category *</label>
                 <select
@@ -173,13 +173,13 @@ export function ClientContestCreatePage() {
 
         {/* Prize & Timeline */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <IndianRupee className="w-4 h-4 text-emerald-600" />
             Prizes & Timeline
           </h2>
 
-          <div className="space-y-2">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">1st Prize ({currencySymbol()}) *</label>
                 <input
@@ -218,7 +218,7 @@ export function ClientContestCreatePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">End Date *</label>
                 <input
@@ -248,13 +248,13 @@ export function ClientContestCreatePage() {
 
         {/* Skills */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <Tag className="w-4 h-4 text-emerald-600" />
             Required Skills
           </h2>
 
           <div className="mb-2">
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <input
                 type="text"
                 value={skillInput}
@@ -266,14 +266,14 @@ export function ClientContestCreatePage() {
               <button
                 type="button"
                 onClick={handleCustomSkill}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className="flex flex-wrap gap-3 mb-2">
             {skills.map((skill) => (
               <button
                 key={skill}
@@ -291,7 +291,7 @@ export function ClientContestCreatePage() {
           </div>
 
           {formData.skills_required.length > 0 && (
-            <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl">
+            <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-xl">
               <span className="text-sm font-medium text-slate-700">Selected:</span>
               {formData.skills_required.map((skill) => (
                 <span
@@ -304,7 +304,7 @@ export function ClientContestCreatePage() {
                     onClick={() => handleRemoveSkill(skill)}
                     className="hover:text-emerald-900"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-4 h-4" />
                   </button>
                 </span>
               ))}
@@ -313,7 +313,7 @@ export function ClientContestCreatePage() {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => navigate('/client/contests')}
@@ -324,7 +324,7 @@ export function ClientContestCreatePage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -333,9 +333,9 @@ export function ClientContestCreatePage() {
               </>
             ) : (
               <>
-                <CheckCircle className="w-3.5 h-3.5" />
+                <CheckCircle className="w-4 h-4" />
                 Create Contest
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>

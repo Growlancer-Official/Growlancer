@@ -383,11 +383,11 @@ const handleSubmit = async () => {
   const answeredCount = answers.filter((a) => a >= 0).length;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-3">
+    <div className="max-w-3xl mx-auto space-y-4">
       {/* Back button */}
       <button
         onClick={() => navigate('/dashboard/certifications')}
-        className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors"
+        className="flex items-center gap-3 text-sm text-slate-500 hover:text-emerald-600 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
         Back to Certifications
@@ -447,21 +447,21 @@ const handleSubmit = async () => {
           </div>
           <h1 className="font-display text-2xl font-bold text-slate-900 mb-2">{test.skill}</h1>
           <p className="text-slate-500 mb-3">{test.description}</p>
-          <div className="grid grid-cols-3 gap-2 mb-8 max-w-sm mx-auto">
+          <div className="grid grid-cols-3 gap-3 mb-8 max-w-sm mx-auto">
             <div className="p-3 bg-slate-50 rounded-xl">
-              <p className="text-lg font-bold text-slate-900">{test.question_count}</p>
+              <p className="text-xl font-bold text-slate-900">{test.question_count}</p>
               <p className="text-xs text-slate-500">Questions</p>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl">
-              <p className="text-lg font-bold text-slate-900">{test.time_limit_minutes}</p>
+              <p className="text-xl font-bold text-slate-900">{test.time_limit_minutes}</p>
               <p className="text-xs text-slate-500">Minutes</p>
             </div>
             <div className="p-3 bg-slate-50 rounded-xl">
-              <p className="text-lg font-bold text-slate-900">{test.passing_score}%</p>
+              <p className="text-xl font-bold text-slate-900">{test.passing_score}%</p>
               <p className="text-xs text-slate-500">Passing</p>
             </div>
           </div>
-          <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-3`}>
+          <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-3`}>
             {levelInfo.icon} {levelInfo.label}
           </div>
 
@@ -470,7 +470,7 @@ const handleSubmit = async () => {
             <p className="text-xs font-semibold text-amber-800 flex items-center gap-1.5 mb-1.5">
               <AlertCircle className="w-4 h-4 flex-shrink-0" /> Test Integrity Rules
             </p>
-            <ul className="text-[11px] text-amber-700 space-y-1 leading-relaxed">
+            <ul className="text-xs text-amber-700 space-y-1 leading-relaxed">
               <li>• Copy-paste and tab-switching are <b>prohibited</b>. This test is under observation.</li>
               <li>• {MAX_VIOLATIONS_BEFORE_BAN} violations → automatic fail + <b>7-day ban</b>.</li>
               <li>• Failed test → retry allowed after <b>24 hours</b>.</li>
@@ -488,13 +488,13 @@ const handleSubmit = async () => {
       {phase === 'taking' && (
         <div className="bg-white rounded-xl border border-slate-200 p-8">
           {/* Anti-cheat observation banner */}
-          <div className={`mb-3 flex items-start gap-2.5 p-3 rounded-xl border ${showViolationWarning ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'} transition-colors`}>
+          <div className={`mb-3 flex items-start gap-3.5 p-3 rounded-xl border ${showViolationWarning ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'} transition-colors`}>
             {showViolationWarning ? (
               <XCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
             ) : (
               <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
             )}
-            <div className="text-[11px] leading-relaxed">
+            <div className="text-xs leading-relaxed">
               {showViolationWarning ? (
                 <p className="text-red-700 font-semibold">
                   Violation recorded ({violationCount}/{MAX_VIOLATIONS_BEFORE_BAN}). Copy-paste & tab-switching are prohibited. {MAX_VIOLATIONS_BEFORE_BAN} violations = 7-day ban.
@@ -508,11 +508,11 @@ const handleSubmit = async () => {
           </div>
           {/* Progress & Timer */}
           <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="text-sm font-medium text-slate-500">Question {currentQuestion + 1} of {questions.length}</span>
               <span className="text-xs text-slate-400">({answeredCount}/{questions.length} answered)</span>
             </div>
-            <div className={`flex items-center gap-2 text-sm font-medium ${timeLeft < 60 ? 'text-red-600' : 'text-slate-600'}`}>
+            <div className={`flex items-center gap-3 text-sm font-medium ${timeLeft < 60 ? 'text-red-600' : 'text-slate-600'}`}>
               <Clock className="w-4 h-4" />
               {formatTime(timeLeft)}
             </div>
@@ -529,7 +529,7 @@ const handleSubmit = async () => {
           </h2>
 
           {/* Options */}
-          <div className="space-y-3 mb-8">
+          <div className="space-y-4 mb-8">
             {questions[currentQuestion]?.options.map((option, idx) => (
               <button
                 key={idx}
@@ -611,12 +611,12 @@ const handleSubmit = async () => {
               </p>
             </div>
           )}
-          <div className="flex items-center justify-center gap-2 mb-8">
+          <div className="flex items-center justify-center gap-3 mb-8">
             <span className="text-4xl font-bold text-slate-900">{score}%</span>
             <span className="text-slate-400">Score</span>
           </div>
           {passed && (
-            <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-3`}>
+            <div className={`inline-flex items-center gap-3 px-4 py-2 rounded-full ${levelInfo.bgColor} ${levelInfo.color} mb-3`}>
               <Award className="w-5 h-5" />
               {levelInfo.icon} {test.skill} — {levelInfo.label}
             </div>

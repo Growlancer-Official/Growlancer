@@ -68,7 +68,7 @@ function MilestoneStepIndicator({
         </div>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-4">
         {milestones.map((milestone, idx) => {
           const status = String(milestone.status || 'pending').toLowerCase();
           const isCompleted = ['completed', 'approved', 'released', 'paid'].includes(status);
@@ -105,9 +105,9 @@ function MilestoneStepIndicator({
                   isCompleted ? 'bg-emerald-500' : 'bg-red-500'
                 }`}>
                   {isCompleted ? (
-                    <CheckCircle className="w-3.5 h-3.5 text-white" />
+                    <CheckCircle className="w-4 h-4 text-white" />
                   ) : (
-                    <AlertCircle className="w-3.5 h-3.5 text-white" />
+                    <AlertCircle className="w-4 h-4 text-white" />
                   )}
                 </div>
               )}
@@ -390,7 +390,7 @@ export function EscrowPayPalPayment({
         {milestones.length > 0 && totalFundedCount < milestones.length && (
           <button
             onClick={() => { setStep('select_milestones'); setSelectedMilestones(new Set()); }}
-            className="mt-6 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors inline-flex items-center gap-2"
+            className="mt-6 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors inline-flex items-center gap-3"
           >
             <Banknote className="w-4 h-4" />
             Fund Remaining Milestones
@@ -427,7 +427,7 @@ export function EscrowPayPalPayment({
 
     return (
       <div className="p-3 sm:p-3">
-        <div className="flex items-center gap-2.5 mb-2">
+        <div className="flex items-center gap-3.5 mb-2">
           <Shield className="w-5 h-5 text-emerald-600" />
           <h2 className="text-lg font-bold text-slate-900">Secure Payment</h2>
         </div>
@@ -451,7 +451,7 @@ export function EscrowPayPalPayment({
             : 'border-slate-200 bg-slate-50'
         }`}>
           <div className="flex items-center justify-between gap-3 mb-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Banknote className={`w-5 h-5 ${walletBalance !== null && walletBalance >= totalAmount ? 'text-emerald-600' : 'text-slate-400'}`} />
               <span className="font-semibold text-slate-800">Pay from Wallet</span>
             </div>
@@ -472,7 +472,7 @@ export function EscrowPayPalPayment({
           <button
             onClick={handlePayFromWallet}
             disabled={payingFromWallet || walletBalance === null || walletBalance < totalAmount}
-            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-3"
           >
             {payingFromWallet ? (
               <>
@@ -569,7 +569,7 @@ export function EscrowPayPalPayment({
                 <p className="text-xs text-slate-400">Available soon — Razorpay is the current payment method</p>
               </div>
             </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
               Coming Soon
             </span>
           </div>
@@ -577,7 +577,7 @@ export function EscrowPayPalPayment({
 
         <div className="mt-6 p-4 bg-slate-50 rounded-lg">
           <h3 className="font-semibold text-slate-900 mb-2">Payment Breakdown</h3>
-          <div className="space-y-2 text-sm">
+          <div className="space-y-4 text-sm">
             {selectedMilestones.size > 0 ? (
               // Per-milestone breakdown
               Array.from(selectedMilestones).map((idx) => {
@@ -640,7 +640,7 @@ export function EscrowPayPalPayment({
 
         {/* Selected amount summary */}
         <div className="mt-6 p-4 bg-slate-50 rounded-lg">
-          <div className="space-y-2 text-sm">
+          <div className="space-y-4 text-sm">
             <div className="flex justify-between text-slate-600">
               <span>Milestones Selected</span>
               <span className="font-medium">{selectedMilestones.size} of {milestones.length}</span>
@@ -658,7 +658,7 @@ export function EscrowPayPalPayment({
               <span>{formatCurrency(totalAmount)}</span>
             </div>
           </div>
-          <p className="text-[11px] text-emerald-700 mt-2 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
+          <p className="text-xs text-emerald-700 mt-2 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5">
             The platform fee is added to your payment — <strong>{freelancerName} receives 100% of the project amount</strong>.
           </p>
         </div>
@@ -672,7 +672,7 @@ export function EscrowPayPalPayment({
           </button>
           <button
             onClick={handleProceedToReview}
-            className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-3"
           >
             Continue to Payment
             <ChevronRight className="w-4 h-4" />
@@ -692,7 +692,7 @@ export function EscrowPayPalPayment({
         </h2>
       </div>
 
-      <div className="space-y-2 mb-3">
+      <div className="space-y-4 mb-3">
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
           <h3 className="font-semibold text-emerald-900 mb-1">Secure Escrow Protection</h3>
           <p className="text-sm text-emerald-700">
@@ -732,7 +732,7 @@ export function EscrowPayPalPayment({
             <span>Total to Pay</span>
             <span>{formatCurrency(totalAmount)}</span>
           </div>
-          <p className="text-[11px] text-emerald-700 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 mt-3">
+          <p className="text-xs text-emerald-700 leading-relaxed bg-emerald-50 border border-emerald-100 rounded-lg p-2.5 mt-3">
             The platform fee is added to your payment — <strong>{freelancerName} receives 100% of the project amount</strong>.
           </p>
         </div>
@@ -748,7 +748,7 @@ export function EscrowPayPalPayment({
         <button
           onClick={handleProceedToPayment}
           disabled={isCreatingContract}
-          className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-3"
         >
           {isCreatingContract ? (
             <>

@@ -72,13 +72,13 @@ export function SkillCertificationsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">Skill Certifications</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">Skill Certifications</h1>
           <p className="text-slate-500 mt-1">Earn verified badges to showcase your expertise to clients</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
-          <Award className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
+          <Award className="w-4 h-4 text-emerald-600" />
           <span className="text-sm font-bold text-emerald-700">{certifications.length} Badges Earned</span>
         </div>
       </div>
@@ -87,7 +87,7 @@ export function SkillCertificationsPage() {
       <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-xl p-5 text-white shadow-sm">
         <div className="flex items-start gap-1.5">
           <div className="w-7 h-7 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-            <Sparkles className="w-3.5 h-3.5 text-white" />
+            <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div className="space-y-1">
             <p className="font-bold text-sm">Learn. Get Certified. Earn More.</p>
@@ -106,29 +106,29 @@ export function SkillCertificationsPage() {
       </TipNote>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="flex items-center gap-1.5">
             <div className="p-3 bg-emerald-100 rounded-xl"><Award className="w-4 h-4 text-emerald-600" /></div>
-            <div><p className="text-lg font-bold text-slate-900">{certifications.length}</p><p className="text-sm text-slate-500">Badges Earned</p></div>
+            <div><p className="text-xl font-bold text-slate-900">{certifications.length}</p><p className="text-sm text-slate-500">Badges Earned</p></div>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="flex items-center gap-1.5">
             <div className="p-3 bg-blue-100 rounded-xl"><BrainCircuit className="w-4 h-4 text-blue-600" /></div>
-            <div><p className="text-lg font-bold text-slate-900">{tests.length}</p><p className="text-sm text-slate-500">Tests Available</p></div>
+            <div><p className="text-xl font-bold text-slate-900">{tests.length}</p><p className="text-sm text-slate-500">Tests Available</p></div>
           </div>
         </div>
         <div className="bg-white rounded-xl border border-slate-100 p-5">
           <div className="flex items-center gap-1.5">
             <div className="p-3 bg-amber-100 rounded-xl"><TrendingUp className="w-4 h-4 text-amber-600" /></div>
-            <div><p className="text-lg font-bold text-slate-900">{certifications.filter((c) => c.level === 'expert' || c.level === 'advanced').length}</p><p className="text-sm text-slate-500">Advanced+ Badges</p></div>
+            <div><p className="text-xl font-bold text-slate-900">{certifications.filter((c) => c.level === 'expert' || c.level === 'advanced').length}</p><p className="text-sm text-slate-500">Advanced+ Badges</p></div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200">
+      <div className="flex items-center gap-3 border-b border-slate-200">
         <button onClick={() => setActiveTab('available')} className={`pb-3 text-sm font-medium relative ${activeTab === 'available' ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>
           Available Tests
           {activeTab === 'available' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-emerald-600" />}
@@ -140,7 +140,7 @@ export function SkillCertificationsPage() {
       </div>
 
       {/* All assessments note */}
-      <div className="flex items-center gap-2 text-sm text-slate-500">
+      <div className="flex items-center gap-3 text-sm text-slate-500">
         <Sparkles className="w-4 h-4 text-emerald-500" />
         <span>All skill assessments are available — pick any to earn a verified badge, in real time.</span>
       </div>
@@ -153,7 +153,7 @@ export function SkillCertificationsPage() {
 
       {/* Available Tests */}
       {activeTab === 'available' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filteredTests.map((test) => {
             const Icon = getSkillIcon(test.skill);
             const levelInfo = CERTIFICATION_LEVELS[test.difficulty];
@@ -169,7 +169,7 @@ export function SkillCertificationsPage() {
                       <p className="text-xs text-slate-500">{test.category}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${levelInfo.bgColor} ${levelInfo.color} ${levelInfo.borderColor}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${levelInfo.bgColor} ${levelInfo.color} ${levelInfo.borderColor}`}>
                     {levelInfo.icon} {levelInfo.label}
                   </span>
                 </div>
@@ -179,7 +179,7 @@ export function SkillCertificationsPage() {
                   <span>Pass: {test.passing_score}%</span>
                 </div>
                 {isLocked ? (
-                  <button disabled className="w-full py-2.5 bg-slate-100 text-slate-400 rounded-xl text-sm font-medium flex items-center justify-center gap-2 cursor-not-allowed">
+                  <button disabled className="w-full py-2.5 bg-slate-100 text-slate-400 rounded-xl text-sm font-medium flex items-center justify-center gap-3 cursor-not-allowed">
                     <Lock className="w-4 h-4" /> Already Passed
                   </button>
                 ) : (
@@ -199,7 +199,7 @@ export function SkillCertificationsPage() {
           {filteredCerts.length === 0 ? (
             <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
               <Award className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-              <h3 className="text-lg font-bold text-slate-900 mb-2">No certifications yet</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">No certifications yet</h3>
               <p className="text-slate-500 mb-3">Take skill tests to earn verified badges.</p>
               <button onClick={() => setActiveTab('available')} className="px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors">Browse Tests</button>
             </div>
@@ -209,16 +209,16 @@ export function SkillCertificationsPage() {
                 const badgeInfo = skillCertificationService.getBadgeInfo(cert);
                 return (
                   <div key={cert.id} className="bg-white rounded-xl border border-slate-100 p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xl ${badgeInfo.bgColor}`}>{badgeInfo.icon}</div>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${badgeInfo.bgColor}`}>{badgeInfo.icon}</div>
                       <div>
                         <h3 className="font-bold text-slate-900">{cert.skill}</h3>
                         <p className="text-sm text-slate-500">{badgeInfo.label} • Score: {badgeInfo.scorePercent}%</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeInfo.bgColor} ${badgeInfo.color} ${badgeInfo.borderColor}`}>
-                        <CheckCircle2 className="w-3 h-3 inline mr-1" />Verified
+                        <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />Verified
                       </span>
                     </div>
                   </div>

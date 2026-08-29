@@ -1115,13 +1115,13 @@ export function ClientSettingsPage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm flex items-center gap-3">
           <AlertCircle className="w-4 h-4" />
           {successMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
           <AlertCircle className="w-4 h-4" />
           {errorMessage}
         </div>
@@ -1164,7 +1164,7 @@ export function ClientSettingsPage() {
           {activeTab === 'company' && (
             <>
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Building2 className="w-5 h-5 text-emerald-600" />
                   Company Profile
                 </h2>
@@ -1184,15 +1184,15 @@ export function ClientSettingsPage() {
                     </div>
                     <div className="flex-1">
                       <input ref={logoInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/svg+xml" onChange={handleLogoUpload} className="hidden" />
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <button type="button" onClick={() => logoInputRef.current?.click()} disabled={uploadingLogo}
-                          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-emerald-300 transition-all disabled:opacity-50">
+                          className="flex items-center gap-3 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-emerald-300 transition-all disabled:opacity-50">
                           {uploadingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
                           {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
                         </button>
                         {companyLogo && (
                           <button type="button" onClick={handleLogoDelete} disabled={deletingLogo}
-                            className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all disabled:opacity-50">
+                            className="flex items-center gap-3 px-4 py-2 bg-white border border-red-200 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 transition-all disabled:opacity-50">
                             {deletingLogo ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Remove
                           </button>
                         )}
@@ -1210,7 +1210,7 @@ export function ClientSettingsPage() {
                       <button
                         type="button"
                         onClick={() => setCompanyData({ ...companyData, account_type: 'individual' })}
-                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
                           companyData.account_type === 'individual'
                             ? 'border-emerald-500 bg-emerald-50 text-emerald-700 ring-2 ring-emerald-200'
                             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
@@ -1221,7 +1221,7 @@ export function ClientSettingsPage() {
                       <button
                         type="button"
                         onClick={() => setCompanyData({ ...companyData, account_type: 'business' })}
-                        className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
+                        className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-sm font-semibold transition-all ${
                           companyData.account_type === 'business'
                             ? 'border-violet-500 bg-violet-50 text-violet-700 ring-2 ring-violet-200'
                             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
@@ -1267,11 +1267,11 @@ export function ClientSettingsPage() {
                         />
                         {gstError ? (
                           <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
-                            <AlertCircle className="w-3.5 h-3.5" /> {gstError}
+                            <AlertCircle className="w-4 h-4" /> {gstError}
                           </p>
                         ) : companyData.gst_number ? (
                           <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
-                            <CheckCircle className="w-3.5 h-3.5" /> Valid GSTIN format
+                            <CheckCircle className="w-4 h-4" /> Valid GSTIN format
                           </p>
                         ) : (
                           <p className="text-xs text-slate-400 mt-1.5">
@@ -1325,7 +1325,7 @@ export function ClientSettingsPage() {
                   </div>
                   <div className="flex justify-end">
                     <button type="submit" disabled={saving}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                       {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Changes</>}
                     </button>
                   </div>
@@ -1341,7 +1341,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Complete Profile</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">A complete company profile attracts more qualified freelancers. Add your logo and description to stand out.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">A complete company profile attracts more qualified freelancers. Add your logo and description to stand out.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1350,7 +1350,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Website Link</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Add your company website to build credibility. Freelancers often research companies before applying.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Add your company website to build credibility. Freelancers often research companies before applying.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1359,7 +1359,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Location Matters</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Listing your location helps match with local freelancers and sets clear timezone expectations.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Listing your location helps match with local freelancers and sets clear timezone expectations.</p>
                     </div>
                   </div>
                 </div>
@@ -1371,7 +1371,7 @@ export function ClientSettingsPage() {
           {activeTab === 'account' && (
             <>
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <User className="w-5 h-5 text-emerald-600" />
                   Account Information
                 </h2>
@@ -1384,17 +1384,17 @@ export function ClientSettingsPage() {
                         <p className="font-medium text-slate-900">{accountData.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       {checkingEmailVerification ? (
                         <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
                       ) : emailVerified ? (
                         <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
-                          <Check className="w-3.5 h-3.5" /> Verified
+                          <Check className="w-4 h-4" /> Verified
                         </span>
                       ) : (
-                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                           <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
-                            <AlertCircle className="w-3.5 h-3.5" /> Not Verified
+                            <AlertCircle className="w-4 h-4" /> Not Verified
                           </span>
                           <button
                             onClick={handleSendVerificationEmail}
@@ -1402,9 +1402,9 @@ export function ClientSettingsPage() {
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
                           >
                             {sendingVerification ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                              <RefreshCw className="w-3.5 h-3.5" />
+                              <RefreshCw className="w-4 h-4" />
                             )}
                             {sendingVerification ? 'Sending...' : 'Verify Email'}
                           </button>
@@ -1423,7 +1423,7 @@ export function ClientSettingsPage() {
                       <div>
                         <p className="text-sm text-slate-500">Full Name</p>
                         {editingName ? (
-                          <form onSubmit={handleSaveName} className="mt-1 flex items-center gap-2">
+                          <form onSubmit={handleSaveName} className="mt-1 flex items-center gap-3">
                             <input
                               type="text"
                               value={nameDraft}
@@ -1437,7 +1437,7 @@ export function ClientSettingsPage() {
                               disabled={savingName}
                               className="inline-flex items-center gap-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
                             >
-                              {savingName ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                              {savingName ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                               Save
                             </button>
                             <button
@@ -1445,16 +1445,16 @@ export function ClientSettingsPage() {
                               onClick={cancelEditName}
                               className="inline-flex items-center gap-1 px-3 py-2 bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold hover:bg-slate-300 transition-colors"
                             >
-                              <X className="w-3.5 h-3.5" />
+                              <X className="w-4 h-4" />
                               Cancel
                             </button>
                           </form>
                         ) : (
-                          <p className="font-medium text-slate-900 flex flex-wrap items-center gap-2">
+                          <p className="font-medium text-slate-900 flex flex-wrap items-center gap-3">
                             {accountData.name || '—'}
                             {nameLock.locked ? (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-amber-600 bg-amber-50 border border-amber-200 rounded-lg">
-                                <Lock className="w-3 h-3" /> Locked till {nameLock.unlockDate}
+                                <Lock className="w-4 h-4" /> Locked till {nameLock.unlockDate}
                               </span>
                             ) : (
                               <button
@@ -1462,7 +1462,7 @@ export function ClientSettingsPage() {
                                 onClick={startEditName}
                                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
                               >
-                                <User className="w-3 h-3" /> Edit Profile
+                                <User className="w-4 h-4" /> Edit Profile
                               </button>
                             )}
                           </p>
@@ -1475,7 +1475,7 @@ export function ClientSettingsPage() {
 
               {/* ── Change Email Address ── */}
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
                   <Mail className="w-5 h-5 text-emerald-600" /> Change Email Address
                 </h2>
                 <p className="text-sm text-slate-500 mb-5">
@@ -1483,7 +1483,7 @@ export function ClientSettingsPage() {
                 </p>
 
                 {emailChangeSent ? (
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2">
+                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-3">
                     <Check className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                     <p className="text-sm text-emerald-700">
                       A confirmation email has been sent to <strong className="text-emerald-800">{newEmail}</strong>.
@@ -1506,7 +1506,7 @@ export function ClientSettingsPage() {
                     <button
                       type="submit"
                       disabled={changeEmailLoading}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {changeEmailLoading ? (
                         <>
@@ -1524,7 +1524,7 @@ export function ClientSettingsPage() {
 
               {/* ── Invite User ── */}
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
                   <UserPlus className="w-5 h-5 text-emerald-600" /> Invite User
                 </h2>
                 <p className="text-sm text-slate-500 mb-5">
@@ -1559,7 +1559,7 @@ export function ClientSettingsPage() {
                   <button
                     type="submit"
                     disabled={inviteLoading}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {inviteLoading ? (
                       <>
@@ -1577,7 +1577,7 @@ export function ClientSettingsPage() {
                 {invitations.length > 0 && (
                   <div className="mt-6 pt-5 border-t border-slate-100">
                     <h3 className="text-sm font-semibold text-slate-700 mb-3">Sent Invitations</h3>
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       {invitations.map((inv) => (
                         <div key={inv.id} className="flex items-center justify-between gap-3 p-4 bg-slate-50 rounded-xl border border-slate-200">
                           <div className="flex items-center gap-3 min-w-0">
@@ -1591,7 +1591,7 @@ export function ClientSettingsPage() {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="flex items-center gap-3 flex-shrink-0">
                             {inviteStatusBadge(inv.status)}
                             {inv.status === 'pending' && (
                               <>
@@ -1601,9 +1601,9 @@ export function ClientSettingsPage() {
                                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-emerald-600 bg-white border border-emerald-200 hover:bg-emerald-50 transition-colors disabled:opacity-50"
                                 >
                                   {inviteResendingId === inv.id ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                    <Loader2 className="w-4 h-4 animate-spin" />
                                   ) : (
-                                    <RefreshCw className="w-3.5 h-3.5" />
+                                    <RefreshCw className="w-4 h-4" />
                                   )}
                                   Resend
                                 </button>
@@ -1612,7 +1612,7 @@ export function ClientSettingsPage() {
                                   disabled={inviteCancellingId === inv.id}
                                   className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-red-600 bg-white border border-red-200 hover:bg-red-50 transition-colors disabled:opacity-50"
                                 >
-                                  <X className="w-3.5 h-3.5" />
+                                  <X className="w-4 h-4" />
                                   Cancel
                                 </button>
                               </>
@@ -1634,7 +1634,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Profile Trust</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">A complete profile with your name builds trust with freelancers. Make sure your information is up to date.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">A complete profile with your name builds trust with freelancers. Make sure your information is up to date.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1643,7 +1643,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Email Notifications</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">All project updates and messages are sent to your email. Check the Notifications tab to customize alerts.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">All project updates and messages are sent to your email. Check the Notifications tab to customize alerts.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1652,7 +1652,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Account Security</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Keep your account secure by using a strong password and enabling two-factor authentication.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Keep your account secure by using a strong password and enabling two-factor authentication.</p>
                     </div>
                   </div>
                 </div>
@@ -1664,7 +1664,7 @@ export function ClientSettingsPage() {
           {activeTab === 'security' && (
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Lock className="w-5 h-5 text-emerald-600" /> Change Password
                 </h2>
                 <form onSubmit={handlePasswordChange} className="space-y-4">
@@ -1696,14 +1696,14 @@ export function ClientSettingsPage() {
                       <p className="text-xs text-slate-500">Log out every other device after the password change</p>
                     </div>
                   </label>
-                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {saving ? 'Updating...' : 'Update Password'}
                   </button>
                 </form>
               </div>
 
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-4 flex items-center gap-3">
                   <Shield className="w-5 h-5 text-emerald-600" /> Two-Factor Authentication
                 </h2>
                 <p className="text-slate-600 mb-4">Add an extra layer of security to your account</p>
@@ -1720,7 +1720,7 @@ export function ClientSettingsPage() {
                           <button onClick={handleDisable2FA} disabled={twoFactorLoading}
                             className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors">Disable</button>
                         ) : (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <input
                               value={twoFactorCode}
                               onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -1741,7 +1741,7 @@ export function ClientSettingsPage() {
                       </div>
                     ) : (
                       <button onClick={handleSetup2FA} disabled={twoFactorLoading}
-                        className="flex items-center gap-2 inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                        className="flex items-center gap-3 inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                         {twoFactorLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <QrCode className="w-5 h-5" />}
                         {twoFactorLoading ? 'Setting up...' : 'Enable Two-Factor Authentication'}
                       </button>
@@ -1764,11 +1764,11 @@ export function ClientSettingsPage() {
                     )}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Verify Code</label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <input type="text" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="000000" maxLength={6}
                           className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-center text-lg font-mono tracking-widest" />
                         <button onClick={handleVerify2FA} disabled={twoFactorLoading || twoFactorCode.length !== 6}
-                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                          className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                           {twoFactorLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify'}
                         </button>
                       </div>
@@ -1778,12 +1778,12 @@ export function ClientSettingsPage() {
                 {showRecoveryCodes && (
                   <div className="space-y-4">
                     <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                      <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-5 h-5 text-amber-600" /><p className="font-medium text-amber-800">Recovery Codes</p></div>
+                      <div className="flex items-center gap-3 mb-2"><AlertTriangle className="w-5 h-5 text-amber-600" /><p className="font-medium text-amber-800">Recovery Codes</p></div>
                       <p className="text-sm text-amber-700 mb-3">Save these recovery codes in a secure place.</p>
-                      <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className="grid grid-cols-2 gap-3 mb-3">
                         {recoveryCodes.map((code, i) => <code key={i} className="p-2 bg-white border border-amber-300 rounded-lg text-sm font-mono text-center">{code}</code>)}
                       </div>
-                      <button onClick={handleCopyRecoveryCodes} className="flex items-center gap-2 text-sm font-medium text-amber-700 hover:text-amber-800">
+                      <button onClick={handleCopyRecoveryCodes} className="flex items-center gap-3 text-sm font-medium text-amber-700 hover:text-amber-800">
                         {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? 'Copied!' : 'Copy Codes'}
                       </button>
                     </div>
@@ -1800,7 +1800,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Strong Passwords</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Use at least 8 characters with a mix of letters, numbers, and special characters for maximum security.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Use at least 8 characters with a mix of letters, numbers, and special characters for maximum security.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1809,7 +1809,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Enable 2FA</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Two-factor authentication adds an extra layer of security to prevent unauthorized access to your account.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Two-factor authentication adds an extra layer of security to prevent unauthorized access to your account.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1818,7 +1818,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Regular Updates</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Change your password regularly and never reuse passwords from other websites or services.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Change your password regularly and never reuse passwords from other websites or services.</p>
                     </div>
                   </div>
                 </div>
@@ -1830,7 +1830,7 @@ export function ClientSettingsPage() {
           {activeTab === 'notifications' && (
             <>
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Bell className="w-5 h-5 text-emerald-600" /> Notification Preferences
                 </h2>
                 <div className="space-y-4">
@@ -1839,7 +1839,7 @@ export function ClientSettingsPage() {
                       <p className="font-medium text-slate-900 mb-3 capitalize">{key}</p>
                       <div className="flex gap-6">
                         {Object.entries(value).map(([type, enabled]) => (
-                          <label key={type} className="flex items-center gap-2 cursor-pointer">
+                          <label key={type} className="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" checked={enabled}
                               onChange={(e) => setNotifications({ ...notifications, [key]: { ...value, [type]: e.target.checked } })}
                               className="w-4 h-4 text-emerald-600 rounded border-slate-300" />
@@ -1852,7 +1852,7 @@ export function ClientSettingsPage() {
                 </div>
                 <div className="flex justify-end pt-4 border-t border-slate-100 mt-6">
                   <button onClick={handleNotificationsSave} disabled={saving}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Preferences</>}
                   </button>
                 </div>
@@ -1867,7 +1867,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Stay Informed</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Enable notifications to stay updated on proposals, messages, and project milestones in real time.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Enable notifications to stay updated on proposals, messages, and project milestones in real time.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1876,7 +1876,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Email Alerts</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Never miss important updates. Email notifications ensure you're always in the loop even when offline.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Never miss important updates. Email notifications ensure you're always in the loop even when offline.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1885,7 +1885,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Customize Alerts</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">You have full control over which notifications you receive. Disable what's not relevant to your workflow.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">You have full control over which notifications you receive. Disable what's not relevant to your workflow.</p>
                     </div>
                   </div>
                 </div>
@@ -1897,7 +1897,7 @@ export function ClientSettingsPage() {
           {activeTab === 'privacy' && (
             <>
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                   <Globe className="w-5 h-5 text-emerald-600" /> Privacy Settings
                 </h2>
                 <div className="space-y-6">
@@ -1927,7 +1927,7 @@ export function ClientSettingsPage() {
                   </div>
                   <div className="flex justify-end pt-4 border-t border-slate-100">
                     <button onClick={handlePrivacySave} disabled={saving}
-                      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                      className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                       {saving ? <><Loader2 className="w-5 h-5 animate-spin" /> Saving...</> : <><Save className="w-5 h-5" /> Save Privacy Settings</>}
                     </button>
                   </div>
@@ -1943,7 +1943,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Public vs Private</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Public profiles attract more freelancer applications. Switch to private if you prefer limited visibility.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Public profiles attract more freelancer applications. Switch to private if you prefer limited visibility.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1952,7 +1952,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Online Status</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Showing your online status helps freelancers know when you're available for quick responses and interviews.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Showing your online status helps freelancers know when you're available for quick responses and interviews.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -1961,7 +1961,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Data Privacy</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Your data is encrypted and secure. We never share your personal information without your explicit consent.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Your data is encrypted and secure. We never share your personal information without your explicit consent.</p>
                     </div>
                   </div>
                 </div>
@@ -1974,13 +1974,13 @@ export function ClientSettingsPage() {
             <div className="space-y-6">
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="font-display text-lg font-bold text-slate-900 flex items-center gap-2">
+                  <h2 className="font-display text-xl font-bold text-slate-900 flex items-center gap-3">
                     <CreditCard className="w-5 h-5 text-emerald-600" /> Payment Methods
                   </h2>
                   <button
                     onClick={handleAddCard}
                     disabled={addingCard}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                    className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl hover:bg-emerald-100 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                     {addingCard ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     {addingCard ? 'Adding...' : 'Add Card'}
                   </button>
@@ -1993,13 +1993,13 @@ export function ClientSettingsPage() {
                     {savedCards.map((card) => (
                       <div key={card.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
                         <div className="flex items-start justify-between mb-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <CreditCard className="w-5 h-5 text-emerald-600" />
                             <div>
                               <span className="font-medium text-slate-900 text-sm">
                                 {card.card_network || 'Card'} •••• {card.card_last_four}
                               </span>
-                              <span className="ml-2 text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium uppercase">
+                              <span className="ml-2 text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded font-medium uppercase">
                                 {card.card_type || 'Card'}
                               </span>
                             </div>
@@ -2025,8 +2025,8 @@ export function ClientSettingsPage() {
                           )}
                         </div>
                         <div className="mt-3 p-2 bg-emerald-50 rounded-lg border border-emerald-100">
-                          <p className="text-[10px] text-emerald-700 font-medium flex items-center gap-1">
-                            <CheckCircle className="w-3 h-3" /> Tokenized via Razorpay — one-click payments enabled
+                          <p className="text-xs text-emerald-700 font-medium flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4" /> Tokenized via Razorpay — one-click payments enabled
                           </p>
                         </div>
                       </div>
@@ -2043,7 +2043,7 @@ export function ClientSettingsPage() {
 
               {/* Other payment methods — UPI / Net Banking / Wallets at Razorpay checkout */}
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h3 className="font-display text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                <h3 className="font-display text-base font-bold text-slate-900 mb-1 flex items-center gap-3">
                   <Wallet className="w-5 h-5 text-emerald-600" /> Other Payment Methods
                 </h3>
                 <p className="text-xs text-slate-500 mb-4">
@@ -2051,28 +2051,28 @@ export function ClientSettingsPage() {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-3 mb-1.5">
                       <Smartphone className="w-4 h-4 text-emerald-600" />
                       <span className="font-medium text-slate-900 text-sm">UPI</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">GPay, PhonePe, Paytm & all UPI apps. Instant, zero-fee for you.</p>
-                    <span className="inline-flex mt-2 items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Available at checkout</span>
+                    <p className="text-xs text-slate-500 leading-relaxed">GPay, PhonePe, Paytm & all UPI apps. Instant, zero-fee for you.</p>
+                    <span className="inline-flex mt-2 items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-4 h-4" /> Available at checkout</span>
                   </div>
                   <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-3 mb-1.5">
                       <Landmark className="w-4 h-4 text-emerald-600" />
                       <span className="font-medium text-slate-900 text-sm">Net Banking</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">All major Indian banks — HDFC, SBI, ICICI, Axis & more.</p>
-                    <span className="inline-flex mt-2 items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Available at checkout</span>
+                    <p className="text-xs text-slate-500 leading-relaxed">All major Indian banks — HDFC, SBI, ICICI, Axis & more.</p>
+                    <span className="inline-flex mt-2 items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-4 h-4" /> Available at checkout</span>
                   </div>
                   <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:border-emerald-300 transition-all">
-                    <div className="flex items-center gap-2 mb-1.5">
+                    <div className="flex items-center gap-3 mb-1.5">
                       <Wallet className="w-4 h-4 text-emerald-600" />
                       <span className="font-medium text-slate-900 text-sm">Wallets</span>
                     </div>
-                    <p className="text-[11px] text-slate-500 leading-relaxed">Paytm Wallet, Amazon Pay, Mobikwik & other prepaid wallets.</p>
-                    <span className="inline-flex mt-2 items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-3 h-3" /> Available at checkout</span>
+                    <p className="text-xs text-slate-500 leading-relaxed">Paytm Wallet, Amazon Pay, Mobikwik & other prepaid wallets.</p>
+                    <span className="inline-flex mt-2 items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full"><CheckCircle className="w-4 h-4" /> Available at checkout</span>
                   </div>
                 </div>
               </div>
@@ -2083,21 +2083,21 @@ export function ClientSettingsPage() {
                   <Mail className="w-4 h-4 text-blue-500" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-slate-700 text-sm flex items-center gap-2">
-                    PayPal <span className="text-[10px] bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold uppercase">Coming Soon</span>
+                  <p className="font-medium text-slate-700 text-sm flex items-center gap-3">
+                    PayPal <span className="text-xs bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded font-semibold uppercase">Coming Soon</span>
                   </p>
                   <p className="text-xs text-slate-400">International payments will be available soon.</p>
                 </div>
               </div>
 
               <div className="bg-white p-6 rounded-2xl border border-slate-100">
-                <h3 className="font-display text-base font-bold text-slate-900 mb-4 flex items-center gap-2">
+                <h3 className="font-display text-base font-bold text-slate-900 mb-4 flex items-center gap-3">
                   <Receipt className="w-5 h-5 text-emerald-600" /> Billing History
                 </h3>
                 {billingLoading ? (
                   <div className="flex items-center justify-center py-8"><Loader2 className="w-5 h-5 animate-spin text-emerald-600" /></div>
                 ) : billingOrders.length > 0 ? (
-                  <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                  <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
                     {billingOrders.map((order) => (
                       <div key={order.id} className="flex items-center gap-4 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors">
                         <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
@@ -2114,7 +2114,7 @@ export function ClientSettingsPage() {
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="font-semibold text-slate-900 text-sm">{formatCurrency(order.amount)}</p>
-                          <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-medium uppercase ${orderStatusStyles[order.status] || orderStatusStyles.created}`}>
+                          <span className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-xs font-medium uppercase ${orderStatusStyles[order.status] || orderStatusStyles.created}`}>
                             {order.status}
                           </span>
                         </div>
@@ -2139,7 +2139,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Payment Methods</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Add multiple payment methods for flexibility. Set a default for automatic payments and transactions.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Add multiple payment methods for flexibility. Set a default for automatic payments and transactions.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -2148,7 +2148,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Default Method</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Your default payment method will be used for all automatic payments and subscription renewals.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Your default payment method will be used for all automatic payments and subscription renewals.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -2157,7 +2157,7 @@ export function ClientSettingsPage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Secure Billing</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">All payment information is encrypted and securely stored. We never share your financial details with third parties.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">All payment information is encrypted and securely stored. We never share your financial details with third parties.</p>
                     </div>
                   </div>
                 </div>
@@ -2167,7 +2167,7 @@ export function ClientSettingsPage() {
           {/* Deletion Tab */}
           {activeTab === 'deletion' && (
             <div className="bg-white p-6 rounded-2xl border border-slate-100">
-              <h2 className="font-display text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <h2 className="font-display text-xl font-bold text-slate-900 mb-6 flex items-center gap-3">
                 <Trash2 className="w-5 h-5 text-red-500" />
                 Delete Account
               </h2>
@@ -2175,7 +2175,7 @@ export function ClientSettingsPage() {
               {deletionStep === 'initial' && (
                 <div className="space-y-6">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-3 mb-2">
                       <AlertTriangle className="w-5 h-5 text-red-600" />
                       <p className="font-medium text-red-800">Warning: This action cannot be undone</p>
                     </div>
@@ -2218,7 +2218,7 @@ export function ClientSettingsPage() {
                   <button
                     onClick={() => setDeletionStep('confirm')}
                     disabled={deletionConfirm !== 'DELETE'}
-                    className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-3 px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <Trash2 className="w-5 h-5" />
                     Continue with Deletion
@@ -2241,7 +2241,7 @@ export function ClientSettingsPage() {
                     value={deletionConfirm}
                     onChange={(e) => setDeletionConfirm(e.target.value)}
                     placeholder="Type DELETE to confirm"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-center text-lg font-bold"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-center text-xl font-bold"
                   />
 
                   <div className="flex gap-3">
@@ -2254,7 +2254,7 @@ export function ClientSettingsPage() {
                     <button
                       onClick={handleRequestDeletion}
                       disabled={deletionConfirm !== 'DELETE'}
-                      className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 flex items-center justify-center gap-3 px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Trash2 className="w-5 h-5" />
                       Permanently Delete Account

@@ -32,7 +32,7 @@ function getStatusBadge(status: string | null, decision?: string | null) {
   }
   return (
     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border ${cfg.color}`}>
-      <cfg.Icon className="w-3.5 h-3.5" />
+      <cfg.Icon className="w-4 h-4" />
       {cfg.label}
     </span>
   );
@@ -273,7 +273,7 @@ export function DisputeResolutionPage() {
         {/* Back button */}
         <button
           onClick={handleBack}
-          className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-600 transition-colors"
+          className="inline-flex items-center gap-3 text-sm text-slate-500 hover:text-emerald-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to all disputes
@@ -281,7 +281,7 @@ export function DisputeResolutionPage() {
 
         {/* Header Card */}
         <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-2">
             <div>
               <div className="flex items-center gap-1.5 mb-2">
                 <h2 className="text-xl font-bold text-slate-900">Dispute #{selectedDispute.id.slice(0, 8)}</h2>
@@ -294,11 +294,11 @@ export function DisputeResolutionPage() {
             {contractDetail && (
               <Link
                 to={`/dashboard/workspace?contract=${contractDetail.id}`}
-                className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"
+                className="inline-flex items-center gap-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-4 py-2 rounded-xl hover:bg-emerald-100 transition-colors"
               >
                 <FileText className="w-4 h-4" />
                 View Contract
-                <ChevronRight className="w-3.5 h-3.5" />
+                <ChevronRight className="w-4 h-4" />
               </Link>
             )}
           </div>
@@ -345,13 +345,13 @@ export function DisputeResolutionPage() {
           <div className={`bg-white rounded-xl border p-6 shadow-sm ${
             selectedDispute.status === 'resolved_released' ? 'border-emerald-100' : selectedDispute.status === 'cancelled' ? 'border-slate-100' : 'border-rose-100'
           }`}>
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-3 mb-3">
               {selectedDispute.status === 'resolved_released' ? (
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               ) : selectedDispute.status === 'cancelled' ? (
-                <Ban className="w-3.5 h-3.5 text-slate-400" />
+                <Ban className="w-4 h-4 text-slate-400" />
               ) : (
-                <XCircle className="w-3.5 h-3.5 text-rose-500" />
+                <XCircle className="w-4 h-4 text-rose-500" />
               )}
               <h3 className="font-semibold text-slate-900">
                 {selectedDispute.status === 'cancelled' ? 'Dispute Dismissed' : 'Resolution Outcome'}
@@ -376,8 +376,8 @@ export function DisputeResolutionPage() {
 
         {/* Messages */}
         <div className="bg-white rounded-xl border border-slate-100 p-6 shadow-sm">
-          <div className="flex items-center gap-2 mb-2">
-            <MessageCircle className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-3 mb-2">
+            <MessageCircle className="w-4 h-4 text-slate-400" />
             <h3 className="font-semibold text-slate-900">Discussion Thread</h3>
           </div>
 
@@ -401,7 +401,7 @@ export function DisputeResolutionPage() {
                     }`}
                   >
                     <p className="leading-relaxed whitespace-pre-wrap">{msg.message}</p>
-                    <p className={`text-[10px] mt-1 ${msg.user_id === user?.id ? 'text-emerald-200' : 'text-slate-400'}`}>
+                    <p className={`text-xs mt-1 ${msg.user_id === user?.id ? 'text-emerald-200' : 'text-slate-400'}`}>
                       {formatDate(msg.created_at)}
                     </p>
                   </div>
@@ -412,7 +412,7 @@ export function DisputeResolutionPage() {
           )}
 
           {/* Message input */}
-          <div className="flex items-end gap-2 border-t border-slate-100 pt-4">
+          <div className="flex items-end gap-3 border-t border-slate-100 pt-4">
             <textarea
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
@@ -429,7 +429,7 @@ export function DisputeResolutionPage() {
             <button
               onClick={handleSendMessage}
               disabled={!newMessage.trim() || sendingMessage}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
             >
               {sendingMessage ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -450,9 +450,9 @@ export function DisputeResolutionPage() {
   return (
     <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">Dispute Resolution</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">Dispute Resolution</h1>
           <p className="text-slate-500 mt-1">
             Track and manage your contract disputes
           </p>
@@ -477,24 +477,24 @@ export function DisputeResolutionPage() {
       {/* Outcome cards — what each decision means for both sides */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-1.5">
         <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4">
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 mb-2" />
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 mb-2" />
           <p className="text-xs font-bold text-emerald-900 mb-1">Freelancer Favour — Work Delivered</p>
-          <p className="text-[11px] text-emerald-700 leading-relaxed">The full escrow is released to the freelancer's wallet. Contract completes.</p>
+          <p className="text-xs text-emerald-700 leading-relaxed">The full escrow is released to the freelancer's wallet. Contract completes.</p>
         </div>
         <div className="bg-rose-50 border border-rose-100 rounded-xl p-4">
-          <XCircle className="w-3.5 h-3.5 text-rose-600 mb-2" />
+          <XCircle className="w-4 h-4 text-rose-600 mb-2" />
           <p className="text-xs font-bold text-rose-900 mb-1">Client Favour — No Work Done</p>
-          <p className="text-[11px] text-rose-700 leading-relaxed">The full escrow is refunded back to the client. Contract cancelled — freelancer gets nothing.</p>
+          <p className="text-xs text-rose-700 leading-relaxed">The full escrow is refunded back to the client. Contract cancelled — freelancer gets nothing.</p>
         </div>
         <div className="bg-violet-50 border border-violet-100 rounded-xl p-4">
-          <Scale className="w-3.5 h-3.5 text-violet-600 mb-2" />
+          <Scale className="w-4 h-4 text-violet-600 mb-2" />
           <p className="text-xs font-bold text-violet-900 mb-1">Split — Partial Work</p>
-          <p className="text-[11px] text-violet-700 leading-relaxed">Client gets a partial refund and the freelancer is paid for the work actually delivered.</p>
+          <p className="text-xs text-violet-700 leading-relaxed">Client gets a partial refund and the freelancer is paid for the work actually delivered.</p>
         </div>
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-          <Ban className="w-3.5 h-3.5 text-slate-600 mb-2" />
+          <Ban className="w-4 h-4 text-slate-600 mb-2" />
           <p className="text-xs font-bold text-slate-900 mb-1">Dismissed — No Wrongdoing</p>
-          <p className="text-[11px] text-slate-600 leading-relaxed">Work resumes normally — escrow stays locked to the contract for the agreed payment.</p>
+          <p className="text-xs text-slate-600 leading-relaxed">Work resumes normally — escrow stays locked to the contract for the agreed payment.</p>
         </div>
       </div>
 
@@ -511,7 +511,7 @@ export function DisputeResolutionPage() {
           </p>
           <Link
             to="/dashboard/contracts"
-            className="inline-flex items-center justify-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-4 py-2.5 rounded-xl hover:bg-emerald-100 transition-colors"
+            className="inline-flex items-center justify-center gap-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-4 py-2.5 rounded-xl hover:bg-emerald-100 transition-colors"
           >
             <FileText className="w-4 h-4" />
             View Your Contracts
@@ -561,7 +561,7 @@ export function DisputeResolutionPage() {
                     onClick={() => handleSelectDispute(dispute)}
                     className="w-full text-left bg-white rounded-xl border border-slate-100 p-5 shadow-sm hover:shadow-md hover:border-slate-200 transition-all group"
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 mb-1.5">
                           <h3 className="font-semibold text-slate-900 truncate">
@@ -578,18 +578,18 @@ export function DisputeResolutionPage() {
                         </p>
                         <div className="flex items-center gap-1.5 mt-2 text-xs text-slate-400">
                           <span className="flex items-center gap-1">
-                            <Calendar className="w-3.5 h-3.5" />
+                            <Calendar className="w-4 h-4" />
                             {formatDate(dispute.created_at)}
                           </span>
                           {(dispute as any).messages && Array.isArray((dispute as any).messages) && (
                             <span className="flex items-center gap-1">
-                              <MessageCircle className="w-3.5 h-3.5" />
+                              <MessageCircle className="w-4 h-4" />
                               {(dispute as any).messages.length} messages
                             </span>
                           )}
                         </div>
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-emerald-500 transition-colors flex-shrink-0 mt-1" />
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-500 transition-colors flex-shrink-0 mt-1" />
                     </div>
                   </button>
                 );

@@ -231,16 +231,16 @@ export function ServicesPage() {
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">My Services</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">My Services</h1>
           <p className="text-slate-500 mt-1">Manage your service offerings</p>
         </div>
         <button
           onClick={() => navigate('/dashboard/services/create')}
-          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
           Create Service
         </button>
       </div>
@@ -251,14 +251,14 @@ export function ServicesPage() {
       </TipNote>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
         <div className="bg-white p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-1.5">
             <div className="p-3 bg-emerald-100 rounded-xl">
               <Package className="w-4 h-4 text-emerald-600" />
             </div>
             <div>
-              <p className="text-lg font-bold text-slate-900">{services.length}</p>
+              <p className="text-xl font-bold text-slate-900">{services.length}</p>
               <p className="text-sm text-slate-500">Total Services</p>
             </div>
           </div>
@@ -269,7 +269,7 @@ export function ServicesPage() {
               <Eye className="w-4 h-4 text-blue-600" />
             </div>
             <div>
-              <p className="text-lg font-bold text-slate-900">
+              <p className="text-xl font-bold text-slate-900">
                 {services.reduce((sum, s) => sum + (s.views || 0), 0)}
               </p>
               <p className="text-sm text-slate-500">Total Views</p>
@@ -282,7 +282,7 @@ export function ServicesPage() {
               <ShoppingBag className="w-4 h-4 text-orange-600" />
             </div>
             <div>
-              <p className="text-lg font-bold text-slate-900">
+              <p className="text-xl font-bold text-slate-900">
                 {services.reduce((sum, s) => sum + (s.orders || 0), 0)}
               </p>
               <p className="text-sm text-slate-500">Total Orders</p>
@@ -295,7 +295,7 @@ export function ServicesPage() {
               <Star className="w-4 h-4 text-purple-600" />
             </div>
             <div>
-              <p className="text-lg font-bold text-slate-900">
+              <p className="text-xl font-bold text-slate-900">
                 {services.length > 0
                   ? (services.reduce((sum, s) => sum + (s.rating || 0), 0) / services.length).toFixed(1)
                   : '—'}
@@ -313,17 +313,17 @@ export function ServicesPage() {
             onClick={() => setShowOffers(!showOffers)}
             className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
           >
-            <div className="flex items-center gap-2">
-              <MessageSquareText className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="flex items-center gap-3">
+              <MessageSquareText className="w-4 h-4 text-emerald-600" />
               <span className="font-bold text-slate-900">Price Offers</span>
               <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">
                 {offers.filter(o => o.status === 'pending').length} pending
               </span>
             </div>
             {showOffers ? (
-              <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronUp className="w-4 h-4 text-slate-400" />
             ) : (
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className="w-4 h-4 text-slate-400" />
             )}
           </button>
 
@@ -335,12 +335,12 @@ export function ServicesPage() {
                 <div key={offer.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <p className="text-sm font-semibold text-slate-900">
                           {offer.client?.name || 'Client'} offered{' '}
                           <span className="text-emerald-600">{formatCurrency(Number(offer.amount))}</span>
                         </p>
-                        <span className={`px-2 py-0.5 text-[11px] font-bold rounded-full ${
+                        <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
                           offer.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
                           offer.status === 'declined' ? 'bg-red-100 text-red-600' :
                           'bg-amber-100 text-amber-700'
@@ -354,13 +354,13 @@ export function ServicesPage() {
                       )}
                     </div>
                     {offer.status === 'pending' && (
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center gap-3 flex-shrink-0">
                         <button
                           onClick={() => respondToOffer(offer, 'accepted')}
                           disabled={offerBusy === offer.id}
                           className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-4 h-4" />
                           {offerBusy === offer.id ? '...' : 'Accept'}
                         </button>
                         <button
@@ -368,7 +368,7 @@ export function ServicesPage() {
                           disabled={offerBusy === offer.id}
                           className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                         >
-                          <XCircle className="w-3.5 h-3.5" />
+                          <XCircle className="w-4 h-4" />
                           Decline
                         </button>
                       </div>
@@ -387,15 +387,15 @@ export function ServicesPage() {
           onClick={() => setShowCategories(!showCategories)}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
         >
-          <div className="flex items-center gap-2">
-            <Layers className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="flex items-center gap-3">
+            <Layers className="w-4 h-4 text-emerald-600" />
             <span className="font-bold text-slate-900">Browse Categories</span>
             <span className="text-xs text-slate-400 font-medium">A-Z</span>
           </div>
           {showCategories ? (
-            <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           )}
         </button>
 
@@ -409,7 +409,7 @@ export function ServicesPage() {
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
@@ -492,7 +492,7 @@ export function ServicesPage() {
 
                 <p className="text-sm text-slate-500 line-clamp-3 mb-2">{service.description}</p>
 
-                <div className="flex items-center gap-2 mb-3 text-sm text-slate-500">
+                <div className="flex items-center gap-3 mb-3 text-sm text-slate-500">
                   <div className="flex items-center gap-1">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-semibold text-slate-900">
@@ -513,33 +513,33 @@ export function ServicesPage() {
                 {(service as any).negotiable || (service as any).accepts_tips ? (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {(service as any).negotiable && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-full bg-violet-50 text-violet-700 border border-violet-100">
-                        <BadgePercent className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-full bg-violet-50 text-violet-700 border border-violet-100">
+                        <BadgePercent className="w-3.5 h-3.5" />
                         Negotiable
                       </span>
                     )}
                     {(service as any).accepts_tips && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-bold rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">
-                        <HandCoins className="w-3 h-3" />
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">
+                        <HandCoins className="w-3.5 h-3.5" />
                         Tips welcome
                       </span>
                     )}
                   </div>
                 ) : null}
                 {Number(service.extra_revision_price) > 0 && (
-                  <p className="text-[11px] text-amber-600 mb-2">
+                  <p className="text-xs text-amber-600 mb-2">
                     Extra revision: {formatCurrency(Number(service.extra_revision_price))} each (beyond free revisions)
                   </p>
                 )}
 
                 {service.tags && service.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-2">
+                  <div className="flex flex-wrap gap-3 mb-2">
                     {service.tags.slice(0, 3).map(tag => (
                       <span
                         key={tag}
                         className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-emerald-50 text-emerald-700"
                       >
-                        <Tag className="w-3 h-3" />
+                        <Tag className="w-3.5 h-3.5" />
                         {tag}
                       </span>
                     ))}
@@ -552,15 +552,15 @@ export function ServicesPage() {
                 <div className="flex items-center justify-between pt-4 border-t border-slate-100">
                   <div className="flex items-center gap-1.5 text-xs text-slate-500">
                     <span className="flex items-center gap-1">
-                      <Eye className="w-3 h-3" />
+                      <Eye className="w-3.5 h-3.5" />
                       {service.views || 0}
                     </span>
                     <span className="flex items-center gap-1">
-                      <ShoppingBag className="w-3 h-3" />
+                      <ShoppingBag className="w-3.5 h-3.5" />
                       {service.orders || 0}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => handleToggleStatus(service)}
                       className={`px-3 py-1 text-xs font-semibold rounded-lg transition-colors ${

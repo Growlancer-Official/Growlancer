@@ -13,9 +13,9 @@ interface ProBadgeProps {
  */
 export function ProBadge({ size = 'sm', className = '' }: ProBadgeProps) {
   const sizes = {
-    xs: { pill: 'text-[8px] px-1.5 py-px gap-0.5', icon: 'w-2.5 h-2.5', tooltip: 'text-[10px] px-2 py-1' },
-    sm: { pill: 'text-[9px] px-2 py-0.5 gap-1', icon: 'w-3 h-3', tooltip: 'text-[10px] px-2.5 py-1' },
-    md: { pill: 'text-[10px] px-2.5 py-1 gap-1', icon: 'w-3.5 h-3.5', tooltip: 'text-[11px] px-3 py-1.5' },
+    xs: { pill: 'text-[10px] px-1.5 py-px gap-0.5', icon: 'w-2.5 h-2.5', tooltip: 'text-xs px-2 py-1' },
+    sm: { pill: 'text-[10px] px-2 py-0.5 gap-1', icon: 'w-3.5 h-3.5', tooltip: 'text-xs px-2.5 py-1' },
+    md: { pill: 'text-xs px-2.5 py-1 gap-1', icon: 'w-4 h-4', tooltip: 'text-xs px-3 py-1.5' },
   }[size];
 
   const base = `relative group inline-flex items-center rounded-md bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white font-extrabold uppercase tracking-wider shadow-sm ring-1 ring-blue-900/30 ${sizes.pill} ${className}`;

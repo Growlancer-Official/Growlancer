@@ -42,7 +42,7 @@ function ProjectMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
-        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
+        <MoreVertical className="w-4 h-4 text-slate-400" />
       </button>
 
       {open && (
@@ -299,14 +299,14 @@ export function ClientProjectsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">My Projects</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">My Projects</h1>
           <p className="text-slate-500 mt-1">Manage your posted projects and track progress</p>
         </div>
         <Link
           to="/client/post"
-          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-4 h-4" />
           Post New Project
         </Link>
       </div>
@@ -317,7 +317,7 @@ export function ClientProjectsPage() {
       </TipNote>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-3 border-b border-slate-200">
         {(['all', 'open', 'in_progress', 'completed', 'cancelled'] as const).map((f) => (
           <button
             key={f}
@@ -350,9 +350,9 @@ export function ClientProjectsPage() {
           {filter === 'all' ? (
             <Link
               to="/client/post"
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               Post Your First Project
             </Link>
           ) : (
@@ -366,7 +366,7 @@ export function ClientProjectsPage() {
         </div>
       ) : (
         <>
-          <div className="grid gap-2">
+          <div className="grid gap-3">
             {filteredProjects.map((project) => (
             <div
               key={project.id}
@@ -375,7 +375,7 @@ export function ClientProjectsPage() {
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-1.5 mb-2">
-                    <h3 className="font-display text-lg font-bold text-slate-900">{project.title}</h3>
+                    <h3 className="font-display text-xl font-bold text-slate-900">{project.title}</h3>
                     <span
                       className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${getStatusColor(
                         project.status
@@ -389,12 +389,12 @@ export function ClientProjectsPage() {
                 <ProjectMenu projectId={project.id} projectStatus={project.status} onClose={setShowCloseModal} onComplete={setShowCompleteModal} onReopen={setShowReopenModal} />
               </div>
 
-              <div className="flex flex-wrap gap-2 text-sm text-slate-500 mb-2">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap gap-3 text-sm text-slate-500 mb-2">
+                <div className="flex items-center gap-3">
                   <IndianRupee className="w-4 h-4" />
                   <span>{formatBudgetRange(project.budget_min, project.budget_max)}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4" />
                   <span>
                     {project.deadline
@@ -402,13 +402,13 @@ export function ClientProjectsPage() {
                       : 'No deadline'}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Briefcase className="w-4 h-4" />
                   <span>{project.proposals_count || 0} proposals</span>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-2 mb-2">
+              <div className="flex flex-wrap gap-3 mb-2">
                 {project.skills_required.slice(0, 4).map((skill) => (
                   <span
                     key={skill}
@@ -424,17 +424,17 @@ export function ClientProjectsPage() {
                 )}
               </div>
 
-              <div className="flex gap-2 flex-wrap">
+              <div className="flex gap-3 flex-wrap">
                 <Link
                   to={`/client/matches?project_id=${project.id}`}
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                  className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
                 >
                   <Eye className="w-4 h-4" />
                   AI Matches
                 </Link>
                 <Link
                   to={`/client/proposals`}
-                  className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                  className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors"
                 >
                   View Proposals
                 </Link>

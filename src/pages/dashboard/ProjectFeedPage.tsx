@@ -87,7 +87,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               <Send className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <h3 className="font-display text-lg font-bold text-slate-900">Apply for Project</h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Apply for Project</h3>
               <p className="text-sm text-slate-500">{project.title}</p>
             </div>
           </div>
@@ -99,10 +99,10 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-3 space-y-3">
+        <form onSubmit={handleSubmit} className="p-3 space-y-4">
           {/* Bid-Free Rate Section */}
           <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-            <div className="flex items-center gap-2 mb-3">
+            <div className="flex items-center gap-3 mb-3">
               <Sparkles className="w-4 h-4 text-emerald-600" />
               <span className="text-sm font-bold text-emerald-900">Bid-War Free Pricing</span>
             </div>
@@ -127,13 +127,13 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
                 />
               </div>
               {withinBudget && (
-                <p className="text-[11px] text-emerald-600 mt-1 flex items-center gap-1">
-                  <CheckCircle2 className="w-3 h-3" /> Within the client's budget — strong chance of winning
+                <p className="text-xs text-emerald-600 mt-1 flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Within the client's budget — strong chance of winning
                 </p>
               )}
               {aboveBudget && (
-                <p className="text-[11px] text-amber-600 mt-1 flex items-center gap-1">
-                  <Zap className="w-3 h-3" /> Above the client's budget ({formatCurrency(clientBudget)}) — a lower bid improves your chances
+                <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5" /> Above the client's budget ({formatCurrency(clientBudget)}) — a lower bid improves your chances
                 </p>
               )}
             </div>
@@ -146,7 +146,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
 
             {/* Smart pricing notes — fixed bids, fair for both sides */}
             {baseFitsBudget && (
-              <div className="mt-3 flex items-start gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2.5">
+              <div className="mt-3 flex items-start gap-3 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
                 <p className="text-xs text-emerald-800">
                   <span className="font-semibold">Great fit:</span> your base rate of {formatCurrency(baseRate)} is within the client's budget ({formatCurrency(clientBudget)}) — bid confidently at your standard price.
@@ -156,7 +156,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
 
             {!baseFitsBudget && !budgetWayBelowBase && baseRate > 0 && clientBudget > 0 && (
               <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-3">
                   <Sparkles className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
                   <p className="text-xs text-amber-800">
                     <span className="font-semibold">Smart price suggestion:</span> the client's budget ({formatCurrency(clientBudget)}) is below your base rate ({formatCurrency(baseRate)}). Bidding around <span className="font-bold">{formatCurrency(suggestedTotal)}</span> fits their budget and helps you win more orders — your base rate stays unchanged for other projects.
@@ -167,14 +167,14 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
                   onClick={() => setProposedRate(String(suggestedTotal))}
                   className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 text-white text-xs font-semibold rounded-lg hover:bg-amber-700 transition-colors"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-4 h-4" />
                   Use suggested price ({formatCurrency(suggestedTotal)})
                 </button>
               </div>
             )}
 
             {budgetWayBelowBase && (
-              <div className="mt-3 flex items-start gap-2 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2.5">
+              <div className="mt-3 flex items-start gap-3 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2.5">
                 <Zap className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
                 <p className="text-xs text-rose-800">
                   <span className="font-semibold">Heads-up:</span> the client's budget ({formatCurrency(clientBudget)}) is well below your base rate ({formatCurrency(baseRate)}). Taking this project may not be worth your time — consider negotiating the scope or passing.
@@ -210,7 +210,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
               className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
               placeholder="Introduce yourself and explain why you're the best fit for this project..."
             />
-            <div className="mt-2 flex items-center gap-2">
+            <div className="mt-2 flex items-center gap-3">
               <AIGenerateModal
                 field="cover_letter"
                 triggerLabel="Write cover message with AI"
@@ -222,7 +222,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
                 }}
                 onApply={(text) => setMessage(text)}
               />
-              <span className="text-[11px] text-slate-400">Free: 5/day · Pro: unlimited</span>
+              <span className="text-xs text-slate-400">Free: 5/day · Pro: unlimited</span>
             </div>
           </div>
 
@@ -237,7 +237,7 @@ function ProposalModal({ project, freelancerRate, isOpen, onClose, onSubmit, isS
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
             >
               {isSubmitting ? (
                 <>
@@ -782,16 +782,16 @@ export function ProjectFeedPage() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-lg sm:text-xl font-bold text-slate-900">AI Project Feed</h1>
-            <p className="text-slate-500 text-[10px] sm:text-xs">
+            <h1 className="font-display text-xl font-bold text-slate-900">AI Project Feed</h1>
+            <p className="text-slate-500 text-xs sm:text-xs">
               {skills.length > 0 
                 ? `${matches.length} projects matched to your ${skills.length} skills` 
                 : 'Complete your profile to get AI-matched projects'}
@@ -802,19 +802,19 @@ export function ProjectFeedPage() {
         {/* Search & Filter */}
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 w-48"
+              className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 w-48"
             />
           </div>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+            className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           >
             <option value="all">All Categories</option>
             {categories.filter(c => c !== 'all').map((category) => (
@@ -833,13 +833,13 @@ export function ProjectFeedPage() {
 
       {/* New Match Alert */}
       {newMatchAlert && (
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-2 animate-in slide-in-from-top">
-          <div className="w-7 h-7 bg-emerald-100 rounded-full flex items-center justify-center">
-            <Zap className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2.5 flex items-center gap-3 animate-in slide-in-from-top">
+          <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+            <Zap className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="flex-1">
-            <p className="font-medium text-emerald-900 text-[11px]">{newMatchAlert}</p>
-            <p className="text-[10px] text-emerald-600">New AI-powered match just added!</p>
+            <p className="font-medium text-emerald-900 text-xs">{newMatchAlert}</p>
+            <p className="text-xs text-emerald-600">New AI-powered match just added!</p>
           </div>
           <button
             onClick={() => setNewMatchAlert(null)}
@@ -852,26 +852,26 @@ export function ProjectFeedPage() {
 
       {/* Success Message */}
       {proposalSuccess && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center gap-2">
+        <div className="bg-green-50 border border-green-200 rounded-lg p-2.5 flex items-center gap-3">
           <CheckCircle2 className="w-4 h-4 text-green-600" />
-          <p className="font-medium text-green-900 text-[11px]">{proposalSuccess}</p>
+          <p className="font-medium text-green-900 text-xs">{proposalSuccess}</p>
         </div>
       )}
 
       {/* Skills Tags */}
       {skills.length > 0 && (
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] text-slate-500">Your skills:</span>
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-xs text-slate-500">Your skills:</span>
           {skills.slice(0, 5).map((skill) => (
             <span
               key={skill}
-              className="px-2 py-0.5 bg-slate-100 text-slate-700 text-[10px] rounded-full"
+              className="px-2 py-0.5 bg-slate-100 text-slate-700 text-xs rounded-full"
             >
               {skill}
             </span>
           ))}
           {skills.length > 5 && (
-            <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] rounded-full">
+            <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs rounded-full">
               +{skills.length - 5} more
             </span>
           )}
@@ -881,7 +881,7 @@ export function ProjectFeedPage() {
       {/* Project Cards */}
       {filteredMatches.length > 0 ? (
         <>
-          <div className="grid grid-cols-1 gap-2">
+          <div className="grid grid-cols-1 gap-3">
             {filteredMatches
               .slice((page - 1) * pageSize, page * pageSize)
               .map((match) => (
@@ -889,15 +889,15 @@ export function ProjectFeedPage() {
               key={match.id}
               className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-md transition-all"
             >
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   {/* Header */}
-                  <div className="flex items-center gap-2 mb-1.5">
+                  <div className="flex items-center gap-3 mb-1.5">
                     <h3 className="font-display text-sm font-bold text-slate-900">
                       {match.project?.title || 'Untitled Project'}
                     </h3>
                     <span
-                      className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${getMatchScoreColor(
+                      className={`px-2 py-0.5 text-xs font-bold rounded-full ${getMatchScoreColor(
                         match.match_score
                       )}`}
                     >
@@ -906,18 +906,18 @@ export function ProjectFeedPage() {
                   </div>
 
                   {/* Description */}
-                  <p className="text-slate-600 mb-1.5 line-clamp-2 text-[11px]">
+                  <p className="text-slate-600 mb-1.5 line-clamp-2 text-xs">
                     {match.project?.description || ''}
                   </p>
 
                   {/* Meta Info */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-500 mb-1.5">
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500 mb-1.5">
                     <span className="flex items-center gap-1">
-                      <Wallet className="w-3 h-3" />
+                      <Wallet className="w-3.5 h-3.5" />
                       {formatBudgetRange(match.project?.budget_min, match.project?.budget_max)}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
+                      <Clock className="w-3.5 h-3.5" />
                       Due {match.project?.deadline && new Date(match.project.deadline).toLocaleDateString()}
                     </span>
                     <span className="flex items-center gap-1">
@@ -934,7 +934,7 @@ export function ProjectFeedPage() {
 
                   {/* Skills */}
                   {match.project?.skills_required && match.project.skills_required.length > 0 && (
-                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                    <div className="flex items-center gap-3 flex-wrap mb-2">
                       {match.project.skills_required.slice(0, 5).map((skill) => (
                         <span
                           key={skill}
@@ -956,14 +956,14 @@ export function ProjectFeedPage() {
                   )}
 
                   {/* Client Info */}
-                  <div className="flex items-center gap-2 text-sm text-slate-500">
+                  <div className="flex items-center gap-3 text-sm text-slate-500">
                     <span>Posted by</span>
                     <span className="font-medium text-slate-700">
                       {match.project.client?.name || 'Client'}
                     </span>
                     {(match.project.client as any)?.rating && Number((match.project.client as any).rating) > 0 && (
                       <span className="flex items-center gap-1">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                         <span className="font-semibold text-slate-700">{Number((match.project.client as any).rating).toFixed(1)}</span>
                         <span className="text-slate-400">({(match.project.client as any).total_reviews || 0})</span>
                       </span>
@@ -972,7 +972,7 @@ export function ProjectFeedPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-3">
                   {(() => {
                     const ci = contractInfoMap.get(match.project_id);
                     if (ci) {
@@ -990,7 +990,7 @@ export function ProjectFeedPage() {
                         return (
                           <button
                             disabled
-                            className="px-6 py-3 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-2"
+                            className="px-6 py-3 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-3"
                           >
                             <CheckCircle2 className="w-4 h-4" />
                             {label}
@@ -1000,7 +1000,7 @@ export function ProjectFeedPage() {
                       return (
                         <Link
                           to={`/dashboard/workspace?contract=${ci.contractId}`}
-                          className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                          className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-3"
                         >
                           <Briefcase className="w-4 h-4" />
                           {ci.status === 'pending' ? 'View Contract' : 'Contract Active'}
@@ -1011,7 +1011,7 @@ export function ProjectFeedPage() {
                       return (
                         <button
                           disabled
-                          className="px-6 py-3 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-2"
+                          className="px-6 py-3 bg-slate-100 text-slate-500 font-medium rounded-xl cursor-not-allowed inline-flex items-center justify-center gap-3"
                         >
                           <CheckCircle2 className="w-4 h-4" />
                           Applied
@@ -1021,7 +1021,7 @@ export function ProjectFeedPage() {
                     return (
                       <button
                         onClick={() => handleApply(match)}
-                        className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+                        className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors flex items-center justify-center gap-3"
                       >
                         Apply Now
                         <ArrowRight className="w-4 h-4" />

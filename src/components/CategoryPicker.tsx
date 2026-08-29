@@ -98,7 +98,7 @@ export function CategoryPicker({
 
   if (catLoading) {
     return (
-      <div className="flex items-center gap-2 py-4 text-sm text-slate-400">
+      <div className="flex items-center gap-3 py-4 text-sm text-slate-400">
         <Loader2 className="w-4 h-4 animate-spin" />
         Loading categories...
       </div>
@@ -150,13 +150,13 @@ export function CategoryPicker({
               <X className="w-4 h-4" />
             </button>
           ) : (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-300 pointer-events-none">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-300 pointer-events-none">
               A–Z
             </span>
           )}
         </div>
-        <p className="flex items-center gap-1.5 text-[11px] text-slate-400 mb-3">
-          <Layers className="w-3 h-3" />
+        <p className="flex items-center gap-1.5 text-xs text-slate-400 mb-3">
+          <Layers className="w-3.5 h-3.5" />
           {categories.length} categories · listed alphabetically
         </p>
 
@@ -165,7 +165,7 @@ export function CategoryPicker({
           <div className="max-h-80 overflow-y-auto overscroll-contain">
             {groupedCategories.map(([letter, items]) => (
               <div key={letter}>
-                <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur px-4 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-slate-400 border-y border-slate-100">
+                <div className="sticky top-0 z-10 bg-slate-50/95 backdrop-blur px-4 py-1.5 text-xs font-black uppercase tracking-[0.18em] text-slate-400 border-y border-slate-100">
                   {letter}
                 </div>
                 <div className="divide-y divide-slate-50">
@@ -214,7 +214,7 @@ export function CategoryPicker({
                                 : 'border-slate-300 group-hover:border-emerald-400'
                             }`}
                           >
-                            {isSelected && <Check className="w-3 h-3 text-white" strokeWidth={3.5} />}
+                            {isSelected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3.5} />}
                           </span>
                         )}
                       </button>
@@ -255,7 +255,7 @@ export function CategoryPicker({
             Add as many as you want.
           </p>
 
-          <div className="flex gap-2 mb-3">
+          <div className="flex gap-3 mb-3">
             <input
               type="text"
               value={skillInput}
@@ -280,7 +280,7 @@ export function CategoryPicker({
           </div>
 
           {selectedSkills.length > 0 ? (
-            <div className="flex flex-wrap gap-2 p-3 bg-emerald-50/60 rounded-xl">
+            <div className="flex flex-wrap gap-3 p-3 bg-emerald-50/60 rounded-xl">
               {selectedSkills.map((skill) => (
                 <span
                   key={skill}
@@ -293,7 +293,7 @@ export function CategoryPicker({
                     className="hover:text-emerald-900"
                     aria-label={`Remove ${skill}`}
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
               ))}

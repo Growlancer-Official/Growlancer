@@ -56,7 +56,7 @@ function InviteMenu({
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
         className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
-        <MoreVertical className="w-3.5 h-3.5 text-slate-400" />
+        <MoreVertical className="w-4 h-4 text-slate-400" />
       </button>
 
       {open && (
@@ -161,14 +161,14 @@ export function ClientInvitesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">Invites</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">Invites</h1>
           <p className="text-slate-500 mt-1">Manage invitations sent to freelancers</p>
         </div>
         <Link
           to="/client/matches"
-          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
-          <Send className="w-3.5 h-3.5" />
+          <Send className="w-4 h-4" />
           Send New Invite
         </Link>
       </div>
@@ -179,7 +179,7 @@ export function ClientInvitesPage() {
       </TipNote>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-3 border-b border-slate-200">
         {(['all', 'pending', 'accepted', 'declined'] as const).map((f) => (
           <button
             key={f}
@@ -212,9 +212,9 @@ export function ClientInvitesPage() {
           {filter === 'all' ? (
             <Link
               to="/client/matches"
-              className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+              className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               Send an Invite
             </Link>
           ) : (
@@ -227,7 +227,7 @@ export function ClientInvitesPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-3">
           {filteredInvites.map((invite) => {
             const expired = isExpired(invite.expires_at);
             return (
@@ -238,7 +238,7 @@ export function ClientInvitesPage() {
                 } hover:shadow-md transition-shadow`}
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                       {invite.freelancer?.avatar ? (
                         <img 
@@ -263,7 +263,7 @@ export function ClientInvitesPage() {
                       <p className="text-sm text-slate-500">{invite.freelancer?.email}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span
                       className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${getStatusColor(
                         expired ? 'expired' : invite.status
@@ -289,12 +289,12 @@ export function ClientInvitesPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+                  <div className="flex items-center gap-3">
                     <Calendar className="w-4 h-4" />
                     <span>Sent: {new Date(invite.created_at).toLocaleDateString()}</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <Clock className="w-4 h-4" />
                     <span>
                       Expires: {new Date(invite.expires_at).toLocaleDateString()}
@@ -303,12 +303,12 @@ export function ClientInvitesPage() {
                 </div>
 
                 {invite.status === 'pending' && !expired && (
-                  <div className="flex gap-2">
+                  <div className="flex gap-3">
                     <button
                       type="button"
                       disabled={actionId === invite.id}
                       onClick={() => void handleCancel(invite.id)}
-                      className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
                     >
                       <X className="w-4 h-4" />
                       Cancel Invite
@@ -317,7 +317,7 @@ export function ClientInvitesPage() {
                       type="button"
                       disabled={actionId === invite.id}
                       onClick={() => void handleResend(invite.id)}
-                      className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
                     >
                       <Send className="w-4 h-4" />
                       Resend

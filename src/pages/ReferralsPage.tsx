@@ -97,19 +97,19 @@ export function ReferralsPage() {
       return {
         container: 'text-center',
         iconContainer: 'h-8 w-8 mx-auto rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-1 ring-1 ring-emerald-500/50',
-        text: 'text-[9px] font-bold text-emerald-400',
+        text: 'text-[10px] font-bold text-emerald-400',
       };
     } else if (isCompleted) {
       return {
         container: 'text-center opacity-80',
         iconContainer: 'h-8 w-8 mx-auto rounded-lg bg-slate-800 text-slate-300 flex items-center justify-center mb-1',
-        text: 'text-[9px] font-bold text-slate-300',
+        text: 'text-[10px] font-bold text-slate-300',
       };
     } else {
       return {
         container: `text-center ${tier === 'Elite' ? 'opacity-20' : 'opacity-40'}`,
         iconContainer: 'h-8 w-8 mx-auto rounded-lg bg-slate-800 text-slate-500 flex items-center justify-center mb-1',
-        text: 'text-[9px] font-bold text-slate-500',
+        text: 'text-[10px] font-bold text-slate-500',
       };
     }
   };
@@ -119,20 +119,20 @@ export function ReferralsPage() {
   }
 
   return (
-    <div className="space-y-2 pb-20 lg:pb-0">
+    <div className="space-y-4 pb-20 lg:pb-0">
       {/* How referrals work — plain-language guide */}
       <TipNote tone="info" title="How referrals work" compact>
         Share your <strong>referral code</strong> with friends — it's the only thing that gets copied, not the full link. A referral counts as <strong>valid</strong> when the friend verifies their email, completes their profile, and sends their first proposal. Self-referrals or multiple accounts to farm rewards are flagged automatically and lead to permanent suspension.
       </TipNote>
 
       {/* Hero: Referral Stats & Code */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="lg:col-span-2 bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.15)] relative overflow-hidden">
           <div className="relative z-10">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
               <div className="space-y-1">
                 <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">Your Referral Link</h3>
-                <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-3 mt-2">
                   <div className="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 font-mono text-lg font-bold text-slate-700">
                     {referralCode}
                   </div>
@@ -170,19 +170,19 @@ export function ReferralsPage() {
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
-                <p className="text-slate-400 text-[11px] font-bold uppercase">Total Referrals</p>
+                <p className="text-slate-400 text-xs font-bold uppercase">Total Referrals</p>
                 <p className="text-3xl font-bold mt-1">{referralStats?.total_referrals || 0}</p>
               </div>
               <div>
-                <p className="text-slate-400 text-[11px] font-bold uppercase">Valid Referrals</p>
+                <p className="text-slate-400 text-xs font-bold uppercase">Valid Referrals</p>
                 <p className="text-3xl font-bold mt-1 text-emerald-600">{referralStats?.valid_referrals || 0}</p>
               </div>
               <div>
-                <p className="text-slate-400 text-[11px] font-bold uppercase">Points</p>
+                <p className="text-slate-400 text-xs font-bold uppercase">Points</p>
                 <p className="text-3xl font-bold mt-1">{referralStats?.points || 0}</p>
               </div>
               <div>
-                <p className="text-slate-400 text-[11px] font-bold uppercase">Level</p>
+                <p className="text-slate-400 text-xs font-bold uppercase">Level</p>
                 <p className="text-3xl font-bold mt-1 text-orange-500">{referralStats?.level || 1}</p>
               </div>
             </div>
@@ -213,7 +213,7 @@ export function ReferralsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-4 gap-3">
             {/* Starter Tier */}
             {(() => {
               const style = getTierStyle('Starter');
@@ -270,8 +270,8 @@ export function ReferralsPage() {
       </section>
 
       {/* Rewards & Validation */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-2">
-        <div className="xl:col-span-2 space-y-2">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+        <div className="xl:col-span-2 space-y-4">
           {/* Rewards Grid */}
           <section className="bg-white rounded-[2.5rem] p-4 border border-slate-100">
             <div className="flex items-center justify-between mb-2">
@@ -305,29 +305,29 @@ export function ReferralsPage() {
           </section>
 
           {/* Validation & Anti-Spam */}
-          <section className="grid grid-cols-1 md:grid-cols-2 gap-2">
+          <section className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="bg-white p-4 rounded-[2.5rem] border border-slate-100">
               <h3 className="font-display text-lg font-bold mb-3">Validation Rules</h3>
-              <ul className="space-y-2">
+              <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-sm">
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>
                     <p className="font-bold">Email Verified</p>
-                    <p className="text-[11px] text-slate-400">The referred user must confirm their email.</p>
+                    <p className="text-xs text-slate-400">The referred user must confirm their email.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3 text-sm">
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>
                     <p className="font-bold">Profile 100% Complete</p>
-                    <p className="text-[11px] text-slate-400">Bio, skills, and portfolio must be filled.</p>
+                    <p className="text-xs text-slate-400">Bio, skills, and portfolio must be filled.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3 text-sm">
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>
                     <p className="font-bold">First Activity Done</p>
-                    <p className="text-[11px] text-slate-400">Referral counts after their first proposal.</p>
+                    <p className="text-xs text-slate-400">Referral counts after their first proposal.</p>
                   </div>
                 </li>
               </ul>
@@ -335,7 +335,7 @@ export function ReferralsPage() {
 
             <div className="bg-red-50 p-4 rounded-[2.5rem] border border-red-100">
               <h3 className="font-display text-lg font-bold text-red-900 mb-3">Anti-Spam Policy</h3>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <div className="flex gap-3">
                   <ShieldAlert className="text-red-600 w-6 h-6 shrink-0" />
                   <p className="text-xs text-red-800 leading-relaxed">Self-referrals or creating multiple accounts to farm referrals will result in permanent suspension of the primary account.</p>
@@ -344,7 +344,7 @@ export function ReferralsPage() {
                   <UserX className="text-red-600 w-6 h-6 shrink-0" />
                   <p className="text-xs text-red-800 leading-relaxed">Duplicate emails or bot-like registration patterns are automatically flagged by our AI security engine.</p>
                 </div>
-                <div className="bg-red-600 text-white p-4 rounded-xl text-[10px] font-bold uppercase tracking-widest text-center">
+                <div className="bg-red-600 text-white p-4 rounded-xl text-xs font-bold uppercase tracking-widest text-center">
                   Zero Tolerance Policy
                 </div>
               </div>
@@ -375,7 +375,7 @@ export function ReferralsPage() {
               >
                 <div className="flex items-center gap-3">
                   <span
-                    className={`h-6 w-6 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                    className={`h-6 w-6 rounded-full text-xs font-bold flex items-center justify-center ${
                       leader.rank === 1
                         ? 'bg-emerald-600 text-white'
                         : leader.rank <= 3
@@ -412,7 +412,7 @@ export function ReferralsPage() {
                 real name + isYou highlight) — no duplicate "You" card. */}
           </div>
 
-          <button className="w-full mt-8 py-3 bg-slate-50 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all">
+          <button className="w-full mt-8 py-3 bg-slate-50 rounded-xl text-xs font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all">
             Full Leaderboard
           </button>
         </aside>
@@ -436,7 +436,7 @@ export function ReferralsPage() {
                   className="flex items-center justify-between p-4 bg-slate-50 rounded-xl"
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-3 h-3 rounded-full ${
+                    <div className={`w-3.5 h-3.5 rounded-full ${
                       referral.status === 'active' ? 'bg-emerald-500' : 'bg-orange-400'
                     }`} />
                     <div>

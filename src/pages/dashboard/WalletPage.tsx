@@ -104,11 +104,11 @@ const getStatusBadge = (status: string) => {
     failed: 'bg-red-100 text-red-700',
   };
   const icons: Record<string, React.ReactNode> = {
-    completed: <CheckCircle2 className="w-3 h-3" />,
-    pending: <Clock className="w-3 h-3" />,
-    processing: <RefreshCw className="w-3 h-3 animate-spin" />,
-    cancelled: <XCircle className="w-3 h-3" />,
-    failed: <AlertCircle className="w-3 h-3" />,
+    completed: <CheckCircle2 className="w-3.5 h-3.5" />,
+    pending: <Clock className="w-3.5 h-3.5" />,
+    processing: <RefreshCw className="w-3.5 h-3.5 animate-spin" />,
+    cancelled: <XCircle className="w-3.5 h-3.5" />,
+    failed: <AlertCircle className="w-3.5 h-3.5" />,
   };
 
   return (
@@ -665,13 +665,13 @@ export function WalletPage() {
   return (
     <div className="space-y-1.5">
       {/* ── Header ── */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-1.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Wallet className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-lg font-bold text-slate-900">Wallet</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">Wallet</h1>
             <p className="text-slate-500 text-sm">Manage your earnings, withdrawals, and payout methods</p>
           </div>
         </div>
@@ -681,7 +681,7 @@ export function WalletPage() {
             fetchTransactions(0, true);
             fetchPayoutMethods();
           }}
-          className="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors"
+          className="inline-flex items-center gap-3 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors"
         >
           <RefreshCw className="w-4 h-4" />
           Refresh
@@ -701,7 +701,7 @@ export function WalletPage() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-2.5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              className={`flex items-center gap-3 px-2.5 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tab.id
                   ? 'border-emerald-600 text-emerald-600'
                   : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -717,7 +717,7 @@ export function WalletPage() {
       {/* ── Global Error ── */}
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-1.5">
-          <AlertCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
+          <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
           <div className="flex-1">
             <p className="text-sm text-red-700">{error}</p>
           </div>
@@ -733,7 +733,7 @@ export function WalletPage() {
       {activeTab === 'overview' && (
         <div className="space-y-1.5">
           {/* Balance Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Available Balance */}
             <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl p-6 text-white shadow-lg shadow-emerald-500/10">
               <div className="flex items-center justify-between mb-2">
@@ -775,7 +775,7 @@ export function WalletPage() {
             {/* Escrow Balance */}
             <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                   <Shield className="w-4 h-4 text-blue-500" />
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
@@ -794,7 +794,7 @@ export function WalletPage() {
             {/* Total Withdrawn */}
             <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
               <div className="flex items-center justify-between mb-2">
-                <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                   <ArrowUpRight className="w-4 h-4 text-blue-500" />
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
@@ -813,14 +813,14 @@ export function WalletPage() {
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Quick Actions</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Quick Actions</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 onClick={() => setActiveTab('withdraw')}
                 disabled={availableBalance <= 0}
-                className="flex items-center gap-2 p-4 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-200 disabled:hover:bg-transparent"
+                className="flex items-center gap-3 p-4 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-colors text-left disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-slate-200 disabled:hover:bg-transparent"
               >
-                <div className="w-8 h-8 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
                   <ArrowUpRight className="w-4 h-4 text-emerald-600" />
                 </div>
                 <div className="flex-1">
@@ -831,21 +831,21 @@ export function WalletPage() {
                       : 'No funds available'}
                   </p>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
 
               <button
                 onClick={() => setActiveTab('transactions')}
-                className="flex items-center gap-2 p-4 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-colors text-left"
+                className="flex items-center gap-3 p-4 border border-slate-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50/50 transition-colors text-left"
               >
-                <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center">
+                <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
                   <ArrowDownLeft className="w-4 h-4 text-blue-600" />
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-slate-900">View Transactions</p>
                   <p className="text-sm text-slate-500">See your full withdrawal history</p>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronRight className="w-4 h-4 text-slate-400" />
               </button>
             </div>
           </div>
@@ -853,7 +853,7 @@ export function WalletPage() {
           {/* Recent Transactions */}
           <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
             <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-display text-lg font-bold text-slate-900">Recent Withdrawals</h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Recent Withdrawals</h3>
               {withdrawals.length > 5 && (
                 <button
                   onClick={() => setActiveTab('transactions')}
@@ -869,7 +869,7 @@ export function WalletPage() {
                 {withdrawals.slice(0, 5).map((w) => (
                   <div
                     key={w.id}
-                    className="flex items-center gap-2 p-4 hover:bg-slate-50 transition-colors"
+                    className="flex items-center gap-3 p-4 hover:bg-slate-50 transition-colors"
                   >
                     <div
                       className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
@@ -923,7 +923,7 @@ export function WalletPage() {
                 {availableBalance > 0 && (
                   <button
                     onClick={() => setActiveTab('withdraw')}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                    className="inline-flex items-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     Withdraw Funds
@@ -942,11 +942,11 @@ export function WalletPage() {
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
           {/* Header + Filters */}
           <div className="p-3 border-b border-slate-100">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-              <h3 className="font-display text-lg font-bold text-slate-900">Transaction History</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <h3 className="font-display text-xl font-bold text-slate-900">Transaction History</h3>
 
               {/* Status filter */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <Filter className="w-4 h-4 text-slate-400" />
                 <select
                   value={txFilterStatus}
@@ -969,8 +969,8 @@ export function WalletPage() {
 
           {/* Error state */}
           {txError && (
-            <div className="p-4 mx-6 mt-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-              <AlertCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
+            <div className="p-4 mx-6 mt-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+              <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
               <p className="text-sm text-red-700">{txError}</p>
             </div>
           )}
@@ -1001,7 +1001,7 @@ export function WalletPage() {
                           {safeFormatDate(tx.created_at, { year: 'numeric', month: 'short', day: 'numeric' }) || '—'}
                         </td>
                         <td className="px-3 py-4">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                               tx.type === 'credit' ? 'bg-emerald-100' : 'bg-slate-100'
                             }`}>
@@ -1043,7 +1043,7 @@ export function WalletPage() {
                       fetchTransactions(nextPage);
                     }}
                     disabled={txLoading}
-                    className="inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors disabled:opacity-50"
+                    className="inline-flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl transition-colors disabled:opacity-50"
                   >
                     {txLoading ? (
                       <>
@@ -1128,7 +1128,7 @@ export function WalletPage() {
             </div>
           ) : (
             <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
-              <h3 className="font-display text-lg font-bold text-slate-900 mb-3">
+              <h3 className="font-display text-xl font-bold text-slate-900 mb-3">
                 Withdraw Funds
               </h3>
               <TipNote tone="info" title="How withdrawals work" compact className="mb-2.5">
@@ -1139,15 +1139,15 @@ export function WalletPage() {
 
               {/* Error */}
               {withdrawError && (
-                <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                  <AlertCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
+                <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                  <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
                   <p className="text-sm text-red-700">{withdrawError}</p>
                 </div>
               )}
 
               {/* Step 1: Amount + Method Selection */}
               {!showReview ? (
-                <div className="space-y-2.5">
+                <div className="space-y-4.5">
                   {/* Amount */}
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -1164,7 +1164,7 @@ export function WalletPage() {
                         min={1}
                         max={availableBalance}
                         step="0.01"
-                        className="w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                        className="w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-xl font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                         placeholder="0.00"
                       />
                     </div>
@@ -1190,11 +1190,11 @@ export function WalletPage() {
                       Payout Method
                     </label>
                     {payoutMethods.length > 0 ? (
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         {payoutMethods.map((method) => (
                           <label
                             key={method.id}
-                            className={`flex items-center gap-2 p-4 border rounded-xl cursor-pointer transition-colors ${
+                            className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
                               selectedMethodId === method.id
                                 ? 'border-emerald-500 bg-emerald-50/50'
                                 : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
@@ -1208,13 +1208,13 @@ export function WalletPage() {
                               onChange={() => setSelectedMethodId(method.id)}
                               className="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
                             />
-                            <div className="w-7 h-7 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
+                            <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center shrink-0">
                               {method.type === 'paypal' ? (
-                                <IndianRupee className="w-3.5 h-3.5 text-blue-600" />
+                                <IndianRupee className="w-4 h-4 text-blue-600" />
                               ) : method.type === 'upi' ? (
-                                <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+                                <Smartphone className="w-4 h-4 text-emerald-600" />
                               ) : (
-                                <Landmark className="w-3.5 h-3.5 text-slate-600" />
+                                <Landmark className="w-4 h-4 text-slate-600" />
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
@@ -1308,7 +1308,7 @@ export function WalletPage() {
                 </div>
               ) : (
                 /* Step 2: Review & Confirm */
-                <div className="space-y-2.5">
+                <div className="space-y-4.5">
                   <div className="p-5 bg-emerald-50 rounded-xl border border-emerald-100">
                     <h4 className="font-semibold text-slate-900 mb-3">Review Your Withdrawal</h4>
                     <div className="space-y-1.5">
@@ -1349,7 +1349,7 @@ export function WalletPage() {
                       type="button"
                       onClick={handleWithdrawSubmit}
                       disabled={withdrawProcessing}
-                      className="flex-1 py-3.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 py-3.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                     >
                       {withdrawProcessing ? (
                         <>
@@ -1376,7 +1376,7 @@ export function WalletPage() {
           {/* Left side — Saved Methods */}
           <div className="lg:col-span-3 bg-white rounded-xl border border-slate-100 shadow-sm">
             <div className="p-3 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-display text-lg font-bold text-slate-900">Saved Payout Methods</h3>
+              <h3 className="font-display text-xl font-bold text-slate-900">Saved Payout Methods</h3>
               <button
                 onClick={() => {
                   setAddingMethod(!addingMethod);
@@ -1391,8 +1391,8 @@ export function WalletPage() {
 
             {/* Error */}
             {methodError && (
-              <div className="p-4 mx-6 mt-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="w-3.5 h-3.5 text-red-600 mt-0.5 shrink-0" />
+              <div className="p-4 mx-6 mt-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 shrink-0" />
                 <p className="text-sm text-red-700">{methodError}</p>
               </div>
             )}
@@ -1405,10 +1405,10 @@ export function WalletPage() {
             ) : methods.length > 0 ? (
               <div className="divide-y divide-slate-100">
                 {methods.map((method) => (
-                  <div key={method.id} className="p-5 flex items-center gap-2 hover:bg-slate-50 transition-colors">
+                  <div key={method.id} className="p-5 flex items-center gap-3 hover:bg-slate-50 transition-colors">
                     {/* Icon */}
                     <div
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         method.type === 'paypal'
                           ? 'bg-blue-50'
                           : method.type === 'upi'
@@ -1427,7 +1427,7 @@ export function WalletPage() {
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <p className="font-semibold text-slate-900">
                           {method.type === 'paypal'
                             ? 'PayPal'
@@ -1437,7 +1437,7 @@ export function WalletPage() {
                         </p>
                         {method.is_default && (
                           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">
-                            <Star className="w-3 h-3" />
+                            <Star className="w-3.5 h-3.5" />
                             Default
                           </span>
                         )}
@@ -1455,7 +1455,7 @@ export function WalletPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-3 shrink-0">
                       {!method.is_default && (
                         <button
                           onClick={() => handleSetDefault(method.id)}
@@ -1513,7 +1513,7 @@ export function WalletPage() {
             {addingMethod && (
               <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
                 <div className="flex items-center justify-between mb-2.5">
-                  <h3 className="font-display text-lg font-bold text-slate-900">Add Method</h3>
+                  <h3 className="font-display text-xl font-bold text-slate-900">Add Method</h3>
                   <button
                     onClick={() => {
                       setAddingMethod(false);
@@ -1521,12 +1521,12 @@ export function WalletPage() {
                     }}
                     className="text-slate-400 hover:text-slate-600"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
 
                 {/* Type selector */}
-                <div className="grid grid-cols-3 gap-2 mb-2.5">
+                <div className="grid grid-cols-3 gap-3 mb-2.5">
                   <button
                     type="button"
                     onClick={() => setNewMethodType('upi')}
@@ -1536,7 +1536,7 @@ export function WalletPage() {
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
-                    <Smartphone className="w-3.5 h-3.5" />
+                    <Smartphone className="w-4 h-4" />
                     UPI
                   </button>
                   <button
@@ -1548,7 +1548,7 @@ export function WalletPage() {
                         : 'border-slate-200 text-slate-600 hover:border-slate-300'
                     }`}
                   >
-                    <Landmark className="w-3.5 h-3.5" />
+                    <Landmark className="w-4 h-4" />
                     Bank
                   </button>
                   <button
@@ -1561,14 +1561,14 @@ export function WalletPage() {
                     }`}
                     title="PayPal withdrawals are coming soon"
                   >
-                    <IndianRupee className="w-3.5 h-3.5" />
+                    <IndianRupee className="w-4 h-4" />
                     PayPal
-                    <span className="text-[9px] font-bold text-amber-500">Soon</span>
+                    <span className="text-[10px] font-bold text-amber-500">Soon</span>
                   </button>
                 </div>
 
                 {/* Fields */}
-                <div className="space-y-2">
+                <div className="space-y-4">
                   {newMethodType === 'paypal' ? (
                     <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
                       <p className="text-sm text-amber-800">
@@ -1659,7 +1659,7 @@ export function WalletPage() {
                     type="button"
                     onClick={handleAddPayoutMethod}
                     disabled={newMethodSaving}
-                    className="w-full py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
                   >
                     {newMethodSaving ? (
                       <>
@@ -1678,24 +1678,24 @@ export function WalletPage() {
             {!addingMethod && (
               <div className="bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-100 shadow-sm p-6">
                 <h4 className="font-semibold text-slate-900 mb-3">💡 Payout Tips</h4>
-                <ul className="space-y-2 text-sm text-slate-600">
-                  <li className="flex items-start gap-2">
+                <ul className="space-y-4 text-sm text-slate-600">
+                  <li className="flex items-start gap-3">
                     <span className="text-emerald-500 mt-0.5">•</span>
                     <span>Add at least one payout method before withdrawing</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className="flex items-start gap-3">
                     <span className="text-emerald-500 mt-0.5">•</span>
                     <span>UPI & Bank withdrawals via RazorpayX are processed in INR, usually within 24 hours</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className="flex items-start gap-3">
                     <span className="text-emerald-500 mt-0.5">•</span>
                     <span>Bank transfers may take 3-5 business days</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className="flex items-start gap-3">
                     <span className="text-emerald-500 mt-0.5">•</span>
                     <span>Set a default method for faster withdrawals</span>
                   </li>
-                  <li className="flex items-start gap-2">
+                  <li className="flex items-start gap-3">
                     <span className="text-emerald-500 mt-0.5">•</span>
                     <span>A {(WITHDRAWAL_FEE_RATE * 100).toFixed(1)}% processing fee applies</span>
                   </li>
@@ -1710,9 +1710,9 @@ export function WalletPage() {
       {activeTab === 'invoices' && (
         <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
           <div className="p-3 border-b border-slate-100">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-3">
               <div>
-                <h3 className="font-display text-lg font-bold text-slate-900">Invoices & Receipts</h3>
+                <h3 className="font-display text-xl font-bold text-slate-900">Invoices & Receipts</h3>
                 <p className="text-sm text-slate-500 mt-0.5">Automatically generated when escrow is released</p>
               </div>
               {invoicesLoading && <Loader2 className="w-4 h-4 animate-spin text-emerald-600" />}
@@ -1727,21 +1727,21 @@ export function WalletPage() {
           ) : (
             <div className="divide-y divide-slate-100">
               {invoices.map((inv) => (
-                <div key={inv.id} className="p-5 flex items-center justify-between gap-2 hover:bg-slate-50/60 transition-colors">
+                <div key={inv.id} className="p-5 flex items-center justify-between gap-3 hover:bg-slate-50/60 transition-colors">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <div className="w-7 h-7 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Receipt className="w-3.5 h-3.5" />
+                    <div className="w-8 h-8 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <Receipt className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-semibold text-slate-900 text-sm">{inv.invoice_number}</p>
                       <p className="text-xs text-slate-500 truncate">{inv.project_title || 'Contract work'}</p>
-                      <p className="text-[10px] text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">{safeFormatDate(inv.issued_at)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-3 flex-shrink-0">
                     <div className="text-right">
                       <p className="font-bold text-slate-900">{formatCurrency(inv.total)}</p>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : inv.status === 'refunded' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${inv.status === 'paid' ? 'bg-emerald-50 text-emerald-700' : inv.status === 'refunded' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
                         {inv.status}
                       </span>
                     </div>
@@ -1758,7 +1758,7 @@ export function WalletPage() {
                       }}
                       className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
                     >
-                      <ExternalLink className="w-3.5 h-3.5" /> View
+                      <ExternalLink className="w-4 h-4" /> View
                     </button>
                   </div>
                 </div>

@@ -221,18 +221,18 @@ export function ClientPostProjectPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Basic Information */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Briefcase className="w-5 h-5 text-emerald-600" />
             Basic Information
           </h2>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Project Title *</label>
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-3">
                 <input
                   type="text"
                   required
@@ -271,7 +271,7 @@ export function ClientPostProjectPage() {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
                 placeholder="Describe your project in detail. Include requirements, deliverables, and any specific skills needed..."
               />
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-3">
                 <AIGenerateModal
                   field="project_description"
                   triggerLabel="Write description with AI"
@@ -285,11 +285,11 @@ export function ClientPostProjectPage() {
                   }}
                   onApply={(text) => setFormData({ ...formData, description: text })}
                 />
-                <span className="text-[11px] text-slate-400">Free: 5/day · Pro: unlimited</span>
+                <span className="text-xs text-slate-400">Free: 5/day · Pro: unlimited</span>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Experience Level *</label>
                 <select
@@ -318,7 +318,7 @@ export function ClientPostProjectPage() {
 
         {/* Budget */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <IndianRupee className="w-5 h-5 text-emerald-600" />
             Budget
           </h2>
@@ -353,7 +353,7 @@ export function ClientPostProjectPage() {
 
         {/* Category + Skills (145 categories only, free-text skills) */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
             <Sparkles className="w-5 h-5 text-emerald-600" />
             Category & Skills
           </h2>
@@ -407,8 +407,8 @@ export function ClientPostProjectPage() {
 
         {/* Visibility */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2">Project Visibility</h2>
-          <div className="space-y-3">
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2">Project Visibility</h2>
+          <div className="space-y-4">
             {[
               { value: 'public', label: 'Public - Visible to all freelancers', desc: 'Get maximum exposure and proposals' },
               { value: 'private', label: 'Private - Only invited freelancers', desc: 'Control who can see your project' },
@@ -440,7 +440,7 @@ export function ClientPostProjectPage() {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => navigate('/client/projects')}
@@ -451,7 +451,7 @@ export function ClientPostProjectPage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>

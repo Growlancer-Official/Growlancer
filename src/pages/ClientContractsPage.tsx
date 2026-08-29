@@ -180,7 +180,7 @@ export function ClientContractsPage() {
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-1.5 font-display text-lg font-bold text-slate-900">
+          <h1 className="flex items-center gap-1.5 font-display text-xl font-bold text-slate-900">
             Contracts
             <InfoTip
               title="How contracts work for you"
@@ -189,8 +189,8 @@ export function ClientContractsPage() {
           </h1>
           <p className="text-slate-500 mt-1">Manage active and completed contracts with freelancers</p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl">
-          <Handshake className="w-3.5 h-3.5" />
+        <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl">
+          <Handshake className="w-4 h-4" />
           <span className="font-bold">{contracts.length} Contracts</span>
         </div>
       </div>
@@ -201,7 +201,7 @@ export function ClientContractsPage() {
         the platform. Never pay a freelancer directly; it voids Growlancer's protection.
       </TipNote>
 
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-3 border-b border-slate-200">
         {(['all', 'active', 'completed', 'pending'] as const).map((f) => (
           <button
             key={f}
@@ -235,16 +235,16 @@ export function ClientContractsPage() {
             <div className="flex gap-1.5 justify-center">
               <Link
                 to="/client/proposals"
-                className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+                className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
               >
-                <FileText className="w-3.5 h-3.5" />
+                <FileText className="w-4 h-4" />
                 View Proposals
               </Link>
               <Link
                 to="/client/matches"
-                className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
+                className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
               >
-                <Users className="w-3.5 h-3.5" />
+                <Users className="w-4 h-4" />
                 Find Freelancers
               </Link>
             </div>
@@ -258,7 +258,7 @@ export function ClientContractsPage() {
           )}
         </div>
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-3">
           {filteredContracts.map((contract) => {
             const escrow = getEscrow(contract);
             return (
@@ -267,7 +267,7 @@ export function ClientContractsPage() {
                 className="bg-white p-6 rounded-xl border border-slate-100 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
                       {contract.freelancer?.avatar ? (
                         <img src={contract.freelancer.avatar} alt={contract.freelancer.name} />
@@ -297,27 +297,27 @@ export function ClientContractsPage() {
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2 text-sm">
-                  <div className="flex items-center gap-2 text-slate-600">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-2 text-sm">
+                  <div className="flex items-center gap-3 text-slate-600">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-medium text-slate-900">
                       {formatCurrency(Number(contract.amount))}
                     </span>
                   </div>
                   {contract.start_date && (
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-3 text-slate-600">
                       <Calendar className="w-4 h-4" />
                       <span>Started: {new Date(contract.start_date).toLocaleDateString()}</span>
                     </div>
                   )}
                   {contract.end_date && (
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-3 text-slate-600">
                       <Clock className="w-4 h-4" />
                       <span>Ends: {new Date(contract.end_date).toLocaleDateString()}</span>
                     </div>
                   )}
                   {escrow && (
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-3 text-slate-600">
                       <FileText className="w-4 h-4" />
                       <span>
                         Escrow: {formatCurrency(escrow.amount)} ({escrow.status})
@@ -326,10 +326,10 @@ export function ClientContractsPage() {
                   )}
                 </div>
 
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-3 flex-wrap">
                   <Link
                     to={`/client/workspace?contract=${contract.id}`}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
+                    className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
                   >
                     <Laptop className="w-4 h-4" />
                     Open Workspace
@@ -337,7 +337,7 @@ export function ClientContractsPage() {
                   {!escrow && (
                     <Link
                       to={`/client/workspace?contract=${contract.id}&fund=1`}
-                      className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 font-semibold rounded-lg border border-emerald-200 hover:bg-emerald-100"
+                      className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 font-semibold rounded-lg border border-emerald-200 hover:bg-emerald-100"
                     >
                       <IndianRupee className="w-4 h-4" />
                       Fund Escrow
@@ -345,7 +345,7 @@ export function ClientContractsPage() {
                   )}
                   <Link
                     to="/client/payments"
-                    className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50"
+                    className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50"
                   >
                     <IndianRupee className="w-4 h-4" />
                     Payments
@@ -353,7 +353,7 @@ export function ClientContractsPage() {
                   {(contract.status === 'active' || contract.status === 'in_progress') && (
                     <Link
                       to={`/client/workspace?contract=${contract.id}`}
-                      className="flex items-center gap-2 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50"
+                      className="flex items-center gap-3 px-4 py-2 text-slate-600 font-medium rounded-lg hover:bg-slate-50"
                     >
                       <AlertCircle className="w-4 h-4" />
                       Report Issue

@@ -52,7 +52,7 @@ export function SafetyPage() {
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -71,8 +71,8 @@ export function SafetyPage() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <ShieldCheck className="w-4 h-4" />
             Security & Trust
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
@@ -86,7 +86,7 @@ export function SafetyPage() {
 
       {/* Safety Grid */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {safetyFeatures.map((feature, index) => (
             <div 
               key={index} 
@@ -96,7 +96,7 @@ export function SafetyPage() {
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} text-white flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform`}>
                   <feature.icon className="w-7 h-7" />
                 </div>
-                <span className="px-2.5 py-0.5 bg-slate-100 text-slate-500 font-bold rounded-full text-[10px] uppercase tracking-wider">
+                <span className="px-2.5 py-0.5 bg-slate-100 text-slate-500 font-bold rounded-full text-xs uppercase tracking-wider">
                   {feature.badge}
                 </span>
               </div>
@@ -117,7 +117,7 @@ export function SafetyPage() {
             <p className="text-emerald-100 text-xs max-w-md mx-auto leading-relaxed">
               Have any questions or need to raise an issue? Browse our Help Center or chat with our AI assistant.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Link
                 to="/help-center"
                 className="inline-flex h-12 px-6 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors shadow-md text-sm shrink-0"

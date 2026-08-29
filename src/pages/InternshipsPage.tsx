@@ -85,13 +85,13 @@ function RoleCard({
     >
       {/* Card Header */}
       <div className="p-3 sm:p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-3">
             <div className={`h-14 w-14 rounded-xl ${c.bg} flex items-center justify-center shadow-md shrink-0`}>
               <RoleIcon icon={role.icon} className="w-7 h-7 text-white" />
             </div>
             <div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-3">
                 <h3 className="font-display text-xl font-bold text-slate-900">{role.name}</h3>
                 <span className={`text-xs px-2.5 py-0.5 ${c.badgeBg} ${c.badgeText} font-bold rounded-full`}>
                   {role.department}
@@ -100,15 +100,15 @@ function RoleCard({
               <p className="mt-2 text-sm text-slate-600 leading-relaxed max-w-2xl">{role.summary}</p>
               <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500 font-medium">
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
+                  <Clock className="w-4 h-4 text-slate-400" />
                   {role.commitment}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <Calendar className="w-4 h-4 text-slate-400" />
                   {role.duration}
                 </span>
                 <span className="flex items-center gap-1">
-                  <Globe className="w-3.5 h-3.5 text-slate-400" />
+                  <Globe className="w-4 h-4 text-slate-400" />
                   Remote (India)
                 </span>
               </div>
@@ -127,7 +127,7 @@ function RoleCard({
               <Send className="ml-2 w-4 h-4" />
             </button>
           ) : (
-            <div className="inline-flex items-center gap-2 h-11 px-6 rounded-xl bg-slate-200 text-slate-500 font-bold text-sm cursor-not-allowed">
+            <div className="inline-flex items-center gap-3 h-11 px-6 rounded-xl bg-slate-200 text-slate-500 font-bold text-sm cursor-not-allowed">
               <Lock className="w-4 h-4" />
               Applications Closed
             </div>
@@ -150,13 +150,13 @@ function RoleCard({
         <div className="border-t border-slate-100 px-6 sm:px-8 py-6 space-y-8 animate-fade-in">
           {/* Responsibilities */}
           <div>
-            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-3">
               <Briefcase className="w-4 h-4 text-emerald-600" />
               Responsibilities
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               {role.responsibilities.map((r, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-2 shrink-0" />
                   {r}
                 </li>
@@ -167,13 +167,13 @@ function RoleCard({
           {/* Skills Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+              <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-3">
                 <Target className="w-4 h-4 text-emerald-600" />
                 Required Skills
               </h4>
-              <ul className="space-y-2">
+              <ul className="space-y-4">
                 {role.requiredSkills.map((s, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                     {s}
                   </li>
@@ -181,13 +181,13 @@ function RoleCard({
               </ul>
             </div>
             <div>
-              <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+              <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-3">
                 <Lightbulb className="w-4 h-4 text-amber-500" />
                 Preferred Skills
               </h4>
-              <ul className="space-y-2">
+              <ul className="space-y-4">
                 {role.preferredSkills.map((s, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                  <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
                     <span className="h-1.5 w-1.5 rounded-full bg-amber-400 mt-2 shrink-0" />
                     {s}
                   </li>
@@ -198,11 +198,11 @@ function RoleCard({
 
           {/* Tools */}
           <div>
-            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-3">
               <Code className="w-4 h-4 text-slate-600" />
               Tools &amp; Technologies
             </h4>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {role.tools.map((t, i) => (
                 <span key={i} className="text-xs px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 font-medium">
                   {t}
@@ -213,13 +213,13 @@ function RoleCard({
 
           {/* Expected Outcomes */}
           <div>
-            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-3">
               <Award className="w-4 h-4 text-emerald-600" />
               Expected Outcomes (8 weeks)
             </h4>
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               {role.outcomes.map((o, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                   {o}
                 </li>
@@ -229,13 +229,13 @@ function RoleCard({
 
           {/* Learning */}
           <div>
-            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-2">
+            <h4 className="font-bold text-slate-900 text-sm mb-3 flex items-center gap-3">
               <BookOpen className="w-4 h-4 text-emerald-600" />
               Learning Opportunities
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {role.learningOpportunities.map((l, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
+                <div key={i} className="flex items-center gap-3 text-sm text-slate-600 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
                   <Sparkles className="w-4 h-4 text-emerald-500 shrink-0" />
                   {l}
                 </div>
@@ -379,10 +379,10 @@ function ApplicationForm({
               </div>
               <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 max-w-sm mx-auto text-left">
                 <h5 className="font-bold text-xs text-slate-500 uppercase tracking-wider mb-2">What happens next?</h5>
-                <ol className="space-y-2 text-sm text-slate-600">
-                  <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Application review (3–5 days)</li>
-                  <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Interview invitation (single round)</li>
-                  <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Onboarding &amp; start</li>
+                <ol className="space-y-4 text-sm text-slate-600">
+                  <li className="flex items-center gap-3"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Application review (3–5 days)</li>
+                  <li className="flex items-center gap-3"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Interview invitation (single round)</li>
+                  <li className="flex items-center gap-3"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>Onboarding &amp; start</li>
                 </ol>
               </div>
               <button
@@ -402,13 +402,13 @@ function ApplicationForm({
 
               {/* Section: Personal Info */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                  <User className="w-3.5 h-3.5" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-3">
+                  <User className="w-4 h-4" />
                   Personal Information
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Full Name <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -421,7 +421,7 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Email <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -433,7 +433,7 @@ function ApplicationForm({
                       className="w-full h-11 px-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm transition-all"
                     />
                   </div>                  <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Phone (optional)</label>
                     <input
                       type="tel"
@@ -444,7 +444,7 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Country (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Country (optional)</label>
                     <input
                       type="text"
                       value={country}
@@ -458,13 +458,13 @@ function ApplicationForm({
 
               {/* Section: Education */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                  <GraduationCap className="w-3.5 h-3.5" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-3">
+                  <GraduationCap className="w-4 h-4" />
                   Education &amp; Background
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">College / University (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">College / University (optional)</label>
                     <input
                       type="text"
                       value={university}
@@ -474,7 +474,7 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Degree (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Degree (optional)</label>
                     <input
                       type="text"
                       value={degree}
@@ -484,7 +484,7 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Graduation Year (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Graduation Year (optional)</label>
                     <select
                       value={graduationYear}
                       onChange={(e) => setGraduationYear(e.target.value)}
@@ -498,7 +498,7 @@ function ApplicationForm({
                     </select>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Google Meet Email (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Google Meet Email (optional)</label>
                     <input
                       type="email"
                       value={googleMeetLink}
@@ -512,13 +512,13 @@ function ApplicationForm({
 
               {/* Section: Links */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                  <Link2 className="w-3.5 h-3.5" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-3">
+                  <Link2 className="w-4 h-4" />
                   Portfolio &amp; Links
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       LinkedIn Profile <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -531,7 +531,7 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">GitHub Profile (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">GitHub Profile (optional)</label>
                     <input
                       type="url"
                       value={githubUrl}
@@ -541,7 +541,7 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">
                       Portfolio / GitHub Link <span className="text-red-400">*</span>
                     </label>
                     <input
@@ -558,13 +558,13 @@ function ApplicationForm({
 
               {/* Section: Resume */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-3">
+                  <FileText className="w-4 h-4" />
                   Resume
                 </h4>
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Upload Resume (PDF only, max 10MB)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Upload Resume (PDF only, max 10MB)</label>
                     <div className="flex items-center gap-3">
                       <label className="flex-1 flex items-center gap-3 px-4 py-3 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all">
                         <Upload className="w-5 h-5 text-slate-400" />
@@ -573,7 +573,7 @@ function ApplicationForm({
                             {resumeFile ? resumeFile.name : 'Click to upload PDF'}
                           </p>
                           {resumeFile && (
-                            <p className="text-[10px] text-slate-400">
+                            <p className="text-xs text-slate-400">
                               {(resumeFile.size / 1024 / 1024).toFixed(1)} MB
                             </p>
                           )}
@@ -614,7 +614,7 @@ function ApplicationForm({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Resume Link (Google Drive, Dropbox) — optional</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Resume Link (Google Drive, Dropbox) — optional</label>
                     <input
                       type="url"
                       value={resumeUrl}
@@ -628,8 +628,8 @@ function ApplicationForm({
 
               {/* Section: Cover Letter */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-3">
+                  <FileText className="w-4 h-4" />
                   Cover Letter <span className="text-red-400">*</span>
                 </h4>
                 <textarea
@@ -644,12 +644,12 @@ function ApplicationForm({
 
               {/* Section: Motivation */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-3">
+                  <Sparkles className="w-4 h-4" />
                   Motivation
                 </h4>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Why Growlancer? (optional)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Why Growlancer? (optional)</label>
                   <textarea
                     rows={3}
                     value={whyGrowlancer}
@@ -662,13 +662,13 @@ function ApplicationForm({
 
               {/* Section: Availability */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5" />
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-3">
+                  <Calendar className="w-4 h-4" />
                   Availability
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Weekly Hours</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Weekly Hours</label>
                     <div className="flex items-center gap-3">
                       <input
                         type="range"
@@ -683,7 +683,7 @@ function ApplicationForm({
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Available From (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Available From (optional)</label>
                     <input
                       type="date"
                       value={availableFrom}
@@ -692,7 +692,7 @@ function ApplicationForm({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">Available To (optional)</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Available To (optional)</label>
                     <input
                       type="date"
                       value={availableTo}
@@ -707,7 +707,7 @@ function ApplicationForm({
               <button
                 type="submit"
                 disabled={step === 'submitting'}
-                className={`w-full h-12 ${c.bg} hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 active:scale-[0.99] transition-all text-sm`}
+                className={`w-full h-12 ${c.bg} hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-3 active:scale-[0.99] transition-all text-sm`}
               >
                 {step === 'submitting' ? (
                   <>
@@ -722,7 +722,7 @@ function ApplicationForm({
                 )}
               </button>
 
-              <p className="text-[10px] text-slate-400 text-center">
+              <p className="text-xs text-slate-400 text-center">
                 By submitting, you agree that Growlancer may store and process your application data.
               </p>
             </form>
@@ -775,7 +775,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
     <div className="border-b border-slate-200 last:border-b-0">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-4 text-left gap-2"
+        className="w-full flex items-center justify-between py-4 text-left gap-3"
       >
         <span className="font-semibold text-sm text-slate-900">{question}</span>
         {open ? (
@@ -825,7 +825,7 @@ export function InternshipsPage() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-bold text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -846,8 +846,8 @@ export function InternshipsPage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent" />
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-3 px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <Sparkles className="w-4 h-4" />
             Growlancer Internship Program
           </span>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none">
@@ -872,7 +872,7 @@ export function InternshipsPage() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-lg p-3 sm:p-4">
           <h2 className="font-display text-2xl font-bold text-slate-900 mb-3">About the Program</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-2">
+            <div className="space-y-4">
               <p className="text-sm text-slate-600 leading-relaxed">
                 Growlancer is an AI-powered freelancing marketplace currently in pre-launch. We're building a platform
                 that uses intelligent matching, escrow payments, and collaborative workspaces to make freelancing
@@ -887,7 +887,7 @@ export function InternshipsPage() {
             </div>
             <div className="bg-slate-50 rounded-xl border border-slate-200 p-3 space-y-3">
               <h3 className="font-bold text-sm text-slate-900">Tech Stack You'll Work With</h3>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {['React 18', 'TypeScript', 'TailwindCSS', 'Vite', 'Supabase', 'PostgreSQL', 'Deno', 'GitHub Actions', 'PenTool'].map((t) => (
                   <span key={t} className="text-xs px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-slate-700 font-medium shadow-sm">
                     {t}
@@ -931,7 +931,7 @@ export function InternshipsPage() {
           <h2 className="font-display text-2xl font-bold text-slate-900">Why Join Growlancer's Internship?</h2>
           <p className="text-slate-500 text-sm mt-2">More than just an internship — it's a launchpad for your career.</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {programBenefits.map((benefit, i) => (
             <div key={i} className="bg-white rounded-xl border border-slate-200 p-3 hover:shadow-md transition-shadow">
               <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center mb-2">

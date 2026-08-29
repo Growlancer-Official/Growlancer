@@ -893,24 +893,24 @@ export function ProfessionalProfilePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
             <User className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-lg font-bold text-slate-900">Professional Profile</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">Professional Profile</h1>
             <p className="text-slate-500 text-sm">Complete your profile to get better AI matches</p>
           </div>
         </div>
         {activeTab === 'profile' && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {!isEditing ? (
-              <button onClick={() => setIsEditing(true)} className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
+              <button onClick={() => setIsEditing(true)} className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-3">
                 <Edit2 className="w-4 h-4" /> Edit Profile
               </button>
             ) : (
               <>
                 <button onClick={() => setIsEditing(false)} className="px-4 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors text-sm">Cancel</button>
-                <button onClick={handleProfileSave} disabled={saving} className="px-2.5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-2 text-sm">
+                <button onClick={handleProfileSave} disabled={saving} className="px-2.5 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 flex items-center gap-3 text-sm">
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                   Save Changes
                 </button>
@@ -930,19 +930,19 @@ export function ProfessionalProfilePage() {
 
       {/* Messages */}
       {successMessage && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-sm flex items-center gap-3">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> {successMessage}
         </div>
       )}
       {errorMessage && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-2">
+        <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-center gap-3">
           <XCircle className="w-4 h-4 flex-shrink-0" /> {errorMessage}
         </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-1.5">
         {/* ── LEFT SIDEBAR: Profile Card + Tab Navigation ── */}
-        <div className="lg:col-span-1 space-y-2">
+        <div className="lg:col-span-1 space-y-4">
           {/* Profile Card */}
           <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm text-center">
             <div className="relative w-24 h-24 mx-auto mb-2">
@@ -958,17 +958,17 @@ export function ProfessionalProfilePage() {
               )}
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleAvatarUpload} className="hidden" />
               <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}
-                className="absolute bottom-0 right-0 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg">
+                className="absolute bottom-0 right-0 w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg">
                 {uploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
               </button>
 
               {profile?.avatar && (
                 <button onClick={() => setConfirmAvatarDelete(true)} className="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow">
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
-            <h2 className="font-display text-lg font-bold text-slate-900 mb-0.5 flex items-center justify-center gap-2">
+            <h2 className="font-display text-xl font-bold text-slate-900 mb-0.5 flex items-center justify-center gap-3">
               {formData.name || 'Your Name'}
               {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" />}
               {isPro && <ProBadge size="xs" />}
@@ -977,25 +977,25 @@ export function ProfessionalProfilePage() {
             <p className="text-xs text-slate-400 mb-2">{profile?.role === 'freelancer' ? 'Freelancer Account' : 'User Account'}</p>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100 mb-2">
+            <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-100 mb-2">
               <div>
-                <p className="text-lg font-bold text-slate-900">{freelancerProfile?.rating ? Number(freelancerProfile.rating).toFixed(1) : '—'}</p>
-                <p className="text-[10px] text-slate-500">Rating</p>
+                <p className="text-xl font-bold text-slate-900">{freelancerProfile?.rating ? Number(freelancerProfile.rating).toFixed(1) : '—'}</p>
+                <p className="text-xs text-slate-500">Rating</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-slate-900">{freelancerProfile?.experience ? Number(freelancerProfile.experience) : '—'}</p>
-                <p className="text-[10px] text-slate-500">Years</p>
+                <p className="text-xl font-bold text-slate-900">{freelancerProfile?.experience ? Number(freelancerProfile.experience) : '—'}</p>
+                <p className="text-xs text-slate-500">Years</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-slate-900">{formData.skills.length}</p>
-                <p className="text-[10px] text-slate-500">Skills</p>
+                <p className="text-xl font-bold text-slate-900">{formData.skills.length}</p>
+                <p className="text-xs text-slate-500">Skills</p>
               </div>
             </div>
 
             {/* Completion Bar */}
             <div className="mb-2">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-semibold text-slate-600">Profile</span>
+                <span className="text-xs font-medium text-slate-600">Profile</span>
                 <span className="text-xs font-bold text-emerald-600">{profileCompletion}%</span>
               </div>
               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
@@ -1005,7 +1005,7 @@ export function ProfessionalProfilePage() {
 
             {/* Availability Toggle */}
             <div className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <div className={`w-2.5 h-2.5 rounded-full ${formData.availability ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                 <span className="text-sm font-medium text-slate-700">{formData.availability ? 'Available' : 'Unavailable'}</span>
               </div>
@@ -1020,10 +1020,10 @@ export function ProfessionalProfilePage() {
                   className={`flex items-center gap-1.5 w-full px-3 py-2.5 rounded-xl font-medium transition-all text-left ${
                     activeTab === id ? 'bg-emerald-50 text-emerald-600 shadow-sm' : 'text-slate-600 hover:bg-slate-50'
                   }`}>
-                  <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                  <Icon className="w-4 h-4 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold">{label}</p>
-                    <p className="text-[10px] text-slate-400 truncate">{desc}</p>
+                    <p className="text-xs text-slate-400 truncate">{desc}</p>
                   </div>
                 </button>
               ))}
@@ -1039,7 +1039,7 @@ export function ProfessionalProfilePage() {
             <>
               {/* Bio */}
               <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-                <h3 className="font-display text-lg font-bold text-slate-900 mb-2">About</h3>
+                <h3 className="font-display text-xl font-bold text-slate-900 mb-2">About</h3>
                 {isEditing ? (
                   <textarea value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                     rows={4} className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
@@ -1053,7 +1053,7 @@ export function ProfessionalProfilePage() {
                 <>
                   {/* Title */}
                   <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Professional Title</h3>
+                    <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Professional Title</h3>
                     <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                       placeholder="e.g., Full Stack Developer, UI/UX Designer" />
@@ -1061,8 +1061,8 @@ export function ProfessionalProfilePage() {
 
                   {/* Professional Info */}
                   <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Professional Info</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Professional Info</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Base Rate ({currencySymbol()})</label>
                         <div className="relative">
@@ -1122,7 +1122,7 @@ export function ProfessionalProfilePage() {
 
                   {/* Categories + Free-text Skills */}
                   <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Categories & Skills</h3>
+                    <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Categories & Skills</h3>
                     <p className="text-xs text-slate-500 mb-2">
                       Pick up to 3 categories — Growlancer matches you to projects by category. Add your own skills freely.
                     </p>
@@ -1140,14 +1140,14 @@ export function ProfessionalProfilePage() {
                     </div>
 
                     {/* Free-text skill input (quick add) */}
-                    <div className="flex gap-2 mb-3">
+                    <div className="flex gap-3 mb-3">
                       <input type="text" value={skillInput} onChange={(e) => setSkillInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                         className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g., React, Node.js, Python" />
                       <button type="button" onClick={addSkill} className="px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Add</button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {formData.skills.map(skill => (
-                        <span key={skill} className="flex items-center gap-2 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium">
+                        <span key={skill} className="flex items-center gap-3 px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium">
                           {skill}
                           <button type="button" onClick={() => removeSkill(skill)} className="hover:text-emerald-900">×</button>
                         </span>
@@ -1157,15 +1157,15 @@ export function ProfessionalProfilePage() {
 
                   {/* Languages */}
                   <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Languages</h3>
-                    <div className="flex gap-2 mb-3">
+                    <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Languages</h3>
+                    <div className="flex gap-3 mb-3">
                       <input type="text" value={languageInput} onChange={(e) => setLanguageInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addLanguage())}
                         className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g., English, Spanish" />
                       <button type="button" onClick={addLanguage} className="px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Add</button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {formData.languages.map(lang => (
-                        <span key={lang} className="flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
+                        <span key={lang} className="flex items-center gap-3 px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
                           {lang}
                           <button type="button" onClick={() => removeLanguage(lang)} className="hover:text-blue-900">×</button>
                         </span>
@@ -1175,7 +1175,7 @@ export function ProfessionalProfilePage() {
 
                   {/* Education */}
                   <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Education</h3>
+                    <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Education</h3>
                     <textarea rows={2} value={formData.education} onChange={(e) => setFormData({ ...formData, education: e.target.value })}
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
                       placeholder="e.g., B.S. Computer Science, MIT" />
@@ -1183,15 +1183,15 @@ export function ProfessionalProfilePage() {
 
                   {/* Certifications */}
                   <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-                    <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Certifications</h3>
-                    <div className="flex gap-2 mb-3">
+                    <h3 className="font-display text-xl font-bold text-slate-900 mb-2">Certifications</h3>
+                    <div className="flex gap-3 mb-3">
                       <input type="text" value={certInput} onChange={(e) => setCertInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addCert())}
                         className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g., AWS Certified" />
                       <button type="button" onClick={addCert} className="px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Add</button>
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-wrap gap-3">
                       {formData.certifications.map(cert => (
-                        <span key={cert} className="flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium">
+                        <span key={cert} className="flex items-center gap-3 px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium">
                           {cert}
                           <button type="button" onClick={() => removeCert(cert)} className="hover:text-purple-900">×</button>
                         </span>
@@ -1202,7 +1202,7 @@ export function ProfessionalProfilePage() {
                   {/* Availability */}
                   <div className="flex items-center gap-1.5 p-4 bg-slate-50 rounded-xl">
                     <input type="checkbox" checked={formData.availability} onChange={(e) => setFormData({ ...formData, availability: e.target.checked })}
-                      className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 cursor-pointer" />
+                      className="w-4 h-4 text-emerald-600 rounded border-slate-300 cursor-pointer" />
                     <label className="flex-1 text-sm font-medium text-slate-700 cursor-pointer">I'm available to take new projects</label>
                   </div>
                 </>
@@ -1211,7 +1211,7 @@ export function ProfessionalProfilePage() {
               {/* View Mode: Display info */}
               {!isEditing && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
                     <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Professional Info</h3>
                       <div className="space-y-1.5">
@@ -1224,7 +1224,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Education & Certs</h3>
-                      <div className="space-y-2">
+                      <div className="space-y-4">
                         <div>
                           <span className="text-xs text-slate-400">Education</span>
                           <p className="font-medium mt-1">{formData.education || 'Not set yet'}</p>
@@ -1243,8 +1243,8 @@ export function ProfessionalProfilePage() {
                         </div>
                         {/* Quick tip — fills remaining space naturally */}
                         <div className="pt-2 border-t border-slate-100">
-                          <div className="flex items-start gap-2 text-xs text-slate-500">
-                            <svg className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                          <div className="flex items-start gap-3 text-xs text-slate-500">
+                            <svg className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                             <span>Profiles with certifications get <strong className="text-slate-700">3x more</strong> client invitations. Add yours by clicking <strong className="text-emerald-600">Edit Profile</strong>.</span>
                           </div>
                         </div>
@@ -1252,10 +1252,10 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 items-start">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
                     <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Categories</h3>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {selectedCategoryNames.length > 0 ? selectedCategoryNames.map(c => <span key={c} className="px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm">{c}</span>) : <p className="text-slate-400">No categories selected</p>}
                       </div>
                       {selectedCategoryNames.length === 0 && (
@@ -1264,7 +1264,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Skills</h3>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {formData.skills.length > 0 ? [...formData.skills].sort((a, b) => a.localeCompare(b)).map(s => <span key={s} className="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-sm">{s}</span>) : <p className="text-slate-400">No skills added</p>}
                       </div>
                       {formData.skills.length === 0 && (
@@ -1273,7 +1273,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
                       <h3 className="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider text-slate-500">Languages</h3>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {formData.languages.length > 0 ? formData.languages.map(l => <span key={l} className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm">{l}</span>) : <p className="text-slate-400">No languages added</p>}
                       </div>
                       {formData.languages.length === 0 && (
@@ -1288,8 +1288,8 @@ export function ProfessionalProfilePage() {
               <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-3 border border-emerald-100 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5">
                   <div className="flex items-start gap-1.5">
-                    <div className="w-7 h-7 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <Star className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                      <Star className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-sm mb-1">Complete Your Profile</h4>
@@ -1297,8 +1297,8 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
-                    <div className="w-7 h-7 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-sm mb-1">Verify Your Skills</h4>
@@ -1306,8 +1306,8 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
-                    <div className="w-7 h-7 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
-                      <Bell className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="w-8 h-8 bg-emerald-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
+                      <Bell className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-sm mb-1">Stay Active</h4>
@@ -1323,11 +1323,11 @@ export function ProfessionalProfilePage() {
           {activeTab === 'account' && (
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Settings className="w-3.5 h-3.5 text-emerald-600" /> Account Settings
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
+                  <Settings className="w-4 h-4 text-emerald-600" /> Account Settings
                 </h2>
                 <form onSubmit={handleAccountSave} className="space-y-1.5">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
                       <input type="text" value={accountData.name} onChange={(e) => setAccountData({ ...accountData, name: e.target.value })}
@@ -1335,7 +1335,7 @@ export function ProfessionalProfilePage() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed" placeholder="Your full name" />
                       {nameLock.locked && (
                         <p className="text-xs text-amber-600 mt-1 flex items-center gap-1">
-                          <Lock className="w-3 h-3" /> Name locked for security — you can change it on {nameLock.unlockDate}.
+                          <Lock className="w-3.5 h-3.5" /> Name locked for security — you can change it on {nameLock.unlockDate}.
                         </p>
                       )}
                     </div>
@@ -1348,11 +1348,11 @@ export function ProfessionalProfilePage() {
                             <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
                           ) : emailVerified ? (
                             <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
-                              <Check className="w-3 h-3" /> Verified
+                              <Check className="w-3.5 h-3.5" /> Verified
                             </span>
                           ) : (
                             <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
-                              <AlertCircle className="w-3 h-3" /> Not Verified
+                              <AlertCircle className="w-3.5 h-3.5" /> Not Verified
                             </span>
                           )}
                         </div>
@@ -1366,9 +1366,9 @@ export function ProfessionalProfilePage() {
                             className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
                           >
                             {sendingVerification ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <Loader2 className="w-4 h-4 animate-spin" />
                             ) : (
-                              <RefreshCw className="w-3.5 h-3.5" />
+                              <RefreshCw className="w-4 h-4" />
                             )}
                             {sendingVerification ? 'Sending...' : 'Verify Email'}
                           </button>
@@ -1381,7 +1381,7 @@ export function ProfessionalProfilePage() {
                       )}
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Username</label>
                       <input type="text" value={accountData.username} onChange={(e) => setAccountData({ ...accountData, username: e.target.value })}
@@ -1393,16 +1393,16 @@ export function ProfessionalProfilePage() {
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="+1 (555) 000-0000" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2"><Clock className="w-4 h-4" /> Timezone</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-3"><Clock className="w-4 h-4" /> Timezone</label>
                       <select value={accountData.timezone} onChange={(e) => setAccountData({ ...accountData, timezone: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
                         {timezones.map(tz => <option key={tz} value={tz}>{tz}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2"><Languages className="w-4 h-4" /> Language</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-3"><Languages className="w-4 h-4" /> Language</label>
                       <select value={accountData.language} onChange={(e) => setAccountData({ ...accountData, language: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all">
                         {languageOptions.map(lang => <option key={lang.code} value={lang.code}>{lang.label}</option>)}
@@ -1410,8 +1410,8 @@ export function ProfessionalProfilePage() {
                     </div>
                   </div>
                   <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                      {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</> : <><Save className="w-3.5 h-3.5" /> Save Changes</>}
+                    <button type="submit" disabled={saving} className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                      {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Changes</>}
                     </button>
                   </div>
                 </form>
@@ -1419,14 +1419,14 @@ export function ProfessionalProfilePage() {
 
               {/* Account Tips — fills blank space */}
               <div className="bg-gradient-to-br from-blue-50 to-white rounded-xl p-3 border border-blue-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-blue-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Settings className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Profile Completeness</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Adding your timezone helps clients know your availability hours for real-time collaboration.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Adding your timezone helps clients know your availability hours for real-time collaboration.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1435,7 +1435,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Language Preference</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Set your preferred language to receive AI matches and notifications in your language.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Set your preferred language to receive AI matches and notifications in your language.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1444,7 +1444,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Account Security</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Visit the Security tab to enable 2FA and protect your account from unauthorized access.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Visit the Security tab to enable 2FA and protect your account from unauthorized access.</p>
                     </div>
                   </div>
                 </div>
@@ -1456,14 +1456,14 @@ export function ProfessionalProfilePage() {
           {activeTab === 'security' && (
             <div className="space-y-1.5">
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Lock className="w-3.5 h-3.5 text-emerald-600" /> Change Password
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
+                  <Lock className="w-4 h-4 text-emerald-600" /> Change Password
                 </h2>
-                <form onSubmit={handlePasswordChange} className="space-y-2">
+                <form onSubmit={handlePasswordChange} className="space-y-4">
                   <p className="text-sm text-slate-500 bg-slate-50 rounded-xl p-4">
                     For security, you'll be asked to confirm your identity before the password is changed.
                   </p>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">New Password</label>
                       <div className="relative">
@@ -1493,7 +1493,7 @@ export function ProfessionalProfilePage() {
                       <p className="text-xs text-slate-500">Log out every other device after the password change</p>
                     </div>
                   </label>
-                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                  <button type="submit" disabled={saving} className="w-full inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
                     {saving ? 'Updating...' : 'Update Password'}
                   </button>
                 </form>
@@ -1501,8 +1501,8 @@ export function ProfessionalProfilePage() {
 
               {/* 2FA */}
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <Shield className="w-3.5 h-3.5 text-emerald-600" /> Two-Factor Authentication
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                  <Shield className="w-4 h-4 text-emerald-600" /> Two-Factor Authentication
                 </h2>
                 <p className="text-slate-600 mb-2">{twoFactorEnabled ? '2FA is enabled. Your account is more secure.' : 'Add an extra layer of security with 2FA.'}</p>
                 {!showQrCode && !showRecoveryCodes && (
@@ -1513,7 +1513,7 @@ export function ProfessionalProfilePage() {
                       {!confirmDisable2FA ? (
                         <button onClick={handleDisable2FA} disabled={twoFactorLoading} className="px-4 py-2 text-sm font-medium text-red-600 bg-white border border-red-200 rounded-xl hover:bg-red-50 transition-colors">Disable</button>
                       ) : (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <input
                             value={twoFactorCode}
                             onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
@@ -1534,14 +1534,14 @@ export function ProfessionalProfilePage() {
                     </div>
                   ) : (
                     <button onClick={handleSetup2FA} disabled={twoFactorLoading}
-                      className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                      {twoFactorLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <QrCode className="w-3.5 h-3.5" />}
+                      className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                      {twoFactorLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <QrCode className="w-4 h-4" />}
                       {twoFactorLoading ? 'Setting up...' : 'Enable Two-Factor Authentication'}
                     </button>
                   )
                 )}
                 {showQrCode && (
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <div className="flex justify-center p-6 bg-white border-2 border-dashed border-slate-200 rounded-xl">
                       <div className="text-center">
                         {qrCodeUrl ? <img src={qrCodeUrl} alt="QR Code" className="w-48 h-48 mx-auto" /> : <div className="w-48 h-48 bg-slate-100 rounded-lg flex items-center justify-center"><QrCode className="w-16 h-16 text-slate-400" /></div>}
@@ -1556,23 +1556,23 @@ export function ProfessionalProfilePage() {
                     )}
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Verify Code</label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <input type="text" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value)} placeholder="000000" maxLength={6}
                           className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all text-center text-lg font-mono tracking-widest" />
                         <button onClick={handleVerify2FA} disabled={twoFactorLoading || twoFactorCode.length !== 6}
-                          className="px-3 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">{twoFactorLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Verify'}</button>
+                          className="px-3 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">{twoFactorLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify'}</button>
                       </div>
                     </div>
                   </div>
                 )}
                 {showRecoveryCodes && (
                   <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-3.5 h-3.5 text-amber-600" /><p className="font-medium text-amber-800">Recovery Codes</p></div>
+                    <div className="flex items-center gap-3 mb-2"><AlertTriangle className="w-4 h-4 text-amber-600" /><p className="font-medium text-amber-800">Recovery Codes</p></div>
                     <p className="text-sm text-amber-700 mb-3">Save these codes in a secure place.</p>
-                    <div className="grid grid-cols-2 gap-2 mb-3">
+                    <div className="grid grid-cols-2 gap-3 mb-3">
                       {recoveryCodes.map((code, i) => <code key={i} className="p-2 bg-white border border-amber-300 rounded-lg text-sm font-mono text-center">{code}</code>)}
                     </div>
-                    <button onClick={handleCopyRecoveryCodes} className="flex items-center gap-2 text-sm font-medium text-amber-700 hover:text-amber-800">
+                    <button onClick={handleCopyRecoveryCodes} className="flex items-center gap-3 text-sm font-medium text-amber-700 hover:text-amber-800">
                       {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}{copied ? 'Copied!' : 'Copy Codes'}
                     </button>
                   </div>
@@ -1581,13 +1581,13 @@ export function ProfessionalProfilePage() {
 
               {/* Active Sessions */}
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-                  <Monitor className="w-3.5 h-3.5 text-emerald-600" /> Active Sessions
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                  <Monitor className="w-4 h-4 text-emerald-600" /> Active Sessions
                 </h2>
                 <p className="text-sm text-slate-600 mb-2">You have {activeSessions} active session{activeSessions !== 1 ? 's' : ''}</p>
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                   <div className="flex items-center gap-1.5">
-                    <Monitor className="w-3.5 h-3.5 text-slate-400" />
+                    <Monitor className="w-4 h-4 text-slate-400" />
                     <div><p className="font-medium text-slate-900">Current Session</p><p className="text-sm text-slate-500">{sessionInfo}</p></div>
                   </div>
                   <span className="flex items-center gap-1 text-xs text-emerald-600 font-medium"><span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" /> Active now</span>
@@ -1596,14 +1596,14 @@ export function ProfessionalProfilePage() {
 
               {/* Security Tips — fills blank space */}
               <div className="bg-gradient-to-br from-amber-50 to-white rounded-xl p-3 border border-amber-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-amber-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Lock className="w-4 h-4 text-amber-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Strong Passwords</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Use a mix of letters, numbers, and symbols. Never reuse passwords across different sites.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Use a mix of letters, numbers, and symbols. Never reuse passwords across different sites.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1612,7 +1612,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Enable 2FA</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Two-factor authentication adds an extra layer of security. Highly recommended for all accounts.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Two-factor authentication adds an extra layer of security. Highly recommended for all accounts.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1621,7 +1621,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Monitor Sessions</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Regularly check your active sessions and sign out from devices you no longer use.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Regularly check your active sessions and sign out from devices you no longer use.</p>
                     </div>
                   </div>
                 </div>
@@ -1633,16 +1633,16 @@ export function ProfessionalProfilePage() {
           {activeTab === 'notifications' && (
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Bell className="w-3.5 h-3.5 text-emerald-600" /> Notification Preferences
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
+                  <Bell className="w-4 h-4 text-emerald-600" /> Notification Preferences
                 </h2>
-                <div className="space-y-2 mb-3">
+                <div className="space-y-4 mb-3">
                   {Object.entries(notifications).map(([key, value]) => (
                     <div key={key} className="p-4 border border-slate-200 rounded-xl">
                       <p className="font-medium text-slate-900 mb-3 capitalize">{key}</p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-3">
                         {Object.entries(value).map(([type, enabled]) => (
-                          <label key={type} className="flex items-center gap-2 cursor-pointer">
+                          <label key={type} className="flex items-center gap-3 cursor-pointer">
                             <input type="checkbox" checked={enabled} onChange={(e) => setNotifications({ ...notifications, [key]: { ...value, [type]: e.target.checked } })}
                               className="w-4 h-4 text-emerald-600 rounded border-slate-300" />
                             <span className="text-sm text-slate-600 capitalize">{type === 'inApp' ? 'In-App' : type === 'push' ? 'Push' : 'Email'}</span>
@@ -1653,22 +1653,22 @@ export function ProfessionalProfilePage() {
                   ))}
                 </div>
                 <div className="flex justify-end">
-                  <button onClick={handleNotificationsSave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                    {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</> : <><Save className="w-3.5 h-3.5" /> Save Preferences</>}
+                  <button onClick={handleNotificationsSave} disabled={saving} className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                    {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Preferences</>}
                   </button>
                 </div>
               </div>
 
               {/* Notifications Tips — fills blank space */}
               <div className="bg-gradient-to-br from-purple-50 to-white rounded-xl p-3 border border-purple-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-purple-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Bell className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Stay Updated</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Enable push notifications to get instant updates about new proposals, messages, and projects.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Enable push notifications to get instant updates about new proposals, messages, and projects.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1677,7 +1677,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Email Digests</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Email notifications ensure you never miss important updates even when you're away from the platform.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Email notifications ensure you never miss important updates even when you're away from the platform.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1686,7 +1686,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Control Frequency</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">You can fine-tune which notifications you receive for each category. Disable what you don't need.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">You can fine-tune which notifications you receive for each category. Disable what you don't need.</p>
                     </div>
                   </div>
                 </div>
@@ -1698,8 +1698,8 @@ export function ProfessionalProfilePage() {
           {activeTab === 'privacy' && (
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <Globe className="w-3.5 h-3.5 text-emerald-600" /> Privacy Settings
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
+                  <Globe className="w-4 h-4 text-emerald-600" /> Privacy Settings
                 </h2>
                 <div className="space-y-1.5">
                   <div>
@@ -1720,12 +1720,12 @@ export function ProfessionalProfilePage() {
                     <div key={key} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                       <div><p className="font-medium text-slate-900">{label}</p><p className="text-sm text-slate-600">{desc}</p></div>
                       <input type="checkbox" checked={(privacy as any)[key]} onChange={(e) => setPrivacy({ ...privacy, [key]: e.target.checked })}
-                        className="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 cursor-pointer" />
+                        className="w-4 h-4 text-emerald-600 rounded border-slate-300 cursor-pointer" />
                     </div>
                   ))}
                   <div className="flex justify-end pt-4 border-t border-slate-100">
-                    <button onClick={handlePrivacySave} disabled={saving} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
-                      {saving ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving...</> : <><Save className="w-3.5 h-3.5" /> Save Privacy Settings</>}
+                    <button onClick={handlePrivacySave} disabled={saving} className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50">
+                      {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : <><Save className="w-4 h-4" /> Save Privacy Settings</>}
                     </button>
                   </div>
                 </div>
@@ -1733,14 +1733,14 @@ export function ProfessionalProfilePage() {
 
               {/* Privacy Tips — fills blank space */}
               <div className="bg-gradient-to-br from-sky-50 to-white rounded-xl p-3 border border-sky-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-sky-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <Globe className="w-4 h-4 text-sky-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Profile Visibility</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Choose who can discover your profile. Public profiles get the most client matches.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Choose who can discover your profile. Public profiles get the most client matches.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1749,7 +1749,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Online Status</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Showing your online status helps clients know when you're available for quick responses.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Showing your online status helps clients know when you're available for quick responses.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1758,7 +1758,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Direct Messages</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Keep DMs open to receive project invitations directly from interested clients.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Keep DMs open to receive project invitations directly from interested clients.</p>
                     </div>
                   </div>
                 </div>
@@ -1770,15 +1770,15 @@ export function ProfessionalProfilePage() {
           {activeTab === 'payout' && (
             <>
               <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-                <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                  <IndianRupee className="w-3.5 h-3.5 text-emerald-600" /> Payout Methods
+                <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
+                  <IndianRupee className="w-4 h-4 text-emerald-600" /> Payout Methods
                 </h2>
                 {payoutMethodsLoading && (
                   <div className="flex items-center justify-center py-4 mb-3"><Loader2 className="w-4 h-4 animate-spin text-emerald-600" /><span className="ml-3 text-sm text-slate-500">Loading...</span></div>
                 )}
                 {payoutMethodsError && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-3 flex items-center gap-2">
-                    <AlertCircle className="w-3.5 h-3.5 text-red-600" /><p className="text-sm text-red-700">{payoutMethodsError}</p>
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-3 flex items-center gap-3">
+                    <AlertCircle className="w-4 h-4 text-red-600" /><p className="text-sm text-red-700">{payoutMethodsError}</p>
                     <button onClick={() => void fetchPayoutMethods()} className="ml-auto text-xs text-red-600 font-medium underline">Retry</button>
                   </div>
                 )}
@@ -1787,19 +1787,19 @@ export function ProfessionalProfilePage() {
                     {payoutMethods.map(method => (
                       <div key={method.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                         <div className="flex items-center gap-1.5">
-                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${method.type === 'paypal' ? 'bg-blue-100' : method.type === 'upi' ? 'bg-violet-100' : 'bg-green-100'}`}>
-                            {method.type === 'paypal' ? <span className="text-blue-600 font-bold text-sm">P</span> : method.type === 'upi' ? <span className="text-violet-600 font-bold text-sm">U</span> : <Briefcase className="w-3.5 h-3.5 text-green-600" />}
+                          <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${method.type === 'paypal' ? 'bg-blue-100' : method.type === 'upi' ? 'bg-violet-100' : 'bg-green-100'}`}>
+                            {method.type === 'paypal' ? <span className="text-blue-600 font-bold text-sm">P</span> : method.type === 'upi' ? <span className="text-violet-600 font-bold text-sm">U</span> : <Briefcase className="w-4 h-4 text-green-600" />}
                           </div>
                           <div><p className="font-medium text-slate-900">{method.type === 'paypal' ? 'PayPal' : method.type === 'upi' ? `UPI — ${method.upi_id || ''}` : `Bank — ${method.bank_name || ''}`}</p>
                           <p className="text-sm text-slate-500">{method.type === 'paypal' ? method.email : method.type === 'upi' ? method.upi_id : `${method.account_holder_name || ''} ••••${method.account_number?.slice(-4) || ''}`}</p></div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           {method.is_default && <span className="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-lg font-medium">Default</span>}
                           {!method.is_default && <button onClick={() => handleSetDefaultPayout(method.id)} className="text-xs text-slate-500 hover:text-emerald-600 font-medium">Set Default</button>}
                           {confirmDeletePayout === method.id ? (
                             <div className="flex items-center gap-1">
                               <button onClick={() => handleRemovePayout(method.id)} disabled={deletingPayoutId === method.id}
-                                className="text-xs px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50">{deletingPayoutId === method.id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Confirm'}</button>
+                                className="text-xs px-2 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium disabled:opacity-50">{deletingPayoutId === method.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Confirm'}</button>
                               <button onClick={() => setConfirmDeletePayout(null)} className="text-xs px-2 py-1 bg-slate-200 text-slate-600 rounded-lg hover:bg-slate-300 font-medium">Cancel</button>
                             </div>
                           ) : (
@@ -1820,7 +1820,7 @@ export function ProfessionalProfilePage() {
                 {showAddPayout ? (
                   <div className="p-4 border-2 border-dashed border-slate-200 rounded-xl">
                     <h3 className="font-medium text-slate-900 mb-2">Add Payout Method</h3>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Method Type</label>
                         <select value={newPayout.type} onChange={(e) => setNewPayout({ ...newPayout, type: e.target.value as any })}
@@ -1851,7 +1851,7 @@ export function ProfessionalProfilePage() {
                             <label className="block text-sm font-medium text-slate-700 mb-2">Account Holder Name <span className="text-red-400">*</span></label>
                             <input type="text" value={newPayout.accountHolderName} onChange={(e) => setNewPayout({ ...newPayout, accountHolderName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" />
                           </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label className="block text-sm font-medium text-slate-700 mb-2">Bank Name</label>
                               <input type="text" value={newPayout.bankName} onChange={(e) => setNewPayout({ ...newPayout, bankName: e.target.value })} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="e.g. HDFC Bank" />
@@ -1868,10 +1868,10 @@ export function ProfessionalProfilePage() {
                           <p className="text-xs text-slate-400 mt-1">Bank transfers are processed via RazorpayX (INR)</p>
                         </>
                       )}
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <button onClick={() => setShowAddPayout(false)} className="flex-1 px-4 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-colors">Cancel</button>
-                        <button onClick={handleAddPayout} disabled={addingPayout} className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50">
-                          {addingPayout ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <IndianRupee className="w-3.5 h-3.5" />}
+                        <button onClick={handleAddPayout} disabled={addingPayout} className="flex-1 flex items-center justify-center gap-3 px-4 py-3 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50">
+                          {addingPayout ? <Loader2 className="w-4 h-4 animate-spin" /> : <IndianRupee className="w-4 h-4" />}
                           {addingPayout ? 'Adding...' : 'Add Method'}
                         </button>
                       </div>
@@ -1879,22 +1879,22 @@ export function ProfessionalProfilePage() {
                   </div>
                 ) : (
                   <button onClick={() => setShowAddPayout(true)} disabled={payoutMethodsLoading}
-                    className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 hover:text-emerald-600 hover:border-emerald-300 transition-all w-full justify-center disabled:opacity-50">
-                    <IndianRupee className="w-3.5 h-3.5" /> Add Payout Method
+                    className="flex items-center gap-3 px-4 py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-500 hover:text-emerald-600 hover:border-emerald-300 transition-all w-full justify-center disabled:opacity-50">
+                    <IndianRupee className="w-4 h-4" /> Add Payout Method
                   </button>
                 )}
               </div>
 
               {/* Payout Tips — fills blank space */}
               <div className="bg-gradient-to-br from-green-50 to-white rounded-xl p-3 border border-green-100 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="flex items-start gap-1.5">
                     <div className="w-9 h-9 bg-green-100 rounded-xl flex items-center justify-center shrink-0 mt-0.5">
                       <IndianRupee className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Quick Payouts</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">Set up your preferred payout method to receive payments quickly once a project milestone is completed.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">Set up your preferred payout method to receive payments quickly once a project milestone is completed.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1903,7 +1903,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Multiple Methods</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">You can add multiple payout methods and set one as default for automatic payments.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">You can add multiple payout methods and set one as default for automatic payments.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">
@@ -1912,7 +1912,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-xs mb-1">Secure Transactions</h4>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">All transactions are processed securely via encrypted channels. Your financial data is protected.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">All transactions are processed securely via encrypted channels. Your financial data is protected.</p>
                     </div>
                   </div>
                 </div>
@@ -1923,13 +1923,13 @@ export function ProfessionalProfilePage() {
           {/* ═══ DELETION TAB ═══ */}
           {activeTab === 'deletion' && (
             <div className="bg-white p-6 rounded-xl border border-slate-100 shadow-sm">
-              <h2 className="font-display text-lg font-bold text-slate-900 mb-3 flex items-center gap-2">
-                <Trash2 className="w-3.5 h-3.5 text-red-500" /> Delete Account
+              <h2 className="font-display text-xl font-bold text-slate-900 mb-3 flex items-center gap-3">
+                <Trash2 className="w-4 h-4 text-red-500" /> Delete Account
               </h2>
               {deletionStep === 'initial' && (
                 <div className="space-y-1.5">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2"><AlertTriangle className="w-3.5 h-3.5 text-red-600" /><p className="font-medium text-red-800">Warning: This cannot be undone</p></div>
+                    <div className="flex items-center gap-3 mb-2"><AlertTriangle className="w-4 h-4 text-red-600" /><p className="font-medium text-red-800">Warning: This cannot be undone</p></div>
                     <p className="text-sm text-red-700">Deleting your account will permanently remove all your data including projects, contracts, messages, and payment history.</p>
                   </div>
                   <div>
@@ -1942,25 +1942,25 @@ export function ProfessionalProfilePage() {
                       <div><p className="font-medium text-slate-900">I understand this action is irreversible</p><p className="text-sm text-slate-500">I confirm permanent deletion</p></div>
                     </label>
                   </div>
-                  <button onClick={() => setDeletionStep('confirm')} disabled={!acceptedTerms} className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
-                    <Trash2 className="w-3.5 h-3.5" /> Continue with Deletion
+                  <button onClick={() => setDeletionStep('confirm')} disabled={!acceptedTerms} className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
+                    <Trash2 className="w-4 h-4" /> Continue with Deletion
                   </button>
                 </div>
               )}
               {deletionStep === 'confirm' && (
                 <div className="space-y-1.5">
                   <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
-                    <AlertTriangle className="w-3.5 h-3.5 text-red-600 mb-2" />
+                    <AlertTriangle className="w-4 h-4 text-red-600 mb-2" />
                     <p className="font-medium text-red-800">Final Confirmation</p>
                     <p className="text-sm text-red-700 mt-1">Type <strong>DELETE</strong> below to confirm</p>
                   </div>
                   <input type="text" value={deletionConfirm} onChange={(e) => setDeletionConfirm(e.target.value)} placeholder="Type DELETE to confirm"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-center text-lg font-bold" />
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-red-500 focus:ring-2 focus:ring-red-200 outline-none transition-all text-center text-xl font-bold" />
                   <div className="flex gap-1.5">
                     <button onClick={() => { setDeletionStep('initial'); setDeletionConfirm(''); }} className="flex-1 px-3 py-3 bg-slate-100 text-slate-700 font-medium rounded-xl hover:bg-slate-200 transition-all">Cancel</button>
                     <button onClick={handleRequestDeletion} disabled={deletionConfirm !== 'DELETE'}
-                      className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
-                      {(deletionStep as string) === 'processing' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                      className="flex-1 inline-flex items-center justify-center gap-3 px-3 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-all disabled:opacity-50">
+                      {(deletionStep as string) === 'processing' ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                       Permanently Delete Account
                     </button>
                   </div>

@@ -76,11 +76,11 @@ export function IndustrySelect({
             setOpen((o) => !o);
           }
         }}
-        className="w-full flex items-center justify-between gap-2 px-4 py-3 rounded-xl border border-slate-200 bg-white text-left cursor-pointer focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all hover:border-slate-300"
+        className="w-full flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-slate-200 bg-white text-left cursor-pointer focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all hover:border-slate-300"
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className="flex items-center gap-2.5 min-w-0">
+        <span className="flex items-center gap-3.5 min-w-0">
           <Building2 className="w-4 h-4 text-slate-400 shrink-0" />
           <span className={`truncate text-sm ${value ? 'text-slate-900 font-medium' : 'text-slate-400'}`}>
             {value || (loading ? 'Loading industries...' : placeholder)}
@@ -138,13 +138,13 @@ export function IndustrySelect({
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => handleSelect(industry.name)}
-                    className={`w-full flex items-center justify-between gap-2 px-4 py-2.5 text-sm transition-colors ${
+                    className={`w-full flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors ${
                       isSelected
                         ? 'bg-emerald-50 text-emerald-700 font-medium'
                         : 'text-slate-700 hover:bg-slate-50'
                     }`}
                   >
-                    <span className="flex items-center gap-2.5 min-w-0">
+                    <span className="flex items-center gap-3.5 min-w-0">
                       <Building2 className={`w-4 h-4 shrink-0 ${isSelected ? 'text-emerald-500' : 'text-slate-300'}`} />
                       <span className="truncate">{industry.name}</span>
                     </span>
@@ -157,10 +157,10 @@ export function IndustrySelect({
 
           {/* Footer count */}
           <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
               {industries.length} industries
             </span>
-            <span className="text-[10px] text-slate-400">Real-time · All sectors</span>
+            <span className="text-xs text-slate-400">Real-time · All sectors</span>
           </div>
         </div>
       )}

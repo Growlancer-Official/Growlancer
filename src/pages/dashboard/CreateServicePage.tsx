@@ -359,11 +359,11 @@ export function CreateServicePage() {
           : 'Create a professional service offering to attract clients and grow your business'}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {/* Service Image */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Image className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <Image className="w-4 h-4 text-emerald-600" />
             Service Image
           </h2>
           <div className="space-y-1">
@@ -384,15 +384,15 @@ export function CreateServicePage() {
 
         {/* Basic Information */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Briefcase className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <Briefcase className="w-4 h-4 text-emerald-600" />
             Basic Information
           </h2>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Service Title *</label>
-              <div className="flex items-start gap-2">
+              <div className="flex items-start gap-3">
                 <input
                   type="text"
                   required
@@ -425,7 +425,7 @@ export function CreateServicePage() {
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all resize-none"
                 placeholder="Describe your service in detail. Include what you deliver, your process, and what makes you unique..."
               />
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-3">
                 <AIGenerateModal
                   field="service_description"
                   triggerLabel="Write description with AI"
@@ -435,7 +435,7 @@ export function CreateServicePage() {
                   }}
                   onApply={(text) => setFormData({ ...formData, description: text })}
                 />
-                <span className="text-[11px] text-slate-400">Free: 5/day · Pro: unlimited</span>
+                <span className="text-xs text-slate-400">Free: 5/day · Pro: unlimited</span>
               </div>
               <p className="text-xs text-slate-500 mt-1">Minimum 150 characters recommended for better SEO</p>
             </div>
@@ -461,12 +461,12 @@ export function CreateServicePage() {
 
         {/* Pricing & Delivery — FINAL MODEL: 3 package tiers + addons */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <IndianRupee className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <IndianRupee className="w-4 h-4 text-emerald-600" />
             Packages & Pricing
           </h2>
 
-          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-2.5 mb-2.5">
+          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-3.5 mb-2.5">
             <Shield className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-sm font-semibold text-slate-900">3 tiers — free for every freelancer, no subscription needed</p>
@@ -479,23 +479,23 @@ export function CreateServicePage() {
           </div>
 
           {/* Package tiers */}
-          <div className="space-y-2">
+          <div className="space-y-4">
             {formData.packages.map((pkg) => {
               const meta = TIER_META[pkg.tier];
               const isBasic = pkg.tier === 'basic';
               return (
                 <div key={pkg.tier} className={`rounded-xl border p-5 ${meta.accent}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
                     <div>
-                      <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                      <h3 className="font-bold text-slate-900 flex items-center gap-3">
                         {meta.label}
                         {isBasic && (
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Required</span>
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Required</span>
                         )}
                       </h3>
                       <p className="text-xs text-slate-500 mt-0.5">{meta.hint}</p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <span className="text-xs text-slate-500">Price ({currencySymbol()})</span>
                       <input
                         type="number"
@@ -555,9 +555,9 @@ export function CreateServicePage() {
                     <label className="block text-xs font-medium text-slate-600 mb-1">
                       What's included (deliverables)
                     </label>
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       {pkg.deliverables.map((d, i) => (
-                        <div key={i} className="flex gap-2">
+                        <div key={i} className="flex gap-3">
                           <input
                             type="text"
                             value={d}
@@ -580,7 +580,7 @@ export function CreateServicePage() {
                         onClick={() => addDeliverable(pkg.tier)}
                         className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-white border border-emerald-200 rounded-lg hover:bg-emerald-50 transition-colors"
                       >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-4 h-4" />
                         Add deliverable
                       </button>
                     </div>
@@ -596,7 +596,7 @@ export function CreateServicePage() {
               <Layers className="w-4 h-4 text-emerald-600" />
               Milestone structure
             </p>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => setFormData({ ...formData, milestone_mode: 'single' })}
@@ -635,7 +635,7 @@ export function CreateServicePage() {
             <p className="text-xs text-slate-500 mb-3 leading-relaxed">
               Offer extras clients can add at checkout — faster delivery, extra revisions, or anything else you sell.
             </p>
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-3 mb-3">
               {formData.addons.map((addon) => (
                 <span
                   key={addon.id}
@@ -648,12 +648,12 @@ export function CreateServicePage() {
                     className="hover:text-violet-900"
                     title="Remove add-on"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </span>
               ))}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               <input
                 type="text"
                 value={addonInput.title}
@@ -675,14 +675,14 @@ export function CreateServicePage() {
               <button
                 type="button"
                 onClick={handleAddAddon}
-                className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-2"
+                className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-3"
               >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div className="mt-5 p-4 bg-blue-50 rounded-xl flex items-start gap-2">
+          <div className="mt-5 p-4 bg-blue-50 rounded-xl flex items-start gap-3">
             <Shield className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
             <p className="text-xs text-blue-700 leading-relaxed">
               <strong>Professional note:</strong> Package prices are locked into escrow when a client orders — the client
@@ -693,7 +693,7 @@ export function CreateServicePage() {
           </div>
 
           {/* 💡 Tip + Negotiable — professional ways to win more orders */}
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-2">
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="p-4 rounded-xl border border-slate-200 bg-white">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
@@ -751,13 +751,13 @@ export function CreateServicePage() {
 
         {/* Service Features */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
             Service Features
           </h2>
 
           <div className="mb-2">
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <input
                 type="text"
                 value={featureInput}
@@ -771,27 +771,27 @@ export function CreateServicePage() {
                 onClick={handleAddFeature}
                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           {formData.features.length > 0 && (
-            <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl">
+            <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-xl">
               <span className="text-sm font-medium text-slate-700">Features:</span>
               {formData.features.map((feature) => (
                 <span
                   key={feature}
                   className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full flex items-center gap-1"
                 >
-                  <Zap className="w-3 h-3" />
+                  <Zap className="w-3.5 h-3.5" />
                   {feature}
                   <button
                     type="button"
                     onClick={() => handleRemoveFeature(feature)}
                     className="hover:text-emerald-900 ml-1"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
               ))}
@@ -807,13 +807,13 @@ export function CreateServicePage() {
 
         {/* Tags */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Tag className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <Tag className="w-4 h-4 text-emerald-600" />
             Search Tags
           </h2>
 
           <div className="mb-2">
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <input
                 type="text"
                 value={tagInput}
@@ -827,12 +827,12 @@ export function CreateServicePage() {
                 onClick={handleCustomTag}
                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2 mb-2">
+          <div className="flex flex-wrap gap-3 mb-2">
             {popularTags.map((tag) => (
               <button
                 key={tag}
@@ -850,7 +850,7 @@ export function CreateServicePage() {
           </div>
 
           {formData.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-xl">
+            <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-xl">
               <span className="text-sm font-medium text-slate-700">Selected:</span>
               {formData.tags.map((tag) => (
                 <span
@@ -863,7 +863,7 @@ export function CreateServicePage() {
                     onClick={() => handleRemoveTag(tag)}
                     className="hover:text-emerald-900"
                   >
-                    <X className="w-3 h-3" />
+                    <X className="w-3.5 h-3.5" />
                   </button>
                 </span>
               ))}
@@ -873,8 +873,8 @@ export function CreateServicePage() {
 
         {/* Requirements */}
         <div className="bg-white p-6 rounded-xl border border-slate-100">
-          <h2 className="font-display text-lg font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-emerald-600" />
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <Shield className="w-4 h-4 text-emerald-600" />
             Client Requirements
           </h2>
 
@@ -892,7 +892,7 @@ export function CreateServicePage() {
         </div>
 
         {/* Submit */}
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => navigate('/dashboard/services')}
@@ -903,7 +903,7 @@ export function CreateServicePage() {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <>
@@ -912,9 +912,9 @@ export function CreateServicePage() {
               </>
             ) : (
               <>
-                <CheckCircle className="w-3.5 h-3.5" />
+                <CheckCircle className="w-4 h-4" />
                 {isEditMode ? 'Save Changes' : 'Publish Service'}
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-4 h-4" />
               </>
             )}
           </button>

@@ -45,7 +45,7 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-2">
             You explicitly acknowledge and agree that:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li><strong>Independent Status:</strong> Freelancers are independent contractors, not employees, agents, or partners of Growlancer or the Client. Nothing in these Terms creates an employment, agency, partnership, or joint venture relationship between you and Growlancer, and no freelancer is entitled to employee benefits, withholdings, or protections provided to employees.</li>
             <li><strong>Service Contracts:</strong> Upon a Client purchasing a Freelancer's Service or awarding a bid, a direct, legally binding contract is established between the Client and the Freelancer. Growlancer is not a party to this contract, but acts as a secure platform and escrow facilitator.</li>
             <li><strong>Performance Quality:</strong> Freelancers are solely responsible for the quality, accuracy, and timely delivery of their work as agreed upon in the workspace.</li>
@@ -62,7 +62,7 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-2">
             To sustain our real-time synchronization servers, AI semantic matching models, and secure escrow operations, Growlancer implements a highly competitive and flat fee structure across all transactions.
           </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Client Fee</span>
@@ -80,7 +80,7 @@ const termsSections: Section[] = [
                   We believe in empowering creators. Growlancer charges freelancers zero percentage fees on standard contracts. The amount earned is the amount received in your wallet.
                 </p>
                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                  <p className="text-[10px] text-amber-800 font-medium">
+                  <p className="text-xs text-amber-800 font-medium">
                     <strong>Note:</strong> A separate payment-processing fee may apply when you withdraw funds from your wallet, charged by our payment processor, not by Growlancer. As of the date of these Terms, RazorpayX (India) withdrawals incur a 2% processing fee, though this rate may change from time to time. PayPal withdrawals are coming soon. Any current applicable fees are clearly displayed before you confirm any transaction or withdrawal.
                   </p>
                 </div>
@@ -102,7 +102,7 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer's proprietary <strong>Escrow Safety Protection</strong> is designed to help reduce financial risk for both parties and minimize the coordination gaps that can occur on freelancing platforms. Escrow helps protect both clients and freelancers by holding funds until agreed milestones or completion conditions are met, but it cannot eliminate every dispute.
           </p>
-          <div className="relative border-l-2 border-emerald-500 pl-4 space-y-2 mb-3">
+          <div className="relative border-l-2 border-emerald-500 pl-4 space-y-4 mb-3">
             <div>
               <h5 className="font-bold text-slate-900 text-sm">A. Contract Funding</h5>
               <p className="text-slate-600 text-xs mt-1">Clients must fully fund the contract amount (milestone or project total + the 5% platform fee) into a secure Growlancer Escrow balance before the Freelancer starts working. This is designed to help confirm that funds are available before work begins.</p>
@@ -136,7 +136,7 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-2">
             Intellectual Property ("IP") rights are critical for both clients and freelancers. Unless explicitly agreed otherwise in a custom written contract between the Freelancer and the Client:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li><strong>Automatic Transfer:</strong> Upon the Client's final payment release of the respective project's escrow funds, all intellectual property rights, ownership, and titles in the deliverables created specifically for that project are transferred to the Client, subject to any separate written agreement between the Freelancer and Client to the contrary.</li>
             <li><strong>Pre-Existing Intellectual Property:</strong> The Freelancer retains all rights to any pre-existing code, libraries, design templates, and tools used during the project. Freelancer grants the Client a perpetual, royalty-free, worldwide license to use such pre-existing intellectual property within the deliverables, as is standard for platform-delivered work.</li>
             <li><strong>Platform Portfolio Rights:</strong> Freelancers are granted a limited license to showcase completed deliverables in their Growlancer portfolios, unless the Client has purchased a "Private Work" contract that specifies confidentiality.</li>
@@ -161,7 +161,7 @@ const termsSections: Section[] = [
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
               The 3-Step Dispute Protocol:
             </h5>
-            <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-2">
+            <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-4">
               <li><strong>1. Coordination Check (48 Hours):</strong> Upon raising a dispute, the contract status is changed to "disputed". The workspace asset locker is frozen, preventing any further uploads or modifications. The client and freelancer are given 48 hours to communicate and resolve the issue mutually (e.g. adjust task requirements or agree to a partial refund).</li>
               <li><strong>2. AI-Assisted Audit:</strong> If no agreement is reached, either party may escalate the dispute to the Growlancer Dispute Center. Our AI Mediator may assist by evaluating workspace logs, chat archives, and task cards, and may propose a split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point for resolution. AI assistance is provided to support, not replace, human judgment.</li>
               <li><strong>3. Human Review & Binding Decision:</strong> A human dispute resolution specialist reviews the AI's recommendation, along with all evidence, and confirms or adjusts the proposed split. Growlancer then issues a final, binding escrow allocation decision. Both parties agree to abide by this decision. Funds are moved only after human confirmation.</li>
@@ -182,7 +182,7 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-2">
             Prohibited actions include:
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li>Exchanging direct emails, phone numbers, MessageSquare invites, or social accounts prior to a contract being funded.</li>
             <li>Soliciting, suggesting, or accepting direct payments outside of the Growlancer system (e.g. direct PayPal, wire transfers, crypto payments) for projects initially sourced on Growlancer.</li>
             <li>Registering multiple user accounts under fake identities to game our AI matching systems or bypass platform suspension restrictions.</li>
@@ -244,7 +244,7 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-2">
             Growlancer uses artificial intelligence ("AI") and automated systems to assist with features such as project matching, dispute analysis, workspace coordination, and AI writing (generating project titles, descriptions, service listings, and cover messages from your input). AI is intended to help improve your experience and may provide recommendations, but it does not make final or perfect decisions.
           </p>
-          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
+          <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
             <li><strong>AI Assists, It Does Not Decide:</strong> AI-generated recommendations and outputs are provided to support, not replace, human judgment. Dispute resolutions and other decisions are subject to human review where applicable.</li>
             <li><strong>Not Professional Advice:</strong> AI-generated recommendations, including matching suggestions and dispute analysis, should not be treated as legal, financial, tax, or other professional advice.</li>
             <li><strong>No Guarantee of Outcomes:</strong> AI assistance does not guarantee project success, matching quality, or any particular outcome. Outputs may occasionally require human review or correction.</li>
@@ -295,7 +295,7 @@ const termsSections: Section[] = [
           <p className="text-slate-600 leading-relaxed mb-2">
             If any provision of these Terms is deemed invalid or unenforceable, that specific clause shall be severed, and the remaining provisions shall continue in full force and effect.
           </p>
-          <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-2 mt-6">
+          <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
             <div>
               <h5 className="font-bold text-sm">Have legal or compliance questions?</h5>
               <p className="text-xs text-slate-400 mt-1">Submit a support ticket and our team will review your inquiry.</p>
@@ -350,7 +350,7 @@ export function TermsPage() {
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-3">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -369,9 +369,9 @@ export function TermsPage() {
         <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-2">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Shield className="w-3.5 h-3.5" />
+        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-4">
+          <span className="inline-flex items-center gap-3 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <Shield className="w-4 h-4" />
             Legal Terms
           </span>
           <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tight leading-none">
@@ -385,10 +385,10 @@ export function TermsPage() {
       </section>
 
       {/* Legal Structure Grid */}
-      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-2">
+      <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-3">
         {/* Sticky Sidebar Outline */}
         <div className="lg:col-span-1">
-          <div className="sticky top-24 space-y-2 bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
+          <div className="sticky top-24 space-y-4 bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
             <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Outline Navigation</h3>
             <div className="space-y-1">
               {sections.map((section) => {
@@ -404,11 +404,11 @@ export function TermsPage() {
                         : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <Icon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-emerald-600' : 'text-slate-400'}`} />
+                    <div className="flex items-center gap-3">
+                      <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-emerald-600' : 'text-slate-400'}`} />
                       <span className="truncate">{section.title.split('. ')[1] || section.title}</span>
                     </div>
-                    <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-transform ${isActive ? 'rotate-90 text-emerald-600' : 'text-slate-300'}`} />
+                    <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${isActive ? 'rotate-90 text-emerald-600' : 'text-slate-300'}`} />
                   </button>
                 );
               })}

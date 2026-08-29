@@ -12,10 +12,10 @@ export function AIAssistantPage() {
   return (
     <div className="flex-1 min-h-0 flex flex-col">
       {/* Tabs — AI Assistant and AI Support are TWO different chats, always separate */}
-      <div className="mb-3 flex items-center gap-2">
+      <div className="mb-3 flex items-center gap-3">
         <button
           onClick={() => setTab('assistant')}
-          className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+          className={`inline-flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
             tab === 'assistant'
               ? 'bg-emerald-600 text-white'
               : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'
@@ -26,7 +26,7 @@ export function AIAssistantPage() {
         </button>
         <button
           onClick={() => setTab('support')}
-          className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
+          className={`inline-flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
             tab === 'support'
               ? 'bg-emerald-600 text-white'
               : 'bg-white text-slate-600 border border-slate-200 hover:border-emerald-300'

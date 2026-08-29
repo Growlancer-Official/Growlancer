@@ -278,7 +278,7 @@ export function NotificationsPanel() {
             {notificationService.getNotificationIcon(notification.type)}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-start justify-between gap-3">
               <p className={`text-sm ${notification.read ? 'text-slate-700' : 'font-semibold text-slate-900'}`}>
                 {notification.title}
               </p>
@@ -289,7 +289,7 @@ export function NotificationsPanel() {
             <p className="text-sm text-slate-600 mt-1 line-clamp-2">{notification.message}</p>
             <div className="flex items-center gap-3 mt-2">
               <span className="text-xs text-slate-400 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
+                <Clock className="w-3.5 h-3.5" />
                 {formatTime(notification.created_at)}
               </span>
               {notification.type && (
@@ -300,7 +300,7 @@ export function NotificationsPanel() {
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 mt-3 ml-14 flex-wrap">
+        <div className="flex items-center gap-3 mt-3 ml-14 flex-wrap">
           {/* Mark as read */}
           {!notification.read && (
             <button
@@ -308,7 +308,7 @@ export function NotificationsPanel() {
               className="text-xs text-slate-500 hover:text-emerald-600 flex items-center gap-1 transition-colors"
               title="Mark as read"
             >
-              <Check className="w-3 h-3" />
+              <Check className="w-3.5 h-3.5" />
               Mark as read
             </button>
           )}
@@ -319,7 +319,7 @@ export function NotificationsPanel() {
               className="text-xs text-slate-500 hover:text-amber-600 flex items-center gap-1 transition-colors"
               title="Restore from archive"
             >
-              <ArchiveRestore className="w-3 h-3" />
+              <ArchiveRestore className="w-3.5 h-3.5" />
               Restore
             </button>
           ) : (
@@ -328,7 +328,7 @@ export function NotificationsPanel() {
               className="text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition-colors"
               title="Archive"
             >
-              <Archive className="w-3 h-3" />
+              <Archive className="w-3.5 h-3.5" />
               Archive
             </button>
           )}
@@ -338,7 +338,7 @@ export function NotificationsPanel() {
             className="text-xs text-slate-500 hover:text-red-600 flex items-center gap-1 transition-colors"
             title="Delete"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="w-3.5 h-3.5" />
             Delete
           </button>
         </div>
@@ -403,10 +403,10 @@ export function NotificationsPanel() {
                         : 'text-slate-500 hover:text-slate-700'
                     }`}
                   >
-                    <tab.icon className="w-3.5 h-3.5" />
+                    <tab.icon className="w-4 h-4" />
                     {tab.label}
                     {tab.id === 'unread' && unreadCount > 0 && (
-                      <span className="w-4 h-4 bg-blue-500 text-white text-[10px] rounded-full flex items-center justify-center ml-0.5">
+                      <span className="w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center ml-0.5">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -423,9 +423,9 @@ export function NotificationsPanel() {
                       onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                       className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg transition-colors"
                     >
-                      <Filter className="w-3 h-3" />
+                      <Filter className="w-3.5 h-3.5" />
                       {filterType ? notificationService.getNotificationTypeLabel(filterType) : 'All Types'}
-                      <ChevronDown className="w-3 h-3" />
+                      <ChevronDown className="w-3.5 h-3.5" />
                     </button>
                     {showFilterDropdown && (
                       <div className="absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-100 z-10 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-1 duration-150">
@@ -448,7 +448,7 @@ export function NotificationsPanel() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-3 ml-auto">
                   {/* Archive All Read (for 'all' and 'unread' tabs) */}
                   {activeTab !== 'archived' && unreadCount > 0 && (
                     <>
@@ -457,7 +457,7 @@ export function NotificationsPanel() {
                         className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
                         title="Archive all read notifications"
                       >
-                        <ArchiveX className="w-3 h-3" />
+                        <ArchiveX className="w-3.5 h-3.5" />
                         Archive read
                       </button>
                       <button
@@ -516,9 +516,9 @@ export function NotificationsPanel() {
               <div className="p-3 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/50">
                 <button
                   onClick={handleRequestPushPermission}
-                  className="w-full flex items-center justify-center gap-2 text-xs text-slate-600 hover:text-blue-600 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-3 text-xs text-slate-600 hover:text-blue-600 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
                 >
-                  <Smartphone className="w-3.5 h-3.5" />
+                  <Smartphone className="w-4 h-4" />
                   Enable push notifications for real-time alerts
                 </button>
               </div>

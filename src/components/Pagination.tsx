@@ -30,7 +30,7 @@ export function Pagination({ currentPage, totalItems, pageSize, onPageChange }: 
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-2 pt-6 border-t border-slate-100 mt-6">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-6 border-t border-slate-100 mt-6">
       <p className="text-sm text-slate-500">
         Showing <span className="font-medium text-slate-700">{startItem}–{endItem}</span> of{' '}
         <span className="font-medium text-slate-700">{totalItems}</span> results

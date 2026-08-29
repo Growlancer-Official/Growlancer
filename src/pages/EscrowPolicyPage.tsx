@@ -41,7 +41,7 @@ export function EscrowPolicyPage() {
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -60,8 +60,8 @@ export function EscrowPolicyPage() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Lock className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <Lock className="w-4 h-4" />
             Growlancer Escrow Protection
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
@@ -76,7 +76,7 @@ export function EscrowPolicyPage() {
       {/* Steps Section */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16 space-y-8">
         <h2 className="font-display text-2xl font-black text-slate-900 mb-8 text-center">The Escrow Lifecycle</h2>
-        <div className="space-y-2">
+        <div className="space-y-4">
           {steps.map((step, i) => (
             <div key={i} className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm flex flex-col sm:flex-row items-start gap-3 hover:border-emerald-500/20 transition-colors group">
               <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${step.color} text-white flex items-center justify-center shrink-0 shadow-md group-hover:scale-105 transition-transform`}>
@@ -94,7 +94,7 @@ export function EscrowPolicyPage() {
       {/* Fees & Transparency — the full money picture */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
         <h2 className="font-display text-2xl font-black text-slate-900 mb-3 text-center">Fees & Transparency</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
             <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Growlancer commission: 5%</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
@@ -169,7 +169,7 @@ export function EscrowPolicyPage() {
               When a dispute is raised, the escrow is frozen and no money moves while our resolution team reviews the workspace evidence — files, chat history, and the full audit trail. Both parties can communicate in the dispute thread and attach evidence. A human specialist reviews the available evidence before any funds are released, and their decision is binding. AI-assisted analysis may support the review but never makes the final call.
             </p>
             
-            <div className="pt-4 flex flex-wrap gap-2">
+            <div className="pt-4 flex flex-wrap gap-3">
               <Link
                 to="/help-center"
                 className="inline-flex h-11 px-5 items-center justify-center font-bold bg-white text-emerald-950 rounded-xl hover:bg-slate-50 transition-colors text-xs shadow-md"

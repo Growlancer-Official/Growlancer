@@ -91,7 +91,7 @@ export function PayPalCheckout({
   // Render different states
   if (status === 'success') {
     return (
-      <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-3 rounded-lg">
+      <div className="flex items-center gap-3 text-emerald-600 bg-emerald-50 px-4 py-3 rounded-lg">
         <CheckCircle className="w-5 h-5" />
         <span className="font-medium">Payment successful!</span>
       </div>
@@ -101,7 +101,7 @@ export function PayPalCheckout({
   if (status === 'error') {
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg">
+        <div className="flex items-center gap-3 text-red-600 bg-red-50 px-4 py-3 rounded-lg">
           <XCircle className="w-5 h-5" />
           <span className="font-medium">{error || 'Payment failed'}</span>
         </div>
@@ -134,7 +134,7 @@ export function PayPalCheckout({
   }
 
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div>

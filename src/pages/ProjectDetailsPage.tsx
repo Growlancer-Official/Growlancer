@@ -228,14 +228,14 @@ export function ProjectDetailsPage() {
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 to={ROUTES.HOME}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+                className="inline-flex items-center justify-center gap-3 px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Home
               </Link>
               <Link
                 to="/client/post"
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center justify-center gap-3 px-5 py-3 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors"
               >
                 Post a Project
               </Link>
@@ -252,11 +252,11 @@ export function ProjectDetailsPage() {
     <main className="min-h-screen bg-cream px-4 py-6">
       <div className="mx-auto max-w-[100rem]">
         {/* Navigation & Actions */}
-        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mb-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <Link
               to={ROUTES.HOME}
-              className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+              className="inline-flex items-center gap-3 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Back to home
@@ -274,7 +274,7 @@ export function ProjectDetailsPage() {
 
           {/* Owner Actions */}
           {isOwner && (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {/* Progress step indicator */}
               <div className="flex items-center gap-1.5 mr-4 px-3 py-1.5 bg-slate-100 rounded-xl">
                 {['open', 'in_progress', 'completed'].map((step, idx) => {
@@ -305,7 +305,7 @@ export function ProjectDetailsPage() {
                 <>
                   <Link
                     to={`/client/post?edit=${project.id}`}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
+                    className="inline-flex items-center gap-3 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium rounded-xl hover:bg-slate-50 transition-all"
                   >
                     <Edit3 className="w-4 h-4" />
                     Edit
@@ -313,7 +313,7 @@ export function ProjectDetailsPage() {
                   {project.status === 'in_progress' && (
                     <button
                       onClick={() => setShowCompleteModal(true)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-50 text-emerald-700 font-medium rounded-xl hover:bg-emerald-100 transition-all border border-emerald-200"
+                      className="inline-flex items-center gap-3 px-5 py-2.5 bg-emerald-50 text-emerald-700 font-medium rounded-xl hover:bg-emerald-100 transition-all border border-emerald-200"
                     >
                       <CheckCircle className="w-4 h-4" />
                       Complete
@@ -321,14 +321,14 @@ export function ProjectDetailsPage() {
                   )}
                   <button
                     onClick={() => setShowCloseModal(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-50 text-orange-700 font-medium rounded-xl hover:bg-orange-100 transition-all border border-orange-200"
+                    className="inline-flex items-center gap-3 px-5 py-2.5 bg-orange-50 text-orange-700 font-medium rounded-xl hover:bg-orange-100 transition-all border border-orange-200"
                   >
                     <X className="w-4 h-4" />
                     Close
                   </button>
                   <button
                     onClick={() => setShowDeleteModal(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-50 text-red-700 font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200"
+                    className="inline-flex items-center gap-3 px-5 py-2.5 bg-red-50 text-red-700 font-medium rounded-xl hover:bg-red-100 transition-all border border-red-200"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
@@ -338,14 +338,14 @@ export function ProjectDetailsPage() {
               {project.status === 'cancelled' && (
                 <button
                   onClick={() => setShowReopenModal(true)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-50 text-blue-700 font-medium rounded-xl hover:bg-blue-100 transition-all border border-blue-200"
+                  className="inline-flex items-center gap-3 px-5 py-2.5 bg-blue-50 text-blue-700 font-medium rounded-xl hover:bg-blue-100 transition-all border border-blue-200"
                 >
                   <RefreshCw className="w-4 h-4" />
                   Reopen
                 </button>
               )}
               {project.status === 'completed' && (
-                <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-500 font-medium rounded-xl">
+                <span className="inline-flex items-center gap-3 px-5 py-2.5 bg-slate-100 text-slate-500 font-medium rounded-xl">
                   <CheckCircle2 className="w-4 h-4" />
                   Project Complete
                 </span>
@@ -355,17 +355,17 @@ export function ProjectDetailsPage() {
         </div>
 
         <div className="grid gap-3 lg:grid-cols-[1.4fr_0.6fr]">
-          <section className="space-y-2">
+          <section className="space-y-4">
             <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
               <h2 className="text-xl font-semibold text-slate-900 mb-2">Project details</h2>
-              <div className="space-y-2 text-slate-600">
+              <div className="space-y-4 text-slate-600">
                 <div>
                   <div className="text-sm uppercase tracking-[0.2em] text-slate-500 font-semibold mb-2">Description</div>
                   <p className="leading-relaxed">{project.description}</p>
                 </div>
                 <div>
                   <div className="text-sm uppercase tracking-[0.2em] text-slate-500 font-semibold mb-2">Skills required</div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-3">
                     {project.skills_required.map((skill) => (
                       <span
                         key={skill}
@@ -395,25 +395,25 @@ export function ProjectDetailsPage() {
                 <span>{project.client?.name ?? 'Client'}</span>
               </div>
               <div className="space-y-3 text-sm text-slate-700">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <IndianRupee className="w-4 h-4 text-emerald-500" />
                   <span>Budget: {formatBudgetRange(project.budget_min, project.budget_max)}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Clock className="w-4 h-4 text-slate-500" />
                   <span>{project.deadline ? new Date(project.deadline).toLocaleDateString() : 'No deadline'}</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Tag className="w-4 h-4 text-slate-500" />
                   <span>{project.category}</span>
                 </div>
                 {project.industry && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <Building2 className="w-4 h-4 text-slate-500" />
                     <span>{project.industry}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
                   <Briefcase className="w-4 h-4 text-slate-500" />
                   <span className="capitalize">{project.experience_level}</span>
                 </div>
@@ -450,7 +450,7 @@ export function ProjectDetailsPage() {
                   <h3 className="text-lg font-semibold text-slate-900 mb-3">Interested in this project?</h3>
                   <Link
                     to={`/dashboard/feed?apply=${project.id}`}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                    className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
                   >
                     <Send className="w-4 h-4" />
                     Apply Now
@@ -460,17 +460,17 @@ export function ProjectDetailsPage() {
               {isOwner && (
                 <>
                   <h3 className="text-lg font-semibold text-slate-900 mb-3">Manage Project</h3>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     <Link
                       to={`/client/proposals`}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
                       View Proposals
                     </Link>
                     <Link
                       to={`/client/matches?project_id=${project.id}`}
-                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100 transition-colors"
+                      className="inline-flex w-full items-center justify-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-100 transition-colors"
                     >
                       AI Matches
                     </Link>

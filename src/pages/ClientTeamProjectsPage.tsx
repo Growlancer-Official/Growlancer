@@ -40,13 +40,13 @@ export function ClientTeamProjectsPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-4">
-      <div className="flex items-start justify-between gap-2 flex-wrap mb-3">
+      <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
         <div>
           <div className="flex items-center gap-1.5 mb-1">
             <div className="w-11 h-11 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
-            <h1 className="font-display text-lg font-bold text-slate-900">Team Projects</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">Team Projects</h1>
           </div>
           <p className="text-slate-600 mt-1">
             Hire a whole team for bigger projects — each freelancer has their own protected escrow.
@@ -54,7 +54,7 @@ export function ClientTeamProjectsPage() {
         </div>
         <Link
           to="/client/team-projects/create"
-          className="inline-flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-3 px-3 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all"
         >
           <Plus className="w-4 h-4" /> Post a Team Project
         </Link>
@@ -77,7 +77,7 @@ export function ClientTeamProjectsPage() {
           <p className="text-slate-500 text-sm mb-2.5">
             Designer + Developer + Writer — sab ek project me hire karo, har ek apne contract ke saath.
           </p>
-          <Link to="/client/team-projects/create" className="inline-flex items-center justify-center gap-2 px-3 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all">
+          <Link to="/client/team-projects/create" className="inline-flex items-center justify-center gap-3 px-3 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all">
             <Plus className="w-4 h-4" /> Post Your First Team Project
           </Link>
         </div>

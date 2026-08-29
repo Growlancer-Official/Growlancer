@@ -119,7 +119,7 @@ export function ReportFeedbackPage() {
       <div className="min-h-screen bg-[#F8FAFC] font-sans pb-24">
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
           <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 group">
+            <Link to="/" className="flex items-center gap-3 group">
               <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
               <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
             </Link>
@@ -139,20 +139,20 @@ export function ReportFeedbackPage() {
             <p className="text-slate-500 max-w-md mx-auto mb-3">
               Thank you for helping us improve Growlancer. Our team will review your report and reply if a response is needed.
             </p>
-            <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3">
+            <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3">
               <span className="text-sm text-slate-500">Reference ID:</span>
               <span className="font-mono font-bold text-emerald-700 text-sm">{successId.slice(0, 8)}</span>
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
                 to="/"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
+                className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25"
               >
                 Back to Home
               </Link>
               <button
                 onClick={() => window.location.reload()}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center justify-center gap-3 px-6 py-3 border border-slate-200 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-colors"
               >
                 Submit Another
               </button>
@@ -168,7 +168,7 @@ export function ReportFeedbackPage() {
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -185,8 +185,8 @@ export function ReportFeedbackPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Star className="w-3.5 h-3.5 animate-pulse" />
+          <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <Star className="w-4 h-4 animate-pulse" />
             Report & Feedback
           </span>
           <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tight leading-none">
@@ -201,9 +201,9 @@ export function ReportFeedbackPage() {
 
       {/* Main Content */}
       <main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start">
           {/* Left: Info cards */}
-          <div className="lg:col-span-1 space-y-2">
+          <div className="lg:col-span-1 space-y-4">
             <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm hover:border-emerald-200 transition-colors">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
@@ -242,7 +242,7 @@ export function ReportFeedbackPage() {
 
             {/* Direct email fallback */}
             <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-3 border border-emerald-100 shadow-sm">
-              <h4 className="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
+              <h4 className="font-bold text-slate-900 text-sm mb-2 flex items-center gap-3">
                 <Mail className="w-4 h-4 text-emerald-600" /> Prefer email?
               </h4>
               <p className="text-xs text-slate-500 mb-3">
@@ -250,7 +250,7 @@ export function ReportFeedbackPage() {
               </p>
               <a
                 href="mailto:growlancer.own@gmail.com"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition-colors"
+                className="inline-flex items-center gap-3 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 rounded-xl text-sm font-semibold hover:bg-emerald-50 transition-colors"
               >
                 <Mail className="w-4 h-4" />
                 growlancer.own@gmail.com
@@ -294,7 +294,7 @@ export function ReportFeedbackPage() {
               {(reportType === 'bug' || reportType === 'security') && (
                 <div>
                   <label className="block text-sm font-bold text-slate-900 mb-3">How urgent is it?</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {PRIORITIES.map((p) => (
                       <button
                         key={p.id}
@@ -392,7 +392,7 @@ export function ReportFeedbackPage() {
 
               {/* Error */}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
                   <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
                   <p className="text-sm text-red-700">{error}</p>
                 </div>
@@ -401,13 +401,13 @@ export function ReportFeedbackPage() {
               {/* Submit */}
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between pt-2">
                 <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                  <ThumbsUp className="w-3.5 h-3.5" />
+                  <ThumbsUp className="w-4 h-4" />
                   Every report is read by the Growlancer team
                 </p>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="inline-flex items-center justify-center gap-3 px-8 py-3.5 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/25 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? (
                     <>

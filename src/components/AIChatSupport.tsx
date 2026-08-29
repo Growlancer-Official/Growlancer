@@ -488,7 +488,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             {lines.map((line, j) => {
               if (line.startsWith('• ') || line.startsWith('- ')) {
                 return (
-                  <div key={j} className="flex items-start gap-2 ml-1 mb-1">
+                  <div key={j} className="flex items-start gap-3 ml-1 mb-1">
                     <span className="text-emerald-500 mt-1">•</span>
                     <span>{line.substring(2)}</span>
                   </div>
@@ -532,18 +532,18 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
               <h3 className="font-bold text-slate-900">{title}</h3>
               <p className="text-xs text-slate-500">
                 <span className="flex items-center gap-1 text-emerald-600 font-semibold">
-                  <Sparkles className="w-3 h-3" />
+                  <Sparkles className="w-3.5 h-3.5" />
                   {modelName}
                 </span>
                 <span className="mx-2 text-slate-300">·</span>
                 <span className="flex items-center gap-1">
-                  <Globe className="w-3 h-3" />
+                  <Globe className="w-3.5 h-3.5" />
                   Any language
                 </span>
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {messages.length > 0 && (
               <button
                 onClick={handleToggleSelectionMode}
@@ -572,10 +572,10 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       {/* Ticket Context Banner */}
       {ticketContext && (
         <div className="px-6 py-2.5 bg-amber-50 border-b border-amber-100">
-          <div className="flex items-center gap-2 text-xs text-amber-700">
+          <div className="flex items-center gap-3 text-xs text-amber-700">
             <span className="font-semibold">Assisting with ticket:</span>
             <span className="truncate">{ticketContext.subject}</span>
-            <span className="px-1.5 py-0.5 bg-amber-100 rounded text-[10px] font-medium">
+            <span className="px-1.5 py-0.5 bg-amber-100 rounded text-xs font-medium">
               {ticketContext.category}
             </span>
           </div>
@@ -583,7 +583,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-3 space-y-4">
         {messages.length === 0 && chatMode === 'support' && supportTopics.length > 0 && (
           <div className="py-4">
             <div className="text-center mb-3">
@@ -646,7 +646,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                 }`}
                 title={selectedIds.has(message.id) ? 'Remove from selection' : 'Select message'}
               >
-                {selectedIds.has(message.id) && <Check className="w-3 h-3" />}
+                {selectedIds.has(message.id) && <Check className="w-3.5 h-3.5" />}
               </button>
             )}
             {message.role === 'assistant' && (
@@ -673,7 +673,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                 </div>
               )}
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10">
-                <span className="text-[10px] opacity-70">
+                <span className="text-xs opacity-70">
                   {message.isStreaming ? 'Typing...' : message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
                 {!message.isStreaming && message.content && (
@@ -682,9 +682,9 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                     className="opacity-70 hover:opacity-100 transition-opacity"
                   >
                     {copiedId === message.id ? (
-                      <Check className="w-3 h-3" />
+                      <Check className="w-3.5 h-3.5" />
                     ) : (
-                      <Copy className="w-3 h-3" />
+                      <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
                 )}
@@ -700,7 +700,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
         {/* Guided support flow — clickable options under the last assistant step */}
         {activeTopic && !flowEnded && !loading && (
-          <div className="flex flex-wrap gap-2 pl-1">
+          <div className="flex flex-wrap gap-3 pl-1">
             {activeTopic.steps[activeStepIndex]?.options.map((opt, idx) => (
               <button
                 key={`${activeTopic.id}-${activeStepIndex}-${idx}`}
@@ -724,7 +724,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
               ? `${selectedIds.size} message${selectedIds.size > 1 ? 's' : ''} selected`
               : 'Select messages to delete'}
           </span>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <button
               onClick={handleToggleSelectionMode}
               className="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 rounded-lg transition-colors"
@@ -755,7 +755,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             <button
               onClick={handleResendVerification}
               disabled={resendingVerification}
-              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border border-amber-300 bg-amber-50 rounded-xl text-xs font-medium text-amber-800 hover:bg-amber-100 transition-all disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-3 py-2.5 px-4 border border-amber-300 bg-amber-50 rounded-xl text-xs font-medium text-amber-800 hover:bg-amber-100 transition-all disabled:opacity-50"
             >
               {resendingVerification ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -768,7 +768,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         )}
         {/* Guest CTA — professional account-creation call to action */}
         {guestPrompted && !user && (
-          <div className="mb-3 grid grid-cols-2 gap-2">
+          <div className="mb-3 grid grid-cols-2 gap-3">
             <Link
               to="/signup"
               className="flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors"
@@ -784,7 +784,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             </Link>
           </div>
         )}
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <input
             type="text"
             value={input}

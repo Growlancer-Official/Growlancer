@@ -64,7 +64,7 @@ export function EmailVerificationBanner({ className = '' }: { className?: string
             disabled={sending}
             className="mt-2 inline-flex items-center gap-1.5 h-8 px-3 rounded-lg bg-amber-600 hover:bg-amber-700 disabled:bg-amber-300 text-white text-xs font-semibold transition-colors"
           >
-            {sending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {sending ? 'Sending...' : 'Send verification link'}
           </button>
         )}

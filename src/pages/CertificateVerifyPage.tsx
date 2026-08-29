@@ -100,10 +100,10 @@ function VerificationSkeleton() {
         </p>
       </div>
       {/* Skeleton */}
-      <div className="w-full max-w-lg space-y-2 animate-pulse">
+      <div className="w-full max-w-lg space-y-4 animate-pulse">
         <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full w-3/4 mx-auto" />
         <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded-full w-1/2 mx-auto" />
-        <div className="grid grid-cols-2 gap-2 mt-8">
+        <div className="grid grid-cols-2 gap-3 mt-8">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="h-16 bg-slate-200 dark:bg-slate-700 rounded-xl" />
           ))}
@@ -154,11 +154,11 @@ function VerifiedCard({
   return (
     <div className="w-full max-w-3xl mx-auto space-y-8">
       {/* Verified Badge Header - Centered */}
-      <div className="text-center space-y-2 animate-in fade-in slide-in-from-top-4 duration-700">
+      <div className="text-center space-y-4 animate-in fade-in slide-in-from-top-4 duration-700">
         <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-500/10 ring-4 ring-emerald-500/20">
           <AnimatedCheckmark className="w-12 h-12" />
         </div>
-        <div className="space-y-2">
+        <div className="space-y-4">
           <h2 className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">
             Credential Successfully Verified
           </h2>
@@ -169,7 +169,7 @@ function VerifiedCard({
       </div>
 
       {/* QR Code + Quick Info Row */}
-      <div className="flex flex-col sm:flex-row gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
+      <div className="flex flex-col sm:flex-row gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
         {/* QR Code */}
         <div className={`
           shrink-0 p-4 rounded-xl border flex flex-col items-center
@@ -177,7 +177,7 @@ function VerifiedCard({
           shadow-lg
         `}>
           <img src={qrCodeUrl} alt="QR" className="w-28 h-28 rounded-xl bg-white" />
-          <p className="text-[9px] text-slate-400 mt-2 font-mono">#{cert.verification_code?.slice(-6)}</p>
+          <p className="text-[10px] text-slate-400 mt-2 font-mono">#{cert.verification_code?.slice(-6)}</p>
         </div>
         {/* Quick Info */}
         <div className={`
@@ -229,7 +229,7 @@ function VerifiedCard({
           px-6 py-4 border-b
           ${dark ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-200 bg-slate-50'}
         `}>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-3">
             <FileText className="w-4 h-4 text-emerald-500" /> Credential Details
           </h3>
         </div>
@@ -248,7 +248,7 @@ function VerifiedCard({
                   <item.icon className="w-4 h-4" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[10px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-500">
+                  <p className="text-xs uppercase tracking-wider font-bold text-slate-500 dark:text-slate-500">
                     {item.label}
                   </p>
                   <p className={`text-sm font-semibold truncate ${item.accent || 'text-slate-800 dark:text-slate-200'}`}>
@@ -265,14 +265,14 @@ function VerifiedCard({
           px-6 py-4 border-t
           ${dark ? 'border-slate-700/50 bg-slate-800/30' : 'border-slate-200 bg-slate-50/50'}
         `}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
               <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Verification Code
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className="font-mono text-sm font-bold text-emerald-700 dark:text-emerald-400 tracking-wider select-all">
                 {cert.verification_code}
               </span>
@@ -281,7 +281,7 @@ function VerifiedCard({
                   border-emerald-300 dark:border-emerald-700
                   text-emerald-700 dark:text-emerald-400
                   hover:bg-emerald-50 dark:hover:bg-emerald-900/20">
-                {copied ? <><CheckCheck className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                {copied ? <><CheckCheck className="w-4 h-4" /> Copied!</> : <><Copy className="w-4 h-4" /> Copy</>}
               </button>
             </div>
           </div>
@@ -295,7 +295,7 @@ function VerifiedCard({
           ${dark ? 'bg-slate-900 border-violet-800/30' : 'bg-white border-violet-200'}
           animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300
         `}>
-          <h4 className="flex items-center gap-2 text-sm font-bold text-violet-600 dark:text-violet-400 mb-3">
+          <h4 className="flex items-center gap-3 text-sm font-bold text-violet-600 dark:text-violet-400 mb-3">
             <Star className="w-4 h-4" /> Outstanding Contributions
           </h4>
           <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
@@ -316,8 +316,8 @@ function VerifiedCard({
           <p className="text-base font-bold text-slate-900 dark:text-white">Mohammed Miran Khan</p>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Founder & CEO, Growlancer</p>
           <div className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800/30">
-            <BadgeCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+            <BadgeCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
               Digital Signature ✓
             </span>
           </div>
@@ -325,9 +325,9 @@ function VerifiedCard({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
+      <div className="flex items-center justify-center gap-3 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
         <button onClick={() => window.print()}
-          className="flex items-center gap-2.5 px-6 py-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.97]
+          className="flex items-center gap-3.5 px-6 py-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.97]
             border-slate-300 dark:border-slate-600
             text-slate-700 dark:text-slate-300
             hover:bg-slate-100 dark:hover:bg-slate-800
@@ -335,7 +335,7 @@ function VerifiedCard({
           <Printer className="w-4 h-4" /> Print Certificate
         </button>
         <button onClick={handleCopyLink}
-          className="flex items-center gap-2.5 px-6 py-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.97]
+          className="flex items-center gap-3.5 px-6 py-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.97]
             border-slate-300 dark:border-slate-600
             text-slate-700 dark:text-slate-300
             hover:bg-slate-100 dark:hover:bg-slate-800
@@ -348,22 +348,22 @@ function VerifiedCard({
       {/* Trust Footer */}
       <div className="text-center">
         <div className={`
-          inline-flex items-center gap-2 px-6 py-3 rounded-xl border
+          inline-flex items-center gap-3 px-6 py-3 rounded-xl border
           ${dark ? 'bg-slate-900/50 border-slate-700/30' : 'bg-slate-50 border-slate-200'}
         `}>
-          <div className="flex items-center gap-2">
-            <Shield className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Digitally Signed</span>
+          <div className="flex items-center gap-3">
+            <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Digitally Signed</span>
           </div>
           <div className="w-px h-4 bg-slate-300 dark:bg-slate-600" />
-          <div className="flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Real-Time</span>
+          <div className="flex items-center gap-3">
+            <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Real-Time</span>
           </div>
           <div className="w-px h-4 bg-slate-300 dark:bg-slate-600" />
-          <div className="flex items-center gap-2">
-            <Lock className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tamper-Proof</span>
+          <div className="flex items-center gap-3">
+            <Lock className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tamper-Proof</span>
           </div>
         </div>
       </div>
@@ -379,7 +379,7 @@ function RevokedCard({ cert, dark }: { cert: Certificate; dark: boolean }) {
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 dark:bg-red-500/10 ring-4 ring-red-500/20">
         <XCircle className="w-10 h-10 text-red-600 dark:text-red-400" />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Credential Revoked</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
           This credential is no longer valid. Please contact the issuer for more information.
@@ -389,7 +389,7 @@ function RevokedCard({ cert, dark }: { cert: Certificate; dark: boolean }) {
         rounded-xl p-3 border text-left shadow-lg
         ${dark ? 'bg-slate-900 border-red-800/30' : 'bg-white border-red-200'}
       `}>
-        <div className="space-y-2">
+        <div className="space-y-4">
           {cert.revoked_reason && (
             <div>
               <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Reason</p>
@@ -423,7 +423,7 @@ function ReplacedCard({ onViewLatest, dark }: { onViewLatest: () => void; dark: 
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-500/10 ring-4 ring-amber-500/20">
         <RefreshCw className="w-10 h-10 text-amber-600 dark:text-amber-400" />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Credential Replaced</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
           This credential has been replaced by a newer version.
@@ -433,12 +433,12 @@ function ReplacedCard({ onViewLatest, dark }: { onViewLatest: () => void; dark: 
         rounded-xl p-3 border shadow-lg
         ${dark ? 'bg-slate-900 border-amber-800/30' : 'bg-white border-amber-200'}
       `}>
-        <div className="space-y-2">
+        <div className="space-y-4">
           <p className="text-sm text-slate-600 dark:text-slate-400 bg-amber-50 dark:bg-amber-900/10 p-4 rounded-xl border border-amber-100 dark:border-amber-800/20">
             This credential has been replaced by a newer version. Please use the new credential for verification.
           </p>
           <button onClick={onViewLatest}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all active:scale-[0.97] shadow-lg shadow-emerald-500/20">
+            className="w-full flex items-center justify-center gap-3 px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all active:scale-[0.97] shadow-lg shadow-emerald-500/20">
             Verify Again <ChevronRight className="w-4 h-4" />
           </button>
         </div>
@@ -454,14 +454,14 @@ function InvalidCard({ error, onRetry }: { error: string; onRetry: () => void })
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 dark:bg-red-500/10 ring-4 ring-red-500/20">
         <AlertTriangle className="w-10 h-10 text-red-600 dark:text-red-400" />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Credential Not Found</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
           {error || "The entered Verification ID or QR Code could not be verified in our system."}
         </p>
       </div>
       <button onClick={onRetry}
-        className="inline-flex items-center gap-2 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all active:scale-[0.97] shadow-lg shadow-emerald-500/20">
+        className="inline-flex items-center gap-3 px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-all active:scale-[0.97] shadow-lg shadow-emerald-500/20">
         <Search className="w-4 h-4" /> Try Another Code
       </button>
     </div>
@@ -475,7 +475,7 @@ function RateLimitedCard() {
       <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-amber-100 dark:bg-amber-500/10 ring-4 ring-amber-500/20">
         <Clock className="w-10 h-10 text-amber-600 dark:text-amber-400" />
       </div>
-      <div className="space-y-2">
+      <div className="space-y-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Too Many Attempts</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
           Please wait a few minutes before trying again. This rate limit protects against unauthorized access.
@@ -507,7 +507,7 @@ function QRScannerButton({ onScan }: { onScan: (token: string) => void }) {
     <>
       <input ref={inputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileChange} />
       <button onClick={handleScan} disabled={scanning}
-        className="flex items-center gap-2 px-5 py-3 rounded-xl border transition-all font-medium text-sm active:scale-[0.97]
+        className="flex items-center gap-3 px-5 py-3 rounded-xl border transition-all font-medium text-sm active:scale-[0.97]
           border-emerald-300 dark:border-emerald-700
           text-emerald-700 dark:text-emerald-400
           hover:bg-emerald-50 dark:hover:bg-emerald-900/20
@@ -656,7 +656,7 @@ export function CertificateVerifyPage() {
           {/* Tab Toggle */}
           <div className="flex gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 mb-3">
             <button onClick={() => setActiveTab('code')}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === 'code'
                   ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
@@ -664,7 +664,7 @@ export function CertificateVerifyPage() {
               <Hash className="w-4 h-4" /> Verification ID
             </button>
             <button onClick={() => setActiveTab('qr')}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
+              className={`flex-1 flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg text-xs font-bold transition-all ${
                 activeTab === 'qr'
                   ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
@@ -713,7 +713,7 @@ export function CertificateVerifyPage() {
         </div>
 
         {/* Info Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
           {[
             { icon: Shield, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/10', title: 'Real-Time Verification', desc: 'Instant credential verification with live data from our secure database.' },
             { icon: FileText, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-500/10', title: 'Certificates & LOR', desc: 'Verify internship certificates and letters of recommendation issued by Growlancer.' },
@@ -743,7 +743,7 @@ export function CertificateVerifyPage() {
                   <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{item.step}</span>
                 </div>
                 <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1">{item.title}</h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -757,9 +757,9 @@ export function CertificateVerifyPage() {
               { icon: Clock, label: 'Real-Time' },
               { icon: Globe, label: 'Public Access' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2">
+              <div key={i} className="flex items-center gap-3">
                 <item.icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{item.label}</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{item.label}</span>
                 {i < 2 && <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 ml-2" />}
               </div>
             ))}
@@ -769,11 +769,11 @@ export function CertificateVerifyPage() {
         {/* Disclaimer */}
         <div className="mt-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
           <div className={`p-4 rounded-xl border ${dark ? 'bg-amber-500/5 border-amber-500/10' : 'bg-amber-50/80 border-amber-200'}`}>
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-3">
               <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
               <div>
-                <p className="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest mb-1">Important Notice</p>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest mb-1">Important Notice</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   This credential verification page is hosted on the Growlancer platform. In the event of a domain change, platform migration, or service discontinuation, this verification service and its associated records may be removed or relocated.
                 </p>
               </div>
@@ -798,16 +798,16 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
           className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
           <div className="relative">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-9 w-9 rounded-xl" />
-            <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />
+            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />
           </div>
           <div className="hidden sm:block">
             <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">Growlancer</p>
-            <p className="text-[9px] uppercase tracking-widest font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">Verification Portal</p>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">Verification Portal</p>
           </div>
         </button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button onClick={onToggleTheme}
-            className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
+            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
               dark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
             }`}>
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -829,15 +829,15 @@ function FooterBar({ dark }: { dark: boolean }) {
   return (
     <footer className={`border-t py-4 px-4 ${dark ? 'border-slate-800/50 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
       <div className="max-w-4xl mx-auto text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
+        <div className="flex items-center justify-center gap-3 mb-3">
           <img src="/UpdatedLogo.webp" alt="" className="h-6 w-6 rounded-lg opacity-40" />
           <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Growlancer</span>
         </div>
-        <p className="text-[10px] text-slate-400 dark:text-slate-500">© {new Date().getFullYear()} Growlancer. All rights reserved.</p>
-        <div className="flex items-center justify-center gap-2 mt-2">
+        <p className="text-xs text-slate-400 dark:text-slate-500">© {new Date().getFullYear()} Growlancer. All rights reserved.</p>
+        <div className="flex items-center justify-center gap-3 mt-2">
           {['Terms', 'Privacy', 'Contact'].map(item => (
             <button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}
-              className="text-[10px] text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{item}</button>
+              className="text-xs text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{item}</button>
           ))}
         </div>
       </div>

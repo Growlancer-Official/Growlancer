@@ -801,13 +801,13 @@ export function ClientWorkspacePage() {
   return (
     <div className="space-y-1.5">
       {/* Top Banner / Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
         <div className="flex items-center gap-1.5">
-          <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <Briefcase className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-lg font-bold text-slate-900">Collaboration Workspace</h1>
+            <h1 className="font-display text-xl font-bold text-slate-900">Collaboration Workspace</h1>
             <p className="text-sm text-slate-500">
               Working with <span className="font-semibold text-slate-700">{selectedContract?.freelancer?.name || 'Freelancer'}</span>
               {(selectedContract?.freelancer as any)?.verification_status === 'verified' && (
@@ -817,8 +817,8 @@ export function ClientWorkspacePage() {
                 <ProBadge size="xs" className="ml-1" />
               )}
               {freelancerRating !== null && freelancerReviewCount > 0 && (
-                <span className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-slate-600">
-                  <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                <span className="ml-2 inline-flex items-center gap-1 text-xs font-semibold text-slate-600">
+                  <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                   {freelancerRating.toFixed(1)}
                   <span className="text-slate-400 font-medium">({freelancerReviewCount})</span>
                 </span>
@@ -829,20 +829,20 @@ export function ClientWorkspacePage() {
                     <span
                       key={cert.skill}
                       title={`Verified ${cert.skill} — ${cert.level} level (earned via Growlancer skill assessment)`}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[10px] font-bold rounded-full border border-amber-200"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-xs font-bold rounded-full border border-amber-200"
                     >
-                      <Award className="w-3 h-3" />
+                      <Award className="w-4 h-4" />
                       {cert.skill}
                     </span>
                   ))}
                   {freelancerCerts.length > 3 && (
-                    <span className="text-[10px] font-bold text-slate-500">+{freelancerCerts.length - 3} more</span>
+                    <span className="text-xs font-bold text-slate-500">+{freelancerCerts.length - 3} more</span>
                   )}
                 </span>
               )}
               {selectedContract?.escrow_funded && (
-                <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full">
-                  <ShieldCheck className="w-3 h-3" />
+                <span className="ml-2 inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full">
+                  <ShieldCheck className="w-4 h-4" />
                   Escrow Funded
                 </span>
               )}
@@ -854,7 +854,7 @@ export function ClientWorkspacePage() {
         <div className="flex items-center bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/50 self-start lg:self-center">
           <button
             onClick={() => setActiveTab('chat')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
               activeTab === 'chat'
                 ? 'bg-white text-emerald-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -866,7 +866,7 @@ export function ClientWorkspacePage() {
 
           <button
             onClick={() => setActiveTab('canvas')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
               activeTab === 'canvas'
                 ? 'bg-white text-emerald-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -878,7 +878,7 @@ export function ClientWorkspacePage() {
 
           <button
             onClick={() => setActiveTab('milestones')}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
               activeTab === 'milestones'
                 ? 'bg-white text-emerald-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -890,17 +890,17 @@ export function ClientWorkspacePage() {
         </div>
 
         {/* Actions: review / fund escrow / status pills */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           {selectedContract?.status === 'completed' &&
             (reviewedContractIds.has(selectedContract.id) ? (
-              <span className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium">
+              <span className="inline-flex items-center gap-3 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium">
                 <Check className="w-4 h-4" />
                 Review Submitted
               </span>
             ) : (
               <button
                 onClick={() => setReviewModalOpen(true)}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
+                className="inline-flex items-center gap-3 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
               >
                 <Star className="w-4 h-4" />
                 Leave Review
@@ -961,26 +961,26 @@ export function ClientWorkspacePage() {
       <div className="rounded-xl overflow-hidden border border-blue-200 shadow-sm">
         <div className="bg-gradient-to-r from-emerald-700 to-teal-700 px-2.5 py-4 flex items-center gap-1.5">
           <div className="w-7 h-7 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
-            <Shield className="w-3.5 h-3.5 text-white" />
+            <Shield className="w-4 h-4 text-white" />
           </div>
           <div>
             <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
-            <p className="text-[11px] text-emerald-100">Everything stays on the platform — payments are always protected</p>
+            <p className="text-xs text-emerald-100">Everything stays on the platform — payments are always protected</p>
           </div>
         </div>
         <div className="bg-blue-50/60 px-2.5 py-4 grid gap-1.5 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <ShieldCheck className="w-4 h-4 text-emerald-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Escrow Protection.</span> All payments are held in
               Growlancer Escrow — release funds to the freelancer only after you approve the complete work.
             </p>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Release escrow only after approving work.</span> Review every
@@ -988,9 +988,9 @@ export function ClientWorkspacePage() {
               satisfied with the delivered work.
             </p>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-violet-100 flex items-center justify-center shrink-0 mt-0.5">
-              <Clock className="w-3.5 h-3.5 text-violet-600" />
+              <Clock className="w-4 h-4 text-violet-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Review window & auto-release.</span> Once a freelancer delivers,
@@ -999,9 +999,9 @@ export function ClientWorkspacePage() {
               funds can never be held hostage. Review promptly or release early to keep the project moving.
             </p>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+              <AlertTriangle className="w-4 h-4 text-red-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">You cannot pay freelancers outside Growlancer.</span> All payments
@@ -1010,9 +1010,9 @@ export function ClientWorkspacePage() {
               or permanent ban</span>.
             </p>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-red-100 flex items-center justify-center shrink-0 mt-0.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-red-600" />
+              <AlertTriangle className="w-4 h-4 text-red-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Freelancer asks for outside payment? Report them.</span>
@@ -1020,9 +1020,9 @@ export function ClientWorkspacePage() {
               <span className="font-bold text-red-600">suspended or permanently banned</span>. Your money stays protected.
             </p>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
-              <RotateCcw className="w-3.5 h-3.5 text-blue-600" />
+              <RotateCcw className="w-4 h-4 text-blue-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Refunds.</span> If work is not delivered or you are not satisfied,
@@ -1030,9 +1030,9 @@ export function ClientWorkspacePage() {
               is refunded to you when the freelancer accepts or when our team rules in your favour.
             </p>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-indigo-600" />
+              <CheckCircle2 className="w-4 h-4 text-indigo-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Revisions.</span> Your service includes free revisions
@@ -1041,9 +1041,9 @@ export function ClientWorkspacePage() {
               to work outside the agreed scope for free.
             </p>
           </div>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-start gap-3.5">
             <div className="w-4 h-4 rounded-full bg-slate-100 flex items-center justify-center shrink-0 mt-0.5">
-              <Shield className="w-3.5 h-3.5 text-slate-600" />
+              <Shield className="w-4 h-4 text-slate-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Legal.</span> All payments, refunds and disputes are governed by
@@ -1064,15 +1064,15 @@ export function ClientWorkspacePage() {
                   {/* Messages */}
                   <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl flex items-center gap-1.5">
-                      <div className="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
-                        <MessageSquare className="w-3.5 h-3.5" />
+                      <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+                        <MessageSquare className="w-4 h-4" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-slate-900">Project Chat Room</h4>
                         <p className="text-xs text-slate-500">Secure real-time correspondence with {selectedContract.freelancer?.name}</p>
                       </div>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {messages.length === 0 && (
                           <div className="flex flex-col items-center justify-center h-full text-slate-400">
                             <MessageSquare className="h-12 w-12 mb-3 opacity-50" />
@@ -1110,7 +1110,7 @@ export function ClientWorkspacePage() {
 
                       {/* Message Input */}
                       <div className="p-4 border-t border-slate-100 bg-slate-50/50 rounded-b-2xl">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <button
                             onClick={() => {
                               setShowUploadModal(true)
@@ -1154,7 +1154,7 @@ export function ClientWorkspacePage() {
                   <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <h3 className="font-semibold text-slate-900 flex items-center gap-3">
                           <FileText className="h-4 w-4" />
                           Shared Assets
                         </h3>
@@ -1233,7 +1233,7 @@ export function ClientWorkspacePage() {
                   {/* Live Task Board */}
                   <div className="lg:col-span-3 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
-                      <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                      <h3 className="font-semibold text-slate-900 flex items-center gap-3">
                         <ClipboardList className="h-4 w-4" />
                         Live Task Board
                       </h3>
@@ -1255,7 +1255,7 @@ export function ClientWorkspacePage() {
                   <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-semibold text-slate-900 flex items-center gap-2">
+                        <h3 className="font-semibold text-slate-900 flex items-center gap-3">
                           <FileText className="h-4 w-4" />
                           Collaborative Scratchpad
                         </h3>
@@ -1295,7 +1295,7 @@ export function ClientWorkspacePage() {
                     <div className="relative">
                       <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-200" />
                       {getTimelineEvents().map((event, idx) => (
-                        <div key={idx} className="relative flex items-start gap-2 pb-6 last:pb-0">
+                        <div key={idx} className="relative flex items-start gap-3 pb-6 last:pb-0">
                           <div className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center ${
                             event.status === 'completed'
                               ? 'bg-green-100'
@@ -1344,7 +1344,7 @@ export function ClientWorkspacePage() {
 
                     {/* Auto-release window control (client) */}
                     <div className="mb-2.5 p-4 rounded-xl bg-violet-50/60 border border-violet-200">
-                      <p className="text-sm font-medium text-slate-900 flex items-center gap-2">
+                      <p className="text-sm font-medium text-slate-900 flex items-center gap-3">
                         <Clock className="h-4 w-4 text-violet-600" />
                         Auto-Release Window
                       </p>
@@ -1352,7 +1352,7 @@ export function ClientWorkspacePage() {
                         When a milestone is delivered, the payment releases automatically after this many hours
                         if you haven't reviewed it. Set a window that gives you enough review time.
                       </p>
-                      <div className="flex items-center gap-2 mt-3">
+                      <div className="flex items-center gap-3 mt-3">
                         <input
                           type="number"
                           min="10"
@@ -1365,7 +1365,7 @@ export function ClientWorkspacePage() {
                         <button
                           onClick={() => void handleSetAutoReleaseHours()}
                           disabled={savingAutoRelease}
-                          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                          className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
                         >
                           {savingAutoRelease ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Check className="h-4 w-4 mr-1.5" />}
                           Apply
@@ -1427,10 +1427,10 @@ export function ClientWorkspacePage() {
                           {(selectedContract as any).delivered_at ? (
                             <div className="mt-3 p-3.5 bg-violet-50 border border-violet-200 rounded-xl text-left">
                               <p className="text-xs font-bold text-violet-800 flex items-center gap-1.5">
-                                <Clock className="w-3.5 h-3.5" />
+                                <Clock className="w-4 h-4" />
                                 Delivered — review & release within {(selectedContract as any).auto_release_hours ?? 10}h
                               </p>
-                              <p className="text-[11px] text-violet-700 mt-1 leading-relaxed">
+                              <p className="text-xs text-violet-700 mt-1 leading-relaxed">
                                 The freelancer has delivered the full project. Review the files and release the escrow when
                                 satisfied — if you don't respond within{' '}
                                 <strong>{(selectedContract as any).auto_release_hours ?? 10} hours</strong>, the payment
@@ -1438,7 +1438,7 @@ export function ClientWorkspacePage() {
                               </p>
                             </div>
                           ) : (
-                            <p className="text-[11px] text-slate-400 mt-1">
+                            <p className="text-xs text-slate-400 mt-1">
                               Once the freelancer delivers, you get a review window before auto-release.
                             </p>
                           )}
@@ -1452,16 +1452,16 @@ export function ClientWorkspacePage() {
                     <h3 className="text-lg font-semibold text-slate-900 mb-2">
                       Escrow & Payment
                     </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div className="p-4 bg-slate-50 rounded-lg">
                         <p className="text-sm text-slate-500 mb-1">Total Amount</p>
-                        <p className="text-lg font-bold text-slate-900">
+                        <p className="text-xl font-bold text-slate-900">
                           {formatCurrency(selectedContract.amount)}
                         </p>
                       </div>
                       <div className="p-4 bg-slate-50 rounded-lg">
                         <p className="text-sm text-slate-500 mb-1">Status</p>
-                        <div className="flex items-center gap-2 mt-1">
+                        <div className="flex items-center gap-3 mt-1">
                           {selectedContract.escrow_funded ? (
                             <ShieldCheck className="h-5 w-5 text-green-500" />
                           ) : (
@@ -1484,7 +1484,7 @@ export function ClientWorkspacePage() {
                       {needsFunding && (
                         <button
                           onClick={() => void openFundEscrow()}
-                          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
+                          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
                         >
                           <IndianRupee className="h-5 w-5 mr-2" />
                           Fund Escrow
@@ -1494,7 +1494,7 @@ export function ClientWorkspacePage() {
                         <button
                           onClick={() => void handleReleaseEscrow()}
                           disabled={releasingEscrow}
-                          className="inline-flex items-center justify-center gap-2 px-3 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors font-semibold"
+                          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 disabled:opacity-50 transition-colors font-semibold"
                         >
                           {releasingEscrow ? (
                             <Loader2 className="h-5 w-5 mr-2 animate-spin" />
@@ -1539,7 +1539,7 @@ export function ClientWorkspacePage() {
                   {revisionRequests.length > 0 && (
                     <div className="bg-white rounded-xl border border-slate-200/80 p-6">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                           <RefreshCw className="h-5 w-5 text-emerald-600" />
                           <h3 className="text-lg font-semibold text-slate-900">Extra Revisions</h3>
                         </div>
@@ -1555,7 +1555,7 @@ export function ClientWorkspacePage() {
                                 </p>
                                 <p className="text-xs text-slate-500 mt-1 line-clamp-2">{req.reason}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-2 shrink-0">
+                              <div className="flex flex-col items-end gap-3 shrink-0">
                                 <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${req.status === 'paid' ? 'bg-emerald-100 text-emerald-700' : req.status === 'accepted' ? 'bg-blue-100 text-blue-700' : req.status === 'pending_freelancer' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'}`}>
                                   {req.status === 'paid' ? 'Paid — In Escrow' : req.status === 'accepted' ? 'Accepted — Awaiting Payment' : req.status === 'pending_freelancer' ? 'Awaiting Freelancer' : 'Declined'}
                                 </span>
@@ -1563,7 +1563,7 @@ export function ClientWorkspacePage() {
                                   <button
                                     onClick={() => void handlePayRevision(req)}
                                     disabled={payingRevision === req.id}
-                                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
+                                    className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 transition-colors text-sm font-medium"
                                   >
                                     {payingRevision === req.id ? (
                                       <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
@@ -1585,7 +1585,7 @@ export function ClientWorkspacePage() {
                   {(refundRequests.length > 0 || selectedContract.cancellation_status === 'pending_freelancer') && (
                     <div className="bg-white rounded-xl border border-slate-200/80 p-6">
                       <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                        <h3 className="text-lg font-semibold text-slate-900 flex items-center gap-3">
                           <RotateCcw className="h-5 w-5 text-amber-500" />
                           Refund & Cancellation
                         </h3>
@@ -1598,7 +1598,7 @@ export function ClientWorkspacePage() {
 
                       {refundRequests.map(req => (
                         <div key={req.id} className="p-4 bg-slate-50 rounded-xl mb-2">
-                          <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center justify-between flex-wrap gap-3">
                             <div>
                               <p className="text-sm font-semibold text-slate-900">{req.reason}</p>
                               <p className="text-xs text-slate-500 mt-0.5 capitalize">
@@ -1617,7 +1617,7 @@ export function ClientWorkspacePage() {
 
                       {refundHistory.length > 0 && (
                         <div>
-                          <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                          <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-3">
                             <History className="h-4 w-4 text-slate-400" />
                             Timeline
                           </p>
@@ -1666,7 +1666,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-3 space-y-2">
+            <div className="p-3 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   File
@@ -1768,7 +1768,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-3 space-y-2">
+            <div className="p-3 space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">
                   Reason <span className="text-red-500">*</span>
@@ -1845,7 +1845,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-3 space-y-2">
+            <div className="p-3 space-y-4">
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800">
                 {selectedContract.freelancer_started_at || (milestones.some(m => ['released', 'paid', 'completed', 'approved'].includes(m.status)))
                   ? 'Work has started on this project. The freelancer must accept your cancellation; if they decline, the case goes to dispute resolution. Released milestones are never refunded.'
@@ -1855,24 +1855,24 @@ export function ClientWorkspacePage() {
               {/* How refunds work — genuine-client path clarity */}
               <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
                 <p className="text-xs font-bold text-emerald-900 mb-2 flex items-center gap-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <ShieldCheck className="w-4 h-4" />
                   Your money is always protected — how refunds work here
                 </p>
                 <ul className="space-y-1.5 text-xs text-emerald-800 leading-relaxed">
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                     <span><strong>Work not started</strong> — your escrow refunds automatically, in full, with no platform fee.</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                     <span><strong>Work started / delivered</strong> — the freelancer can accept (full refund) or reject, and the case is escalated to our resolution team with escrow frozen until a fair decision.</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
                     <span><strong>Fraud, scam or non-delivery claims</strong> — escrow freezes instantly and our team reviews the workspace evidence (files, chat, timeline) before any money moves.</span>
                   </li>
                   <li className="flex items-start gap-1.5">
-                    <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                     <span><strong>Tip:</strong> before requesting a refund, try a <strong>free revision</strong> — most issues are fixed within the included revisions and everyone saves time.</span>
                   </li>
                 </ul>
@@ -1950,7 +1950,7 @@ export function ClientWorkspacePage() {
                 <X className="h-5 w-5 text-slate-500" />
               </button>
             </div>
-            <div className="p-4 sm:p-5 space-y-2">
+            <div className="p-4 sm:p-5 space-y-4">
               <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-3 sm:p-4 text-xs sm:text-sm text-emerald-800 leading-relaxed">
                 <p className="font-medium flex items-center gap-1.5">
                   <Info className="h-4 w-4 shrink-0" />
@@ -2153,7 +2153,7 @@ function TasksSection({
   return (
     <div>
       {/* Add Task */}
-      <div className="flex items-center gap-2 mb-2">
+      <div className="flex items-center gap-3 mb-2">
         <input
           type="text"
           value={taskInput}
@@ -2196,7 +2196,7 @@ function TasksSection({
             <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               {status === 'todo' ? 'To Do' : status.replace('_', ' ')}
             </h4>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {tasks
                 .filter(t => t.status === status)
                 .map(task => (
@@ -2210,7 +2210,7 @@ function TasksSection({
                       dragIndex === tasks.indexOf(task) ? 'opacity-50' : ''
                     }`}
                   >
-                    <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-start justify-between gap-3">
                       <p className="text-sm text-slate-900 flex-1">{task.title}</p>
                       <button
                         onClick={() => void handleLocalDelete(task.id)}

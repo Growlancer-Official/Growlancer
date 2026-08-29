@@ -285,7 +285,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-red-700">Account already exists on this browser</p>
-                <p className="text-[11px] text-red-600 leading-relaxed mt-0.5">
+                <p className="text-xs text-red-600 leading-relaxed mt-0.5">
                   {sameBrowserEmail ? (
                     <>
                       An account for <span className="font-semibold">{sameBrowserEmail}</span> was already
@@ -319,11 +319,11 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               <AlertCircle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-amber-800">Already logged in</p>
-                <p className="text-[11px] text-amber-600 leading-relaxed">
+                <p className="text-xs text-amber-600 leading-relaxed">
                   You can still create a new account below. Logging out first is recommended.
                 </p>
               </div>
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-3 shrink-0">
                 <button
                   type="button"
                   onClick={() => { onClose(); navigate(role === 'client' ? '/client' : '/dashboard'); }}
@@ -349,7 +349,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
                   className="p-1 rounded-lg hover:bg-amber-100 transition-colors"
                   aria-label="Dismiss"
                 >
-                  <X className="w-3.5 h-3.5 text-amber-500" />
+                  <X className="w-4 h-4 text-amber-500" />
                 </button>
               </div>
             </div>
@@ -386,9 +386,9 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
             className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {oauthProvider === 'github' ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
             ) : (
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.48 2 2 6.58 2 12.22c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.37-3.37-1.37-.45-1.18-1.11-1.5-1.11-1.5-.91-.63.07-.62.07-.62 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.06 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.3.1-2.7 0 0 .84-.28 2.75 1.05.8-.23 1.65-.34 2.5-.34.85 0 1.7.11 2.5.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.4.2 2.44.1 2.7.64.72 1.03 1.63 1.03 2.75 0 3.93-2.34 4.8-4.57 5.05.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .27.18.59.69.48A10.25 10.25 0 0022 12.22C22 6.58 17.52 2 12 2z" fill="#24292E"/>
               </svg>
             )}
@@ -409,9 +409,9 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
             className="w-full h-11 flex items-center justify-center gap-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors text-sm font-semibold text-slate-700 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {oauthProvider === 'linkedin' ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-slate-400" />
+              <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
             ) : (
-              <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect x="2" y="2" width="20" height="20" rx="4" fill="#0A66C2"/>
                 <path d="M8 10.5V17H5.5V10.5H8Z" fill="white"/>
                 <path d="M6.75 8.75C6.06 8.75 5.5 8.19 5.5 7.5C5.5 6.81 6.06 6.25 6.75 6.25C7.44 6.25 8 6.81 8 7.5C8 8.19 7.44 8.75 6.75 8.75Z" fill="white"/>
@@ -422,29 +422,29 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           </button>
           <div className="relative flex items-center gap-3 py-1">
             <div className="flex-1 h-px bg-slate-200"></div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">or continue with email</span>
+            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">or continue with email</span>
             <div className="flex-1 h-px bg-slate-200"></div>
           </div>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-2">
+          <div className="mb-2 p-3 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
             <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
             <p className="text-xs text-red-600">{error}</p>
           </div>
         )}
 
         {/* Signup Form */}
-        <form onSubmit={handleSubmit} className="space-y-2">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {/* Role Selection */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
               I want to...
             </label>
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-2 gap-3.5 sm:gap-3">
               <label
-                className={`cursor-pointer flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
+                className={`cursor-pointer flex items-center gap-3 sm:gap-3.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
                   role === 'freelancer'
                     ? 'border-emerald-500 bg-emerald-50/50 shadow-sm shadow-emerald-500/10'
                     : role === null
@@ -467,15 +467,15 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
                     ? 'bg-white border-orange-200 text-slate-400'
                     : 'bg-white border-slate-200 text-slate-400'
                 } transition-all`}>
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <User className="w-4 h-4 sm:w-4 sm:h-4" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">Freelance</span>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block truncate">Work & earn</span>
+                  <span className="text-xs sm:text-xs text-slate-400 hidden sm:block truncate">Work & earn</span>
                 </div>
               </label>
               <label
-                className={`cursor-pointer flex items-center gap-2 sm:gap-2.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
+                className={`cursor-pointer flex items-center gap-3 sm:gap-3.5 p-2.5 sm:p-3.5 border-2 rounded-xl transition-all min-w-0 ${
                   role === 'client'
                     ? 'border-emerald-500 bg-emerald-50/50 shadow-sm shadow-emerald-500/10'
                     : role === null
@@ -498,17 +498,17 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
                     ? 'bg-white border-orange-200 text-slate-400'
                     : 'bg-white border-slate-200 text-slate-400'
                 } transition-all`}>
-                  <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <Briefcase className="w-4 h-4 sm:w-4 sm:h-4" />
                 </div>
                 <div className="flex flex-col min-w-0">
                   <span className="text-xs sm:text-sm font-semibold text-slate-800 truncate">Hire Talent</span>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 hidden sm:block truncate">Find & hire</span>
+                  <span className="text-xs sm:text-xs text-slate-400 hidden sm:block truncate">Find & hire</span>
                 </div>
               </label>
             </div>
             {role === null && (
-              <p className="text-[11px] text-orange-500 font-medium ml-1 flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
+              <p className="text-xs text-orange-500 font-medium ml-1 flex items-center gap-1">
+                <AlertCircle className="w-3.5 h-3.5" />
                 Please select a role to continue
               </p>
             )}
@@ -518,7 +518,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           <div className="space-y-1.5">
             <label
               htmlFor="full-name"
-              className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1"
+              className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1"
             >
               Full Name
             </label>
@@ -543,7 +543,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           <div className="space-y-1.5">
             <label
               htmlFor="email"
-              className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1"
+              className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1"
             >
               Work Email
             </label>
@@ -574,7 +574,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               )}
             </div>
             {emailError && (
-              <p className="text-[11px] text-red-500 ml-1">{emailError}</p>
+              <p className="text-xs text-red-500 ml-1">{emailError}</p>
             )}
           </div>
 
@@ -583,11 +583,11 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
             <div className="flex items-center justify-between ml-1">
               <label
                 htmlFor="password"
-                className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider"
+                className="text-xs font-semibold text-slate-500 uppercase tracking-wider"
               >
                 Password
               </label>
-              <span className={`text-[10px] font-semibold uppercase ${
+              <span className={`text-xs font-semibold uppercase ${
                 passwordStrength === 0 ? 'text-slate-400' :
                 passwordStrength <= 2 ? 'text-red-500' :
                 passwordStrength <= 3 ? 'text-orange-500' :
@@ -643,13 +643,13 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               ))}
             </div>
             {passwordError && (
-              <p className="text-[11px] text-red-500 mt-1">{passwordError}</p>
+              <p className="text-xs text-red-500 mt-1">{passwordError}</p>
             )}
           </div>
 
           {/* Phone Number — India only (+91) */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
               Phone Number
             </label>
             <div className="relative group">
@@ -670,14 +670,14 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
                 className="w-full h-11 pl-12 pr-4 bg-white border border-slate-200 rounded-xl outline-none transition-all text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
               />
             </div>
-    <p className="text-[10px] text-slate-400 ml-1">
+    <p className="text-xs text-slate-400 ml-1">
       India only (<strong>+91</strong>). Other countries coming soon.
     </p>
           </div>
 
           {/* Referral Code (Optional) */}
           <div className="space-y-1.5">
-            <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider ml-1">
+            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider ml-1">
               Referral Code <span className="text-slate-300 normal-case">(optional)</span>
             </label>
             <div className="relative group">
@@ -696,18 +696,18 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
                 className="w-full h-11 pl-10 pr-4 bg-white border border-slate-200 rounded-xl outline-none transition-all text-sm focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10"
               />
             </div>
-            <p className="text-[10px] text-slate-400 ml-1">Have a referral code? Paste it here to earn rewards for both you and the person who invited you.</p>
+            <p className="text-xs text-slate-400 ml-1">Have a referral code? Paste it here to earn rewards for both you and the person who invited you.</p>
           </div>
 
           {/* Terms Checkbox */}
-          <div className="flex items-start gap-2 py-1">
+          <div className="flex items-start gap-3 py-1">
             <input
               type="checkbox"
               id="terms"
               required
               className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
             />
-            <label htmlFor="terms" className="text-[11px] text-slate-500 leading-normal">
+            <label htmlFor="terms" className="text-xs text-slate-500 leading-normal">
               By creating an account, you agree to our{' '}
               <button
                 type="button"
@@ -730,7 +730,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 mt-2 group disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-3 mt-2 group disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>

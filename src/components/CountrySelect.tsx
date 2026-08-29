@@ -215,7 +215,7 @@ export function CountrySelect({
                   onClick={() => { setQuery(''); setHighlightIdx(0); inputRef.current?.focus(); }}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 rounded-full hover:bg-slate-100 transition-colors"
                 >
-                  <X className="w-3.5 h-3.5 text-slate-400" />
+                  <X className="w-4 h-4 text-slate-400" />
                 </button>
               )}
             </div>
@@ -247,7 +247,7 @@ export function CountrySelect({
             {filtered.pinned.length > 0 && (
               <>
                 <div className="px-4 py-1.5 bg-emerald-50/50 border-y border-emerald-100/50">
-                  <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider">
                     🇮🇳 Currently Available
                   </span>
                 </div>
@@ -266,7 +266,7 @@ export function CountrySelect({
                     >
                       <span className="text-lg">{getFlagEmoji(c.code)}</span>
                       <span className="text-sm font-semibold text-emerald-700">{c.name}</span>
-                      <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded ml-1">
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-1.5 py-0.5 rounded ml-1">
                         AVAILABLE
                       </span>
                       {value === c.name && (
@@ -282,7 +282,7 @@ export function CountrySelect({
             {filtered.rest.length > 0 && (
               <>
                 <div className="px-4 py-1.5 bg-slate-50 border-y border-slate-100">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     Coming Soon
                   </span>
                 </div>
@@ -301,7 +301,7 @@ export function CountrySelect({
                     >
                       <span className="text-lg">{getFlagEmoji(c.code)}</span>
                       <span className="text-sm text-slate-700">{c.name}</span>
-                      <span className="text-[10px] text-slate-400 ml-auto">{c.code}</span>
+                      <span className="text-xs text-slate-400 ml-auto">{c.code}</span>
                       {value === c.name && (
                         <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                       )}
@@ -322,7 +322,7 @@ export function CountrySelect({
 
           {/* Footer hint */}
           <div className="px-4 py-2 bg-slate-50 border-t border-slate-100">
-            <p className="text-[10px] text-slate-400 text-center">
+            <p className="text-xs text-slate-400 text-center">
               ↑↓ Navigate · Enter Select · Esc Close
             </p>
           </div>

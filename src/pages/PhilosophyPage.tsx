@@ -37,7 +37,7 @@ export function PhilosophyPage() {
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -57,8 +57,8 @@ export function PhilosophyPage() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-300" />
+          <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <TrendingUp className="w-4 h-4 text-emerald-300" />
             Foundational Philosophy
           </span>
           <h1 className="font-display text-4xl sm:text-7xl font-black tracking-tight leading-none">
@@ -74,7 +74,7 @@ export function PhilosophyPage() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 -mt-8 relative z-10">
         <div className="bg-white rounded-xl border border-slate-200/60 shadow-xl grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-100 overflow-hidden">
           {pillars.map((item, idx) => (
-            <div key={idx} className="p-4 space-y-2 hover:bg-slate-50/50 transition-colors">
+            <div key={idx} className="p-4 space-y-4 hover:bg-slate-50/50 transition-colors">
               <div className="font-display font-black text-4xl text-slate-900 tracking-tight">{item.value}</div>
               <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{item.label}</h4>
               <p className="text-xs text-slate-500 leading-normal">{item.desc}</p>
@@ -85,7 +85,7 @@ export function PhilosophyPage() {
 
       {/* Core Principles */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20 space-y-12">
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-4">
           <h2 className="font-display text-3xl font-extrabold text-slate-900">Our Three Pillars of Alignment</h2>
           <p className="text-sm text-slate-500 max-w-md mx-auto">These ideas direct every feature, pixel, and line of code we write for our remote ecosystem.</p>
         </div>
@@ -102,7 +102,7 @@ export function PhilosophyPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <h3 className="font-display text-xl font-bold text-slate-900 leading-tight">{p.title}</h3>
-                  <span className="px-2.5 py-0.5 bg-slate-100 text-slate-500 font-bold rounded-full text-[10px] uppercase tracking-wider">
+                  <span className="px-2.5 py-0.5 bg-slate-100 text-slate-500 font-bold rounded-full text-xs uppercase tracking-wider">
                     {p.badge}
                   </span>
                 </div>
@@ -123,7 +123,7 @@ export function PhilosophyPage() {
             <p className="text-emerald-100 text-sm max-w-md mx-auto leading-relaxed">
               Create a free account today to hire vetted creators or find secure projects with integrated payment protection.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Link
                 to="/signup"
                 className="inline-flex h-12 px-6 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors shadow-md text-sm shrink-0"

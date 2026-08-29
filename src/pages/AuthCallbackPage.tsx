@@ -752,7 +752,7 @@ export function AuthCallbackPage() {
                 </div>
               )}
 
-              <p className="text-[10px] text-slate-400">
+              <p className="text-xs text-slate-400">
                 By continuing, you agree to our{' '}
                 <a href="/terms" className="text-emerald-600 hover:underline">Terms of Service</a>
               </p>

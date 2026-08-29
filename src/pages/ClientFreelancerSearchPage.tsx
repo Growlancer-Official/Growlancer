@@ -225,7 +225,7 @@ export function ClientFreelancerSearchPage() {
     const props = getSellerLevelBadgeProps(level as any);
     return (
       <span className={props.className}>
-        <Award className="w-3 h-3" />
+        <Award className="w-4 h-4" />
         {props.label}
       </span>
     );
@@ -234,9 +234,9 @@ export function ClientFreelancerSearchPage() {
   return (
     <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
-          <h1 className="font-display text-lg font-bold text-slate-900">Find Talent</h1>
+          <h1 className="font-display text-xl font-bold text-slate-900">Find Talent</h1>
           <p className="text-slate-500 mt-1">Search and hire skilled freelancers for your projects</p>
           <TipNote tone="protection" compact className="mt-3 max-w-2xl">
             <strong>Verified</strong> and <strong>Pro</strong> badges show real, checked freelancers — contact them
@@ -244,10 +244,10 @@ export function ClientFreelancerSearchPage() {
           </TipNote>
         </div>
         <div className="flex items-center gap-1.5">
-          <button onClick={() => setShowFilters(!showFilters)} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">
+          <button onClick={() => setShowFilters(!showFilters)} className="inline-flex items-center justify-center gap-3 px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors">
             <Filter className="w-4 h-4" /> Filters
           </button>
-          <button onClick={() => setShowSaveModal(true)} className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors">
+          <button onClick={() => setShowSaveModal(true)} className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors">
             <Plus className="w-4 h-4" /> Save Search
           </button>
         </div>
@@ -255,15 +255,15 @@ export function ClientFreelancerSearchPage() {
 
       {/* Saved Searches */}
       {savedSearches.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-3 overflow-x-auto pb-2">
           {savedSearches.map((search) => (
             <div key={search.id} className="flex items-center gap-1 px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-sm flex-shrink-0">
               <button onClick={() => loadSavedSearch(search)} className="font-medium text-slate-700 hover:text-emerald-600 transition-colors">{search.name}</button>
               <button onClick={() => handleToggleNotify(search)} className="p-1 text-slate-400 hover:text-emerald-600" title={search.notify_new_results ? 'Notifications on' : 'Notifications off'}>
-                {search.notify_new_results ? <Bell className="w-3 h-3 text-emerald-500" /> : <BellOff className="w-3 h-3" />}
+                {search.notify_new_results ? <Bell className="w-4 h-4 text-emerald-500" /> : <BellOff className="w-4 h-4" />}
               </button>
               <button onClick={() => handleDeleteSaved(search.id)} className="p-1 text-slate-400 hover:text-red-500">
-                <Trash2 className="w-3 h-3" />
+                <Trash2 className="w-4 h-4" />
               </button>
             </div>
           ))}
@@ -276,15 +276,15 @@ export function ClientFreelancerSearchPage() {
           onClick={() => setShowCategories(!showCategories)}
           className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
         >
-          <div className="flex items-center gap-2">
-            <Layers className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="flex items-center gap-3">
+            <Layers className="w-4 h-4 text-emerald-600" />
             <span className="font-bold text-slate-900">Browse Categories</span>
             <span className="text-xs text-slate-400 font-medium">A-Z</span>
           </div>
           {showCategories ? (
-            <ChevronUp className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronUp className="w-4 h-4 text-slate-400" />
           ) : (
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+            <ChevronDown className="w-4 h-4 text-slate-400" />
           )}
         </button>
 
@@ -308,14 +308,14 @@ export function ClientFreelancerSearchPage() {
       {/* Filters */}
       {showFilters && (
         <div className="bg-white rounded-xl border border-slate-200 p-4">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
             <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
               <option value="All">All Categories</option>
               {categories.map((cat) => (<option key={cat} value={cat}>{cat}</option>))}
             </select>
             <input type="number" value={minRate} onChange={(e) => setMinRate(e.target.value)} placeholder="Min" className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             <input type="number" value={maxRate} onChange={(e) => setMaxRate(e.target.value)} placeholder="Max" className="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" />
-            <label className="flex items-center gap-2 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
+            <label className="flex items-center gap-3 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
               <input type="checkbox" checked={availabilityOnly} onChange={(e) => setAvailabilityOnly(e.target.checked)} className="w-4 h-4 rounded border-slate-300 text-emerald-600" />
               <span className="text-sm font-medium text-slate-700">Available Now</span>
             </label>
@@ -340,11 +340,11 @@ export function ClientFreelancerSearchPage() {
       ) : freelancers.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-xl border border-slate-100">
           <Search className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-          <h3 className="text-lg font-bold text-slate-900 mb-2">No freelancers found</h3>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">No freelancers found</h3>
           <p className="text-slate-500">Try adjusting your filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {freelancers.map((f) => (
             <div key={f.id} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm hover:shadow-md transition-all">
               <div className="flex items-start gap-1.5 mb-3">
@@ -352,13 +352,13 @@ export function ClientFreelancerSearchPage() {
                   {f.profile?.avatar ? <img src={f.profile.avatar} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center font-bold text-slate-400">{(f.profile?.name || f.title || 'U')[0]}</div>}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <h3 className="font-bold text-slate-900 truncate flex items-center gap-1.5">
                       {f.profile?.name || f.title || 'Freelancer'}
                       {f.profile?.is_pro && <ProBadge size="xs" />}
                       {f.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                     </h3>
-                    {f.availability && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />Available</span>}
+                    {f.availability && <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />Available</span>}
                   </div>
                   {f.title && <p className="text-sm text-slate-500 truncate">{f.title}</p>}
                 </div>
@@ -375,10 +375,10 @@ export function ClientFreelancerSearchPage() {
                 </div>
               )}
               <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                <span className="flex items-center gap-1 text-xs text-slate-500">{f.location && <><MapPin className="w-3 h-3" />{f.location}</>}</span>
-                {f.hourly_rate && <span className="text-lg font-bold text-emerald-600">{formatCurrency(Number(f.hourly_rate))}</span>}
+                <span className="flex items-center gap-1 text-xs text-slate-500">{f.location && <><MapPin className="w-4 h-4" />{f.location}</>}</span>
+                {f.hourly_rate && <span className="text-xl font-bold text-emerald-600">{formatCurrency(Number(f.hourly_rate))}</span>}
               </div>
-              <div className="flex items-center gap-2 mt-4">
+              <div className="flex items-center gap-3 mt-4">
                 <button
                   onClick={() => navigate(`/freelancer/${f.user_id}`)}
                   className="flex-1 px-3 py-2 text-xs font-medium border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
@@ -389,7 +389,7 @@ export function ClientFreelancerSearchPage() {
                   onClick={() => void openContact(f)}
                   className="flex-1 px-3 py-2 text-xs font-medium bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-1.5"
                 >
-                  <MessageSquare className="w-3.5 h-3.5" />
+                  <MessageSquare className="w-4 h-4" />
                   Contact
                 </button>
               </div>
@@ -402,7 +402,7 @@ export function ClientFreelancerSearchPage() {
       {contactFreelancer && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setContactFreelancer(null)}>
           <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Contact {contactFreelancer.profile?.name || 'Freelancer'}</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-1">Contact {contactFreelancer.profile?.name || 'Freelancer'}</h3>
             <p className="text-sm text-slate-500 mb-2">Send a project invite — they'll respond in real time.</p>
 
             {contactLoadingProjects ? (
@@ -443,7 +443,7 @@ export function ClientFreelancerSearchPage() {
               <button
                 onClick={handleSendInvite}
                 disabled={!selectedProject || sendingInvite || contactLoadingProjects}
-                className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 disabled:opacity-50 flex items-center justify-center gap-3"
               >
                 {sendingInvite ? <Loader2 className="w-4 h-4 animate-spin" /> : <MessageSquare className="w-4 h-4" />}
                 Send Invite
@@ -457,7 +457,7 @@ export function ClientFreelancerSearchPage() {
       {showSaveModal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setShowSaveModal(false)}>
           <div className="bg-white rounded-xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900 mb-2">Save This Search</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Save This Search</h3>
             <input type="text" value={saveName} onChange={(e) => setSaveName(e.target.value)} placeholder="e.g. React developers under 500" className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-emerald-500" />
             <div className="flex gap-1.5">
               <button onClick={() => setShowSaveModal(false)} className="flex-1 px-4 py-2.5 border border-slate-200 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50">Cancel</button>

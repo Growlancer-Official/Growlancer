@@ -39,7 +39,7 @@ export function PricingPage() {
       {/* Premium Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -60,7 +60,7 @@ export function PricingPage() {
             Premium plan ({formatCurrency(299)}/month) for AI + productivity tools. No hidden fees, no pay-to-win.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-2xl mx-auto mt-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl mx-auto mt-8">
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-left">
               <p className="text-xs font-bold uppercase tracking-widest text-emerald-700 mb-1">
                 For Clients
@@ -108,8 +108,8 @@ export function PricingPage() {
 
           <div className="max-w-md mx-auto">
             <div className="rounded-xl p-4 bg-slate-900 text-white shadow-xl">
-              <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-2">
-                <ShieldCheck className="w-3 h-3" />
+              <div className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-2">
+                <ShieldCheck className="w-3.5 h-3.5" />
                 ONE FLAT RATE FOR EVERYONE
               </div>
               <h3 className="font-display text-2xl font-bold mb-2">Platform Fee</h3>
@@ -134,7 +134,7 @@ export function PricingPage() {
               >
                 Post a Project — It's Free
               </Link>
-              <p className="text-[11px] text-slate-500 text-center mt-3">
+              <p className="text-xs text-slate-500 text-center mt-3">
                 Posting a project and inviting freelancers costs {formatCurrency(0)}. You only pay when you hire.
               </p>
             </div>
@@ -146,7 +146,7 @@ export function PricingPage() {
       <section className="pb-14 sm:pb-20">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="text-center mb-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2">
+            <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2">
               <Sparkles className="w-4 h-4" />
               FOR FREELANCERS
             </div>
@@ -171,7 +171,7 @@ export function PricingPage() {
               <p>Pro plans are being prepared — check back soon.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl mx-auto">
               {plans.map((plan) => {
                 const isFree = plan.price === 0;
                 const isPopular = plan.ai_priority && !isFree;
@@ -185,14 +185,14 @@ export function PricingPage() {
                     }`}
                   >
                     {isPopular && (
-                      <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-2 w-fit">
-                        <Crown className="w-3 h-3" />
+                      <div className="inline-flex items-center gap-1 text-xs font-bold bg-emerald-500 text-slate-900 px-3 py-1 rounded-full mb-2 w-fit">
+                        <Crown className="w-3.5 h-3.5" />
                         MOST POPULAR
                       </div>
                     )}
                     {isFree && (
-                      <div className="inline-flex items-center gap-1 text-[10px] font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full mb-2 w-fit">
-                        <Zap className="w-3 h-3" />
+                      <div className="inline-flex items-center gap-1 text-xs font-bold bg-slate-100 text-slate-600 px-3 py-1 rounded-full mb-2 w-fit">
+                        <Zap className="w-3.5 h-3.5" />
                         START FREE
                       </div>
                     )}
@@ -291,7 +291,7 @@ export function PricingPage() {
           <div className="text-center mt-8">
             <Link
               to="/dashboard/pro"
-              className="inline-flex items-center gap-2 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+              className="inline-flex items-center gap-3 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
             >
               See full Premium plan details
               <ArrowRight className="w-4 h-4" />
@@ -306,7 +306,7 @@ export function PricingPage() {
           <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 text-center mb-10">
             Pricing Questions, Answered
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Who pays the platform fee?</h3>
               <p className="text-sm text-slate-600">
@@ -389,7 +389,7 @@ export function PricingPage() {
             </p>
           </div>
           <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
                 <p className="text-sm text-slate-600">
@@ -421,21 +421,21 @@ export function PricingPage() {
       <section className="pb-16 sm:pb-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-slate-200">
+            <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-200">
               <ShieldCheck className="w-8 h-8 text-emerald-500" />
               <div>
                 <p className="font-bold text-slate-900">100% Secure</p>
                 <p className="text-sm text-slate-600">Escrow protected</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-slate-200">
+            <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-200">
               <Zap className="w-8 h-8 text-orange-500" />
               <div>
                 <p className="font-bold text-slate-900">Instant Match</p>
                 <p className="text-sm text-slate-600">AI-powered in seconds</p>
               </div>
             </div>
-            <div className="flex items-center gap-2 bg-white rounded-xl p-3 border border-slate-200">
+            <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-200">
               <Check className="w-8 h-8 text-blue-500" />
               <div>
                 <p className="font-bold text-slate-900">No Hidden Fees</p>

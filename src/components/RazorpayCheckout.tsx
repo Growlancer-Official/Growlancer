@@ -154,7 +154,7 @@ export function RazorpayCheckout({
   // Success state
   if (status === 'success') {
     return (
-      <div className="flex items-center gap-2 text-emerald-600 bg-emerald-50 px-4 py-3 rounded-lg">
+      <div className="flex items-center gap-3 text-emerald-600 bg-emerald-50 px-4 py-3 rounded-lg">
         <CheckCircle className="w-5 h-5" />
         <span className="font-medium">Payment successful!</span>
       </div>
@@ -165,7 +165,7 @@ export function RazorpayCheckout({
   if (status === 'error') {
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2 text-red-600 bg-red-50 px-4 py-3 rounded-lg">
+        <div className="flex items-center gap-3 text-red-600 bg-red-50 px-4 py-3 rounded-lg">
           <XCircle className="w-5 h-5" />
           <span className="font-medium">{error || 'Payment failed'}</span>
         </div>
@@ -193,7 +193,7 @@ export function RazorpayCheckout({
 
   // Idle state - show payment button
   return (
-    <div className={`space-y-2 ${className}`}>
+    <div className={`space-y-4 ${className}`}>
       <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div>
@@ -207,14 +207,14 @@ export function RazorpayCheckout({
       </div>
 
       {orderData.currency === 'INR' && (
-        <label className="flex items-center gap-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 transition-colors cursor-pointer">
+        <label className="flex items-center gap-3 p-3 rounded-lg bg-white border border-slate-200 hover:border-emerald-300 transition-colors cursor-pointer">
           <input
             type="checkbox"
             checked={saveCard}
             onChange={(e) => setSaveCard(e.target.checked)}
             className="w-4 h-4 text-emerald-600 rounded border-slate-300"
           />
-          <div className="flex items-center gap-2 text-sm text-slate-700">
+          <div className="flex items-center gap-3 text-sm text-slate-700">
             <Save className="w-4 h-4 text-emerald-500" />
             <span>
               <strong>Save card</strong> for future one-click payments

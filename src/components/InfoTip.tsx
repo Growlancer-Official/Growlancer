@@ -55,7 +55,7 @@ export function InfoTip({ text, title, align = 'right', className = '', tone = '
         } ${alignClass}`}
       >
         {title && (
-          <span className="block px-3 pt-2.5 pb-1 text-[11px] font-bold uppercase tracking-wide text-emerald-300">
+          <span className="block px-3 pt-2.5 pb-1 text-xs font-bold uppercase tracking-wide text-emerald-300">
             {title}
           </span>
         )}

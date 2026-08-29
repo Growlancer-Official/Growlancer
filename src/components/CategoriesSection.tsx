@@ -71,7 +71,7 @@ export function CategoriesSection({
     return (
       <div>
         {loading ? (
-          <div className="flex items-center gap-2 text-sm text-slate-400 py-4">
+          <div className="flex items-center gap-3 text-sm text-slate-400 py-4">
             <Loader2 className="w-4 h-4 animate-spin" />
             Loading categories...
           </div>
@@ -204,10 +204,10 @@ export function CategoriesSection({
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${meta.bgColor} ${meta.color} mb-3 group-hover:scale-110 transition-transform duration-200`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-3 mb-1">
                   <h3 className="font-semibold text-slate-900 text-sm leading-tight">{cat.name}</h3>
                   {catCount > 0 && (
-                    <span className="px-1.5 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-700 rounded-full flex-shrink-0">
+                    <span className="px-1.5 py-0.5 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full flex-shrink-0">
                       {catCount}
                     </span>
                   )}
@@ -225,9 +225,9 @@ export function CategoriesSection({
       {showToggleButton && !loading && (
         <button
           onClick={() => setShowAll(!showAll)}
-          className="mt-6 w-full py-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl border border-slate-200 hover:border-emerald-200 transition-all flex items-center justify-center gap-2 group"
+          className="mt-6 w-full py-3 text-sm font-medium text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-xl border border-slate-200 hover:border-emerald-200 transition-all flex items-center justify-center gap-3 group"
         >
-          <span className="transition-transform duration-300 inline-flex items-center gap-2">
+          <span className="transition-transform duration-300 inline-flex items-center gap-3">
             {showAll ? (
               <>Show Less <ChevronUp className="w-4 h-4 transition-transform duration-300 rotate-0" /></>
             ) : (

@@ -252,14 +252,14 @@ export function SubscriptionPayPalPayment({
                 <p className="text-xs text-slate-400">Available soon — Razorpay is the current payment method</p>
               </div>
             </div>
-            <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
+            <span className="text-xs font-semibold uppercase tracking-wide text-slate-500 bg-slate-200 px-2.5 py-1 rounded-full">
               Coming Soon
             </span>
           </div>
         )}
 
         <div className="mt-6 p-4 bg-amber-50 rounded-lg border border-amber-100">
-          <div className="flex items-center gap-2 text-amber-700 mb-2">
+          <div className="flex items-center gap-3 text-amber-700 mb-2">
             <Calendar className="w-4 h-4" />
             <span className="font-semibold">{trialDays}-Day Free Trial</span>
           </div>
@@ -278,7 +278,7 @@ export function SubscriptionPayPalPayment({
         <h2 className="text-xl font-bold text-slate-900">Upgrade to Pro</h2>
       </div>
 
-      <div className="space-y-2 mb-3">
+      <div className="space-y-4 mb-3">
         <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-100">
           <h3 className="font-semibold text-amber-900 mb-1">{planName} Plan</h3>
           <div className="flex items-baseline gap-1">
@@ -288,7 +288,7 @@ export function SubscriptionPayPalPayment({
         </div>
 
         <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-100">
-          <div className="flex items-center gap-2 text-emerald-700 mb-2">
+          <div className="flex items-center gap-3 text-emerald-700 mb-2">
             <Calendar className="w-4 h-4" />
             <span className="font-semibold">{trialDays}-Day Free Trial</span>
           </div>
@@ -297,43 +297,43 @@ export function SubscriptionPayPalPayment({
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-4">
           <h3 className="font-semibold text-slate-900">Pro Features:</h3>
-          <ul className="space-y-2 text-sm text-slate-600">
+          <ul className="space-y-4 text-sm text-slate-600">
             {role === 'freelancer' ? (
               <>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>10x more proposals per month</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Priority matching algorithm</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Access to high-budget projects</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Advanced earnings analytics</span>
                 </li>
               </>
             ) : (
               <>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Unlimited AI-powered matching</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Priority access to top freelancers</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Dedicated account manager</span>
                 </li>
-                <li className="flex items-center gap-2">
+                <li className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600" />
                   <span>Advanced project analytics</span>
                 </li>
@@ -345,7 +345,7 @@ export function SubscriptionPayPalPayment({
 
       {/* Pay from Growlancer Wallet */}
       <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-2">
-        <div className="flex items-center gap-2 text-blue-700 mb-1">
+        <div className="flex items-center gap-3 text-blue-700 mb-1">
           <Wallet className="w-4 h-4" />
           <span className="font-semibold">Pay from Growlancer Wallet</span>
         </div>
@@ -357,7 +357,7 @@ export function SubscriptionPayPalPayment({
         <button
           onClick={handleWalletPay}
           disabled={walletPaying || (walletBalance !== null && walletBalance < planPrice)}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-3"
         >
           {walletPaying ? (
             <>
@@ -388,7 +388,7 @@ export function SubscriptionPayPalPayment({
         <button
           onClick={handleProceedToPayment}
           disabled={isCreatingSubscription}
-          className="flex-1 py-3 px-4 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-300 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          className="flex-1 py-3 px-4 bg-amber-600 hover:bg-amber-700 disabled:bg-amber-300 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-3"
         >
           {isCreatingSubscription ? (
             <>

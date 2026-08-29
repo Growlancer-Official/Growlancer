@@ -179,7 +179,7 @@ export function ProSubscriptionPage() {
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-10 w-10 rounded-xl" />
             <span className="font-display text-xl font-bold tracking-tight">Growlancer</span>
           </div>
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-3">
             <Link
               to="/dashboard"
               className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors"
@@ -194,7 +194,7 @@ export function ProSubscriptionPage() {
         {/* Hero Section */}
         <section className="pt-16 pb-24 px-4">
           <div className="max-w-4xl mx-auto text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
+            <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-4 h-4" />
               FREELANCER PREMIUM
             </div>
@@ -211,7 +211,7 @@ export function ProSubscriptionPage() {
               <div className="mt-8 mx-auto max-w-md p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
                 <CheckCircle className="text-emerald-600 text-2xl w-6 h-6 flex-shrink-0" />
                 <div className="text-left">
-                  <p className="text-emerald-900 font-bold text-sm flex items-center gap-2">
+                  <p className="text-emerald-900 font-bold text-sm flex items-center gap-3">
                     You are on{' '}
                     {subscription.subscription_plans?.name || 'Pro'} plan
                     <ProBadge size="xs" />
@@ -275,13 +275,13 @@ export function ProSubscriptionPage() {
                   } ${isCurrentPlan ? 'ring-2 ring-emerald-400' : ''}`}
                 >
                   {isPopular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1 rounded-full bg-slate-900 text-white text-[10px] font-bold uppercase tracking-widest shadow-xl">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1 rounded-full bg-slate-900 text-white text-xs font-bold uppercase tracking-widest shadow-xl">
                       Most Popular
                     </div>
                   )}
 
                   {isCurrentPlan && (
-                    <div className="absolute top-4 right-4 z-20 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold uppercase tracking-widest">
+                    <div className="absolute top-4 right-4 z-20 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-widest">
                       Current Plan
                     </div>
                   )}
@@ -322,7 +322,7 @@ export function ProSubscriptionPage() {
 
                   {/* Features */}
                   <div className="space-y-3 mb-8 flex-1">
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-3 text-sm">
                       <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                       <span className="text-slate-700">
                         {plan.ai_messages_limit >= 1000
@@ -330,7 +330,7 @@ export function ProSubscriptionPage() {
                           : `${plan.ai_messages_limit} AI messages/month`}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-3 text-sm">
                       <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                       <span className="text-slate-700">
                         {plan.ai_messages_limit >= 1000
@@ -338,31 +338,31 @@ export function ProSubscriptionPage() {
                           : 'AI writing — 5 generations per day'}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-3 text-sm">
                       <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                       <span className="text-slate-700">AI-powered project matching</span>
                     </div>
-                    <div className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-3 text-sm">
                       <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                       <span className="text-slate-700">Personalized AI assistant</span>
                     </div>
                     {plan.price > 0 ? (
                       <>
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-3 text-sm">
                           <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                           <span className="text-slate-700">Priority AI responses</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-3 text-sm">
                           <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                           <span className="text-slate-700">Advanced analytics</span>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-3 text-sm">
                           <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
                           <span className="text-slate-700">Priority support 24/7</span>
                         </div>
                       </>
                     ) : (
-                      <div className="flex items-center gap-2 text-sm">
+                      <div className="flex items-center gap-3 text-sm">
                         <X className="w-4 h-4 text-slate-400 flex-shrink-0" />
                         <span className="text-slate-400">Premium features</span>
                       </div>
@@ -371,7 +371,7 @@ export function ProSubscriptionPage() {
 
                   {/* Action Button */}
                   {isCurrentPlan ? (
-                    <div className="space-y-2">
+                    <div className="space-y-4">
                       {subscription?.cancel_at_period_end ? (
                         <>
                           <button
@@ -381,7 +381,7 @@ export function ProSubscriptionPage() {
                           >
                             {cancelling ? 'Renewing...' : 'Renew Now'}
                           </button>
-                          <p className="text-[11px] text-amber-600 text-center font-medium">
+                          <p className="text-xs text-amber-600 text-center font-medium">
                             Your Pro ends at period end — renew to keep it active.
                           </p>
                         </>
@@ -405,7 +405,7 @@ export function ProSubscriptionPage() {
                     <button
                       onClick={() => handleUpgrade(plan.id, true)}
                       disabled={upgrading === plan.id}
-                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm ${
+                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 text-sm ${
                         isPopular
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                           : 'bg-slate-900 hover:bg-slate-800 text-white'
@@ -427,7 +427,7 @@ export function ProSubscriptionPage() {
                     <button
                       onClick={() => handleUpgrade(plan.id)}
                       disabled={upgrading === plan.id}
-                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-2 text-sm ${
+                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 text-sm ${
                         isPopular
                           ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
                           : 'bg-slate-900 hover:bg-slate-800 text-white'
@@ -449,7 +449,7 @@ export function ProSubscriptionPage() {
 
                   {isCurrentPlan && !subscription?.cancel_at_period_end && (
                     <div className="mt-4 flex items-center justify-center gap-3">
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
                         <ShieldCheck className="text-emerald-500 w-4 h-4" />
                         Active
                       </div>
@@ -462,15 +462,15 @@ export function ProSubscriptionPage() {
 
           {/* Trust Badges */}
           <div className="max-w-md mx-auto mt-8 flex items-center justify-center gap-3">
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
               <ShieldCheck className="text-emerald-500 w-4 h-4" />
               Secure Payment
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
               <RefreshCw className="text-emerald-500 w-4 h-4" />
               Cancel Anytime
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
               <CreditCard className="text-emerald-500 w-4 h-4" />
               UPI / Cards / NetBanking
             </div>
@@ -488,7 +488,7 @@ export function ProSubscriptionPage() {
                 platform is merit-based.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
                 <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
                   <Sparkles className="w-6 h-6" />
@@ -588,7 +588,7 @@ export function ProSubscriptionPage() {
         <section className="py-24 bg-slate-50">
           <div className="max-w-[100rem] mx-auto px-4">
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm mb-3">
+              <div className="inline-flex items-center gap-3 px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm mb-3">
                 <Sparkles className="w-4 h-4" />
                 Pre-Launch Phase
               </div>
@@ -702,7 +702,7 @@ export function ProSubscriptionPage() {
       {/* Footer */}
       <footer className="bg-white py-6 border-t border-slate-100">
         <div className="max-w-[100rem] mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="flex items-center justify-center gap-3 mb-3">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-bold text-slate-900">Growlancer</span>
           </div>

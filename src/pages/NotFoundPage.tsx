@@ -8,7 +8,7 @@ export function NotFoundPage() {
       {/* Premium Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center">
-          <Link to={ROUTES.HOME} className="flex items-center gap-2 group">
+          <Link to={ROUTES.HOME} className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -36,14 +36,14 @@ export function NotFoundPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to={ROUTES.HOME}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
+              className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               <Home className="w-4 h-4" />
               Back to Home
             </Link>
             <button
               onClick={() => window.history.back()}
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
+              className="inline-flex items-center justify-center gap-3 px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
               Go Back
@@ -53,7 +53,7 @@ export function NotFoundPage() {
           {/* Helpful Links */}
           <div className="mt-12 pt-8 border-t border-slate-200">
             <p className="text-sm text-slate-500 mb-4">Popular pages:</p>
-            <div className="flex flex-wrap gap-2 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center">
               <Link
                 to={ROUTES.HOW_IT_WORKS}
                 className="px-3 py-1.5 bg-slate-100 text-slate-600 text-sm rounded-lg hover:bg-slate-200 transition-colors"

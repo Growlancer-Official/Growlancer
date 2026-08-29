@@ -79,7 +79,7 @@ export function AboutPage() {
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-3">
             <img src="/UpdatedLogo.png" alt="Growlancer" className="h-8 w-8 rounded-lg" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -99,8 +99,8 @@ export function AboutPage() {
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+          <span className="inline-flex items-center gap-3 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <Sparkles className="w-4 h-4 animate-pulse" />
             Our Mission
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
@@ -116,7 +116,7 @@ export function AboutPage() {
       {/* Stats Panel */}
       <section className="relative -mt-10 z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12">
         <div className="bg-white rounded-[2.5rem] border border-slate-200/60 p-4 sm:p-10 shadow-xl">
-          <div className="text-center space-y-2 mb-2">
+          <div className="text-center space-y-4 mb-2">
             <h2 className="text-xs font-black uppercase text-emerald-600 tracking-widest flex items-center justify-center gap-1.5">
               <TrendingUp className="w-4 h-4" /> Live Platform Metrics
             </h2>
@@ -152,7 +152,7 @@ export function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
           <div className="space-y-3">
             <span className="inline-flex items-center gap-1 text-xs font-black uppercase text-emerald-600 tracking-wider">
-              <Zap className="w-3.5 h-3.5" /> Bridging the Gaps
+              <Zap className="w-4 h-4" /> Bridging the Gaps
             </span>
             <h3 className="font-display text-3xl font-black text-slate-900 leading-tight">
               Why we started Growlancer
@@ -166,14 +166,14 @@ export function AboutPage() {
           </div>
           <div className="relative">
             <div className="absolute inset-0 bg-emerald-600/10 rounded-[3rem] blur-3xl -rotate-6"></div>
-            <div className="relative bg-white rounded-[3rem] p-4 border border-slate-200/50 shadow-lg space-y-2">
+            <div className="relative bg-white rounded-[3rem] p-4 border border-slate-200/50 shadow-lg space-y-4">
               <div className="flex gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-red-400"></span>
-                <span className="w-3 h-3 rounded-full bg-yellow-400"></span>
-                <span className="w-3 h-3 rounded-full bg-green-400"></span>
+                <span className="w-3.5 h-3.5 rounded-full bg-red-400"></span>
+                <span className="w-3.5 h-3.5 rounded-full bg-yellow-400"></span>
+                <span className="w-3.5 h-3.5 rounded-full bg-green-400"></span>
               </div>
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/30 text-xs font-mono text-slate-600">
-                <LiveCodeTerminal lines={terminalLines} className="space-y-2" />
+                <LiveCodeTerminal lines={terminalLines} className="space-y-4" />
               </div>
               <div className="flex items-center gap-3 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -190,8 +190,8 @@ export function AboutPage() {
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20 sm:mt-28">
         {/* Section Label */}
         <div className="text-center space-y-3 mb-10 sm:mb-14">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 font-bold rounded-full border border-emerald-500/20 text-xs uppercase tracking-wider">
-            <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+          <span className="inline-flex items-center gap-3 px-4 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 font-bold rounded-full border border-emerald-500/20 text-xs uppercase tracking-wider">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
             </svg>
             Leadership &amp; Vision
@@ -230,7 +230,7 @@ export function AboutPage() {
               {/* Founder Info — Right Side */}
               <div className="lg:col-span-3 space-y-5 text-center lg:text-left">
                 <div className="space-y-1.5">
-                  <span className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-emerald-500/15 text-emerald-300 font-bold rounded-full border border-emerald-500/25 text-[10px] uppercase tracking-[0.15em]">
+                  <span className="inline-flex items-center gap-3 px-2.5 py-0.5 bg-emerald-500/15 text-emerald-300 font-bold rounded-full border border-emerald-500/25 text-xs uppercase tracking-[0.15em]">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     Founder &amp; Chief Executive Officer
                   </span>
@@ -281,15 +281,15 @@ export function AboutPage() {
                     </div>
                     <div className="text-left">
                       <p className="text-sm font-bold text-white leading-tight">MOHAMMAD MIRAN KHAN</p>
-                      <p className="text-[10px] text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlancer</p>
+                      <p className="text-xs text-slate-500 uppercase tracking-widest">Founder &amp; CEO, Growlancer</p>
                     </div>
                   </div>
                   <div className="flex items-center sm:ml-auto">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg border border-white/10">
-                      <svg className="w-3 h-3 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
-                      <span className="text-[10px] font-semibold text-slate-300">Vision-Driven</span>
+                      <span className="text-xs font-semibold text-slate-300">Vision-Driven</span>
                     </div>
                   </div>
                 </div>
@@ -322,7 +322,7 @@ export function AboutPage() {
                 <div className={`h-14 w-14 rounded-xl flex items-center justify-center shrink-0 ${val.iconColor} group-hover:scale-110 transition-transform`}>
                   <Icon className="w-7 h-7" />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-4">
                   <h3 className="font-display font-extrabold text-lg text-slate-900 group-hover:text-emerald-700 transition-colors">
                     {val.title}
                   </h3>
@@ -349,7 +349,7 @@ export function AboutPage() {
             <p className="text-emerald-100 text-sm leading-relaxed max-w-md mx-auto">
               Join thousands of clients and freelancers who have already bridged dashboard gaps and secured their contracts through active escrow.
             </p>
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-2">
+            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link
                 to="/signup"
                 className="w-full sm:w-auto inline-flex h-12 px-8 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all active:scale-95 shadow-md shadow-emerald-950/20"

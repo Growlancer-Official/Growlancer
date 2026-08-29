@@ -77,7 +77,7 @@ export function VerifyNowHeaderButton() {
         title="Identity verification in review"
         className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 rounded-full border border-amber-200 hover:bg-amber-100 transition-colors"
       >
-        <Clock className="w-3.5 h-3.5 text-amber-600" />
+        <Clock className="w-4 h-4 text-amber-600" />
         <span className="text-xs font-bold text-amber-700">In Review</span>
       </Link>
     );
@@ -90,7 +90,7 @@ export function VerifyNowHeaderButton() {
       title="Verify your identity to unlock full access"
       className="hidden md:inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-full hover:bg-emerald-700 transition-colors shadow-sm"
     >
-      <ShieldCheck className="w-3.5 h-3.5" />
+      <ShieldCheck className="w-4 h-4" />
       Verify Now
     </Link>
   );

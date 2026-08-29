@@ -243,8 +243,8 @@ export function TimeTrackingPage() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'running': return <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium flex items-center gap-1"><span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse" />Running</span>;
-      case 'submitted': return <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full font-medium"><Clock className="w-3 h-3 inline mr-1" />Pending</span>;
-      case 'approved': return <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium"><CheckCircle2 className="w-3 h-3 inline mr-1" />Approved</span>;
+      case 'submitted': return <span className="px-2 py-0.5 bg-amber-100 text-amber-700 text-xs rounded-full font-medium"><Clock className="w-3.5 h-3.5 inline mr-1" />Pending</span>;
+      case 'approved': return <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs rounded-full font-medium"><CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />Approved</span>;
       case 'rejected': return <span className="px-2 py-0.5 bg-red-100 text-red-700 text-xs rounded-full font-medium">Rejected</span>;
       default: return null;
     }
@@ -266,10 +266,10 @@ export function TimeTrackingPage() {
 
       {/* Contract Selector */}
       {contracts.length > 0 && (
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-3 overflow-x-auto pb-2">
           {contracts.map((c) => (
             <button key={c.id} onClick={() => setActiveContract(c.id)} className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${activeContract === c.id ? 'bg-emerald-100 text-emerald-700 border border-emerald-200' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-              <Briefcase className="w-3.5 h-3.5 inline mr-1.5" />{c.title}
+              <Briefcase className="w-4 h-4 inline mr-1.5" />{c.title}
             </button>
           ))}
         </div>
@@ -278,7 +278,7 @@ export function TimeTrackingPage() {
       {contracts.length === 0 ? (
         <div className="text-center py-16 bg-white rounded-2xl border border-slate-100">
           <Timer className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-          <h3 className="text-lg font-bold text-slate-900 mb-2">No hourly contracts</h3>
+          <h3 className="text-xl font-bold text-slate-900 mb-2">No hourly contracts</h3>
           <p className="text-slate-500">Time tracking is available for hourly contracts.</p>
         </div>
       ) : (
@@ -300,7 +300,7 @@ export function TimeTrackingPage() {
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 border-b border-slate-200">
+          <div className="flex gap-3 border-b border-slate-200">
             {([{ id: 'timer' as const, label: 'Timer' }, { id: 'manual' as const, label: 'Manual Entry' }, { id: 'history' as const, label: 'History' }]).map((tab) => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`px-4 py-3 text-sm font-medium relative ${activeTab === tab.id ? 'text-emerald-600' : 'text-slate-500 hover:text-slate-700'}`}>
                 {tab.label}
@@ -318,11 +318,11 @@ export function TimeTrackingPage() {
               )}
               <div className="flex justify-center gap-3">
                 {!isTracking ? (
-                  <button onClick={startTracking} className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-2">
+                  <button onClick={startTracking} className="px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-3">
                     <Play className="w-5 h-5" /> Start Timer
                   </button>
                 ) : (
-                  <button onClick={stopTracking} className="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors inline-flex items-center gap-2">
+                  <button onClick={stopTracking} className="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl hover:bg-red-700 transition-colors inline-flex items-center gap-3">
                     <Pause className="w-5 h-5" /> Stop & Submit ({formatElapsed(elapsed)})
                   </button>
                 )}
@@ -355,7 +355,7 @@ export function TimeTrackingPage() {
 
           {/* History Tab */}
           {activeTab === 'history' && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {loading ? (
                 <div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-emerald-600" /></div>
               ) : timeEntries.length === 0 ? (
@@ -368,7 +368,7 @@ export function TimeTrackingPage() {
                   <div key={entry.id} className="bg-white rounded-xl border border-slate-100 p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="text-center min-w-[50px]">
-                        <p className="text-lg font-bold text-slate-900">{entry.hours}h</p>
+                        <p className="text-xl font-bold text-slate-900">{entry.hours}h</p>
                       </div>
                       <div>
                         <p className="font-medium text-slate-900 text-sm">{entry.description}</p>

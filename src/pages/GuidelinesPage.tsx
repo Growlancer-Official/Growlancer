@@ -28,7 +28,7 @@ export function GuidelinesPage() {
       {/* Symmetrical Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -47,8 +47,8 @@ export function GuidelinesPage() {
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl -ml-40 -mb-20"></div>
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-2 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Compass className="w-3.5 h-3.5" />
+          <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+            <Compass className="w-4 h-4" />
             Community Guidelines
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
@@ -62,20 +62,20 @@ export function GuidelinesPage() {
 
       {/* Do's and Dont's */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {/* Dos */}
           <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200/50 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center border border-emerald-100 flex-shrink-0">
                 <CheckCircle className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
                 <h3 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Do's</h3>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Best Practices</p>
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Best Practices</p>
               </div>
             </div>
 
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               {dos.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -87,17 +87,17 @@ export function GuidelinesPage() {
 
           {/* Donts */}
           <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200/50 shadow-sm space-y-3">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center border border-red-100 flex-shrink-0">
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
               <div>
                 <h3 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Don'ts</h3>
-                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Banned Operations</p>
+                <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Banned Operations</p>
               </div>
             </div>
 
-            <ul className="space-y-2">
+            <ul className="space-y-4">
               {donts.map((item, idx) => (
                 <li key={idx} className="flex items-start gap-3">
                   <XCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
@@ -132,7 +132,7 @@ export function GuidelinesPage() {
 
       {/* Enforcement Alert Box */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12">
-        <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-3 flex flex-col sm:flex-row gap-2 items-start shadow-sm">
+        <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-3 flex flex-col sm:flex-row gap-3 items-start shadow-sm">
           <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
             <AlertTriangle className="w-5 h-5 text-amber-700 animate-pulse" />
           </div>
@@ -155,7 +155,7 @@ export function GuidelinesPage() {
             <p className="text-emerald-100 text-xs max-w-md mx-auto leading-relaxed">
               If you see something that violates our guidelines, please create a support ticket and we'll review it promptly.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
               <Link
                 to="/contact"
                 className="inline-flex h-12 px-6 items-center justify-center font-bold bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors shadow-md text-sm shrink-0"

@@ -111,7 +111,7 @@ export default function SupportTicketsPage() {
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
         >
           <Plus className="w-4 h-4" />
           New Ticket
@@ -128,7 +128,7 @@ export default function SupportTicketsPage() {
       {showForm && (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-lg font-bold text-slate-900">Create Support Ticket</h2>
+            <h2 className="font-display text-xl font-bold text-slate-900">Create Support Ticket</h2>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
               <ChevronUp className="w-5 h-5" />
             </button>
@@ -142,7 +142,7 @@ export default function SupportTicketsPage() {
           ) : (
             <form onSubmit={handleCreate} className="space-y-4">
               {submitError && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 rounded-xl border border-red-200">
+                <div className="flex items-center gap-3 p-3 bg-red-50 rounded-xl border border-red-200">
                   <AlertCircle className="w-4 h-4 text-red-500" />
                   <span className="text-sm text-red-700">{submitError}</span>
                 </div>
@@ -203,7 +203,7 @@ export default function SupportTicketsPage() {
                 <button
                   type="submit"
                   disabled={submitting || !subject.trim() || !description.trim()}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50"
+                  className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                   {submitting ? 'Submitting...' : 'Submit Ticket'}
@@ -231,7 +231,7 @@ export default function SupportTicketsPage() {
           <div className="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
             <LifeBuoy className="w-8 h-8 text-emerald-600" />
           </div>
-          <h3 className="font-display text-lg font-bold text-slate-900 mb-2">No tickets yet</h3>
+          <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No tickets yet</h3>
           <p className="text-slate-500 mb-6 max-w-sm mx-auto">
             {isFreelancer
               ? "You haven't submitted any support tickets. If you need help, click 'New Ticket' above."
@@ -239,13 +239,13 @@ export default function SupportTicketsPage() {
           </p>
           <button
             onClick={() => setShowForm(true)}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+            className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
           >
             <Plus className="w-4 h-4" /> Create Your First Ticket
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {tickets.map((ticket) => {
             const status = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
             const isExpanded = expandedId === ticket.id;
@@ -265,7 +265,7 @@ export default function SupportTicketsPage() {
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-semibold text-slate-900 truncate">{ticket.subject}</h3>
-                      <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                      <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500">
                         <span className={`px-2 py-0.5 rounded-full font-medium ${status.color}`}>
                           {status.label}
                         </span>

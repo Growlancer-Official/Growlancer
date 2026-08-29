@@ -115,7 +115,7 @@ export function StatusPage() {
       {/* Premium Header */}
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-3 group">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
@@ -136,7 +136,7 @@ export function StatusPage() {
           <p className="font-semibold">{overallLabel}</p>
         </div>
 
-        <section className="space-y-2 mb-12">
+        <section className="space-y-4 mb-12">
           {systems.length === 0 && overall === 'checking' ? (
             <div className="flex justify-center py-6">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600" />
@@ -145,7 +145,7 @@ export function StatusPage() {
             systems.map((sys) => {
               const Icon = sys.icon;
               return (
-                <div key={sys.name} className="bg-white rounded-xl border border-slate-100 p-3 flex items-start gap-2">
+                <div key={sys.name} className="bg-white rounded-xl border border-slate-100 p-3 flex items-start gap-3">
                   <Icon className={`w-6 h-6 shrink-0 mt-0.5 ${sys.color}`} />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-slate-900">{sys.name}</p>
@@ -163,7 +163,7 @@ export function StatusPage() {
           <div className="space-y-3">
             {incidents.map((inc) => (
               <div key={inc.title} className="bg-white rounded-xl border border-slate-100 p-4">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-slate-500 mb-1">
+                <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500 mb-1">
                   <span>{inc.date}</span>
                   <span>·</span>
                   <span className="font-medium text-slate-700">{inc.status}</span>
