@@ -304,18 +304,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               devWarn('[Auth] OAuth referral not recorded:', refError?.message || (refData as any)?.error);
             } else {
               devLog('[Auth] OAuth referral processed for code:', oauthRefCode);
-              // 🆕 Grant referred OAuth user 5 free connects as welcome bonus
-              try {
-                await supabase.from('connects_transactions').insert({
-                  user_id: authUser.id,
-                  amount: 5,
-                  type: 'bonus',
-                  description: 'Welcome bonus - referred by friend',
-                });
-                devLog('[Auth] OAuth referred user granted 5 free connects');
-              } catch (bonusErr) {
-                devWarn('[Auth] OAuth referral bonus grant error:', bonusErr);
-              }
             }
           } catch (refErr) {
             devWarn('[Auth] OAuth referral processing error:', refErr);
@@ -423,18 +411,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           } else {
             devLog('[Auth] Deferred referral processed for code:', refCode);
             localStorage.setItem(`growlancer_ref_done_${authUser.id}`, '1');
-            // Grant the referred user 5 free connects as welcome bonus (once)
-            try {
-              await supabase.from('connects_transactions').insert({
-                user_id: authUser.id,
-                amount: 5,
-                type: 'bonus',
-                description: 'Welcome bonus - referred by friend',
-              });
-              devLog('[Auth] Deferred referred user granted 5 free connects');
-            } catch (bonusErr) {
-              devWarn('[Auth] Deferred referral bonus grant error:', bonusErr);
-            }
           }
           localStorage.removeItem('growlancer_pending_ref');
         }
@@ -1341,17 +1317,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 devLog('[Auth] Referral processed successfully for code:', referrerCode);
                 // Mark done so the deferred syncAuthUser path doesn't re-query
                 localStorage.setItem(`growlancer_ref_done_${data.user.id}`, '1');
-                try {
-                  await supabase.from('connects_transactions').insert({
-                    user_id: data.user.id,
-                    amount: 5,
-                    type: 'bonus',
-                    description: 'Welcome bonus - referred by friend',
-                  });
-                  devLog('[Auth] Referred user granted 5 free connects');
-                } catch (bonusErr) {
-                  devWarn('[Auth] Referral bonus grant error:', bonusErr);
-                }
               }
             } catch (refErr) {
               devWarn('[Auth] Referral processing exception:', refErr);
