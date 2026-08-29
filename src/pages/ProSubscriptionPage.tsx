@@ -146,10 +146,21 @@ export function ProSubscriptionPage() {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId);
 
-  // Separate plans by interval for the toggle
-  const monthlyPlans = plans.filter((p) => p.interval === 'month');
-  const yearlyPlans = plans.filter((p) => p.interval === 'year');
-  const displayPlans = billingInterval === 'month' ? monthlyPlans : yearlyPlans;
+  // Single flat plan — only show the paid ₹299/month plan as a card.
+  // Free plan info lives in the comparison table below.
+  const paidPlans = plans.filter((p) => p.price > 0);
+  // Deduplicate by name (old DB may have duplicate ₹299 plans)
+  const seenNames = new Set<string>();
+  const uniquePaidPlans = paidPlans.filter((p) => {
+    if (seenNames.has(p.name)) return false;
+    seenNames.add(p.name);
+    return true;
+  });
+  const displayPlans = uniquePaidPlans.length > 0 ? uniquePaidPlans : plans.filter((p) => p.price > 0).slice(0, 1);
+  // For comparison table: Free vs Premium (two columns)
+  const freePlan = plans.find((p) => p.price === 0);
+  const premiumPlan = plans.find((p) => p.price > 0 && p.interval === 'month');
+  const comparisonPlans = [freePlan, premiumPlan].filter(Boolean) as typeof plans;
 
   // Build comparison rows from plan features.
   // ⚠️ RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.
@@ -232,15 +243,7 @@ export function ProSubscriptionPage() {
             )}
           </div>
 
-          {/* Single flat plan — no billing-interval toggle (one plan only) */}
-          <div className="flex items-center justify-center mb-12">
-            <span className="px-6 py-2.5 rounded-xl font-bold text-sm bg-slate-900 text-white shadow-lg">
-              Monthly · {formatCurrency(299)}
-            </span>
-            <span className="ml-3 text-xs text-slate-500 font-medium">
-              One plan only — no tiers, no annual commitment
-            </span>
-          </div>
+
 
           {/* No lock-in note — one flat plan, cancel anytime */}
           <div className="max-w-5xl mx-auto px-4 mb-8">
@@ -252,13 +255,9 @@ export function ProSubscriptionPage() {
             </TipNote>
           </div>
 
-          {/* Plan Cards — responsive: 1-2 plans stay centered & tidy, 3+ go full width */}
+          {/* Plan Card — single ₹299/month plan */}
           <div
-            className={`mx-auto grid grid-cols-1 gap-3 px-4 ${
-              displayPlans.length <= 2
-                ? 'max-w-3xl md:grid-cols-2'
-                : 'max-w-5xl md:grid-cols-2 lg:grid-cols-3'
-            }`}
+            className="mx-auto grid grid-cols-1 gap-3 px-4 max-w-lg"
           >
             {displayPlans.map((plan) => {
               const isCurrentPlan = subscription?.plan_id === plan.id;
@@ -540,16 +539,8 @@ export function ProSubscriptionPage() {
                 <thead className="bg-slate-50">
                   <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-widest text-slate-400">
                     <th className="p-3">Feature</th>
-                    {displayPlans.map((plan) => (
-                      <th
-                        key={plan.id}
-                        className={`p-3 ${
-                          plan.ai_priority ? 'text-emerald-600' : ''
-                        }`}
-                      >
-                        {plan.name}
-                      </th>
-                    ))}
+                    <th className="p-3">Free</th>
+                    <th className="p-3 text-emerald-600">Premium</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -558,24 +549,12 @@ export function ProSubscriptionPage() {
                       <td className="p-3 font-medium text-slate-700">
                         {feature.label}
                       </td>
-                      {displayPlans.map((plan) => {
-                        const value = feature.getValue(plan);
-                        const isHighlighted =
-                          plan.ai_priority &&
-                          (feature.key === 'ai_priority' || feature.key === 'matching');
-                        return (
-                          <td
-                            key={plan.id}
-                            className={`p-3 ${
-                              isHighlighted ? 'font-bold text-emerald-600' : ''
-                            } ${
-                              value === '—' ? 'text-slate-400' : ''
-                            }`}
-                          >
-                            {value}
-                          </td>
-                        );
-                      })}
+                      <td className="p-3">
+                        {freePlan ? feature.getValue(freePlan) : '—'}
+                      </td>
+                      <td className="p-3 font-bold text-emerald-600">
+                        {premiumPlan ? feature.getValue(premiumPlan) : '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
