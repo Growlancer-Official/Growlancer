@@ -43,7 +43,8 @@ export function isProSubscription(
   // cron flips status) would keep showing the PRO badge.
   if (status === 'trial') {
     if (!subscription.trial_end_date) return false;
-    if (new Date(subscription.trial_end_date).getTime() <= Date.now()) return false;
+    const trialEnd = new Date(subscription.trial_end_date);
+    if (Number.isNaN(trialEnd.getTime()) || trialEnd.getTime() <= Date.now()) return false;
   }
 
   const plan = subscription.subscription_plans;

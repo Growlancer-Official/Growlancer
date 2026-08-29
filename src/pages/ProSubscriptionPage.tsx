@@ -232,7 +232,7 @@ export function ProSubscriptionPage() {
                       ? 'Cancels at period end'
                       : `Next renewal: ${
                           subscription.subscription_end_date
-                            ? new Date(subscription.subscription_end_date).toLocaleDateString()
+                            ? (safeFormatDate(subscription.subscription_end_date) || '—')
                             : subscription.trial_end_date
                             ? `Trial ends ${safeFormatDate(subscription.trial_end_date) || '—'}`
                             : 'N/A'

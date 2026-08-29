@@ -29,7 +29,12 @@ export function ForgotPasswordPage() {
       });
 
       if (resetError) {
-        setError(resetError.message);
+        // Make rate-limit errors user-friendly
+        if (resetError.message?.includes('rate limit') || resetError.message?.includes('too many')) {
+          setError('Too many requests. Please wait a few minutes before trying again.');
+        } else {
+          setError(resetError.message);
+        }
       } else {
         setSent(true);
       }

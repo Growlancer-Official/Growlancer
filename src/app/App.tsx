@@ -271,6 +271,7 @@ function App() {
                 }
               >
                 <Route index element={<OverviewPage />} />
+                <Route path="overview" element={<Navigate to="/dashboard" replace />} />
                 <Route path="feed" element={<ProjectFeedPage />} />
                 <Route path="invites" element={<InvitesPage />} />
                 <Route path="proposals" element={<ProposalsPage />} />
@@ -293,6 +294,7 @@ function App() {
                 {/* Old Inbox links redirect to the Notifications Center */}
                 <Route path="inbox" element={<Navigate to="notifications" replace />} />
                 <Route path="disputes" element={<DisputeResolutionPage />} />
+                <Route path="dispute-resolution" element={<Navigate to="/dashboard/disputes" replace />} />
                 <Route path="identity-verification" element={<IdentityVerificationPage />} />
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />

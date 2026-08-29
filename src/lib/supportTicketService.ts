@@ -61,31 +61,39 @@ const ticketService = {
       .select()
       .single();
 
-    if (error) return { success: false, error: error.message };
-
-    // Look up user name/email for admin notification
-    let requesterName = params.userId;
-    let requesterEmail = '';
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) requesterEmail = user.email;
-      if (user?.user_metadata?.name) requesterName = user.user_metadata.name as string;
-      else if (user?.email) requesterName = user.email;
-    } catch { /* ignore */ }
+    if (error) {
+      // Surface user-friendly messages for common RLS/permission errors
+      if (error.message?.includes('permission denied') || error.message?.includes('violates row-level security')) {
+        return { success: false, error: 'You do not have permission to create tickets. Please make sure you are logged in.' };
+      }
+      return { success: false, error: error.message };
+    }
 
     // Fire-and-forget admin notification on ticket creation
-    sendAdminNotification({
-      subject: `New Support Ticket: ${params.subject.substring(0, 80)}`,
-      message: `A new support ticket has been created by ${params.userRole}: ${params.description.substring(0, 200)}`,
-      requester_name: requesterName,
-      requester_email: requesterEmail,
-      details: {
-        category: params.category || 'general',
-        priority: params.priority || 'normal',
-        created_at: new Date().toISOString(),
-        user_role: params.userRole,
-      },
-    });
+    // Non-critical: failure here should NEVER block the user's ticket creation.
+    try {
+      let requesterName = params.userId;
+      let requesterEmail = '';
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user?.email) requesterEmail = user.email;
+        if (user?.user_metadata?.name) requesterName = user.user_metadata.name as string;
+        else if (user?.email) requesterName = user.email;
+      } catch { /* non-critical */ }
+
+      sendAdminNotification({
+        subject: `New Support Ticket: ${params.subject.substring(0, 80)}`,
+        message: `A new support ticket has been created by ${params.userRole}: ${params.description.substring(0, 200)}`,
+        requester_name: requesterName,
+        requester_email: requesterEmail,
+        details: {
+          category: params.category || 'general',
+          priority: params.priority || 'normal',
+          created_at: new Date().toISOString(),
+          user_role: params.userRole,
+        },
+      });
+    } catch { /* email notification failure must not block ticket creation */ }
 
     return { success: true, ticket: data as unknown as SupportTicket };
   },

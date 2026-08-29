@@ -86,7 +86,13 @@ export default function SupportTicketsPage() {
       loadTickets();
       setTimeout(() => { setShowForm(false); setSubmitSuccess(false); }, 2000);
     } else {
-      setSubmitError(result.error || 'Failed to create ticket. Please try again.');
+      // Surface user-friendly errors
+      const err = result.error || 'Failed to create ticket. Please try again.';
+      if (err.includes('Failed to send') || err.includes('Edge Function')) {
+        setSubmitError('Your ticket was created but we had trouble sending a notification. Our team will still see it.');
+      } else {
+        setSubmitError(err);
+      }
     }
   }
 
@@ -97,21 +103,21 @@ export default function SupportTicketsPage() {
   const isFreelancer = user?.role === 'freelancer';
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
-            <Headphones className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+            <Headphones className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-2xl font-bold text-slate-900">Support Tickets</h1>
-            <p className="text-slate-500 text-sm">Get help from our support team</p>
+            <h1 className="font-display text-xl font-bold text-slate-900">Support Tickets</h1>
+            <p className="text-slate-500 text-xs">Get help from our support team</p>
           </div>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold text-sm rounded-xl hover:bg-emerald-700 transition-all"
         >
           <Plus className="w-4 h-4" />
           New Ticket
@@ -126,9 +132,9 @@ export default function SupportTicketsPage() {
 
       {/* Create Form */}
       {showForm && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="font-display text-xl font-bold text-slate-900">Create Support Ticket</h2>
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="font-display text-lg font-bold text-slate-900">Create Support Ticket</h2>
             <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
               <ChevronUp className="w-5 h-5" />
             </button>
@@ -160,7 +166,7 @@ export default function SupportTicketsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Category</label>
                   <select
@@ -199,11 +205,11 @@ export default function SupportTicketsPage() {
                 />
               </div>
 
-              <div className="flex items-center gap-3 pt-2">
+              <div className="flex items-center gap-2 pt-2">
                 <button
                   type="submit"
                   disabled={submitting || !subject.trim() || !description.trim()}
-                  className="inline-flex items-center gap-3 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white font-semibold text-sm rounded-xl hover:bg-emerald-700 transition-all disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                   {submitting ? 'Submitting...' : 'Submit Ticket'}
@@ -211,7 +217,7 @@ export default function SupportTicketsPage() {
                 <button
                   type="button"
                   onClick={() => setShowForm(false)}
-                  className="px-6 py-3 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 border border-slate-200 text-slate-600 font-medium text-sm rounded-xl hover:bg-slate-50 transition-colors"
                 >
                   Cancel
                 </button>
@@ -223,16 +229,16 @@ export default function SupportTicketsPage() {
 
       {/* Tickets List */}
       {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <div className="w-8 h-8 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
+        <div className="flex items-center justify-center py-12">
+          <div className="w-7 h-7 border-3 border-emerald-200 border-t-emerald-600 rounded-full animate-spin" />
         </div>
       ) : tickets.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-slate-200 shadow-sm">
-          <div className="w-16 h-16 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-            <LifeBuoy className="w-8 h-8 text-emerald-600" />
+        <div className="text-center py-12 bg-white rounded-xl border border-slate-200 shadow-sm">
+          <div className="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+            <LifeBuoy className="w-6 h-6 text-emerald-600" />
           </div>
-          <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No tickets yet</h3>
-          <p className="text-slate-500 mb-6 max-w-sm mx-auto">
+          <h3 className="font-display text-lg font-bold text-slate-900 mb-1">No tickets yet</h3>
+          <p className="text-slate-500 text-xs mb-4 max-w-sm mx-auto">
             {isFreelancer
               ? "You haven't submitted any support tickets. If you need help, click 'New Ticket' above."
               : "You haven't submitted any support tickets. We're here to help — just click 'New Ticket'."}
@@ -245,7 +251,7 @@ export default function SupportTicketsPage() {
           </button>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {tickets.map((ticket) => {
             const status = STATUS_CONFIG[ticket.status] || STATUS_CONFIG.open;
             const isExpanded = expandedId === ticket.id;
@@ -257,7 +263,7 @@ export default function SupportTicketsPage() {
               >
                 <button
                   onClick={() => toggleExpand(ticket.id)}
-                  className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50/50 transition-colors"
+                  className="w-full flex items-center justify-between p-3 text-left hover:bg-slate-50/50 transition-colors"
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center flex-shrink-0">
@@ -284,7 +290,7 @@ export default function SupportTicketsPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="px-5 pb-5 border-t border-slate-100 pt-4">
+                  <div className="px-4 pb-4 border-t border-slate-100 pt-3">
                     <div className="bg-slate-50 rounded-xl p-4 mb-3">
                       <p className="text-sm text-slate-700 whitespace-pre-wrap">{ticket.description}</p>
                     </div>
