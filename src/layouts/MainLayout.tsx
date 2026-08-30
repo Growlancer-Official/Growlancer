@@ -101,6 +101,11 @@ export function MainLayout() {
               <Link to={ROUTES.ABOUT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">About</Link>
               <Link to={ROUTES.CONTACT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Contact</Link>
               <Link to={ROUTES.HELP_CENTER} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Help</Link>
+              <Link to={ROUTES.INTERNSHIPS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Internships</Link>
+              <Link to={ROUTES.PHILOSOPHY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Philosophy</Link>
+              <Link to={ROUTES.SAFETY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Safety</Link>
+              <Link to={ROUTES.GUIDELINES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Guidelines</Link>
+              <Link to={ROUTES.STATUS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Status</Link>
             </nav>
 
             {/* Right actions */}
