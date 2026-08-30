@@ -64,6 +64,8 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [flowEnded, setFlowEnded] = useState(false);
   const [guestPrompted, setGuestPrompted] = useState(false);
+  // ── AI usage tracking (freelancer free tier only) ──
+  const [aiUsage, setAiUsage] = useState<{ used: number; limit: number } | null>(null);
 
   // ── Chat persistence ──
   // Chat history is saved per-user in localStorage so it survives page
@@ -124,6 +126,30 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       // storage unavailable — non-critical
     }
   }, [messages, user, context, chatMode, CHAT_STORAGE_KEY]);
+
+  // Fetch AI usage stats for freelancers (free tier limit display)
+  useEffect(() => {
+    if (!user || context !== 'freelancer') return;
+    const fetchUsage = async () => {
+      try {
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1);
+        startOfMonth.setHours(0, 0, 0, 0);
+        const { data } = await supabase
+          .from('usage_logs')
+          .select('usage_count')
+          .eq('user_id', user.id)
+          .eq('feature_type', 'ai_message')
+          .gte('created_at', startOfMonth.toISOString())
+          .maybeSingle();
+        const used = data?.usage_count ?? 0;
+        setAiUsage({ used, limit: 10 });
+      } catch {
+        // non-critical
+      }
+    };
+    void fetchUsage();
+  }, [user, context]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -549,9 +575,27 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             <strong>AI Support</strong> tab for account, payment or dispute issues — your conversations stay separate and private.
           </TipNote>
         )}
+        {chatMode === 'assistant' && context === 'freelancer' && aiUsage && (
+          <div className="flex items-center justify-between mt-2 px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-full bg-slate-100 rounded-full h-1.5 w-32">
+                <div
+                  className={`h-1.5 rounded-full transition-all ${aiUsage.used >= aiUsage.limit ? 'bg-red-500' : 'bg-emerald-500'}`}
+                  style={{ width: `${Math.min(100, (aiUsage.used / aiUsage.limit) * 100)}%` }}
+                />
+              </div>
+              <span className="text-[10px] text-slate-500 font-medium">
+                {aiUsage.used}/{aiUsage.limit} messages this month
+              </span>
+            </div>
+            {aiUsage.used >= aiUsage.limit && (
+              <Link to="/dashboard/pro" className="text-[10px] text-emerald-600 font-bold hover:underline">
+                Upgrade for unlimited →
+              </Link>
+            )}
+          </div>
+        )}
       </div>
-
-
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-3 space-y-4">

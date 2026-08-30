@@ -113,12 +113,49 @@ async function checkRateLimit(
 }
 
 /**
- * Growlancer earns ONLY a 5% platform commission on contracts.
- * AI assistant, chat and dedicated support are FREE for everyone —
- * no subscription gating, no monthly message caps.
+ * Freelancer AI message limit: free users get 10 messages/month,
+ * Pro subscribers (₹299/month) get unlimited. Clients are always free.
  */
-async function checkMessageLimit(): Promise<{ allowed: boolean; isPro: boolean; used: number; limit: number }> {
-  return { allowed: true, isPro: true, used: 0, limit: 0 };
+async function checkMessageLimit(
+  supabase: ReturnType<typeof createClient>,
+  userId: string,
+  userRole: string
+): Promise<{ allowed: boolean; isPro: boolean; used: number; limit: number }> {
+  // Clients are always free — no limit check needed
+  if (userRole === 'client') {
+    return { allowed: true, isPro: false, used: 0, limit: 0 };
+  }
+
+  // Check subscription status
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('status, subscription_plans!inner(name, price)')
+    .eq('user_id', userId)
+    .in('status', ['active', 'trial'])
+    .maybeSingle();
+
+  const isPro = sub?.status === 'active' || sub?.status === 'trial';
+  if (isPro) {
+    return { allowed: true, isPro: true, used: 0, limit: 0 };
+  }
+
+  // Free freelancer: count this month's AI messages
+  const startOfMonth = new Date();
+  startOfMonth.setDate(1);
+  startOfMonth.setHours(0, 0, 0, 0);
+
+  const { data: usage } = await supabase
+    .from('usage_logs')
+    .select('usage_count')
+    .eq('user_id', userId)
+    .eq('feature_type', 'ai_message')
+    .gte('created_at', startOfMonth.toISOString())
+    .maybeSingle();
+
+  const used = usage?.usage_count ?? 0;
+  const limit = 10;
+
+  return { allowed: used < limit, isPro: false, used, limit };
 }
 
 /** OpenAI-compatible message conversion for the AI endpoint. */
@@ -279,8 +316,19 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // AI is FREE + UNLIMITED for everyone (no subscription gate)
-    const { isPro } = await checkMessageLimit();
+    // Check freelancer AI message limit (clients always free)
+    const { allowed, isPro, used, limit } = await checkMessageLimit(supabase, user_id, user_role);
+    if (!allowed) {
+      return new Response(JSON.stringify({
+        error: `You've used ${used}/${limit} free AI messages this month. Upgrade to Premium for unlimited messages.`,
+        code: 'message_limit',
+        used,
+        limit,
+      }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     // Rate limit check (per authenticated user — abuse guard)
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
@@ -312,6 +360,31 @@ Deno.serve(async (req: Request) => {
           status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
+      }
+    }
+
+    // Log AI usage for freelancers (server-side only)
+    if (user_role === 'freelancer' && !isPro) {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      // Upsert: increment usage_count for this month
+      const { data: existing } = await supabase
+        .from('usage_logs')
+        .select('id, usage_count')
+        .eq('user_id', user_id)
+        .eq('feature_type', 'ai_message')
+        .gte('created_at', startOfMonth.toISOString())
+        .maybeSingle();
+      if (existing) {
+        await supabase
+          .from('usage_logs')
+          .update({ usage_count: (existing.usage_count ?? 0) + 1 })
+          .eq('id', existing.id);
+      } else {
+        await supabase
+          .from('usage_logs')
+          .insert({ user_id, feature_type: 'ai_message', usage_count: 1 });
       }
     }
 

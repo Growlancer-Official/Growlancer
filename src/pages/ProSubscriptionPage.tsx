@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { ArrowRight, BarChart3, Check, CheckCircle, CreditCard, Crown, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { safeFormatDate } from '../utils/date';
@@ -8,6 +7,8 @@ import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayme
 import { ProBadge } from '../components/ProBadge';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
+import { PageSkeleton } from '../components/PageSkeleton';
+import { InfoTip } from '../components/InfoTip';
 import {
   isProSubscription,
   subscriptionService,
@@ -168,36 +169,27 @@ export function ProSubscriptionPage() {
   ];
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 animate-spin text-emerald-600" />
-      </div>
-    );
+    return <PageSkeleton />;
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+    <div className="space-y-4">
       {/* Header */}
-      <header className="backdrop-blur-xl bg-white/80 sticky top-0 z-50 border-b border-slate-200/60">
-        <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-10 w-10 rounded-xl" />
-            <span className="font-display text-xl font-bold tracking-tight">Growlancer</span>
-          </div>
-          <nav className="hidden md:flex items-center gap-3">
-            <Link
-              to="/dashboard"
-              className="text-sm font-semibold text-slate-600 hover:text-emerald-600 transition-colors"
-            >
-              Back to Dashboard
-            </Link>
-          </nav>
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+          <Crown className="w-4 h-4 text-white" />
         </div>
-      </header>
+        <div>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
+            Premium
+            <InfoTip title="Growlancer Premium" text="Premium unlocks AI writing tools, AI assistant, profile optimization and advanced analytics. It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone." />
+          </h1>
+          <p className="text-slate-500 mt-1">Unlock AI-powered productivity tools</p>
+        </div>
+      </div>
 
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="pt-16 pb-24 px-4">
+      {/* Hero Section */}
+      <section className="pb-8">
           <div className="max-w-4xl mx-auto text-center mb-16">
             <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
               <Sparkles className="w-4 h-4" />
@@ -662,21 +654,6 @@ export function ProSubscriptionPage() {
             </div>
           </div>
         </section>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white py-6 border-t border-slate-100">
-        <div className="max-w-[100rem] mx-auto px-4 text-center">
-          <div className="flex items-center justify-center gap-3 mb-3">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
-            <span className="font-display font-bold text-slate-900">Growlancer</span>
-          </div>
-          <p className="text-slate-400 text-sm">
-            &copy; {new Date().getFullYear()} Growlancer AI. Empowering India's freelance workforce.
-          </p>
-        </div>
-      </footer>
-
       {/* Cancel Confirmation Modal */}
       <ConfirmModal
         isOpen={showCancelConfirm}
