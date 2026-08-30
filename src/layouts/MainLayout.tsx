@@ -90,7 +90,7 @@ export function MainLayout() {
             </Link>
 
             {/* Desktop nav — professional text like Upwork/Fiverr */}
-            <nav className="hidden lg:flex items-center gap-0.5 text-[12px] text-slate-600">
+            <nav className="hidden lg:flex items-center gap-0.5 text-[11px] text-slate-600">
               <Link to={ROUTES.HOW_IT_WORKS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">How it works</Link>
               <Link to={ROUTES.CATEGORIES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Categories</Link>
               <Link to={ROUTES.FREELANCERS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Find Talent</Link>
