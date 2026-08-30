@@ -95,7 +95,7 @@ export function ClientContestCreatePage() {
           <Trophy className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Trophy className="w-5 h-5 text-emerald-600" /></div>Create Contest <InfoTip title="Tips for a successful contest" text="Set a clear brief with specific deliverables so freelancers know exactly what to submit. A fair prize attracts quality entries — 2nd/3rd prizes are optional but encourage more submissions. The deadline controls how long entries are accepted, then you review and award the winner. Skills shown help freelancers decide if they're a fit." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Create Contest <InfoTip title="Tips for a successful contest" text="Set a clear brief with specific deliverables so freelancers know exactly what to submit. A fair prize attracts quality entries — 2nd/3rd prizes are optional but encourage more submissions. The deadline controls how long entries are accepted, then you review and award the winner. Skills shown help freelancers decide if they're a fit." /></h1>
           <p className="text-slate-500 text-xs">Post a design or development contest and receive competing submissions</p>
         </div>
       </div>

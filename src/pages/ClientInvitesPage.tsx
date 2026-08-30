@@ -157,9 +157,14 @@ export function ClientInvitesPage() {
     <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Send className="w-5 h-5 text-emerald-600" /></div>Invites <InfoTip title="What happens after you invite a freelancer" text="The freelancer sees your invite in real time and can Accept (a contract + workspace is created instantly with escrow protection) or Decline. You can Cancel a pending invite anytime or Resend it to give the freelancer a gentle nudge. Invites auto-expire after the shown deadline." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center shadow-lg shadow-pink-500/20">
+            <MailCheck className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Invites <InfoTip title="What happens after you invite a freelancer" text="The freelancer sees your invite in real time and can Accept (a contract + workspace is created instantly with escrow protection) or Decline. You can Cancel a pending invite anytime or Resend it to give the freelancer a gentle nudge. Invites auto-expire after the shown deadline." /></h1>
           <p className="text-slate-500 mt-1">Manage invitations sent to freelancers</p>
+          </div>
         </div>
         <Link
           to="/client/matches"

@@ -41,11 +41,16 @@ export function ClientTeamProjectsPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-4">
       <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Users className="w-5 h-5 text-emerald-600" /></div>Team Projects <InfoTip title="How team projects work" text="Each role gets its own independent contract (own escrow / milestones / dispute). One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Team Projects <InfoTip title="How team projects work" text="Each role gets its own independent contract (own escrow / milestones / dispute). One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee." /></h1>
           <p className="text-slate-600 mt-1">
             Hire a whole team for bigger projects — each freelancer has their own protected escrow.
           </p>
+          </div>
         </div>
         <Link
           to="/client/team-projects/create"

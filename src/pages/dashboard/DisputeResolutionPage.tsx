@@ -451,11 +451,16 @@ export function DisputeResolutionPage() {
     <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Scale className="w-5 h-5 text-emerald-600" /></div>Dispute Resolution <InfoTip title="How dispute resolution works" text="A dispute freezes the escrow money until our review team decides the case — funds are never moved without a decision. You can message and upload evidence in the meantime. Once decided, one of these outcomes happens automatically: full release to freelancer, full refund to client, or a fair split." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-red-500/20">
+            <Scale className="w-4 h-4 text-white" />
+          </div>
+          <div>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Dispute Resolution <InfoTip title="How dispute resolution works" text="A dispute freezes the escrow money until our review team decides the case — funds are never moved without a decision. You can message and upload evidence in the meantime. Once decided, one of these outcomes happens automatically: full release to freelancer, full refund to client, or a fair split." /></h1>
           <p className="text-slate-500 mt-1">
             Track and manage your contract disputes
           </p>
+          </div>
         </div>
         <div className="flex items-center gap-1.5 text-sm">
           <span className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg font-medium">

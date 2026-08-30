@@ -461,9 +461,12 @@ export function OverviewPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
-            <div className="p-2 bg-emerald-100 rounded-xl"><LayoutDashboard className="w-5 h-5 text-emerald-600" /></div>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <LayoutDashboard className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
             Welcome back, {user?.name || (isFreelancer ? 'Freelancer' : 'Client')}!
             {user?.verificationStatus === 'verified' && <VerifiedBadge size="sm" />}
             {isFreelancer && isPro && <ProBadge size="md" />}
@@ -474,6 +477,7 @@ export function OverviewPage() {
               ? "Here's your freelancing overview."
               : 'Manage your projects and freelancers.'}
           </p>
+          </div>
         </div>
       </div>
 

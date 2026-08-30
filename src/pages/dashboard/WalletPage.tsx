@@ -670,7 +670,7 @@ export function WalletPage() {
             <Wallet className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Wallet className="w-5 h-5 text-emerald-600" /></div>Wallet <InfoTip title="How your wallet works" text="Your earnings from completed contracts appear here in real time. Withdraw to your saved bank/UPI anytime — a small 2% processor fee applies on withdrawal. Escrow funds move to your wallet only after the client approves your work or the auto-release window passes." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Wallet <InfoTip title="How your wallet works" text="Your earnings from completed contracts appear here in real time. Withdraw to your saved bank/UPI anytime — a small 2% processor fee applies on withdrawal. Escrow funds move to your wallet only after the client approves your work or the auto-release window passes." /></h1>
             <p className="text-slate-500 text-sm">Manage your earnings, withdrawals, and payout methods</p>
           </div>
         </div>

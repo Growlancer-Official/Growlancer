@@ -212,15 +212,19 @@ export function ClientPostProjectPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-4">
-      <div className="mb-3">
-        <h1 className="font-display text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
-          <div className="p-2 bg-emerald-100 rounded-xl"><Briefcase className="w-5 h-5 text-emerald-600" /></div>
-          {editProjectId ? 'Edit Project' : 'Post New Project'} <InfoTip title="Post a project" text="Set a clear title, budget and description so freelancers know exactly what you need. The category and skills help AI match you with the best freelancers. After posting, proposals arrive in real time — review, shortlist and hire with escrow protection on every payment." /></h1>
+      <div className="mb-3 flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <Briefcase className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="font-display text-xl font-bold text-slate-900 mb-1 flex items-center gap-2">
+            {editProjectId ? 'Edit Project' : 'Post New Project'} <InfoTip title="Post a project" text="Set a clear title, budget and description so freelancers know exactly what you need. The category and skills help AI match you with the best freelancers. After posting, proposals arrive in real time — review, shortlist and hire with escrow protection on every payment." /></h1>
         <p className="text-slate-500 text-xs sm:text-sm">
           {editProjectId
             ? 'Update your project details and regenerate AI matches'
             : 'Fill in the details to post your project and get matched with talented freelancers'}
         </p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">

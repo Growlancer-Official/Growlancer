@@ -1102,9 +1102,14 @@ export function ClientSettingsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Settings className="w-5 h-5 text-emerald-600" /></div>Settings <InfoTip title="Account settings" text="Manage your email, password, payment methods, notification preferences and privacy settings. Changes save in real time and sync across all your sessions." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-500 to-gray-600 flex items-center justify-center shadow-lg shadow-slate-500/20">
+            <Settings className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Settings <InfoTip title="Account settings" text="Manage your email, password, payment methods, notification preferences and privacy settings. Changes save in real time and sync across all your sessions." /></h1>
           <p className="text-slate-500 mt-1">Manage your account settings and preferences</p>
+          </div>
         </div>
       </div>
 

@@ -181,11 +181,16 @@ export function ClientMatchesPage() {
     return (
       <div className="space-y-1.5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Sparkles className="w-5 h-5 text-emerald-600" /></div>AI Talent Matches <InfoTip title="How AI matching works" text="Our engine scores freelancers against your project's skills, experience and budget — higher scores mean a stronger fit. Invite the freelancers you like; when they accept, a contract + workspace is created instantly with escrow protection. Regenerate anytime to refresh the list in real time." /></h1>
-            <p className="text-slate-500 mt-1">
-              Get AI-powered freelancer recommendations based on your project requirements
-            </p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">AI Talent Matches <InfoTip title="How AI matching works" text="Our engine scores freelancers against your project's skills, experience and budget — higher scores mean a stronger fit. Invite the freelancers you like; when they accept, a contract + workspace is created instantly with escrow protection. Regenerate anytime to refresh the list in real time." /></h1>
+              <p className="text-slate-500 mt-1">
+                Get AI-powered freelancer recommendations based on your project requirements
+              </p>
+            </div>
           </div>
         </div>
 
@@ -214,12 +219,17 @@ export function ClientMatchesPage() {
   if (!projectId) {
     return (
       <div className="space-y-1.5">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Sparkles className="w-5 h-5 text-emerald-600" /></div>AI Talent Matches <InfoTip title="How AI matching works" text="Our engine scores freelancers against your project's skills, experience and budget — higher scores mean a stronger fit. Invite the freelancers you like; when they accept, a contract + workspace is created instantly with escrow protection. Regenerate anytime to refresh the list in real time." /></h1>
-          <p className="text-slate-500 mt-1">
-            Select a project to view AI-powered freelancer recommendations
-          </p>
-        </div>
+      <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+              <Sparkles className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">AI Talent Matches <InfoTip title="How AI matching works" text="Our engine scores freelancers against your project's skills, experience and budget — higher scores mean a stronger fit. Invite the freelancers you like; when they accept, a contract + workspace is created instantly with escrow protection. Regenerate anytime to refresh the list in real time." /></h1>
+              <p className="text-slate-500 mt-1">
+                Select a project to view AI-powered freelancer recommendations
+              </p>
+            </div>
+          </div>
 
         <div className="bg-white rounded-xl border border-slate-200 p-4">
           <h3 className="font-display font-bold text-slate-900 mb-2">Your Projects</h3>
@@ -271,6 +281,9 @@ export function ClientMatchesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-3 mb-1">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-md shadow-cyan-500/20">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
             <Link
               to="/client/matches"
               className="text-sm text-slate-400 hover:text-slate-600 transition-colors"

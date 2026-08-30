@@ -159,7 +159,12 @@ export function ClientPostTeamProjectPage() {
         ← Back to Team Projects
       </button>
 
-      <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 mb-2"><div className="p-2 bg-emerald-100 rounded-xl"><Users className="w-5 h-5 text-emerald-600" /></div>Post a Team Project <InfoTip title="How team projects work" text="Each role gets an independent contract — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee." /></h1>
+      <div className="flex items-center gap-3 mb-2">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
+          <Users className="w-5 h-5 text-white" />
+        </div>
+        <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Post a Team Project <InfoTip title="How team projects work" text="Each role gets an independent contract — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee." />      </h1>
+      </div>
       <p className="text-slate-600 mb-3">
         Hire a whole team for bigger projects — Designer, Developer, Writer — all in one place. Each freelancer has their <strong>own protected escrow</strong>.
       </p>

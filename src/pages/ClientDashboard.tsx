@@ -146,7 +146,7 @@ export default function ClientDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="font-display text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
-            <div className="p-2 bg-emerald-100 rounded-xl"><LayoutDashboard className="w-5 h-5 text-emerald-600" /></div>
+            
             Welcome back, {user?.name || 'Client'}!
             <InfoTip title="Your dashboard" text="This is your client command center — contracts, proposals, AI matches and payments all in one place. Everything updates in real time as freelancers respond to your projects." />
           </h1>

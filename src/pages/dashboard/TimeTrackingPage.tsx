@@ -253,9 +253,14 @@ export function TimeTrackingPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-3">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Timer className="w-5 h-5 text-emerald-600" /></div>Time Tracking <InfoTip title="How time tracking works" text="Start the timer while you work (or add a manual entry for past hours) — every session is submitted to the client for approval in real time. Approved hours count toward your payout; Pending hours are waiting on the client's review. Only log real, honest work hours — entries above 16 hours/day are flagged." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/20">
+            <Timer className="w-4 h-4 text-white" />
+          </div>
+          <div>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Time Tracking <InfoTip title="How time tracking works" text="Start the timer while you work (or add a manual entry for past hours) — every session is submitted to the client for approval in real time. Approved hours count toward your payout; Pending hours are waiting on the client's review. Only log real, honest work hours — entries above 16 hours/day are flagged." /></h1>
           <p className="text-slate-500 mt-1">Log hours on hourly contracts</p>
+          </div>
         </div>
       </div>
 

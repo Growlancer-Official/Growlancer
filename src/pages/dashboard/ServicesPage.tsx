@@ -232,9 +232,14 @@ export function ServicesPage() {
     <div className="space-y-4 pb-20 lg:pb-0">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Package className="w-5 h-5 text-emerald-600" /></div>My Services <InfoTip title="Get more orders from your services" text="Views grow when clients browse, orders count after a service purchase is completed, and your rating updates after each review — all in real time. The Price Offers panel shows clients' negotiable offers on your services; accepting one lets the client order at that agreed price. Edit any service with the pencil icon — changes go live instantly." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/20">
+            <Package className="w-4 h-4 text-white" />
+          </div>
+          <div>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">My Services <InfoTip title="Get more orders from your services" text="Views grow when clients browse, orders count after a service purchase is completed, and your rating updates after each review — all in real time. The Price Offers panel shows clients' negotiable offers on your services; accepting one lets the client order at that agreed price. Edit any service with the pencil icon — changes go live instantly." /></h1>
           <p className="text-slate-500 mt-1">Manage your service offerings</p>
+          </div>
         </div>
         <button
           onClick={() => navigate('/dashboard/services/create')}

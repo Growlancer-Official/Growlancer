@@ -100,9 +100,12 @@ export function AnalyticsPage() {
     <div className="max-w-[100rem] mx-auto space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <BarChart3 className="w-4 h-4 text-white" />
+          </div>
+          <div>
           <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
-            <div className="p-2 bg-emerald-100 rounded-xl"><BarChart3 className="w-5 h-5 text-emerald-600" /></div>
             Analytics
             <InfoTip
               title="About these numbers"
@@ -110,6 +113,7 @@ export function AnalyticsPage() {
             />
           </h1>
           <p className="text-slate-500 mt-1">Track your performance and growth</p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <button

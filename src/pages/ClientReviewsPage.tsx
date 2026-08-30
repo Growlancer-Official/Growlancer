@@ -100,9 +100,14 @@ export function ClientReviewsPage() {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Star className="w-5 h-5 text-emerald-600" /></div>Reviews <InfoTip title="How ratings work" text="Freelancers rate you after a completed contract — on quality, communication, timeliness and professionalism. Your overall rating shows next to your name everywhere, so reply to reviews with the Reply button to build trust. New reviews appear here in real time." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-amber-600 flex items-center justify-center shadow-lg shadow-yellow-500/20">
+            <Star className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Reviews <InfoTip title="How ratings work" text="Freelancers rate you after a completed contract — on quality, communication, timeliness and professionalism. Your overall rating shows next to your name everywhere, so reply to reviews with the Reply button to build trust. New reviews appear here in real time." /></h1>
           <p className="text-slate-500 mt-1">Reviews from freelancers you've worked with</p>
+          </div>
         </div>
       </div>
 

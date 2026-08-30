@@ -159,9 +159,14 @@ export function PortfolioPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Image className="w-5 h-5 text-emerald-600" /></div>Portfolio <InfoTip title="Showcase work that wins clients" text="Add 3-5 of your best completed projects with clear titles and descriptions — clients view this on your public profile before contacting you. Feature your standout work with the star button. Updates appear on your public profile in real time." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-rose-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/20">
+            <Image className="w-4 h-4 text-white" />
+          </div>
+          <div>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Portfolio <InfoTip title="Showcase work that wins clients" text="Add 3-5 of your best completed projects with clear titles and descriptions — clients view this on your public profile before contacting you. Feature your standout work with the star button. Updates appear on your public profile in real time." /></h1>
           <p className="text-slate-500 mt-1">Showcase your best work to potential clients</p>
+          </div>
         </div>
         <button
           onClick={() => {

@@ -789,7 +789,7 @@ export function ClientWorkspacePage() {
             <Briefcase className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Laptop className="w-5 h-5 text-emerald-600" /></div>Workspace <InfoTip title="Workspace overview" text="Your active contracts live here — milestones, deliverables, messaging, escrow payments and file sharing. Each contract is independent; work with multiple freelancers simultaneously without any overlap." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Workspace <InfoTip title="Workspace overview" text="Your active contracts live here — milestones, deliverables, messaging, escrow payments and file sharing. Each contract is independent; work with multiple freelancers simultaneously without any overlap." /></h1>
             <p className="text-slate-500">Manage your active projects</p>
           </div>
         </div>

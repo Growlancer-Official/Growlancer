@@ -790,7 +790,7 @@ export function ProjectFeedPage() {
             <Sparkles className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><Sparkles className="w-5 h-5 text-emerald-600" /></div>AI Project Feed <InfoTip title="How to win projects here" text="Each card shows how well the project fits your profile (% Match). Tap Apply Now with your rate and a short cover message — the client reviews proposals in real time. Once you're hired, the button becomes Contract Active and work happens in the workspace with escrow protection. Matching improves as you complete your profile." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">AI Project Feed <InfoTip title="How to win projects here" text="Each card shows how well the project fits your profile (% Match). Tap Apply Now with your rate and a short cover message — the client reviews proposals in real time. Once you're hired, the button becomes Contract Active and work happens in the workspace with escrow protection. Matching improves as you complete your profile." /></h1>
             <p className="text-slate-500 text-xs sm:text-xs">
               {skills.length > 0 
                 ? `${matches.length} projects matched to your ${skills.length} skills` 

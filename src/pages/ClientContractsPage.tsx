@@ -173,16 +173,20 @@ export function ClientContractsPage() {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
-            <div className="p-2 bg-emerald-100 rounded-xl"><Handshake className="w-5 h-5 text-emerald-600" /></div>
-            Contracts
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+            <FileText className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
+              Contracts
             <InfoTip
               title="How contracts work for you"
               text="1) Accept a proposal or a freelancer accepts your invite → contract is Pending. 2) You fund escrow → contract becomes Active and the freelancer starts work. 3) The freelancer delivers in the Workspace → you review and approve. 4) Funds release from escrow only after your approval. Your money is safe until you're happy with the work."
             />
           </h1>
           <p className="text-slate-500 mt-1">Manage active and completed contracts with freelancers</p>
+          </div>
         </div>
         <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl">
           <Handshake className="w-4 h-4" />

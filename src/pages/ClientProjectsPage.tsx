@@ -295,9 +295,14 @@ export function ClientProjectsPage() {
     <div className="space-y-1.5">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2"><div className="p-2 bg-emerald-100 rounded-xl"><FolderKanban className="w-5 h-5 text-emerald-600" /></div>My Projects <InfoTip title="From post to completed — your project journey" text="Open — freelancers can apply and you can invite AI matches. In Progress — a freelancer is hired and working under escrow. Completed — work delivered and approved. Cancelled — you closed it (active contracts continue safely). Use the menu on any project to see proposals, AI matches, edit, or change status — all in real time." /></h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+            <FolderKanban className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">My Projects <InfoTip title="From post to completed — your project journey" text="Open — freelancers can apply and you can invite AI matches. In Progress — a freelancer is hired and working under escrow. Completed — work delivered and approved. Cancelled — you closed it (active contracts continue safely). Use the menu on any project to see proposals, AI matches, edit, or change status — all in real time." /></h1>
           <p className="text-slate-500 mt-1">Manage your posted projects and track progress</p>
+          </div>
         </div>
         <Link
           to="/client/post"
