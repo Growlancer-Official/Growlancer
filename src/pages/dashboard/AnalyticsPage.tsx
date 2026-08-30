@@ -97,7 +97,7 @@ export function AnalyticsPage() {
   );
 
   return (
-    <div className="max-w-[100rem] mx-auto space-y-4">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export function AnalyticsPage() {
               </div>
               <BarChart3 className="w-5 h-5 text-slate-400" />
             </div>
-            <div className="h-48 flex items-end gap-3">
+            <div className="h-64 flex items-end gap-3">
               {data.earningsByMonth.length > 0 ? (
                 data.earningsByMonth.map((month, idx) => {
                   const maxAmount = Math.max(...data.earningsByMonth.map((m) => m.amount), 1);
@@ -286,16 +286,16 @@ export function AnalyticsPage() {
                 <p className="text-sm text-slate-500">Projects matched to your skills</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-4">
                 <p className="text-xl font-bold text-violet-600">{data.newMatches}</p>
                 <p className="text-sm text-violet-600/70">New Matches</p>
               </div>
-              <div className="flex-1 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4">
                 <p className="text-xl font-bold text-blue-600">{data.totalMatches}</p>
                 <p className="text-sm text-blue-600/70">Total Matches</p>
               </div>
-              <div className="flex-1 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl p-4">
                 <p className="text-xl font-bold text-emerald-600">
                   {data.totalProposals > 0 ? Math.round((data.acceptedProposals / data.totalProposals) * 100) : 0}%
                 </p>
