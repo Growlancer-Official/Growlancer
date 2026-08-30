@@ -855,7 +855,7 @@ export function WorkspacePage() {
       <div className="space-y-1.5 max-w-[100rem] mx-auto px-4 py-4">
         <div className="flex items-center gap-1.5">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Laptop className="w-4 h-4 text-white" />
+            <Briefcase className="w-4 h-4 text-white" />
           </div>
           <div>
             <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Workspace <InfoTip title="Workspace overview" text="Your active contracts live here — milestones, deliverables, messaging, escrow payments and file sharing. Each contract is independent; work with multiple clients without any overlap." /></h1>
@@ -867,7 +867,7 @@ export function WorkspacePage() {
           <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-2">
             <Briefcase className="w-7 h-7 text-slate-400" />
           </div>
-          <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No active contracts</h3>
+          <h3 className="font-display text-xl font-bold text-slate-900 mb-2">No Active Contracts</h3>
           <p className="text-slate-500 max-w-md mx-auto mb-3">
             You don't have any active contracts. Submit proposals to get hired and start working!
           </p>
@@ -882,7 +882,7 @@ export function WorkspacePage() {
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
         <div className="flex items-center gap-1.5">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
-            <Laptop className="w-4 h-4 text-white" />
+            <Briefcase className="w-4 h-4 text-white" />
           </div>
           <div>
             <h1 className="font-display text-xl font-bold text-slate-900">Collaboration Workspace</h1>
@@ -926,7 +926,7 @@ export function WorkspacePage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <ClipboardList className="w-4 h-4" />
+            <Laptop className="w-4 h-4" />
             <span>Co-Working Canvas</span>
           </button>
 
