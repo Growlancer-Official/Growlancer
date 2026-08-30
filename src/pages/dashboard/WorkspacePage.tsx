@@ -852,7 +852,7 @@ export function WorkspacePage() {
 
   if (contracts.length === 0) {
     return (
-      <div className="space-y-1.5 max-w-[100rem] mx-auto px-4 py-4">
+      <div className="space-y-4">
         <div className="flex items-center gap-1.5">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Briefcase className="w-4 h-4 text-white" />
@@ -874,6 +874,14 @@ export function WorkspacePage() {
         </div>
       </div>
     );
+  }
+
+  if (!selectedContract && contracts.length > 0) {
+    return (
+      <div className="flex items-center justify-center min-h-[80vh]">
+        <Loader2 className="animate-spin h-8 w-8 text-emerald-600" />
+      </div>
+    )
   }
 
   return (
@@ -938,27 +946,29 @@ export function WorkspacePage() {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Clock className="w-4 h-4" />
+            <ClipboardList className="w-4 h-4" />
             <span>Milestones & Escrow</span>
           </button>
         </div>
 
-        {/* Leave Review — after completion */}
-        {selectedContract?.status === 'completed' &&
-          (reviewedContractIds.has(selectedContract.id) ? (
-            <span className="inline-flex items-center gap-3 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium">
-              <Check className="w-4 h-4" />
-              Review Submitted
-            </span>
-          ) : (
-            <button
-              onClick={() => setReviewModalOpen(true)}
-              className="inline-flex items-center gap-3 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
-            >
-              <Star className="w-4 h-4" />
-              Leave Review
-            </button>
-          ))}
+        {/* Actions: review / status pills */}
+        <div className="flex flex-wrap items-center gap-3">
+          {selectedContract?.status === 'completed' &&
+            (reviewedContractIds.has(selectedContract.id) ? (
+              <span className="inline-flex items-center gap-3 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-xl text-sm font-medium">
+                <Check className="w-4 h-4" />
+                Review Submitted
+              </span>
+            ) : (
+              <button
+                onClick={() => setReviewModalOpen(true)}
+                className="inline-flex items-center gap-3 px-4 py-2.5 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
+              >
+                <Star className="w-4 h-4" />
+                Leave Review
+              </button>
+            ))}
+        </div>
 
         {/* Contract Selector */}
         {contracts.length > 1 && (
