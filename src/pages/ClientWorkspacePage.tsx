@@ -1078,7 +1078,7 @@ export function ClientWorkspacePage() {
               {activeTab === 'chat' && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
                   {/* Messages */}
-                  <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+                  <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[400px] sm:h-[500px] lg:h-[600px]">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl flex items-center gap-1.5">
                       <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
                         <MessageSquare className="w-4 h-4" />
@@ -1167,7 +1167,7 @@ export function ClientWorkspacePage() {
                     </div>
 
                   {/* Shared Assets */}
-                  <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+                  <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[400px] sm:h-[500px] lg:h-[600px]">
                     <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                       <div className="flex items-center justify-between">
                         <h3 className="font-semibold text-slate-900 flex items-center gap-3">

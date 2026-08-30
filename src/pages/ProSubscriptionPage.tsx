@@ -170,7 +170,7 @@ export function ProSubscriptionPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+        <Loader2 className="w-10 h-10 animate-spin text-emerald-600" />
       </div>
     );
   }

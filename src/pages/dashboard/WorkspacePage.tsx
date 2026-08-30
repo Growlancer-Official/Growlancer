@@ -1196,7 +1196,7 @@ export function WorkspacePage() {
           {activeTab === 'chat' && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-1.5">
               {/* Left Column - Chat Room */}
-              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[600px]">
+              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col h-[400px] sm:h-[500px] lg:h-[400px] sm:h-[500px] lg:h-[600px]">
                 {/* Chat Header */}
                 <div className="p-4 border-b border-slate-100 bg-slate-50/50 rounded-t-2xl">
                   <div className="flex items-center gap-1.5">
@@ -1272,7 +1272,7 @@ export function WorkspacePage() {
               </div>
 
               {/* Right Column - Deliverables & Assets Locker */}
-              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-5 h-[600px] flex flex-col">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-5 h-[400px] sm:h-[500px] lg:h-[600px] flex flex-col">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900">Shared Asset Locker</h3>
@@ -1343,7 +1343,7 @@ export function WorkspacePage() {
           {activeTab === 'canvas' && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-1.5">
               {/* Shared Live Task Board */}
-              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[400px] sm:h-[500px] lg:h-[600px]">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900 flex items-center gap-3">
@@ -1479,7 +1479,7 @@ export function WorkspacePage() {
               </div>
 
               {/* Collaborative Scratchpad / Notes */}
-              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[400px] sm:h-[500px] lg:h-[600px]">
                 <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900 flex items-center gap-3">
@@ -1744,7 +1744,7 @@ export function WorkspacePage() {
               </div>
 
               {/* Chronological Project Timeline (Right Column) */}
-              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[600px]">
+              <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 flex flex-col h-[400px] sm:h-[500px] lg:h-[600px]">
                 <div className="pb-3 border-b border-slate-100">
                   <h3 className="font-semibold text-slate-900 flex items-center gap-3">
                     <Clock className="w-4 h-4 text-emerald-600" />
