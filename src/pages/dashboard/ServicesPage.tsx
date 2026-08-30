@@ -22,6 +22,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { InfoTip } from '../../components/InfoTip';
+import { EmptyState } from '../../components/EmptyState';
 import { Pagination } from '../../components/Pagination';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { safeLower } from '../../utils/date';
@@ -446,15 +447,11 @@ export function ServicesPage() {
 
       {/* Services Grid */}
       {filteredServices.length === 0 ? (
-        <div className="text-center py-12">
-          <Package className="w-16 h-16 text-slate-300 mx-auto mb-2" />
-          <h3 className="text-lg font-semibold text-slate-900 mb-2">No services found</h3>
-          <p className="text-slate-500">
-            {searchTerm || filterStatus !== 'all'
-              ? 'Try adjusting your search or filters'
-              : 'Create your first service to start offering your services'}
-          </p>
-        </div>
+        <EmptyState
+          icon={<Package className="w-10 h-10" />}
+          title="No services found"
+          description={searchTerm || filterStatus !== 'all' ? 'Try adjusting your search or filters' : 'Create your first service to start offering your services'}
+        />
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5">

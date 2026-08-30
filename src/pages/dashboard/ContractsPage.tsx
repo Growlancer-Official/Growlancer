@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, X } from 'lucide-react';
 import { InfoTip } from '../../components/InfoTip';
+import { Button } from '../../components/Button';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { useAuth } from '../../context/AuthContext';
@@ -824,26 +825,28 @@ export function ContractsPage() {
                         <Briefcase className="w-4 h-4" />
                         Workspace
                       </Link>
-                      <button
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           setContractModalContract(contract);
                         }}
-                        className="px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors inline-flex items-center gap-3"
+                        icon={<FileText className="w-4 h-4" />}
                       >
-                        <FileText className="w-4 h-4" />
                         View Contract
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={(e) => {
                           e.stopPropagation();
                           setEscrowModalContract(contract);
                         }}
-                        className="px-4 py-2.5 border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:bg-slate-50 transition-colors inline-flex items-center gap-3"
+                        icon={<Shield className="w-4 h-4" />}
                       >
-                        <Shield className="w-4 h-4" />
                         Escrow Details
-                      </button>
+                      </Button>
                     </div>
                   </div>
 

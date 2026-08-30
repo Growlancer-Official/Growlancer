@@ -4,6 +4,7 @@ import { Clock, IndianRupee, Trophy, Users, Search } from 'lucide-react';
 import { contestService, type Contest, getTimeRemaining } from '../../lib/contests';
 import { formatCurrency } from '../../lib/currency';
 import { InfoTip } from '../../components/InfoTip';
+import { EmptyState } from '../../components/EmptyState';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { safeLower } from '../../utils/date';
 
@@ -122,10 +123,12 @@ export function ContestsDashboardPage() {
 
       {/* Contests Grid */}
       {filteredContests.length === 0 ? (
-        <div className="text-center py-12 bg-white rounded-xl border border-slate-200">
-          <Trophy className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-slate-900 mb-1">No contests found</h3>
-          <p className="text-slate-500 text-xs">Check back later for new contests or adjust your filters.</p>
+        <div className="bg-white rounded-xl border border-slate-200">
+          <EmptyState
+            icon={<Trophy className="w-10 h-10" />}
+            title="No contests found"
+            description="Check back later for new contests or adjust your filters."
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Award, Bell, BellOff, ChevronDown, ChevronUp, Filter, Layers, Loader2, MapPin, MessageSquare, Plus, Search, Star, Trash2 } from 'lucide-react';
 import { InfoTip } from '../components/InfoTip';
+import { EmptyState } from '../components/EmptyState';
 import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -339,10 +340,12 @@ export function ClientFreelancerSearchPage() {
       {loading ? (
         <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-emerald-600" /></div>
       ) : freelancers.length === 0 ? (
-        <div className="text-center py-20 bg-white rounded-xl border border-slate-100">
-          <Search className="w-8 h-8 text-slate-300 mx-auto mb-2" />
-          <h3 className="text-xl font-bold text-slate-900 mb-2">No freelancers found</h3>
-          <p className="text-slate-500">Try adjusting your filters.</p>
+        <div className="bg-white rounded-xl border border-slate-100">
+          <EmptyState
+            icon={<Search className="w-10 h-10" />}
+            title="No freelancers found"
+            description="Try adjusting your filters."
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

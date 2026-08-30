@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Edit3, ExternalLink, Image, Loader2, Plus, Save, Star, StarOff, Tag, Trash2, X,  } from 'lucide-react';
 import { InfoTip } from '../../components/InfoTip';
+import { EmptyState } from '../../components/EmptyState';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
@@ -318,24 +319,24 @@ export function PortfolioPage() {
 
       {/* Portfolio Grid */}
       {items.length === 0 && !showForm ? (
-        <div className="bg-white rounded-xl border border-slate-100 p-16 text-center shadow-sm">
-          <div className="w-16 h-16 bg-emerald-50 rounded-xl flex items-center justify-center mx-auto mb-2">
-            <Image className="w-8 h-8 text-emerald-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-slate-900 mb-2">No portfolio items yet</h3>
-          <p className="text-slate-500 mb-3 max-w-md mx-auto">
-            Showcase your best work to stand out to potential clients. Add your first project now.
-          </p>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-            }}
+        <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
+          <EmptyState
+            icon={<Image className="w-10 h-10" />}
+            title="No portfolio items yet"
+            description="Showcase your best work to stand out to potential clients. Add your first project now."
+            action={
+              <button
+                onClick={() => {
+                  resetForm();
+                  setShowForm(true);
+                }}
             className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
           >
             <Plus className="w-4 h-4" />
             Add Your First Project
           </button>
+            }
+          />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1.5">
