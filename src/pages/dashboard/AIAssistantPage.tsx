@@ -35,11 +35,10 @@ export function AIAssistantPage() {
           <Headphones className="w-4 h-4" />
           AI Support
         </button>
+        {tab === 'support' && (
+          <InfoTip title="Support vs. AI Assistant" text="This is Growlancer Support — for payments, escrow, verification, contracts, disputes and account issues. Pick a topic below and follow the guided flow; for anything else use the AI Assistant tab. The two chats stay completely separate." />
+        )}
       </div>
-
-      {tab === 'support' && (
-        <InfoTip title="Support vs. AI Assistant" text="This is Growlancer Support — for payments, escrow, verification, contracts, disputes and account issues. Pick a topic below and follow the guided flow; for anything else use the{' '} AI Assistant tab. The two chats stay completely separate." />
-      )}
 
       <div className="flex-1 min-h-0">
         {tab === 'assistant' ? (
