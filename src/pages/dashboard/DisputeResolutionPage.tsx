@@ -269,7 +269,7 @@ export function DisputeResolutionPage() {
 
   if (selectedDispute) {
     return (
-      <div className="max-w-4xl mx-auto space-y-1.5">
+      <div className="space-y-1.5">
         {/* Back button */}
         <button
           onClick={handleBack}

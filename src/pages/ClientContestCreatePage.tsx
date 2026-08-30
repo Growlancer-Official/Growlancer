@@ -89,7 +89,7 @@ export function ClientContestCreatePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-3">
+    <div className="space-y-1.5">
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
           <Trophy className="w-5 h-5 text-white" />

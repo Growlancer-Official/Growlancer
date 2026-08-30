@@ -154,7 +154,7 @@ export function ClientPostTeamProjectPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4">
+    <div className="space-y-1.5">
       <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-2 flex items-center gap-1">
         ← Back to Team Projects
       </button>

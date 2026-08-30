@@ -39,7 +39,7 @@ export function ClientTeamProjectsPage() {
   if (loading) return <PageSkeleton />;;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4">
+    <div className="space-y-1.5">
       <div className="flex items-start justify-between gap-3 flex-wrap mb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
