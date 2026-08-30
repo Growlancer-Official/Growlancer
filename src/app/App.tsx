@@ -299,10 +299,10 @@ function App() {
                 <Route path="identity-verification" element={<IdentityVerificationPage />} />
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />
-                <Route path="time-tracking" element={<TimeTrackingPage />} />
-                <Route path="contests" element={<ContestsDashboardPage />} />
-                <Route path="help-center" element={<HelpCenterPage />} />
+                <Route path="time-tracking" element={<TimeTrackingPage />} />                <Route path="contests" element={<ContestsDashboardPage />} />
+                <Route path="help-center" element={<HelpCenterPage dashboard />} />
               </Route>
+
 
               {/* Client Dashboard Routes - Protected */}
               <Route
@@ -340,7 +340,7 @@ function App() {
                 <Route path="reviews" element={<ClientReviewsPage />} />
                 <Route path="contests" element={<ClientContestsPage />} />
                 <Route path="contests/create" element={<ClientContestCreatePage />} />
-                <Route path="help-center" element={<HelpCenterPage />} />
+                <Route path="help-center" element={<HelpCenterPage dashboard />} />
               </Route>
 
               {/* Admin Dashboard Routes - Protected by Supabase Auth */}

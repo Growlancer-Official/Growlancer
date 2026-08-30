@@ -188,55 +188,32 @@ export function ProSubscriptionPage() {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="pb-8">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-3">
-              <Sparkles className="w-4 h-4" />
-              FREELANCER PREMIUM
-            </div>
-            <h1 className="font-display text-4xl md:text-6xl font-extrabold tracking-tight mb-3">
-              One Simple Plan. <span className="text-emerald-600">{formatCurrency(299)}/month.</span>
-            </h1>
-            <p className="text-lg text-slate-500 max-w-2xl mx-auto">
-              Premium unlocks our <strong>AI writing tools, AI assistant, profile optimization and advanced analytics</strong>.
-              It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone.
+      {/* Subscription Status Banner */}
+      {isPro && subscription && (
+        <div className="mx-auto max-w-md p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+          <CheckCircle className="text-emerald-600 text-2xl w-6 h-6 flex-shrink-0" />
+          <div className="text-left">
+            <p className="text-emerald-900 font-bold text-sm flex items-center gap-3">
+              You are on{' '}
+              {subscription.subscription_plans?.name || 'Pro'} plan
+              <ProBadge size="xs" />
             </p>
-
-            {/* Subscription Status Banner */}
-            {isPro && subscription && (
-              <div className="mt-8 mx-auto max-w-md p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-                <CheckCircle className="text-emerald-600 text-2xl w-6 h-6 flex-shrink-0" />
-                <div className="text-left">
-                  <p className="text-emerald-900 font-bold text-sm flex items-center gap-3">
-                    You are on{' '}
-                    {subscription.subscription_plans?.name || 'Pro'} plan
-                    <ProBadge size="xs" />
-                  </p>
-                  <p className="text-emerald-700 text-xs">
-                    {subscription.cancel_at_period_end
-                      ? 'Cancels at period end'
-                      : `Next renewal: ${
-                          subscription.subscription_end_date
-                            ? (safeFormatDate(subscription.subscription_end_date) || '—')
-                            : subscription.trial_end_date
-                            ? `Trial ends ${safeFormatDate(subscription.trial_end_date) || '—'}`
-                            : 'N/A'
-                        }`}
-                  </p>
-                </div>
-              </div>
-            )}
+            <p className="text-emerald-700 text-xs">
+              {subscription.cancel_at_period_end
+                ? 'Cancels at period end'
+                : `Next renewal: ${
+                    subscription.subscription_end_date
+                      ? (safeFormatDate(subscription.subscription_end_date) || '—')
+                      : subscription.trial_end_date
+                      ? `Trial ends ${safeFormatDate(subscription.trial_end_date) || '—'}`
+                      : 'N/A'
+                  }`}
+            </p>
           </div>
+        </div>        )}
 
-
-
-
-
-          {/* Plan Card — single ₹299/month plan */}
-          <div
-            className="mx-auto grid grid-cols-1 gap-3 px-4 max-w-lg"
-          >
+      {/* Plan Card — single ₹299/month plan */}
+      <div className="mx-auto grid grid-cols-1 gap-3 px-4 max-w-lg">
             {displayPlans.map((plan) => {
               const isCurrentPlan = subscription?.plan_id === plan.id;
               const isPopular = plan.ai_priority && billingInterval === 'month';
@@ -452,7 +429,6 @@ export function ProSubscriptionPage() {
               UPI / Cards / NetBanking
             </div>
           </div>
-        </section>
 
         {/* Why Upgrade Section */}
         <section className="bg-white py-24 border-y border-slate-100">

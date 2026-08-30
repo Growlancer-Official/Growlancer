@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {ArrowLeft, BookOpen, ChevronDown, CreditCard, FileText, LifeBuoy, MessageSquare, Search, Users, } from 'lucide-react';
+import {ArrowLeft, BookOpen, ChevronDown, CreditCard, FileText, HelpCircle, LifeBuoy, MessageSquare, Search, Users, } from 'lucide-react';
+import { InfoTip } from '../components/InfoTip';
 
 interface FAQ {
   category: string;
@@ -71,7 +72,7 @@ const faqs: FAQ[] = [
   },
 ];
 
-export function HelpCenterPage() {
+export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = {}) {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [expandedFAQIndex, setExpandedFAQIndex] = useState<number | null>(null);
@@ -100,60 +101,79 @@ export function HelpCenterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cream font-sans pb-24 text-slate-800">
-      {/* Symmetrical Header */}
-      <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
-        <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
-          </Link>
-          <Link
-            to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Home
-          </Link>
-        </div>
-      </header>
-
-      {/* Hero section */}
-      <section className="relative py-8 sm:py-24 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
-
-        <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
-          <span className="inline-flex items-center gap-3 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <LifeBuoy className="w-4 h-4" />
-            Knowledge Base
-          </span>
-          <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
-            How can we <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">help you succeed?</span>
-          </h1>
-          <p className="text-slate-300 text-base sm:text-lg max-w-xl mx-auto font-medium">
-            Search our comprehensive, real-time guide system for questions about canvases, escrow protection, AI matching, and payouts.
-          </p>
-
-          {/* Symmetrical Reactive Search Bar */}
-          <div className="max-w-xl mx-auto relative mt-8">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Type keyword e.g. escrow, scratchpad..."
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setExpandedFAQIndex(null); // Reset expand on search
-              }}
-              className="w-full h-14 pl-12 pr-4 bg-white/95 text-slate-800 border border-slate-200 rounded-xl text-lg font-medium focus:outline-none focus:ring-4 focus:ring-emerald-500/20 focus:border-emerald-600 transition-all shadow-xl"
-            />
+    <div className="space-y-4">
+      {/* Dashboard header — shown when inside dashboard layout */}
+      {dashboard && (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-amber-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <HelpCircle className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
+              Help Center
+              <InfoTip title="Help Center" text="Search our knowledge base for answers about canvases, escrow protection, AI matching, payouts, and more. For instant help, use the AI Support chat." />
+            </h1>
+            <p className="text-slate-500 mt-1">Find answers to common questions</p>
           </div>
         </div>
-      </section>
+      )}
+
+      {/* Public header + hero — shown on standalone /help-center page */}
+      {!dashboard && (
+        <>
+          <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
+            <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
+              <Link to="/" className="flex items-center gap-3">
+                <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
+                <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+              </Link>
+              <Link
+                to="/"
+                className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Home
+              </Link>
+            </div>
+          </header>
+
+          <section className="relative py-8 sm:py-24 overflow-hidden bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white border-b border-emerald-900/30">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+            <div className="absolute bottom-0 left-0 w-80 h-80 bg-teal-500/5 rounded-full blur-3xl -ml-20 -mb-20"></div>
+
+            <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
+              <span className="inline-flex items-center gap-3 px-3 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
+                <LifeBuoy className="w-4 h-4" />
+                Knowledge Base
+              </span>
+              <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
+                How can we <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">help you succeed?</span>
+              </h1>
+              <p className="text-slate-300 text-base sm:text-lg max-w-xl mx-auto font-medium">
+                Search our comprehensive, real-time guide system for questions about canvases, escrow protection, AI matching, and payouts.
+              </p>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* Search bar — always visible */}
+      <div className="relative max-w-xl">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <input
+          type="text"
+          placeholder="Search questions..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setExpandedFAQIndex(null);
+          }}
+          className="w-full h-11 pl-12 pr-4 bg-white border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+        />
+      </div>
 
       {/* Main FAQ Interface */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-12 grid grid-cols-1 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         {/* Sidebar Filters */}
         <div className="lg:col-span-1 space-y-4">
           <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Topic Categories</h3>
