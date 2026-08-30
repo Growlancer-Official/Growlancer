@@ -113,7 +113,7 @@ const ClientWorkspacePage = lazy(() => import('@pages/ClientWorkspacePage').then
 const ClientPostProjectPage = lazy(() => import('@pages/ClientPostProjectPage').then(m => ({ default: m.ClientPostProjectPage })));
 const ClientAIAssistantPage = lazy(() => import('@pages/ClientAIAssistantPage').then(m => ({ default: m.ClientAIAssistantPage })));
 const ClientPaymentsPage = lazy(() => import('@pages/ClientPaymentsPage').then(m => ({ default: m.ClientPaymentsPage })));
-const ClientSettingsPage = lazy(() => import('@pages/ClientSettingsPage_NEW').then(m => ({ default: m.ClientSettingsPage })));
+const ClientSettingsPage = lazy(() => import('@pages/ClientSettingsPage').then(m => ({ default: m.ClientSettingsPage })));
 const ClientFreelancerSearchPage = lazy(() => import('@pages/ClientFreelancerSearchPage').then(m => ({ default: m.ClientFreelancerSearchPage })));
 const ClientReviewsPage = lazy(() => import('@pages/ClientReviewsPage').then(m => ({ default: m.ClientReviewsPage })));
 const ClientContestsPage = lazy(() => import('@pages/ClientContestsPage').then(m => ({ default: m.ClientContestsPage })));

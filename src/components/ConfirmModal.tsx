@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { AlertTriangle, X, Loader2 } from 'lucide-react';
+import { AlertTriangle, Info, XCircle, Loader2 } from 'lucide-react';
+import { ModalShell } from './ModalShell';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -27,19 +28,7 @@ export function ConfirmModal({
   const [internalLoading, setInternalLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape' && !loading) onClose();
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
-  }, [isOpen, onClose, loading]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setInternalLoading(false);
-    }
+    if (!isOpen) setInternalLoading(false);
   }, [isOpen]);
 
   const handleConfirm = async () => {
@@ -51,74 +40,67 @@ export function ConfirmModal({
     }
   };
 
-  if (!isOpen) return null;
+  const isLoading = loading || internalLoading;
 
   const variantStyles = {
     danger: {
-      icon: 'bg-red-100 text-red-600',
+      iconBg: 'bg-red-100 text-red-600',
+      Icon: XCircle,
       button: 'bg-red-600 hover:bg-red-700 focus:ring-red-500',
     },
     warning: {
-      icon: 'bg-amber-100 text-amber-600',
+      iconBg: 'bg-amber-100 text-amber-600',
+      Icon: AlertTriangle,
       button: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
     },
     info: {
-      icon: 'bg-blue-100 text-blue-600',
+      iconBg: 'bg-blue-100 text-blue-600',
+      Icon: Info,
       button: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
     },
   };
 
   const styles = variantStyles[variant];
-  const isLoading = loading || internalLoading;
+  const { Icon } = styles;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto">
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
-        onClick={isLoading ? undefined : onClose}
-      />
-      <div
-        className="relative bg-white rounded-xl p-3 sm:p-4 max-w-md w-full my-auto max-h-[calc(100vh-2rem)] overflow-y-auto shadow-2xl animate-scale-in border border-slate-100"
-      >
-        <button
-          onClick={isLoading ? undefined : onClose}
-          disabled={isLoading}
-          className="absolute top-4 right-4 p-2 rounded-full hover:bg-slate-100 transition-colors disabled:opacity-50"
-        >
-          <X className="w-4 h-4 text-slate-400" />
-        </button>
-
-        <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${styles.icon} mb-3`}>
-          <AlertTriangle className="w-8 h-8" />
-        </div>
-
-        <h2 className="font-display text-lg font-bold text-slate-900 mb-2">{title}</h2>
-        <p className="text-slate-600 mb-8 leading-relaxed text-sm">{message}</p>
-
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="flex-1 px-6 py-3 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={isLoading}
-            className={`flex-1 px-6 py-3 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 ${styles.button}`}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              confirmLabel
-            )}
-          </button>
-        </div>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={isLoading ? () => {} : onClose}
+      closeOnBackdrop={!isLoading}
+      closeOnEscape={!isLoading}
+      maxWidth="max-w-md"
+    >
+      <div className={`inline-flex items-center justify-center w-12 h-12 rounded-xl ${styles.iconBg} mb-4`}>
+        <Icon className="w-7 h-7" />
       </div>
-    </div>
+
+      <h2 className="font-display text-lg font-bold text-slate-900 mb-2">{title}</h2>
+      <p className="text-slate-600 mb-6 leading-relaxed text-sm">{message}</p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={onClose}
+          disabled={isLoading}
+          className="flex-1 px-6 py-3 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
+        >
+          {cancelLabel}
+        </button>
+        <button
+          onClick={handleConfirm}
+          disabled={isLoading}
+          className={`flex-1 px-6 py-3 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 ${styles.button}`}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Processing...
+            </>
+          ) : (
+            confirmLabel
+          )}
+        </button>
+      </div>
+    </ModalShell>
   );
 }

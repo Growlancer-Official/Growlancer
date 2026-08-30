@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Loader2, Star, X } from 'lucide-react';
+import { Loader2, Star } from 'lucide-react';
 import { reviewService } from '../lib/reviews';
 import { useToast } from './Toast';
+import { ModalShell } from './ModalShell';
 
 interface ReviewModalProps {
   contractId?: string;
@@ -88,17 +89,8 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
   };
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-3 border-b border-slate-100">
-          <div>
-            <h3 className="font-display text-lg font-bold text-slate-900">Leave a Review</h3>
-            <p className="text-xs text-slate-500 mt-0.5">{projectTitle || 'Contract'}</p>
-          </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <ModalShell isOpen={true} onClose={onClose} title="Leave a Review" maxWidth="max-w-lg">
+        <p className="text-xs text-slate-500 -mt-2 mb-4">{projectTitle || 'Contract'}</p>
 
         <div className="p-3 space-y-4.5">
           {error && (
@@ -181,7 +173,6 @@ export function ReviewModal({ contractId, contestId, revieweeId, revieweeName, p
             </button>
           </div>
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 }

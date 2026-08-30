@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { Sparkles, Loader2, Check, RefreshCw, X, Wand2, Zap } from 'lucide-react';
+import { Sparkles, Loader2, Check, RefreshCw, Zap } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { useToast } from './Toast';
+import { ModalShell } from './ModalShell';
 
 export type AIWriterField =
   | 'project_title'
@@ -129,39 +130,26 @@ export function AIGenerateModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
-        <div className="p-3 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white rounded-t-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-fuchsia-600 flex items-center justify-center">
-              <Wand2 className="w-4 h-4 text-white" />
-            </div>
-            <div>
-              <h3 className="font-display text-base font-bold text-slate-900">{FIELD_TITLES[field]}</h3>
-              <p className="text-xs text-slate-500 flex items-center gap-1">
-                {usage ? (
-                  usage.isPro ? (
-                    <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-                      <Zap className="w-3.5 h-3.5" /> Unlimited Pro AI writing
-                    </span>
-                  ) : (
-                    `${usage.used} of ${usage.limit} free generations used today`
-                  )
-                ) : (
-                  'Free: 5/day · Pro: unlimited'
-                )}
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
-          >
-            <X className="w-4 h-4 text-slate-400" />
-          </button>
-        </div>
+    <ModalShell
+      isOpen={open}
+      onClose={() => setOpen(false)}
+      title={FIELD_TITLES[field]}
+      maxWidth="max-w-lg"
+    >
+        {/* Usage info */}
+        <p className="text-xs text-slate-500 -mt-2 mb-4 flex items-center gap-1">
+          {usage ? (
+            usage.isPro ? (
+              <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
+                <Zap className="w-3.5 h-3.5" /> Unlimited Pro AI writing
+              </span>
+            ) : (
+              `${usage.used} of ${usage.limit} free generations used today`
+            )
+          ) : (
+            'Free: 5/day · Pro: unlimited'
+          )}
+        </p>
 
         <div className="p-3 space-y-4">
           {/* Step 1: what do you want */}
@@ -245,8 +233,7 @@ export function AIGenerateModal({
             </button>
           )}
         </div>
-      </div>
-    </div>
+    </ModalShell>
   );
 }
 
