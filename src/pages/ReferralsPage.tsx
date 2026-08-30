@@ -15,7 +15,6 @@ import {
 } from 'lucide-react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Pagination } from '../components/Pagination';
-import { InfoTip } from '../components/InfoTip';
 import { useAuth } from '../context/AuthContext';
 import { useReferralsData } from '../hooks/useReferralsData';
 

@@ -25,7 +25,6 @@ import {
   Star,
   Trophy,
   HelpCircle,
-  Ticket,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';

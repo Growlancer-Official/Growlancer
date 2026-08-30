@@ -6,7 +6,6 @@ import { safeFormatDate } from '../utils/date';
 import { formatCurrency } from '../lib/currency';
 import { SubscriptionPayPalPayment } from '../components/SubscriptionPayPalPayment';
 import { ProBadge } from '../components/ProBadge';
-import { InfoTip } from '../components/InfoTip';
 import { useToast } from '../components/Toast';
 import { ConfirmModal } from '../components/ConfirmModal';
 import {
@@ -155,7 +154,7 @@ export function ProSubscriptionPage() {
   // For comparison table: Free vs Premium (two columns)
   const freePlan = plans.find((p) => p.price === 0);
   const premiumPlan = canonicalPlan || fallbackPlan || plans.find((p) => p.price > 0 && p.interval === 'month');
-  const comparisonPlans = [freePlan, premiumPlan].filter(Boolean) as typeof plans;
+  const _comparisonPlans = [freePlan, premiumPlan].filter(Boolean) as typeof plans;
 
   // Build comparison rows from plan features.
   // ⚠️ RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.

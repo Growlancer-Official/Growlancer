@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Briefcase, CheckCircle2, Clock, CreditCard, IndianRupee, FileText,
-  Handshake, LayoutDashboard, Plus, Users, TrendingUp, Sparkles,
+  Handshake, Plus, Users, TrendingUp, Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { InfoTip } from '../components/InfoTip';
@@ -47,7 +47,7 @@ export default function ClientDashboard() {
       setLoading(true);
       setError(null);
 
-      const [projectsData, contractsData, notificationResult] = await Promise.all([
+      const [projectsData, contractsData] = await Promise.all([
         projectsService.getClientProjects(user.id, true),
         contractsService.getByUser(user.id, 'client', true),
         notificationService.getByUser(user.id),

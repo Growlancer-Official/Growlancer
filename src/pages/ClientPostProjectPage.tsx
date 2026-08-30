@@ -5,7 +5,6 @@ import { supabase } from '../lib/supabase';
 import { formatCurrency, currencySymbol } from '../lib/currency';
 import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Sparkles, CheckCircle2 } from 'lucide-react';
 import { InfoTip } from '../components/InfoTip';
-import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { useToast } from '../components/Toast';
 import { useCategories } from '../hooks/useCategories';

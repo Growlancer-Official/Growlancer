@@ -2,7 +2,6 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlertCircle, AlertTriangle, ArrowRight, Briefcase, Calendar, CheckCircle2, ChevronDown, ChevronRight, Clock, IndianRupee, FileText, Handshake, Loader2, Shield, ThumbsUp, User, X } from 'lucide-react';
 import { InfoTip } from '../../components/InfoTip';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { VerifiedBadge } from '../../components/VerifiedBadge';
 import { useAuth } from '../../context/AuthContext';

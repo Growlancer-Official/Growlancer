@@ -4,7 +4,7 @@
  * loading state from ProtectedRoute through to page data fetch.
  */
 
-export function LayoutSkeleton({ variant = 'freelancer' }: { variant?: 'freelancer' | 'client' }) {
+export function LayoutSkeleton({ variant: _variant = 'freelancer' }: { variant?: 'freelancer' | 'client' }) {
   return (
     <div className="flex min-h-screen bg-[#F8FAFC]">
       {/* Sidebar skeleton — matches w-64 desktop sidebar */}

@@ -53,7 +53,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   // the AI stream (the edge function relays the actual model on first chunk).
   const [modelName, setModelName] = useState(() => (import.meta.env.VITE_AI_MODEL as string | undefined) || 'Growlancer AI');
   const toast = useToast();
-  const [verifyCta, setVerifyCta] = useState(false);
+  const [verifyCta, _setVerifyCta] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());

@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Bot, Briefcase, Check, CreditCard, FileText, Handshake, Headphones, LayoutDashboard, MessageSquare, Plus, Sparkles, Trophy, Users, Wallet, Zap,  } from 'lucide-react';
-import { LoadingSkeleton } from '../../components/LoadingSkeleton';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';

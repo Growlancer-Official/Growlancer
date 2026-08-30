@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Clock, IndianRupee, Trophy, Users, Search, Filter, ArrowRight, Loader2 } from 'lucide-react';
+import { Clock, IndianRupee, Trophy, Users, Search } from 'lucide-react';
 import { contestService, type Contest, getTimeRemaining } from '../../lib/contests';
 import { formatCurrency } from '../../lib/currency';
 import { InfoTip } from '../../components/InfoTip';
@@ -14,7 +14,7 @@ export function ContestsDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<ContestType>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, _setSelectedCategory] = useState<string>('all');
 
   useEffect(() => {
     fetchContests();

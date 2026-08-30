@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import { Award, Bell, ClipboardCheck, Copy, MailCheck, ShieldCheck, Sparkles, Trophy, Zap,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReferralsData, shareReferralLink } from '../hooks/useReferralsData';
-import { InfoTip } from '../components/InfoTip';
 
 function tierFromCount(count: number) {
   if (count >= 25) return { label: 'Elite', next: null, progress: 100, target: 25 };
