@@ -82,19 +82,25 @@ export function MainLayout() {
                 className="h-9 w-9 rounded-xl"
               />
               <div className="leading-tight">
-                <div className="font-semibold tracking-tight text-[15px] sm:text-base font-display">Growlancer</div>
-                <div className="text-xs text-slate-500 -mt-0.5">AI freelancing marketplace</div>
+                <div className="font-semibold tracking-tight text-[15px] sm:text-base font-display flex items-center gap-1.5">Growlancer
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 ring-1 ring-amber-200 text-[9px] font-bold uppercase tracking-wide">Beta</span>
+                </div>
+                <div className="text-[10px] sm:text-xs text-slate-500 -mt-0.5">AI freelancing marketplace</div>
               </div>
             </Link>
 
-            {/* Desktop nav */}
-            <nav className="hidden lg:flex items-center gap-1 text-sm text-slate-600">
-              <Link to={ROUTES.HOW_IT_WORKS} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">How it works</Link>
-              <Link to={ROUTES.FREELANCERS} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Find Talent</Link>
-              <Link to={ROUTES.SERVICES} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Services</Link>
-              <Link to={ROUTES.PRICING} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Pricing</Link>
-              <Link to={ROUTES.ABOUT} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">About</Link>
-              <Link to={ROUTES.HELP_CENTER} className="px-3 py-2 rounded-lg hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Help</Link>
+            {/* Desktop nav — compact text like Upwork/Fiverr */}
+            <nav className="hidden lg:flex items-center gap-0.5 text-[13px] text-slate-600">
+              <Link to={ROUTES.HOW_IT_WORKS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">How it works</Link>
+              <Link to={ROUTES.CATEGORIES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Categories</Link>
+              <Link to={ROUTES.FREELANCERS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Find Talent</Link>
+              <Link to={ROUTES.SERVICES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Services</Link>
+              <Link to={ROUTES.CONTESTS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Contests</Link>
+              <Link to={ROUTES.FEATURES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Features</Link>
+              <Link to={ROUTES.PRICING} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Pricing</Link>
+              <Link to={ROUTES.ABOUT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">About</Link>
+              <Link to={ROUTES.CONTACT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Contact</Link>
+              <Link to={ROUTES.HELP_CENTER} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Help</Link>
             </nav>
 
             {/* Right actions */}
