@@ -778,7 +778,7 @@ export function ProjectFeedPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

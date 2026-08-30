@@ -368,7 +368,7 @@ export function OverviewPage() {
   }, [fetchDashboardData, user, role]);
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   if (error) {

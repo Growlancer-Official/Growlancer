@@ -654,7 +654,7 @@ export function WalletPage() {
   // =============================================
 
   if (overviewLoading && activeTab === 'overview') {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   // =============================================

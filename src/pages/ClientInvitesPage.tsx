@@ -150,7 +150,7 @@ export function ClientInvitesPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

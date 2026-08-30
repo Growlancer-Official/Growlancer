@@ -48,7 +48,7 @@ export function ContestsDashboardPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

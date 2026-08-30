@@ -36,7 +36,7 @@ export function ClientTeamProjectsPage() {
     void load();
   }, [load]);
 
-  if (loading) return <PageSkeleton />;;
+  if (loading) return <PageSkeleton />;
 
   return (
     <div className="space-y-1.5">

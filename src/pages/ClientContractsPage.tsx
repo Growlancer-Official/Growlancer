@@ -167,7 +167,7 @@ export function ClientContractsPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

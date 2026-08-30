@@ -375,7 +375,7 @@ const handleSubmit = async () => {
   }
 
   if (!test) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   const levelInfo = CERTIFICATION_LEVELS[test.difficulty];

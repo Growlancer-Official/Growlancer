@@ -66,7 +66,7 @@ export function SkillCertificationsPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

@@ -45,7 +45,7 @@ export function AnalyticsPage() {
   }, [fetchAnalytics, user]);
 
   if (loading && !data) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   const formatCurrency = (amount: number) =>

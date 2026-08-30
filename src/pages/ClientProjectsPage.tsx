@@ -288,7 +288,7 @@ export function ClientProjectsPage() {
 
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

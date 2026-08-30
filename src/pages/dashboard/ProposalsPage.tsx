@@ -181,7 +181,7 @@ export function ProposalsPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

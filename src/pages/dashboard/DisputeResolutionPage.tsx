@@ -260,7 +260,7 @@ export function DisputeResolutionPage() {
   /* ================================================================ */
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   /* ================================================================ */

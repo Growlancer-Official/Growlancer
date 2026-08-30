@@ -875,7 +875,7 @@ export function ProfessionalProfilePage() {
 
   // ── Render ──
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   const tabs = [

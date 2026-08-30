@@ -107,7 +107,7 @@ export default function ClientDashboard() {
   }, [fetchDashboardData, user?.id]);
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   if (error) {

@@ -153,7 +153,7 @@ export function PortfolioPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

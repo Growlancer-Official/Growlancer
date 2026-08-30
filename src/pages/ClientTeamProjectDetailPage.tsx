@@ -156,7 +156,7 @@ export function ClientTeamProjectDetailPage() {
     { amount: 0, commission: 0, total: 0 }
   );
 
-  if (loading) return <PageSkeleton />;;
+  if (loading) return <PageSkeleton />;
 
   if (error || !project) {
     return (

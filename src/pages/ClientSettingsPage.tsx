@@ -1095,7 +1095,7 @@ export function ClientSettingsPage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   return (

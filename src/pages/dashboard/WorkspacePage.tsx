@@ -847,7 +847,7 @@ export function WorkspacePage() {
   };
 
   if (loading) {
-    return <PageSkeleton />;;
+    return <PageSkeleton />;
   }
 
   if (contracts.length === 0) {
