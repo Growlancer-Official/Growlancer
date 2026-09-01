@@ -31,3 +31,4 @@ supabase/.temp/
 
 # Security reports / PDFs (never commit).
 *.pdf
+.tmp_payload.json

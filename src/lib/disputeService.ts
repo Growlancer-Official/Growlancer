@@ -8,7 +8,7 @@ export type DisputeCase = Tables<'disputes'>;
 
 export interface DisputeInput {
   contract_id: string;
-  raised_by: string;
+  user_id: string;
   reason: string;
   description: string;
   desired_outcome?: string;
@@ -39,10 +39,9 @@ export const disputeService = {
           contract_id: input.contract_id,
           client_id: contract.client_id,
           freelancer_id: contract.freelancer_id,
-          raised_by: input.raised_by,
           reason: input.reason,
           description: input.description,
-          status: 'pending',
+          status: 'open',
           amount: 0,
         })
         .select()
@@ -51,7 +50,7 @@ export const disputeService = {
       if (error) throw error;
 
       // Fire-and-forget: email notification to the other party
-      const isClient = input.raised_by === contract.client_id;
+      const isClient = input.user_id === contract.client_id;
       const otherPartyId = isClient ? contract.freelancer_id : contract.client_id;
       const { data: otherPartyPub } = await supabase
         .from('profiles')
