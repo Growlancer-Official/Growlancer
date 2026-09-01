@@ -619,8 +619,10 @@ serve(async req => {
           throw new Error('Payment amount does not match order amount');
         }
 
-        // Update order in database
-        const { data: updatedOrder, error: updateError } = await supabaseClient
+        // Update order in database (service_role — user-level UPDATE policy was
+        // dropped in security_hardening_v5_rls for defence-in-depth; the edge
+        // function already verified ownership + HMAC signature above).
+        const { data: updatedOrder, error: updateError } = await supabaseAdmin
           .from('razorpay_orders')
           .update({
             status: 'captured',
