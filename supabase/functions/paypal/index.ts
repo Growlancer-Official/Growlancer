@@ -256,6 +256,14 @@ serve(async req => {
       }
     );
 
+    // Service-role client for server-audited ledger writes (paypal_transactions
+    // has no user INSERT policy — all writes are server-side).
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    );
+
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), {
@@ -489,7 +497,7 @@ serve(async req => {
 
           for (const purchaseUnit of captureResult.purchase_units || []) {
             for (const capture of purchaseUnit.payments?.captures || []) {
-              await supabaseClient.from('paypal_transactions').insert({
+              await supabaseAdmin.from('paypal_transactions').insert({
                 paypal_order_id: updatedOrder.id,
                 paypal_transaction_id: capture.id,
                 transaction_type: 'capture',
@@ -582,7 +590,7 @@ serve(async req => {
           ? validateAmount(refundAmount)
           : parseFloat(orderDetails.purchase_units[0].payments.captures[0].amount.value);
 
-        await supabaseClient.from('paypal_transactions').insert({
+        await supabaseAdmin.from('paypal_transactions').insert({
           paypal_order_id: orderToRefund.paypal_order_id,
           paypal_transaction_id: refundResult.id,
           transaction_type: 'refund',

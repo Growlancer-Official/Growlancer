@@ -137,7 +137,7 @@ async function paypalFetch(path: string, options: RequestInit = {}): Promise<any
 async function rollbackWithdrawal(supabaseClient: any, withdrawalId: string, userId: string, amount: number, errorReason: string): Promise<void> {
   console.error(`[ROLLBACK] Withdrawal ${withdrawalId} failed: ${errorReason}`, { userId, amount });
   try { await supabaseClient.rpc('release_wallet_funds', { p_user_id: userId, p_amount: amount }); } catch (e) { console.error(`[ROLLBACK] Release wallet funds failed for ${userId}, amount=${amount}:`, e); }
-  try { await supabaseClient.from('withdrawals').update({ status: 'failed', failure_reason: errorReason, updated_at: new Date().toISOString() }).eq('id', withdrawalId); } catch (e) { console.error(`[ROLLBACK] Withdrawal status update failed for ${withdrawalId}:`, e); }
+  try { await supabaseAdmin.from('withdrawals').update({ status: 'failed', failure_reason: errorReason, updated_at: new Date().toISOString() }).eq('id', withdrawalId); } catch (e) { console.error(`[ROLLBACK] Withdrawal status update failed for ${withdrawalId}:`, e); }
   try { await supabaseAdmin.from('transactions').update({ status: 'failed', description: `Withdrawal failed: ${errorReason}` }).eq('metadata->>withdrawal_id', withdrawalId); } catch { /* non-critical — transaction record is secondary */ }
 }
 
@@ -265,13 +265,13 @@ Deno.serve(async (req) => {
       if (wdMethod === 'paypal') insertData.paypal_email = paypal_email
       if (wdMethod === 'razorpay_payout') insertData.razorpay_fund_account_id = resolvedFundAccountId
 
-      const { data: withdrawal, error: withdrawalError } = await supabaseClient.from('withdrawals').insert(insertData).select().single()
+      const { data: withdrawal, error: withdrawalError } = await supabaseAdmin.from('withdrawals').insert(insertData).select().single()
       if (withdrawalError) throw withdrawalError
 
       // Hold wallet funds
       const { data: holdResult, error: holdError } = await supabaseClient.rpc('hold_wallet_funds', { p_user_id: user.id, p_amount: amount })
       if (holdError || !holdResult?.success) {
-        await supabaseClient.from('withdrawals').delete().eq('id', withdrawal.id)
+        await supabaseAdmin.from('withdrawals').delete().eq('id', withdrawal.id)
         throw new Error(holdResult?.error || 'Failed to hold funds')
       }
 
@@ -314,7 +314,7 @@ Deno.serve(async (req) => {
           else if (rpStatus === 'failed' || rpStatus === 'cancelled') payoutStatus = 'failed'
           else payoutStatus = 'processing'
 
-          await supabaseClient.from('withdrawals').update({
+          await supabaseAdmin.from('withdrawals').update({
             razorpay_payout_id: providerPayoutId,
             status: payoutStatus === 'completed' ? 'processing' : payoutStatus,
             updated_at: new Date().toISOString(),
@@ -361,7 +361,7 @@ Deno.serve(async (req) => {
           else if (['DENIED', 'CANCELED'].includes(ppStatus)) payoutStatus = 'failed'
           else payoutStatus = 'processing'
 
-          await supabaseClient.from('withdrawals').update({
+          await supabaseAdmin.from('withdrawals').update({
             paypal_payout_id: providerPayoutId,
             status: payoutStatus === 'completed' ? 'processing' : payoutStatus,
             updated_at: new Date().toISOString(),
@@ -390,7 +390,7 @@ Deno.serve(async (req) => {
         // freelancer sees a clean "Withdrawal queued" instead of a raw error.
         const configLike = /url was not found|not found on the server|invalid account|account.*not.*exist|payouts.*not.*enabled|not configured|invalid.*credential|missing.*credential|unauthorized|payment processing is not enabled/i.test(errorMsg)
         if (configLike) {
-          await supabaseClient.from('withdrawals').update({
+          await supabaseAdmin.from('withdrawals').update({
             status: 'pending',
             failure_reason: `Queued — payout service not configured yet. ${errorMsg}`,
             updated_at: new Date().toISOString(),
