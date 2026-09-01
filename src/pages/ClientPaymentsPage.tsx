@@ -544,8 +544,12 @@ export function ClientPaymentsPage() {
                 onSuccess={() => {
                   setTopupSuccess('Funds added! Your wallet has been credited.');
                   setShowAddFunds(false);
+                  // Immediate refresh + delayed retries (edge function may still be
+                  // processing the verify_payment → wallet credit chain)
                   void fetchWallet();
                   void fetchTransactions();
+                  setTimeout(() => void fetchWallet(), 2000);
+                  setTimeout(() => void fetchWallet(), 5000);
                 }}
                 onError={(e) => {
                   setAddFundsError(e.message || 'Payment failed. Please try again.');
