@@ -1,1 +1,0 @@
-{"query": "SELECT update_wallet_balance('00000000-0000-0000-0000-000000000000'::uuid, 1.00);"}

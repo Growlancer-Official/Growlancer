@@ -504,22 +504,22 @@ export const dbFunctions = {
 
   // === WALLET RPCS ===
   getWalletBalance: (userId: string) =>
-    callRpc('get_wallet_balance', { p_user_id: userId }).single(),
+    callRpc('get_wallet_balance', { p_user_id: userId }),
   updateWalletBalance: (userId: string, amount: number) =>
     callRpc('update_wallet_balance', {
       p_user_id: userId,
       p_amount: amount,
-    }).single(),
+    }),
   holdWalletFunds: (userId: string, amount: number) =>
     callRpc('hold_wallet_funds', {
       p_user_id: userId,
       p_amount: amount,
-    }).single(),
+    }),
   releaseWalletFunds: (userId: string, amount: number) =>
     callRpc('release_wallet_funds', {
       p_user_id: userId,
       p_amount: amount,
-    }).single(),
+    }),
   processWithdrawalComplete: (withdrawalId: string) =>
     callRpc('process_withdrawal_complete', {
       p_withdrawal_id: withdrawalId,
