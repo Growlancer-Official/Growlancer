@@ -38,6 +38,7 @@ export function IdentityVerificationPage() {
   const [showForm, setShowForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadStep, setUploadStep] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Consent — user must explicitly agree before documents are submitted.
   const [consentAgreed, setConsentAgreed] = useState(false);
@@ -232,6 +233,7 @@ export function IdentityVerificationPage() {
     setSubmitting(true);
     setUploading(true);
     setError(null);
+    setUploadStep('upload');
 
     try {
       // ── STEP 1: Upload the document image(s) ──
@@ -245,6 +247,7 @@ export function IdentityVerificationPage() {
         const uploadResult = await identityVerificationService.uploadVerificationDocument(formData.document_file, user.id);
         if (!uploadResult.success) {
           setError(uploadResult.error || 'Failed to upload document');
+          setUploadStep(null);
           return;
         }
         imageSignedUrl = uploadResult.url || '';
@@ -252,9 +255,11 @@ export function IdentityVerificationPage() {
       }
 
       if (formData.document_file_back) {
+        setUploadStep('upload_back');
         const uploadBack = await identityVerificationService.uploadVerificationDocument(formData.document_file_back, user.id);
         if (!uploadBack.success) {
           setError(uploadBack.error || 'Failed to upload document back side');
+          setUploadStep(null);
           return;
         }
         backSignedUrl = uploadBack.url || null;
@@ -263,10 +268,12 @@ export function IdentityVerificationPage() {
 
       if (!imageSignedUrl) {
         setError('Could not upload document. Please try again.');
+        setUploadStep(null);
         return;
       }
 
       // ── STEP 2: AI Vision Verification — check clarity + extract + match ──
+      setUploadStep('ai_verify');
       setError(null);
       const aiResult = await identityVerificationService.verifyDocumentWithAI(
         imageSignedUrl,
@@ -308,6 +315,7 @@ export function IdentityVerificationPage() {
       }
 
       // ── STEP 3: AI verified — insert as pre-verified with storage PATH (not signed URL) ──
+      setUploadStep('submit');
       const result = await identityVerificationService.submit(user.id, {
         ...formData,
         document_url: imageStoragePath,
@@ -345,9 +353,11 @@ export function IdentityVerificationPage() {
       }
     } catch {
       setError('An unexpected error occurred. Please try again.');
+      setUploadStep(null);
     } finally {
       setSubmitting(false);
       setUploading(false);
+      setUploadStep(null);
     }
   };
 
@@ -677,6 +687,27 @@ export function IdentityVerificationPage() {
             </div>
           )}
 
+          {uploadStep && (
+            <div className="flex items-center gap-4 text-xs text-slate-500 mt-3">
+              {['upload', 'ai_verify', 'submit'].map((step, i) => {
+                const labels: Record<string, string> = {
+                  upload: 'Uploading document',
+                  upload_back: 'Uploading back side',
+                  ai_verify: 'AI verifying document',
+                  submit: 'Saving verification',
+                };
+                const active = uploadStep === step || (uploadStep === 'upload_back' && step === 'upload');
+                const done = ['upload', 'ai_verify', 'submit'].indexOf(uploadStep) > i;
+                return (
+                  <span key={step} className={`flex items-center gap-1 ${active ? 'text-emerald-600 font-medium' : done ? 'text-emerald-500' : 'text-slate-300'}`}>
+                    {done ? <CheckCircle2 className="w-3 h-3" /> : active ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="w-3 h-3 rounded-full border border-slate-300" />}
+                    {labels[uploadStep] || labels[step]}
+                  </span>
+                );
+              })}
+            </div>
+          )}
+
           <div className="flex items-center gap-1.5 pt-2">
             <button
               type="submit"
@@ -686,7 +717,7 @@ export function IdentityVerificationPage() {
               {uploading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Uploading...
+                  Processing...
                 </>
               ) : submitting ? (
                 <>
@@ -988,7 +1019,12 @@ export function IdentityVerificationPage() {
                 disabled={submitting || !consentAgreed}
                 className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {submitting ? (
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : submitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
                     Submitting...
