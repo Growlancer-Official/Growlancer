@@ -339,7 +339,7 @@ export function ClientTeamProjectDetailPage() {
             </tfoot>
           </table>
         </div>
-        <InfoTip title="Information" text="Ek role ka contract dispute/cancel ho jaaye to baaki roles ke contracts par koi effect nahi — sab independent escrow ke saath protected hain." />
+        <InfoTip title="Team project protection" text="If one role's contract gets disputed or cancelled, it doesn't affect the other roles — each contract has its own independent escrow, milestones and dispute. Your team project stays protected regardless." />
       </div>
 
       <ConfirmModal
