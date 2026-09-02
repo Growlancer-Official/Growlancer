@@ -309,6 +309,7 @@ export type RpcName =
   | 'search_freelancers_by_category'
   | 'get_projects_by_category'
   | 'get_wallet_balance'
+  | 'get_wallet_balance_v2'
   | 'update_wallet_balance'
   | 'hold_wallet_funds'
   | 'release_wallet_funds'
@@ -504,7 +505,7 @@ export const dbFunctions = {
 
   // === WALLET RPCS ===
   getWalletBalance: (userId: string) =>
-    callRpc('get_wallet_balance', { p_user_id: userId }),
+    callRpc('get_wallet_balance_v2', { p_user_id: userId }),
   updateWalletBalance: (userId: string, amount: number) =>
     callRpc('update_wallet_balance', {
       p_user_id: userId,
