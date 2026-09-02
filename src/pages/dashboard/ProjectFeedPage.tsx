@@ -499,7 +499,7 @@ export function ProjectFeedPage() {
 
     // Set up real-time subscription for AI matches
     const matchesChannel = supabase
-      .channel('ai-matches-changes')
+      .channel(`ai-matches-feed-${user.id}-${Date.now()}`)
       .on(
         'postgres_changes',
         {
