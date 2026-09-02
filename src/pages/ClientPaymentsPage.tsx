@@ -172,8 +172,8 @@ export function ClientPaymentsPage() {
       if (result.success && result.balance) {
         setWalletBalance(Number(result.balance.balance) || 0);
       }
-    } catch {
-      // Wallet fetch is non-critical — escrow can still be funded directly
+    } catch (err) {
+      console.error('[wallet] fetchWallet failed:', err);
     } finally {
       setWalletLoading(false);
     }

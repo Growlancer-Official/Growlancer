@@ -83,7 +83,12 @@ export const withdrawalService = {
   // Wallet Balance
   // ============================================================
 
-  /** Fetch the current wallet balance for the authenticated user */
+  /** Fetch the current wallet balance for the authenticated user.
+   *  Uses direct table query instead of RPC — the get_wallet_balance RPC
+   *  can fail on Supabase read replicas with "cannot execute INSERT in a
+   *  read-only transaction" due to its legacy INSERT ... ON CONFLICT clause.
+   *  The wallets table has a proper SELECT RLS policy (user_id = auth.uid()).
+   */
   async getWalletBalance(): Promise<{ success: boolean; balance?: WalletBalance; error?: string }> {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -91,6 +96,18 @@ export const withdrawalService = {
         return { success: false, error: 'Not authenticated' };
       }
 
+      // Primary: direct table query (bypasses broken RPC)
+      const { data: row, error: tblErr } = await supabase
+        .from('wallets')
+        .select('balance, pending_balance, escrow_balance, currency')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (!tblErr && row) {
+        return { success: true, balance: row as unknown as WalletBalance };
+      }
+
+      // Fallback: try RPC (may work if PostgREST cache refreshed)
       const { data, error } = await dbFunctions.getWalletBalance(session.user.id);
       if (error) {
         return { success: false, error: error.message };
