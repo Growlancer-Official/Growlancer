@@ -40,7 +40,10 @@ jobs:
 
       - name: Push database migrations (gated)
         if: vars.SUPABASE_DB_AUTO_PUSH == 'true'
-        run: supabase db push
+        # --include-all: applies out-of-order backfilled migrations (e.g. a file
+        # with an older timestamp that was added after newer ones were applied).
+        # --yes: auto-confirms the "push these migrations?" prompt so CI doesn't hang.
+        run: supabase db push --include-all --yes
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
