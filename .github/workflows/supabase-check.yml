@@ -31,7 +31,8 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
 
       - name: Dry-run migrations
-        run: supabase db push --dry-run
+        # --include-all: handles backfilled migrations with older timestamps
+        run: supabase db push --dry-run --include-all
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}

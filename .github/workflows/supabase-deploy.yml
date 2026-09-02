@@ -40,7 +40,12 @@ jobs:
 
       - name: Push database migrations (gated)
         if: vars.SUPABASE_DB_AUTO_PUSH == 'true'
-        run: supabase db push
+        # --include-all: applies local migrations whose timestamps fall before
+        # the latest remote migration — required when historical migrations were
+        # backfilled (e.g. consolidation files with older timestamps). Without
+        # this flag, Supabase CLI exits 1 with "local files to be inserted before
+        # last remote migration", blocking every push after a backfill.
+        run: supabase db push --include-all
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
