@@ -4,6 +4,12 @@ import { supabase } from '../lib/supabase';
 import { useToast } from './Toast';
 import { ModalShell } from './ModalShell';
 
+export interface AIWriterUsage {
+  isPro: boolean;
+  used: number;
+  limit: number;
+}
+
 export type AIWriterField =
   | 'project_title'
   | 'project_description'
@@ -23,6 +29,21 @@ interface AIGenerateModalProps {
   /** Trigger button label */
   triggerLabel?: string;
   className?: string;
+  /**
+   * Real-time usage reporter — fires after every generation / limit response so
+   * the surrounding page can render a live remaining counter.
+   */
+  onUsageChange?: (usage: AIWriterUsage) => void;
+  /**
+   * Client AI features are free for life (platform promise): suppress the
+   * "Free: 5/day · Pro" copy and any upgrade prompts on client surfaces.
+   */
+  clientFree?: boolean;
+  /**
+   * Pre-loaded usage (e.g. from get_ai_writer_usage) so the meter is visible
+   * before the user's first generation.
+   */
+  initialUsage?: AIWriterUsage | null;
 }
 
 const FIELD_TITLES: Record<AIWriterField, string> = {
@@ -56,13 +77,16 @@ export function AIGenerateModal({
   onApply,
   triggerLabel = 'Write with AI',
   className = '',
+  onUsageChange,
+  clientFree = false,
+  initialUsage = null,
 }: AIGenerateModalProps) {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState('');
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [editedResult, setEditedResult] = useState('');
-  const [usage, setUsage] = useState<{ isPro: boolean; used: number; limit: number } | null>(null);
+  const [usage, setUsage] = useState<AIWriterUsage | null>(initialUsage);
   const [error, setError] = useState<string | null>(null);
   const toast = useToast();
 
@@ -70,7 +94,13 @@ export function AIGenerateModal({
     setInput('');
     setResult(null);
     setError(null);
+    setUsage(initialUsage);
     setOpen(true);
+  };
+
+  const reportUsage = (next: AIWriterUsage) => {
+    setUsage(next);
+    onUsageChange?.(next);
   };
 
   const generate = async () => {
@@ -87,9 +117,9 @@ export function AIGenerateModal({
       });
       if (invokeError) {
         const msg = (data as any)?.error || 'AI generation failed. Please try again.';
-        if (msg === 'daily_limit_reached') {
+        if (msg === 'daily_limit_reached' || msg === 'fair_use_limit_reached') {
           setError((data as any)?.message || 'Daily AI writing limit reached.');
-          setUsage({ isPro: false, used: (data as any)?.used ?? 5, limit: (data as any)?.limit ?? 5 });
+          reportUsage({ isPro: !!(data as any)?.isPro, used: (data as any)?.used ?? (data as any)?.limit ?? 5, limit: (data as any)?.limit ?? 5 });
         } else {
           setError(msg);
         }
@@ -98,7 +128,7 @@ export function AIGenerateModal({
       if (data?.success && data.text) {
         setResult(data.text);
         setEditedResult(data.text);
-        setUsage({ isPro: !!data.isPro, used: data.used ?? 0, limit: data.limit ?? 0 });
+        reportUsage({ isPro: !!data.isPro, used: data.used ?? 0, limit: data.limit ?? 0 });
       } else {
         setError(data?.error || 'AI generation failed. Please try again.');
       }
@@ -138,13 +168,17 @@ export function AIGenerateModal({
     >
         {/* Usage info */}
         <p className="text-xs text-slate-500 -mt-2 mb-4 flex items-center gap-1">
-          {usage ? (
+          {clientFree ? (
+            <span className="inline-flex items-center gap-1 text-emerald-600 font-medium">
+              <Zap className="w-3.5 h-3.5" /> Free for you — no limits, ever
+            </span>
+          ) : usage ? (
             usage.isPro ? (
               <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
                 <Zap className="w-3.5 h-3.5" /> Unlimited Pro AI writing
               </span>
             ) : (
-              `${usage.used} of ${usage.limit} free generations used today`
+              `${Math.max(0, usage.limit - usage.used)} of ${usage.limit} free AI writes left today`
             )
           ) : (
             'Free: 5/day · Pro: unlimited'
@@ -173,7 +207,7 @@ export function AIGenerateModal({
           {error && (
             <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700">
               {error}
-              {usage && !usage.isPro && (
+              {!clientFree && usage && !usage.isPro && (
                 <span className="block mt-1 text-rose-500">
                   Upgrade to Pro on the <span className="font-semibold">Pricing</span> page for unlimited AI writing.
                 </span>

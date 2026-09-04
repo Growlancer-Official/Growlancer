@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase';
+import { supabase, uniqueChannelName } from '../lib/supabase';
 import { formatCurrency } from '../lib/currency';
 import { teamProjectsService, type TeamProject, type TeamRole, TEAM_COMMISSION_RATE } from '../lib/teamProjects';
 import { AlertCircle, ArrowLeft, CheckCircle2, Plus, RefreshCw, UserCheck, Users } from 'lucide-react';
@@ -73,6 +73,47 @@ export function ClientTeamProjectDetailPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  // Real-time: roles (and their AI suggestions) update live — e.g. when a
+  // freelancer adds a matching skill, or the role status/skills/budget change
+  // server-side. No manual page reload needed.
+  useEffect(() => {
+    if (!projectId) return;
+    const channel = supabase
+      .channel(uniqueChannelName('team-project-roles', projectId))
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'team_project_roles', filter: `team_project_id=eq.${projectId}` },
+        (payload) => {
+          if (payload.eventType === 'INSERT') {
+            const incoming = payload.new as TeamRole;
+            setRoles((prev) =>
+              prev.some((r) => r.id === incoming.id)
+                ? prev
+                : [...prev, incoming].sort((a, b) => a.created_at.localeCompare(b.created_at))
+            );
+            void loadContract(incoming.id);
+          } else if (payload.eventType === 'UPDATE') {
+            const updated = payload.new as TeamRole;
+            setRoles((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+            void loadContract(updated.id);
+          } else if (payload.eventType === 'DELETE') {
+            const oldRole = payload.old as { id?: string };
+            if (oldRole.id) {
+              setRoles((prev) => prev.filter((r) => r.id !== oldRole.id));
+              setContracts((prev) => {
+                const next = { ...prev };
+                delete next[oldRole.id as string];
+                return next;
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => { void channel.unsubscribe(); };
+  }, [projectId, loadContract]);
 
   const refreshRoleMatches = async (role: TeamRole) => {
     setRematching((prev) => ({ ...prev, [role.id]: true }));

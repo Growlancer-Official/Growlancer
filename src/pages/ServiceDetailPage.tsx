@@ -449,6 +449,23 @@ export function ServiceDetailPage() {
               <div className="text-slate-600 whitespace-pre-wrap leading-relaxed">{service.description}</div>
             </div>
 
+            {/* Skills */}
+            {Array.isArray((service as any).skills) && (service as any).skills.length > 0 && (
+              <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">
+                <h2 className="text-lg font-semibold text-slate-900 mb-3">Skills</h2>
+                <div className="flex flex-wrap gap-3">
+                  {(service as any).skills.map((skill: string) => (
+                    <span
+                      key={skill}
+                      className="px-3 py-1.5 bg-violet-50 text-violet-700 text-sm rounded-lg border border-violet-100"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Tags */}
             {service.tags && service.tags.length > 0 && (
               <div className="bg-white rounded-xl border border-slate-100 p-3 shadow-sm">

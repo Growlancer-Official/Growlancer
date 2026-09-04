@@ -16,6 +16,7 @@ import {
   Plus,
   Search,
   ShoppingBag,
+  Sparkles,
   Star,
   Tag,
   Trash2,
@@ -207,7 +208,8 @@ export function ServicesPage() {
   const filteredServices = services.filter(service => {
     const matchesSearch =
       safeLower(service.title).includes(safeLower(searchTerm)) ||
-      safeLower(service.description).includes(safeLower(searchTerm));
+      safeLower(service.description).includes(safeLower(searchTerm)) ||
+      safeLower((service.skills || []).join(' ')).includes(safeLower(searchTerm));
     const matchesStatus =
       filterStatus === 'all' || service.status === filterStatus;
     const matchesCategory =
@@ -527,6 +529,23 @@ export function ServicesPage() {
                   <p className="text-xs text-amber-600 mb-2">
                     Extra revision: {formatCurrency(Number(service.extra_revision_price))} each (beyond free revisions)
                   </p>
+                )}
+
+                {service.skills && service.skills.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-2">
+                    {service.skills.slice(0, 4).map((skill) => (
+                      <span
+                        key={skill}
+                        className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-lg bg-violet-50 text-violet-700"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        {skill}
+                      </span>
+                    ))}
+                    {service.skills.length > 4 && (
+                      <span className="text-xs text-slate-400">+{service.skills.length - 4} more</span>
+                    )}
+                  </div>
                 )}
 
                 {service.tags && service.tags.length > 0 && (

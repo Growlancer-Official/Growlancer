@@ -343,7 +343,8 @@ export type RpcName =
   | 'unfreeze_contract'
   | 'process_pending_refunds'
   | 'process_no_response_disputes'
-  | 'create_user_subscription';
+  | 'create_user_subscription'
+  | 'get_ai_writer_usage';
 
 /**
  * Safe typed RPC caller.
@@ -484,6 +485,9 @@ export const dbFunctions = {
     callRpc('get_user_push_tokens', {
       p_user_id: userId,
     }),
+  // === AI WRITER ===
+  getAIWriterUsage: () => callRpc('get_ai_writer_usage'),
+
   // === CATEGORY ECOSYSTEM RPCs ===
   getCategoryCounts: () => callRpc('get_category_counts'),
   getCategoryHierarchy: () => callRpc('get_category_hierarchy'),
