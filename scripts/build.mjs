@@ -253,11 +253,20 @@ function generateFallbackIndexHtml() {
     <meta name="description" content="Growlancer is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
     <link rel="icon" href="/UpdatedLogo.webp?v=3" type="image/webp">
     <link rel="icon" href="/UpdatedLogo.png?v=2" type="image/png">
-    <meta name="theme-color" content="#4F46E5">
+    <meta name="theme-color" content="#10b981">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Growlancer — AI-Powered Freelancing Marketplace">
     <meta property="og:description" content="Hire top freelancers or get hired for high-quality work with Growlancer.">
     <meta name="twitter:card" content="summary_large_image">
+    <!-- Design fonts (Satoshi + Cabinet Grotesk) — must match pages/+Head.tsx so
+         fallback-shell routes (served when Vike prerender is skipped) load the
+         same fonts as prerendered pages. CSP allows api.fontshare.com. -->
+    <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+    <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap">
+    <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript>
+      <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+    </noscript>
 ${cssTags}
   </head>
   <body>
