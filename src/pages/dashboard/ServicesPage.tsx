@@ -26,6 +26,7 @@ import { ConfirmModal } from '../../components/ConfirmModal';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
 import { formatCurrency } from '../../lib/currency';
+import { serviceFromPrice } from '../../lib/servicePricing';
 
 export function ServicesPage() {
   const { user } = useAuth();
@@ -318,7 +319,7 @@ export function ServicesPage() {
                   <div className="flex items-center gap-1">
                     <IndianRupee className="w-4 h-4" />
                     <span className="font-semibold text-slate-900">
-                      {(service as any).packages?.length > 0 ? 'From ' : ''}{formatCurrency(Number(service.price))}
+                      From {formatCurrency(serviceFromPrice(service))}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">

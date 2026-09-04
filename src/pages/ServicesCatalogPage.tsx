@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Clock, Eye, Filter, Grid3X3, List, Loader2, Package, Search, ShoppingCart, Star,  } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { formatCurrency } from '../lib/currency';
+import { packageCount, serviceFromPrice } from '../lib/servicePricing';
 import { useCategories } from '../hooks/useCategories';
 import { useToast } from '../components/Toast';
 import { TipNote } from '../components/TipNote';
@@ -18,6 +19,7 @@ interface ServiceResult {
   price_type: string;
   delivery_days: number;
   tags: string[];
+  packages?: unknown;
 
   image_url: string | null;
   views: number;
@@ -119,7 +121,7 @@ export function ServicesCatalogPage() {
           <p className="text-slate-300 text-lg mb-3">Discover pre-packaged services from top freelancers — order instantly.</p>
           <div className="mb-3">
             <TipNote tone="protection" title="Every order is protected" compact>
-              Pay through <strong>Growlancer Escrow</strong> — your money is held safely and released to the freelancer only after you approve the completed work. Delivery times, free revisions and the full three-tier package pricing are shown on every card.
+              Pay through <strong>Growlancer Escrow</strong> — your money is held safely and released to the freelancer only after you approve the completed work. Every card shows the starting price, delivery time and rating — open a service to compare all three Basic, Standard and Premium packages.
             </TipNote>
           </div>
           <div className="flex gap-3 max-w-3xl">
@@ -276,17 +278,20 @@ export function ServicesCatalogPage() {
                     )}
 
                     {/* Footer */}
-                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                      <div className="flex items-center gap-3 text-xs text-slate-400">
+                    <div className="flex items-end justify-between pt-3 border-t border-slate-100">
+                      <div className="flex items-center gap-3 text-xs text-slate-400 pb-0.5">
                         <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{service.views || 0}</span>
                         <span className="flex items-center gap-1"><ShoppingCart className="w-3.5 h-3.5" />{service.orders || 0}</span>
                         {service.rating && service.rating > 0 && (
                           <span className="flex items-center gap-0.5"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{Number(service.rating).toFixed(1)}</span>
                         )}
                       </div>
-                      <span className="text-lg font-bold text-emerald-600">
-                        {formatCurrency(Number(service.price))}
-                      </span>
+                      <div className="text-right shrink-0">
+                        <span className="block text-[10px] uppercase tracking-wide text-slate-400 font-semibold leading-none mb-0.5">From</span>
+                        <span className="text-lg font-bold text-emerald-600 leading-tight">
+                          {formatCurrency(serviceFromPrice(service))}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -320,9 +325,10 @@ export function ServicesCatalogPage() {
                           {service.rating && <span className="flex items-center gap-0.5"><Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{Number(service.rating).toFixed(1)}</span>}
                         </div>
                       </div>
-                      <div className="text-right ml-4">
-                        <span className="text-xl font-bold text-emerald-600">{formatCurrency(Number(service.price))}</span>
-                        <span className="text-xs text-slate-400 block">{(service as any).packages?.length > 0 ? 'From · 3 tiers' : 'Fixed Price'}</span>
+                      <div className="text-right ml-4 shrink-0">
+                        <span className="block text-[10px] uppercase tracking-wide text-slate-400 font-semibold leading-none mb-1">From</span>
+                        <span className="text-xl font-bold text-emerald-600 leading-tight">{formatCurrency(serviceFromPrice(service))}</span>
+                        <span className="text-xs text-slate-400 block mt-1">{packageCount(service) >= 3 ? `${packageCount(service)} packages` : 'Packaged service'}</span>
                       </div>
                     </div>
                   </div>

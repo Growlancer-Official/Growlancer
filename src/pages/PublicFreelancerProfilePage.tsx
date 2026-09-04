@@ -31,6 +31,7 @@ import { InfoTip } from '../components/InfoTip';
 import { invitesService } from '../lib/dataService';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/date';
+import { serviceFromPrice } from '../lib/servicePricing';
 import {
   isProSubscription,
   subscriptionService,
@@ -89,6 +90,7 @@ interface FreelancerService {
   category: string | null;
   image_url: string | null;
   price: number;
+  packages?: unknown;
   delivery_days: number | null;
   revisions: number | null;
   extra_revision_price?: number | null;
@@ -214,7 +216,7 @@ export function PublicFreelancerProfilePage() {
           reviewService.getUserReviews(userKey),
           supabase
             .from('services')
-            .select('id, title, description, category, image_url, price, delivery_days, revisions, extra_revision_price, tags, active')
+            .select('id, title, description, category, image_url, price, packages, delivery_days, revisions, extra_revision_price, tags, active')
             .eq('freelancer_id', userKey)
             .eq('active', true)
             .order('created_at', { ascending: false }),
@@ -635,7 +637,7 @@ export function PublicFreelancerProfilePage() {
                         <div>
                           <p className="text-xs text-slate-400 uppercase tracking-wider font-semibold">From</p>
                           <p className="font-bold text-emerald-700 text-lg">
-                            {(service as any).packages?.length > 0 ? 'From ' : ''}{formatCurrency(Number(service.price))}
+                            {formatCurrency(serviceFromPrice(service))}
                           </p>
                         </div>
                         <div className="flex items-center gap-3 text-xs text-slate-500">
