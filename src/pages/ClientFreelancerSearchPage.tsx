@@ -172,6 +172,26 @@ export function ClientFreelancerSearchPage() {
 
   useEffect(() => { fetchFreelancers(); }, [fetchFreelancers]);
 
+  // ── Realtime: new/updated freelancer profiles appear live ────────────────
+  // Mirrors the freelancer feed. When a freelancer completes their profile
+  // (or updates skills/rates/availability), the search list refreshes
+  // instantly — no manual reload needed.
+  useEffect(() => {
+    const channel = supabase
+      .channel('client-freelancer-search')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'freelancer_profiles' },
+        () => {
+          void fetchFreelancers();
+        }
+      )
+      .subscribe();
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [fetchFreelancers]);
+
   useEffect(() => {
     if (!user) return;
     const fetchSaved = async () => {
