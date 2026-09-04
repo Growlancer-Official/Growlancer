@@ -358,7 +358,7 @@ This will remove the QR code permanently with NO WAY TO RECOVER! The credential 
             onClick={() => setActiveSubTab(tab)}
             className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
               activeSubTab === tab
-                ? 'bg-purple-600 text-white shadow-lg'
+                ? 'bg-emerald-600 text-white shadow-lg'
                 : 'text-slate-400 hover:text-white'
             }`}
           >

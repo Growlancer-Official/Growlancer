@@ -221,7 +221,7 @@ export function PricingPage() {
           </>
           ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-5xl mx-auto">
+            <div className={`grid grid-cols-1 md:grid-cols-2 gap-3 mx-auto ${plans.length > 2 ? 'lg:grid-cols-3 max-w-5xl' : 'max-w-3xl'}`}>
               {plans.map((plan) => {
                 const isFree = plan.price === 0;
                 const isPopular = plan.ai_priority && !isFree;
@@ -487,7 +487,7 @@ export function PricingPage() {
               </div>
             </div>
             <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-200">
-              <Check className="w-8 h-8 text-blue-500" />
+              <Check className="w-8 h-8 text-emerald-500" />
               <div>
                 <p className="font-bold text-slate-900">No Hidden Fees</p>
                 <p className="text-sm text-slate-600">Transparent pricing</p>

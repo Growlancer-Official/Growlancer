@@ -190,7 +190,7 @@ export function ProSubscriptionPage() {
 
       {/* Subscription Status Banner */}
       {isPro && subscription && (
-        <div className="mx-auto max-w-md p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
+        <div className="mx-auto max-w-lg p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
           <CheckCircle className="text-emerald-600 text-2xl w-6 h-6 flex-shrink-0" />
           <div className="text-left">
             <p className="text-emerald-900 font-bold text-sm flex items-center gap-3">
@@ -431,22 +431,22 @@ export function ProSubscriptionPage() {
           </div>
 
         {/* Why Upgrade Section */}
-        <section className="bg-white py-24 border-y border-slate-100">
-          <div className="max-w-[100rem] mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="font-display text-xl font-extrabold mb-2">What Premium Unlocks</h2>
-              <p className="text-slate-500">
+        <section className="bg-white py-10 border-y border-slate-100 mt-8">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="font-display text-2xl font-extrabold mb-2">What Premium Unlocks</h2>
+              <p className="text-slate-500 text-sm">
                 Fair and honest: Premium is purely AI + productivity tools. Your packages, proposals,
                 visibility and matching score are <strong>identical</strong> with or without it — everything on this
                 platform is merit-based.
               </p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
                 <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
                   <Sparkles className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">Unlimited AI Writing</h3>
+                <h3 className="font-bold text-base mb-2">Unlimited AI Writing</h3>
                 <p className="text-sm text-slate-500">
                   Unlimited AI-generated titles, descriptions and cover letters (free users get 5/day).
                 </p>
@@ -455,25 +455,25 @@ export function ProSubscriptionPage() {
                 <div className="h-12 w-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-3">
                   <MessageSquare className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">AI Assistant & Support</h3>
+                <h3 className="font-bold text-base mb-2">AI Assistant & Support</h3>
                 <p className="text-sm text-slate-500">
                   Priority AI assistant responses and 24/7 priority support — human help when you need it.
                 </p>
               </div>
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mx-auto mb-3">
+                <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
                   <BarChart3 className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">Advanced Analytics</h3>
+                <h3 className="font-bold text-base mb-2">Advanced Analytics</h3>
                 <p className="text-sm text-slate-500">
                   Deeper performance insights for your profile, services and proposals.
                 </p>
               </div>
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mx-auto mb-3">
+                <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
                   <CheckCircle className="w-6 h-6" />
                 </div>
-                <h3 className="font-bold text-lg mb-3">Verified Badge</h3>
+                <h3 className="font-bold text-base mb-2">Premium Badge</h3>
                 <p className="text-sm text-slate-500">
                   A visible Premium badge on your profile — a signal of commitment, never a ranking boost.
                 </p>
@@ -483,9 +483,9 @@ export function ProSubscriptionPage() {
         </section>
 
         {/* Plan Comparison Table */}
-        <section className="py-24">
+        <section className="py-10">
           <div className="max-w-5xl mx-auto px-4">
-            <h2 className="font-display text-xl font-extrabold text-center mb-16">
+            <h2 className="font-display text-2xl font-extrabold text-center mb-8">
               Compare Plans
             </h2>
             <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
@@ -517,18 +517,18 @@ export function ProSubscriptionPage() {
           </div>
         </section>
 
-        {/* Testimonials Section */}
-        <section className="py-24 bg-slate-50">
-          <div className="max-w-[100rem] mx-auto px-4">
+        {/* Pre-Launch Section */}
+        <section className="py-10 bg-slate-50">
+          <div className="max-w-5xl mx-auto px-4">
             <div className="text-center">
               <div className="inline-flex items-center gap-3 px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm mb-3">
                 <Sparkles className="w-4 h-4" />
                 Pre-Launch Phase
               </div>
-              <h2 className="font-display text-xl font-extrabold mb-2">
+              <h2 className="font-display text-2xl font-extrabold mb-2">
                 Be Among the First
               </h2>
-              <p className="text-slate-500 max-w-2xl mx-auto">
+              <p className="text-slate-500 max-w-2xl mx-auto text-sm">
                 Growlancer is currently in pre-launch. We're building the AI-powered freelancing platform of the future. 
                 User testimonials and success stories will be featured here after our official launch.
               </p>
@@ -537,15 +537,15 @@ export function ProSubscriptionPage() {
         </section>
 
         {/* FAQ Section */}
-        <section className="py-24 bg-slate-50">
-          <div className="max-w-[100rem] mx-auto px-4">
-            <div className="text-center mb-16">
-              <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-slate-900">Common Questions</h2>
-              <p className="text-slate-500 mt-3 max-w-2xl mx-auto">
+        <section className="py-10 bg-slate-50">
+          <div className="max-w-5xl mx-auto px-4">
+            <div className="text-center mb-8">
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">Common Questions</h2>
+              <p className="text-slate-500 mt-3 max-w-2xl mx-auto text-sm">
                 Everything you need to know about Growlancer Premium — honest answers, no fine print.
               </p>
             </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">

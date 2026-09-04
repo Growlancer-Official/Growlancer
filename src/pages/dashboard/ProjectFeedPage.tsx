@@ -418,51 +418,52 @@ export function ProjectFeedPage() {
           !!m.project // project embed can be null when RLS hides it — drop those rows
         );
 
-        // ── Open-projects fallback ───────────────────────────────────────────
-        // If AI matches are sparse (new freelancer / matching job just posted),
-        // also surface open projects that match the freelancer's skills so the
-        // feed is never empty while matching projects exist. These entries use
-        // a neutral heuristic score — real AI scores replace them as soon as
-        // the ai-matching engine writes a match for this freelancer.
+        // ── Open-projects fallback (browse-all — the feed is NEVER empty) ──
+        // Skill-overlapping projects surface first (score 60); every other
+        // open public project still shows below (score 40) so a fresh
+        // freelancer — or one with no skills yet — always sees live work.
+        // Real AI scores replace these rows as soon as the server-side match
+        // engine writes an ai_matches row (which happens automatically on
+        // project post / profile completion).
         const freelancerSkillSet = new Set(
           (Array.isArray(profileData?.skills) ? profileData.skills : [])
             .map((s: unknown) => safeLower(s))
             .filter((s: string) => s !== '')
         );
         const alreadyMatched = new Set(realMatches.map(m => m.project_id));
-        let syntheticMatches: MatchWithProject[] = [];
-        if (freelancerSkillSet.size > 0) {
-          const { data: openProjects } = await supabase
-            .from('projects')
-            .select('*, client:profiles!projects_client_id_fkey(id, name, avatar, deleted_at)')
-            .eq('status', 'open')
-            .order('created_at', { ascending: false })
-            .limit(50);
+        const { data: openProjects } = await supabase
+          .from('projects')
+          .select('*, client:profiles!projects_client_id_fkey(id, name, avatar, deleted_at)')
+          .eq('status', 'open')
+          .order('created_at', { ascending: false })
+          .limit(50);
 
-          syntheticMatches = ((openProjects as any[]) || [])
-            .filter((pr: any) => {
-              if (alreadyMatched.has(pr.id) || declinedProjects.has(pr.id)) return false;
-              const clientProf = pr.client;
-              if (!clientProf || clientProf.deleted_at || !clientProf.name) return false;
-              const required = Array.isArray(pr.skills_required) ? pr.skills_required : [];
-              return required.some((skill: unknown) =>
-                freelancerSkillSet.has(safeLower(skill))
-              );
-            })
-            .map((pr: any) => ({
-              id: `open-${pr.id}`,
-              freelancer_id: user.id,
-              project_id: pr.id,
-              match_score: 60,
-              skill_score: null,
-              experience_score: null,
-              budget_score: null,
-              availability_score: null,
-              completion_score: null,
-              created_at: new Date().toISOString(),
-              project: pr,
-            }));
-        }
+        const clientOk = (pr: any) => {
+          const clientProf = pr.client;
+          return !(clientProf && (clientProf.deleted_at || !clientProf.name));
+        };
+        const skillOverlap = (pr: any) =>
+          (Array.isArray(pr.skills_required) ? pr.skills_required : [])
+            .some((skill: unknown) => freelancerSkillSet.has(safeLower(skill)));
+
+        const syntheticMatches: MatchWithProject[] = ((openProjects as any[]) || [])
+          .filter((pr: any) => {
+            if (alreadyMatched.has(pr.id) || declinedProjects.has(pr.id)) return false;
+            return clientOk(pr);
+          })
+          .map((pr: any) => ({
+            id: `open-${pr.id}`,
+            freelancer_id: user.id,
+            project_id: pr.id,
+            match_score: skillOverlap(pr) ? 60 : 40,
+            skill_score: null,
+            experience_score: null,
+            budget_score: null,
+            availability_score: null,
+            completion_score: null,
+            created_at: new Date().toISOString(),
+            project: pr,
+          }));
 
         const combinedMatches = [...realMatches, ...syntheticMatches];
         setMatches(combinedMatches);
@@ -642,11 +643,28 @@ export function ProjectFeedPage() {
       )
       .subscribe();
 
+    // Real-time subscription for NEW open projects — the browse-all fallback
+    // refetches instantly when a client posts, so the feed updates live for
+    // every freelancer (matched or not).
+    const projectsChannel = supabase
+      .channel('feed-projects-changes')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'projects' },
+        (payload) => {
+          if (payload.new && (payload.new as any).status === 'open') {
+            void fetchData();
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       clearTimeout(timeoutId);
       matchesChannel.unsubscribe();
       profilesChannel.unsubscribe();
       contractsChannel.unsubscribe();
+      projectsChannel.unsubscribe();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -792,9 +810,9 @@ export function ProjectFeedPage() {
           <div>
             <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">AI Project Feed <InfoTip title="How to win projects here" text="Each card shows how well the project fits your profile (% Match). Tap Apply Now with your rate and a short cover message — the client reviews proposals in real time. Once you're hired, the button becomes Contract Active and work happens in the workspace with escrow protection. Matching improves as you complete your profile." /></h1>
             <p className="text-slate-500 text-xs sm:text-xs">
-              {skills.length > 0 
-                ? `${matches.length} projects matched to your ${skills.length} skills` 
-                : 'Complete your profile to get AI-matched projects'}
+              {skills.length > 0
+                ? `${matches.length} open projects — matched to your ${skills.length} skills first`
+                : `${matches.length} open projects — add skills to your profile to get AI-matched first`}
             </p>
           </div>
         </div>
@@ -891,13 +909,19 @@ export function ProjectFeedPage() {
                     <h3 className="font-display text-sm font-bold text-slate-900">
                       {match.project?.title || 'Untitled Project'}
                     </h3>
-                    <span
-                      className={`px-2 py-0.5 text-xs font-bold rounded-full ${getMatchScoreColor(
-                        match.match_score
-                      )}`}
-                    >
-                      {match.match_score}% Match
-                    </span>
+                    {match.id.startsWith('open-') ? (
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-slate-100 text-slate-500">
+                        Browse
+                      </span>
+                    ) : (
+                      <span
+                        className={`px-2 py-0.5 text-xs font-bold rounded-full ${getMatchScoreColor(
+                          match.match_score
+                        )}`}
+                      >
+                        {match.match_score}% Match
+                      </span>
+                    )}
                   </div>
 
                   {/* Description */}

@@ -190,7 +190,7 @@ export function ReportFeedbackPage() {
             Report & Feedback
           </span>
           <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tight leading-none">
-            Help us make Growlancer <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">better</span>
+            Help us make Growlancer <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">better</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
             Found a bug? Have an idea? Share it with our team — every report helps us build the #1 freelancing platform.

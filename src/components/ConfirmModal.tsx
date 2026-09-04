@@ -54,9 +54,9 @@ export function ConfirmModal({
       button: 'bg-amber-600 hover:bg-amber-700 focus:ring-amber-500',
     },
     info: {
-      iconBg: 'bg-blue-100 text-blue-600',
+      iconBg: 'bg-emerald-100 text-emerald-600',
       Icon: Info,
-      button: 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
+      button: 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500',
     },
   };
 

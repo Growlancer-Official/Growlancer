@@ -159,7 +159,7 @@ function EscrowProgressBar({ funded, total }: { funded: number; total: number })
       <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
         <div
           className={`h-3 rounded-full transition-all duration-500 ${
-            percent >= 100 ? 'bg-emerald-500' : percent >= 50 ? 'bg-blue-500' : 'bg-amber-500'
+            percent >= 100 ? 'bg-emerald-500' : percent >= 50 ? 'bg-teal-500' : 'bg-amber-500'
           }`}
           style={{ width: `${percent}%` }}
         />

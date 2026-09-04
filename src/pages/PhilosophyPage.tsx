@@ -14,14 +14,14 @@ export function PhilosophyPage() {
       icon: Scale,
       title: 'Symmetrical Fairness & Escrow',
       description: 'We believe both freelancer hours and client capital are equally sacred. We lock funds in escrow before work begins to guarantee payment to the builder, while preserving release approval to ensure the buyer receives precisely what they paid for.',
-      color: 'from-indigo-500 to-indigo-600',
+      color: 'from-emerald-500 to-emerald-700',
       badge: 'Trust & Safety'
     },
     {
       icon: Heart,
       title: 'Real-Time Co-Working Synced Canvas',
       description: 'The era of sending emails, MessageSquare messages, and Columns boards back and forth is over. Growlancer workspaces feature live canvas boards, type-locked shared notes, WebRTC peer sessions, and transaction ledgers directly side by side.',
-      color: 'from-pink-500 to-rose-600',
+      color: 'from-orange-500 to-orange-600',
       badge: 'Collaboration'
     },
   ];

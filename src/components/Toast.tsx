@@ -127,7 +127,7 @@ function ToastItem({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }
     success: <CheckCircle2 className="w-5 h-5 text-emerald-500" />,
     error: <AlertCircle className="w-5 h-5 text-red-500" />,
     warning: <AlertTriangle className="w-5 h-5 text-amber-500" />,
-    info: <Info className="w-5 h-5 text-blue-500" />,
+    info: <Info className="w-5 h-5 text-emerald-500" />,
     loading: <Loader2 className="w-5 h-5 text-slate-500 animate-spin" />,
   };
 

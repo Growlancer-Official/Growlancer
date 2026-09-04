@@ -15,10 +15,10 @@ interface TipNoteProps {
 const TONE_MAP: Record<Tone, { icon: LucideIcon; wrap: string; iconWrap: string; titleClass: string; textClass: string }> = {
   info: {
     icon: Info,
-    wrap: 'bg-blue-50 border-blue-200',
-    iconWrap: 'bg-blue-100 text-blue-600',
-    titleClass: 'text-blue-900',
-    textClass: 'text-blue-700',
+    wrap: 'bg-emerald-50 border-emerald-200',
+    iconWrap: 'bg-emerald-100 text-emerald-600',
+    titleClass: 'text-emerald-900',
+    textClass: 'text-emerald-700',
   },
   success: {
     icon: CheckCircle2,

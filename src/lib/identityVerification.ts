@@ -2,8 +2,6 @@
 // Pure data-access layer for identity_verifications table with secure file uploads
 import { supabase, realtimeChannels } from './supabase';
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-
 export type IdentityVerification = Record<string, any> & {
   id: string;
   user_id: string;
@@ -195,88 +193,16 @@ export const identityVerificationService = {
   },
 
   /**
-   * AI-powered document verification using OpenRouter vision model.
-   * Checks image clarity, OCR-extracts details, and compares against user input.
-   * Returns structured result that the frontend can show in real time.
-   */
-  async verifyDocumentWithAI(
-    imageUrl: string,
-    backImageUrl: string | null,
-    details: { full_name: string; date_of_birth: string; document_number: string; document_type: string }
-  ): Promise<{
-    success: boolean;
-    image_clear: boolean;
-    clarity_issue: string | null;
-    extracted_name: string | null;
-    extracted_dob: string | null;
-    extracted_number: string | null;
-    name_match: boolean | null;
-    dob_match: boolean | null;
-    number_match: boolean | null;
-    verification_result: 'verified' | 'rejected' | 'unclear_image';
-    error?: string;
-  }> {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
-
-      const response = await fetch(
-        `${SUPABASE_URL}/functions/v1/verify-document`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            image_url: imageUrl,
-            back_image_url: backImageUrl,
-            full_name: details.full_name,
-            date_of_birth: details.date_of_birth,
-            document_number: details.document_number,
-            document_type: details.document_type,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        const errBody = await response.text().catch(() => 'Unknown error');
-        throw new Error(`Verification failed (${response.status}): ${errBody}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'AI verification failed';
-      return {
-        success: false,
-        image_clear: false,
-        clarity_issue: null,
-        extracted_name: null,
-        extracted_dob: null,
-        extracted_number: null,
-        name_match: null,
-        dob_match: null,
-        number_match: null,
-        verification_result: 'rejected',
-        error: msg,
-      };
-    }
-  },
-
-  /**
    * Submit a new identity verification request.
    * Handles both secure file uploads and URL-based uploads for backward compatibility.
    *
-   * AI VERIFICATION: If the document has been pre-verified by the AI vision check
-   * (verifiedByAI=true), the row is inserted as 'verified' directly — the trigger
-   * still runs as a safety net. If the AI check found unclear images or mismatches,
-   * the frontend should handle those BEFORE calling submit (the submit method
-   * itself does NOT re-run AI verification).
+   * MANUAL REVIEW: every submission enters the compliance queue as 'pending'.
+   * An admin reviews the documents (AdminIdentityVerificationPage) and the
+   * user's status flips to verified/rejected in real time via the sync trigger.
    */
   async submit(
     userId: string,
-    upload: VerificationUpload,
-    options?: { verifiedByAI?: boolean; aiResult?: { name_match?: boolean; dob_match?: boolean; number_match?: boolean } }
+    upload: VerificationUpload
   ): Promise<{ success: boolean; verification?: IdentityVerification; error?: string }> {
     try {
       let documentUrl = upload.document_url;
@@ -311,9 +237,9 @@ export const identityVerificationService = {
         return { success: false, error: 'Please upload the back side of your document.' };
       }
 
-      // Determine initial status: 'verified' if AI pre-verified, else 'pending'
-      const initialStatus = options?.verifiedByAI ? 'verified' : 'pending';
-
+      // MNC-style manual review: submissions ALWAYS enter the compliance
+      // queue as 'pending'. A human reviewer (admin) approves or rejects the
+      // document — automated/AI verification is never trusted for identity.
       const { data, error } = await supabase
         .from('identity_verifications' as any)
         .insert({
@@ -325,9 +251,9 @@ export const identityVerificationService = {
           expiry_date: upload.expiry_date || null,
           full_name: upload.full_name || null,
           date_of_birth: upload.date_of_birth || null,
-          status: initialStatus,
-          verified_at: options?.verifiedByAI ? new Date().toISOString() : null,
-          verification_provider: options?.verifiedByAI ? 'ai_vision' : null,
+          status: 'pending',
+          verified_at: null,
+          verification_provider: 'manual',
           rejection_reason: null,
           rejection_count: 0,
           blocked_until: null,

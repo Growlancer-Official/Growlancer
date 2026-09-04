@@ -270,7 +270,7 @@ export function NotificationsPanel() {
       <div
         key={notification.id}
         className={`p-4 hover:bg-slate-50 transition-all duration-200 ${
-          !notification.read ? 'bg-blue-50/50' : ''
+          !notification.read ? 'bg-emerald-50/50' : ''
         } ${isAnimatingOut ? 'opacity-0 -translate-y-2 scale-95' : 'opacity-100 translate-y-0 scale-100'}`}
       >
         <div className="flex items-start gap-3">
@@ -283,7 +283,7 @@ export function NotificationsPanel() {
                 {notification.title}
               </p>
               {!notification.read && (
-                <span className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-1.5" />
+                <span className="w-2 h-2 bg-emerald-500 rounded-full flex-shrink-0 mt-1.5" />
               )}
             </div>
             <p className="text-sm text-slate-600 mt-1 line-clamp-2">{notification.message}</p>
@@ -325,7 +325,7 @@ export function NotificationsPanel() {
           ) : (
             <button
               onClick={() => handleArchive(notification.id)}
-              className="text-xs text-slate-500 hover:text-indigo-600 flex items-center gap-1 transition-colors"
+              className="text-xs text-slate-500 hover:text-emerald-600 flex items-center gap-1 transition-colors"
               title="Archive"
             >
               <Archive className="w-3.5 h-3.5" />
@@ -406,7 +406,7 @@ export function NotificationsPanel() {
                     <tab.icon className="w-4 h-4" />
                     {tab.label}
                     {tab.id === 'unread' && unreadCount > 0 && (
-                      <span className="w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center ml-0.5">
+                      <span className="w-4 h-4 bg-emerald-500 text-white text-xs rounded-full flex items-center justify-center ml-0.5">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}
@@ -437,7 +437,7 @@ export function NotificationsPanel() {
                               setShowFilterDropdown(false);
                             }}
                             className={`w-full text-left px-3 py-1.5 text-xs hover:bg-slate-50 transition-colors ${
-                              filterType === opt.value ? 'text-blue-600 font-medium' : 'text-slate-600'
+                              filterType === opt.value ? 'text-emerald-600 font-medium' : 'text-slate-600'
                             }`}
                           >
                             {opt.label}
@@ -454,7 +454,7 @@ export function NotificationsPanel() {
                     <>
                       <button
                         onClick={handleArchiveAllRead}
-                        className="text-xs text-indigo-600 hover:text-indigo-700 font-medium flex items-center gap-1"
+                        className="text-xs text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
                         title="Archive all read notifications"
                       >
                         <ArchiveX className="w-3.5 h-3.5" />
@@ -516,7 +516,7 @@ export function NotificationsPanel() {
               <div className="p-3 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/50">
                 <button
                   onClick={handleRequestPushPermission}
-                  className="w-full flex items-center justify-center gap-3 text-xs text-slate-600 hover:text-blue-600 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+                  className="w-full flex items-center justify-center gap-3 text-xs text-slate-600 hover:text-emerald-600 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
                 >
                   <Smartphone className="w-4 h-4" />
                   Enable push notifications for real-time alerts

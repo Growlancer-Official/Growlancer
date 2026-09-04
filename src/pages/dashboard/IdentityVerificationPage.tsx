@@ -104,8 +104,8 @@ export function IdentityVerificationPage() {
     return () => clearInterval(t);
   }, [verificationStatus, blockedDisplayMs, fetchStatus]);
 
-  // Realtime subscription for status changes — the backend auto-verifies valid
-  // documents INSTANTLY, so the pending → verified/rejected flip arrives live.
+  // Realtime subscription for status changes — when the compliance team
+  // approves/rejects, the pending → verified/rejected flip arrives live.
   // On the verified flip we also send the approval email once (fire-and-forget)
   // so the user gets notified in-app + by email.
   const emailedVerifiedIds = useRef<Set<string>>(new Set());
@@ -120,7 +120,7 @@ export function IdentityVerificationPage() {
         setBlockedMsLeft(getKycBlockedMsLeft(updated));
       }
 
-      // 🔔 Email once when the backend auto-verifies (idempotent per row).
+      // 🔔 Email once when the compliance team approves (idempotent per row).
       if (
         updated.status === 'verified' &&
         updated.id &&
@@ -237,10 +237,9 @@ export function IdentityVerificationPage() {
 
     try {
       // ── STEP 1: Upload the document image(s) ──
-      // Need BOTH: signed URL (for AI vision check) + storage path (for DB)
-      let imageSignedUrl = formData.document_url;
+      // Store the never-expiring storage PATH in the DB; signed URLs are only
+      // used for the upload preview. Admins re-sign paths on demand.
       let imageStoragePath = formData.document_url;
-      let backSignedUrl = formData.document_url_back || null;
       let backStoragePath = formData.document_url_back || null;
 
       if (formData.document_file) {
@@ -250,7 +249,6 @@ export function IdentityVerificationPage() {
           setUploadStep(null);
           return;
         }
-        imageSignedUrl = uploadResult.url || '';
         imageStoragePath = uploadResult.path || uploadResult.url || '';
       }
 
@@ -262,59 +260,19 @@ export function IdentityVerificationPage() {
           setUploadStep(null);
           return;
         }
-        backSignedUrl = uploadBack.url || null;
         backStoragePath = uploadBack.path || uploadBack.url || null;
       }
 
-      if (!imageSignedUrl) {
+      if (!imageStoragePath) {
         setError('Could not upload document. Please try again.');
         setUploadStep(null);
         return;
       }
 
-      // ── STEP 2: AI Vision Verification — check clarity + extract + match ──
-      setUploadStep('ai_verify');
-      setError(null);
-      const aiResult = await identityVerificationService.verifyDocumentWithAI(
-        imageSignedUrl,
-        backSignedUrl,
-        {
-          full_name: formData.full_name || '',
-          date_of_birth: formData.date_of_birth || '',
-          document_number: formData.document_number || '',
-          document_type: formData.document_type,
-        }
-      );
-
-      if (!aiResult.success) {
-        setError(aiResult.error || 'AI verification failed. Please try again.');
-        return;
-      }
-
-      // ── Handle AI verification result ──
-      if (aiResult.verification_result === 'unclear_image') {
-        // Image quality issue — ask user to upload a clearer image
-        const clarityMsg = aiResult.clarity_issue
-          ? `The uploaded image is not clear enough: ${aiResult.clarity_issue}. Please upload a clearer image of your document.`
-          : 'The uploaded image is not clear enough. Please take a clearer photo and upload again.';
-        setError(clarityMsg);
-        return;
-      }
-
-      if (aiResult.verification_result === 'rejected') {
-        // Details don't match — show specific mismatches
-        const mismatches: string[] = [];
-        if (aiResult.name_match === false) mismatches.push(`Name (extracted: ${aiResult.extracted_name || 'N/A'})`);
-        if (aiResult.dob_match === false) mismatches.push(`Date of Birth (extracted: ${aiResult.extracted_dob || 'N/A'})`);
-        if (aiResult.number_match === false) mismatches.push(`Document Number (extracted: ${aiResult.extracted_number || 'N/A'})`);
-        const mismatchDetail = mismatches.length > 0
-          ? ` Mismatch in: ${mismatches.join(', ')}.`
-          : ' The details you entered do not match the document.';
-        setError(`Document verification failed.${mismatchDetail} Please verify your details and try again.`);
-        return;
-      }
-
-      // ── STEP 3: AI verified — insert as pre-verified with storage PATH (not signed URL) ──
+      // ── STEP 2: Submit to the compliance queue (manual review) ─────────
+      // No automated/AI decision is trusted for identity. Documents are stored
+      // with their storage paths (never-expiring) and a compliance admin
+      // reviews them; the user's status flips in real time via realtime.
       setUploadStep('submit');
       const result = await identityVerificationService.submit(user.id, {
         ...formData,
@@ -322,13 +280,6 @@ export function IdentityVerificationPage() {
         document_url_back: backStoragePath || '',
         document_file: undefined,
         document_file_back: undefined,
-      }, {
-        verifiedByAI: true,
-        aiResult: {
-          name_match: aiResult.name_match || false,
-          dob_match: aiResult.dob_match || false,
-          number_match: aiResult.number_match || false,
-        },
       });
 
       if (result.success && result.verification) {
@@ -637,7 +588,7 @@ export function IdentityVerificationPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Document Number <span className="text-red-500">*</span>
-              <span className="ml-2 text-xs font-normal text-slate-400">(auto-verified against its format)</span>
+              <span className="ml-2 text-xs font-normal text-slate-400">(checked by our compliance team)</span>
             </label>
             <input
               type="text"
@@ -689,15 +640,14 @@ export function IdentityVerificationPage() {
 
           {uploadStep && (
             <div className="flex items-center gap-4 text-xs text-slate-500 mt-3">
-              {['upload', 'ai_verify', 'submit'].map((step, i) => {
+              {['upload', 'submit'].map((step, i) => {
                 const labels: Record<string, string> = {
                   upload: 'Uploading document',
                   upload_back: 'Uploading back side',
-                  ai_verify: 'AI verifying document',
-                  submit: 'Saving verification',
+                  submit: 'Submitting for review',
                 };
                 const active = uploadStep === step || (uploadStep === 'upload_back' && step === 'upload');
-                const done = ['upload', 'ai_verify', 'submit'].indexOf(uploadStep) > i;
+                const done = ['upload', 'submit'].indexOf(uploadStep) > i;
                 return (
                   <span key={step} className={`flex items-center gap-1 ${active ? 'text-emerald-600 font-medium' : done ? 'text-emerald-500' : 'text-slate-300'}`}>
                     {done ? <CheckCircle2 className="w-3 h-3" /> : active ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="w-3 h-3 rounded-full border border-slate-300" />}
@@ -758,16 +708,17 @@ export function IdentityVerificationPage() {
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h2>
         <p className="text-slate-500 mb-3">
-          Your documents are being <span className="font-semibold text-slate-700">auto-verified</span> against standard
-          formats. Verification completes <span className="font-semibold text-amber-700">in seconds</span> —
+          Your documents are with our <span className="font-semibold text-slate-700">compliance team for manual review</span>.
+          Verification typically takes <span className="font-semibold text-amber-700">1–2 business days</span> —
           your status updates here in real time, no refresh needed.
         </p>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex items-start gap-3 text-left">
-          <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
-          <p className="text-xs text-blue-700 leading-relaxed">
-            If your document number doesn't match the expected format, your submission is rejected
-            instantly with a clear reason and you can resubmit (3 attempts, then a 24-hour cooldown).
-            Your documents are stored securely and never shared without your consent.
+        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3 flex items-start gap-3 text-left">
+          <Shield className="w-4 h-4 text-slate-600 mt-0.5 shrink-0" />
+          <p className="text-xs text-slate-600 leading-relaxed">
+            A trained compliance reviewer verifies every document by hand — no automated approval. If
+            anything needs clarification, your submission is rejected with a clear reason and you can
+            resubmit (3 attempts, then a 24-hour cooldown). Your documents are stored securely and never
+            shared without your consent.
           </p>
         </div>
 
@@ -942,30 +893,123 @@ export function IdentityVerificationPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Document Image URL (Front side)</label>
-              <input
-                type="url"
-                value={formData.document_url}
-                onChange={(e) => setFormData((prev) => ({ ...prev, document_url: e.target.value }))}
-                placeholder="https://example.com/my-document.jpg"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                required
-              />
-            </div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Upload Document</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-xs font-medium text-slate-600">Front side</span>
+                    {!formData.document_file && (
+                      <span className="text-xs font-bold text-red-500">Required</span>
+                    )}
+                  </div>
+                  <div
+                    className={`relative border-2 border-dashed rounded-xl p-5 text-center transition-all ${
+                      dragSide === 'front'
+                        ? 'border-emerald-500 bg-emerald-50'
+                        : formData.document_file
+                        ? 'border-emerald-200 bg-emerald-50'
+                        : 'border-slate-300 hover:border-emerald-400 bg-slate-50'
+                    }`}
+                    onDragEnter={(e) => handleDrag(e, 'front')}
+                    onDragLeave={(e) => handleDrag(e, 'front')}
+                    onDragOver={(e) => handleDrag(e, 'front')}
+                    onDrop={(e) => handleDrop(e, 'front')}
+                  >
+                    {formData.document_file ? (
+                      <div className="space-y-3">
+                        <FileText className="w-6 h-6 text-emerald-600 mx-auto" />
+                        <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file.name}</p>
+                        <button
+                          type="button"
+                          onClick={() => removeFile('front')}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <X className="w-4 h-4" />
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        <Upload className="w-7 h-7 text-slate-400 mx-auto" />
+                        <p className="text-xs font-medium text-slate-700">Drag & drop front image</p>
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
+                        >
+                          Browse
+                        </button>
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
+                          onChange={(e) => handleFileInputChange(e, 'front')}
+                          className="hidden"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-            {documentNeedsBack(formData.document_type) && (
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Document Image URL (Back side)</label>
-                <input
-                  type="url"
-                  value={formData.document_url_back}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, document_url_back: e.target.value }))}
-                  placeholder="https://example.com/my-document-back.jpg"
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                  required
-                />
+                {documentNeedsBack(formData.document_type) && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-xs font-medium text-slate-600">Back side</span>
+                      {!formData.document_file_back && (
+                        <span className="text-xs font-bold text-red-500">Required</span>
+                      )}
+                    </div>
+                    <div
+                      className={`relative border-2 border-dashed rounded-xl p-5 text-center transition-all ${
+                        dragSide === 'back'
+                          ? 'border-emerald-500 bg-emerald-50'
+                          : formData.document_file_back
+                          ? 'border-emerald-200 bg-emerald-50'
+                          : 'border-slate-300 hover:border-emerald-400 bg-slate-50'
+                      }`}
+                      onDragEnter={(e) => handleDrag(e, 'back')}
+                      onDragLeave={(e) => handleDrag(e, 'back')}
+                      onDragOver={(e) => handleDrag(e, 'back')}
+                      onDrop={(e) => handleDrop(e, 'back')}
+                    >
+                      {formData.document_file_back ? (
+                        <div className="space-y-3">
+                          <FileText className="w-6 h-6 text-emerald-600 mx-auto" />
+                          <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file_back.name}</p>
+                          <button
+                            type="button"
+                            onClick={() => removeFile('back')}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <Upload className="w-7 h-7 text-slate-400 mx-auto" />
+                          <p className="text-xs font-medium text-slate-700">Drag & drop back image</p>
+                          <button
+                            type="button"
+                            onClick={() => backFileInputRef.current?.click()}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
+                          >
+                            Browse
+                          </button>
+                          <input
+                            ref={backFileInputRef}
+                            type="file"
+                            accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
+                            onChange={(e) => handleFileInputChange(e, 'back')}
+                            className="hidden"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Document Number (optional)</label>
@@ -1101,7 +1145,7 @@ export function IdentityVerificationPage() {
               <Shield className="w-4 h-4 text-white" />
             </div>
             <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text="Verified freelancers get a trust badge on their profile, higher AI match scores, and priority in client search. Upload a government-issued ID and a selfie — our team reviews within 24 hours. Your documents are encrypted and never shared." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text="Verified freelancers get a trust badge on their profile and priority in client search. Upload a government-issued ID — our compliance team manually reviews it, typically within 1–2 business days. Your documents are encrypted and never shared." /></h1>
             <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
             </div>
           </div>
@@ -1129,8 +1173,7 @@ export function IdentityVerificationPage() {
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Shield className="w-4 h-4 text-white" />
           </div>
-          <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text="Verified freelancers get a trust badge on their profile, higher AI match scores, and priority in client search. Upload a government-issued ID and a selfie — our team reviews within 24 hours. Your documents are encrypted and never shared." /></h1>
+          <div>            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text="Verified freelancers get a trust badge on their profile and priority in client search. Upload a government-issued ID — our compliance team manually reviews it, typically within 1–2 business days. Your documents are encrypted and never shared." /></h1>
           <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
           </div>
         </div>

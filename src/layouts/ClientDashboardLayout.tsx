@@ -325,7 +325,7 @@ export function ClientDashboardLayout() {
                       <span className="font-medium text-sm">{link.label}</span>
                       {badgeCount && (
                         <span className={`ml-auto text-white text-[10px] min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center font-bold ${
-                          link.id === 'notifications' ? 'bg-blue-500' : 'bg-orange-500'
+                          link.id === 'notifications' ? 'bg-emerald-500' : 'bg-orange-500'
                         }`}>
                           {badgeCount}
                         </span>
@@ -469,7 +469,7 @@ export function ClientDashboardLayout() {
                     <span className="font-medium text-sm">{link.label}</span>
                     {badgeCount && (
                       <span className={`ml-auto text-white text-[10px] min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center font-bold ${
-                        link.id === 'notifications' ? 'bg-blue-500' : 'bg-orange-500'
+                        link.id === 'notifications' ? 'bg-emerald-500' : 'bg-orange-500'
                       }`}>
                         {badgeCount}
                       </span>

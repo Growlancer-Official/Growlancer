@@ -14,14 +14,14 @@ export function SafetyPage() {
       icon: Lock,
       title: 'Asset Locker Freeze',
       description: 'Shared design files, code bundle deposits, and documents are securely versioned in the workspace. In the event of a coordination dispute, files and escrow are automatically frozen to prevent tampering while our team reviews the evidence.',
-      color: 'from-indigo-500 to-indigo-600',
+      color: 'from-emerald-500 to-emerald-700',
       badge: 'Assets'
     },
     {
       icon: UserCheck,
       title: 'KYC Document Verification',
       description: 'Both clients and freelancers can verify their identity by submitting government-issued documents (e.g. Aadhaar, PAN). Our system auto-checks the details in real time and issues a verified badge next to the name — verified users are clearly marked everywhere on the platform.',
-      color: 'from-pink-500 to-pink-600',
+      color: 'from-orange-500 to-orange-600',
       badge: 'Identity'
     },
     {
@@ -42,7 +42,7 @@ export function SafetyPage() {
       icon: ShieldCheck,
       title: 'Outside-Payment Protection',
       description: 'All payments must happen through Growlancer Escrow. Paying or being asked to pay outside the platform is a policy violation — report it from your workspace and repeat violations lead to suspension or permanent ban.',
-      color: 'from-indigo-500 to-violet-600',
+      color: 'from-teal-500 to-teal-700',
       badge: 'Protection'
     },
   ];
