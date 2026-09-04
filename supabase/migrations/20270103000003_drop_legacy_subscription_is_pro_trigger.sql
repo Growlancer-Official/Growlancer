@@ -1,0 +1,24 @@
+-- ═══════════════════════════════════════════════════════════════════════════
+-- HOTFIX: drop legacy live-only is_pro trigger on subscriptions
+--
+-- The live DB carries a trigger (`on_subscription_changed` →
+-- handle_subscription_status) that is NOT in this repo's migrations. It does
+-- direct `UPDATE profiles SET is_pro = ...` on every subscription
+-- INSERT/UPDATE without setting app.bypass_privilege_check, so once the
+-- profiles privilege guard existed (20270101000006) every real is_pro flip it
+-- attempted aborted the whole statement with "Cannot self-modify is_pro":
+--   - service-role activation (razorpay/paypal verify → status 'active')
+--     rolled back → paid subscriptions never activated,
+--   - cron expiry / cancellation rolled back → PRO badge never cleared.
+--
+-- It is fully superseded by sync_profile_pro_flag_trg (20261120000000), the
+-- repo's AFTER INSERT/UPDATE/DELETE recompute, which derives is_pro from the
+-- authoritative subscriptions row and (per 20270103000000) sets the bypass
+-- GUC before writing. Having both triggers double-writes profiles; the legacy
+-- one is un-bypassed and breaks every real transition.
+--
+-- Defensive IF EXISTS: this trigger never existed on fresh schemas (only
+-- live drift), so the migration is a safe no-op there.
+-- ═══════════════════════════════════════════════════════════════════════════
+DROP TRIGGER IF EXISTS on_subscription_changed ON public.subscriptions;
+DROP FUNCTION IF EXISTS public.handle_subscription_status();
