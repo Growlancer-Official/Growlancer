@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import { InfoTip } from '../components/InfoTip';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { formatCurrency } from '../lib/currency';
+import { supabase } from '../lib/supabase';
 import {
   projectsService,
   contractsService,
@@ -25,6 +26,33 @@ interface ClientStats {
   unreadNotifications: number;
 }
 
+/** One AI match shown on the client dashboard (embedded project + freelancer). */
+interface AiRecommendedRow {
+  id: string;
+  project_id: string;
+  match_score: number;
+  project?: { id: string; title: string | null; status?: string | null } | null;
+  freelancer?: {
+    id: string;
+    name: string | null;
+    avatar: string | null;
+    freelancer_profiles?:
+      | {
+          skills?: string[] | null;
+          rating?: number | null;
+          hourly_rate?: number | null;
+          location?: string | null;
+        }
+      | Array<{
+          skills?: string[] | null;
+          rating?: number | null;
+          hourly_rate?: number | null;
+          location?: string | null;
+        }>
+      | null;
+  } | null;
+}
+
 export default function ClientDashboard() {
   const { user, role } = useAuth();
   const [stats, setStats] = useState<ClientStats>({
@@ -37,6 +65,7 @@ export default function ClientDashboard() {
   });
   const [recentProjects, setRecentProjects] = useState<any[]>([]);
   const [recentContracts, setRecentContracts] = useState<any[]>([]);
+  const [aiRecommended, setAiRecommended] = useState<AiRecommendedRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -89,8 +118,56 @@ export default function ClientDashboard() {
     }
   }, [user, role]);
 
+  /**
+   * Live AI freelancer recommendations across the client's own projects.
+   * RLS already restricts ai_matches to the client's projects, so one ordered
+   * query returns their best matches; the same freelancer is deduped to their
+   * single strongest match to keep the card tidy.
+   */
+  const loadAiRecommended = useCallback(async () => {
+    if (!user?.id || role !== 'client') return;
+    try {
+      const { data } = await supabase
+        .from('ai_matches')
+        .select(`
+          id,
+          project_id,
+          match_score,
+          match_reason,
+          created_at,
+          project:projects(id, title, status),
+          freelancer:profiles!ai_matches_freelancer_id_fkey(
+            id,
+            name,
+            avatar,
+            freelancer_profiles(skills, rating, hourly_rate, location)
+          )
+        `)
+        .gte('match_score', 40)
+        .order('match_score', { ascending: false })
+        .limit(12);
+
+      const rows = (data || []) as AiRecommendedRow[];
+      const seen = new Set<string>();
+      const best: AiRecommendedRow[] = [];
+      for (const row of rows) {
+        // Only surface matches for projects that still need talent.
+        const projectStatus = row.project?.status;
+        if (projectStatus && !['open', 'in_progress', 'active'].includes(projectStatus)) continue;
+        if (!row.freelancer?.id || seen.has(row.freelancer.id)) continue;
+        seen.add(row.freelancer.id);
+        best.push(row);
+        if (best.length >= 3) break;
+      }
+      setAiRecommended(best);
+    } catch (err) {
+      console.error('Error loading AI recommendations:', err);
+    }
+  }, [user?.id, role]);
+
   useEffect(() => {
     void fetchDashboardData();
+    void loadAiRecommended();
     if (!user?.id) return;
 
     const contractSub = contractsService.subscribe(user.id, 'client', fetchDashboardData);
@@ -98,13 +175,28 @@ export default function ClientDashboard() {
     const projectSub = proposalsService.subscribeForClientProjects(user.id, fetchDashboardData);
     const notifSub = notificationService.subscribe(user.id, () => void fetchDashboardData());
 
+    // Live AI recommendations — RLS limits delivered events to this client's
+    // own project matches, so a freelancer appearing (profile completion) or a
+    // new match being scored shows up the moment it is written.
+    const aiMatchSub = supabase
+      .channel(`client-dashboard-ai-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ai_matches' },
+        () => {
+          void loadAiRecommended();
+        }
+      )
+      .subscribe();
+
     return () => {
       contractSub.unsubscribe();
       proposalSub.unsubscribe();
       projectSub.unsubscribe();
       notifSub.unsubscribe();
+      void aiMatchSub.unsubscribe();
     };
-  }, [fetchDashboardData, user?.id]);
+  }, [fetchDashboardData, loadAiRecommended, user?.id]);
 
   if (loading) {
     return <PageSkeleton />;
@@ -333,21 +425,83 @@ export default function ClientDashboard() {
 
       {/* AI Matching + Proposals */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <Link
-          to="/client/matches"
-          className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-xl p-4 text-white shadow-md hover:shadow-lg transition-all group"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <Sparkles className="w-4 h-4 animate-pulse" />
-            <h3 className="text-sm font-bold">AI Talent Matching</h3>
+        {/* Live AI Recommended Freelancers — updates the moment a match is written */}
+        <div className="bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-600 rounded-xl p-4 text-white shadow-md">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 animate-pulse" />
+              <h3 className="text-sm font-bold">AI Recommended Freelancers</h3>
+            </div>
+            <span className="flex items-center gap-1 text-[10px] text-emerald-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-ping" />
+              Live
+            </span>
           </div>
-          <p className="text-emerald-100 text-xs mb-2">
-            Find perfect freelancers based on skills, experience, and reviews.
-          </p>
-          <span className="inline-block bg-white text-emerald-600 px-3 py-1 rounded-lg font-medium text-xs group-hover:bg-emerald-50 transition-all">
-            View Matches
-          </span>
-        </Link>
+
+          {aiRecommended.length > 0 ? (
+            <>
+              <div className="space-y-1.5 mb-2">
+                {aiRecommended.map((row) => {
+                  const fp = Array.isArray(row.freelancer?.freelancer_profiles)
+                    ? row.freelancer?.freelancer_profiles[0]
+                    : row.freelancer?.freelancer_profiles;
+                  const skills = Array.isArray(fp?.skills) ? fp.skills : [];
+                  return (
+                    <Link
+                      key={row.id}
+                      to={`/client/matches?project_id=${row.project_id}`}
+                      className="flex items-center gap-2.5 bg-white/10 hover:bg-white/20 rounded-lg px-2.5 py-2 transition-colors"
+                    >
+                      {row.freelancer?.avatar ? (
+                        <img
+                          src={row.freelancer.avatar}
+                          alt=""
+                          className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                        />
+                      ) : (
+                        <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                          {(row.freelancer?.name || 'F')[0]}
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold leading-tight truncate">
+                          {row.freelancer?.name || 'Freelancer'}
+                        </p>
+                        <p className="text-[10px] text-emerald-100 truncate">
+                          {skills.length > 0 ? skills.slice(0, 2).join(' · ') : 'Generalist'}
+                          {' — for '}
+                          {row.project?.title ? `“${row.project.title}”` : 'your project'}
+                        </p>
+                      </div>
+                      <span className="text-[10px] font-bold bg-white text-emerald-600 rounded-full px-1.5 py-0.5 shrink-0">
+                        {Math.round(Number(row.match_score) || 0)}% match
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+              <Link
+                to="/client/matches"
+                className="inline-block text-emerald-50 text-xs font-medium hover:text-white underline underline-offset-2"
+              >
+                View all matches →
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-emerald-100 text-xs mb-2">
+                AI is scoring freelancers for your projects right now. Post a project (or keep its skills
+                updated) and the best-fit freelancers appear here instantly.
+              </p>
+              <Link
+                to="/client/matches"
+                className="inline-block bg-white text-emerald-600 px-3 py-1 rounded-lg font-medium text-xs hover:bg-emerald-50 transition-all"
+              >
+                Open Talent Matches
+              </Link>
+            </>
+          )}
+        </div>
 
         <div className="bg-white rounded-xl p-4 border border-slate-100">
           <div className="flex items-center gap-2 mb-2">
