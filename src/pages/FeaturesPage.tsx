@@ -14,14 +14,14 @@ export function FeaturesPage() {
       icon: ShieldCheck,
       title: 'Escrow Protection',
       description: 'Funds remain secured in a virtual escrow pool. Joint-release arbitration sliders resolve dispute splits without locking funds permanently.',
-      color: 'from-indigo-400 to-indigo-500',
+      color: 'from-emerald-400 to-emerald-500',
       badge: 'Payment'
     },
     {
       icon: Code,
       title: 'Co-Working Canvas',
       description: 'Live shared Kanban task boards and notes with input focus locking preventing editing collisions. Write code side by side.',
-      color: 'from-pink-400 to-rose-500',
+      color: 'from-orange-400 to-orange-500',
       badge: 'Collaboration'
     },
     {
@@ -35,14 +35,14 @@ export function FeaturesPage() {
       icon: Wallet,
       title: 'Flat 5% Platform Fee',
       description: 'Zero complicated tier scales. See exactly what you are paying with transparent invoicing and no extra markups.',
-      color: 'from-purple-400 to-fuchsia-500',
+      color: 'from-emerald-400 to-teal-500',
       badge: 'Pricing'
     },
     {
       icon: BarChart3,
       title: 'Progress Analytics',
       description: 'Track task burndown rates and milestone releases with visual analytics.',
-      color: 'from-blue-400 to-cyan-500',
+      color: 'from-orange-400 to-amber-500',
       badge: 'Metrics'
     },
     {
@@ -90,7 +90,7 @@ export function FeaturesPage() {
             Growlancer Toolkit
           </span>
           <h1 className="font-display text-4xl sm:text-7xl font-black tracking-tight leading-none">
-            Features built for <span className="bg-gradient-to-r from-emerald-400 to-indigo-400 bg-clip-text text-transparent">frictionless build</span>
+            Features built for <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">frictionless build</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
             We built Growlancer from the ground up to replace outdated bidding platforms, static dashboards, and fragmented payment tools.

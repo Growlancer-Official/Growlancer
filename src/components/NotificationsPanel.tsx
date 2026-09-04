@@ -513,7 +513,7 @@ export function NotificationsPanel() {
 
             {/* Footer - Push notification permission */}
             {'Notification' in window && Notification.permission === 'default' && (
-              <div className="p-3 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/50">
+              <div className="p-3 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/50">
                 <button
                   onClick={handleRequestPushPermission}
                   className="w-full flex items-center justify-center gap-3 text-xs text-slate-600 hover:text-blue-600 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"

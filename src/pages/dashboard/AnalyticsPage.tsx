@@ -101,7 +101,7 @@ export function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <BarChart3 className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -287,11 +287,11 @@ export function AnalyticsPage() {
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-4">
                 <p className="text-xl font-bold text-violet-600">{data.newMatches}</p>
                 <p className="text-sm text-violet-600/70">New Matches</p>
               </div>
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4">
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4">
                 <p className="text-xl font-bold text-blue-600">{data.totalMatches}</p>
                 <p className="text-sm text-blue-600/70">Total Matches</p>
               </div>

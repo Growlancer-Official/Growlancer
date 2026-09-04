@@ -62,14 +62,14 @@ export function AboutPage() {
       icon: Globe,
       title: 'Real-Time Co-Working',
       desc: 'Work borders are obsolete. Our system bridges team coordinates across distances, providing micro-second syncing of tasks, note scratchpads, and secure assets.',
-      color: 'from-blue-500/10 to-indigo-500/10',
+      color: 'from-emerald-500/10 to-teal-500/10',
       iconColor: 'text-blue-600 bg-blue-100',
     },
     {
       icon: Users,
       title: 'Active Community',
       desc: 'Growlancer treats freelancers and clients as mutual stakeholders. Symmetrical platform fees and verified expert badges empower sustainable careers.',
-      color: 'from-purple-500/10 to-pink-500/10',
+      color: 'from-orange-500/10 to-amber-500/10',
       iconColor: 'text-purple-600 bg-purple-100',
     },
   ];

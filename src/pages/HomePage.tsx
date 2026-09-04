@@ -129,7 +129,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
           <div className="lg:col-span-6 flex flex-col items-center">
             <div className="relative w-full max-w-[640px] opacity-0 translate-y-2 animate-fade-up animation-delay-180">
               {/* Background glow */}
-              <div className="absolute -inset-4 bg-gradient-to-br from-emerald-500/20 via-transparent to-blue-500/20 rounded-[32px] blur-2xl -z-10" />
+              <div className="absolute -inset-4 bg-gradient-to-br from-emerald-500/20 via-transparent to-teal-500/20 rounded-[32px] blur-2xl -z-10" />
               <div className="absolute -top-4 -right-8 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -z-10" />
               <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -z-10" />
 
@@ -194,8 +194,8 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
               ].map(({ icon: Icon, label, desc, color }) => {
                 const colorMap = {
                   emerald: 'from-emerald-50 to-emerald-100 ring-emerald-200 text-emerald-600 group-hover:shadow-emerald-200/50',
-                  blue: 'from-blue-50 to-blue-100 ring-blue-200 text-blue-600 group-hover:shadow-blue-200/50',
-                  purple: 'from-purple-50 to-purple-100 ring-purple-200 text-purple-600 group-hover:shadow-purple-200/50',
+                  blue: 'from-teal-50 to-teal-100 ring-teal-200 text-teal-600 group-hover:shadow-teal-200/50',
+                  purple: 'from-amber-50 to-amber-100 ring-amber-200 text-amber-600 group-hover:shadow-amber-200/50',
                   orange: 'from-orange-50 to-orange-100 ring-orange-200 text-orange-600 group-hover:shadow-orange-200/50',
                 };
                 return (
@@ -321,17 +321,17 @@ function WhyDifferentSection() {
       icon: ShieldCheck,
       title: 'Escrow-First Trust',
       desc: 'Every contract is protected by secure escrow. Funds release only when milestones are approved — safety for both sides.',
-      gradient: 'from-blue-500/10 to-blue-600/5',
-      iconBg: 'bg-blue-100 text-blue-600',
-      border: 'hover:border-blue-200',
+      gradient: 'from-teal-500/10 to-teal-600/5',
+      iconBg: 'bg-teal-100 text-teal-600',
+      border: 'hover:border-teal-200',
     },
     {
       icon: Users,
       title: 'Built for Collaboration',
       desc: 'Shared workspaces with task boards, notes, and real-time updates keep everyone aligned. No context-switching across tools.',
-      gradient: 'from-purple-500/10 to-purple-600/5',
-      iconBg: 'bg-purple-100 text-purple-600',
-      border: 'hover:border-purple-200',
+      gradient: 'from-amber-500/10 to-amber-600/5',
+      iconBg: 'bg-amber-100 text-amber-600',
+      border: 'hover:border-amber-200',
     },
     {
       icon: BarChart3,

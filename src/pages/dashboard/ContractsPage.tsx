@@ -489,7 +489,7 @@ export function ContractsPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div className="flex items-center gap-1.5">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Handshake className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -1257,7 +1257,7 @@ export function ContractsPage() {
                   </div>
                   <div className="w-full bg-slate-100 rounded-full h-2.5">
                     <div
-                      className="h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-500"
+                      className="h-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-emerald-700 transition-all duration-500"
                       style={{ width: `${releasedPct}%` }}
                     />
                   </div>

@@ -535,7 +535,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   return (
     <div className="flex flex-col h-full bg-white rounded-xl border border-slate-200 overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-emerald-50 to-blue-50">
+      <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-emerald-50 to-teal-50">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-emerald-100 rounded-xl">

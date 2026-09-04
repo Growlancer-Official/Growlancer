@@ -495,7 +495,7 @@ export function NotificationsCenterPage() {
 
         {/* Push footer */}
         {'Notification' in window && Notification.permission === 'default' && (
-          <div className="p-4 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-blue-50/60">
+          <div className="p-4 border-t border-slate-100 bg-gradient-to-r from-slate-50 to-emerald-50/60">
             <button
               onClick={handleRequestPushPermission}
               className="w-full flex items-center justify-center gap-3 text-xs font-medium text-slate-600 hover:text-blue-600 py-2 rounded-xl hover:bg-blue-50 transition-colors"

@@ -10,7 +10,7 @@ export function HowItWorksPage() {
       icon: FileText,
       title: '1. Specify Requirements',
       description: 'Define your project scope, budget limits, required skills, and deliverables in our easy wizard. No complex specs needed.',
-      color: 'from-blue-500 to-blue-600'
+      color: 'from-emerald-500 to-emerald-700'
     },
     {
       icon: Cpu,

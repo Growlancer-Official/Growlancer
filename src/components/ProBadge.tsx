@@ -18,7 +18,7 @@ export function ProBadge({ size = 'sm', className = '' }: ProBadgeProps) {
     md: { pill: 'text-xs px-2.5 py-1 gap-1', icon: 'w-4 h-4', tooltip: 'text-xs px-3 py-1.5' },
   }[size];
 
-  const base = `relative group inline-flex items-center rounded-md bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white font-extrabold uppercase tracking-wider shadow-sm ring-1 ring-blue-900/30 ${sizes.pill} ${className}`;
+  const base = `relative group inline-flex items-center rounded-md bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-800 text-white font-extrabold uppercase tracking-wider shadow-sm ring-1 ring-emerald-900/30 ${sizes.pill} ${className}`;
 
   return (
     <span

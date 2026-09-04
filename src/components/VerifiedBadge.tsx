@@ -28,7 +28,7 @@ export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', 
   }[size];
 
   const gradient = tone === 'blue'
-    ? 'from-blue-500 to-blue-700'
+    ? 'from-emerald-500 to-emerald-700'
     : 'from-emerald-500 to-green-600';
 
   const label = tone === 'blue' ? 'Verified Client' : 'KYC Verified';

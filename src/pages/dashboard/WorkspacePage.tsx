@@ -1616,7 +1616,7 @@ export function WorkspacePage() {
                 {/* Auto-release protection — delivered milestones can never be held hostage */}
                 {milestones.length > 0 && (
                   <div className="rounded-xl overflow-hidden border border-violet-200 shadow-sm">
-                    <div className="bg-gradient-to-r from-violet-600 to-emerald-600 px-2.5 py-3.5 flex items-center gap-1.5">
+                    <div className="bg-gradient-to-r from-violet-600 to-fuchsia-600 px-2.5 py-3.5 flex items-center gap-1.5">
                       <div className="w-9 h-9 bg-white/15 rounded-xl flex items-center justify-center shrink-0">
                         <ShieldCheck className="w-4 h-4 text-white" />
                       </div>

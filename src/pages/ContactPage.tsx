@@ -38,7 +38,7 @@ export function ContactPage() {
             AI Support
           </span>
           <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tight leading-none">
-            We're here to <span className="bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">help you grow</span>
+            We're here to <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">help you grow</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
             Get instant answers from our AI support assistant. Real-time help whenever you need it.

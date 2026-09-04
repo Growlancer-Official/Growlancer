@@ -14,13 +14,13 @@ export function EscrowPolicyPage() {
       icon: Clock,
       title: '2. Synchronized Building',
       description: 'The freelancer works on the milestones using the live Synced Canvas. Progress is tracked via live task boards, making deliverables fully transparent.',
-      color: 'from-indigo-500 to-indigo-600'
+      color: 'from-emerald-500 to-emerald-700'
     },
     {
       icon: CheckCircle,
       title: '3. Verification & Release',
       description: 'Once deliverables are submitted, the client reviews them. Releasing the work moves escrow funds directly into the freelancer\'s wallet. A released payment is final — it is not refundable except in cases of verified fraud or a clear Terms violation. Work that has been delivered or approved but not yet released remains held in escrow and can still be disputed.',
-      color: 'from-pink-500 to-pink-600'
+      color: 'from-orange-500 to-orange-600'
     },
     {
       icon: RefreshCcw,
@@ -32,7 +32,7 @@ export function EscrowPolicyPage() {
       icon: Clock,
       title: '5. Delivery-Based Auto-Release',
       description: 'The auto-release timer starts only when the freelancer delivers the work — how many days the work took is up to you and the freelancer, never a deadline. After delivery you get a review window (default 72h, adjustable 24h–7 days). If you do not respond in time, the escrow releases to the freelancer automatically. A client can never hold a payment hostage, and a freelancer can never be paid before delivering.',
-      color: 'from-violet-500 to-purple-600'
+      color: 'from-orange-500 to-orange-600'
     },
   ];
 
