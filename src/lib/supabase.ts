@@ -342,7 +342,8 @@ export type RpcName =
   | 'freeze_contract'
   | 'unfreeze_contract'
   | 'process_pending_refunds'
-  | 'process_no_response_disputes';
+  | 'process_no_response_disputes'
+  | 'create_user_subscription';
 
 /**
  * Safe typed RPC caller.
@@ -368,6 +369,8 @@ export const dbFunctions = {
   }) => supabase.rpc('create_contract_with_escrow', params),
   acceptInviteCreateContract: (inviteId: string) =>
     callRpc('accept_invite_create_contract', { p_invite_id: inviteId }),
+  createUserSubscription: (planId: string) =>
+    callRpc('create_user_subscription', { p_plan_id: planId }),
   fundEscrow: (contractId: string, clientId: string) =>
     supabase.rpc('fund_escrow', {
       p_contract_id: contractId,

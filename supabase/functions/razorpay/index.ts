@@ -683,9 +683,12 @@ serve(async req => {
         }
 
         if (updatedOrder.subscription_id) {
-          await supabaseClient
+          // Service-role update: since subscription_state_hardening, the client
+          // cannot UPDATE subscription status (column-level grants) — only
+          // server-side code may set 'active' after a captured payment.
+          await supabaseAdmin
             .from('subscriptions')
-            .update({ status: 'active', subscription_start_date: new Date().toISOString() })
+            .update({ status: 'active', subscription_start_date: new Date().toISOString(), updated_at: new Date().toISOString() })
             .eq('id', updatedOrder.subscription_id);
         }
 

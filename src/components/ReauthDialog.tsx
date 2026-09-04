@@ -3,7 +3,7 @@ import { Lock, Mail, Loader2, ShieldCheck, AlertCircle, X, KeyRound } from 'luci
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
 
-import { isReauthValid, markReauthVerified, getReauthRemainingMs, OTP_ATTEMPT_LIMIT, OTP_RESEND_COOLDOWN_S } from '../lib/reauth';
+import { markReauthVerified, OTP_ATTEMPT_LIMIT, OTP_RESEND_COOLDOWN_S } from '../lib/reauth';
 
 type Mode = 'password' | 'otp';
 type Phase = 'form' | 'verifying' | 'success' | 'error';
@@ -322,16 +322,4 @@ export function ReauthDialog({
       </div>
     </div>
   );
-}
-
-/** Convenience hook: wraps ReauthDialog state + validity check. */
-export function useReauthDialog() {
-  const [open, setOpen] = useState(false);
-  return {
-    isOpen: open,
-    open: () => setOpen(true),
-    close: () => setOpen(false),
-    valid: isReauthValid(),
-    remainingMs: getReauthRemainingMs(),
-  };
 }

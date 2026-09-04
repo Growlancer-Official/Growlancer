@@ -8,7 +8,6 @@ import { PayPalCheckout } from './PayPalCheckout';
 import { RazorpayCheckout } from './RazorpayCheckout';
 import { PAYMENTS_CONFIG } from '../lib/payments';
 import { formatCurrency } from '../lib/currency';
-import { supabase } from '../lib/supabase';
 import { subscriptionService } from '../lib/subscriptionHelpers';
 import { withdrawalService } from '../lib/withdrawal';
 
@@ -91,24 +90,16 @@ export function SubscriptionPayPalPayment({
     setIsCreatingSubscription(true);
     
     try {
-      // Create subscription record with trial status
-      const { data: subscription, error: subError } = await supabase
-        .from('subscriptions')
-        .insert({
-          user_id: user?.id,
-          plan_id: planId,
-          status: 'trial',
-          trial_start_date: new Date().toISOString(),
-          trial_end_date: new Date(Date.now() + trialDays * 24 * 60 * 60 * 1000).toISOString(),
-        })
-        .select()
-        .single();
-
-      if (subError || !subscription) {
-        throw new Error('Failed to create subscription');
+      // Create the subscription row SERVER-SIDE (create_user_subscription RPC):
+      // fresh users get a 'trial' row, post-trial users get a 'pending' row that
+      // becomes 'active' only after this payment is captured. The browser never
+      // writes subscription state directly (free-Pro bypass fix).
+      const result = await subscriptionService.subscribeToPlan(user?.id || '', planId);
+      if (!result.success || !result.subscription) {
+        throw new Error(result.error || 'Failed to create subscription');
       }
 
-      setSubscriptionId(subscription.id);
+      setSubscriptionId(result.subscription.id);
       setIsCreatingSubscription(false);
       setStep('payment');
     } catch (err) {

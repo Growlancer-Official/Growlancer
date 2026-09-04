@@ -135,14 +135,19 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         const startOfMonth = new Date();
         startOfMonth.setDate(1);
         startOfMonth.setHours(0, 0, 0, 0);
-        const { data } = await supabase
+        // Aggregate across rows — usage_logs can hold several rows per month,
+        // and maybeSingle() would throw once a second row exists (usage meter
+        // would silently stop showing).
+        const { data: rows } = await supabase
           .from('usage_logs')
           .select('usage_count')
           .eq('user_id', user.id)
           .eq('feature_type', 'ai_message')
-          .gte('created_at', startOfMonth.toISOString())
-          .maybeSingle();
-        const used = data?.usage_count ?? 0;
+          .gte('created_at', startOfMonth.toISOString());
+        const used = (rows || []).reduce(
+          (sum, r) => sum + (Number((r as { usage_count?: number }).usage_count) || 0),
+          0
+        );
         setAiUsage({ used, limit: 10 });
       } catch {
         // non-critical

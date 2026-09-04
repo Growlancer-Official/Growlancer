@@ -211,7 +211,17 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: 'Invalid amount' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
       }
 
-      const wdMethod = withdrawal_method || 'paypal'
+      const wdMethod = withdrawal_method || 'razorpay_payout'
+
+      // 🛡️ SECURITY (2026): PayPal payouts are BLOCKED server-side until a real
+      // INR→USD FX conversion is implemented. The wallet holds INR; the PayPal
+      // payout API call below would otherwise send the INR amount labelled as
+      // USD — a ~80× fund-drain (₹5,000 wallet → $4,855 payout). PayPal remains
+      // disabled in the UI (VITE_PAYPAL_ENABLED=false); this guard makes sure no
+      // direct API caller can reach the broken path either.
+      if (wdMethod === 'paypal') {
+        return new Response(JSON.stringify({ error: 'PayPal withdrawals are temporarily disabled. Please use Razorpay payout (UPI / bank transfer) instead.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
 
       if (wdMethod === 'paypal' && !paypal_email) {
         return new Response(JSON.stringify({ error: 'PayPal email is required' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })

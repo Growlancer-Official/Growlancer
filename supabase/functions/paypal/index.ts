@@ -519,11 +519,14 @@ serve(async req => {
           }
 
           if (updatedOrder.subscription_id) {
-            await supabaseClient
+            // Service-role update: clients cannot UPDATE subscription status
+            // (subscription_state_hardening column grants) — server-side only.
+            await supabaseAdmin
               .from('subscriptions')
               .update({
                 status: 'active',
                 subscription_start_date: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
               })
               .eq('id', updatedOrder.subscription_id);
           }
@@ -650,7 +653,7 @@ serve(async req => {
 
         // Update our DB if record exists
         if (subRecord) {
-          await supabaseClient
+          await supabaseAdmin
             .from('subscriptions')
             .update({
               status: 'cancelled',

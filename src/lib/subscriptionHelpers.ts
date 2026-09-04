@@ -1,5 +1,5 @@
 import type { Tables } from '../types/supabase';
-import { supabase, uniqueChannelName } from './supabase';
+import { dbFunctions, supabase, uniqueChannelName } from './supabase';
 
 type AnyRecord = Record<string, unknown>;
 
@@ -144,91 +144,44 @@ const subscriptionService = {
 
   /**
    * Subscribe to a plan. If the plan has trial_days > 0 AND the user has never
-   * used a free trial before, starts a trial. Otherwise creates an active
-   * subscription (for paid plans, payment should be handled separately).
+   * used a free trial before, starts a trial. Otherwise creates a 'pending'
+   * subscription (payment is handled separately — wallet or Razorpay).
+   *
+   * ⚠️ SECURITY (2026): subscription creation runs ENTIRELY server-side through
+   * the SECURITY DEFINER RPC `create_user_subscription`. The browser never
+   * INSERTs/UPDATEs subscription state directly, so it can never fabricate an
+   * 'active' (paid) row, never farm a second trial via upsert, and never set
+   * its own end-dates. 'active' is only reached after real payment
+   * (pay_subscription_with_wallet / razorpay verify / webhook capture).
    */
   async subscribeToPlan(
     userId: string,
-    planId: string,
-    paymentProvider?: string,
-    paymentSubscriptionId?: string
+    planId: string
   ): Promise<{ success: boolean; subscription?: SubscriptionWithPlan; error?: string }> {
     try {
-      // Fetch the plan to check trial days
-      const { data: plan, error: planError } = await supabase
-        .from('subscription_plans')
-        .select('*')
-        .eq('id', planId)
-        .single();
+      // Trial eligibility is decided SERVER-SIDE by the RPC (verified email +
+      // one trial per email ever). This method is now a thin RPC wrapper.
+      const { data: rpc, error: rpcError } = await dbFunctions.createUserSubscription(planId);
 
-      if (planError || !plan) throw planError || new Error('Plan not found');
-
-      // One free trial per user, ever — after that, always a PAID subscription.
-      // This prevents the DB guard from rejecting the insert with
-      // "A free trial has already been used for this email address."
-      const alreadyUsedTrial = await this.hasUsedFreeTrial(userId);
-
-      const now = new Date();
-      const trialDays = plan.trial_days || 0;
-      // Never start a trial if the user already used theirs
-      const isTrial = trialDays > 0 && !alreadyUsedTrial;
-
-      // Cancel any existing active/trial subscriptions
-      await supabase
-        .from('subscriptions')
-        .update({ status: 'cancelled', cancel_at_period_end: true })
-        .eq('user_id', userId)
-        .in('status', ['active', 'trial']);
-
-      const subscriptionData: any = {
-        user_id: userId,
-        plan_id: planId,
-        status: isTrial ? 'trial' : 'active',
-        start_date: now.toISOString(),
-        trial_start_date: isTrial ? now.toISOString() : null,
-        trial_end_date: isTrial
-          // 60s margin: the DB guard rejects trial_end_date > now() + trial_days.
-          // DB now() runs a few ms AFTER the client's `now`, so a full
-          // trialDays*24h window can occasionally exceed the guard by a hair
-          // and raise "Trial period exceeds the allowed X days". Trimming 60s
-          // makes the window always fit — while remaining a full trial day.
-          ? new Date(now.getTime() + trialDays * 86400000 - 60000).toISOString()
-          : null,
-        payment_provider: paymentProvider || null,
-        payment_subscription_id: paymentSubscriptionId || null,
-      };
-
-      if (!isTrial && paymentProvider) {
-        // Paid plan - set expiry to 1 month/year from now
-        const interval = plan.interval || 'month';
-        const expiryDate = new Date(now);
-        if (interval === 'year') {
-          expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-        } else {
-          expiryDate.setMonth(expiryDate.getMonth() + 1);
-        }
-        subscriptionData.subscription_end_date = expiryDate.toISOString();
-        subscriptionData.expiry_date = expiryDate.toISOString();
+      if (rpcError) throw rpcError;
+      const result = rpc as { success?: boolean; subscription_id?: string; error?: string } | null;
+      if (!result?.success || !result.subscription_id) {
+        throw new Error(result?.error || 'Failed to create subscription');
       }
 
-      // Legacy `plan` flag (free/pro) expected by older code + the CHECK constraint.
-      subscriptionData.plan = (plan.price ?? 0) > 0 ? 'pro' : 'free';
-
-      // Upsert keyed on (user_id, plan_id) — the table enforces UNIQUE(user_id, plan_id),
-      // so a plain INSERT fails if the user previously subscribed to this plan
-      // (e.g. a cancelled/expired trial row still exists). Upsert restores it atomically.
+      // Load the freshly created row (own-row SELECT is allowed by RLS).
       const { data, error } = await supabase
         .from('subscriptions')
-        .upsert(subscriptionData, { onConflict: 'user_id,plan_id' })
         .select('*, subscription_plans(*)')
-        .single();
+        .eq('id', result.subscription_id)
+        .maybeSingle();
 
       if (error) throw error;
 
       // is_pro is automatically synced by the sync_profile_pro_flag trigger
       // (SECURITY DEFINER) on the subscriptions table — no client-side update needed.
 
-      return { success: true, subscription: data as unknown as SubscriptionWithPlan };
+      return { success: true, subscription: (data as unknown as SubscriptionWithPlan) ?? null };
     } catch (error: any) {
       // Surface the REAL server message (e.g. the trial guard trigger's
       // "A free trial has already been used for this email address" or
@@ -380,17 +333,22 @@ const subscriptionService = {
       startOfMonth.setDate(1);
       startOfMonth.setHours(0, 0, 0, 0);
 
-      const { data: usageData, error: usageError } = await supabase
+      // Aggregate: usage_logs can legally hold MULTIPLE rows per (user, month)
+      // (each billing/tracking pass inserts its own row). maybeSingle() would
+      // error on the second row and silently kill the usage meter — sum instead.
+      const { data: usageRows, error: usageError } = await supabase
         .from('usage_logs')
         .select('usage_count')
         .eq('user_id', userId)
         .eq('feature_type', 'ai_message')
-        .gte('created_at', startOfMonth.toISOString())
-        .maybeSingle();
+        .gte('created_at', startOfMonth.toISOString());
 
       if (usageError) throw usageError;
 
-      const messagesUsed = usageData?.usage_count ?? 0;
+      const messagesUsed = (usageRows || []).reduce(
+        (sum, row) => sum + (Number((row as { usage_count?: number }).usage_count) || 0),
+        0
+      );
       const percentageUsed = isUnlimited ? 0 : Math.min(100, Math.round((messagesUsed / messagesLimit) * 100));
 
       // Calculate reset date (next 1st of month)

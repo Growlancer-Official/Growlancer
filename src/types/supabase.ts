@@ -12,31 +12,6 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.5"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          extensions?: Json
-          operationName?: string
-          query?: string
-          variables?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
       admin_credentials: {
@@ -1151,6 +1126,18 @@ export type Database = {
           id?: never
           report?: Json | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      disposable_email_domains: {
+        Row: {
+          domain: string
+        }
+        Insert: {
+          domain: string
+        }
+        Update: {
+          domain?: string
         }
         Relationships: []
       }
@@ -6103,6 +6090,7 @@ export type Database = {
       cleanup_user_data: { Args: { p_user_id: string }; Returns: undefined }
       cleanup_verification_rate_limits: { Args: never; Returns: undefined }
       close_expired_contests: { Args: never; Returns: undefined }
+      complete_onboarding: { Args: never; Returns: Json }
       complete_referral: { Args: { p_referee_user_id: string }; Returns: Json }
       create_admin_withdrawal: {
         Args: {
@@ -6339,6 +6327,7 @@ export type Database = {
         }
         Returns: Json
       }
+      get_public_platform_metrics: { Args: never; Returns: Json }
       get_recovery_codes_count: { Args: { p_user_id: string }; Returns: number }
       get_reputation_stats: {
         Args: { p_freelancer_id: string }
@@ -6420,6 +6409,7 @@ export type Database = {
             }[]
           }
       get_wallet_balance: { Args: { p_user_id: string }; Returns: Json }
+      get_wallet_balance_v2: { Args: { p_user_id: string }; Returns: Json }
       grant_admin_role: { Args: { p_user_id: string }; Returns: Json }
       hold_wallet_funds: {
         Args: { p_amount: number; p_user_id: string }
@@ -6658,6 +6648,12 @@ export type Database = {
         Args: { p_preferences: Json; p_user_id: string }
         Returns: Json
       }
+      should_bypass_privilege_check: { Args: never; Returns: boolean }
+      sync_private_email: { Args: { p_email: string }; Returns: Json }
+      sync_private_referral: {
+        Args: { p_referral_code: string }
+        Returns: Json
+      }
       sync_profile_pro_flag: { Args: { v_user_id: string }; Returns: undefined }
       test_simple_rpc: { Args: never; Returns: Json }
       unfreeze_contract: { Args: { p_contract_id: string }; Returns: boolean }
@@ -6678,6 +6674,10 @@ export type Database = {
         Returns: Json
       }
       verify_credential_by_token: { Args: { p_token: string }; Returns: Json }
+      verify_reauth_status: {
+        Args: { p_reauth_at: string; p_user_id: string }
+        Returns: boolean
+      }
       verify_recovery_code: {
         Args: { p_code: string; p_user_id: string }
         Returns: Json
@@ -6700,12 +6700,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -6729,11 +6729,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -6754,11 +6754,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -6779,11 +6779,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -6796,11 +6796,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -6810,9 +6810,6 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {},
   },
