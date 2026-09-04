@@ -404,8 +404,15 @@ Deno.serve(async (req: Request) => {
 
       const score = calculateMatchScore(project as Project, freelancerData);
 
-      // Strict matching: decent score + skills AND category overlap
-      if (score.match_score >= 40 && score.skill_score > 0 && score.category_score > 0) {
+      // Skill-first qualification (mirrors the server engine): category overlap
+      // qualifies on its own; without it, a REAL skill overlap is required
+      // (project lists skills + >= 40% of them matched). Skills alone must
+      // never be silently dropped just because categories don't line up.
+      const projectSkills = (project as Project).skills_required || [];
+      const qualifies = score.category_score > 0
+        ? score.match_score >= 40
+        : projectSkills.length > 0 && score.skill_score >= 40 && score.match_score >= 40;
+      if (qualifies) {
         matches.push(score);
         candidates.push(freelancerData);
       }

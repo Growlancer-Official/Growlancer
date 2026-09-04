@@ -133,22 +133,24 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       const freelancerCategories: string[] = fp.categories || [];
       const freelancerSkills: string[] = fp.skills || [];
 
-      // --- CATEGORY MATCHING (Primary filter) ---
-      // The freelancer must have selected the project's category (case-insensitive)
-      const categoryMatched = freelancerCategories.some(
-        (cat: string) => cat.toLowerCase().trim() === projectCategory.toLowerCase().trim()
-      );
-      if (!categoryMatched) continue; // Skip freelancers who don't cover this category
-      const categoryScore = 100;
-
-      // --- SKILL MATCHING (Secondary boost) ---
-      // Any overlapping skill text adds to the score — but skills never disqualify a match
+      // --- SKILL MATCHING (scored first — skills can qualify on their own) ---
       const matchedSkills = requiredSkills.filter((s: string) =>
         freelancerSkills.some((fs: string) => fs.toLowerCase().trim() === s.toLowerCase().trim())
       );
       const skillScore = requiredSkills.length > 0
         ? Math.round((matchedSkills.length / requiredSkills.length) * 100)
         : 50;
+
+      // --- CATEGORY MATCHING (boost when covered — NEVER a hard gate) ---
+      // Category overlap qualifies; otherwise a real skill overlap qualifies too
+      // (project lists skills + >= 1 skill and >= 40% of the required set) —
+      // matching the server-side skill-first engine.
+      const categoryMatched = freelancerCategories.some(
+        (cat: string) => cat.toLowerCase().trim() === projectCategory.toLowerCase().trim()
+      );
+      const skillQualifies = requiredSkills.length > 0 && matchedSkills.length > 0 && skillScore >= 40;
+      if (!categoryMatched && !skillQualifies) continue;
+      const categoryScore = categoryMatched ? 100 : 0;
 
       // --- EXPERIENCE SCORE (0-100) ---
       const expYears = fp.experience || 0;
@@ -183,7 +185,7 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       // --- AVAILABILITY SCORE (0-100) ---
       const availabilityScore = fp.availability ? 100 : 20;
 
-      // --- OVERALL MATCH SCORE (weighted — category is the anchor) ---
+      // --- OVERALL MATCH SCORE (weighted — strictly merit-based) ---
       const matchScore = Math.min(100, Math.round(
         (categoryScore * 0.45) +
         (skillScore * 0.20) +
