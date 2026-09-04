@@ -110,6 +110,28 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       return { success: false, error: `Fallback failed: could not fetch freelancer profiles (${profsError?.message})` };
     }
 
+    // A freelancer's live services are match signals too (their profile row
+    // can be empty) — merge service category/skills into the candidates.
+    const { data: activeServices } = await supabase
+      .from('services')
+      .select('freelancer_id, category, skills')
+      .eq('active', true);
+    const serviceCatMap = new Map<string, Set<string>>();
+    const serviceSkillMap = new Map<string, Set<string>>();
+    for (const svc of (activeServices || []) as Array<{ freelancer_id: string; category?: string | null; skills?: string[] | null }>) {
+      if (svc.category && svc.category.trim()) {
+        if (!serviceCatMap.has(svc.freelancer_id)) serviceCatMap.set(svc.freelancer_id, new Set());
+        serviceCatMap.get(svc.freelancer_id)!.add(svc.category.trim());
+      }
+      for (const s of svc.skills || []) {
+        const skill = String(s).trim();
+        if (skill) {
+          if (!serviceSkillMap.has(svc.freelancer_id)) serviceSkillMap.set(svc.freelancer_id, new Set());
+          serviceSkillMap.get(svc.freelancer_id)!.add(skill);
+        }
+      }
+    }
+
     const calculatedMatches: any[] = [];
 
     // 3. Score each freelancer against the project
@@ -130,8 +152,16 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
         location?: string;
       };
 
-      const freelancerCategories: string[] = fp.categories || [];
-      const freelancerSkills: string[] = fp.skills || [];
+      const profileCategories = fp.categories || [];
+      const profileSkills = fp.skills || [];
+      const serviceCats = serviceCatMap.get(profile.id as string);
+      const serviceSkills = serviceSkillMap.get(profile.id as string);
+      const freelancerCategories = serviceCats && serviceCats.size > 0
+        ? Array.from(new Set([...profileCategories, ...serviceCats]))
+        : profileCategories;
+      const freelancerSkills = serviceSkills && serviceSkills.size > 0
+        ? Array.from(new Set([...profileSkills, ...serviceSkills]))
+        : profileSkills;
 
       // --- SKILL MATCHING (scored first — skills can qualify on their own) ---
       const matchedSkills = requiredSkills.filter((s: string) =>
