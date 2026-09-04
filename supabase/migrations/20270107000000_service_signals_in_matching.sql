@@ -31,11 +31,13 @@ DECLARE
   v_skills text[];
   v_svc record;
 BEGIN
-  SELECT public.matching_text_array(categories),
-         public.matching_text_array(skills)
+  -- Table alias is REQUIRED: RETURNS TABLE (categories, skills) makes those
+  -- names PL/pgSQL variables, so bare column names would be ambiguous (42702).
+  SELECT public.matching_text_array(fp.categories),
+         public.matching_text_array(fp.skills)
   INTO v_cats, v_skills
-  FROM public.freelancer_profiles
-  WHERE user_id = p_user_id;
+  FROM public.freelancer_profiles fp
+  WHERE fp.user_id = p_user_id;
 
   v_cats := COALESCE(v_cats, ARRAY[]::text[]);
   v_skills := COALESCE(v_skills, ARRAY[]::text[]);
