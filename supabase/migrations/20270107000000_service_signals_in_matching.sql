@@ -128,9 +128,11 @@ BEGIN
     RETURN;
   END IF;
 
-  -- Categories/skills = profile ∪ active services (see freelancer_match_signals)
-  SELECT categories, skills INTO v_cats, v_fp_skills
-  FROM public.freelancer_match_signals(p_freelancer_id);
+  -- Categories/skills = profile ∪ active services (see freelancer_match_signals).
+  -- Column list is alias-qualified so PL/pgSQL can never report these names as
+  -- ambiguous (they collide with the helper's OUT params).
+  SELECT fm.categories, fm.skills INTO v_cats, v_fp_skills
+  FROM public.freelancer_match_signals(p_freelancer_id) AS fm;
 
   -- ── SKILLS (scored first — a strong skill overlap can qualify on its own) ─
   v_required := public.matching_text_array(v_project.skills_required);
@@ -227,9 +229,10 @@ DECLARE
   v_m record;
   v_count integer := 0;
 BEGIN
-  SELECT categories, skills
+  -- Alias-qualified: the helper's OUT params must never look ambiguous here.
+  SELECT fm.categories, fm.skills
   INTO v_cats, v_skills
-  FROM public.freelancer_match_signals(p_user_id);
+  FROM public.freelancer_match_signals(p_user_id) AS fm;
 
   IF cardinality(v_cats) = 0 AND cardinality(v_skills) = 0 THEN
     -- Nothing to match on (profile AND services empty) — remove stale rows
@@ -331,11 +334,20 @@ EXECUTE FUNCTION public.trg_service_match_refresh_fn();
 DO $$
 DECLARE
   v_project record;
+  v_ctx text;
 BEGIN
-  FOR v_project IN
-    SELECT id FROM public.projects
-    WHERE status = 'open' AND category IS NOT NULL AND category <> ''
-  LOOP
-    PERFORM public.generate_project_matches(v_project.id);
-  END LOOP;
+  BEGIN
+    FOR v_project IN
+      SELECT id FROM public.projects
+      WHERE status = 'open' AND category IS NOT NULL AND category <> ''
+    LOOP
+      PERFORM public.generate_project_matches(v_project.id);
+    END LOOP;
+  EXCEPTION WHEN OTHERS THEN
+    -- Surface the INNER statement context on the CI log before re-raising.
+    GET STACKED DIAGNOSTICS v_ctx = PG_EXCEPTION_CONTEXT;
+    RAISE NOTICE 'BACKFILL_ERR: %', SQLERRM;
+    RAISE NOTICE 'BACKFILL_CTX: %', v_ctx;
+    RAISE;
+  END;
 END $$;
