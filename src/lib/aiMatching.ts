@@ -26,6 +26,8 @@ export interface AIMatchWithProfile extends AIMatch {
     categories: string[];
     skills: string[];
     hourly_rate: number;
+    /** Cheapest starting price across the freelancer's active services (₹0 = none). */
+    starting_rate?: number;
     availability: string;
     bio?: string;
     location?: string;
@@ -462,6 +464,12 @@ export const aiMatchingService = {
               experience,
               rating,
               total_reviews
+            ),
+            services:services!services_freelancer_id_fkey(
+              id,
+              price,
+              packages,
+              active
             )
           )
         `)
@@ -486,6 +494,23 @@ export const aiMatchingService = {
 
         const fp = fpRaw || {};
 
+        // A freelancer often prices via SERVICES instead of a profile hourly
+        // rate — derive the cheapest "From ₹X" across their live services so
+        // the match card never shows ₹0 for a priced freelancer.
+        const rawServices = Array.isArray(freelancerRaw.services) ? freelancerRaw.services : [];
+        let startingRate = 0;
+        for (const svc of rawServices) {
+          if (!svc || svc.active !== true) continue;
+          const pk = Array.isArray(svc.packages) ? svc.packages : [];
+          const basic = pk.find((p: { tier?: string }) => p?.tier === 'basic');
+          const price = basic
+            ? Number(basic.price) || 0
+            : Number(svc.price) || 0;
+          if (price > 0) {
+            startingRate = startingRate === 0 ? price : Math.min(startingRate, price);
+          }
+        }
+
         return {
           ...row,
           freelancer: {
@@ -496,6 +521,7 @@ export const aiMatchingService = {
             verification_status: freelancerRaw.verification_status || undefined,
             skills: fp.skills || [],
             hourly_rate: fp.hourly_rate || 0,
+            starting_rate: startingRate,
             availability: fp.availability ? 'Available' : 'Unavailable',
             bio: fp.bio || '',
             location: fp.location || 'Remote',

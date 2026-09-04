@@ -423,7 +423,18 @@ export function ClientMatchesPage() {
               <div className="grid grid-cols-2 gap-3 mb-2 text-sm">
                 <div className="flex items-center gap-3 text-slate-600">
                   <IndianRupee className="w-4 h-4" />
-                  <span>{formatCurrency(match.freelancer.hourly_rate || 0)}</span>
+                  {match.freelancer.hourly_rate > 0 ? (
+                    <span>
+                      {formatCurrency(match.freelancer.hourly_rate)}
+                      <span className="text-xs text-slate-400">/hr</span>
+                    </span>
+                  ) : (match.freelancer.starting_rate || 0) > 0 ? (
+                    <span title="Starting price from this freelancer's published services">
+                      From {formatCurrency(match.freelancer.starting_rate || 0)}
+                    </span>
+                  ) : (
+                    <span className="text-slate-500">Rate on request</span>
+                  )}
                 </div>
                 <div className="flex items-center gap-3 text-slate-600">
                   <MapPin className="w-4 h-4" />
