@@ -1078,7 +1078,7 @@ export function ProfessionalProfilePage() {
                             }}
                             className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="50" />
                         </div>
-                        <p className="text-xs text-slate-400 mt-1.5">Your standard base rate — the starting point clients see on your profile (negotiable)</p>
+                        <p className="text-xs text-slate-400 mt-1.5">Your standard rate — the starting point clients see on your profile</p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Years of Experience</label>

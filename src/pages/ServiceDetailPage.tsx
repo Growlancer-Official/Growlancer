@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, BadgePercent, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Send, Shield, ShoppingCart, Star, Tag, X } from 'lucide-react';
-import { supabase, uniqueChannelName } from '../lib/supabase';
-import { formatCurrency as libFormatCurrency, currencySymbol } from '../lib/currency';
+import { ArrowLeft, Calendar, CheckCircle, ChevronRight, Clock, Loader2, MessageSquare, Shield, ShoppingCart, Star, Tag } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { formatCurrency as libFormatCurrency } from '../lib/currency';
 import { requireKycForAction } from '../lib/kycGate';
 import { reviewService } from '../lib/reviews';
 import { useToast } from '../components/Toast';
@@ -73,12 +73,7 @@ export function ServiceDetailPage() {
   const [loading, setLoading] = useState(true);
   const toast = useToast();
   const [addingToCart, setAddingToCart] = useState(false);
-  // 💬 Negotiable price + tips
-  const [myOffers, setMyOffers] = useState<any[]>([]);
-  const [showOfferModal, setShowOfferModal] = useState(false);
-  const [offerAmount, setOfferAmount] = useState('');
-  const [offerMessage, setOfferMessage] = useState('');
-  const [submittingOffer, setSubmittingOffer] = useState(false);
+  // 💜 Tip (optional, goes 100% to the freelancer)
   const [tipPercent, setTipPercent] = useState<number | null>(null);
   // ── Package tier + add-ons (FINAL MODEL: 3 tiers, client picks, server prices) ──
   const [selectedTier, setSelectedTier] = useState<ServicePackage['tier'] | null>(null);
@@ -138,51 +133,7 @@ export function ServiceDetailPage() {
     fetchService();
   }, [serviceId, toast]);
 
-  // 💬 Client-side: track my price offers on this service (real time).
-  // If the freelancer accepts, the order price switches to the agreed amount.
-  useEffect(() => {
-    if (!user || !service || service.freelancer_id === user.id) return;
-    let cancelled = false;
 
-    const fetchMyOffers = async () => {
-      try {
-        const { data } = await supabase
-          .from('service_offers')
-          .select('*')
-          .eq('service_id', service.id)
-          .eq('client_id', user.id)
-          .order('created_at', { ascending: false })
-          .limit(5);
-        if (!cancelled && data) setMyOffers(data);
-      } catch { /* non-critical */ }
-    };
-    void fetchMyOffers();
-
-    const channel = supabase
-      .channel(uniqueChannelName('svc-offers', `${service.id}:${user.id}`))
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'service_offers',
-          filter: `service_id=eq.${service.id} AND client_id=eq.${user.id}`,
-        },
-        (payload) => {
-          if (cancelled) return;
-          if (payload.eventType === 'INSERT') {
-            setMyOffers(prev => [payload.new, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            setMyOffers(prev => prev.map(o => (o.id === payload.new.id ? { ...o, ...payload.new } : o)));
-          } else if (payload.eventType === 'DELETE') {
-            setMyOffers(prev => prev.filter(o => o.id !== (payload.old as any)?.id));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { cancelled = true; void supabase.removeChannel(channel); };
-  }, [user, service]);
 
   // Record a service view (once per session, never for the owner) so the
   // freelancer's dashboard shows a real-time view count.
@@ -251,15 +202,9 @@ export function ServiceDetailPage() {
   // amount recomputed from the services table, never trusts the client) and
   // opens the Razorpay checkout modal. On success the payment is verified
   // via signature and the user is confirmed.
-  // The effective price: an ACCEPTED offer replaces the listed price (the
-  // razorpay function re-verifies the accepted offer server-side — the client
-  // can never pay an amount the freelancer didn't agree to).
-  const acceptedOffer = myOffers.find(o => o.status === 'accepted');
-  const pendingOffer = myOffers.find(o => o.status === 'pending');
-  const declinedOffer = myOffers.find(o => o.status === 'declined');
-  // Package price (or the accepted-negotiated price, which replaces the tier
-  // price — the razorpay function re-verifies the offer server-side).
-  const displayPrice = acceptedOffer ? Number(acceptedOffer.amount) : (selectedPackage?.price || 0);
+  // The client always pays the LISTED package price (+ add-ons + tip) — no
+  // price offers exist anymore.
+  const displayPrice = Number(selectedPackage?.price || 0);
   const tipAmount = tipPercent
     ? Math.round((displayPrice * tipPercent) / 100 * 100) / 100
     : 0;
@@ -267,38 +212,6 @@ export function ServiceDetailPage() {
   // recomputed — this breakdown is informational, the amount is re-verified).
   const platformFee = Math.round((displayPrice + addonTotal) * 0.05 * 100) / 100;
   const totalPayable = displayPrice + addonTotal + tipAmount + platformFee;
-
-  const submitOffer = async () => {
-    if (!user || !service) return;
-    const amount = parseFloat(offerAmount);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      toast.error('Invalid offer', 'Enter a valid offer amount.');
-      return;
-    }
-    setSubmittingOffer(true);
-    try {
-      const { error } = await supabase.from('service_offers').insert({
-        service_id: service.id,
-        client_id: user.id,
-        freelancer_id: service.freelancer_id,
-        amount,
-        message: offerMessage.trim() || null,
-        status: 'pending',
-      });
-      if (error) throw error;
-      // The freelancer's in-app notification is created by the DB trigger
-      // (service_offers_notify_fn, SECURITY DEFINER) — real time, automatic.
-      toast.success('Offer sent', 'The freelancer will review your offer in real time.');
-      setShowOfferModal(false);
-      setOfferAmount('');
-      setOfferMessage('');
-    } catch (err) {
-      console.error('Submit offer failed:', err);
-      toast.error('Error', 'Failed to send your offer. Please try again.');
-    } finally {
-      setSubmittingOffer(false);
-    }
-  };
 
   const handleContinueToOrder = async () => {
     if (!user) {
@@ -323,7 +236,7 @@ export function ServiceDetailPage() {
     try {
       // Client sends ONLY the tier name + addon IDs — the edge function reads
       // prices from the services row (server-side authority, never trusts a
-      // client-sent price). The accepted offer (if any) replaces the tier price.
+      // client-sent price).
       const { order, razorpay_key_id, amount, currency } = await razorpayService.createOrder({
         order_type: 'service_purchase',
         amount: totalPayable,
@@ -336,8 +249,6 @@ export function ServiceDetailPage() {
           addon_ids: selectedAddonIds,
           // Server-side validated: 0 <= tip <= service price
           tip_amount: tipAmount > 0 ? tipAmount : 0,
-          // Server-side validated: only the client's ACCEPTED offer is honored
-          offer_id: acceptedOffer?.id || undefined,
         },
       });
 
@@ -650,31 +561,8 @@ export function ServiceDetailPage() {
                 </div>
               </div>
 
-              {/* 💬 Offer status — live */}
-              {pendingOffer && (
-                <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                  <p className="text-xs font-semibold text-amber-800">
-                    Offer of {formatCurrency(Number(pendingOffer.amount))} pending — the freelancer is reviewing it.
-                  </p>
-                </div>
-              )}
-              {declinedOffer && (
-                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-center">
-                  <p className="text-xs font-semibold text-red-700">
-                    Your offer of {formatCurrency(Number(declinedOffer.amount))} was declined. Order at the listed price or make a new offer.
-                  </p>
-                </div>
-              )}
-              {acceptedOffer && (
-                <div className="mt-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-center">
-                  <p className="text-xs font-semibold text-emerald-800">
-                    ✓ Offer accepted — you can order at {formatCurrency(Number(acceptedOffer.amount))} (agreed price).
-                  </p>
-                </div>
-              )}
-
               {/* 💜 Tip selector — only when the freelancer enables tips */}
-              {(service as any).accepts_tips && !acceptedOffer && (
+              {(service as any).accepts_tips && (
                 <div className="mt-4">
                   <p className="text-xs font-semibold text-slate-600 mb-2">Add a tip (goes 100% to the freelancer):</p>
                   <div className="flex flex-wrap gap-1.5">
@@ -709,18 +597,6 @@ export function ServiceDetailPage() {
                 {addingToCart ? 'Processing...' : 'Continue to Order'}
               </button>
 
-              {/* 🤝 Make an Offer — only for logged-in clients on negotiable services */}
-              {(service as any).negotiable && !acceptedOffer && user && service.freelancer_id !== user.id && (
-                <button
-                  onClick={() => setShowOfferModal(true)}
-                  disabled={pendingOffer || submittingOffer}
-                  className="w-full mt-3 flex items-center justify-center gap-3 px-5 py-2.5 text-sm font-bold text-violet-700 bg-violet-50 border border-violet-200 rounded-xl hover:bg-violet-100 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <BadgePercent className="w-4 h-4" />
-                  {pendingOffer ? 'Offer Pending' : 'Make an Offer'}
-                </button>
-              )}
-
               <div className="mt-4 space-y-4 text-sm text-slate-500">
                 <div className="flex items-center gap-3">
                   <Shield className="w-4 h-4 text-emerald-500" />
@@ -732,63 +608,6 @@ export function ServiceDetailPage() {
                 </div>
               </div>
             </div>
-
-            {/* 🤝 Make an Offer Modal */}
-            {showOfferModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm" onClick={() => !submittingOffer && setShowOfferModal(false)}>
-                <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-3" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex items-start justify-between mb-2">
-                    <div>
-                      <h3 className="text-lg font-bold text-slate-900">Make a Price Offer</h3>
-                      <p className="text-xs text-slate-500 mt-1">
-                        Propose a fair price on "{service.title}". The freelancer accepts or declines — the agreed price is honored, never changed silently.
-                      </p>
-                    </div>
-                    <button onClick={() => !submittingOffer && setShowOfferModal(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Your offer ({currencySymbol()}) *</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={offerAmount}
-                        onChange={(e) => setOfferAmount(e.target.value)}
-                        placeholder={`Listed price: ${service.price}`}
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none transition-all"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1.5">Message (optional)</label>
-                      <textarea
-                        rows={3}
-                        value={offerMessage}
-                        onChange={(e) => setOfferMessage(e.target.value)}
-                        placeholder="e.g., I have a clear scope and can share all assets upfront..."
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-violet-500 focus:ring-2 focus:ring-violet-200 outline-none transition-all resize-none"
-                      />
-                    </div>
-                    <div className="p-3 bg-blue-50 border border-blue-100 rounded-xl">
-                      <p className="text-xs text-blue-700 leading-relaxed">
-                        Offers are protected by Growlancer policy: the freelancer decides the agreed price,
-                        payment is always processed through escrow, and no work starts before funding.
-                      </p>
-                    </div>
-                    <button
-                      onClick={submitOffer}
-                      disabled={submittingOffer || !offerAmount}
-                      className="w-full inline-flex items-center justify-center gap-3 px-5 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all font-semibold"
-                    >
-                      {submittingOffer ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                      {submittingOffer ? 'Sending...' : 'Send Offer'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Freelancer Card */}
             {service.freelancer && (

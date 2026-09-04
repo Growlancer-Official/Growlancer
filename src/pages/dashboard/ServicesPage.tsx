@@ -1,16 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  BadgePercent,
-  CheckCircle2,
-  ChevronDown,
-  ChevronUp,
   Clock,
   Eye,
   HandCoins,
   IndianRupee,
-  Layers,
-  MessageSquareText,
   Package,
   Pencil,
   Plus,
@@ -20,7 +14,6 @@ import {
   Star,
   Tag,
   Trash2,
-  XCircle,
 } from 'lucide-react';
 import { InfoTip } from '../../components/InfoTip';
 import { EmptyState } from '../../components/EmptyState';
@@ -30,7 +23,6 @@ import { safeLower } from '../../utils/date';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
-import { CategoriesSection } from '../../components/CategoriesSection';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import type { Tables } from '../../types/supabase';
 import { formatCurrency } from '../../lib/currency';
@@ -43,13 +35,8 @@ export function ServicesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [showCategories, setShowCategories] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [page, setPage] = useState(1);
-  // 💬 Negotiable-price offers (client → freelancer), live via realtime.
-  const [offers, setOffers] = useState<any[]>([]);
-  const [showOffers, setShowOffers] = useState(false);
-  const [offerBusy, setOfferBusy] = useState<string | null>(null);
   const pageSize = 9;
   const toast = useToast();
 
@@ -127,68 +114,6 @@ export function ServicesPage() {
     setDeleteConfirm(null);
   };
 
-  // ── Offers (negotiable price) ────────────────────────────────
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchOffers = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('service_offers')
-          .select('*, client:profiles!service_offers_client_id_fkey(name, avatar), service:services(id, title, price)')
-          .eq('freelancer_id', user.id)
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-        if (data) setOffers(data);
-      } catch (err) {
-        console.error('Error fetching service offers:', err);
-      }
-    };
-
-    void fetchOffers();
-
-    // Real-time: new offers + accept/decline flips arrive instantly.
-    const channel = realtimeChannels.services('freelancer-service-offers')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'service_offers', filter: `freelancer_id=eq.${user.id}` },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setOffers(prev => [payload.new, ...prev].filter((o, i, a) => a.findIndex(x => x.id === o.id) === i));
-          } else if (payload.eventType === 'UPDATE') {
-            setOffers(prev => prev.map(o => (o.id === payload.new.id ? { ...o, ...payload.new } : o)));
-          } else if (payload.eventType === 'DELETE') {
-            setOffers(prev => prev.filter(o => o.id !== payload.old.id));
-          }
-        }
-      )
-      .subscribe();
-
-    return () => { void channel.unsubscribe(); };
-  }, [user]);
-
-  const respondToOffer = async (offer: any, status: 'accepted' | 'declined') => {
-    setOfferBusy(offer.id);
-    try {
-      const { error } = await supabase
-        .from('service_offers')
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq('id', offer.id)
-        .eq('freelancer_id', user?.id);
-      if (error) throw error;
-
-      // The in-app notification for the client is created by the DB trigger
-      // (service_offers_notify_fn, SECURITY DEFINER) — client-side inserts
-      // would fail notifications RLS. Real time, automatic.
-      toast.success(status === 'accepted' ? 'Offer accepted' : 'Offer declined');
-    } catch (err) {
-      console.error('Respond to offer failed:', err);
-      toast.error('Error', 'Failed to update the offer. Please try again.');
-    } finally {
-      setOfferBusy(null);
-    }
-  };
-
   const handleToggleStatus = async (service: Tables<'services'>) => {
     try {
       const newStatus = service.status === 'active' ? 'inactive' : 'active';
@@ -240,7 +165,7 @@ export function ServicesPage() {
             <Package className="w-4 h-4 text-white" />
           </div>
           <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">My Services <InfoTip title="Get more orders from your services" text="Views grow when clients browse, orders count after a service purchase is completed, and your rating updates after each review — all in real time. The Price Offers panel shows clients' negotiable offers on your services; accepting one lets the client order at that agreed price. Edit any service with the pencil icon — changes go live instantly." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">My Services <InfoTip title="Get more orders from your services" text="Views grow when clients browse, orders count after a service purchase is completed, and your rating updates after each review — all in real time. Edit any service with the pencil icon — changes go live instantly." /></h1>
           <p className="text-slate-500 mt-1">Manage your service offerings</p>
           </div>
         </div>
@@ -305,108 +230,6 @@ export function ServicesPage() {
               </p>
               <p className="text-sm text-slate-500">Avg Rating</p>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* 💬 Negotiable-Price Offers — live */}
-      {offers.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-100">
-          <button
-            onClick={() => setShowOffers(!showOffers)}
-            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <MessageSquareText className="w-4 h-4 text-emerald-600" />
-              <span className="font-bold text-slate-900">Price Offers</span>
-              <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-emerald-100 text-emerald-700">
-                {offers.filter(o => o.status === 'pending').length} pending
-              </span>
-            </div>
-            {showOffers ? (
-              <ChevronUp className="w-4 h-4 text-slate-400" />
-            ) : (
-              <ChevronDown className="w-4 h-4 text-slate-400" />
-            )}
-          </button>
-
-          <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-            showOffers ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-          }`}>
-            <div className="px-4 pb-4 space-y-1.5 border-t border-slate-50">
-              {offers.slice(0, 10).map(offer => (
-                <div key={offer.id} className="p-4 rounded-xl border border-slate-100 bg-slate-50/50">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {offer.client?.name || 'Client'} offered{' '}
-                          <span className="text-emerald-600">{formatCurrency(Number(offer.amount))}</span>
-                        </p>
-                        <span className={`px-2 py-0.5 text-xs font-bold rounded-full ${
-                          offer.status === 'accepted' ? 'bg-emerald-100 text-emerald-700' :
-                          offer.status === 'declined' ? 'bg-red-100 text-red-600' :
-                          'bg-amber-100 text-amber-700'
-                        }`}>
-                          {offer.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-slate-500 mt-0.5">on "{offer.service?.title || 'Service'}"</p>
-                      {offer.message && (
-                        <p className="text-xs text-slate-600 mt-1 italic">"{offer.message}"</p>
-                      )}
-                    </div>
-                    {offer.status === 'pending' && (
-                      <div className="flex items-center gap-3 flex-shrink-0">
-                        <button
-                          onClick={() => respondToOffer(offer, 'accepted')}
-                          disabled={offerBusy === offer.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
-                        >
-                          <CheckCircle2 className="w-4 h-4" />
-                          {offerBusy === offer.id ? '...' : 'Accept'}
-                        </button>
-                        <button
-                          onClick={() => respondToOffer(offer, 'declined')}
-                          disabled={offerBusy === offer.id}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          Decline
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Categories Section - A-Z Accordion */}
-      <div className="bg-white rounded-xl border border-slate-100">
-        <button
-          onClick={() => setShowCategories(!showCategories)}
-          className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
-        >
-          <div className="flex items-center gap-3">
-            <Layers className="w-4 h-4 text-emerald-600" />
-            <span className="font-bold text-slate-900">Browse Categories</span>
-            <span className="text-xs text-slate-400 font-medium">A-Z</span>
-          </div>
-          {showCategories ? (
-            <ChevronUp className="w-4 h-4 text-slate-400" />
-          ) : (
-            <ChevronDown className="w-4 h-4 text-slate-400" />
-          )}
-        </button>
-
-        <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-          showCategories ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
-        }`}>
-          <div className="px-4 pb-4 border-t border-slate-50">
-            <CategoriesSection mode="browse" maxInitial={0} />
           </div>
         </div>
       </div>
@@ -509,22 +332,14 @@ export function ServicesPage() {
                     </div>
                   ) : null}
                 </div>
-                {(service as any).negotiable || (service as any).accepts_tips ? (
+                {(service as any).accepts_tips && (
                   <div className="flex flex-wrap gap-1.5 mb-3">
-                    {(service as any).negotiable && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-full bg-violet-50 text-violet-700 border border-violet-100">
-                        <BadgePercent className="w-3.5 h-3.5" />
-                        Negotiable
-                      </span>
-                    )}
-                    {(service as any).accepts_tips && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">
-                        <HandCoins className="w-3.5 h-3.5" />
-                        Tips welcome
-                      </span>
-                    )}
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 text-xs font-bold rounded-full bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-100">
+                      <HandCoins className="w-3.5 h-3.5" />
+                      Tips welcome
+                    </span>
                   </div>
-                ) : null}
+                )}
                 {Number(service.extra_revision_price) > 0 && (
                   <p className="text-xs text-amber-600 mb-2">
                     Extra revision: {formatCurrency(Number(service.extra_revision_price))} each (beyond free revisions)
