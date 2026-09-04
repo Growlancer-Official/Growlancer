@@ -42,11 +42,12 @@ BEGIN
   v_cats := COALESCE(v_cats, ARRAY[]::text[]);
   v_skills := COALESCE(v_skills, ARRAY[]::text[]);
 
-  -- What the freelancer is ACTUALLY offering right now: their live services
+  -- What the freelancer is ACTUALLY offering right now: their live services.
+  -- Qualified: bare `skills` here collides with this function's OUT param.
   FOR v_svc IN
-    SELECT category, skills
-    FROM public.services
-    WHERE freelancer_id = p_user_id AND active = true
+    SELECT s.category, s.skills
+    FROM public.services s
+    WHERE s.freelancer_id = p_user_id AND s.active = true
   LOOP
     IF v_svc.category IS NOT NULL AND btrim(v_svc.category) <> '' THEN
       v_cats := v_cats || ARRAY[lower(btrim(v_svc.category))];
