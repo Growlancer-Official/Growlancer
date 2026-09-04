@@ -12,9 +12,8 @@
 --      categories/skills with every ACTIVE service's category/skills.
 --   2. project_match_components + refresh_freelancer_project_matches now score
 --      against those merged signals.
---   3. Services INSERT/UPDATE/DELETE (category/skills/active) now trigger a
---      freelancer re-match in real time — publishing a service with matching
---      skills makes the freelancer appear to clients instantly.
+--   3. Services INSERT/UPDATE (category/skills/active/status) and DELETE now
+--      trigger a freelancer re-match in real time.
 --   4. Backfill re-scores all open projects.
 --
 -- Still 100% merit-based — is_pro/payment has zero influence.
@@ -316,7 +315,13 @@ REVOKE ALL ON FUNCTION public.trg_service_match_refresh_fn() FROM PUBLIC;
 
 DROP TRIGGER IF EXISTS trg_service_match_refresh ON public.services;
 CREATE TRIGGER trg_service_match_refresh
-AFTER INSERT OR UPDATE OF category, skills, active, status OR DELETE ON public.services
+AFTER INSERT OR UPDATE OF category, skills, active, status ON public.services
+FOR EACH ROW
+EXECUTE FUNCTION public.trg_service_match_refresh_fn();
+
+DROP TRIGGER IF EXISTS trg_service_match_refresh_delete ON public.services;
+CREATE TRIGGER trg_service_match_refresh_delete
+AFTER DELETE ON public.services
 FOR EACH ROW
 EXECUTE FUNCTION public.trg_service_match_refresh_fn();
 

@@ -43,10 +43,18 @@ jobs:
         # --include-all: applies out-of-order backfilled migrations (e.g. a file
         # with an older timestamp that was added after newer ones were applied).
         # --yes: auto-confirms the "push these migrations?" prompt so CI doesn't hang.
-        run: supabase db push --include-all --yes
+        run: supabase db push --include-all --yes 2>&1 | tee /tmp/migration-push.log; exit ${PIPESTATUS[0]}
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+
+      - name: Upload migration log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: migration-push-log
+          path: /tmp/migration-push.log
+          if-no-files-found: ignore
 
       - name: Migration status (always run)
         run: supabase migration list
