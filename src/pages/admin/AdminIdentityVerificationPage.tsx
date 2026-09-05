@@ -3,7 +3,7 @@ import {
   Shield, Search, Loader2, RefreshCw, Mail, FileText,
   CheckCircle2, XCircle, AlertTriangle, ExternalLink, Clock,
   Eye, BadgeCheck, AlertCircle, ShieldAlert,
-  Copy, CheckCheck, X, KeyRound, Save, Trash2,
+  Copy, CheckCheck, X, KeyRound, Save, Trash2, ShieldCheck, Sparkles,
 } from 'lucide-react';
 import { identityVerificationService, type IdentityVerification } from '../../lib/identityVerification';
 import { supabase } from '../../lib/supabase';
@@ -329,16 +329,16 @@ export function AdminIdentityVerificationPage() {
   });
 
   // ── KYC provider config (founder-managed; token stored server-side only) ──
-  const [providerStatus, setProviderStatus] = useState<{ configured: boolean; provider: string; updated_at?: string } | null>(null);
+  const [providerStatus, setProviderStatus] = useState<{ configured: boolean; provider: string; mode: 'production' | 'development'; updated_at?: string } | null>(null);
   const [tokenInput, setTokenInput] = useState('');
   const [providerBusy, setProviderBusy] = useState(false);
 
   const fetchProviderStatus = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc('admin_get_kyc_provider_status' as any);
-      const result = data as { success: boolean; configured: boolean; provider: string; updated_at?: string } | null;
+      const result = data as { success: boolean; configured: boolean; provider: string; mode?: 'production' | 'development'; updated_at?: string } | null;
       if (!error && result?.success) {
-        setProviderStatus({ configured: !!result.configured, provider: result.provider, updated_at: result.updated_at });
+        setProviderStatus({ configured: !!result.configured, provider: result.provider, mode: result.mode === 'development' ? 'development' : 'production', updated_at: result.updated_at });
       } else {
         setProviderStatus(null);
       }
@@ -373,6 +373,41 @@ export function AdminIdentityVerificationPage() {
     } finally {
       setProviderBusy(false);
     }
+  };
+
+  const handleSetMode = async (mode: 'production' | 'development') => {
+    const isDev = mode === 'development';
+    setConfirmDialog({
+      isOpen: true,
+      variant: isDev ? 'warning' : 'info',
+      title: isDev ? 'Enable Development Verification Mode?' : 'Switch back to Production Mode?',
+      message: isDev
+        ? 'Users will be auto-verified instantly WITHOUT an external provider. Every record is honestly labelled provider="dev_mode" and can be re-verified for real later. Do NOT enable this in production — switch to Production when a real provider token is configured.'
+        : 'New verifications will go through the real provider (or fail-safe review if none is configured). Previously dev-verified users keep their status until re-verified for real.',
+      confirmLabel: isDev ? 'Enable Dev Mode' : 'Switch to Production',
+      onConfirm: async () => {
+        setProviderBusy(true);
+        try {
+          const { data, error } = await supabase.rpc('admin_set_kyc_mode' as any, { p_mode: mode });
+          const result = data as { success: boolean; error?: string } | null;
+          if (error || !result?.success) {
+            toast.error('Failed to switch mode', result?.error || error?.message || 'Please try again.');
+          } else {
+            toast.success(
+              isDev ? 'Development mode enabled' : 'Production mode enabled',
+              isDev
+                ? 'New submissions are now auto-verified instantly (provider: dev_mode).'
+                : 'New submissions now use the real provider or fail-safe review.'
+            );
+            await fetchProviderStatus();
+          }
+        } catch {
+          toast.error('Failed to switch mode. Please try again.');
+        } finally {
+          setProviderBusy(false);
+        }
+      },
+    });
   };
 
   const handleClearToken = async () => {
@@ -567,12 +602,22 @@ export function AdminIdentityVerificationPage() {
                 }`}>
                   {providerStatus === null ? 'Unknown' : providerStatus.configured ? 'Live' : 'Not Configured'}
                 </span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  providerStatus?.mode === 'development'
+                    ? 'bg-amber-500/15 text-amber-400'
+                    : 'bg-emerald-500/15 text-emerald-400'
+                }`}>
+                  {providerStatus === null ? 'Mode Unknown' : providerStatus.mode === 'development' ? 'Dev Mode' : 'Production'}
+                </span>
               </h2>
               <p className="text-slate-400 text-xs mt-1 max-w-2xl">
                 Paste your Surepass API token to enable real-time PAN verification.
                 The token is stored server-side (never exposed to users or the browser)
                 and can be rotated or removed here anytime. Without a token, new
                 verifications wait safely in review — nothing is ever auto-approved.
+                In <span className="text-amber-400 font-semibold">Development Mode</span> users are
+                auto-verified instantly (labelled <span className="text-slate-300">dev_mode</span>);
+                switch back to Production before launch.
               </p>
             </div>
           </div>
@@ -612,6 +657,38 @@ export function AdminIdentityVerificationPage() {
             Token configured · provider: {providerStatus.provider} · last updated {formatDate(providerStatus.updated_at)}
           </p>
         )}
+
+        {/* Verification Mode — development (instant auto-verify) vs production (real provider / fail-safe) */}
+        <div className="mt-4 pt-4 border-t border-white/5 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1">
+            <p className="text-xs font-semibold text-slate-200">Verification Mode</p>
+            <p className="text-[11px] text-slate-500 mt-0.5 max-w-lg">
+              {providerStatus?.mode === 'development'
+                ? 'Development: every submission is auto-verified instantly without an external provider (records labelled dev_mode — re-verify for real before launch).'
+                : 'Production: submissions use the configured provider — or fail safely into review if no provider token is set. No fake verification, ever.'}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => void handleSetMode('production')}
+              disabled={providerBusy || providerStatus?.mode === 'production'}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-emerald-600 hover:bg-emerald-500 text-white"
+            >
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Production
+            </button>
+            <button
+              type="button"
+              onClick={() => void handleSetMode('development')}
+              disabled={providerBusy || providerStatus?.mode === 'development'}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed bg-amber-600 hover:bg-amber-500 text-white"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              Dev Mode
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Stats Cards */}

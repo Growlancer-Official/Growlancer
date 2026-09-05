@@ -11,14 +11,19 @@
 // Switching providers = add an adapter + flip KYC_PROVIDER env; nothing else
 // changes.
 //
-// NO FAKE KYC: without a configured provider token the function NEVER marks
-// anyone verified — it flags the row for review (fail-safe) and returns a
-// friendly "temporarily unavailable" message.
+// NO FAKE KYC: in production mode without a configured provider token the
+// function NEVER marks anyone verified — it flags the row for review
+// (fail-safe) and returns a friendly "temporarily unavailable" message.
 //
-// DEVELOPMENT MODE: KYC_DEV_MODE=true + KYC_DEV_TOKEN=... activates a
-// deterministic dev adapter. It is refused unless the Supabase ref matches
-// the dev project ref, so it can never activate accidentally in production.
-// Dev results are honestly labelled provider='dev-sandbox'.
+// DEVELOPMENT MODE (two independent gates):
+//   1. env-gated sandbox  — KYC_DEV_MODE=true + KYC_DEV_TOKEN=... + project
+//      ref match (can never activate accidentally in production), provider
+//      labelled 'dev-sandbox'.
+//   2. DB-driven mode     — kyc_provider_config.mode='development', flipped
+//      only by an admin RPC from the admin panel (audited). Same automated
+//      engine, provider labelled 'dev_mode' so rows are honest and can be
+//      re-verified against a real provider later. Production mode never
+//      reaches this adapter.
 //
 // Idempotency: only rows in 'pending' are processed; decisions are written
 // exactly once (status-guarded update), so repeated invokes cannot
@@ -47,24 +52,31 @@ const RATE_LIMIT = 5; // submissions per window (provider calls cost money)
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const PROVIDER_TIMEOUT_MS = 20_000;
 
-// Provider token resolution: admin-managed DB config (kyc_provider_config,
-// set from the admin panel) wins; env secret is the fallback. This lets the
-// founder rotate/enable the provider without a redeploy.
-async function resolveProviderToken(service: any): Promise<{ token: string | null; source: 'database' | 'env' | 'none' }> {
+// Provider config resolution: admin-managed DB config (kyc_provider_config,
+// set from the admin panel) wins for both token AND verification mode; the env
+// secret stays as the fallback. This lets the founder rotate/enable the
+// provider — or flip development mode — without a redeploy.
+async function resolveProviderConfig(service: any): Promise<{
+  token: string | null;
+  mode: 'production' | 'development';
+  source: 'database' | 'env' | 'none';
+}> {
   try {
     const { data, error } = await service
       .from('kyc_provider_config')
-      .select('api_token')
+      .select('api_token, mode')
       .eq('id', 1)
       .maybeSingle();
-    if (!error && data?.api_token && String(data.api_token).trim().length > 0) {
-      return { token: String(data.api_token).trim(), source: 'database' }; 
+    if (!error && data) {
+      const token = data?.api_token && String(data.api_token).trim().length > 0 ? String(data.api_token).trim() : null;
+      const mode = data?.mode === 'development' ? 'development' : 'production';
+      return { token, mode, source: 'database' };
     }
   } catch {
     // Table missing / RLS deny — fall through to env.
   }
   const envToken = Deno.env.get('SUREPASS_API_TOKEN') ?? '';
-  return { token: envToken.trim() || null, source: envToken ? 'env' : 'none' };
+  return { token: envToken.trim() || null, mode: 'production', source: envToken ? 'env' : 'none' };
 }
 
 const corsHeaders = {
@@ -209,7 +221,7 @@ const surepassAdapter: KycProviderAdapter = {
   },
 };
 
-// ── Dev sandbox adapter (impossible to activate in production) ──────────────
+// ── Dev sandbox adapter (env-gated; impossible to activate in production) ────
 // Deterministic on the PAN's 4th character (the real holder-type digit —
 // 'P' = individual): P → verified, F → failed, anything else → review.
 // Labelled 'dev-sandbox' so no dev row can masquerade as a production verdict.
@@ -227,7 +239,27 @@ const devAdapter: KycProviderAdapter = {
   },
 };
 
-function getAdapter(token: string | null): KycProviderAdapter | null {
+// ── DB-driven development-mode adapter (admin switch, audited) ──────────────
+// Activated ONLY when kyc_provider_config.mode = 'development'. Deterministic
+// automated verification: format + email-verified + duplicate checks still
+// apply around it (handled by the caller), and every row is labelled
+// provider='dev_mode' so it can never be confused with a real verdict — and
+// can be re-verified against a real provider later. Production mode never
+// reaches this adapter.
+const devModeAdapter: KycProviderAdapter = {
+  name: 'dev_mode',
+  async verifyPan({ pan }) {
+    return {
+      outcome: 'verified',
+      provider_reference: `dev_${crypto.randomUUID()}`,
+      failure_category: null,
+      meta: { mode: 'development', masked_pan: maskPan(pan), note: 'automated dev-mode verification (no external provider)' },
+    };
+  },
+};
+
+function getAdapter(token: string | null, dbDevMode: boolean): KycProviderAdapter | null {
+  if (dbDevMode) return devModeAdapter;
   if (DEV_MODE_ACTIVE) return devAdapter;
   if (KYC_PROVIDER === 'surepass' && token) return surepassAdapter;
   return null; // No provider configured → fail safe (review), never a fake verdict
@@ -385,11 +417,11 @@ serve(async (req: Request) => {
     }
 
     // ── Provider call (server-side; the token never leaves this function) ─
-    const tokenResolution = await resolveProviderToken(service);
-    const adapter = getAdapter(tokenResolution.token);
+    const providerConfig = await resolveProviderConfig(service);
+    const adapter = getAdapter(providerConfig.token, providerConfig.mode === 'development');
     let result: ProviderResult;
     if (adapter) {
-      result = await adapter.verifyPan({ pan: rawPan, fullName, dateOfBirth: dob, token: tokenResolution.token as string });
+      result = await adapter.verifyPan({ pan: rawPan, fullName, dateOfBirth: dob, token: providerConfig.token as string });
     } else {
       // Fail safe: no provider configured → REVIEW, never a fake verdict.
       result = { outcome: 'review', provider_reference: null, failure_category: 'provider_error', meta: { reason: 'provider_not_configured' } };
