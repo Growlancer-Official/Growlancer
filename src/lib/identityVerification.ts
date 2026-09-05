@@ -229,9 +229,10 @@ export const identityVerificationService = {
    * Submit a new identity verification request.
    * Handles both secure file uploads and URL-based uploads for backward compatibility.
    *
-   * MANUAL REVIEW: every submission enters the compliance queue as 'pending'.
-   * An admin reviews the documents (AdminIdentityVerificationPage) and the
-   * user's status flips to verified/rejected in real time via the sync trigger.
+   * AUTOMATED: the row enters as 'pending' (RLS-enforced), then the kyc-submit
+   * edge function verifies it server-side (PAN → instant; others → review) and
+   * the status flips to verified/rejected/review in real time via Realtime +
+   * the badge-sync trigger.
    */
   async submit(
     userId: string,

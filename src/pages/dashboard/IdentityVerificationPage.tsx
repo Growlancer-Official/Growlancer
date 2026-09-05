@@ -47,7 +47,7 @@ export function IdentityVerificationPage() {
 
   // Form state — supports FRONT + BACK images per document type
   const [formData, setFormData] = useState<VerificationUpload>({
-    document_type: 'passport',
+    document_type: 'pan',
     document_file: undefined,
     document_url: '',
     document_file_back: undefined,
@@ -104,8 +104,8 @@ export function IdentityVerificationPage() {
     return () => clearInterval(t);
   }, [verificationStatus, blockedDisplayMs, fetchStatus]);
 
-  // Realtime subscription for status changes — when the compliance team
-  // approves/rejects, the pending → verified/rejected flip arrives live.
+  // Realtime subscription for status changes — the kyc-submit engine flips
+  // the row to verified/rejected/review and this pushes the change live.
   // On the verified flip we also send the approval email once (fire-and-forget)
   // so the user gets notified in-app + by email.
   const emailedVerifiedIds = useRef<Set<string>>(new Set());
@@ -120,7 +120,7 @@ export function IdentityVerificationPage() {
         setBlockedMsLeft(getKycBlockedMsLeft(updated));
       }
 
-      // 🔔 Email once when the compliance team approves (idempotent per row).
+      // 🔔 Email once when the engine verifies (idempotent per row).
       if (
         updated.status === 'verified' &&
         updated.id &&
@@ -294,7 +294,7 @@ export function IdentityVerificationPage() {
       setShowForm(false);
       setConsentAgreed(false);
       setFormData({
-        document_type: 'passport',
+        document_type: 'pan',
         document_file: undefined,
         document_url: '',
         document_file_back: undefined,
@@ -387,13 +387,16 @@ export function IdentityVerificationPage() {
               onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
             >
-              <option value="aadhaar">Aadhaar Card (India)</option>
               <option value="pan">PAN Card (India)</option>
+              <option value="aadhaar">Aadhaar Card (India)</option>
               <option value="passport">Passport</option>
               <option value="drivers_license">Driver's License</option>
               <option value="national_id">National ID Card</option>
               <option value="other">Other Government ID</option>
             </select>
+            <p className="text-xs text-slate-500 mt-1.5">
+              PAN verifies automatically in real time. Other documents are checked by our compliance team.
+            </p>
           </div>
 
           {/* Full Name */}
@@ -599,14 +602,14 @@ export function IdentityVerificationPage() {
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               Document Number <span className="text-red-500">*</span>
-              <span className="ml-2 text-xs font-normal text-slate-400">(checked by our compliance team)</span>
+              <span className="ml-2 text-xs font-normal text-slate-400">(verified automatically in real time)</span>
             </label>
             <input
               type="text"
               required
               value={formData.document_number || ''}
               onChange={(e) => setFormData((prev) => ({ ...prev, document_number: e.target.value.toUpperCase() }))}
-              placeholder="e.g., XXXXXXXXXXXX"
+              placeholder={formData.document_type === 'pan' ? 'e.g., ABCDE1234F' : 'e.g., XXXXXXXXXXXX'}
               className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
             />
           </div>
@@ -712,7 +715,7 @@ export function IdentityVerificationPage() {
     // Industry-standard verification stepper: Submitted → In Review → Verified
     const steps = [
       { label: 'Submitted', done: true, current: false },
-      { label: 'In Review', done: false, current: true },
+      { label: 'Verifying', done: false, current: true },
       { label: 'Verified', done: false, current: false },
     ];
     return (
@@ -722,16 +725,16 @@ export function IdentityVerificationPage() {
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h2>
         <p className="text-slate-500 mb-3">
-          Your documents are with our <span className="font-semibold text-slate-700">compliance team for manual review</span>.
-          Verification typically takes <span className="font-semibold text-amber-700">1–2 business days</span> —
+          Your details are being <span className="font-semibold text-slate-700">verified automatically right now</span>.
+          This usually completes <span className="font-semibold text-amber-700">within seconds</span> —
           your status updates here in real time, no refresh needed.
         </p>
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3 flex items-start gap-3 text-left">
           <Shield className="w-4 h-4 text-slate-600 mt-0.5 shrink-0" />
           <p className="text-xs text-slate-600 leading-relaxed">
-            A trained compliance reviewer verifies every document by hand — no automated approval. If
-            anything needs clarification, your submission is rejected with a clear reason and you can
-            resubmit (3 attempts, then a 24-hour cooldown). Your documents are stored securely and never
+            Your identity details are checked securely in real time against official verification records.
+            If anything doesn't match, your submission is returned with a clear reason and you can
+            resubmit (3 attempts, then a 24-hour cooldown). Your data is stored securely and never
             shared without your consent.
           </p>
         </div>
@@ -1178,7 +1181,7 @@ export function IdentityVerificationPage() {
               <Shield className="w-4 h-4 text-white" />
             </div>
             <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text="Verified freelancers get a trust badge on their profile and priority in client search. Upload a government-issued ID — our compliance team manually reviews it, typically within 1–2 business days. Your documents are encrypted and never shared." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text={`Verified ${isClient ? 'clients' : 'freelancers'} get a trust badge on their profile and priority in matching and search. Submit your PAN — verification completes automatically in real time. Your documents are encrypted and never shared.`} /></h1>
             <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
             </div>
           </div>
@@ -1206,7 +1209,7 @@ export function IdentityVerificationPage() {
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
             <Shield className="w-4 h-4 text-white" />
           </div>
-          <div>            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text="Verified freelancers get a trust badge on their profile and priority in client search. Upload a government-issued ID — our compliance team manually reviews it, typically within 1–2 business days. Your documents are encrypted and never shared." /></h1>
+          <div>            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text={`Verified ${isClient ? 'clients' : 'freelancers'} get a trust badge on their profile and priority in matching and search. Submit your PAN — verification completes automatically in real time. Your documents are encrypted and never shared.`} /></h1>
           <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
           </div>
         </div>
