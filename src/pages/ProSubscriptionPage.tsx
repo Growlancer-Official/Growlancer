@@ -1,5 +1,18 @@
 import { useState, useEffect } from 'react';
-import { ArrowRight, BarChart3, Check, CheckCircle, CreditCard, Crown, Loader2, Lock, MessageSquare, RefreshCw, ShieldCheck, Sparkles, TrendingUp, X, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  CheckCircle,
+  ChevronDown,
+  CreditCard,
+  Crown,
+  Loader2,
+  MessageSquare,
+  RefreshCw,
+  ShieldCheck,
+  Sparkles,
+  X,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { safeFormatDate } from '../utils/date';
 import { formatCurrency } from '../lib/currency';
@@ -16,8 +29,51 @@ import {
   type AIPlan,
 } from '../lib/subscriptionHelpers';
 
-// Testimonials removed - Growlancer is currently in pre-launch phase
-// Real user testimonials will be added after platform launch
+const FAQ_ITEMS = [
+  {
+    q: 'What do I get in Premium?',
+    a: 'Premium unlocks unlimited AI writing (titles, descriptions, cover letters), a personalized AI assistant with priority responses, and advanced analytics. It is purely extra AI + productivity tools — your packages, proposals, visibility and matching score stay exactly the same.',
+  },
+  {
+    q: 'Does Premium boost my ranking or visibility?',
+    a: 'No — never. Ranking, matching and visibility are 100% merit-based and identical for free and Premium freelancers. Premium only adds AI and analytics tools; it is never a pay-to-win boost.',
+  },
+  {
+    q: 'Can I cancel anytime?',
+    a: 'Yes — cancel from this page with one click. No contracts, no lock-in. You keep Premium access until the end of your current billing period, and you can renew whenever you like.',
+  },
+  {
+    q: 'How does the free trial work?',
+    a: 'New freelancers get one free trial of Premium — no payment needed to start. After the trial ends (or if you have already used it), upgrading is handled securely via Razorpay.',
+  },
+  {
+    q: 'Are there any hidden fees?',
+    a: 'No. Premium is a flat monthly price — what you see is what you pay. The 5% platform commission on contracts and the payout processing fee are separate, transparent costs that apply to everyone equally.',
+  },
+];
+
+const UNLOCKS = [
+  {
+    icon: Sparkles,
+    title: 'Unlimited AI Writing',
+    text: 'Unlimited AI-generated titles, descriptions and cover letters. Free users get 5 generations per day.',
+  },
+  {
+    icon: MessageSquare,
+    title: 'AI Assistant — Priority',
+    text: 'Unlimited AI assistant messages with priority responses, plus 24/7 priority human support.',
+  },
+  {
+    icon: BarChart3,
+    title: 'Advanced Analytics',
+    text: 'Deeper insights into your profile, service and proposal performance — views, conversions and trends.',
+  },
+  {
+    icon: CheckCircle,
+    title: 'Premium Badge',
+    text: 'A visible Premium badge on your profile. A signal of commitment — never a ranking boost.',
+  },
+];
 
 export function ProSubscriptionPage() {
   const { user } = useAuth();
@@ -26,10 +82,10 @@ export function ProSubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [showPayPal, setShowPayPal] = useState(false);
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [billingInterval, setBillingInterval] = useState<'month' | 'year'>('month');
   const [upgrading, setUpgrading] = useState<string | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   // One free trial per user — fresh freelancers see ONLY "Start Free Trial";
   // after the trial is used, the same CTA becomes "Upgrade" (wallet/Razorpay).
   const [trialUsed, setTrialUsed] = useState(false);
@@ -47,13 +103,6 @@ export function ProSubscriptionPage() {
 
         if (plansResult.success && plansResult.plans) {
           setPlans(plansResult.plans);
-          // Auto-detect billing interval from current subscription
-          const currentPlan = plansResult.plans.find(
-            (p) => p.id === subResult.subscription?.plan_id
-          );
-          if (currentPlan) {
-            setBillingInterval(currentPlan.interval as 'month' | 'year');
-          }
         }
         if (subResult.success) {
           setSubscription(subResult.subscription ?? null);
@@ -155,14 +204,13 @@ export function ProSubscriptionPage() {
   // For comparison table: Free vs Premium (two columns)
   const freePlan = plans.find((p) => p.price === 0);
   const premiumPlan = canonicalPlan || fallbackPlan || plans.find((p) => p.price > 0 && p.interval === 'month');
-  const _comparisonPlans = [freePlan, premiumPlan].filter(Boolean) as typeof plans;
 
   // Build comparison rows from plan features.
-  // ⚠️ RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.
+  // RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.
   const allFeatures = [
     { key: 'ai_writing', label: 'AI Writing', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : '5/day') },
     { key: 'ai_messages', label: 'AI Assistant', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : `${p.ai_messages_limit}/mo`) },
-    { key: 'packages', label: '3-Tier Service Packages', getValue: () => '✓ Free for everyone' },
+    { key: 'packages', label: '3-Tier Service Packages', getValue: () => 'Included — free for everyone' },
     { key: 'matching', label: 'AI Matching & Ranking', getValue: () => 'Merit-based — same for all' },
     { key: 'analytics', label: 'Analytics', getValue: (p: AIPlan) => (p.price > 0 ? 'Advanced' : 'Basic') },
     { key: 'support', label: 'Support', getValue: (p: AIPlan) => (p.price > 0 ? '24/7 Priority' : 'Email') },
@@ -173,34 +221,33 @@ export function ProSubscriptionPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-5xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
           <Crown className="w-4 h-4 text-white" />
         </div>
-        <div>
+        <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
             Premium
             <InfoTip title="Growlancer Premium" text="Premium unlocks AI writing tools, AI assistant, profile optimization and advanced analytics. It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone." />
           </h1>
-          <p className="text-slate-500 mt-1">Unlock AI-powered productivity tools</p>
+          <p className="text-slate-500 mt-0.5 text-sm">AI-powered productivity tools, on top of the free marketplace</p>
         </div>
       </div>
 
       {/* Subscription Status Banner */}
       {isPro && subscription && (
-        <div className="mx-auto max-w-lg p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3">
-          <CheckCircle className="text-emerald-600 text-2xl w-6 h-6 flex-shrink-0" />
-          <div className="text-left">
-            <p className="text-emerald-900 font-bold text-sm flex items-center gap-3">
-              You are on{' '}
-              {subscription.subscription_plans?.name || 'Pro'} plan
+        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start sm:items-center gap-3">
+          <CheckCircle className="text-emerald-600 w-6 h-6 flex-shrink-0 mt-0.5 sm:mt-0" />
+          <div className="min-w-0">
+            <p className="text-emerald-900 font-bold text-sm flex flex-wrap items-center gap-x-2 gap-y-1">
+              <span>You are on {subscription.subscription_plans?.name || 'Pro'} plan</span>
               <ProBadge size="xs" />
             </p>
-            <p className="text-emerald-700 text-xs">
+            <p className="text-emerald-700 text-xs mt-0.5">
               {subscription.cancel_at_period_end
-                ? 'Cancels at period end'
+                ? 'Cancels at period end — renew below to keep Premium active.'
                 : `Next renewal: ${
                     subscription.subscription_end_date
                       ? (safeFormatDate(subscription.subscription_end_date) || '—')
@@ -210,160 +257,77 @@ export function ProSubscriptionPage() {
                   }`}
             </p>
           </div>
-        </div>        )}
+        </div>
+      )}
 
-      {/* Plan Card — single ₹299/month plan */}
-      <div className="mx-auto grid grid-cols-1 gap-3 px-4 max-w-lg">
-            {displayPlans.map((plan) => {
-              const isCurrentPlan = subscription?.plan_id === plan.id;
-              const isPopular = plan.ai_priority && billingInterval === 'month';
-              const isFree = plan.price === 0;
+      {/* Plan + Benefits: 2-col dashboard layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+        {/* Plan Card */}
+        <div className="lg:col-span-2 space-y-4">
+          {displayPlans.map((plan) => {
+            const isCurrentPlan = subscription?.plan_id === plan.id;
 
-              return (
-                <div
-                  key={plan.id}
-                  className={`relative flex flex-col rounded-[32px] p-4 border-2 transition-all duration-300 bg-white ${
-                    isPopular
-                      ? 'border-emerald-500 shadow-[0_20px_50px_-12px_rgba(16,185,129,0.25)] md:scale-105 lg:scale-110'
-                      : 'border-slate-200 hover:border-slate-300'
-                  } ${isCurrentPlan ? 'ring-2 ring-emerald-400' : ''}`}
-                >
-                  {isPopular && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20 px-4 py-1 rounded-full bg-slate-900 text-white text-xs font-bold uppercase tracking-widest shadow-xl">
-                      Most Popular
-                    </div>
-                  )}
-
-                  {isCurrentPlan && (
-                    <div className="absolute top-4 right-4 z-20 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-widest">
-                      Current Plan
-                    </div>
-                  )}
-
-                  {/* Plan Icon */}
-                  <div
-                    className={`p-3 rounded-xl w-fit mb-3 ${
-                      isFree ? 'bg-slate-100' : 'bg-emerald-100'
-                    }`}
-                  >
-                    {isFree ? (
-                      <Zap className="w-6 h-6 text-slate-600" />
-                    ) : (
-                      <Crown className="w-6 h-6 text-emerald-600" />
-                    )}
+            return (
+              <div
+                key={plan.id}
+                className={`relative rounded-2xl p-6 border bg-white transition-all ${
+                  isCurrentPlan ? 'border-emerald-300 ring-2 ring-emerald-100' : 'border-slate-200'
+                }`}
+              >
+                {isCurrentPlan && (
+                  <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[11px] font-bold uppercase tracking-wider">
+                    Current Plan
                   </div>
+                )}
 
-                  {/* Plan Name & Description */}
-                  <h3 className="font-display text-xl font-bold mb-1">{plan.name}</h3>
-                  <p className="text-sm text-slate-500 mb-3">{plan.description}</p>
+                <div className="p-2.5 rounded-xl w-fit bg-emerald-100 mb-4">
+                  <Crown className="w-5 h-5 text-emerald-600" />
+                </div>
 
-                  {/* Price */}
-                  <div className="mb-3">
-                    <div className="flex items-baseline gap-1">
-                      <span className="font-display text-4xl font-extrabold">
-                        {formatCurrency(plan.price)}
-                      </span>
-                      <span className="text-slate-400 font-bold text-sm">
-                        /{plan.interval}
-                      </span>
-                    </div>
-                    {plan.trial_days > 0 && (
-                      <p className="text-sm text-emerald-600 font-medium mt-1">
-                        {plan.trial_days}-day free trial
-                      </p>
-                    )}
-                  </div>
+                <h3 className="font-display text-lg font-bold text-slate-900">{plan.name}</h3>
+                <p className="text-sm text-slate-500 mt-0.5">{plan.description}</p>
 
-                  {/* Features */}
-                  <div className="space-y-3 mb-8 flex-1">
-                    <div className="flex items-center gap-3 text-sm">
-                      <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="text-slate-700">
-                        {plan.ai_messages_limit >= 1000
-                          ? 'Unlimited AI messages'
-                          : `${plan.ai_messages_limit} AI messages/month`}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="text-slate-700">
-                        {plan.ai_messages_limit >= 1000
-                          ? 'Unlimited AI writing (titles, descriptions, cover letters)'
-                          : 'AI writing — 5 generations per day'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="text-slate-700">AI-powered project matching</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                      <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                      <span className="text-slate-700">Personalized AI assistant</span>
-                    </div>
-                    {plan.price > 0 ? (
-                      <>
-                        <div className="flex items-center gap-3 text-sm">
-                          <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                          <span className="text-slate-700">Priority AI responses</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                          <span className="text-slate-700">Advanced analytics</span>
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <Check className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                          <span className="text-slate-700">Priority support 24/7</span>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex items-center gap-3 text-sm">
-                        <X className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                        <span className="text-slate-400">Premium features</span>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex items-baseline gap-1 mt-4">
+                  <span className="font-display text-4xl font-extrabold text-slate-900">
+                    {formatCurrency(plan.price)}
+                  </span>
+                  <span className="text-slate-400 font-semibold text-sm">/month</span>
+                </div>
+                {plan.trial_days > 0 && !isCurrentPlan && (
+                  <p className="text-xs text-emerald-600 font-semibold mt-1.5">
+                    {plan.trial_days}-day free trial for new freelancers
+                  </p>
+                )}
 
-                  {/* Action Button */}
+                {/* Action Button */}
+                <div className="mt-6">
                   {isCurrentPlan ? (
-                    <div className="space-y-4">
-                      {subscription?.cancel_at_period_end ? (
-                        <>
-                          <button
-                            onClick={() => void handleRenew()}
-                            disabled={cancelling}
-                            className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all text-sm disabled:opacity-50"
-                          >
-                            {cancelling ? 'Renewing...' : 'Renew Now'}
-                          </button>
-                          <p className="text-xs text-amber-600 text-center font-medium">
-                            Your Pro ends at period end — renew to keep it active.
-                          </p>
-                        </>
-                      ) : (
+                    subscription?.cancel_at_period_end ? (
+                      <div className="space-y-2">
                         <button
-                          onClick={() => setShowCancelConfirm(true)}
-                          className="w-full py-3 rounded-xl font-bold transition-all text-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
+                          onClick={() => void handleRenew()}
+                          disabled={cancelling}
+                          className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition-all text-sm disabled:opacity-50"
                         >
-                          Cancel Subscription
+                          {cancelling ? 'Renewing...' : 'Renew Now'}
                         </button>
-                      )}
-                    </div>
-                  ) : isFree ? (
-                    <button
-                      disabled
-                      className="w-full py-3 rounded-xl bg-slate-100 text-slate-400 font-bold cursor-not-allowed text-sm"
-                    >
-                      Current Plan
-                    </button>
+                        <p className="text-xs text-amber-600 text-center font-medium">
+                          Your Premium ends at period end — renew to keep it active.
+                        </p>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowCancelConfirm(true)}
+                        className="w-full py-2.5 rounded-xl font-bold transition-all text-sm bg-slate-100 text-slate-700 hover:bg-slate-200"
+                      >
+                        Cancel Subscription
+                      </button>
+                    )
                   ) : plan.trial_days > 0 && !trialUsed ? (
                     <button
                       onClick={() => handleUpgrade(plan.id, true)}
                       disabled={upgrading === plan.id}
-                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 text-sm ${
-                        isPopular
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-                          : 'bg-slate-900 hover:bg-slate-800 text-white'
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      className="w-full py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center gap-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {upgrading === plan.id ? (
                         <>
@@ -381,11 +345,7 @@ export function ProSubscriptionPage() {
                     <button
                       onClick={() => handleUpgrade(plan.id)}
                       disabled={upgrading === plan.id}
-                      className={`w-full py-3 rounded-xl font-bold transition-all shadow-lg active:scale-[0.98] flex items-center justify-center gap-3 text-sm ${
-                        isPopular
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20'
-                          : 'bg-slate-900 hover:bg-slate-800 text-white'
-                      } disabled:opacity-50 disabled:cursor-not-allowed`}
+                      className="w-full py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 active:scale-[0.98] flex items-center justify-center gap-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {upgrading === plan.id ? (
                         <>
@@ -394,242 +354,118 @@ export function ProSubscriptionPage() {
                         </>
                       ) : (
                         <>
-                          Upgrade to {plan.name}
+                          Upgrade to Premium
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
                     </button>
                   )}
+                </div>
 
-                  {isCurrentPlan && !subscription?.cancel_at_period_end && (
-                    <div className="mt-4 flex items-center justify-center gap-3">
-                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                        <ShieldCheck className="text-emerald-500 w-4 h-4" />
-                        Active
-                      </div>
-                    </div>
-                  )}
+                {/* Trust Badges */}
+                <div className="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center gap-x-4 gap-y-2">
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                    <ShieldCheck className="text-emerald-500 w-3.5 h-3.5" />
+                    Secure Payment
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                    <RefreshCw className="text-emerald-500 w-3.5 h-3.5" />
+                    Cancel Anytime
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                    <CreditCard className="text-emerald-500 w-3.5 h-3.5" />
+                    UPI / Cards
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })}
+        </div>
 
-          {/* Trust Badges */}
-          <div className="max-w-md mx-auto mt-8 flex items-center justify-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
-              <ShieldCheck className="text-emerald-500 w-4 h-4" />
-              Secure Payment
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
-              <RefreshCw className="text-emerald-500 w-4 h-4" />
-              Cancel Anytime
-            </div>
-            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-widest">
-              <CreditCard className="text-emerald-500 w-4 h-4" />
-              UPI / Cards / NetBanking
-            </div>
+        {/* What Premium Unlocks */}
+        <div className="lg:col-span-3">
+          <h2 className="font-display text-lg font-bold text-slate-900 mb-1">What Premium unlocks</h2>
+          <p className="text-sm text-slate-500 mb-4">
+            Honest and fair: Premium is purely AI + productivity tools. Your packages, proposals,
+            visibility and matching score are <strong>identical</strong> with or without it — everything
+            on this platform is merit-based.
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {UNLOCKS.map(({ icon: Icon, title, text }) => (
+              <div key={title} className="p-4 rounded-xl bg-white border border-slate-200">
+                <div className="h-9 w-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center mb-3">
+                  <Icon className="w-4 h-4" />
+                </div>
+                <h3 className="font-bold text-sm text-slate-900 mb-1">{title}</h3>
+                <p className="text-xs text-slate-500 leading-relaxed">{text}</p>
+              </div>
+            ))}
           </div>
+        </div>
+      </div>
 
-        {/* Why Upgrade Section */}
-        <section className="bg-white py-10 border-y border-slate-100 mt-8">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="text-center mb-8">
-              <h2 className="font-display text-2xl font-extrabold mb-2">What Premium Unlocks</h2>
-              <p className="text-slate-500 text-sm">
-                Fair and honest: Premium is purely AI + productivity tools. Your packages, proposals,
-                visibility and matching score are <strong>identical</strong> with or without it — everything on this
-                platform is merit-based.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
-                  <Sparkles className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-base mb-2">Unlimited AI Writing</h3>
-                <p className="text-sm text-slate-500">
-                  Unlimited AI-generated titles, descriptions and cover letters (free users get 5/day).
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center mx-auto mb-3">
-                  <MessageSquare className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-base mb-2">AI Assistant & Support</h3>
-                <p className="text-sm text-slate-500">
-                  Priority AI assistant responses and 24/7 priority support — human help when you need it.
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
-                  <BarChart3 className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-base mb-2">Advanced Analytics</h3>
-                <p className="text-sm text-slate-500">
-                  Deeper performance insights for your profile, services and proposals.
-                </p>
-              </div>
-              <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
-                <div className="h-12 w-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-3">
-                  <CheckCircle className="w-6 h-6" />
-                </div>
-                <h3 className="font-bold text-base mb-2">Premium Badge</h3>
-                <p className="text-sm text-slate-500">
-                  A visible Premium badge on your profile — a signal of commitment, never a ranking boost.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+      {/* Plan Comparison Table */}
+      <section>
+        <h2 className="font-display text-lg font-bold text-slate-900 mb-3">Compare plans</h2>
+        <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
+          <table className="w-full min-w-[560px] border-collapse text-left">
+            <thead className="bg-slate-50">
+              <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-400">
+                <th className="px-4 py-3">Feature</th>
+                <th className="px-4 py-3">Free</th>
+                <th className="px-4 py-3 text-emerald-600">Premium</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {allFeatures.map((feature) => (
+                <tr key={feature.key} className="text-sm">
+                  <td className="px-4 py-3 font-medium text-slate-700">{feature.label}</td>
+                  <td className="px-4 py-3 text-slate-500">
+                    {freePlan ? feature.getValue(freePlan) : '—'}
+                  </td>
+                  <td className="px-4 py-3 font-semibold text-emerald-700">
+                    {premiumPlan ? feature.getValue(premiumPlan) : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-        {/* Plan Comparison Table */}
-        <section className="py-10">
-          <div className="max-w-5xl mx-auto px-4">
-            <h2 className="font-display text-2xl font-extrabold text-center mb-8">
-              Compare Plans
-            </h2>
-            <div className="bg-white rounded-xl border border-slate-200 overflow-x-auto shadow-sm">
-              <table className="w-full min-w-[640px] border-collapse text-left">
-                <thead className="bg-slate-50">
-                  <tr className="border-b border-slate-100 text-xs font-bold uppercase tracking-widest text-slate-400">
-                    <th className="p-3">Feature</th>
-                    <th className="p-3">Free</th>
-                    <th className="p-3 text-emerald-600">Premium</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {allFeatures.map((feature) => (
-                    <tr key={feature.key} className="text-sm">
-                      <td className="p-3 font-medium text-slate-700">
-                        {feature.label}
-                      </td>
-                      <td className="p-3">
-                        {freePlan ? feature.getValue(freePlan) : '—'}
-                      </td>
-                      <td className="p-3 font-bold text-emerald-600">
-                        {premiumPlan ? feature.getValue(premiumPlan) : '—'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+      {/* FAQ */}
+      <section>
+        <h2 className="font-display text-lg font-bold text-slate-900 mb-1">Common questions</h2>
+        <p className="text-sm text-slate-500 mb-4">
+          Everything you need to know about Growlancer Premium — honest answers, no fine print.
+        </p>
+        <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+          {FAQ_ITEMS.map((item, idx) => {
+            const isOpen = openFaq === idx;
+            return (
+              <div key={item.q}>
+                <button
+                  type="button"
+                  onClick={() => setOpenFaq(isOpen ? null : idx)}
+                  className="w-full flex items-center justify-between gap-4 px-4 py-3.5 text-left hover:bg-slate-50 transition-colors"
+                  aria-expanded={isOpen}
+                >
+                  <span className="font-semibold text-sm text-slate-900">{item.q}</span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-slate-400 flex-shrink-0 transition-transform duration-200 ${
+                      isOpen ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+                {isOpen && (
+                  <p className="px-4 pb-4 text-sm text-slate-600 leading-relaxed">{item.a}</p>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
-        {/* Pre-Launch Section */}
-        <section className="py-10 bg-slate-50">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="text-center">
-              <div className="inline-flex items-center gap-3 px-4 py-2 bg-emerald-100 text-emerald-700 font-semibold rounded-full text-sm mb-3">
-                <Sparkles className="w-4 h-4" />
-                Pre-Launch Phase
-              </div>
-              <h2 className="font-display text-2xl font-extrabold mb-2">
-                Be Among the First
-              </h2>
-              <p className="text-slate-500 max-w-2xl mx-auto text-sm">
-                Growlancer is currently in pre-launch. We're building the AI-powered freelancing platform of the future. 
-                User testimonials and success stories will be featured here after our official launch.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ Section */}
-        <section className="py-10 bg-slate-50">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="text-center mb-8">
-              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900">Common Questions</h2>
-              <p className="text-slate-500 mt-3 max-w-2xl mx-auto text-sm">
-                Everything you need to know about Growlancer Premium — honest answers, no fine print.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                    <div className="text-emerald-600 mb-2">
-                      <Lock className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
-                      Secure Payment
-                    </h4>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      All subscription payments are processed securely via Razorpay — UPI, cards and net banking.
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                    <div className="text-emerald-600 mb-2">
-                      <CheckCircle className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
-                      No Hidden Fees
-                    </h4>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      What you see is what you pay — {formatCurrency(299)}/month, flat. No tiers, no setup fees, no surprises.
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                    <div className="text-emerald-600 mb-2">
-                      <TrendingUp className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
-                      Cancel Anytime
-                    </h4>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      No lock-in, no long-term contract. Cancel whenever you want — your access stays until the period ends.
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                    <div className="text-emerald-600 mb-2">
-                      <ShieldCheck className="w-6 h-6" />
-                    </div>
-                    <h4 className="font-bold text-sm uppercase tracking-widest text-slate-900 mb-2">
-                      Always Merit-Based
-                    </h4>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Premium never boosts your ranking, visibility or matching — those stay merit-based and free for everyone.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                  <h4 className="font-bold mb-3 text-lg text-slate-900">What do I get in Premium?</h4>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    Premium unlocks our <strong>AI writing tools, AI assistant, profile optimization and advanced analytics</strong>.
-                    It is purely extra AI + productivity tools — it never affects your packages, proposals,
-                    visibility or matching score. Everything on the platform stays merit-based for everyone.
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                  <h4 className="font-bold mb-3 text-lg text-slate-900">Can I cancel anytime?</h4>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    Yes — cancel from the Premium page with one click, any time. No contracts, no commitments.
-                    You keep access until the end of your billing period, and you can renew again whenever you like.
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                  <h4 className="font-bold mb-3 text-lg text-slate-900">Does Premium boost my ranking or visibility?</h4>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    <strong>No — never.</strong> Ranking, matching and visibility are always merit-based and identical for
-                    free and Premium freelancers alike. Premium only unlocks AI and analytics tools; it is never a
-                    pay-to-win boost.
-                  </p>
-                </div>
-                <div className="p-3 rounded-xl bg-white border border-slate-200 shadow-sm">
-                  <h4 className="font-bold mb-3 text-lg text-slate-900">What's the difference between Free and Premium?</h4>
-                  <p className="text-slate-600 text-sm leading-relaxed">
-                    Free gives you the full marketplace: 3-tier packages, unlimited proposals (fair-use), escrow,
-                    messaging and reviews. Premium ({formatCurrency(299)}/month) adds unlimited AI writing, a personalized
-                    AI assistant, profile optimization and advanced analytics. Same access to work either way.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       {/* Cancel Confirmation Modal */}
       <ConfirmModal
         isOpen={showCancelConfirm}
