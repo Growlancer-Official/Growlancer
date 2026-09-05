@@ -3,7 +3,7 @@ import {
   Shield, Search, Loader2, RefreshCw, Mail, FileText,
   CheckCircle2, XCircle, AlertTriangle, ExternalLink, Clock,
   Eye, BadgeCheck, AlertCircle, ShieldAlert,
-  Copy, CheckCheck, X,
+  Copy, CheckCheck, X, KeyRound, Save, Trash2,
 } from 'lucide-react';
 import { identityVerificationService, type IdentityVerification } from '../../lib/identityVerification';
 import { supabase } from '../../lib/supabase';
@@ -328,6 +328,71 @@ export function AdminIdentityVerificationPage() {
     pending: 0, review: 0, verified: 0, rejected: 0, total: 0,
   });
 
+  // ── KYC provider config (founder-managed; token stored server-side only) ──
+  const [providerStatus, setProviderStatus] = useState<{ configured: boolean; provider: string; updated_at?: string } | null>(null);
+  const [tokenInput, setTokenInput] = useState('');
+  const [providerBusy, setProviderBusy] = useState(false);
+
+  const fetchProviderStatus = useCallback(async () => {
+    try {
+      const { data, error } = await supabase.rpc('admin_get_kyc_provider_status' as any);
+      const result = data as { success: boolean; configured: boolean; provider: string; updated_at?: string } | null;
+      if (!error && result?.success) {
+        setProviderStatus({ configured: !!result.configured, provider: result.provider, updated_at: result.updated_at });
+      } else {
+        setProviderStatus(null);
+      }
+    } catch {
+      setProviderStatus(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchProviderStatus();
+  }, [fetchProviderStatus]);
+
+  const handleSaveToken = async () => {
+    const token = tokenInput.trim();
+    if (!token) {
+      toast.error('Please paste your Surepass API token first.');
+      return;
+    }
+    setProviderBusy(true);
+    try {
+      const { data, error } = await supabase.rpc('admin_set_kyc_provider_config' as any, { p_token: token, p_provider: 'surepass' });
+      const result = data as { success: boolean; error?: string } | null;
+      if (error || !result?.success) {
+        toast.error('Failed to save', result?.error || error?.message || 'Please try again.');
+      } else {
+        toast.success('Verification provider configured', 'New PAN verifications are now verified automatically in real time.');
+        setTokenInput('');
+        await fetchProviderStatus();
+      }
+    } catch {
+      toast.error('Failed to save the token. Please try again.');
+    } finally {
+      setProviderBusy(false);
+    }
+  };
+
+  const handleClearToken = async () => {
+    setProviderBusy(true);
+    try {
+      const { data, error } = await supabase.rpc('admin_clear_kyc_provider_config' as any);
+      const result = data as { success: boolean; error?: string } | null;
+      if (error || !result?.success) {
+        toast.error('Failed to clear', result?.error || error?.message || 'Please try again.');
+      } else {
+        toast.success('Provider token cleared', 'New verifications will wait in review until a token is configured again.');
+        await fetchProviderStatus();
+      }
+    } catch {
+      toast.error('Failed to clear the token. Please try again.');
+    } finally {
+      setProviderBusy(false);
+    }
+  };
+
   const fetchVerifications = useCallback(async () => {
     setLoading(true);
     try {
@@ -480,6 +545,73 @@ export function AdminIdentityVerificationPage() {
         <p className="text-slate-400 text-sm mt-1">
           Review and manage identity verification requests. Documents are securely accessed via signed URLs.
         </p>
+      </div>
+
+      {/* Verification Provider Config — founder-managed, token stays server-side */}
+      <div
+        className="rounded-[2rem] p-6"
+        style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}
+      >
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+          <div className="flex items-start gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 shrink-0">
+              <KeyRound className="w-5 h-5 text-emerald-400" />
+            </div>
+            <div>
+              <h2 className="font-bold text-white text-sm flex items-center gap-2">
+                Automatic Verification Provider
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                  providerStatus?.configured
+                    ? 'bg-emerald-500/15 text-emerald-400'
+                    : 'bg-amber-500/15 text-amber-400'
+                }`}>
+                  {providerStatus === null ? 'Unknown' : providerStatus.configured ? 'Live' : 'Not Configured'}
+                </span>
+              </h2>
+              <p className="text-slate-400 text-xs mt-1 max-w-2xl">
+                Paste your Surepass API token to enable real-time PAN verification.
+                The token is stored server-side (never exposed to users or the browser)
+                and can be rotated or removed here anytime. Without a token, new
+                verifications wait safely in review — nothing is ever auto-approved.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="password"
+            value={tokenInput}
+            onChange={(e) => setTokenInput(e.target.value)}
+            placeholder={providerStatus?.configured ? 'Paste a new token to rotate…' : 'Paste your Surepass API token…'}
+            autoComplete="off"
+            className="flex-1 px-4 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-200 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+          />
+          <button
+            type="button"
+            onClick={() => void handleSaveToken()}
+            disabled={providerBusy || !tokenInput.trim()}
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-sm font-bold transition-colors"
+          >
+            {providerBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            Save Token
+          </button>
+          {providerStatus?.configured && (
+            <button
+              type="button"
+              onClick={() => void handleClearToken()}
+              disabled={providerBusy}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 text-sm font-bold transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+              Remove
+            </button>
+          )}
+        </div>
+        {providerStatus?.configured && providerStatus.updated_at && (
+          <p className="text-slate-500 text-[11px] mt-2">
+            Token configured · provider: {providerStatus.provider} · last updated {formatDate(providerStatus.updated_at)}
+          </p>
+        )}
       </div>
 
       {/* Stats Cards */}

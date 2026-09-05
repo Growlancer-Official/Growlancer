@@ -34,7 +34,6 @@ const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
 // ── Provider configuration (server-side secrets only) ──────────────────────
 const KYC_PROVIDER = (Deno.env.get('KYC_PROVIDER') ?? 'surepass').toLowerCase();
-const SUREPASS_TOKEN = Deno.env.get('SUREPASS_API_TOKEN') ?? '';
 const SUREPASS_BASE = Deno.env.get('SUREPASS_BASE_URL') ?? 'https://kyc-api.surepass.io/api/v1';
 // Dev sandbox: ONLY when explicitly enabled AND on the dev project.
 const KYC_DEV_MODE = Deno.env.get('KYC_DEV_MODE') === 'true';
@@ -47,6 +46,26 @@ const ROUTE = 'kyc-submit';
 const RATE_LIMIT = 5; // submissions per window (provider calls cost money)
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 const PROVIDER_TIMEOUT_MS = 20_000;
+
+// Provider token resolution: admin-managed DB config (kyc_provider_config,
+// set from the admin panel) wins; env secret is the fallback. This lets the
+// founder rotate/enable the provider without a redeploy.
+async function resolveProviderToken(service: any): Promise<{ token: string | null; source: 'database' | 'env' | 'none' }> {
+  try {
+    const { data, error } = await service
+      .from('kyc_provider_config')
+      .select('api_token')
+      .eq('id', 1)
+      .maybeSingle();
+    if (!error && data?.api_token && String(data.api_token).trim().length > 0) {
+      return { token: String(data.api_token).trim(), source: 'database' }; 
+    }
+  } catch {
+    // Table missing / RLS deny — fall through to env.
+  }
+  const envToken = Deno.env.get('SUREPASS_API_TOKEN') ?? '';
+  return { token: envToken.trim() || null, source: envToken ? 'env' : 'none' };
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -87,7 +106,7 @@ interface ProviderResult {
 
 interface KycProviderAdapter {
   readonly name: string;
-  verifyPan(input: { pan: string; fullName: string; dateOfBirth?: string | null }): Promise<ProviderResult>;
+  verifyPan(input: { pan: string; fullName: string; dateOfBirth?: string | null; token: string }): Promise<ProviderResult>;
 }
 
 // ── Surepass PAN Comprehensive adapter (production) ─────────────────────────
@@ -118,7 +137,7 @@ function maskPan(pan: string): string {
 
 const surepassAdapter: KycProviderAdapter = {
   name: 'surepass',
-  async verifyPan({ pan, fullName }) {
+  async verifyPan({ pan, fullName, token }) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), PROVIDER_TIMEOUT_MS);
     try {
@@ -126,7 +145,7 @@ const surepassAdapter: KycProviderAdapter = {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUREPASS_TOKEN}`,
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ id_number: pan }),
         signal: controller.signal,
@@ -208,9 +227,9 @@ const devAdapter: KycProviderAdapter = {
   },
 };
 
-function getAdapter(): KycProviderAdapter | null {
+function getAdapter(token: string | null): KycProviderAdapter | null {
   if (DEV_MODE_ACTIVE) return devAdapter;
-  if (KYC_PROVIDER === 'surepass' && SUREPASS_TOKEN) return surepassAdapter;
+  if (KYC_PROVIDER === 'surepass' && token) return surepassAdapter;
   return null; // No provider configured → fail safe (review), never a fake verdict
 }
 
@@ -365,11 +384,12 @@ serve(async (req: Request) => {
       return new Response(JSON.stringify({ success: false, status: 'rejected', error: 'Please enter your full name as printed on your PAN card.' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // ── Provider call (server-side; the key never leaves this function) ────
-    const adapter = getAdapter();
+    // ── Provider call (server-side; the token never leaves this function) ─
+    const tokenResolution = await resolveProviderToken(service);
+    const adapter = getAdapter(tokenResolution.token);
     let result: ProviderResult;
     if (adapter) {
-      result = await adapter.verifyPan({ pan: rawPan, fullName, dateOfBirth: dob });
+      result = await adapter.verifyPan({ pan: rawPan, fullName, dateOfBirth: dob, token: tokenResolution.token as string });
     } else {
       // Fail safe: no provider configured → REVIEW, never a fake verdict.
       result = { outcome: 'review', provider_reference: null, failure_category: 'provider_error', meta: { reason: 'provider_not_configured' } };
