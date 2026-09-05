@@ -112,8 +112,51 @@ const privacySections: Section[] = [
       ),
     },
     {
+      id: 'kyc',
+      title: '6. Identity Verification (KYC) & Verified Badge',
+      icon: ShieldAlert,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-2">
+            Growlancer verifies the identity of freelancers and clients to build trust, prevent fraud and duplicate accounts, and satisfy applicable anti-money-laundering (AML) obligations. This section explains exactly what we collect, why, how it is processed, and what the Verified badge means.
+          </p>
+          <div className="space-y-4">
+            <div>
+              <h5 className="font-bold text-slate-900 text-sm">A. What We Collect &amp; Why</h5>
+              <ul className="list-disc pl-5 text-slate-600 space-y-2 mt-1 text-sm">
+                <li><strong>Identity details:</strong> PAN number, full name as printed on the document, and (where provided) date of birth — used solely to verify your identity and confirm the record belongs to you.</li>
+                <li><strong>Document images:</strong> Uploaded front/back copies, used only to review your submission and removed once review is complete. We do not retain raw identity documents longer than necessary for the verification purpose.</li>
+                <li><strong>Verification records:</strong> Status, provider/reference ID, timestamps, and masked (non-sensitive) metadata. We do not store your PAN in plain text; it is stored in a format that cannot be used to reconstruct the number, and never displayed publicly. We never store Aadhaar information unless a lawful basis requires it, and we do not claim to perform government-authorized Aadhaar authentication.</li>
+              </ul>
+            </div>
+            <div>
+              <h5 className="font-bold text-slate-900 text-sm">B. Automated Processing &amp; Development Mode</h5>
+              <p className="text-slate-600 text-xs mt-1">
+                Verification is processed automatically by our systems. During Growlancer's pre-launch / development phase, verification may be performed through our <strong>development verification mode</strong>, which runs automated platform checks instead of a third-party identity verification provider. Verification records produced this way are clearly labelled internally as such.
+              </p>
+              <p className="text-slate-600 text-xs mt-2">
+                <strong>The Verified badge indicates your verification status on the Growlancer platform. It is not a government-issued identity certification and should not be represented as one.</strong> Once a third-party verification provider is configured, new verifications run against that provider, and we may re-verify previously automated records.
+              </p>
+            </div>
+            <div>
+              <h5 className="font-bold text-slate-900 text-sm">C. Third-Party Providers &amp; Consent</h5>
+              <p className="text-slate-600 text-xs mt-1">
+                When a verification provider is active, we share only the minimum information required for verification (e.g., PAN, name, and date of birth) with that provider, under contractual safeguards, solely for the purpose of verifying your identity. We never sell your identity data. You give explicit consent before any submission, and you may withdraw consent or delete your account at any time; withdrawal may affect your ability to use verification-gated features.
+              </p>
+            </div>
+            <div>
+              <h5 className="font-bold text-slate-900 text-sm">D. Retention &amp; Your Rights</h5>
+              <p className="text-slate-600 text-xs mt-1">
+                Verification records are retained while your account is active and thereafter only where required by law (e.g., anti-money-laundering and tax record-keeping). All rights in Section 8 below (access, correction, erasure, withdrawal of consent) apply to verification data, including the right to request correction of a name mismatch or deletion of your verification records.
+              </p>
+            </div>
+          </div>
+        </>
+      ),
+    },
+    {
       id: 'cookies',
-      title: '6. Cookie Policy',
+      title: '7. Cookie Policy',
       icon: Cookie,
       content: (
         <>
@@ -138,9 +181,8 @@ const privacySections: Section[] = [
         </>
       ),
     },
-    {
-    id: 'rights',
-    title: '7. Data Protection & Your Rights',
+    {      id: 'rights',
+      title: '8. Data Protection & Your Rights',
     icon: Globe,
     content: (
       <>
@@ -167,7 +209,7 @@ const privacySections: Section[] = [
     },
     {
       id: 'support',
-      title: '8. Privacy Administration',
+      title: '9. Privacy Administration',
       icon: HelpCircle,
       content: (
         <>

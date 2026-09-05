@@ -269,8 +269,28 @@ const termsSections: Section[] = [
       ),
     },
     {
+      id: 'verified-badge',
+      title: '12. Identity Verification & Verified Badge',
+      icon: ShieldCheck,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-2">
+            Growlancer offers identity verification to strengthen trust between freelancers and clients. The platform's <strong>Verified badge</strong> indicates that a user has completed Growlancer's verification process and is in good standing.
+          </p>
+          <ul className="list-disc pl-5 text-slate-600 space-y-4 mb-2 text-sm">
+            <li><strong>Badge Meaning:</strong> The Verified badge reflects your verification status on the Growlancer platform. It is not a government-issued identity certification, a creditworthiness assessment, or a representation of professional qualifications. You may not represent it as such.</li>
+            <li><strong>Automated Verification & Development Mode:</strong> Verification is processed automatically by Growlancer. During the platform's pre-launch / development phase, verification may be performed through Growlancer's development verification mode, which runs automated platform checks rather than a third-party identity verification provider. Verification records from this mode are internally labelled as such.</li>
+            <li><strong>Accurate Information Required:</strong> You agree to provide accurate, current, and complete identity information. Submitting false, fabricated, or another person's identity documents is a violation of these Terms and may result in account suspension, permanent ban, or legal action.</li>
+            <li><strong>One Identity Per Account:</strong> Each verified identity may be used on only one Growlancer account. Attempting to verify the same identity on multiple accounts is prohibited; such attempts may be rejected or result in account action.</li>
+            <li><strong>Badge Can Be Removed:</strong> Growlancer may remove, suspend, or reset a Verified badge at any time if we reasonably believe verification information is inaccurate, fraudulent, or in breach of these Terms. If your badge is removed, you may be able to re-verify by submitting accurate information again.</li>
+            <li><strong>Consent & Data Use:</strong> By submitting verification information you consent to its processing as described in our <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>, including automated processing and, where applicable, sharing with third-party verification providers solely for verification purposes.</li>
+          </ul>
+        </>
+      ),
+    },
+    {
       id: 'force-majeure',
-      title: '12. Force Majeure',
+      title: '13. Force Majeure',
       icon: Shield,
       content: (
         <>
@@ -285,7 +305,7 @@ const termsSections: Section[] = [
     },
     {
       id: 'support',
-      title: '13. Legal Administration & Contact',
+      title: '14. Legal Administration & Contact',
       icon: HelpCircle,
       content: (
         <>

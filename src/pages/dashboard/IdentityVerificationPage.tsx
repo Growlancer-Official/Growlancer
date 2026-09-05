@@ -634,11 +634,14 @@ export function IdentityVerificationPage() {
               className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
             />
             <span className="text-xs text-slate-600 leading-relaxed">
-              <span className="font-semibold text-slate-800">I agree</span> to share my identity documents with Growlancer for
-              verification purposes only. I understand my documents are stored securely, used solely to verify my
-              identity and build trust on the platform, and are never shared with third parties without my consent.
-              I may delete my account and data at any time.{' '}
-              <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>
+              <span className="font-semibold text-slate-800">I agree</span> to share my identity information with Growlancer for
+              verification purposes only. I understand verification may be processed automatically (including automated
+              platform checks during Growlancer's development phase), my information is stored securely, used solely to
+              verify my identity and build trust on the platform, and is never shared with third parties or verification
+              providers without my consent. I may withdraw consent or delete my account and data at any time.{' '}
+              <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>{' '}
+              and{' '}
+              <Link to="/terms" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Terms</Link>
             </span>
           </label>
 
