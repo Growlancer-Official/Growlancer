@@ -268,12 +268,6 @@ function getAdapter(token: string | null, dbDevMode: boolean): KycProviderAdapte
 // ═══════════════════════════════════════════════════════════════════════════
 // Duplicate-identity protection (privacy-preserving — server-side only)
 // ═══════════════════════════════════════════════════════════════════════════
-async function sha256Hex(s: string): Promise<string> {
-  const bytes = new TextEncoder().encode(s);
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
-
 async function findDuplicateIdentity(
   service: any,
   userId: string,
@@ -281,15 +275,17 @@ async function findDuplicateIdentity(
   fullName: string,
   dob: string | null
 ): Promise<string | null> {
-  // (1) Salted PAN-hash duplicate among VERIFIED rows of other users.
-  //     The hash is privacy-preserving — no raw PAN is stored or compared.
-  const panHash = await sha256Hex(`growlancer-kyc-v1:${pan}`);
+  // (1) Document duplicate among VERIFIED rows of other users. document_hash
+  //     is a GENERATED column on live = normalized document_number, so we
+  //     compare against the same normalized value (never the raw PAN stored
+  //     anywhere extra). The DB trigger kyc_reject_duplicate_identity is the
+  //     authoritative guard; this is the friendly pre-flight check.
   const { data: panDup, error: panDupErr } = await service
     .from('identity_verifications')
     .select('user_id')
     .eq('status', 'verified')
     .neq('user_id', userId)
-    .eq('document_hash', `PANHASH:${panHash}`)
+    .eq('document_hash', pan)
     .limit(1);
   if (!panDupErr && panDup && panDup.length > 0) return 'pan_reused';
 
@@ -460,8 +456,8 @@ serve(async (req: Request) => {
       baseUpdate.rejection_count = 0;
       baseUpdate.blocked_until = null;
       baseUpdate.review_reason = null;
-      // Privacy-preserving duplicate anchor: salted PAN hash (not the PAN).
-      baseUpdate.document_hash = `PANHASH:${await sha256Hex(`growlancer-kyc-v1:${rawPan}`)}`;
+      // NOTE: document_hash is a GENERATED column on live (normalized
+      // document_number) — never written from here; the DB trigger manages it.
     } else if (result.outcome === 'failed') {
       decision = 'rejected';
       baseUpdate.status = 'rejected';
