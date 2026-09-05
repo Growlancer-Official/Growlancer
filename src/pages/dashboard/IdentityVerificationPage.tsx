@@ -899,13 +899,16 @@ export function IdentityVerificationPage() {
                 onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
               >
-                <option value="aadhaar">Aadhaar Card (India)</option>
                 <option value="pan">PAN Card (India)</option>
+                <option value="aadhaar">Aadhaar Card (India)</option>
                 <option value="passport">Passport</option>
                 <option value="drivers_license">Driver's License</option>
                 <option value="national_id">National ID Card</option>
                 <option value="other">Other Government ID</option>
               </select>
+              <p className="text-xs text-slate-500 mt-1.5">
+                PAN verifies automatically in real time. Other documents are checked by our compliance team.
+              </p>
             </div>
 
             <div>
