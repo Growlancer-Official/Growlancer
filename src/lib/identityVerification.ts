@@ -262,13 +262,19 @@ export const identityVerificationService = {
         documentUrlBack = uploadBack.path || uploadBack.url;
       }
 
-      if (!documentUrl) {
-        return { success: false, error: 'Document URL or file is required' };
-      }
-
-      // A document type that requires a back image must actually have one
-      if (documentNeedsBack(upload.document_type) && !documentUrlBack) {
-        return { success: false, error: 'Please upload the back side of your document.' };
+      // PAN is verified server-side by number — an image is never required.
+      // Other document types are compliance-reviewed, so they must carry an
+      // image (front, and back where the type needs it).
+      if (upload.document_type !== 'pan') {
+        if (!documentUrl) {
+          return { success: false, error: 'Document URL or file is required' };
+        }
+        if (documentNeedsBack(upload.document_type) && !documentUrlBack) {
+          return { success: false, error: 'Please upload the back side of your document.' };
+        }
+      } else {
+        documentUrl = documentUrl || null;
+        documentUrlBack = null;
       }
 
       // MNC-style manual review: submissions ALWAYS enter the compliance

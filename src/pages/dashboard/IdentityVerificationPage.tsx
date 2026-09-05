@@ -1,77 +1,128 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { identityVerificationService, documentNeedsBack, KYC_MAX_ATTEMPTS, getRemainingKycAttempts, isKycBlocked, formatKycCooldown, getKycBlockedMsLeft, type VerificationUpload } from '../../lib/identityVerification';
+import {
+  identityVerificationService,
+  KYC_MAX_ATTEMPTS,
+  getRemainingKycAttempts,
+  isKycBlocked,
+  formatKycCooldown,
+  getKycBlockedMsLeft,
+  getKycFriendlyError,
+  type IdentityVerification,
+} from '../../lib/identityVerification';
+import {
+  clientBusinessService,
+  validateOptionalBusinessPan,
+  normalizeBusinessPan,
+  validateOptionalUdyam,
+  normalizeUdyam,
+} from '../../lib/clientBusiness';
+import { validateOptionalGstin, normalizeGstin } from '../../lib/gst';
 import { supabase } from '../../lib/supabase';
-import type { IdentityVerification } from '../../lib/identityVerification';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { InfoTip } from '../../components/InfoTip';
-import { AlertCircle,
+import {
+  AlertCircle,
+  BadgeCheck,
+  Building2,
   CheckCircle2,
   Clock,
-  FileText,
   Loader2,
+  Mail,
+  MailCheck,
+  MailWarning,
   RefreshCw,
   Shield,
   ShieldAlert,
   ShieldCheck,
-  Upload,
-  X,
-  XCircle } from 'lucide-react';
+} from 'lucide-react';
 
 type PageStatus = 'loading' | 'idle';
 
+/**
+ * Two-step verification, shared by freelancers and clients:
+ *
+ *   Step 1 — Email verification (real-time; real auth flag, never client-set)
+ *   Step 2 — Identity:
+ *              freelancers → PAN Card (automated, real-time via kyc-submit)
+ *              clients     → optional: PAN identity AND/OR business details
+ *                            (GST / Udyam / Business PAN — self-attested)
+ *
+ * The PAN decision always happens server-side (kyc-submit edge function) and
+ * the resulting flip arrives over Supabase Realtime — no refresh needed.
+ */
 export function IdentityVerificationPage() {
-  const { user } = useAuth();
+  const { user, supabaseUser } = useAuth();
   const [searchParams] = useSearchParams();
-  // This page is shared by BOTH dashboards: /dashboard/identity-verification
-  // (freelancer) and /client/verification (client). Keep the copy role-aware.
   const isClient = user?.role === 'client';
-  // Where to send the user after verification succeeds (set by the KYC gate
-  // via ?redirect=). Falls back to the role dashboard.
-  const postVerifyRedirect =
-    searchParams.get('redirect') || (isClient ? '/client' : '/dashboard');
+  const postVerifyRedirect = searchParams.get('redirect') || (isClient ? '/client' : '/dashboard');
+  const email = supabaseUser?.email || user?.email || '';
+
   const [pageStatus, setPageStatus] = useState<PageStatus>('loading');
   const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected' | 'blocked' | 'review'>('none');
-  const [blockedMsLeft, setBlockedMsLeft] = useState(0);
   const [verification, setVerification] = useState<IdentityVerification | null>(null);
-  const [showForm, setShowForm] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [uploadStep, setUploadStep] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  // Consent — user must explicitly agree before documents are submitted.
-  const [consentAgreed, setConsentAgreed] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const backFileInputRef = useRef<HTMLInputElement>(null);
-
-  // Form state — supports FRONT + BACK images per document type
-  const [formData, setFormData] = useState<VerificationUpload>({
-    document_type: 'pan',
-    document_file: undefined,
-    document_url: '',
-    document_file_back: undefined,
-    document_url_back: '',
-    document_number: '',
-    expiry_date: '',
-  });
-  // Per-side drag state so the two upload zones highlight independently
-  const [dragSide, setDragSide] = useState<'front' | 'back' | null>(null);
-
-  // 🚫 Blocked-state live countdown — state lives at the top level (hooks
-  // must not be called inside render functions). Synced from blockedMsLeft
-  // and ticks down every second; auto-refreshes when the cooldown expires.
+  const [blockedMsLeft, setBlockedMsLeft] = useState(0);
   const [blockedDisplayMs, setBlockedDisplayMs] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  // Sync the display countdown whenever the source blockedMsLeft changes.
+  // ── Step 1: email (real auth flag — never client-set) ──────────────────
+  const [emailConfirmed, setEmailConfirmed] = useState<boolean>(!!supabaseUser?.email_confirmed_at);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [checkingEmail, setCheckingEmail] = useState(false);
+
+  // ── Step 2: PAN (freelancers mandatory, clients optional) ──────────────
+  const [showPanForm, setShowPanForm] = useState(false);
+  const [pan, setPan] = useState('');
+  const [fullName, setFullName] = useState('');
+  const [dob, setDob] = useState('');
+  const [consentAgreed, setConsentAgreed] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // ── Clients: optional business details (self-attested) ─────────────────
+  const [bizLoaded, setBizLoaded] = useState(false);
+  const [biz, setBiz] = useState({ company_name: '', gst_number: '', udyam_number: '', business_pan: '' });
+  const [bizSaving, setBizSaving] = useState(false);
+  const [bizSavedMsg, setBizSavedMsg] = useState<string | null>(null);
+  const [bizError, setBizError] = useState<string | null>(null);
+
+  // ── Keep the cooldown countdown in sync ────────────────────────────────
   useEffect(() => {
     setBlockedDisplayMs(blockedMsLeft);
   }, [blockedMsLeft]);
 
+  const refreshEmailState = useCallback(async () => {
+    try {
+      const { data: { user: fresh } } = await supabase.auth.getUser();
+      if (fresh) setEmailConfirmed(!!fresh.email_confirmed_at);
+    } catch {
+      // Auth hiccup — keep current state; the manual "check" button retries.
+    }
+  }, []);
+
+  // Step 1 in real time: confirmation opens in another tab → cross-tab auth
+  // sync fires TOKEN_REFRESHED; a window focus also re-validates. Either way
+  // the step flips to "verified" without a manual reload.
+  useEffect(() => {
+    setEmailConfirmed(!!supabaseUser?.email_confirmed_at);
+  }, [supabaseUser]);
+
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange(() => {
+      refreshEmailState();
+    });
+    const onFocus = () => { refreshEmailState(); };
+    window.addEventListener('focus', onFocus);
+    return () => {
+      listener.subscription.unsubscribe();
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [refreshEmailState]);
+
   const fetchStatus = useCallback(async () => {
     if (!user) return;
     try {
-      setError(null);
       const result = await identityVerificationService.getStatus(user.id);
       setVerification(result.verification);
       setVerificationStatus(result.status);
@@ -79,7 +130,6 @@ export function IdentityVerificationPage() {
         setBlockedMsLeft(getKycBlockedMsLeft(result.verification));
       }
     } catch {
-      console.error('Failed to fetch verification status');
       setError('Failed to load verification status. Please refresh the page.');
     } finally {
       setPageStatus('idle');
@@ -90,7 +140,7 @@ export function IdentityVerificationPage() {
     fetchStatus();
   }, [fetchStatus]);
 
-  // Tick the countdown once per second while the user is blocked.
+  // Tick the cooldown once per second; auto-refresh when it expires.
   useEffect(() => {
     if (verificationStatus !== 'blocked' || blockedDisplayMs <= 0) return;
     const t = setInterval(() => {
@@ -98,1133 +148,632 @@ export function IdentityVerificationPage() {
       setBlockedDisplayMs(left);
       if (left <= 0) {
         clearInterval(t);
-        fetchStatus(); // Auto-refresh when cooldown expires
+        fetchStatus();
       }
     }, 1000);
     return () => clearInterval(t);
   }, [verificationStatus, blockedDisplayMs, fetchStatus]);
 
-  // Realtime subscription for status changes — the kyc-submit engine flips
-  // the row to verified/rejected/review and this pushes the change live.
-  // On the verified flip we also send the approval email once (fire-and-forget)
-  // so the user gets notified in-app + by email.
+  // Realtime subscription — the kyc-submit engine's decision lands here live.
   const emailedVerifiedIds = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (!user) return;
-
     const channel = identityVerificationService.subscribe(user.id, (updated) => {
       const isBlocked = isKycBlocked(updated);
       setVerification(updated);
       setVerificationStatus(isBlocked ? 'blocked' : (updated.status as 'pending' | 'verified' | 'rejected' | 'review'));
-      if (isBlocked) {
-        setBlockedMsLeft(getKycBlockedMsLeft(updated));
-      }
-
-      // 🔔 Email once when the engine verifies (idempotent per row).
-      if (
-        updated.status === 'verified' &&
-        updated.id &&
-        !emailedVerifiedIds.current.has(updated.id)
-      ) {
+      if (isBlocked) setBlockedMsLeft(getKycBlockedMsLeft(updated));
+      if (updated.status === 'verified' && updated.id && !emailedVerifiedIds.current.has(updated.id)) {
         emailedVerifiedIds.current.add(updated.id);
         supabase.functions
           .invoke('email-notifications', {
             method: 'POST',
             body: {
               type: 'verification_approved',
-              data: {
-                recipient_email: user.email,
-                recipient_name: user.name || user.email?.split('@')[0] || 'User',
-              },
+              data: { recipient_email: email, recipient_name: user.name || email?.split('@')[0] || 'User' },
             },
           })
           .catch((err) => console.error('[KYC] approval email failed:', err));
       }
     });
-
-    return () => {
-      channel.unsubscribe();
-    };
+    return () => { channel.unsubscribe(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  // Handle file selection — `side` picks which image slot (front/back)
-  const handleFileSelect = (file: File, side: 'front' | 'back' = 'front') => {
-    // Validate file type (accept images and PDFs)
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'application/pdf'];
-    if (!validTypes.includes(file.type)) {
-      setError('Invalid file type. Please upload JPG, PNG, GIF, or PDF.');
-      return;
-    }
+  // Clients: load saved business details once.
+  useEffect(() => {
+    if (!isClient || !user || bizLoaded) return;
+    (async () => {
+      const info = await clientBusinessService.get(user.id);
+      if (info) {
+        setBiz({
+          company_name: info.company_name || '',
+          gst_number: info.gst_number || '',
+          udyam_number: info.udyam_number || '',
+          business_pan: info.business_pan || '',
+        });
+      }
+      setBizLoaded(true);
+    })();
+  }, [isClient, user, bizLoaded]);
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('File size too large. Maximum size is 5MB.');
-      return;
-    }
-
-    setFormData(prev =>
-      side === 'back'
-        ? { ...prev, document_file_back: file, document_url_back: '' }
-        : { ...prev, document_file: file, document_url: '' }
-    );
-    setError(null);
-  };
-
-  // Drag and drop handlers (per side)
-  const handleDrag = (e: React.DragEvent, side: 'front' | 'back') => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setDragSide(side);
-    } else if (e.type === 'dragleave') {
-      setDragSide(null);
+  // ── Step 1 actions ─────────────────────────────────────────────────────
+  const handleSendEmail = async () => {
+    if (!email) return;
+    setSendingEmail(true);
+    setEmailSent(false);
+    const { error: resendError } = await supabase.auth.resend({ type: 'signup', email });
+    setSendingEmail(false);
+    if (resendError) {
+      setError('Could not send the verification link. Please try again shortly.');
+    } else {
+      setEmailSent(true);
+      setError(null);
     }
   };
 
-  const handleDrop = (e: React.DragEvent, side: 'front' | 'back') => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragSide(null);
-
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0], side);
-    }
+  const handleCheckEmail = async () => {
+    setCheckingEmail(true);
+    await refreshEmailState();
+    await supabase.auth.refreshSession().catch(() => {});
+    setCheckingEmail(false);
   };
 
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>, side: 'front' | 'back') => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0], side);
-    }
-  };
-
-  const removeFile = (side: 'front' | 'back') => {
-    setFormData(prev =>
-      side === 'back'
-        ? { ...prev, document_file_back: undefined, document_url_back: '' }
-        : { ...prev, document_file: undefined, document_url: '' }
-    );
-    if (side === 'back') {
-      if (backFileInputRef.current) backFileInputRef.current.value = '';
-    } else if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  // ── Step 2 actions ─────────────────────────────────────────────────────
+  const handlePanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
-
     if (!consentAgreed) {
-      setError('Please agree to the consent terms before submitting your documents.');
+      setError('Please agree to the consent terms before submitting.');
       return;
     }
-
-    if (!formData.document_file && !formData.document_url.trim()) {
-      setError('Please upload a document or provide a document URL');
+    const cleanPan = pan.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (!/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(cleanPan)) {
+      setError('That PAN number does not look valid. Please check it and try again.');
       return;
     }
-
-    // Two-sided documents must include the BACK image too
-    if (documentNeedsBack(formData.document_type) && !formData.document_file_back && !formData.document_url_back?.trim()) {
-      setError(`Please upload the back side of your ${formData.document_type.replace('_', ' ')} as well.`);
+    if (!fullName.trim()) {
+      setError('Please enter your full name as printed on your PAN card.');
       return;
     }
-
     setSubmitting(true);
-    setUploading(true);
     setError(null);
-    setUploadStep('upload');
-
     try {
-      // ── STEP 1: Upload the document image(s) ──
-      // Store the never-expiring storage PATH in the DB; signed URLs are only
-      // used for the upload preview. Admins re-sign paths on demand.
-      let imageStoragePath = formData.document_url;
-      let backStoragePath = formData.document_url_back || null;
-
-      if (formData.document_file) {
-        const uploadResult = await identityVerificationService.uploadVerificationDocument(formData.document_file, user.id);
-        if (!uploadResult.success) {
-          setError(uploadResult.error || 'Failed to upload document');
-          setUploadStep(null);
-          return;
-        }
-        imageStoragePath = uploadResult.path || uploadResult.url || '';
-      }
-
-      if (formData.document_file_back) {
-        setUploadStep('upload_back');
-        const uploadBack = await identityVerificationService.uploadVerificationDocument(formData.document_file_back, user.id);
-        if (!uploadBack.success) {
-          setError(uploadBack.error || 'Failed to upload document back side');
-          setUploadStep(null);
-          return;
-        }
-        backStoragePath = uploadBack.path || uploadBack.url || null;
-      }
-
-      if (!imageStoragePath) {
-        setError('Could not upload document. Please try again.');
-        setUploadStep(null);
-        return;
-      }
-
-      // ── STEP 2: Submit the request, then run the REAL-TIME KYC engine ──
-      // The row enters as 'pending' (RLS-enforced), then the kyc-submit edge
-      // function calls the REAL verification provider server-side and flips
-      // the row to verified/rejected/review. Supabase Realtime pushes the
-      // status change to this page instantly — no refresh needed.
-      setUploadStep('submit');
       const result = await identityVerificationService.submit(user.id, {
-        ...formData,
-        document_url: imageStoragePath,
-        document_url_back: backStoragePath || '',
-        document_file: undefined,
-        document_file_back: undefined,
-      });
-
-      if (!result.success || !result.verification) {
-        setError(result.error || 'Failed to submit verification');
-        setUploadStep(null);
-        return;
-      }
-
-      setUploadStep('verifying');
-      setVerification(result.verification);
-      setShowForm(false);
-      setConsentAgreed(false);
-      setFormData({
         document_type: 'pan',
+        document_number: cleanPan,
+        full_name: fullName.trim(),
+        date_of_birth: dob || undefined,
         document_file: undefined,
         document_url: '',
         document_file_back: undefined,
         document_url_back: '',
-        document_number: '',
-        expiry_date: '',
-        full_name: '',
-        date_of_birth: '',
       });
-
-      // Automated engine — the provider call + decision happen server-side.
-      // Realtime delivers the resulting status flip to the UI.
+      if (!result.success || !result.verification) {
+        setError(result.error || 'Failed to submit verification. Please try again.');
+        return;
+      }
+      setVerification(result.verification);
+      setVerificationStatus('pending');
+      setShowPanForm(false);
+      // Automated engine: provider call + decision run server-side; the
+      // result arrives via the realtime subscription below.
       const processResult = await identityVerificationService.process(result.verification.id);
       if (!processResult.success) {
         setError(processResult.error || 'Verification is temporarily unavailable. Please try again shortly.');
       }
-      // Final state arrives via the realtime subscription + fetchStatus below.
       await fetchStatus();
     } catch {
       setError('An unexpected error occurred. Please try again.');
-      setUploadStep(null);
     } finally {
       setSubmitting(false);
-      setUploading(false);
-      setUploadStep(null);
     }
   };
 
-  const handleResubmit = () => {
-    if (isKycBlocked(verification)) return;
-    setShowForm(true);
-    setVerificationStatus('none');
-    setVerification(null);
-    setError(null);
+  const handleBusinessSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setBizSaving(true);
+    setBizError(null);
+    setBizSavedMsg(null);
+    const result = await clientBusinessService.save(user.id, {
+      company_name: biz.company_name,
+      gst_number: biz.gst_number,
+      udyam_number: biz.udyam_number,
+      business_pan: biz.business_pan,
+    });
+    setBizSaving(false);
+    if (!result.success) {
+      setBizError(result.error || 'Could not save business details. Please try again.');
+    } else {
+      setBizSavedMsg('Business details saved. They are shown as self-attested — not a verified badge.');
+    }
   };
 
-  // Status renderers
-  const renderNoneState = () => (
-    <div className="space-y-1.5">
-      {/* Info card */}
-      <div className="bg-amber-50 border border-amber-200 rounded-xl p-6">
-        <div className="flex items-start gap-3">
-          <div className="p-2 bg-amber-100 rounded-xl shrink-0">
-            <ShieldAlert className="w-4 h-4 text-amber-600" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-amber-900 mb-1">Identity Verification Required</h3>
-            <p className="text-sm text-amber-700">
-              Verify your identity to build trust with {isClient ? 'freelancers' : 'clients'}, unlock higher earning limits, and access premium features.
-              Your information is securely stored and never shared without your consent.
-            </p>
-          </div>
-        </div>
-      </div>
+  const emailVerified = emailConfirmed;
+  const kycVerified = verificationStatus === 'verified';
+  const attemptsLeft = getRemainingKycAttempts(verification);
+  const blockExpired = !!verification?.blocked_until && !isKycBlocked(verification);
+  const canResubmit = attemptsLeft > 0 || blockExpired;
 
-      {/* Benefits */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {[
-          { icon: ShieldCheck, label: 'Build Trust', desc: 'Verified badge on your profile' },
-          { icon: Upload, label: 'Higher Limits', desc: 'Increased withdrawal and contract limits' },
-          { icon: CheckCircle2, label: 'Priority Support', desc: 'Access to faster support responses' },
-        ].map((benefit) => (
-          <div key={benefit.label} className="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
-            <div className="p-2 bg-emerald-100 rounded-xl w-fit mb-3">
-              <benefit.icon className="w-4 h-4 text-emerald-600" />
-            </div>
-            <h4 className="font-semibold text-slate-900 mb-1">{benefit.label}</h4>
-            <p className="text-sm text-slate-500">{benefit.desc}</p>
-          </div>
-        ))}
-      </div>
-
-      {!showForm ? (
-        <button
-          onClick={() => setShowForm(true)}
-          className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-medium"
-        >
-          <Upload className="w-4 h-4" />
-          Start Verification
-        </button>
-      ) : (
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3">
-          <h3 className="text-lg font-semibold text-slate-900">Submit Your Documents</h3>
-
-          {/* Document Type */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Document Type</label>
-            <select
-              value={formData.document_type}
-              onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
-            >
-              <option value="pan">PAN Card (India)</option>
-              <option value="aadhaar">Aadhaar Card (India)</option>
-              <option value="passport">Passport</option>
-              <option value="drivers_license">Driver's License</option>
-              <option value="national_id">National ID Card</option>
-              <option value="other">Other Government ID</option>
-            </select>
-            <p className="text-xs text-slate-500 mt-1.5">
-              PAN verifies automatically in real time. Other documents are checked by our compliance team.
-            </p>
-          </div>
-
-          {/* Full Name */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Full Name (as on document) <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.full_name || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
-              placeholder="e.g., Rahul Sharma"
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-          </div>
-
-          {/* Date of Birth */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Date of Birth <span className="text-red-500">*</span>
-            </label>
-            <input
-              type="date"
-              required
-              value={formData.date_of_birth || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, date_of_birth: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-          </div>
-
-          {/* Secure File Upload — per-document FRONT + BACK slots */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Upload Document</label>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {/* FRONT side */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-xs font-medium text-slate-600">Front side {formData.document_type === 'pan' || formData.document_type === 'other' ? '(only required)' : ''}</span>
-                  {!formData.document_file && (
-                    <span className="text-xs font-bold text-red-500">Required</span>
-                  )}
-                </div>
-                <div
-                  className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-                    dragSide === 'front'
-                      ? 'border-emerald-500 bg-emerald-50'
-                      : formData.document_file
-                      ? 'border-emerald-200 bg-emerald-50'
-                      : 'border-slate-300 hover:border-emerald-400 bg-slate-50'
-                  }`}
-                  onDragEnter={(e) => handleDrag(e, 'front')}
-                  onDragLeave={(e) => handleDrag(e, 'front')}
-                  onDragOver={(e) => handleDrag(e, 'front')}
-                  onDrop={(e) => handleDrop(e, 'front')}
-                >
-                  {formData.document_file ? (
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-center">
-                        <FileText className="w-7 h-7 text-emerald-600" />
-                      </div>
-                      <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file.name}</p>
-                      <button
-                        type="button"
-                        onClick={() => removeFile('front')}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <X className="w-4 h-4" />
-                        Remove
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <Upload className="w-8 h-8 text-slate-400 mx-auto" />
-                      <p className="text-xs font-medium text-slate-700">Drag & drop front image</p>
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
-                      >
-                        Browse
-                      </button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
-                        onChange={(e) => handleFileInputChange(e, 'front')}
-                        className="hidden"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* BACK side — only for two-sided documents */}
-              {documentNeedsBack(formData.document_type) && (
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-medium text-slate-600">Back side</span>
-                    {!formData.document_file_back && (
-                      <span className="text-xs font-bold text-red-500">Required</span>
-                    )}
-                  </div>
-                  <div
-                    className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-all ${
-                      dragSide === 'back'
-                        ? 'border-emerald-500 bg-emerald-50'
-                        : formData.document_file_back
-                        ? 'border-emerald-200 bg-emerald-50'
-                        : 'border-slate-300 hover:border-emerald-400 bg-slate-50'
-                    }`}
-                    onDragEnter={(e) => handleDrag(e, 'back')}
-                    onDragLeave={(e) => handleDrag(e, 'back')}
-                    onDragOver={(e) => handleDrag(e, 'back')}
-                    onDrop={(e) => handleDrop(e, 'back')}
-                  >
-                    {formData.document_file_back ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-center">
-                          <FileText className="w-7 h-7 text-emerald-600" />
-                        </div>
-                        <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file_back.name}</p>
-                        <button
-                          type="button"
-                          onClick={() => removeFile('back')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-4">
-                        <Upload className="w-8 h-8 text-slate-400 mx-auto" />
-                        <p className="text-xs font-medium text-slate-700">Drag & drop back image</p>
-                        <button
-                          type="button"
-                          onClick={() => backFileInputRef.current?.click()}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
-                        >
-                          Browse
-                        </button>
-                        <input
-                          ref={backFileInputRef}
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
-                          onChange={(e) => handleFileInputChange(e, 'back')}
-                          className="hidden"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* URL fallback option */}
-            <div className="mt-4 pt-4 border-t border-slate-200">
-              <details className="group">
-                <summary className="text-sm text-slate-500 cursor-pointer hover:text-slate-700">
-                  Or paste document URL instead
-                </summary>
-                <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                  <div>
-                    <label className="block text-xs text-slate-500 mb-1">Front side URL</label>
-                    <input
-                      type="url"
-                      value={formData.document_url}
-                      onChange={(e) => {
-                        setFormData((prev) => ({ ...prev, document_url: e.target.value }));
-                        if (e.target.value) {
-                          setFormData((prev) => ({ ...prev, document_file: undefined }));
-                        }
-                      }}
-                      placeholder="https://example.com/front.jpg"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                    />
-                  </div>
-                  {documentNeedsBack(formData.document_type) && (
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1">Back side URL</label>
-                      <input
-                        type="url"
-                        value={formData.document_url_back}
-                        onChange={(e) => {
-                          setFormData((prev) => ({ ...prev, document_url_back: e.target.value }));
-                          if (e.target.value) {
-                            setFormData((prev) => ({ ...prev, document_file_back: undefined }));
-                          }
-                        }}
-                        placeholder="https://example.com/back.jpg"
-                        className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-                      />
-                    </div>
-                  )}
-                </div>
-              </details>
-            </div>
-          </div>
-
-          {/* Document Number */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Document Number <span className="text-red-500">*</span>
-              <span className="ml-2 text-xs font-normal text-slate-400">(verified automatically in real time)</span>
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.document_number || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, document_number: e.target.value.toUpperCase() }))}
-              placeholder={formData.document_type === 'pan' ? 'e.g., ABCDE1234F' : 'e.g., XXXXXXXXXXXX'}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
-            />
-          </div>
-
-          {/* Expiry Date */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Expiry Date (optional)</label>
-            <input
-              type="date"
-              value={formData.expiry_date || ''}
-              onChange={(e) => setFormData((prev) => ({ ...prev, expiry_date: e.target.value }))}
-              className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-            />
-          </div>
-
-          {/* Consent */}
-          <label className="flex items-start gap-1.5 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
-            <input
-              type="checkbox"
-              checked={consentAgreed}
-              onChange={(e) => {
-                setConsentAgreed(e.target.checked);
-                if (e.target.checked) setError(null);
-              }}
-              className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
-            />
-            <span className="text-xs text-slate-600 leading-relaxed">
-              <span className="font-semibold text-slate-800">I agree</span> to share my identity information with Growlancer for
-              verification purposes only. I understand verification may be processed automatically (including automated
-              platform checks during Growlancer's development phase), my information is stored securely, used solely to
-              verify my identity and build trust on the platform, and is never shared with third parties or verification
-              providers without my consent. I may withdraw consent or delete my account and data at any time.{' '}
-              <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>{' '}
-              and{' '}
-              <Link to="/terms" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Terms</Link>
-            </span>
-          </label>
-
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-              <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm text-red-700">{error}</p>
-            </div>
-          )}
-
-          {uploadStep && (
-            <div className="flex items-center gap-4 text-xs text-slate-500 mt-3">
-              {['upload', 'submit'].map((step, i) => {
-                const labels: Record<string, string> = {
-                  upload: 'Uploading document',
-                  upload_back: 'Uploading back side',
-                  submit: 'Submitting for review',
-                };
-                const active = uploadStep === step || (uploadStep === 'upload_back' && step === 'upload');
-                const done = ['upload', 'submit'].indexOf(uploadStep) > i;
-                return (
-                  <span key={step} className={`flex items-center gap-1 ${active ? 'text-emerald-600 font-medium' : done ? 'text-emerald-500' : 'text-slate-300'}`}>
-                    {done ? <CheckCircle2 className="w-3 h-3" /> : active ? <Loader2 className="w-3 h-3 animate-spin" /> : <span className="w-3 h-3 rounded-full border border-slate-300" />}
-                    {labels[uploadStep] || labels[step]}
-                  </span>
-                );
-              })}
-            </div>
-          )}
-
-          <div className="flex items-center gap-1.5 pt-2">
-            <button
-              type="submit"
-              disabled={submitting || !consentAgreed}
-              className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
-              ) : submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  <Upload className="w-4 h-4" />
-                  Submit Verification
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="px-4 py-2.5 text-slate-600 hover:text-slate-800 transition-colors font-medium"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
-      )}
-    </div>
-  );
-
-  const renderPendingState = () => {
-    // Industry-standard verification stepper: Submitted → In Review → Verified
-    const steps = [
-      { label: 'Submitted', done: true, current: false },
-      { label: 'Verifying', done: false, current: true },
-      { label: 'Verified', done: false, current: false },
-    ];
-    return (
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
-        <div className="p-3 bg-amber-100 rounded-xl w-fit mx-auto mb-2">
-          <Clock className="w-8 h-8 text-amber-600" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h2>
-        <p className="text-slate-500 mb-3">
-          Your details are being <span className="font-semibold text-slate-700">verified automatically right now</span>.
-          This usually completes <span className="font-semibold text-amber-700">within seconds</span> —
-          your status updates here in real time, no refresh needed.
-        </p>
-        <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 mb-3 flex items-start gap-3 text-left">
-          <Shield className="w-4 h-4 text-slate-600 mt-0.5 shrink-0" />
-          <p className="text-xs text-slate-600 leading-relaxed">
-            Your identity details are checked securely in real time against official verification records.
-            If anything doesn't match, your submission is returned with a clear reason and you can
-            resubmit (3 attempts, then a 24-hour cooldown). Your data is stored securely and never
-            shared without your consent.
-          </p>
-        </div>
-
-        {/* Status Stepper */}
-        <div className="flex items-center justify-center gap-0 mb-3">
-          {steps.map((step, idx) => (
-            <div key={step.label} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-all ${
-                    step.done
-                      ? 'bg-emerald-500 border-emerald-500 text-white'
-                      : step.current
-                      ? 'bg-amber-100 border-amber-500 text-amber-600'
-                      : 'bg-slate-100 border-slate-200 text-slate-400'
-                  }`}
-                >
-                  {step.done ? <CheckCircle2 className="w-4 h-4" /> : <span className="text-sm font-bold">{idx + 1}</span>}
-                </div>
-                <span className={`text-xs mt-2 font-medium ${step.current ? 'text-amber-700' : step.done ? 'text-emerald-700' : 'text-slate-400'}`}>
-                  {step.label}
-                </span>
-              </div>
-              {idx < steps.length - 1 && (
-                <div className={`w-12 sm:w-16 h-0.5 mb-3 mx-1 ${step.done ? 'bg-emerald-500' : 'bg-slate-200'}`} />
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 inline-flex items-center gap-1.5">
-          <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
-          <span className="text-sm font-medium text-amber-800">Under Review</span>
-        </div>
-        {verification?.created_at && (
-          <p className="text-xs text-slate-400 mt-4">
-            Submitted on {new Date(verification.created_at).toLocaleDateString('en-US', {
-              year: 'numeric', month: 'long', day: 'numeric',
-            })}
-          </p>
-        )}
-      </div>
-    );
-  };
-
-  const renderVerifiedState = () => (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
-      <div className="p-3 bg-emerald-100 rounded-xl w-fit mx-auto mb-2">
-        <ShieldCheck className="w-8 h-8 text-emerald-600" />
-      </div>
-      <h2 className="text-xl font-bold text-slate-900 mb-2">Identity Verified</h2>
-      <p className="text-slate-500 mb-2">Your identity has been successfully verified.</p>
-      <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 inline-flex items-center gap-1.5">
-        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-        <span className="text-sm font-medium text-emerald-800">Verified</span>
-      </div>
-      {verification?.verified_at && (
-        <p className="text-xs text-slate-400 mt-4">
-          Verified on {new Date(verification.verified_at).toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric',
-          })}
-        </p>
-      )}
-      <Link
-        to={postVerifyRedirect}
-        className="mt-6 inline-flex items-center justify-center gap-3 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
-      >
-        Continue to Dashboard
-      </Link>
-      <p className="text-xs text-slate-400 mt-3">
-        You can now use the full platform — payments, projects, matches and more are unlocked.
-      </p>
-    </div>
-  );
-
-  // REVIEW state — exceptional fallback only (provider error/ambiguity).
-  // The user sees a calm, friendly message; the compliance team handles it
-  // from the admin queue. Never auto-verified, never shown technical detail.
-  const renderReviewState = () => (
-    <div className="space-y-1.5">
-      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
-        <div className="p-3 bg-amber-100 rounded-xl w-fit mx-auto mb-2">
-          <Clock className="w-8 h-8 text-amber-600" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Verification in Review</h2>
-        <p className="text-slate-500 mb-4">
-          Your verification needs a quick manual check on our side. This usually
-          takes a short time — you will be notified here and by email as soon as
-          it is complete. No action is needed from you right now.
-        </p>
-      </div>
-    </div>
-  );
-
-  const renderRejectedState = () => {
-    const attemptsLeft = getRemainingKycAttempts(verification);
-    // After the 24h cooldown has EXPIRED (blocked_until in the past), the user
-    // can resubmit again — a new submission starts a fresh attempt cycle.
-    const blockExpired =
-      !!verification?.blocked_until && !isKycBlocked(verification);
-    const canResubmit = attemptsLeft > 0 || blockExpired;
-    return (
-      <div className="space-y-1.5">
-        <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
-          <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-2">
-            <XCircle className="w-8 h-8 text-red-600" />
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Rejected</h2>
-          <p className="text-slate-500 mb-2">
-            Your identity verification was not approved. Please review the reason below and resubmit.
-          </p>
-
-          {/* Attempts remaining badge */}
-          <div className="flex items-center justify-center gap-3 mb-2">
-            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-              attemptsLeft <= 1 ? 'bg-red-100 text-red-700' :
-              attemptsLeft <= 2 ? 'bg-amber-100 text-amber-700' :
-              'bg-slate-100 text-slate-700'
-            }`}>
-              {attemptsLeft} of {KYC_MAX_ATTEMPTS} attempts remaining
-            </span>
-          </div>
-
-          {verification?.rejection_reason && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-left mb-3">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason</p>
-                  <p className="text-sm text-red-700">{verification.rejection_reason}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {canResubmit ? (
-            <button
-              onClick={handleResubmit}
-              className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold"
-            >
-              <RefreshCw className="w-4 h-4" />
-              {blockExpired ? 'Submit New Verification' : `Resubmit Verification (${attemptsLeft} left)`}
-            </button>
-          ) : (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
-              <p className="text-sm font-medium text-amber-800">
-                No attempts remaining. You will be able to try again after the cooldown period.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {showForm && canResubmit && (
-          <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 space-y-3">
-            <h3 className="text-lg font-semibold text-slate-900">Resubmit Your Documents</h3>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Document Type</label>
-              <select
-                value={formData.document_type}
-                onChange={(e) => setFormData((prev) => ({ ...prev, document_type: e.target.value as VerificationUpload['document_type'] }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
-              >
-                <option value="pan">PAN Card (India)</option>
-                <option value="aadhaar">Aadhaar Card (India)</option>
-                <option value="passport">Passport</option>
-                <option value="drivers_license">Driver's License</option>
-                <option value="national_id">National ID Card</option>
-                <option value="other">Other Government ID</option>
-              </select>
-              <p className="text-xs text-slate-500 mt-1.5">
-                PAN verifies automatically in real time. Other documents are checked by our compliance team.
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Full Name (as on document)</label>
-              <input
-                type="text"
-                value={formData.full_name || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, full_name: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
-              <input
-                type="date"
-                value={formData.date_of_birth || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, date_of_birth: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Upload Document</label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-xs font-medium text-slate-600">Front side</span>
-                    {!formData.document_file && (
-                      <span className="text-xs font-bold text-red-500">Required</span>
-                    )}
-                  </div>
-                  <div
-                    className={`relative border-2 border-dashed rounded-xl p-5 text-center transition-all ${
-                      dragSide === 'front'
-                        ? 'border-emerald-500 bg-emerald-50'
-                        : formData.document_file
-                        ? 'border-emerald-200 bg-emerald-50'
-                        : 'border-slate-300 hover:border-emerald-400 bg-slate-50'
-                    }`}
-                    onDragEnter={(e) => handleDrag(e, 'front')}
-                    onDragLeave={(e) => handleDrag(e, 'front')}
-                    onDragOver={(e) => handleDrag(e, 'front')}
-                    onDrop={(e) => handleDrop(e, 'front')}
-                  >
-                    {formData.document_file ? (
-                      <div className="space-y-3">
-                        <FileText className="w-6 h-6 text-emerald-600 mx-auto" />
-                        <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file.name}</p>
-                        <button
-                          type="button"
-                          onClick={() => removeFile('front')}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                          Remove
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="space-y-3">
-                        <Upload className="w-7 h-7 text-slate-400 mx-auto" />
-                        <p className="text-xs font-medium text-slate-700">Drag & drop front image</p>
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
-                        >
-                          Browse
-                        </button>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
-                          onChange={(e) => handleFileInputChange(e, 'front')}
-                          className="hidden"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {documentNeedsBack(formData.document_type) && (
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <span className="text-xs font-medium text-slate-600">Back side</span>
-                      {!formData.document_file_back && (
-                        <span className="text-xs font-bold text-red-500">Required</span>
-                      )}
-                    </div>
-                    <div
-                      className={`relative border-2 border-dashed rounded-xl p-5 text-center transition-all ${
-                        dragSide === 'back'
-                          ? 'border-emerald-500 bg-emerald-50'
-                          : formData.document_file_back
-                          ? 'border-emerald-200 bg-emerald-50'
-                          : 'border-slate-300 hover:border-emerald-400 bg-slate-50'
-                      }`}
-                      onDragEnter={(e) => handleDrag(e, 'back')}
-                      onDragLeave={(e) => handleDrag(e, 'back')}
-                      onDragOver={(e) => handleDrag(e, 'back')}
-                      onDrop={(e) => handleDrop(e, 'back')}
-                    >
-                      {formData.document_file_back ? (
-                        <div className="space-y-3">
-                          <FileText className="w-6 h-6 text-emerald-600 mx-auto" />
-                          <p className="text-xs font-medium text-slate-900 break-all">{formData.document_file_back.name}</p>
-                          <button
-                            type="button"
-                            onClick={() => removeFile('back')}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          >
-                            <X className="w-4 h-4" />
-                            Remove
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          <Upload className="w-7 h-7 text-slate-400 mx-auto" />
-                          <p className="text-xs font-medium text-slate-700">Drag & drop back image</p>
-                          <button
-                            type="button"
-                            onClick={() => backFileInputRef.current?.click()}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors"
-                          >
-                            Browse
-                          </button>
-                          <input
-                            ref={backFileInputRef}
-                            type="file"
-                            accept="image/jpeg,image/jpg,image/png,image/gif,application/pdf"
-                            onChange={(e) => handleFileInputChange(e, 'back')}
-                            className="hidden"
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Document Number (optional)</label>
-              <input
-                type="text"
-                value={formData.document_number || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, document_number: e.target.value }))}
-                placeholder="e.g., Passport number or ID number"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Expiry Date (optional)</label>
-              <input
-                type="date"
-                value={formData.expiry_date || ''}
-                onChange={(e) => setFormData((prev) => ({ ...prev, expiry_date: e.target.value }))}
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
-              />
-            </div>
-
-            {/* Consent */}
-            <label className="flex items-start gap-1.5 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
-              <input
-                type="checkbox"
-                checked={consentAgreed}
-                onChange={(e) => {
-                  setConsentAgreed(e.target.checked);
-                  if (e.target.checked) setError(null);
-                }}
-                className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
-              />
-              <span className="text-xs text-slate-600 leading-relaxed">
-                <span className="font-semibold text-slate-800">I agree</span> to share my identity documents with Growlancer for
-                verification purposes only. My documents are stored securely and never shared without my consent.{' '}
-                <Link to="/privacy" className="text-emerald-600 hover:text-emerald-700 font-medium underline underline-offset-2">Privacy Policy</Link>
-              </span>
-            </label>
-
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
-
-            <div className="flex items-center gap-1.5 pt-2">
-              <button
-                type="submit"
-                disabled={submitting || !consentAgreed}
-                className="inline-flex items-center gap-3 px-3 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : submitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4" />
-                    Submit Verification
-                  </>
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowForm(false); setError(null); setConsentAgreed(false); }}
-                className="px-4 py-2.5 text-slate-600 hover:text-slate-800 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        )}
-      </div>
-    );
-  };
-
-  // 🚫 Blocked state — 24-hour cooldown with live countdown
-  const renderBlockedState = () => (
-    <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
-        <div className="p-3 bg-red-100 rounded-xl w-fit mx-auto mb-2">
-          <Clock className="w-8 h-8 text-red-600" />
-        </div>
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Verification Temporarily Blocked</h2>
-        <p className="text-slate-500 mb-3">
-          You have used all {KYC_MAX_ATTEMPTS} verification attempts. To protect your account security,
-          you can try again after the cooldown period ends.
-        </p>
-
-        {/* Live countdown */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 mb-3">
-          <p className="text-sm font-medium text-amber-800 mb-2">Cooldown Remaining</p>
-          <p className="text-xl font-bold text-amber-900 font-mono">
-            {formatKycCooldown(blockedDisplayMs)}
-          </p>
-        </div>
-
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-left">
-          <div className="flex items-start gap-3">
-            <Shield className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-blue-800 mb-1">Why was I blocked?</p>
-              <p className="text-xs text-blue-700 leading-relaxed">
-                Multiple verification attempts with document numbers that don't match the expected format.
-                This is a security measure to prevent misuse. After the cooldown, you can submit a new
-                verification with the correct document details.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-  );
-
-  // Loading state
-  if (pageStatus === 'loading') {
-    return <PageSkeleton />;
-  }
-
-  // Error state
-  if (error && pageStatus === 'idle' && verificationStatus === 'none' && !showForm) {
-    return (
-      <div className="space-y-1.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-              <Shield className="w-4 h-4 text-white" />
-            </div>
-            <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text={`Verified ${isClient ? 'clients' : 'freelancers'} get a trust badge on their profile and priority in matching and search. Submit your PAN — verification completes automatically in real time. Your documents are encrypted and never shared.`} /></h1>
-            <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <AlertCircle className="w-7 h-7 text-red-500 mx-auto mb-3" />
-          <p className="text-red-700 mb-2">{error}</p>
-          <button
-            onClick={fetchStatus}
-            className="inline-flex items-center gap-3 px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
-          >
-            <RefreshCw className="w-4 h-4" />
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  if (pageStatus === 'loading') return <PageSkeleton />;
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
-            <Shield className="w-4 h-4 text-white" />
+            <ShieldCheck className="w-5 h-5 text-white" />
           </div>
-          <div>            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Identity Verification <InfoTip title="Why verify?" text={`Verified ${isClient ? 'clients' : 'freelancers'} get a trust badge on their profile and priority in matching and search. Submit your PAN — verification completes automatically in real time. Your documents are encrypted and never shared.`} /></h1>
-          <p className="text-slate-500 mt-1">Verify your identity to unlock platform benefits</p>
+          <div>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
+              Identity Verification
+              <InfoTip
+                title="Two quick steps"
+                text={`Step 1 — verify your email (one click in the email we send). Step 2 — ${
+                  isClient
+                    ? 'optionally verify your PAN for the Verified badge, or add your business details (GST / Udyam / Business PAN) to build trust with freelancers.'
+                    : 'verify your PAN card — it is checked automatically in real time against official records and unlocks your Verified badge.'
+                } No document uploads needed.`}
+              />
+            </h1>
+            <p className="text-slate-500 text-sm mt-0.5">
+              {isClient
+                ? 'Verify your identity to build trust with freelancers. Everything is optional for clients — only add what you want.'
+                : 'Unlock your Verified badge, higher limits and priority matching.'}
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Status-based content */}
-      {verificationStatus === 'none' && renderNoneState()}
-      {verificationStatus === 'pending' && renderPendingState()}
-      {verificationStatus === 'verified' && renderVerifiedState()}
-      {verificationStatus === 'rejected' && renderRejectedState()}
-      {verificationStatus === 'review' && renderReviewState()}
-      {verificationStatus === 'blocked' && renderBlockedState()}
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+          <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700">{error}</p>
+          <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-600" aria-label="Dismiss">
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* ── Step indicator ─────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+        <div className="flex items-center gap-3">
+          <StepDot index={1} label="Email verification" done={emailVerified} active={!emailVerified} />
+          <div className={`flex-1 h-0.5 rounded ${emailVerified ? 'bg-emerald-500' : 'bg-slate-200'}`} />
+          <StepDot
+            index={2}
+            label={isClient ? 'Identity & business (optional)' : 'PAN card verification'}
+            done={kycVerified}
+            active={emailVerified && !kycVerified}
+          />
+        </div>
+      </div>
+
+      {/* ── Step 1: Email ──────────────────────────────────────────────── */}
+      <div className={`bg-white rounded-xl border p-4 shadow-sm ${emailVerified ? 'border-emerald-100' : 'border-slate-100'}`}>
+        <div className="flex items-start gap-3">
+          <div className={`p-2.5 rounded-xl shrink-0 ${emailVerified ? 'bg-emerald-100' : 'bg-amber-100'}`}>
+            {emailVerified ? <MailCheck className="w-5 h-5 text-emerald-600" /> : <MailWarning className="w-5 h-5 text-amber-600" />}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="font-semibold text-slate-900">Step 1 — Email verification</h2>
+              {emailVerified ? (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-full px-2 py-0.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Verified
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                  <Clock className="w-3.5 h-3.5" /> Pending
+                </span>
+              )}
+            </div>
+            {emailVerified ? (
+              <p className="text-sm text-slate-500 mt-1">
+                Your email <span className="font-medium text-slate-700">{email}</span> is confirmed. Step 2 is unlocked below.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm text-slate-500 mt-1">
+                  We sent a confirmation link to <span className="font-medium text-slate-700">{email || 'your email'}</span>. Click it
+                  to activate your account — your status flips here automatically, no refresh needed.
+                </p>
+                {emailSent && (
+                  <p className="text-xs text-emerald-600 mt-1.5 flex items-center gap-1">
+                    <Mail className="w-3.5 h-3.5" /> Link sent! Check your inbox (and spam) — then hit "I've verified".
+                  </p>
+                )}
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <button
+                    onClick={handleSendEmail}
+                    disabled={sendingEmail || !email}
+                    className="inline-flex items-center gap-2 h-9 px-4 rounded-lg bg-amber-600 hover:bg-amber-700 disabled:bg-amber-300 text-white text-sm font-semibold transition-colors"
+                  >
+                    {sendingEmail ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                    {sendingEmail ? 'Sending...' : 'Send verification link'}
+                  </button>
+                  <button
+                    onClick={handleCheckEmail}
+                    disabled={checkingEmail}
+                    className="inline-flex items-center gap-2 h-9 px-4 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${checkingEmail ? 'animate-spin' : ''}`} />
+                    {checkingEmail ? 'Checking...' : "I've verified — check now"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Step 2 ─────────────────────────────────────────────────────── */}
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4">
+        <div className="flex items-start gap-3 mb-3">
+          <div className={`p-2.5 rounded-xl shrink-0 ${kycVerified ? 'bg-emerald-100' : emailVerified ? 'bg-blue-100' : 'bg-slate-100'}`}>
+            <ShieldCheck className={`w-5 h-5 ${kycVerified ? 'text-emerald-600' : emailVerified ? 'text-blue-600' : 'text-slate-400'}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-semibold text-slate-900">
+              Step 2 — {isClient ? 'Identity & business details (optional)' : 'PAN card verification'}
+            </h2>
+            <p className="text-sm text-slate-500 mt-0.5">
+              {isClient
+                ? 'Freelancers trust verified clients. Add your PAN for the Verified badge, add business details, or both — entirely optional.'
+                : 'PAN is verified automatically against official records — usually within seconds, and your badge appears here instantly.'}
+            </p>
+          </div>
+        </div>
+
+        {!emailVerified && (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
+            <ShieldAlert className="w-5 h-5 text-amber-600 shrink-0" />
+            <p className="text-sm text-amber-800">Complete Step 1 (email verification) first — identity verification unlocks right after.</p>
+          </div>
+        )}
+
+        {/* Verified — all good */}
+        {kycVerified && (
+          <div className="text-center py-4">
+            <div className="p-3 bg-emerald-100 rounded-2xl w-fit mx-auto mb-3">
+              <BadgeCheck className="w-10 h-10 text-emerald-600" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-1">Identity Verified</h3>
+            <p className="text-slate-500 text-sm mb-2">
+              {verification?.verified_at
+                ? `Verified on ${new Date(verification.verified_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}`
+                : 'Your identity has been verified successfully.'}
+            </p>
+            <p className="text-xs text-slate-400 mb-4">You can now use the full platform — payments, projects, matches and more are unlocked.</p>
+            <Link
+              to={postVerifyRedirect}
+              className="inline-flex items-center justify-center gap-2 h-11 px-6 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+            >
+              Continue to Dashboard
+            </Link>
+          </div>
+        )}
+
+        {/* In-progress / decided-but-not-verified states */}
+        {!kycVerified && emailVerified && (
+          <>
+            {verificationStatus === 'pending' && (
+              <div className="text-center py-4">
+                <div className="p-3 bg-amber-100 rounded-2xl w-fit mx-auto mb-3">
+                  <Clock className="w-8 h-8 text-amber-600 animate-pulse" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Verification In Progress</h3>
+                <p className="text-slate-500 text-sm mb-3">
+                  Your details are being <span className="font-semibold text-slate-700">verified automatically right now</span>. This
+                  usually completes <span className="font-semibold text-amber-700">within seconds</span> — your status updates here in
+                  real time, no refresh needed.
+                </p>
+                <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+                  <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
+                  Checking official records…
+                </div>
+              </div>
+            )}
+
+            {verificationStatus === 'review' && (
+              <div className="text-center py-4">
+                <div className="p-3 bg-amber-100 rounded-2xl w-fit mx-auto mb-3">
+                  <Clock className="w-8 h-8 text-amber-600" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Verification in Review</h3>
+                <p className="text-slate-500 text-sm mb-2">
+                  Your submission needs a quick check on our side. You will be notified here and by email as soon as it is complete — no
+                  action is needed from you right now.
+                </p>
+              </div>
+            )}
+
+            {verificationStatus === 'rejected' && (
+              <div className="space-y-3">
+                <div className="text-center pt-2">
+                  <div className="p-3 bg-red-100 rounded-2xl w-fit mx-auto mb-3">
+                    <AlertCircle className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-slate-900 mb-1">Verification Unsuccessful</h3>
+                  <p className="text-sm text-red-600 font-medium">
+                    {verification?.rejection_reason || getKycFriendlyError(verification?.failure_category as string | null)}
+                  </p>
+                  {attemptsLeft > 0 && !blockExpired && (
+                    <p className="text-xs text-slate-400 mt-2">
+                      {attemptsLeft} of {KYC_MAX_ATTEMPTS} attempts remaining
+                    </p>
+                  )}
+                </div>
+                {canResubmit ? (
+                  <button
+                    onClick={() => { setShowPanForm((s) => !s); setError(null); }}
+                    className="w-full inline-flex items-center justify-center gap-2 h-11 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl transition-colors"
+                  >
+                    {showPanForm ? 'Hide form' : blockExpired ? 'Submit new verification' : `Resubmit verification (${attemptsLeft} left)`}
+                  </button>
+                ) : (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                    <p className="text-sm font-medium text-amber-800">
+                      No attempts remaining. You can try again after the cooldown period.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {verificationStatus === 'blocked' && (
+              <div className="text-center py-2">
+                <div className="p-3 bg-red-100 rounded-2xl w-fit mx-auto mb-3">
+                  <Clock className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-2">Verification Temporarily Blocked</h3>
+                <p className="text-slate-500 text-sm mb-3">
+                  You have used all {KYC_MAX_ATTEMPTS} verification attempts. To protect your account you can try again after the cooldown.
+                </p>
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-3 max-w-sm mx-auto">
+                  <p className="text-sm font-medium text-amber-800 mb-1">Cooldown remaining</p>
+                  <p className="text-2xl font-bold text-amber-900 font-mono">{formatKycCooldown(blockedDisplayMs)}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Fresh start / resubmit options */}
+            {(verificationStatus === 'none' || (verificationStatus === 'rejected' && canResubmit)) && (
+              <div className="space-y-4">
+                {/* ── Identity (PAN) option ── */}
+                <div className="rounded-xl border border-slate-200 overflow-hidden">
+                  <button
+                    type="button"
+                    onClick={() => { setShowPanForm((s) => !s); setError(null); }}
+                    className="w-full flex items-center justify-between px-4 py-3.5 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+                  >
+                    <span className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-emerald-600" />
+                      <span>
+                        <span className="block text-sm font-semibold text-slate-900">
+                          {isClient ? 'Verify with PAN (optional — gets the Verified badge)' : 'Verify my PAN'}
+                        </span>
+                        <span className="block text-xs text-slate-500">
+                          {isClient
+                            ? 'Personal PAN verification for the Verified badge.'
+                            : 'Required to unlock your Verified badge. Checked automatically in real time.'}
+                        </span>
+                      </span>
+                    </span>
+                    <span className={`text-emerald-600 font-bold text-lg transition-transform ${showPanForm ? 'rotate-180' : ''}`}>▾</span>
+                  </button>
+
+                  {showPanForm && (
+                    <form onSubmit={handlePanSubmit} className="p-4 space-y-3 border-t border-slate-100">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                            PAN number <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            maxLength={10}
+                            value={pan}
+                            onChange={(e) => setPan(e.target.value.toUpperCase())}
+                            placeholder="ABCDE1234F"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                            Full name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            placeholder="As printed on PAN card"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-1.5">Date of birth (optional)</label>
+                        <input
+                          type="date"
+                          value={dob}
+                          max={new Date().toISOString().split('T')[0]}
+                          onChange={(e) => setDob(e.target.value)}
+                          className="w-full sm:w-64 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                        />
+                      </div>
+
+                      <label className="flex items-start gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={consentAgreed}
+                          onChange={(e) => {
+                            setConsentAgreed(e.target.checked);
+                            if (e.target.checked) setError(null);
+                          }}
+                          className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
+                        />
+                        <span className="text-xs text-slate-600 leading-relaxed">
+                          <span className="font-semibold text-slate-800">I agree</span> to share my PAN and name with Growlancer for
+                          verification purposes only. Verification may be processed automatically (including automated platform checks
+                          during Growlancer's development phase). My data is stored securely, never shared with third parties without my
+                          consent, and I may withdraw consent or delete my data at any time. Read the{' '}
+                          <Link to="/privacy" className="text-emerald-600 hover:underline font-medium">Privacy Policy</Link> and{' '}
+                          <Link to="/terms" className="text-emerald-600 hover:underline font-medium">Terms</Link>.
+                        </span>
+                      </label>
+
+                      <button
+                        type="submit"
+                        disabled={submitting || !consentAgreed}
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 h-11 px-6 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
+                      >
+                        {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldCheck className="w-4 h-4" />}
+                        {submitting ? 'Verifying…' : 'Verify PAN now'}
+                      </button>
+                      <p className="text-xs text-slate-400">No document upload needed — the number is checked securely on our servers.</p>
+                    </form>
+                  )}
+                </div>
+
+                {/* ── Clients: optional business details ──────────────── */}
+                {isClient && (
+                  <div className="rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 py-3.5 bg-slate-50">
+                      <Building2 className="w-5 h-5 text-blue-600 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">Business details (optional)</p>
+                        <p className="text-xs text-slate-500">
+                          Company name, GSTIN, Udyam or business PAN — shown as self-attested, helps freelancers trust you.
+                        </p>
+                      </div>
+                    </div>
+
+                    {bizLoaded ? (
+                      <form onSubmit={handleBusinessSave} className="p-4 space-y-3 border-t border-slate-100">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Company / business name</label>
+                            <input
+                              type="text"
+                              value={biz.company_name}
+                              onChange={(e) => { setBiz((b) => ({ ...b, company_name: e.target.value })); setBizSavedMsg(null); }}
+                              placeholder="e.g., Acme Studios Pvt. Ltd."
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">GSTIN</label>
+                            <input
+                              type="text"
+                              value={biz.gst_number}
+                              onChange={(e) => {
+                                const v = normalizeGstin(e.target.value);
+                                const check = validateOptionalGstin(v);
+                                setBiz((b) => ({ ...b, gst_number: e.target.value }));
+                                setBizError(check.valid ? null : check.error || null);
+                                setBizSavedMsg(null);
+                              }}
+                              placeholder="22AAAAA0000A1Z5"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Udyam registration number</label>
+                            <input
+                              type="text"
+                              value={biz.udyam_number}
+                              onChange={(e) => {
+                                const v = normalizeUdyam(e.target.value);
+                                const check = validateOptionalUdyam(v);
+                                setBiz((b) => ({ ...b, udyam_number: e.target.value }));
+                                setBizError(check.valid ? null : check.error || null);
+                                setBizSavedMsg(null);
+                              }}
+                              placeholder="UDYAM-XX-00-0000000"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 mb-1.5">Business PAN</label>
+                            <input
+                              type="text"
+                              value={biz.business_pan}
+                              onChange={(e) => {
+                                const v = normalizeBusinessPan(e.target.value);
+                                const check = validateOptionalBusinessPan(v);
+                                setBiz((b) => ({ ...b, business_pan: e.target.value }));
+                                setBizError(check.valid ? null : check.error || null);
+                                setBizSavedMsg(null);
+                              }}
+                              placeholder="ABCDE1234F"
+                              className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
+                            />
+                          </div>
+                        </div>
+
+                        {bizError && (
+                          <p className="text-sm text-red-600 flex items-center gap-1.5">
+                            <AlertCircle className="w-4 h-4 shrink-0" /> {bizError}
+                          </p>
+                        )}
+                        {bizSavedMsg && (
+                          <p className="text-sm text-emerald-600 flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 shrink-0" /> {bizSavedMsg}
+                          </p>
+                        )}
+
+                        <button
+                          type="submit"
+                          disabled={bizSaving || !!bizError}
+                          className="inline-flex items-center justify-center gap-2 h-10 px-5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors"
+                        >
+                          {bizSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                          {bizSaving ? 'Saving…' : 'Save business details'}
+                        </button>
+                        <p className="text-xs text-slate-400">
+                          Self-attested — these details are not auto-verified against a government database today. Never share someone
+                          else's PAN or GSTIN; doing so violates our Terms.
+                        </p>
+                      </form>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-slate-400 flex items-center justify-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin" /> Loading…
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Small circular step indicator used in the header stepper. */
+function StepDot({ index, label, done, active }: { index: number; label: string; done: boolean; active: boolean }) {
+  return (
+    <div className="flex items-center gap-2 min-w-0">
+      <span
+        className={`w-8 h-8 rounded-full flex items-center justify-center border-2 text-sm font-bold shrink-0 transition-colors ${
+          done
+            ? 'bg-emerald-500 border-emerald-500 text-white'
+            : active
+              ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
+              : 'border-slate-200 text-slate-400 bg-white'
+        }`}
+      >
+        {done ? <CheckCircle2 className="w-4 h-4" /> : index}
+      </span>
+      <span className={`text-xs sm:text-sm font-medium leading-tight ${done ? 'text-emerald-700' : active ? 'text-slate-900' : 'text-slate-400'}`}>
+        {label}
+      </span>
     </div>
   );
 }
