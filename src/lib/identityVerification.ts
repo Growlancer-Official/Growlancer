@@ -161,7 +161,7 @@ export const identityVerificationService = {
    */
   async getStatus(userId: string): Promise<{
     verification: IdentityVerification | null;
-    status: 'none' | 'pending' | 'verified' | 'rejected' | 'blocked';
+    status: 'none' | 'pending' | 'verified' | 'rejected' | 'blocked' | 'review';
   }> {
     try {
       const { data, error } = await supabase
@@ -178,7 +178,7 @@ export const identityVerificationService = {
 
       const dataAny = data as any;
       // Blocked = latest attempt rejected AND cooldown still active
-      let resolvedStatus: 'pending' | 'verified' | 'rejected' | 'blocked' = dataAny.status as 'pending' | 'verified' | 'rejected';
+      let resolvedStatus: 'pending' | 'verified' | 'rejected' | 'blocked' | 'review' = dataAny.status as 'pending' | 'verified' | 'rejected' | 'review';
       if (resolvedStatus === 'rejected' && isKycBlocked(dataAny as IdentityVerification)) {
         resolvedStatus = 'blocked';
       }
@@ -189,6 +189,39 @@ export const identityVerificationService = {
     } catch (error) {
       console.error('Error fetching verification status:', error);
       return { verification: null, status: 'none' };
+    }
+  },
+
+  /**
+   * Run the automated KYC engine (kyc-submit edge function) on a PENDING
+   * verification row. The REAL provider call happens server-side; the row
+   * flips to verified/rejected/review there and Supabase Realtime pushes the
+   * change to every open page — no refresh needed.
+   *
+   * Returns a friendly, user-safe message (technical provider errors never
+   * reach the UI).
+   */
+  async process(
+    verificationId: string
+  ): Promise<{ success: boolean; status?: string; message?: string; error?: string }> {
+    try {
+      const { data, error } = await supabase.functions.invoke('kyc-submit', {
+        body: { verification_id: verificationId },
+      });
+      if (error) throw error;
+      return {
+        success: data?.success !== false,
+        status: data?.status,
+        message: data?.message,
+        error: data?.error,
+      };
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : 'Failed to process verification';
+      console.error('KYC processing error:', msg);
+      return {
+        success: false,
+        error: 'Verification is temporarily unavailable. Please try again shortly.',
+      };
     }
   },
 
@@ -406,3 +439,28 @@ export const identityVerificationService = {
     return channel;
   },
 };
+
+/**
+ * Map a backend failure_category to a user-friendly, non-technical message.
+ * Technical provider details never reach the UI.
+ */
+export function getKycFriendlyError(failureCategory: string | null | undefined): string {
+  switch (failureCategory) {
+    case 'name_mismatch':
+      return 'The name you entered does not match the official record. Please check your name and try again.';
+    case 'invalid_pan':
+      return 'This identity number could not be verified. Please check it and try again.';
+    case 'duplicate_identity':
+      return 'This identity is already verified on another Growlancer account.';
+    case 'rate_limited':
+      return 'Too many verification attempts. Please try again in a while.';
+    case 'email_unverified':
+      return 'Please verify your email address first, then try again.';
+    case 'provider_timeout':
+    case 'provider_error':
+    case 'rate_limited_provider':
+      return 'Verification is temporarily unavailable. Please try again shortly.';
+    default:
+      return 'Your identity could not be verified. Please check your information and try again.';
+  }
+}

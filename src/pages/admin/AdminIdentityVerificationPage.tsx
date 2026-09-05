@@ -11,7 +11,7 @@ import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
-type TabFilter = 'all' | 'pending' | 'verified' | 'rejected';
+type TabFilter = 'all' | 'pending' | 'review' | 'verified' | 'rejected';
 
 interface VerificationWithUser extends IdentityVerification {
   user_name?: string;
@@ -324,8 +324,8 @@ export function AdminIdentityVerificationPage() {
   const toast = useToast();
   const [rejectionReason, setRejectionReason] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [stats, setStats] = useState<{ pending: number; verified: number; rejected: number; total: number }>({
-    pending: 0, verified: 0, rejected: 0, total: 0,
+  const [stats, setStats] = useState<{ pending: number; review: number; verified: number; rejected: number; total: number }>({
+    pending: 0, review: 0, verified: 0, rejected: 0, total: 0,
   });
 
   const fetchVerifications = useCallback(async () => {
@@ -343,6 +343,7 @@ export function AdminIdentityVerificationPage() {
       // Calculate stats
       setStats({
         pending: records.filter((v) => v.status === 'pending').length,
+        review: records.filter((v) => (v as any).status === 'review').length,
         verified: records.filter((v) => v.status === 'verified').length,
         rejected: records.filter((v) => v.status === 'rejected').length,
         total: records.length,
@@ -465,6 +466,7 @@ export function AdminIdentityVerificationPage() {
 
   const tabs: { id: TabFilter; label: string; count: number }[] = [
     { id: 'pending', label: 'Pending', count: stats.pending },
+    { id: 'review', label: 'Needs Review', count: stats.review },
     { id: 'verified', label: 'Verified', count: stats.verified },
     { id: 'rejected', label: 'Rejected', count: stats.rejected },
     { id: 'all', label: 'All', count: stats.total },

@@ -32,7 +32,7 @@ export function IdentityVerificationPage() {
   const postVerifyRedirect =
     searchParams.get('redirect') || (isClient ? '/client' : '/dashboard');
   const [pageStatus, setPageStatus] = useState<PageStatus>('loading');
-  const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected' | 'blocked'>('none');
+  const [verificationStatus, setVerificationStatus] = useState<'none' | 'pending' | 'verified' | 'rejected' | 'blocked' | 'review'>('none');
   const [blockedMsLeft, setBlockedMsLeft] = useState(0);
   const [verification, setVerification] = useState<IdentityVerification | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -115,7 +115,7 @@ export function IdentityVerificationPage() {
     const channel = identityVerificationService.subscribe(user.id, (updated) => {
       const isBlocked = isKycBlocked(updated);
       setVerification(updated);
-      setVerificationStatus(isBlocked ? 'blocked' : (updated.status as 'pending' | 'verified' | 'rejected'));
+      setVerificationStatus(isBlocked ? 'blocked' : (updated.status as 'pending' | 'verified' | 'rejected' | 'review'));
       if (isBlocked) {
         setBlockedMsLeft(getKycBlockedMsLeft(updated));
       }
@@ -269,10 +269,11 @@ export function IdentityVerificationPage() {
         return;
       }
 
-      // ── STEP 2: Submit to the compliance queue (manual review) ─────────
-      // No automated/AI decision is trusted for identity. Documents are stored
-      // with their storage paths (never-expiring) and a compliance admin
-      // reviews them; the user's status flips in real time via realtime.
+      // ── STEP 2: Submit the request, then run the REAL-TIME KYC engine ──
+      // The row enters as 'pending' (RLS-enforced), then the kyc-submit edge
+      // function calls the REAL verification provider server-side and flips
+      // the row to verified/rejected/review. Supabase Realtime pushes the
+      // status change to this page instantly — no refresh needed.
       setUploadStep('submit');
       const result = await identityVerificationService.submit(user.id, {
         ...formData,
@@ -282,26 +283,36 @@ export function IdentityVerificationPage() {
         document_file_back: undefined,
       });
 
-      if (result.success && result.verification) {
-        setVerification(result.verification);
-        setShowForm(false);
-        setConsentAgreed(false);
-        setFormData({
-          document_type: 'passport',
-          document_file: undefined,
-          document_url: '',
-          document_file_back: undefined,
-          document_url_back: '',
-          document_number: '',
-          expiry_date: '',
-          full_name: '',
-          date_of_birth: '',
-        });
-        // Re-fetch status to update the UI immediately
-        await fetchStatus();
-      } else {
+      if (!result.success || !result.verification) {
         setError(result.error || 'Failed to submit verification');
+        setUploadStep(null);
+        return;
       }
+
+      setUploadStep('verifying');
+      setVerification(result.verification);
+      setShowForm(false);
+      setConsentAgreed(false);
+      setFormData({
+        document_type: 'passport',
+        document_file: undefined,
+        document_url: '',
+        document_file_back: undefined,
+        document_url_back: '',
+        document_number: '',
+        expiry_date: '',
+        full_name: '',
+        date_of_birth: '',
+      });
+
+      // Automated engine — the provider call + decision happen server-side.
+      // Realtime delivers the resulting status flip to the UI.
+      const processResult = await identityVerificationService.process(result.verification.id);
+      if (!processResult.success) {
+        setError(processResult.error || 'Verification is temporarily unavailable. Please try again shortly.');
+      }
+      // Final state arrives via the realtime subscription + fetchStatus below.
+      await fetchStatus();
     } catch {
       setError('An unexpected error occurred. Please try again.');
       setUploadStep(null);
@@ -794,6 +805,25 @@ export function IdentityVerificationPage() {
     </div>
   );
 
+  // REVIEW state — exceptional fallback only (provider error/ambiguity).
+  // The user sees a calm, friendly message; the compliance team handles it
+  // from the admin queue. Never auto-verified, never shown technical detail.
+  const renderReviewState = () => (
+    <div className="space-y-1.5">
+      <div className="bg-white rounded-xl border border-slate-100 shadow-sm p-4 text-center max-w-lg mx-auto">
+        <div className="p-3 bg-amber-100 rounded-xl w-fit mx-auto mb-2">
+          <Clock className="w-8 h-8 text-amber-600" />
+        </div>
+        <h2 className="text-xl font-bold text-slate-900 mb-2">Verification in Review</h2>
+        <p className="text-slate-500 mb-4">
+          Your verification needs a quick manual check on our side. This usually
+          takes a short time — you will be notified here and by email as soon as
+          it is complete. No action is needed from you right now.
+        </p>
+      </div>
+    </div>
+  );
+
   const renderRejectedState = () => {
     const attemptsLeft = getRemainingKycAttempts(verification);
     // After the 24h cooldown has EXPIRED (blocked_until in the past), the user
@@ -1184,6 +1214,7 @@ export function IdentityVerificationPage() {
       {verificationStatus === 'pending' && renderPendingState()}
       {verificationStatus === 'verified' && renderVerifiedState()}
       {verificationStatus === 'rejected' && renderRejectedState()}
+      {verificationStatus === 'review' && renderReviewState()}
       {verificationStatus === 'blocked' && renderBlockedState()}
     </div>
   );
