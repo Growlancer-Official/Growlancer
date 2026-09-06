@@ -649,8 +649,10 @@ export function ClientDashboardLayout() {
           </div>
         </header>
 
-        {/* Page Content */}
-        <div className="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 max-w-[100rem] mx-auto w-full break-words">
+        {/* Page Content — overflow-x clip keeps long content from pushing the
+            page horizontally on mobile (beige-strip bug); header sticky sits
+            outside this wrapper so sticky behavior is unaffected. */}
+        <div className="flex-1 flex flex-col p-4 sm:p-6 lg:p-8 max-w-[100rem] mx-auto w-full break-words overflow-x-hidden">
           <Suspense>
             <Outlet />
           </Suspense>

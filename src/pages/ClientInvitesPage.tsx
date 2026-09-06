@@ -234,9 +234,9 @@ export function ClientInvitesPage() {
                   expired ? 'border-slate-200 opacity-60' : 'border-slate-100'
                 } hover:shadow-md transition-shadow`}
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {invite.freelancer?.avatar ? (
                         <img 
                           src={invite.freelancer.avatar} 
@@ -251,13 +251,13 @@ export function ClientInvitesPage() {
                         <MailCheck className="w-4 h-4 text-slate-400" />
                       )}
                     </div>
-                    <div>
-                      <h3 className="font-display font-bold text-slate-900 flex items-center gap-1.5">
+                    <div className="min-w-0">
+                      <h3 className="font-display font-bold text-slate-900 flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                         {invite.freelancer?.name || 'Unknown Freelancer'}
                         {invite.freelancer?.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                         {invite.freelancer?.is_pro && <ProBadge size="xs" />}
                       </h3>
-                      <p className="text-sm text-slate-500">{invite.freelancer?.email}</p>
+                      <p className="text-sm text-slate-500 truncate">{invite.freelancer?.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -286,7 +286,7 @@ export function ClientInvitesPage() {
                   </div>
                 )}
 
-                <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 mb-2">
                   <div className="flex items-center gap-3">
                     <Calendar className="w-4 h-4" />
                     <span>Sent: {new Date(invite.created_at).toLocaleDateString()}</span>

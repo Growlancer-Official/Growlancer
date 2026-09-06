@@ -294,19 +294,19 @@ export function ClientProjectsPage() {
   return (
     <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg shadow-amber-500/20 flex-shrink-0">
             <FolderKanban className="w-5 h-5 text-white" />
           </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">My Projects <InfoTip title="From post to completed — your project journey" text="Open — freelancers can apply and you can invite AI matches. In Progress — a freelancer is hired and working under escrow. Completed — work delivered and approved. Cancelled — you closed it (active contracts continue safely). Use the menu on any project to see proposals, AI matches, edit, or change status — all in real time." /></h1>
+          <div className="min-w-0">
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">My Projects <InfoTip title="From post to completed — your project journey" text="Open — freelancers can apply and you can invite AI matches. In Progress — a freelancer is hired and working under escrow. Completed — work delivered and approved. Cancelled — you closed it (active contracts continue safely). Use the menu on any project to see proposals, AI matches, edit, or change status — all in real time." /></h1>
           <p className="text-slate-500 mt-1">Manage your posted projects and track progress</p>
           </div>
         </div>
         <Link
           to="/client/post"
-          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all"
+          className="inline-flex items-center justify-center gap-3 px-3 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-all flex-shrink-0"
         >
           <Plus className="w-4 h-4" />
           Post New Project
@@ -315,7 +315,7 @@ export function ClientProjectsPage() {
 
 
       {/* Filter Tabs */}
-      <div className="flex gap-3 border-b border-slate-200">
+      <div className="flex gap-3 border-b border-slate-200 overflow-x-auto">
         {(['all', 'open', 'in_progress', 'completed', 'cancelled'] as const).map((f) => (
           <button
             key={f}
