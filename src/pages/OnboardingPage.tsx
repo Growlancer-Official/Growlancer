@@ -453,6 +453,24 @@ export function OnboardingPage() {
         if (refErr) console.error('Referral apply error:', refErr);
       }
 
+      // Complete any pending referral now that onboarding is done — this is
+      // the completion event the referral system was waiting for. Without it
+      // referrals stayed "pending" forever and referrers never earned their
+      // bonus. No-op when this user signed up without a referral.
+      try {
+        const { data: refComplete, error: refCompleteErr } = await (supabase.rpc as any)('complete_referral', {
+          p_referee_user_id: user.id,
+        });
+        if (refCompleteErr) {
+          console.error('Referral completion error:', refCompleteErr);
+        } else if (refComplete && (refComplete as any).success === false && (refComplete as any).error !== 'No pending referral found') {
+          console.error('Referral completion failed:', (refComplete as any).error);
+        }
+      } catch (refE) {
+        // Never block onboarding on referral completion
+        console.error('Referral completion exception:', refE);
+      }
+
       // 🆕 Sync context BEFORE redirect so the dashboard route check sees
       // onboardingCompleted + the chosen role immediately (no stale-gate flash
       // and the right dashboard for the role picked on the welcome step).
