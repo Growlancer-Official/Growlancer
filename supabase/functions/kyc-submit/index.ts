@@ -385,6 +385,7 @@ serve(async (req: Request) => {
         status: 'rejected',
         failure_category: 'rate_limited',
         rejection_reason: msg,
+        rejection_count: attemptNo,
         blocked_until: blockedUntil,
         updated_at: new Date().toISOString(),
       }).eq('id', verificationId).eq('status', 'pending');
