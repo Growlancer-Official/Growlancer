@@ -1098,12 +1098,14 @@ export function OnboardingPage() {
                           className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                         >
                           <option value="">Select size...</option>
-                          <option value="1">Just me (1)</option>
-                          <option value="2-10">2-10 employees</option>
+                          {/* Values MUST match the client_profiles_size_check DB constraint
+                              (same as ClientSettingsPage) or the client_profiles upsert
+                              fails with a 400 and onboarding silently stalls. */}
+                          <option value="1-10">Just me (1-10)</option>
                           <option value="11-50">11-50 employees</option>
                           <option value="51-200">51-200 employees</option>
-                          <option value="201-1000">201-1000 employees</option>
-                          <option value="1000+">1000+ employees</option>
+                          <option value="201-500">201-500 employees</option>
+                          <option value="500+">500+ employees</option>
                         </select>
                       </div>
                       <div>
