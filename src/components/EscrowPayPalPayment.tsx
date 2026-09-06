@@ -607,8 +607,13 @@ export function EscrowPayPalPayment({
           </div>
         </div>
 
-        {/* Escrow Progress */}
-        <EscrowProgressBar funded={fundedAmount + fundingAmount} total={safeAmount} />
+        {/* Escrow Progress — shows the AFTER-payment projection: currently held
+            + what this payment will add once completed. Never reads as
+            "already funded" before the payment goes through. */}
+        <div>
+          <div className="text-xs text-slate-500 mb-1 px-1">After this payment (projected)</div>
+          <EscrowProgressBar funded={fundedAmount + fundingAmount} total={safeAmount} />
+        </div>
       </div>
     );
   }
