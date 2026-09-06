@@ -57,10 +57,17 @@ export function AuthCallbackPage() {
 
         if (error) {
           setStatus('error');
-          setErrorMessage(
-            errorDescription?.replace(/\+/g, ' ') ||
-              'Authentication failed. Please try again.'
-          );
+          const rawDescription = errorDescription?.replace(/\+/g, ' ') || '';
+          // 🆕 Friendly duplicate-email message: the GitHub/LinkedIn account's
+          // email is already used on Growlancer — log in with the original
+          // method instead of creating a second account.
+          if (/already registered|already exists|already.*in use|duplicate/i.test(rawDescription)) {
+            setErrorMessage(
+              'This email is already used professionally on Growlancer. Please log in with your email and password instead.'
+            );
+          } else {
+            setErrorMessage(rawDescription || 'Authentication failed. Please try again.');
+          }
           return;
         }
 

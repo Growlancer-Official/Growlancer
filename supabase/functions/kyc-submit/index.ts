@@ -356,6 +356,41 @@ serve(async (req: Request) => {
       }), { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
+    // ── User-level attempt carry-forward (per-user abuse protection) ───────
+    // Failures count across submissions (current failure streak — a verified
+    // row resets the count), so inserting a fresh pending row can never reset
+    // the retry budget: 1st mismatch → 1 retry left; 2nd failure → 24-hour
+    // cooldown. This is the engine-side twin of the DB kyc_guard_submit trigger.
+    const { data: recentRows, error: recentErr } = await service
+      .from('identity_verifications')
+      .select('id, status, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5);
+    let priorFails = 0;
+    if (!recentErr && recentRows) {
+      for (const r of recentRows) {
+        if (r.id === verificationId) continue;
+        if (r.status === 'verified') break; // streak reset on a successful verify
+        if (r.status === 'rejected') priorFails++;
+      }
+    }
+    const attemptNo = 1 + priorFails;
+    if (priorFails >= 2) {
+      // Defensive (the guard trigger normally prevents reaching here):
+      // two prior failures with no successful verify between them → block now.
+      const blockedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+      const msg = 'Too many failed attempts. Your next verification attempt unlocks after 24 hours.';
+      await service.from('identity_verifications').update({
+        status: 'rejected',
+        failure_category: 'rate_limited',
+        rejection_reason: msg,
+        blocked_until: blockedUntil,
+        updated_at: new Date().toISOString(),
+      }).eq('id', verificationId).eq('status', 'pending');
+      return new Response(JSON.stringify({ success: false, status: 'rejected', error: msg }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+
     // ── Email verification gate (real auth flag only — never client trust) ─
     if (!user.email_confirmed_at) {
       await service.from('identity_verifications').update({
@@ -464,6 +499,20 @@ serve(async (req: Request) => {
       baseUpdate.failed_at = nowIso;
       baseUpdate.verified_at = null;
       baseUpdate.review_reason = null;
+      baseUpdate.rejection_count = attemptNo; // user-level streak (drives UI attempts)
+      if (attemptNo >= 2) {
+        // Second real failure (name/DOB/PAN mismatch) → 24-hour cooldown.
+        baseUpdate.blocked_until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+        baseUpdate.rejection_reason = 'Verification failed after multiple attempts. You can try again after 24 hours.';
+      } else {
+        baseUpdate.blocked_until = null;
+        baseUpdate.rejection_reason =
+          result.failure_category === 'name_mismatch'
+            ? 'The name you entered does not match the PAN record. You have 1 retry left — please check your name and resubmit.'
+            : result.failure_category === 'duplicate_identity'
+            ? 'This identity is already verified on another Growlancer account.'
+            : 'Your details could not be verified. You have 1 retry left — please check your information and resubmit.';
+      }
     } else {
       decision = 'review';
       baseUpdate.status = 'review';
@@ -517,14 +566,17 @@ serve(async (req: Request) => {
     }
 
     // ── Friendly, non-technical response (realtime pushes the row flip) ────
+    const rejectedMsg =
+      attemptNo >= 2
+        ? 'Verification failed again. For security, your next attempt unlocks after 24 hours.'
+        : result.failure_category === 'name_mismatch'
+        ? 'The name you entered does not match the PAN record. You have 1 retry left — please check your name and try again.'
+        : result.failure_category === 'duplicate_identity'
+        ? 'This identity is already verified on another Growlancer account.'
+        : 'Your identity could not be verified. You have 1 retry left — please check your information and try again.';
     const friendly: Record<string, string> = {
       verified: 'Your identity has been verified.',
-      rejected:
-        result.failure_category === 'name_mismatch'
-          ? 'The name you entered does not match the PAN record. Please check your name and try again.'
-          : result.failure_category === 'duplicate_identity'
-          ? 'This identity is already verified on another Growlancer account.'
-          : 'Your identity could not be verified. Please check your information and try again.',
+      rejected: rejectedMsg,
       review: 'Your verification needs a quick manual check. We will update you shortly.',
     };
 

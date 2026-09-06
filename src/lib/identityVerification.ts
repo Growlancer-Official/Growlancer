@@ -13,8 +13,12 @@ export type IdentityVerification = Record<string, any> & {
   blocked_until?: string | null;
 };
 
-/** Max KYC resubmit attempts before the 24-hour cooldown kicks in. */
-export const KYC_MAX_ATTEMPTS = 3;
+/** Max KYC attempts before the 24-hour cooldown kicks in.
+ *  Flow: 1st failure → 1 retry left (real-time). 2nd failure → 24-hour cooldown.
+ *  A successful verification resets the streak. Enforced server-side
+ *  (kyc-submit engine + kyc_guard_submit trigger) — this constant only drives UI copy.
+ */
+export const KYC_MAX_ATTEMPTS = 2;
 
 /**
  * How many resubmit attempts the user has left (0 when blocked/cooldown active).
@@ -204,7 +208,10 @@ export const identityVerificationService = {
   async process(
     verificationId: string
   ): Promise<{ success: boolean; status?: string; message?: string; error?: string }> {
-    try {
+    // One automatic retry for transient failures (edge cold-start / network
+    // hiccup). The engine is idempotent — only still-pending rows are decided —
+    // so a retry can never double-apply or resurrect a decided row.
+    const attempt = async () => {
       const { data, error } = await supabase.functions.invoke('kyc-submit', {
         body: { verification_id: verificationId },
       });
@@ -215,13 +222,23 @@ export const identityVerificationService = {
         message: data?.message,
         error: data?.error,
       };
-    } catch (error) {
-      const msg = error instanceof Error ? error.message : 'Failed to process verification';
-      console.error('KYC processing error:', msg);
-      return {
-        success: false,
-        error: 'Verification is temporarily unavailable. Please try again shortly.',
-      };
+    };
+    try {
+      return await attempt();
+    } catch (firstErr) {
+      const msg = firstErr instanceof Error ? firstErr.message : 'Failed to process verification';
+      console.error('KYC processing error (retrying once):', msg);
+      await new Promise((r) => setTimeout(r, 1500));
+      try {
+        return await attempt();
+      } catch (error) {
+        const retryMsg = error instanceof Error ? error.message : 'Failed to process verification';
+        console.error('KYC processing error (after retry):', retryMsg);
+        return {
+          success: false,
+          error: 'Verification is temporarily unavailable. Please try again shortly.',
+        };
+      }
     }
   },
 
@@ -301,7 +318,18 @@ export const identityVerificationService = {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // The kyc_guard_submit trigger blocks new rows while a 24-hour
+        // cooldown is active — surface it as a friendly message, not raw SQL.
+        const raw = error.message || '';
+        if (raw.includes('KYC submission blocked')) {
+          return {
+            success: false,
+            error: 'Too many failed attempts. Your next verification attempt unlocks after 24 hours.',
+          };
+        }
+        throw error;
+      }
 
       // The kyc_auto_verify_trigger_fn (SECURITY DEFINER) now handles:
       // 1. Processing pending rows via kyc_verify_row

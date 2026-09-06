@@ -79,6 +79,7 @@ export function IdentityVerificationPage() {
   const [dob, setDob] = useState('');
   const [consentAgreed, setConsentAgreed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [checkingPending, setCheckingPending] = useState(false);
 
   // ── Clients: optional business details (self-attested) ─────────────────
   const [bizLoaded, setBizLoaded] = useState(false);
@@ -179,6 +180,47 @@ export function IdentityVerificationPage() {
     return () => { channel.unsubscribe(); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
+
+  // Safety net while a submission is stuck 'pending' (e.g. the engine call hit
+  // a transient failure before the auto-retry could land): re-check via the
+  // engine on focus / interval so the status flips without a manual refresh.
+  const recheckingPending = useRef(false);
+  useEffect(() => {
+    if (verificationStatus !== 'pending' || !verification?.id) return;
+    const recheck = async () => {
+      if (recheckingPending.current) return;
+      recheckingPending.current = true;
+      try {
+        await identityVerificationService.process(verification.id);
+      } catch {
+        // The realtime subscription + next tick will pick the flip up.
+      } finally {
+        recheckingPending.current = false;
+      }
+    };
+    const t = setInterval(recheck, 15000);
+    const onFocus = () => recheck();
+    window.addEventListener('focus', onFocus);
+    // First re-check soon after landing on a pending state.
+    const first = setTimeout(recheck, 3000);
+    return () => {
+      clearInterval(t);
+      clearTimeout(first);
+      window.removeEventListener('focus', onFocus);
+    };
+  }, [verificationStatus, verification?.id]);
+
+  const handleCheckNow = useCallback(async () => {
+    if (!verification?.id || recheckingPending.current) return;
+    setCheckingPending(true);
+    try {
+      await identityVerificationService.process(verification.id);
+    } catch {
+      setError('Still working on it — your status updates here automatically the moment it completes.');
+    } finally {
+      setCheckingPending(false);
+    }
+  }, [verification?.id]);
 
   // Clients: load saved business details once.
   useEffect(() => {
@@ -474,6 +516,20 @@ export function IdentityVerificationPage() {
                   <Loader2 className="w-4 h-4 text-amber-600 animate-spin" />
                   Checking official records…
                 </div>
+                <button
+                  type="button"
+                  onClick={handleCheckNow}
+                  disabled={checkingPending}
+                  className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 hover:text-emerald-800 disabled:opacity-60"
+                >
+                  {checkingPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" /> Checking again…
+                    </>
+                  ) : (
+                    'Check again now'
+                  )}
+                </button>
               </div>
             )}
 

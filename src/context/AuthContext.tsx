@@ -1258,7 +1258,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         setIsLoading(false);
-        return { success: false, error: error.message };
+        // 🆕 Friendly, consistent duplicate-email message — signup with an
+        // already-used email (including one owned by an OAuth account).
+        const rawErr = error.message || '';
+        if (/already registered|already exists|User already|email address.*exists/i.test(rawErr)) {
+          return {
+            success: false,
+            error: 'This email is already used professionally on Growlancer. Please log in instead — or continue with GitHub / LinkedIn if you originally signed up that way.',
+          };
+        }
+        return { success: false, error: rawErr };
       }
 
       if (data.user) {
