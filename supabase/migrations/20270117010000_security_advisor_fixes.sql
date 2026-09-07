@@ -74,7 +74,11 @@ END;
 $fix$;
 
 -- ── 2. Storage: intern resumes bucket — require authentication ─────────────
+-- NOTE: 20270118000000 later re-scopes this same policy (resumes/ folder
+-- only) and adds the anon application-flow policy. The DROP guards here make
+-- this migration idempotent when applied after later states.
 DROP POLICY IF EXISTS "Anyone can upload internship resumes" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated users can upload internship resumes" ON storage.objects;
 CREATE POLICY "Authenticated users can upload internship resumes"
 ON storage.objects FOR INSERT
 TO authenticated
