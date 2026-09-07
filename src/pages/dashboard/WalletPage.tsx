@@ -349,6 +349,15 @@ export function WalletPage() {
       if (result.success && result.methods) {
         setMethods(result.methods);
         setPayoutMethods(result.methods);
+        // Auto-select the default method (the tip "Set a default method for
+        // faster withdrawals" promises this) — or the only method when just
+        // one exists, so the user is never left with an unexplained disabled
+        // Review button after adding their first payout method.
+        setSelectedMethodId((prev) => {
+          if (prev && result.methods!.some((m) => m.id === prev)) return prev;
+          const def = result.methods!.find((m) => m.is_default);
+          return def?.id || (result.methods!.length === 1 ? result.methods![0].id : '');
+        });
       } else {
         setMethodError(result.error || 'Failed to load payout methods');
       }
