@@ -1484,7 +1484,15 @@ export function ClientWorkspacePage() {
                             <Lock className="h-5 w-5 text-slate-400" />
                           )}
                           <p className="text-lg font-semibold text-slate-900">
-                            {selectedContract.escrow_funded ? 'Funded' : 'Awaiting Funding'}
+                            {/* After a full release the escrow row flips to
+                                released/refunded and escrow_funded resets — a
+                                completed contract must read "Released", not
+                                "Awaiting Funding". */}
+                            {selectedContract.escrow_funded
+                              ? 'Funded'
+                              : ['completed', 'cancelled'].includes(String(selectedContract.status || ''))
+                              ? 'Released'
+                              : 'Awaiting Funding'}
                           </p>
                         </div>
                       </div>

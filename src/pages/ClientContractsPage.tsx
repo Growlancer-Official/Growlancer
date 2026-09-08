@@ -172,13 +172,13 @@ export function ClientContractsPage() {
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <FileText className="w-5 h-5 text-white" />
           </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
+          <div className="min-w-0">
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">
               Contracts
             <InfoTip
               title="How contracts work for you"
@@ -188,7 +188,7 @@ export function ClientContractsPage() {
           <p className="text-slate-500 mt-1">Manage active and completed contracts with freelancers</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl">
+        <div className="flex items-center gap-3 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-xl flex-shrink-0">
           <Handshake className="w-4 h-4" />
           <span className="font-bold">{contracts.length} Contracts</span>
         </div>
@@ -196,7 +196,7 @@ export function ClientContractsPage() {
 
       <InfoTip title="Your money is protected until you approve" text="A contract is only active after escrow is funded. The freelancer can't touch the funds — they release only when you approve the delivered work. If you're not satisfied, request a revision or raise a dispute instead of paying outside the platform. Never pay a freelancer directly; it voids Growlancer's protection." />
 
-      <div className="flex gap-3 border-b border-slate-200">
+      <div className="flex gap-3 border-b border-slate-200 overflow-x-auto">
         {(['all', 'active', 'completed', 'pending'] as const).map((f) => (
           <button
             key={f}
@@ -261,25 +261,25 @@ export function ClientContractsPage() {
                 key={contract.id}
                 className="bg-white p-6 rounded-xl border border-slate-100 hover:shadow-md transition-shadow"
               >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                       {contract.freelancer?.avatar ? (
-                        <img src={contract.freelancer.avatar} alt={contract.freelancer.name} />
+                        <img src={contract.freelancer.avatar} alt={contract.freelancer.name} className="w-full h-full object-cover" />
                       ) : (
                         <User className="w-4 h-4 text-slate-400" />
                       )}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <h3 className="font-display font-bold text-slate-900">
-                        <span className="flex items-center gap-1.5">
+                        <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
                           {contract.freelancer?.name || 'Unknown Freelancer'}
                           {contract.freelancer?.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                           {contract.freelancer?.is_pro && <ProBadge size="xs" />}
                         </span>
                       </h3>
                       {contract.project && (
-                        <p className="text-sm text-slate-500">{contract.project.title}</p>
+                        <p className="text-sm text-slate-500 truncate">{contract.project.title}</p>
                       )}
                     </div>
                   </div>

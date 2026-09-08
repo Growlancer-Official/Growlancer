@@ -888,14 +888,14 @@ export function WorkspacePage() {
     <div className="space-y-1.5">
       {/* Top Banner / Header */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 bg-white/60 backdrop-blur-md border border-slate-100 p-5 rounded-xl shadow-sm">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 min-w-0">
           <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <Briefcase className="w-4 h-4 text-white" />
           </div>
-          <div>
+          <div className="min-w-0">
             <h1 className="font-display text-xl font-bold text-slate-900">Collaboration Workspace</h1>
-            <p className="text-sm text-slate-500">
-              Co-working with <span className="font-semibold text-slate-700">{selectedContract?.client?.name}</span>
+            <p className="text-sm text-slate-500 flex flex-wrap items-center gap-x-1 gap-y-0.5">
+              Co-working with <span className="font-semibold text-slate-700 break-words">{selectedContract?.client?.name}</span>
               {(selectedContract?.client as any)?.verification_status === 'verified' && (
                 <VerifiedBadge size="xs" className="ml-1.5" tone="blue" />
               )}
@@ -912,23 +912,24 @@ export function WorkspacePage() {
           </div>
         </div>
 
-        {/* Dynamic Nav Tabs */}
-        <div className="flex items-center bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/50 self-start lg:self-center">
+        {/* Dynamic Nav Tabs — horizontally scrollable on mobile so the three
+            tabs never overflow the viewport */}
+        <div className="flex items-center bg-slate-100/80 p-1.5 rounded-xl border border-slate-200/50 self-start lg:self-center max-w-full overflow-x-auto">
           <button
             onClick={() => setActiveTab('chat')}
-            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
               activeTab === 'chat'
                 ? 'bg-white text-emerald-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <MessageSquare className="w-4 h-4" />
+            <MessageSquare className="w-4 h-4 shrink-0" />
             <span>Chat & Assets</span>
           </button>
           
           <button
             onClick={() => setActiveTab('canvas')}
-            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
               activeTab === 'canvas'
                 ? 'bg-white text-emerald-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -940,7 +941,7 @@ export function WorkspacePage() {
 
           <button
             onClick={() => setActiveTab('milestones')}
-            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+            className={`flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 whitespace-nowrap ${
               activeTab === 'milestones'
                 ? 'bg-white text-emerald-600 shadow-sm'
                 : 'text-slate-600 hover:text-slate-900'
@@ -1213,10 +1214,10 @@ export function WorkspacePage() {
                     <div className="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center">
                       <MessageSquare className="w-4 h-4" />
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-slate-900">Project Chat Room</h4>
-                      <p className="text-xs text-slate-500">Secure real-time correspondence with {selectedContract.client?.name}</p>
-                    </div>
+          <div className="min-w-0">
+            <h4 className="font-semibold text-slate-900">Project Chat Room</h4>
+            <p className="text-xs text-slate-500 truncate">Secure real-time correspondence with {selectedContract.client?.name}</p>
+          </div>
                   </div>
                 </div>
 

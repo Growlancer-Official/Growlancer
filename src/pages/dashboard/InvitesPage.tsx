@@ -407,10 +407,11 @@ export function InvitesPage() {
 
                 {/* Content */}
                 <div className="flex-1 min-w-0 break-words">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-1.5 mb-2">
-                        <h3 className="font-display text-xl font-bold text-slate-900">
+                  {/* Wrap on mobile: content stacks above the action buttons */}
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mb-2">
+                        <h3 className="font-display text-xl font-bold text-slate-900 break-words min-w-0">
                           {invite.projects.title}
                         </h3>
                         {getStatusBadge(invite.status)}
@@ -421,7 +422,7 @@ export function InvitesPage() {
                       </p>
 
                       {/* Client Info */}
-                      <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 mb-2">
                         <span className="flex items-center gap-1">
                           <User className="w-4 h-4" />
                           Invited by <span className="font-medium text-slate-700 flex items-center gap-1">
@@ -473,7 +474,7 @@ export function InvitesPage() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-col gap-3 flex-shrink-0">
+                    <div className="flex flex-row gap-3 flex-shrink-0 max-sm:max-w-[240px]">
                       {invite.status === 'pending' && !isExpired(invite.expires_at) ? (
                         <>
                           <button

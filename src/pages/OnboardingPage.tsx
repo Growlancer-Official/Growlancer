@@ -453,6 +453,24 @@ export function OnboardingPage() {
         if (refErr) console.error('Referral apply error:', refErr);
       }
 
+      // Complete any pending referral now that onboarding is done — this is
+      // the completion event the referral system was waiting for. Without it
+      // referrals stayed "pending" forever and referrers never earned their
+      // bonus. No-op when this user signed up without a referral.
+      try {
+        const { data: refComplete, error: refCompleteErr } = await (supabase.rpc as any)('complete_referral', {
+          p_referee_user_id: user.id,
+        });
+        if (refCompleteErr) {
+          console.error('Referral completion error:', refCompleteErr);
+        } else if (refComplete && (refComplete as any).success === false && (refComplete as any).error !== 'No pending referral found') {
+          console.error('Referral completion failed:', (refComplete as any).error);
+        }
+      } catch (refE) {
+        // Never block onboarding on referral completion
+        console.error('Referral completion exception:', refE);
+      }
+
       // 🆕 Sync context BEFORE redirect so the dashboard route check sees
       // onboardingCompleted + the chosen role immediately (no stale-gate flash
       // and the right dashboard for the role picked on the welcome step).
@@ -1098,12 +1116,14 @@ export function OnboardingPage() {
                           className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                         >
                           <option value="">Select size...</option>
-                          <option value="1">Just me (1)</option>
-                          <option value="2-10">2-10 employees</option>
+                          {/* Values MUST match the client_profiles_size_check DB constraint
+                              (same as ClientSettingsPage) or the client_profiles upsert
+                              fails with a 400 and onboarding silently stalls. */}
+                          <option value="1-10">Just me (1-10)</option>
                           <option value="11-50">11-50 employees</option>
                           <option value="51-200">51-200 employees</option>
-                          <option value="201-1000">201-1000 employees</option>
-                          <option value="1000+">1000+ employees</option>
+                          <option value="201-500">201-500 employees</option>
+                          <option value="500+">500+ employees</option>
                         </select>
                       </div>
                       <div>

@@ -488,19 +488,19 @@ export function ContractsPage() {
     <div className="space-y-1.5">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex items-center gap-1.5">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 flex-shrink-0">
             <Handshake className="w-4 h-4 text-white" />
           </div>
-          <div>
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">My Contracts <InfoTip title="How contracts & money work" text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlancer." /></h1>
+          <div className="min-w-0">
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">My Contracts <InfoTip title="How contracts & money work" text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlancer." /></h1>
             <p className="text-slate-500">
               {activeCount} active contract{activeCount !== 1 ? 's' : ''}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <div className="px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
             <p className="text-xs text-emerald-600">Total Earnings</p>
             <p className="text-xl font-bold text-emerald-700">{formatCurrency(totalEarnings)}</p>
@@ -515,11 +515,12 @@ export function ContractsPage() {
       {/* How-it-works strip — hover the funding badges on any contract for details */}
       <InfoTip title="Your money is always protected" text="The{' '}funding badges on each contract (Not Funded / Partially Funded / Fully Funded) tell you exactly where escrow stands. Work confidently — payment releases to your wallet only after the client approves your work, or automatically once the review window passes." />
 
-      {/* Tabs — workflow order: All → Active → Pending → Completed */}
-      <div className="flex items-center gap-3 border-b border-slate-200 overflow-x-auto">
+      {/* Tabs — workflow order: All → Active → Pending → Completed.
+          Wrap (not horizontal scroll) on mobile so no tab is ever cut off. */}
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-0 border-b border-slate-200">
         <button
           onClick={() => { userTouchedFilter.current = true; setActiveTab('all'); }}
-          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+          className={`px-3 sm:px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'all'
               ? 'text-emerald-600'
               : 'text-slate-500 hover:text-slate-700'
@@ -532,7 +533,7 @@ export function ContractsPage() {
         </button>
         <button
           onClick={() => { userTouchedFilter.current = true; setActiveTab('active'); }}
-          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+          className={`px-3 sm:px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'active'
               ? 'text-emerald-600'
               : 'text-slate-500 hover:text-slate-700'
@@ -550,7 +551,7 @@ export function ContractsPage() {
         </button>
         <button
           onClick={() => { userTouchedFilter.current = true; setActiveTab('pending'); }}
-          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+          className={`px-3 sm:px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'pending'
               ? 'text-emerald-600'
               : 'text-slate-500 hover:text-slate-700'
@@ -568,7 +569,7 @@ export function ContractsPage() {
         </button>
         <button
           onClick={() => { userTouchedFilter.current = true; setActiveTab('completed'); }}
-          className={`px-4 py-3 text-sm font-medium transition-colors relative ${
+          className={`px-3 sm:px-4 py-3 text-sm font-medium transition-colors relative ${
             activeTab === 'completed'
               ? 'text-emerald-600'
               : 'text-slate-500 hover:text-slate-700'
@@ -602,10 +603,10 @@ export function ContractsPage() {
                 onClick={() => setSelectedContract(selectedContract?.id === contract.id ? null : contract)}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     {/* Header */}
-                    <div className="flex items-center gap-1.5 mb-3">
-                      <h3 className="font-display text-xl font-bold text-slate-900">
+                    <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 mb-3">
+                      <h3 className="font-display text-xl font-bold text-slate-900 break-words min-w-0">
                         {contract.project?.title || 'Project'}
                       </h3>
                       {getStatusBadge(contract.status || 'active')}
@@ -613,7 +614,7 @@ export function ContractsPage() {
                     </div>
 
                     {/* Client Info */}
-                    <div className="flex items-center gap-3 text-sm text-slate-500 mb-2">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-500 mb-2">
                       <span className="flex items-center gap-1">
                         <User className="w-4 h-4" />
                         Client: <span className="font-medium text-slate-700 flex items-center gap-1">
@@ -633,8 +634,8 @@ export function ContractsPage() {
                       )}
                     </div>
 
-                    {/* Financial Details */}
-                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-2">
+                    {/* Financial Details — 2-col grid on mobile so ₹ tiles stay readable */}
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-2">
                       <div className="p-3 bg-slate-50 rounded-xl">
                         <p className="text-xs text-slate-500 mb-1">Contract Value</p>
                         <p className="text-xl font-bold text-slate-900">{formatCurrency(contract.amount)}</p>
@@ -652,7 +653,7 @@ export function ContractsPage() {
                         <p className="text-xl font-bold text-purple-700 capitalize">{getStatusLabel(contract.status || '')}</p>
                       </div>
                       {/* Escrow Balance Indicator */}
-                      <div className={`p-3 rounded-xl ${
+                      <div className={`p-3 rounded-xl max-sm:col-span-2 ${
                         balance?.isFullyFunded
                           ? 'bg-emerald-50'
                           : balance && balance.fundedAmount > 0

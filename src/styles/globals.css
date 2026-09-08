@@ -12,10 +12,16 @@
   html {
     @apply scroll-smooth;
     font-family: 'Satoshi', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    overflow-x: clip;
   }
 
   body {
     @apply font-sans text-slate-900 antialiased bg-cream;
+    /* Mobile safety net: a single too-wide element (long ID, URL, non-wrapping
+       row) used to widen the document and expose the cream body as a beige
+       strip on the right. clip stops the widening without creating a scroll
+       container, so sticky headers keep working. */
+    overflow-x: clip;
   }
 }
 

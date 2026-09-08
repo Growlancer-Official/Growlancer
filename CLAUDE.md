@@ -135,6 +135,16 @@ merit-based ranking confirmed.
 
 ✅ Team Projects feature — multi-freelancer, independent-contracts architecture, live.
 
+✅ KYC real-time engine (Sep 2026) — `kyc-submit` edge function, provider abstraction
+(Surepass/Deepvue switch via 1 adapter), duplicate-identity protection (DB trigger +
+pre-flight), realtime status flips, email gate, rate limits.
+
+⚠️ KYC provider — abhi `kyc_provider_config.mode = 'development'` (admin panel se toggle):
+users auto-verify instantly, rows honestly labelled `provider='dev_mode'`. Revenue aate hi
+admin → Verification → Production + provider token (SIRF REAL provider se VERIFIED; dev rows
+dobara real verify karne honge). `document_hash` live par GENERATED column hai — function se
+kabhi write mat karna (428C9 error, silent pending-fail cause tha).
+
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
 

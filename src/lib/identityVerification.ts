@@ -13,8 +13,12 @@ export type IdentityVerification = Record<string, any> & {
   blocked_until?: string | null;
 };
 
-/** Max KYC resubmit attempts before the 24-hour cooldown kicks in. */
-export const KYC_MAX_ATTEMPTS = 3;
+/** Max KYC attempts before the 24-hour cooldown kicks in.
+ *  Flow: 1st failure → 1 retry left (real-time). 2nd failure → 24-hour cooldown.
+ *  A successful verification resets the streak. Enforced server-side
+ *  (kyc-submit engine + kyc_guard_submit trigger) — this constant only drives UI copy.
+ */
+export const KYC_MAX_ATTEMPTS = 2;
 
 /**
  * How many resubmit attempts the user has left (0 when blocked/cooldown active).
@@ -161,7 +165,7 @@ export const identityVerificationService = {
    */
   async getStatus(userId: string): Promise<{
     verification: IdentityVerification | null;
-    status: 'none' | 'pending' | 'verified' | 'rejected' | 'blocked';
+    status: 'none' | 'pending' | 'verified' | 'rejected' | 'blocked' | 'review';
   }> {
     try {
       const { data, error } = await supabase
@@ -178,7 +182,7 @@ export const identityVerificationService = {
 
       const dataAny = data as any;
       // Blocked = latest attempt rejected AND cooldown still active
-      let resolvedStatus: 'pending' | 'verified' | 'rejected' | 'blocked' = dataAny.status as 'pending' | 'verified' | 'rejected';
+      let resolvedStatus: 'pending' | 'verified' | 'rejected' | 'blocked' | 'review' = dataAny.status as 'pending' | 'verified' | 'rejected' | 'review';
       if (resolvedStatus === 'rejected' && isKycBlocked(dataAny as IdentityVerification)) {
         resolvedStatus = 'blocked';
       }
@@ -193,12 +197,59 @@ export const identityVerificationService = {
   },
 
   /**
+   * Run the automated KYC engine (kyc-submit edge function) on a PENDING
+   * verification row. The REAL provider call happens server-side; the row
+   * flips to verified/rejected/review there and Supabase Realtime pushes the
+   * change to every open page — no refresh needed.
+   *
+   * Returns a friendly, user-safe message (technical provider errors never
+   * reach the UI).
+   */
+  async process(
+    verificationId: string
+  ): Promise<{ success: boolean; status?: string; message?: string; error?: string }> {
+    // One automatic retry for transient failures (edge cold-start / network
+    // hiccup). The engine is idempotent — only still-pending rows are decided —
+    // so a retry can never double-apply or resurrect a decided row.
+    const attempt = async () => {
+      const { data, error } = await supabase.functions.invoke('kyc-submit', {
+        body: { verification_id: verificationId },
+      });
+      if (error) throw error;
+      return {
+        success: data?.success !== false,
+        status: data?.status,
+        message: data?.message,
+        error: data?.error,
+      };
+    };
+    try {
+      return await attempt();
+    } catch (firstErr) {
+      const msg = firstErr instanceof Error ? firstErr.message : 'Failed to process verification';
+      console.error('KYC processing error (retrying once):', msg);
+      await new Promise((r) => setTimeout(r, 1500));
+      try {
+        return await attempt();
+      } catch (error) {
+        const retryMsg = error instanceof Error ? error.message : 'Failed to process verification';
+        console.error('KYC processing error (after retry):', retryMsg);
+        return {
+          success: false,
+          error: 'Verification is temporarily unavailable. Please try again shortly.',
+        };
+      }
+    }
+  },
+
+  /**
    * Submit a new identity verification request.
    * Handles both secure file uploads and URL-based uploads for backward compatibility.
    *
-   * MANUAL REVIEW: every submission enters the compliance queue as 'pending'.
-   * An admin reviews the documents (AdminIdentityVerificationPage) and the
-   * user's status flips to verified/rejected in real time via the sync trigger.
+   * AUTOMATED: the row enters as 'pending' (RLS-enforced), then the kyc-submit
+   * edge function verifies it server-side (PAN → instant; others → review) and
+   * the status flips to verified/rejected/review in real time via Realtime +
+   * the badge-sync trigger.
    */
   async submit(
     userId: string,
@@ -228,13 +279,19 @@ export const identityVerificationService = {
         documentUrlBack = uploadBack.path || uploadBack.url;
       }
 
-      if (!documentUrl) {
-        return { success: false, error: 'Document URL or file is required' };
-      }
-
-      // A document type that requires a back image must actually have one
-      if (documentNeedsBack(upload.document_type) && !documentUrlBack) {
-        return { success: false, error: 'Please upload the back side of your document.' };
+      // PAN is verified server-side by number — an image is never required.
+      // Other document types are compliance-reviewed, so they must carry an
+      // image (front, and back where the type needs it).
+      if (upload.document_type !== 'pan') {
+        if (!documentUrl) {
+          return { success: false, error: 'Document URL or file is required' };
+        }
+        if (documentNeedsBack(upload.document_type) && !documentUrlBack) {
+          return { success: false, error: 'Please upload the back side of your document.' };
+        }
+      } else {
+        documentUrl = documentUrl || null;
+        documentUrlBack = null;
       }
 
       // MNC-style manual review: submissions ALWAYS enter the compliance
@@ -261,7 +318,18 @@ export const identityVerificationService = {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        // The kyc_guard_submit trigger blocks new rows while a 24-hour
+        // cooldown is active — surface it as a friendly message, not raw SQL.
+        const raw = error.message || '';
+        if (raw.includes('KYC submission blocked')) {
+          return {
+            success: false,
+            error: 'Too many failed attempts. Your next verification attempt unlocks after 24 hours.',
+          };
+        }
+        throw error;
+      }
 
       // The kyc_auto_verify_trigger_fn (SECURITY DEFINER) now handles:
       // 1. Processing pending rows via kyc_verify_row
@@ -406,3 +474,28 @@ export const identityVerificationService = {
     return channel;
   },
 };
+
+/**
+ * Map a backend failure_category to a user-friendly, non-technical message.
+ * Technical provider details never reach the UI.
+ */
+export function getKycFriendlyError(failureCategory: string | null | undefined): string {
+  switch (failureCategory) {
+    case 'name_mismatch':
+      return 'The name you entered does not match the official record. Please check your name and try again.';
+    case 'invalid_pan':
+      return 'This identity number could not be verified. Please check it and try again.';
+    case 'duplicate_identity':
+      return 'This identity is already verified on another Growlancer account.';
+    case 'rate_limited':
+      return 'Too many verification attempts. Please try again in a while.';
+    case 'email_unverified':
+      return 'Please verify your email address first, then try again.';
+    case 'provider_timeout':
+    case 'provider_error':
+    case 'rate_limited_provider':
+      return 'Verification is temporarily unavailable. Please try again shortly.';
+    default:
+      return 'Your identity could not be verified. Please check your information and try again.';
+  }
+}

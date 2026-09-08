@@ -1187,6 +1187,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const referralCode = createReferralCode(role.substring(0, 2).toUpperCase());
 
+      // 🆕 Pre-flight duplicate-email check. GoTrue runs with anti-enumeration:
+      // signing up an already-registered email returns a FAKE success-shaped
+      // user object and sends nothing — the real user is stuck waiting for a
+      // confirmation email that never arrives. Catch it here instead and give
+      // the honest, friendly message.
+      try {
+        const { data: emailTaken } = await supabase.rpc('is_email_taken' as any, { p_email: email });
+        if (emailTaken === true) {
+          setIsLoading(false);
+          return {
+            success: false,
+            error: 'This email is already used professionally on Growlancer. Please log in instead — or continue with GitHub / LinkedIn if you originally signed up that way.',
+          };
+        }
+      } catch {
+        // RPC unavailable (deploy lag) → fall through to the normal signup
+        // path. Post-signup handling below still covers the error case.
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -1258,10 +1277,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         setIsLoading(false);
-        return { success: false, error: error.message };
+        // 🆕 Friendly, consistent duplicate-email message — signup with an
+        // already-used email (including one owned by an OAuth account).
+        const rawErr = error.message || '';
+        if (/already registered|already exists|User already|email address.*exists/i.test(rawErr)) {
+          return {
+            success: false,
+            error: 'This email is already used professionally on Growlancer. Please log in instead — or continue with GitHub / LinkedIn if you originally signed up that way.',
+          };
+        }
+        return { success: false, error: rawErr };
       }
 
       if (data.user) {
+        // 🆕 Anti-enumeration signal: a duplicate-email signup returns a user
+        // object with `identities: []` (GoTrue "fake success" — no email is
+        // ever sent). Surface the honest duplicate message instead of letting
+        // the user wait forever for an email that never arrives.
+        if (Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+          setIsLoading(false);
+          return {
+            success: false,
+            error: 'This email is already used professionally on Growlancer. Please log in instead — or continue with GitHub / LinkedIn if you originally signed up that way.',
+          };
+        }
+
         // Try to create profile immediately
         let created = await createUserProfile(data.user.id, email, name, role, referralCode);
 

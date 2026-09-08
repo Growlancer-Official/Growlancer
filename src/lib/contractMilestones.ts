@@ -350,7 +350,20 @@ export const milestoneService = {
       let fundedMilestoneCount = 0;
 
       if (escrow) {
-        fundedAmount = escrow.amount || 0;
+        // escrow.amount is the CONTRACTED amount recorded when the escrow row is
+        // created (before any money moves). It is only "deposited" once the row
+        // is actually funded — deriving it from status prevents showing
+        // unfunded contracts as "₹X funded"/"Escrow Held ₹X".
+        const escrowStatus = String(escrow.status || '').toLowerCase();
+        const isMoneyHeld =
+          escrowStatus === 'funded' ||
+          escrowStatus === 'active' ||
+          escrowStatus === 'released' ||
+          escrowStatus === 'completed' ||
+          escrowStatus === 'partially_funded' ||
+          escrowStatus === 'disputed' ||
+          escrowStatus === 'frozen';
+        fundedAmount = isMoneyHeld ? escrow.amount || 0 : 0;
         const escrowMilestones = parseMilestones(escrow.milestones);
 
         if (escrowMilestones.length > 0) {

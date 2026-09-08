@@ -44,12 +44,13 @@ export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', 
       <BadgeCheck className={`${sizes.icon} fill-white/20`} strokeWidth={2.5} />
       {showLabel && <span className={sizes.label}>{tone === 'blue' ? 'CLIENT' : 'VERIFIED'}</span>}
 
-      {/* Polished hover tooltip */}
+      {/* Polished hover tooltip — precise: platform-level verification, not a government-issued ID */}
       <span
         role="tooltip"
         className={`pointer-events-none absolute left-1/2 -top-1 -translate-x-1/2 -translate-y-full z-50 whitespace-nowrap rounded-lg bg-slate-900 text-white font-semibold normal-case tracking-normal shadow-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${sizes.tooltip}`}
       >
-        {label}
+        {tone === 'blue' ? 'Verified Client' : 'Verified on Growlancer'}
+        <span className="block text-[10px] font-medium opacity-80 normal-case tracking-normal">platform verification · not a government-issued ID</span>
         <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
       </span>
     </span>
