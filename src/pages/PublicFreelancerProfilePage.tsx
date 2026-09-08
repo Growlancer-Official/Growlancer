@@ -237,6 +237,45 @@ export function PublicFreelancerProfilePage() {
     fetchProfile();
   }, [freelancerId, toast]);
 
+  // Keep the public badge and profile header in sync with KYC/profile changes.
+  useEffect(() => {
+    if (!profileKey) return;
+
+    const channel = supabase
+      .channel(`public-profile-verification-${profileKey}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'freelancer_profiles',
+        filter: `user_id=eq.${profileKey}`,
+      }, (payload) => {
+        setProfile((current) => current
+          ? { ...current, ...(payload.new as Partial<FreelancerProfile>) }
+          : current);
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'profiles',
+        filter: `id=eq.${profileKey}`,
+      }, (payload) => {
+        const next = payload.new as { name?: string | null; avatar?: string | null; is_pro?: boolean | null; verification_status?: string | null };
+        setProfile((current) => current
+          ? {
+              ...current,
+              verification_status: next.verification_status ?? current.verification_status,
+              profile: current.profile
+                ? { ...current.profile, name: next.name ?? current.profile.name, avatar: next.avatar ?? current.profile.avatar, is_pro: next.is_pro ?? current.profile.is_pro }
+                : current.profile,
+            }
+          : current);
+        if (typeof next.is_pro === 'boolean') setIsProFreelancer(next.is_pro);
+      })
+      .subscribe();
+
+    return () => { void channel.unsubscribe(); };
+  }, [profileKey]);
+
   // Real-time services sync (services are the freelancer's live offerings)
   useEffect(() => {
     if (!profileKey) return;

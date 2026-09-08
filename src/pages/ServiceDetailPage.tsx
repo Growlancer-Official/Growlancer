@@ -87,17 +87,7 @@ export function ServiceDetailPage() {
       try {
         const { data, error } = await supabase
           .from('services')
-          .select(`
-            *,
-            freelancer:profiles!services_freelancer_id_fkey (
-              id,
-              name,
-              avatar,
-              is_pro,
-              verification_status,
-              professional:freelancer_profiles(title, hourly_rate, location, skills)
-            )
-          `)
+          .select('*')
           .eq('id', serviceId)
           .eq('status', 'active')
           .maybeSingle();
@@ -114,6 +104,30 @@ export function ServiceDetailPage() {
         }
 
         const svc = data as unknown as ServiceData;
+
+        // Load the owner profile separately. This avoids a schema-sensitive
+        // nested relation query failing on mobile when PostgREST relationship
+        // metadata is stale or differs between environments.
+        const [{ data: owner }, { data: professional }] = await Promise.all([
+          supabase
+            .from('profiles')
+            .select('id, name, avatar, is_pro, verification_status')
+            .eq('id', svc.freelancer_id)
+            .maybeSingle(),
+          supabase
+            .from('freelancer_profiles')
+            .select('title, hourly_rate, location, skills, verification_status')
+            .eq('user_id', svc.freelancer_id)
+            .maybeSingle(),
+        ]);
+
+        svc.freelancer = owner
+          ? {
+              ...owner,
+              verification_status: professional?.verification_status ?? owner.verification_status,
+              professional,
+            }
+          : undefined;
 
         // Fetch freelancer reviews for rating
         if (svc.freelancer) {

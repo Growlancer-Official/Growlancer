@@ -225,7 +225,7 @@ async function verifyAdminSession(
     return null
   }
 
-  return { user_id: user.id, email: profile?.email || user.email || '' }
+  return { user_id: user.id, email: privData?.email || user.email || '' }
 }
 
 Deno.serve(async (req) => {

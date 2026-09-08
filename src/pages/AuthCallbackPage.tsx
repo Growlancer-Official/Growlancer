@@ -510,7 +510,7 @@ export function AuthCallbackPage() {
         // 🆕 Country gate: If user has no profile country set (first-time OAuth), show country confirmation
         // Only for OAuth flows (unknown action) / invites — email signups already
         // provided an India phone number in the signup modal, so skip the gate.
-        if (profile && !profile.country && detectedAction === 'unknown') {
+        if (profile && !profile.country && profile.onboardingCompleted === false && detectedAction === 'unknown') {
           setStatus('country_gate');
           if (cancelled) return;
           return; // Stop — country confirmation UI will handle the redirect

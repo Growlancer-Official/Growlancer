@@ -1,14 +1,14 @@
 name: Supabase Deploy
 
-# Deploys edge functions and (optionally) pushes migrations on push to main.
+# Deploys edge functions and (optionally) pushes migrations after CI passes on main.
 # Migrations are gated by the SUPABASE_DB_AUTO_PUSH GitHub variable — keep it
 # false until migration-drift reconciliation is complete (see DEPLOYMENT.md §4).
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CI — Regression Guard"]
+    types: [completed]
     branches: [main]
-    paths:
-      - 'supabase/**'
   workflow_dispatch:
 
 concurrency:
@@ -18,10 +18,13 @@ concurrency:
 jobs:
   deploy:
     name: Deploy to Supabase
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - uses: supabase/setup-cli@v1
         with:
