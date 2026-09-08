@@ -379,6 +379,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               setOauthProvider('github');
               // 🆕 Save selected role to localStorage before OAuth redirect
               localStorage.setItem('growlancer_oauth_role', role || 'freelancer');
+              localStorage.setItem('growlancer_oauth_provider', 'github');
               const result = await signInWithOAuth('github');
               setOauthProvider(null);
               if (!result.success) setError(result.error || 'GitHub sign in failed. Make sure GitHub is configured in the Supabase Dashboard.');
@@ -402,6 +403,7 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
               setOauthProvider('linkedin');
               // 🆕 Save selected role to localStorage before OAuth redirect
               localStorage.setItem('growlancer_oauth_role', role || 'freelancer');
+              localStorage.setItem('growlancer_oauth_provider', 'linkedin_oidc');
               const result = await signInWithOAuth('linkedin_oidc');
               setOauthProvider(null);
               if (!result.success) setError(result.error || 'LinkedIn sign in failed. Make sure LinkedIn is configured in the Supabase Dashboard.');

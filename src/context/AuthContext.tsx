@@ -1003,6 +1003,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (role) {
         localStorage.setItem('growlancer_oauth_role', role);
       }
+      // Preserve the provider across the external redirect. On mobile browsers
+      // the callback can render before Supabase has restored app_metadata.
+      localStorage.setItem('growlancer_oauth_provider', provider);
 
       const redirectTo = `${window.location.origin}/auth/callback`;
       devLog('[Auth] OAuth signInWithOAuth — provider:', provider, 'redirectTo:', redirectTo);

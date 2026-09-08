@@ -120,9 +120,10 @@ export function AuthCallbackPage() {
 
         // Try getSession with retry first — supabase-js's detectSessionInUrl usually
         // auto-exchanges the PKCE `code` on load, so getSession is the common path.
-        // ⚡ Fast retries (400ms) — no artificial multi-second waits.
-        for (let attempt = 0; attempt < 3; attempt++) {
-          if (attempt > 0) await new Promise(r => setTimeout(r, 400));
+        // Mobile browsers can restore the callback session after a slower
+        // provider/network handoff, so allow a short bounded recovery window.
+        for (let attempt = 0; attempt < 7; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, 500));
           try {
             const { data, error: sessionError } = await supabase.auth.getSession();
             if (sessionError) continue;
@@ -263,7 +264,8 @@ export function AuthCallbackPage() {
         // returns email_confirmed_at once Supabase has actually confirmed it.
         // OAuth providers (github/linkedin) auto-confirm the email at account
         // creation, so the gate only applies to email/password signups.
-        const authProvider = (authUser?.app_metadata?.provider as string | undefined) ?? '';
+        const storedOAuthProvider = localStorage.getItem('growlancer_oauth_provider') || '';
+        const authProvider = (authUser?.app_metadata?.provider as string | undefined) || storedOAuthProvider;
         const isProviderOAuth =
           authProvider === 'github' || authProvider === 'linkedin_oidc';
         const isOAuthFlow =
@@ -446,6 +448,7 @@ export function AuthCallbackPage() {
         if (savedRole) {
           localStorage.removeItem('growlancer_oauth_role');
         }
+        localStorage.removeItem('growlancer_oauth_provider');
 
         // 🛡️ Only OAuth flows (detectedAction === 'unknown' OR a real OAuth provider)
         // get role correction from localStorage. Email signup users chose their role in
