@@ -339,19 +339,26 @@ Deno.serve(async (req: Request) => {
       .eq('role', 'freelancer')
       .is('deleted_at', null);
 
-    // Fetch freelancer service categories for category-based matching
+    // Fetch freelancer service categories + skills (a freelancer's live
+    // services are strong match signals even when the profile row is empty)
     const { data: allServices } = await supabase
       .from('services')
-      .select('freelancer_id, category')
+      .select('freelancer_id, category, skills')
       .eq('status', 'active');
 
     const freelancerCategoryMap = new Map<string, Set<string>>();
+    const freelancerSkillMap = new Map<string, Set<string>>();
     if (allServices) {
       for (const svc of allServices) {
         if (!freelancerCategoryMap.has(svc.freelancer_id)) {
           freelancerCategoryMap.set(svc.freelancer_id, new Set());
         }
-        freelancerCategoryMap.get(svc.freelancer_id)!.add(svc.category);
+        if (svc.category) freelancerCategoryMap.get(svc.freelancer_id)!.add(svc.category);
+        const svcSkills = Array.isArray(svc.skills) ? svc.skills : [];
+        if (svcSkills.length > 0) {
+          if (!freelancerSkillMap.has(svc.freelancer_id)) freelancerSkillMap.set(svc.freelancer_id, new Set());
+          for (const s of svcSkills) freelancerSkillMap.get(svc.freelancer_id)!.add(s);
+        }
       }
     }
 
@@ -389,11 +396,17 @@ Deno.serve(async (req: Request) => {
       if (!fProfile) continue;
 
       const freelancerCategories = freelancerCategoryMap.get(freelancer.id) || new Set();
+      const profileSkills = Array.isArray(fProfile.skills) ? fProfile.skills : [];
+      const serviceSkills = freelancerSkillMap.get(freelancer.id);
+      const skills = serviceSkills && serviceSkills.size > 0
+        ? mergeSkillSets(profileSkills, Array.from(serviceSkills))
+        : profileSkills;
+
       const freelancerData: FreelancerCandidate = {
         id: freelancer.id,
         name: freelancer.name || 'Freelancer',
         bio: freelancer.bio || '',
-        skills: Array.isArray(fProfile.skills) ? fProfile.skills : [],
+        skills,
         categories: Array.from(freelancerCategories),
         hourly_rate: Number(fProfile.hourly_rate) || 0,
         availability: fProfile.availability === true || fProfile.availability === 'true',
@@ -404,8 +417,15 @@ Deno.serve(async (req: Request) => {
 
       const score = calculateMatchScore(project as Project, freelancerData);
 
-      // Strict matching: decent score + skills AND category overlap
-      if (score.match_score >= 40 && score.skill_score > 0 && score.category_score > 0) {
+      // Skill-first qualification (mirrors the server engine): category overlap
+      // qualifies on its own; without it, a REAL skill overlap is required
+      // (project lists skills + >= 40% of them matched). Skills alone must
+      // never be silently dropped just because categories don't line up.
+      const projectSkills = (project as Project).skills_required || [];
+      const qualifies = score.category_score > 0
+        ? score.match_score >= 40
+        : projectSkills.length > 0 && score.skill_score >= 40 && score.match_score >= 40;
+      if (qualifies) {
         matches.push(score);
         candidates.push(freelancerData);
       }
@@ -477,6 +497,23 @@ Deno.serve(async (req: Request) => {
     });
   }
 });
+
+/** Merge skill lists (from profile + services), deduped case-insensitively. */
+function mergeSkillSets(...sets: (string[] | undefined)[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const arr of sets) {
+    for (const raw of arr || []) {
+      const s = String(raw).trim();
+      const key = s.toLowerCase();
+      if (s && !seen.has(key)) {
+        seen.add(key);
+        out.push(s);
+      }
+    }
+  }
+  return out;
+}
 
 function calculateMatchScore(project: Project, freelancer: FreelancerCandidate): MatchResult {
   // All sub-scores are 0-100 (consistent with the server-side SQL engine so the

@@ -8,12 +8,16 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 // Generates professional text (project title, project description, cover
 // letter, service title/description) from a short "what do you want" input.
 // - Requires an authenticated user (JWT)
-// - Per-user DAILY allowance: Free = 5 generations, Pro = unlimited (100/day)
+// - Per-user DAILY allowance (freelancer writing): Free = 5/day, Pro = 100/day
+// - CLIENT fields (project_title / project_description) are FREE for life per
+//   the business model — they only get a generous fair-use abuse guard with a
+//   NEUTRAL message (never "upgrade"), because clients must never see a paywall.
 // - Rate limit data lives in the `rate_limits` table (window_start = UTC day)
 // - AI key is read from secrets only — never exposed to the frontend
 
-const FREE_DAILY_LIMIT = 5;
-const PRO_DAILY_LIMIT = 100;
+const FREE_DAILY_LIMIT = 5; // freelancer fields (service_*, cover_letter)
+const PRO_DAILY_LIMIT = 100; // freelancer fields, Pro
+const CLIENT_FAIR_USE_DAILY_LIMIT = 60; // client fields — abuse guard only
 const ROUTE = 'ai-writer';
 const MAX_INPUT_LEN = 2000;
 
@@ -42,6 +46,10 @@ const FIELDS = [
   'service_description',
 ] as const;
 type Field = (typeof FIELDS)[number];
+
+// Fields a CLIENT uses when posting a project → free for life (fair-use guard
+// only, never monetized, never an upgrade prompt).
+const CLIENT_FIELDS = new Set<Field>(['project_title', 'project_description']);
 
 interface WriterContext {
   budget?: number | string;
@@ -197,14 +205,25 @@ Deno.serve(async (req: Request) => {
       return json(400, { error: `Input too long (max ${MAX_INPUT_LEN} characters).` });
     }
 
-    // ─── PRO STATUS (server-side, profiles.is_pro is kept honest by trigger) ───
+    // ─── PRO STATUS + ROLE (server-side; is_pro kept honest by trigger) ───
     const { data: profile } = await supabase
       .from('profiles')
-      .select('is_pro')
+      .select('is_pro, role')
       .eq('id', user_id)
       .maybeSingle();
     const isPro = !!profile?.is_pro;
-    const limit = isPro ? PRO_DAILY_LIMIT : FREE_DAILY_LIMIT;
+    const role = profile?.role ?? 'freelancer';
+
+    // Client AI features are FREE FOR LIFE (platform promise). Project fields
+    // only get a generous fair-use abuse guard with neutral messaging — never
+    // a monetized 5/day cap, never an "upgrade" prompt. Freelancer fields
+    // (service title/description, cover letter) keep the 5/day ↔ Pro model.
+    const clientFree = role === 'client' || CLIENT_FIELDS.has(field);
+    const limit = clientFree
+      ? CLIENT_FAIR_USE_DAILY_LIMIT
+      : isPro
+        ? PRO_DAILY_LIMIT
+        : FREE_DAILY_LIMIT;
 
     // ─── DAILY USAGE (rate_limits, window = UTC day) ───
     const windowStart = todayStart();
@@ -223,13 +242,16 @@ Deno.serve(async (req: Request) => {
     const used = count ?? 0;
     if (!countError && used >= limit) {
       return json(429, {
-        error: 'daily_limit_reached',
-        message: isPro
-          ? 'Daily AI writing limit reached. Please try again tomorrow.'
-          : `You have used all ${FREE_DAILY_LIMIT} free AI generations today. Upgrade to Pro for unlimited AI writing.`,
+        error: clientFree ? 'fair_use_limit_reached' : 'daily_limit_reached',
+        message: clientFree
+          ? 'You have used a lot of AI today. Please try again in a little while.'
+          : isPro
+            ? 'Daily AI writing limit reached. Please try again tomorrow.'
+            : `You have used all ${FREE_DAILY_LIMIT} free AI generations today. Upgrade to Pro for unlimited AI writing.`,
         isPro,
         used,
         limit,
+        freeForClients: clientFree,
       });
     }
 
@@ -264,7 +286,7 @@ Deno.serve(async (req: Request) => {
       return json(502, { error: 'AI returned an empty response. Please try again.' });
     }
 
-    return json(200, { success: true, text, isPro, used: used + 1, limit });
+    return json(200, { success: true, text, isPro, used: used + 1, limit, remaining: Math.max(0, limit - (used + 1)), freeForClients: clientFree });
   } catch (err) {
     console.error('[ai-writer] unexpected error:', err?.message || err);
     return json(500, { error: 'Something went wrong. Please try again.' });

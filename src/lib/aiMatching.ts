@@ -26,6 +26,8 @@ export interface AIMatchWithProfile extends AIMatch {
     categories: string[];
     skills: string[];
     hourly_rate: number;
+    /** Cheapest starting price across the freelancer's active services (₹0 = none). */
+    starting_rate?: number;
     availability: string;
     bio?: string;
     location?: string;
@@ -110,6 +112,28 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       return { success: false, error: `Fallback failed: could not fetch freelancer profiles (${profsError?.message})` };
     }
 
+    // A freelancer's live services are match signals too (their profile row
+    // can be empty) — merge service category/skills into the candidates.
+    const { data: activeServices } = await supabase
+      .from('services')
+      .select('freelancer_id, category, skills')
+      .eq('active', true);
+    const serviceCatMap = new Map<string, Set<string>>();
+    const serviceSkillMap = new Map<string, Set<string>>();
+    for (const svc of (activeServices || []) as Array<{ freelancer_id: string; category?: string | null; skills?: string[] | null }>) {
+      if (svc.category && svc.category.trim()) {
+        if (!serviceCatMap.has(svc.freelancer_id)) serviceCatMap.set(svc.freelancer_id, new Set());
+        serviceCatMap.get(svc.freelancer_id)!.add(svc.category.trim());
+      }
+      for (const s of svc.skills || []) {
+        const skill = String(s).trim();
+        if (skill) {
+          if (!serviceSkillMap.has(svc.freelancer_id)) serviceSkillMap.set(svc.freelancer_id, new Set());
+          serviceSkillMap.get(svc.freelancer_id)!.add(skill);
+        }
+      }
+    }
+
     const calculatedMatches: any[] = [];
 
     // 3. Score each freelancer against the project
@@ -130,25 +154,35 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
         location?: string;
       };
 
-      const freelancerCategories: string[] = fp.categories || [];
-      const freelancerSkills: string[] = fp.skills || [];
+      const profileCategories = fp.categories || [];
+      const profileSkills = fp.skills || [];
+      const serviceCats = serviceCatMap.get(profile.id as string);
+      const serviceSkills = serviceSkillMap.get(profile.id as string);
+      const freelancerCategories = serviceCats && serviceCats.size > 0
+        ? Array.from(new Set([...profileCategories, ...serviceCats]))
+        : profileCategories;
+      const freelancerSkills = serviceSkills && serviceSkills.size > 0
+        ? Array.from(new Set([...profileSkills, ...serviceSkills]))
+        : profileSkills;
 
-      // --- CATEGORY MATCHING (Primary filter) ---
-      // The freelancer must have selected the project's category (case-insensitive)
-      const categoryMatched = freelancerCategories.some(
-        (cat: string) => cat.toLowerCase().trim() === projectCategory.toLowerCase().trim()
-      );
-      if (!categoryMatched) continue; // Skip freelancers who don't cover this category
-      const categoryScore = 100;
-
-      // --- SKILL MATCHING (Secondary boost) ---
-      // Any overlapping skill text adds to the score — but skills never disqualify a match
+      // --- SKILL MATCHING (scored first — skills can qualify on their own) ---
       const matchedSkills = requiredSkills.filter((s: string) =>
         freelancerSkills.some((fs: string) => fs.toLowerCase().trim() === s.toLowerCase().trim())
       );
       const skillScore = requiredSkills.length > 0
         ? Math.round((matchedSkills.length / requiredSkills.length) * 100)
         : 50;
+
+      // --- CATEGORY MATCHING (boost when covered — NEVER a hard gate) ---
+      // Category overlap qualifies; otherwise a real skill overlap qualifies too
+      // (project lists skills + >= 1 skill and >= 40% of the required set) —
+      // matching the server-side skill-first engine.
+      const categoryMatched = freelancerCategories.some(
+        (cat: string) => cat.toLowerCase().trim() === projectCategory.toLowerCase().trim()
+      );
+      const skillQualifies = requiredSkills.length > 0 && matchedSkills.length > 0 && skillScore >= 40;
+      if (!categoryMatched && !skillQualifies) continue;
+      const categoryScore = categoryMatched ? 100 : 0;
 
       // --- EXPERIENCE SCORE (0-100) ---
       const expYears = fp.experience || 0;
@@ -183,7 +217,7 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
       // --- AVAILABILITY SCORE (0-100) ---
       const availabilityScore = fp.availability ? 100 : 20;
 
-      // --- OVERALL MATCH SCORE (weighted — category is the anchor) ---
+      // --- OVERALL MATCH SCORE (weighted — strictly merit-based) ---
       const matchScore = Math.min(100, Math.round(
         (categoryScore * 0.45) +
         (skillScore * 0.20) +
@@ -430,6 +464,12 @@ export const aiMatchingService = {
               experience,
               rating,
               total_reviews
+            ),
+            services:services!services_freelancer_id_fkey(
+              id,
+              price,
+              packages,
+              active
             )
           )
         `)
@@ -454,6 +494,23 @@ export const aiMatchingService = {
 
         const fp = fpRaw || {};
 
+        // A freelancer often prices via SERVICES instead of a profile hourly
+        // rate — derive the cheapest "From ₹X" across their live services so
+        // the match card never shows ₹0 for a priced freelancer.
+        const rawServices = Array.isArray(freelancerRaw.services) ? freelancerRaw.services : [];
+        let startingRate = 0;
+        for (const svc of rawServices) {
+          if (!svc || svc.active !== true) continue;
+          const pk = Array.isArray(svc.packages) ? svc.packages : [];
+          const basic = pk.find((p: { tier?: string }) => p?.tier === 'basic');
+          const price = basic
+            ? Number(basic.price) || 0
+            : Number(svc.price) || 0;
+          if (price > 0) {
+            startingRate = startingRate === 0 ? price : Math.min(startingRate, price);
+          }
+        }
+
         return {
           ...row,
           freelancer: {
@@ -464,6 +521,7 @@ export const aiMatchingService = {
             verification_status: freelancerRaw.verification_status || undefined,
             skills: fp.skills || [],
             hourly_rate: fp.hourly_rate || 0,
+            starting_rate: startingRate,
             availability: fp.availability ? 'Available' : 'Unavailable',
             bio: fp.bio || '',
             location: fp.location || 'Remote',

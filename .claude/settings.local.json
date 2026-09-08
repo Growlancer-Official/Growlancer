@@ -3,7 +3,9 @@
     "allow": [
       "Bash(xargs wc -l)",
       "Bash(grep -v '^\\\\s*$')",
-      "Bash(npx supabase *)"
+      "Bash(npx supabase *)",
+      "Bash(npx tsc *)",
+      "Bash(echo \"EXIT: $?\")"
     ]
   }
 }

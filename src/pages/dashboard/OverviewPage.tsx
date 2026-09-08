@@ -4,7 +4,7 @@ import { ArrowRight, Bot, Briefcase, Check, CreditCard, FileText, Handshake, Hea
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { formatBudgetRange, safeFormatDate, safeLower, safeNumber } from '../../utils/date';
+import { formatBudgetRange, safeFormatDate, safeNumber } from '../../utils/date';
 import { formatCurrency } from '../../lib/currency';
 import { CacheManager } from '../../lib/services/cacheManager';
 import {
@@ -89,6 +89,54 @@ export function OverviewPage() {
     completedProjects: number;
   }>({ level: 'new', rating: 0, completionRate: 100, completedProjects: 0 });
 
+  /**
+   * Live AI recommendations (freelancer): the real ai_matches rows the feed
+   * shows — embedded project + client, score >= 40, newest best first. Called
+   * on mount and on every ai_matches INSERT/UPDATE/DELETE so the card and the
+   * "AI Matches" counter update instantly without a full-page reload.
+   */
+  const refreshAiRecommendations = useCallback(async () => {
+    if (!user || role !== 'freelancer') return;
+    try {
+      const [rowsResult, countResult] = await Promise.all([
+        supabase
+          .from('ai_matches')
+          .select(`
+            *,
+            project:projects(
+              *,
+              client:profiles!projects_client_id_fkey(id, name, avatar, deleted_at)
+            )
+          `)
+          .eq('freelancer_id', user.id)
+          .gte('match_score', 40)
+          .order('match_score', { ascending: false })
+          .limit(5),
+        supabase
+          .from('ai_matches')
+          .select('id', { count: 'exact', head: true })
+          .eq('freelancer_id', user.id)
+          .gte('match_score', 40),
+      ]);
+
+      const rows = (rowsResult.data || []) as any[];
+      // Mirror the feed guard: hide rows whose project/client is gone.
+      const visible = rows.filter(
+        (m) =>
+          (m.match_score ?? 0) >= 40 &&
+          !!m.project &&
+          !(
+            m.project.client &&
+            (m.project.client.deleted_at || !m.project.client.name)
+          )
+      );
+      setRecentProjects(visible.map((m) => m.project));
+      setStats((s) => ({ ...s, newMatches: countResult?.count ?? visible.length }));
+    } catch (err) {
+      console.error('Error refreshing AI recommendations:', err);
+    }
+  }, [user, role]);
+
   /** Fetch all dashboard data with forceRefetch=true to bypass cache */
   const fetchDashboardData = useCallback(async () => {
     if (!user) return;
@@ -102,31 +150,29 @@ export function OverviewPage() {
         // Clear only stale (expired) entries — keeps fresh data in cache for instant load
         CacheManager.prune();
 
-        // ⚡ Performance: ONE light query fetches `skills` (for matching) and
-        // one tiny usage_logs count for profile views. Previously this called
+        // ⚡ Performance: a small profile query + a tiny usage_logs count for
+        // profile views. Previously this called
         // analyticsService.getFreelancerAnalytics() — 8 parallel heavy queries
         // (contracts, proposals, reviews, services, ai_matches, wallet RPC,
         // transactions) — just to display a single profile-views number.
+        // AI recommendations load separately via refreshAiRecommendations().
         const [
           contractsData,
           proposalsData,
           invitesData,
-          projectsData,
           notificationResult,
           earningsData,
           profileResult,
           profileViewsResult,
-          matchCountResult,
         ] = await Promise.all([
           contractsService.getByUser(user.id, 'freelancer', true),
           proposalsService.getByFreelancer(user.id, true),
           invitesService.getFreelancerInvites(user.id, true),
-          projectsService.getOpenProjects(50, true),
           notificationService.getByUser(user.id),
           transactionsService.getEarningsSummary(user.id),
           supabase
             .from('freelancer_profiles')
-            .select('skills, seller_level, rating, completion_rate')
+            .select('seller_level, rating, completion_rate')
             .eq('user_id', user.id)
             .maybeSingle(),
           // Profile views live in usage_logs (feature='profile_view') — the
@@ -137,18 +183,10 @@ export function OverviewPage() {
             .select('id', { count: 'exact', head: true })
             .eq('user_id', user.id)
             .eq('feature', 'profile_view'),
-          // Real AI match count (was: proposals + invites — never updated live).
-          // Same >= 40 threshold the feed uses, so the number matches the feed.
-          supabase
-            .from('ai_matches')
-            .select('id', { count: 'exact', head: true })
-            .eq('freelancer_id', user.id)
-            .gte('match_score', 40),
         ]);
 
         const profileData = profileResult?.data as Record<string, unknown> | null;
         const profileViews = profileViewsResult?.count ?? 0;
-        const matchesCount = matchCountResult?.count ?? 0;
 
         // Seller position (level) — server-computed, shown live here
         const sellerLevelRaw = (profileData?.seller_level as string | null | undefined) || 'new';
@@ -174,25 +212,6 @@ export function OverviewPage() {
         const unreadNotifications = Array.isArray(notificationResult?.notifications)
           ? notificationResult.notifications.filter((n: any) => !n.read).length
           : 0;
-
-        // Filter projects by matching skills
-        const freelancerSkills: string[] = profileData && Array.isArray(profileData.skills)
-          ? profileData.skills
-          : [];
-
-        const matchedProjects = Array.isArray(projectsData)
-          ? projectsData.filter((project: any) => {
-              const required = Array.isArray(project.skills_required) ? project.skills_required : [];
-              if (freelancerSkills.length === 0) return false;
-              return required.some((skill: unknown) =>
-                freelancerSkills.some((fs: unknown) =>
-                  safeLower(fs) !== '' && safeLower(fs) === safeLower(skill)
-                )
-              );
-            })
-          : [];
-
-        setRecentProjects(matchedProjects.slice(0, 5));
 
         // Create activity feed from recent events
         const recentActivities = [
@@ -225,7 +244,7 @@ export function OverviewPage() {
         setStats({
           activeContracts,
           pendingProposals,
-          newMatches: matchesCount,
+          newMatches: 0,
           pendingInvites,
           totalEarnings: earningsData.total,
           monthlyEarnings: earningsData.monthly,
@@ -241,6 +260,11 @@ export function OverviewPage() {
         });
 
         setActivities(recentActivities);
+
+        // Real AI recommendation card: same ai_matches the feed shows (score
+        // >= 40) — kept lightweight so a new match updates card + counter
+        // instantly without re-running the heavy full dashboard reload.
+        await refreshAiRecommendations();
       } else if (role === 'client') {
         // ---------- CLIENT DASHBOARD ----------
         CacheManager.clear();
@@ -311,7 +335,7 @@ export function OverviewPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, role]);
+  }, [refreshAiRecommendations, user, role]);
 
   useEffect(() => {
     fetchDashboardData();
@@ -323,13 +347,15 @@ export function OverviewPage() {
         const txSub = transactionsService.subscribe(user.id, fetchDashboardData);
         const notifSub = notificationService.subscribe(user.id, fetchDashboardData);
         const inviteSub = invitesService.subscribeFreelancer(user.id, fetchDashboardData);
-        // Live AI matches count — new match → number updates instantly
+        // Live AI matches — the recommendation card AND the counter update
+        // instantly (INSERT on a new match, DELETE when a re-score replaces
+        // one), without flashing the whole page.
         const matchSub = supabase
           .channel(`overview-matches-${user.id}`)
           .on(
             'postgres_changes',
             { event: '*', schema: 'public', table: 'ai_matches', filter: `freelancer_id=eq.${user.id}` },
-            () => { fetchDashboardData(); }
+            () => { void refreshAiRecommendations(); }
           )
           .subscribe();
         // Live seller position — level bump (contract completed) shows instantly
@@ -365,7 +391,7 @@ export function OverviewPage() {
         };
       }
     }
-  }, [fetchDashboardData, user, role]);
+  }, [fetchDashboardData, refreshAiRecommendations, user, role]);
 
   if (loading) {
     return <PageSkeleton />;

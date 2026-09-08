@@ -16,6 +16,7 @@ import { useCountries } from '../hooks/useCountries';
 import { useAboutPageMetrics } from '../hooks/useAboutPageMetrics';
 import { CategoriesSection as CategoriesSectionComponent } from '../components/CategoriesSection';
 import { supabase } from '../lib/supabase';
+import { serviceFromPrice } from '../lib/servicePricing';
 import { validateEmail } from '../utils/validation';
 
 // ═══════════════════════════════════════════════════════════════
@@ -723,6 +724,7 @@ interface LiveService {
   category: string | null;
   image_url: string | null;
   price: number;
+  packages?: unknown;
   created_at: string;
   freelancer?: { name: string | null; avatar: string | null } | null;
 }
@@ -750,7 +752,7 @@ function LiveServicesSection() {
       try {
         const { data } = await supabase
           .from('services')
-          .select('id, title, category, image_url, price, created_at, freelancer:profiles!services_freelancer_id_fkey(name, avatar)')
+          .select('id, title, category, image_url, price, packages, created_at, freelancer:profiles!services_freelancer_id_fkey(name, avatar)')
           .eq('active', true)
           .order('created_at', { ascending: false })
           .limit(8);
@@ -860,9 +862,12 @@ function LiveServicesSection() {
                     <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 group-hover:text-emerald-700 transition-colors">
                       {service.title}
                     </h3>
-                    <span className="flex items-center gap-0.5 font-bold text-emerald-700 text-sm shrink-0">
-                      <IndianRupee className="w-4 h-4" />
-                      {Number(service.price).toLocaleString('en-IN')}
+                    <span className="text-right shrink-0">
+                      <span className="block text-[9px] uppercase tracking-wide text-slate-400 font-semibold leading-none mb-0.5">From</span>
+                      <span className="flex items-center gap-0.5 font-bold text-emerald-700 text-sm">
+                        <IndianRupee className="w-4 h-4" />
+                        {serviceFromPrice(service).toLocaleString('en-IN')}
+                      </span>
                     </span>
                   </div>
                   <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">

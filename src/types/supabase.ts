@@ -4343,6 +4343,7 @@ export type Database = {
           requirements: string | null
           reviews_count: number | null
           revisions: number | null
+          skills: string[] | null
           status: string | null
           tags: string[] | null
           title: string
@@ -4373,6 +4374,7 @@ export type Database = {
           requirements?: string | null
           reviews_count?: number | null
           revisions?: number | null
+          skills?: string[] | null
           status?: string | null
           tags?: string[] | null
           title: string
@@ -4403,6 +4405,7 @@ export type Database = {
           requirements?: string | null
           reviews_count?: number | null
           revisions?: number | null
+          skills?: string[] | null
           status?: string | null
           tags?: string[] | null
           title?: string

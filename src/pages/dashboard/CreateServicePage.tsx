@@ -1,8 +1,8 @@
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { supabase, dbFunctions } from '../../lib/supabase';
 import { ArrowRight, Briefcase, CheckCircle, IndianRupee, Image, Layers, Package, Plus, Shield, Sparkles, Tag, Trash2, X, Zap } from 'lucide-react';
 import { useToast } from '../../components/Toast';
 import { InfoTip } from '../../components/InfoTip';
@@ -58,7 +58,7 @@ export function CreateServicePage() {
     title: '',
     description: '',
     category: 'Web Development',
-    // FINAL MODEL: 3-tier packaging — Basic required, Standard/Premium optional.
+    // FINAL MODEL: 3-tier packaging — Basic, Standard & Premium ALL required.
     // The legacy single `price` column is kept in sync with the Basic tier so
     // cards/search continue to work; escrow uses packages server-side.
     price: '',
@@ -68,14 +68,20 @@ export function CreateServicePage() {
     requirements: '',
     tags: [] as string[],
     features: [] as string[],
+    skills: [] as string[],
     image_url: '',
-    // 💡 Tip + negotiable — freelancer chooses; clients see them on the detail page
+    // 💡 Tip — freelancer chooses; clients see it on the detail page
     accepts_tips: false,
-    negotiable: false,
   });
   const [addonInput, setAddonInput] = useState({ title: '', price: '' });
   const [tagInput, setTagInput] = useState('');
   const [featureInput, setFeatureInput] = useState('');
+  const [skillInput, setSkillInput] = useState('');
+  // Real-time AI-writer usage (5/day free, Pro unlimited) — refreshed after
+  // every generation via AIGenerateModal's onUsageChange callback.
+  const [writerUsage, setWriterUsage] = useState<{ isPro: boolean; used: number; limit: number } | null>(null);
+  // Quick-add suggestions — the freelancer's own profile skills.
+  const [profileSkills, setProfileSkills] = useState<string[]>([]);
 
   const { flatNames: categories } = useCategories();
 
@@ -122,6 +128,52 @@ export function CreateServicePage() {
     }
   };
 
+  const handleAddSkill = (skill: string) => {
+    const trimmed = skill.trim();
+    if (!trimmed) return;
+    if (!formData.skills.some((s) => s.toLowerCase() === trimmed.toLowerCase())) {
+      setFormData({ ...formData, skills: [...formData.skills, trimmed] });
+    }
+    setSkillInput('');
+  };
+
+  const handleRemoveSkill = (skill: string) => {
+    setFormData({ ...formData, skills: formData.skills.filter((s) => s !== skill) });
+  };
+
+  // Load the real-time AI-writer meter + profile-skill suggestions once.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+
+    const loadMeta = async () => {
+      try {
+        const [usageRes, profileRes] = await Promise.all([
+          dbFunctions.getAIWriterUsage(),
+          supabase
+            .from('freelancer_profiles')
+            .select('skills')
+            .eq('user_id', user.id)
+            .maybeSingle(),
+        ]);
+        if (cancelled) return;
+        const usageData = usageRes.data as { isPro?: boolean; used?: number; limit?: number } | null;
+        if (!usageRes.error && usageData) {
+          setWriterUsage({ isPro: !!usageData.isPro, used: usageData.used ?? 0, limit: usageData.limit ?? 5 });
+        }
+        const profileData = profileRes.data as { skills?: unknown } | null;
+        if (!profileRes.error && profileData && Array.isArray(profileData.skills)) {
+          setProfileSkills((profileData.skills as string[]).map(String));
+        }
+      } catch (err) {
+        console.error('Failed to load AI usage/skills:', err);
+      }
+    };
+
+    void loadMeta();
+    return () => { cancelled = true; };
+  }, [user]);
+
   const handleRemoveFeature = (feature: string) => {
     setFormData({
       ...formData,
@@ -157,9 +209,9 @@ export function CreateServicePage() {
           price: number; price_type: string | null; delivery_days: number;
           revisions: number | null; extra_revision_price: number | null;
           requirements: string | null; tags: string[] | null;
-          features: unknown; image_url: string | null;
+          features: unknown; skills: unknown; image_url: string | null;
           packages: unknown; addons: unknown; milestone_mode: string | null;
-          accepts_tips: boolean | null; negotiable: boolean | null;
+          accepts_tips: boolean | null;
         };
 
         // Rebuild the package list from the stored JSONB (defaults when legacy
@@ -187,9 +239,9 @@ export function CreateServicePage() {
           requirements: svc.requirements || '',
           tags: svc.tags || [],
           features: Array.isArray(svc.features) ? svc.features.map(String) : [],
+          skills: Array.isArray(svc.skills) ? svc.skills.map(String) : [],
           image_url: svc.image_url || '',
           accepts_tips: svc.accepts_tips === true,
-          negotiable: svc.negotiable === true,
         });
       } catch (err) {
         console.error('Failed to load service for edit:', err);
@@ -267,27 +319,30 @@ export function CreateServicePage() {
     e.preventDefault();
     setLoading(true);
 
-    // Validate: Basic tier is mandatory and must have a real price.
+    // Validate: ALL THREE packages are required (Fiverr-style) with real
+    // prices and strictly increasing values — Basic < Standard < Premium.
     const basic = formData.packages.find((p) => p.tier === 'basic');
-    if (!basic || !Number.isFinite(basic.price) || basic.price <= 0) {
-      toast.error('Basic package required', 'Set a price for the Basic package — it is the minimum every client can order.');
-      setLoading(false);
-      return;
-    }
-    // Validate Standard and Premium tiers — price must be higher than the tier below.
     const standard = formData.packages.find((p) => p.tier === 'standard');
     const premium = formData.packages.find((p) => p.tier === 'premium');
-    if (standard && standard.price > 0 && standard.price <= basic.price) {
+    for (const pkg of [basic, standard, premium]) {
+      if (!pkg || !Number.isFinite(pkg.price) || pkg.price <= 0) {
+        const label = pkg ? pkg.tier : '';
+        toast.error(`${label[0].toUpperCase() + label.slice(1)} package required`, 'Price all three packages — Basic, Standard and Premium — so clients can compare and pick the scope that fits.');
+        setLoading(false);
+        return;
+      }
+    }
+    if (standard!.price <= basic!.price) {
       toast.error('Standard price too low', 'Standard must cost more than Basic.');
       setLoading(false);
       return;
     }
-    if (premium && premium.price > 0 && premium.price <= (standard?.price || basic.price)) {
+    if (premium!.price <= standard!.price) {
       toast.error('Premium price too low', 'Premium must cost more than Standard.');
       setLoading(false);
       return;
     }
-    // All three tiers are always published (price 0 = free upgrade placeholder).
+    // All three tiers are always published.
     const publishedPackages = formData.packages;
 
     const payload = {
@@ -305,10 +360,10 @@ export function CreateServicePage() {
       milestone_mode: formData.milestone_mode,
       requirements: formData.requirements || null,
       features: formData.features,
+      skills: formData.skills,
       tags: formData.tags,
       image_url: formData.image_url || null,
       accepts_tips: formData.accepts_tips,
-      negotiable: formData.negotiable,
     };
 
     try {
@@ -342,6 +397,10 @@ export function CreateServicePage() {
     }
   };
 
+  // Live AI-writer quota (shared across title/description/cover-letter, 5/day free)
+  const aiLimitReached = writerUsage ? !writerUsage.isPro && writerUsage.used >= writerUsage.limit : false;
+  const aiRemaining = writerUsage && !writerUsage.isPro ? Math.max(0, writerUsage.limit - writerUsage.used) : null;
+
   if (fetching) {
     return (
       <div className="flex items-center justify-center py-24">
@@ -357,7 +416,7 @@ export function CreateServicePage() {
           <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/20">
             <Package className="w-4 h-4 text-white" />
           </div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">{isEditMode ? 'Edit Service' : 'Create New Service'} <InfoTip title="Create a service" text="Fill in a clear title, description, category and packages. Basic package is required — Standard and Premium are optional extras. Set realistic delivery times and include revisions. Publish to make it visible to clients instantly." /></h1>
+          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">{isEditMode ? 'Edit Service' : 'Create New Service'} <InfoTip title="Create a service" text="Fill in a clear title, description, category and skills, then price all three packages — Basic, Standard and Premium — so clients can pick the scope that fits. Set realistic delivery times and include revisions. Publish to make it visible to clients instantly." /></h1>
         </div>
         <p className="text-slate-500">{isEditMode
           ? 'Update your service — changes go live instantly for clients'
@@ -394,6 +453,20 @@ export function CreateServicePage() {
             Basic Information
           </h2>
 
+          {aiLimitReached && (
+            <div className="mb-4 p-3 rounded-xl border border-amber-200 bg-amber-50 flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-xs text-amber-800 font-medium flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4" /> You've used all {writerUsage?.limit ?? 5} free AI writes for today.
+              </p>
+              <Link
+                to="/dashboard/pro"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 transition-colors"
+              >
+                <Zap className="w-3.5 h-3.5" /> Upgrade to Pro for unlimited
+              </Link>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Service Title *</label>
@@ -413,11 +486,24 @@ export function CreateServicePage() {
                   context={{
                     category: formData.category || undefined,
                     base_price: formData.price || undefined,
+                    freelancer_skills: formData.skills,
                   }}
+                  initialUsage={writerUsage}
+                  onUsageChange={setWriterUsage}
                   onApply={(text) => setFormData({ ...formData, title: text })}
                 />
               </div>
               <p className="text-xs text-slate-500 mt-1">Make it descriptive and keyword-rich for better visibility</p>
+              {writerUsage && !aiLimitReached && aiRemaining !== null && (
+                <p className="text-xs text-emerald-600 font-medium mt-1.5 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5" /> {aiRemaining} of {writerUsage.limit} free AI writes left today
+                </p>
+              )}
+              {writerUsage?.isPro && (
+                <p className="text-xs text-amber-600 font-medium mt-1.5 flex items-center gap-1">
+                  <Zap className="w-3.5 h-3.5" /> Unlimited Pro AI writing
+                </p>
+              )}
             </div>
 
             <div>
@@ -437,10 +523,19 @@ export function CreateServicePage() {
                   context={{
                     category: formData.category || undefined,
                     base_price: formData.price || undefined,
+                    freelancer_skills: formData.skills,
                   }}
+                  initialUsage={writerUsage}
+                  onUsageChange={setWriterUsage}
                   onApply={(text) => setFormData({ ...formData, description: text })}
                 />
-                <span className="text-xs text-slate-400">Free: 5/day · Pro: unlimited</span>
+                <span className="text-xs text-slate-400">
+                  {writerUsage
+                    ? writerUsage.isPro
+                      ? 'Pro: unlimited AI writing'
+                      : `${Math.max(0, writerUsage.limit - writerUsage.used)}/${writerUsage.limit} free today`
+                    : 'Free: 5/day · Pro: unlimited'}
+                </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">Minimum 150 characters recommended for better SEO</p>
             </div>
@@ -464,6 +559,84 @@ export function CreateServicePage() {
           </div>
         </div>
 
+        {/* Skills for this service */}
+        <div className="bg-white p-4 rounded-xl border border-slate-100">
+          <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+            <Sparkles className="w-4 h-4 text-emerald-600" />
+            Skills for This Service
+            <span className="text-xs font-normal text-slate-400">(recommended)</span>
+          </h2>
+          <p className="text-xs text-slate-500 mb-3">
+            Add the skills behind this service — e.g. React, Figma, SEO. The AI writer uses them to
+            tailor your title & description, and clients see exactly what you deliver.
+          </p>
+
+          {/* Quick-add from the freelancer's own profile skills */}
+          {profileSkills.some((s) => !formData.skills.some((x) => x.toLowerCase() === s.toLowerCase())) && (
+            <div className="mb-3">
+              <p className="text-xs font-medium text-slate-500 mb-1.5">Quick add from your profile:</p>
+              <div className="flex flex-wrap gap-2">
+                {profileSkills
+                  .filter((s) => !formData.skills.some((x) => x.toLowerCase() === s.toLowerCase()))
+                  .slice(0, 12)
+                  .map((s) => (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => handleAddSkill(s)}
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-emerald-100 text-slate-600 hover:text-emerald-700 text-xs font-medium border border-slate-200 hover:border-emerald-300 transition-colors"
+                    >
+                      <Plus className="w-3 h-3" />
+                      {s}
+                    </button>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex gap-3 mb-3">
+            <input
+              type="text"
+              value={skillInput}
+              onChange={(e) => setSkillInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddSkill(skillInput))}
+              className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
+              placeholder="Type a skill and press Enter — e.g., React Native, Figma, SEO"
+            />
+            <button
+              type="button"
+              onClick={() => handleAddSkill(skillInput)}
+              className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+
+          {formData.skills.length > 0 ? (
+            <div className="flex flex-wrap gap-3 p-4 bg-slate-50 rounded-xl">
+              <span className="text-sm font-medium text-slate-700">Skills:</span>
+              {formData.skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="px-3 py-1 bg-emerald-100 text-emerald-700 text-sm font-medium rounded-full flex items-center gap-1"
+                >
+                  {skill}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSkill(skill)}
+                    className="hover:text-emerald-900 ml-1"
+                    aria-label={`Remove ${skill}`}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">No skills added yet — clients can't filter or find your service by skill until you add at least one.</p>
+          )}
+        </div>
+
         {/* Pricing & Delivery — FINAL MODEL: 3 package tiers + addons */}
         <div className="bg-white p-4 rounded-xl border border-slate-100 p-4">
           <h2 className="font-display text-xl font-bold text-slate-900 mb-2 flex items-center gap-3">
@@ -471,110 +644,116 @@ export function CreateServicePage() {
             Packages & Pricing
           </h2>
 
-          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-3.5 mb-2.5">
+          <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex items-start gap-3.5 mb-4">
             <Shield className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-slate-900">3 tiers — free for every freelancer, no subscription needed</p>
+              <p className="text-sm font-semibold text-slate-900">3 packages — Basic, Standard & Premium (all required)</p>
               <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                Offer Basic, Standard and Premium packages so clients can pick the scope that fits. This is completely
-                free — your subscription never affects packages, visibility or ranking. The client pays the package
-                price + a flat 5% platform fee; you receive 100% of the package price.
+                Price every tier so clients can compare and pick the scope that fits — just like the big marketplaces.
+                Packages are completely free and never affect your ranking. The client pays the package price + a flat
+                5% platform fee; you receive 100% of the package price.
               </p>
             </div>
           </div>
 
-          {/* Package tiers */}
-          <div className="space-y-4">
+          {/* Package tiers — 3 required columns (Fiverr-style) */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch">
             {formData.packages.map((pkg) => {
               const meta = TIER_META[pkg.tier];
-              const isBasic = pkg.tier === 'basic';
+              const isPopular = pkg.tier === 'standard';
               return (
-                <div key={pkg.tier} className={`rounded-xl border p-5 ${meta.accent}`}>
-                  <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-                    <div>
-                      <h3 className="font-bold text-slate-900 flex items-center gap-3">
-                        {meta.label}
-                        {isBasic && (
-                          <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Required</span>
-                        )}
-                      </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">{meta.hint}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-slate-500">Price ({currencySymbol()})</span>
+                <div
+                  key={pkg.tier}
+                  className={`relative rounded-xl border p-4 flex flex-col gap-3 ${meta.accent} ${
+                    isPopular ? 'border-emerald-300 ring-2 ring-emerald-100' : ''
+                  }`}
+                >
+                  {isPopular && (
+                    <span className="absolute -top-2.5 right-3 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-sm">
+                      Most Popular
+                    </span>
+                  )}
+
+                  <div>
+                    <h3 className="font-bold text-slate-900">{meta.label} <span className="text-red-400">*</span></h3>
+                    <p className="text-[11px] text-slate-500 mt-0.5">{meta.hint}</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Price</label>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-slate-400 font-bold">{currencySymbol()}</span>
                       <input
                         type="number"
                         min="0"
                         step="1"
                         value={pkg.price > 0 ? pkg.price : ''}
                         onChange={(e) => updatePackage(pkg.tier, { price: parseFloat(e.target.value) || 0 })}
-                        className="w-28 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
-                        placeholder={isBasic ? '500' : 'Optional'}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white font-bold text-slate-900"
+                        placeholder="e.g. 500"
+                        required
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1">Package name (optional)</label>
+                    <input
+                      type="text"
+                      value={pkg.title}
+                      onChange={(e) => updatePackage(pkg.tier, { title: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                      placeholder={meta.label}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="block text-xs font-medium text-slate-600 mb-1">Package title</label>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Delivery (days)</label>
                       <input
-                        type="text"
-                        value={pkg.title}
-                        onChange={(e) => updatePackage(pkg.tier, { title: e.target.value })}
+                        type="number"
+                        min="0"
+                        value={pkg.delivery_days}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updatePackage(pkg.tier, { delivery_days: v === '' ? 0 : Math.max(0, parseInt(v) || 0) });
+                        }}
                         className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
-                        placeholder={meta.label}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Delivery (days)</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={pkg.delivery_days}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            updatePackage(pkg.tier, { delivery_days: v === '' ? 0 : Math.max(0, parseInt(v) || 0) });
-                          }}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Revisions</label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={pkg.revisions}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            updatePackage(pkg.tier, { revisions: v === '' ? 0 : Math.max(0, parseInt(v) || 0) });
-                          }}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
-                        />
-                      </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-600 mb-1">Revisions</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={pkg.revisions}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          updatePackage(pkg.tier, { revisions: v === '' ? 0 : Math.max(0, parseInt(v) || 0) });
+                        }}
+                        className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                      />
                     </div>
                   </div>
 
                   {/* Deliverables — what this package includes */}
-                  <div>
-                    <label className="block text-xs font-medium text-slate-600 mb-1">
-                      What's included (deliverables)
-                    </label>
-                    <div className="space-y-4">
+                  <div className="flex-1">
+                    <label className="block text-xs font-medium text-slate-600 mb-1">What's included</label>
+                    <div className="space-y-2">
                       {pkg.deliverables.map((d, i) => (
-                        <div key={i} className="flex gap-3">
+                        <div key={i} className="flex gap-2">
                           <input
                             type="text"
                             value={d}
                             onChange={(e) => updatePackageDeliverable(pkg.tier, i, e.target.value)}
-                            className="flex-1 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
+                            className="flex-1 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white text-sm"
                             placeholder={i === 0 ? `e.g., ${meta.label} design with 3 pages` : 'Another deliverable'}
                           />
                           <button
                             type="button"
                             onClick={() => removeDeliverable(pkg.tier, i)}
-                            className="px-2.5 text-slate-400 hover:text-red-500 transition-colors"
-                            title="Remove"
+                            className="px-2 text-slate-400 hover:text-red-500 transition-colors"
+                            title="Remove deliverable"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -697,59 +876,30 @@ export function CreateServicePage() {
             </p>
           </div>
 
-          {/* 💡 Tip + Negotiable — professional ways to win more orders */}
-          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="p-4 rounded-xl border border-slate-200 bg-white">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-                    <span aria-hidden>💜</span> Accept Tips
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Clients can add an optional tip at checkout — happy clients tip generously and it builds goodwill.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.accepts_tips}
-                  onClick={() => setFormData({ ...formData, accepts_tips: !formData.accepts_tips })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                    formData.accepts_tips ? 'bg-emerald-600' : 'bg-slate-300'
-                  }`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.accepts_tips ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
+          {/* 💜 Accept Tips — professional way to win more orders */}
+          <div className="mt-5 p-4 rounded-xl border border-slate-200 bg-white">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
+                  <span aria-hidden>💜</span> Accept Tips
+                </p>
+                <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+                  Clients can add an optional tip at checkout — happy clients tip generously and it builds goodwill.
+                </p>
               </div>
-            </div>
-
-            <div className="p-4 rounded-xl border border-slate-200 bg-white">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-900 flex items-center gap-1.5">
-                    <span aria-hidden>🤝</span> Price Negotiable
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Let clients make a fair offer on the package they choose. You accept or decline — the agreed price is
-                    honored, never changed silently.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={formData.negotiable}
-                  onClick={() => setFormData({ ...formData, negotiable: !formData.negotiable })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
-                    formData.negotiable ? 'bg-emerald-600' : 'bg-slate-300'
-                  }`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    formData.negotiable ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
-              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={formData.accepts_tips}
+                onClick={() => setFormData({ ...formData, accepts_tips: !formData.accepts_tips })}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
+                  formData.accepts_tips ? 'bg-emerald-600' : 'bg-slate-300'
+                }`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  formData.accepts_tips ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </button>
             </div>
           </div>
         </div>

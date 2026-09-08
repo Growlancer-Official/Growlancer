@@ -250,6 +250,7 @@ export function ClientPostProjectPage() {
                   field="project_title"
                   triggerLabel="AI"
                   className="shrink-0 mt-1"
+                  clientFree
                   context={{
                     budget: formData.budget || undefined,
                     category: formData.category || undefined,
@@ -280,6 +281,7 @@ export function ClientPostProjectPage() {
                 <AIGenerateModal
                   field="project_description"
                   triggerLabel="Write description with AI"
+                  clientFree
                   context={{
                     budget: formData.budget || undefined,
                     category: formData.category || undefined,
@@ -290,7 +292,7 @@ export function ClientPostProjectPage() {
                   }}
                   onApply={(text) => setFormData({ ...formData, description: text })}
                 />
-                <span className="text-xs text-slate-400">Free: 5/day · Pro: unlimited</span>
+                <span className="text-xs text-slate-400">AI is free for clients — no limits</span>
               </div>
             </div>
 
