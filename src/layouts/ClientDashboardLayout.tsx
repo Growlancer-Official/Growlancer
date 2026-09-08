@@ -261,7 +261,7 @@ export function ClientDashboardLayout() {
       />
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 p-6 transform transition-transform duration-300 ease-out lg:hidden ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-white shadow-2xl border-r border-slate-200 p-5 transform transition-transform duration-300 ease-out lg:hidden ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full'}`}
       >
         <div className="flex h-full flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-4">
@@ -278,10 +278,10 @@ export function ClientDashboardLayout() {
           </Link>
           <button
             onClick={() => setMobileNavOpen(false)}
-            className="inline-flex items-center justify-center h-8 w-8 rounded-lg border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all"
+            className="inline-flex items-center justify-center h-9 w-9 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all"
             aria-label="Close navigation"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -321,7 +321,7 @@ export function ClientDashboardLayout() {
                           : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                       }`}
                     >
-                      <link.icon className="w-4 h-4" />
+                      <link.icon className="w-5 h-5 shrink-0" />
                       <span className="font-medium text-sm">{link.label}</span>
                       {badgeCount && (
                         <span className={`ml-auto text-white text-[10px] min-w-[20px] h-5 px-1.5 rounded-full flex items-center justify-center font-bold ${
@@ -364,7 +364,7 @@ export function ClientDashboardLayout() {
                       : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                   }`}
                 >
-                  <link.icon className="w-4 h-4" />
+                  <link.icon className="w-5 h-5 shrink-0" />
                   <span className="font-medium text-sm">{link.label}</span>
                 </Link>
               ))}
@@ -383,7 +383,7 @@ export function ClientDashboardLayout() {
                       : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                   }`}
                 >
-                  <link.icon className="w-4 h-4" />
+                  <link.icon className="w-5 h-5 shrink-0" />
                   <span className="font-medium text-sm">{link.label}</span>
                 </Link>
               ))}
@@ -618,7 +618,7 @@ export function ClientDashboardLayout() {
             <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
 
             {/* User Menu */}
-            <button className="flex items-center gap-1 sm:gap-3 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
+            <button aria-label="Open account menu" className="flex items-center justify-center gap-1 sm:gap-3 min-h-10 min-w-10 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
               {user?.avatar ? (
                 <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
                   <img

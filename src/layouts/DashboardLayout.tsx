@@ -425,7 +425,7 @@ export function DashboardLayout() {
                         : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                     }`}
                   >
-                    <link.icon className="w-4 h-4" />
+                    <link.icon className="w-5 h-5 shrink-0" />
                     <span className="font-medium text-sm">{link.label}</span>
                     {link.id === 'pro' && isPro && (
                       <ProBadge size="xs" className="ml-1" />
@@ -454,7 +454,7 @@ export function DashboardLayout() {
                     : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                 }`}
               >
-                <link.icon className="w-4 h-4" />
+                <link.icon className="w-5 h-5 shrink-0" />
                 <span className="font-medium text-sm">{link.label}</span>
               </Link>
             ))}
@@ -475,7 +475,7 @@ export function DashboardLayout() {
                     : 'text-slate-700 hover:bg-slate-50 hover:text-emerald-600'
                 }`}
               >
-                <link.icon className="w-4 h-4" />
+                <link.icon className="w-5 h-5 shrink-0" />
                 <span className="font-medium text-sm">{link.label}</span>
               </Link>
             ))}
@@ -708,7 +708,7 @@ export function DashboardLayout() {
             <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
 
             {/* User Menu */}
-            <button className="flex items-center gap-1 sm:gap-3 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
+            <button aria-label="Open account menu" className="flex items-center justify-center gap-1 sm:gap-3 min-h-10 min-w-10 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
               {user?.avatar ? (
                 <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
                   <img
