@@ -90,7 +90,7 @@ export function ServiceDetailPage() {
           .select(`
             *,
             freelancer:profiles!services_freelancer_id_fkey(
-              id, name, avatar, is_pro, verification_status
+              id, name, avatar, is_pro
             )
           `)
           .eq('id', serviceId)
