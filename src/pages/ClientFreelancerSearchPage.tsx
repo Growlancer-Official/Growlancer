@@ -122,7 +122,7 @@ export function ClientFreelancerSearchPage() {
     try {
       let query = supabase
         .from('freelancer_profiles')
-        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, verification_status, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro, verification_status)')
+        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, verification_status, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)')
         .not('user_id', 'is', null);
 
       if (minRate) query = query.gte('hourly_rate', Number(minRate));
@@ -143,13 +143,20 @@ export function ClientFreelancerSearchPage() {
       const { data, error } = await query.limit(50);
       if (error) throw error;
 
+      const userIds = (data || []).map((item) => (item as { user_id: string }).user_id).filter(Boolean);
+      const { data: profileStatuses } = userIds.length > 0
+        ? await supabase.from('profiles').select('id, verification_status').in('id', userIds)
+        : { data: [] as { id: string; verification_status: string | null }[] };
+      const statusByUserId = new Map((profileStatuses || []).map((item) => [item.id, item.verification_status]));
+
       let results = (data || []).map((item) => {
         const freelancer = item as unknown as FreelancerResult;
+        const profileStatus = statusByUserId.get(freelancer.user_id);
         return {
           ...freelancer,
-          verification_status: freelancer.verification_status === 'verified' || freelancer.profile?.verification_status === 'verified'
+          verification_status: freelancer.verification_status === 'verified' || profileStatus === 'verified'
             ? 'verified'
-            : freelancer.verification_status ?? freelancer.profile?.verification_status ?? null,
+            : freelancer.verification_status ?? profileStatus ?? null,
         };
       });
 
