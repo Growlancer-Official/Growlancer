@@ -87,7 +87,12 @@ export function ServiceDetailPage() {
       try {
         const { data, error } = await supabase
           .from('services')
-          .select('*')
+          .select(`
+            *,
+            freelancer:profiles!services_freelancer_id_fkey(
+              id, name, avatar, is_pro, verification_status
+            )
+          `)
           .eq('id', serviceId)
           .eq('status', 'active')
           .maybeSingle();
@@ -105,28 +110,16 @@ export function ServiceDetailPage() {
 
         const svc = data as unknown as ServiceData;
 
-        // Load the owner profile separately. This avoids a schema-sensitive
-        // nested relation query failing on mobile when PostgREST relationship
-        // metadata is stale or differs between environments.
-        const [{ data: owner }, { data: professional }] = await Promise.all([
-          supabase
-            .from('profiles')
-            .select('id, name, avatar, is_pro, verification_status')
-            .eq('id', svc.freelancer_id)
-            .maybeSingle(),
-          supabase
-            .from('freelancer_profiles')
-            .select('title, hourly_rate, location, skills, verification_status')
-            .eq('user_id', svc.freelancer_id)
-            .maybeSingle(),
-        ]);
-
+        // Use the public service-owner relation for profile data. Direct
+        // anonymous reads from profiles are blocked by RLS in production.
+        const { data: professional } = await supabase
+          .from('freelancer_profiles')
+          .select('title, hourly_rate, location, skills, verification_status')
+          .eq('user_id', svc.freelancer_id)
+          .maybeSingle();
+        const owner = (data as unknown as { freelancer?: ServiceData['freelancer'] | null }).freelancer;
         svc.freelancer = owner
-          ? {
-              ...owner,
-              verification_status: professional?.verification_status ?? owner.verification_status,
-              professional,
-            }
+          ? { ...owner, verification_status: professional?.verification_status ?? owner.verification_status, professional }
           : undefined;
 
         // Fetch freelancer reviews for rating
