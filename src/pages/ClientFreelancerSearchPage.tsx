@@ -31,7 +31,7 @@ interface FreelancerResult {
   completion_rate: number | null;
   seller_level: string | null;
   verification_status: string | null;
-  profile: { name: string | null; avatar: string | null; is_pro?: boolean } | null;
+  profile: { name: string | null; avatar: string | null; is_pro?: boolean; verification_status?: string | null } | null;
 }
 
 interface SavedSearch {
@@ -122,7 +122,7 @@ export function ClientFreelancerSearchPage() {
     try {
       let query = supabase
         .from('freelancer_profiles')
-        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, verification_status, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)')
+        .select('id, user_id, title, bio, location, hourly_rate, experience, skills, languages, availability, rating, total_reviews, completion_rate, seller_level, verification_status, profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro, verification_status)')
         .not('user_id', 'is', null);
 
       if (minRate) query = query.gte('hourly_rate', Number(minRate));
@@ -143,7 +143,15 @@ export function ClientFreelancerSearchPage() {
       const { data, error } = await query.limit(50);
       if (error) throw error;
 
-      let results = (data || []) as unknown as FreelancerResult[];
+      let results = (data || []).map((item) => {
+        const freelancer = item as unknown as FreelancerResult;
+        return {
+          ...freelancer,
+          verification_status: freelancer.verification_status === 'verified' || freelancer.profile?.verification_status === 'verified'
+            ? 'verified'
+            : freelancer.verification_status ?? freelancer.profile?.verification_status ?? null,
+        };
+      });
 
       if (searchQuery) {
         const q = safeLower(searchQuery);
@@ -182,6 +190,13 @@ export function ClientFreelancerSearchPage() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'freelancer_profiles' },
+        () => {
+          void fetchFreelancers();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
         () => {
           void fetchFreelancers();
         }

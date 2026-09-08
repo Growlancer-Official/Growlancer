@@ -7,6 +7,7 @@ import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { useToast } from '../components/Toast';
 import { TipNote } from '../components/TipNote';
+import { VerifiedBadge } from '../components/VerifiedBadge';
 import { safeLower } from '../utils/date';
 
 interface FreelancerResult {
@@ -23,7 +24,8 @@ interface FreelancerResult {
   total_reviews: number | null;
   completion_rate: number | null;
   created_at: string;
-  profile: { name: string; avatar: string | null } | null;
+  verification_status: string | null;
+  profile: { name: string; avatar: string | null; verification_status?: string | null } | null;
 }
 
 export function FreelancersSearchPage() {
@@ -62,7 +64,8 @@ export function FreelancersSearchPage() {
           total_reviews,
           completion_rate,
           created_at,
-          profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)
+          verification_status,
+          profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, verification_status)
         `)
         .not('user_id', 'is', null);
 
@@ -93,7 +96,15 @@ export function FreelancersSearchPage() {
       const { data, error } = await query;
       if (error) throw error;
 
-      let results = (data || []) as FreelancerResult[];
+      let results = (data || []).map((item) => {
+        const freelancer = item as unknown as FreelancerResult;
+        return {
+          ...freelancer,
+          verification_status: freelancer.verification_status === 'verified' || freelancer.profile?.verification_status === 'verified'
+            ? 'verified'
+            : freelancer.verification_status ?? freelancer.profile?.verification_status ?? null,
+        };
+      });
 
       // Client-side filters for text search, category, and skills
       if (searchQuery) {
@@ -130,6 +141,21 @@ export function FreelancersSearchPage() {
 
   useEffect(() => {
     fetchFreelancers();
+  }, [fetchFreelancers]);
+
+  // KYC status is synced to both profile tables; refresh public cards live.
+  useEffect(() => {
+    const channel = supabase
+      .channel('public-freelancer-search')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'freelancer_profiles' }, () => {
+        void fetchFreelancers();
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, () => {
+        void fetchFreelancers();
+      })
+      .subscribe();
+
+    return () => { void channel.unsubscribe(); };
   }, [fetchFreelancers]);
 
   const addSkillFilter = () => {
@@ -367,6 +393,7 @@ export function FreelancersSearchPage() {
                         <h3 className="font-bold text-slate-900 truncate group-hover:text-emerald-600 transition-colors">
                           {freelancer.profile?.name || 'Freelancer'}
                         </h3>
+                        {freelancer.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                         {freelancer.availability && (
                           <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full flex-shrink-0">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
