@@ -7,6 +7,7 @@ import { useCategories } from '../hooks/useCategories';
 import { CategoriesSection } from '../components/CategoriesSection';
 import { useToast } from '../components/Toast';
 import { TipNote } from '../components/TipNote';
+import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { safeLower } from '../utils/date';
 
@@ -25,7 +26,7 @@ interface FreelancerResult {
   completion_rate: number | null;
   created_at: string;
   verification_status: string | null;
-  profile: { name: string; avatar: string | null; verification_status?: string | null } | null;
+  profile: { name: string; avatar: string | null; is_pro?: boolean; verification_status?: string | null } | null;
 }
 
 export function FreelancersSearchPage() {
@@ -65,7 +66,7 @@ export function FreelancersSearchPage() {
           completion_rate,
           created_at,
           verification_status,
-          profile:profiles!freelancer_profiles_user_id_fkey(name, avatar)
+          profile:profiles!freelancer_profiles_user_id_fkey(name, avatar, is_pro)
         `)
         .not('user_id', 'is', null);
 
@@ -98,18 +99,21 @@ export function FreelancersSearchPage() {
 
       const userIds = (data || []).map((item) => (item as { user_id: string }).user_id).filter(Boolean);
       const { data: profileStatuses } = userIds.length > 0
-        ? await supabase.from('profiles').select('id, verification_status').in('id', userIds)
-        : { data: [] as { id: string; verification_status: string | null }[] };
-      const statusByUserId = new Map((profileStatuses || []).map((item) => [item.id, item.verification_status]));
+        ? await supabase.from('profiles').select('id, is_pro, verification_status').in('id', userIds)
+        : { data: [] as { id: string; is_pro: boolean | null; verification_status: string | null }[] };
+      const statusByUserId = new Map((profileStatuses || []).map((item) => [item.id, item]));
 
       let results = (data || []).map((item) => {
         const freelancer = item as unknown as FreelancerResult;
         const profileStatus = statusByUserId.get(freelancer.user_id);
         return {
           ...freelancer,
-          verification_status: freelancer.verification_status === 'verified' || profileStatus === 'verified'
+          profile: freelancer.profile
+            ? { ...freelancer.profile, is_pro: profileStatus?.is_pro ?? freelancer.profile.is_pro }
+            : freelancer.profile,
+          verification_status: freelancer.verification_status === 'verified' || profileStatus?.verification_status === 'verified'
             ? 'verified'
-            : freelancer.verification_status ?? profileStatus ?? null,
+            : freelancer.verification_status ?? profileStatus?.verification_status ?? null,
         };
       });
 
@@ -401,6 +405,7 @@ export function FreelancersSearchPage() {
                           {freelancer.profile?.name || 'Freelancer'}
                         </h3>
                         {freelancer.verification_status === 'verified' && <VerifiedBadge size="xs" />}
+                        {freelancer.profile?.is_pro && <ProBadge size="xs" />}
                         {freelancer.availability && (
                           <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-bold rounded-full flex-shrink-0">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
