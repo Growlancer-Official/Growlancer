@@ -534,29 +534,47 @@ export function ClientPaymentsPage() {
                 ))}
               </div>
 
-              <RazorpayCheckout
-                orderData={{
-                  order_type: 'wallet_topup',
-                  amount: Number(addFundsAmount) || 0,
-                  currency: 'INR',
-                  description: 'Growlancer wallet top-up',
-                }}
-                onSuccess={() => {
-                  setTopupSuccess('Funds added! Your wallet has been credited.');
-                  setShowAddFunds(false);
-                  // Immediate refresh + delayed retries (edge function may still be
-                  // processing the verify_payment → wallet credit chain)
-                  void fetchWallet();
-                  void fetchTransactions();
-                  setTimeout(() => void fetchWallet(), 2000);
-                  setTimeout(() => void fetchWallet(), 5000);
-                }}
-                onError={(e) => {
-                  setAddFundsError(e.message || 'Payment failed. Please try again.');
-                }}
-                buttonText={`Pay ${formatCurrency(Number(addFundsAmount) || 0)} with Razorpay`}
-                userInfo={{ name: (user as any)?.user_metadata?.name, email: user?.email }}
-              />
+              {/* Mirror the server-side bounds (razorpay edge fn: ₹50–₹1,00,000) so the
+                  user gets instant feedback instead of a checkout error later. */}
+              {(() => {
+                const amtNum = Number(addFundsAmount);
+                const invalid = addFundsAmount !== '' && (!Number.isFinite(amtNum) || amtNum < 50 || amtNum > 100000);
+                if (!invalid) return null;
+                return (
+                  <p className="text-xs text-red-600 mb-2">Amount must be between ₹50 and ₹1,00,000.</p>
+                );
+              })()}
+
+              {(() => {
+                const amtNum = Number(addFundsAmount);
+                const valid = addFundsAmount !== '' && Number.isFinite(amtNum) && amtNum >= 50 && amtNum <= 100000;
+                if (!valid) return null;
+                return (
+                  <RazorpayCheckout
+                    orderData={{
+                      order_type: 'wallet_topup',
+                      amount: amtNum,
+                      currency: 'INR',
+                      description: 'Growlancer wallet top-up',
+                    }}
+                    onSuccess={() => {
+                      setTopupSuccess('Funds added! Your wallet has been credited.');
+                      setShowAddFunds(false);
+                      // Immediate refresh + delayed retries (edge function may still be
+                      // processing the verify_payment → wallet credit chain)
+                      void fetchWallet();
+                      void fetchTransactions();
+                      setTimeout(() => void fetchWallet(), 2000);
+                      setTimeout(() => void fetchWallet(), 5000);
+                    }}
+                    onError={(e) => {
+                      setAddFundsError(e.message || 'Payment failed. Please try again.');
+                    }}
+                    buttonText={`Pay ${formatCurrency(amtNum)} with Razorpay`}
+                    userInfo={{ name: (user as any)?.user_metadata?.name, email: user?.email }}
+                  />
+                );
+              })()}
 
               <div className="mt-4 p-3 bg-slate-50 rounded-xl">
                 <p className="text-xs text-slate-500 flex items-center gap-3">

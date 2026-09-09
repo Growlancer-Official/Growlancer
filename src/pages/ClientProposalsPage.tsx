@@ -75,7 +75,7 @@ function ProposalMenu({
     <div className="relative" ref={ref}>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
+        className="inline-flex h-10 w-10 items-center justify-center hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
         <MoreVertical className="w-4 h-4 text-slate-400" />
       </button>
@@ -357,7 +357,7 @@ export function ClientProposalsPage() {
                     title="View freelancer profile"
                     className="shrink-0"
                   >
-                    <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-emerald-400 transition-all">
+                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden hover:ring-2 hover:ring-emerald-400 transition-all">
                       {proposal.freelancer?.avatar ? (
                         <img src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
                       ) : (

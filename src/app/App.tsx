@@ -95,6 +95,8 @@ const PortfolioPage = lazy(() => import('@pages/dashboard/PortfolioPage').then(m
 const AnalyticsPage = lazy(() => import('@pages/dashboard/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const NotificationsCenterPage = lazy(() => import('@pages/dashboard/NotificationsCenterPage').then(m => ({ default: m.NotificationsCenterPage })));
 const DisputeResolutionPage = lazy(() => import('@pages/dashboard/DisputeResolutionPage').then(m => ({ default: m.DisputeResolutionPage })));
+// SupportTicketsPage default-exports; both freelancer and client dashboards route to it.
+const SupportTicketsPage = lazy(() => import('@pages/dashboard/SupportTicketsPage'));
 const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVerificationPage').then(m => ({ default: m.IdentityVerificationPage })));
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
 const SkillTestPage = lazy(() => import('@pages/dashboard/SkillTestPage').then(m => ({ default: m.SkillTestPage })));
@@ -292,10 +294,13 @@ function App() {
                 <Route path="portfolio" element={<PortfolioPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="notifications" element={<NotificationsCenterPage />} />
-                {/* Old Inbox links redirect to the Notifications Center */}
-                <Route path="inbox" element={<Navigate to="notifications" replace />} />
+                {/* Old Inbox links redirect to the Notifications Center —
+                    absolute target so deeper legacy paths (/dashboard/inbox/<anything>)
+                    can never chain into /dashboard/inbox/notifications/... loops */}
+                <Route path="inbox/*" element={<Navigate to="/dashboard/notifications" replace />} />
                 <Route path="disputes" element={<DisputeResolutionPage />} />
                 <Route path="dispute-resolution" element={<Navigate to="/dashboard/disputes" replace />} />
+                <Route path="tickets" element={<SupportTicketsPage />} />
                 <Route path="identity-verification" element={<IdentityVerificationPage />} />
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />
@@ -324,8 +329,10 @@ function App() {
                 {/* Direct contract workspace URLs (e.g. /client/workspace/:id) — must not 404 on refresh */}
                 <Route path="workspace/:contractId" element={<ClientWorkspacePage />} />
                 <Route path="notifications" element={<NotificationsCenterPage />} />
-                {/* Old Inbox links redirect to the Notifications Center */}
-                <Route path="inbox" element={<Navigate to="notifications" replace />} />
+                {/* Old Inbox links redirect to the Notifications Center —
+                    absolute target so deeper legacy paths (/client/inbox/<anything>)
+                    can never chain into /client/inbox/notifications/... loops */}
+                <Route path="inbox/*" element={<Navigate to="/client/notifications" replace />} />
                 <Route path="payments" element={<ClientPaymentsPage />} />
                 <Route path="settings" element={<ClientSettingsPage />} />
                 <Route path="verification" element={<IdentityVerificationPage />} />
@@ -340,6 +347,7 @@ function App() {
                 <Route path="reviews" element={<ClientReviewsPage />} />
                 <Route path="contests" element={<ClientContestsPage />} />
                 <Route path="contests/create" element={<ClientContestCreatePage />} />
+                <Route path="tickets" element={<SupportTicketsPage />} />
                 <Route path="help-center" element={<HelpCenterPage dashboard />} />
               </Route>
 

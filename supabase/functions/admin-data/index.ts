@@ -8,7 +8,7 @@ import { sendEmail } from '../_shared/brevo.ts'
 
 // Allowed tables for admin CRUD operations — restricts the generic proxy
 const ALLOWED_TABLES = [
-  'profiles', 'freelancer_profiles', 'client_profiles',
+  'profiles', 'profiles_private', 'freelancer_profiles', 'client_profiles',
   'projects', 'proposals', 'contracts', 'escrow',
   'transactions', 'withdrawals', 'subscriptions', 'subscription_plans',
   'services', 'messages', 'notifications', 'reviews',

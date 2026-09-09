@@ -561,7 +561,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
               <button
                 onClick={handleToggleSelectionMode}
                 title={selectionMode ? 'Cancel selection' : 'Manage / clear chat'}
-                className={`p-2 rounded-lg transition-colors ${
+                className={`inline-flex h-10 w-10 items-center justify-center rounded-lg transition-colors ${
                   selectionMode
                     ? 'bg-emerald-100 text-emerald-700'
                     : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100'
@@ -697,7 +697,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                 {!message.isStreaming && message.content && (
                   <button
                     onClick={() => handleCopy(message.content, message.id)}
-                    className="opacity-70 hover:opacity-100 transition-opacity"
+                    className="-m-1.5 inline-flex h-9 w-9 items-center justify-center opacity-70 hover:opacity-100 transition-opacity"
                   >
                     {copiedId === message.id ? (
                       <Check className="w-3.5 h-3.5" />

@@ -138,7 +138,7 @@ serve(async (req: Request) => {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info, x-app-version, x-app-name',
   };
 
   if (req.method === 'OPTIONS') {

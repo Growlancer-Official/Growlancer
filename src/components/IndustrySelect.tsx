@@ -94,7 +94,7 @@ export function IndustrySelect({
               onChange('');
               setOpen(false);
             }}
-            className="shrink-0 p-1 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+            className="-my-2 -mr-1.5 shrink-0 inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
             aria-label="Clear industry"
           >
             <X className="w-4 h-4" />

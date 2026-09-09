@@ -3,6 +3,8 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
   Bot,
+  FilePlus2,
+  Inbox,
   LayoutGrid,
   PlusCircle,
   FolderKanban,
@@ -25,12 +27,14 @@ import {
   Star,
   Trophy,
   HelpCircle,
+  LifeBuoy,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
+import { AccountMenu } from '../components/AccountMenu';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
@@ -92,7 +96,15 @@ const accountLinks: SidebarLink[] = [
 ];
 
 const supportLinks: SidebarLink[] = [
+  { id: 'tickets', path: '/client/tickets', icon: LifeBuoy, label: 'Support Tickets' },
   { id: 'help-center', path: '/client/help-center', icon: HelpCircle, label: 'Help Center' },
+];
+
+// Routed pages without a sidebar entry — the mobile header title falls back
+// to these before the generic "Workspace" default.
+const extraPageTitles: SidebarLink[] = [
+  { id: 'post', path: '/client/post', icon: FilePlus2, label: 'Post a Project' },
+  { id: 'inbox', path: '/client/inbox', icon: Inbox, label: 'Inbox' },
 ];
 
 export function ClientDashboardLayout() {
@@ -125,6 +137,16 @@ export function ClientDashboardLayout() {
     if (path !== '/client' && (currentPath === path || currentPath.startsWith(path + '/'))) return true;
     return false;
   };
+
+  // Every sidebar destination (grouped + account + support) — used for the
+  // mobile header's current-page title so pages like Payments show their own
+  // name instead of falling back to "Workspace".
+  const allSidebarLinks = [
+    ...sidebarGroups.flatMap((group) => group.links),
+    ...accountLinks,
+    ...supportLinks,
+    ...extraPageTitles,
+  ];
 
   useEffect(() => {
     if (!user) {
@@ -567,7 +589,7 @@ export function ClientDashboardLayout() {
             </button>
             <div className="lg:hidden min-w-0 flex-1 px-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 leading-none">Client Dashboard</p>
-              <p className="mt-1 text-sm font-bold text-slate-800 truncate">{currentPath === '/client' ? 'Overview' : (sidebarGroups.flatMap((group) => group.links).find((link) => isActive(link.path))?.label || 'Workspace')}</p>
+              <p className="mt-1 text-sm font-bold text-slate-800 truncate">{currentPath === '/client' ? 'Overview' : (allSidebarLinks.find((link) => isActive(link.path))?.label || 'Workspace')}</p>
             </div>
             <div className="hidden sm:flex items-center gap-4 flex-1 min-w-0">
               <div className="relative w-full max-w-xs md:max-w-sm group">
@@ -591,7 +613,7 @@ export function ClientDashboardLayout() {
                     navigate(q ? `/client/find-talent?search=${encodeURIComponent(q)}` : '/client/find-talent');
                   }}
                   aria-label="Search freelancers"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                 >
                   <Search className="w-4 h-4" />
                 </button>
@@ -617,39 +639,14 @@ export function ClientDashboardLayout() {
 
             <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
 
-            {/* User Menu */}
-            <button aria-label="Open account menu" className="flex items-center justify-center gap-1 sm:gap-3 min-h-10 min-w-10 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
-              {user?.avatar ? (
-                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
-                  <img
-                    src={user.avatar}
-                    alt={user.name || 'Client'}
-                    className="w-full h-full object-cover object-top"
-                    style={{
-                      objectPosition: 'center 20%',
-                      filter: 'brightness(1.05) contrast(1.02)'
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-slate-100 flex items-center justify-center border-2 border-emerald-500/20">
-                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
-                </div>
-              )}
-              <div className="text-left hidden lg:block">
-                <p className="text-sm font-bold leading-tight truncate max-w-[120px] flex items-center gap-1.5">
-                  <span className="truncate">{user?.name || 'Client'}</span>
-                  {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" tone="blue" />}
-                </p>
-                {clientStats && clientStats.rating > 0 && (
-                  <div className="flex items-center gap-1 mt-0.5">
-                    <span className="text-[10px] text-emerald-600">★</span>
-                    <span className="text-[10px] text-slate-500 font-medium">{clientStats.rating.toFixed(1)}</span>
-                    <span className="text-[10px] text-slate-400">({clientStats.total_reviews})</span>
-                  </div>
-                )}
-              </div>
-            </button>
+            {/* User Menu — real dropdown (was a dead button with no onClick) */}
+            <AccountMenu
+              dashboardBase="/client"
+              avatar={user?.avatar}
+              name={user?.name || 'Client'}
+              subtitle={clientStats && clientStats.rating > 0 ? `★${clientStats.rating.toFixed(1)} (${clientStats.total_reviews})` : undefined}
+              nameBadge={user?.verificationStatus === 'verified' ? <VerifiedBadge size="xs" tone="blue" /> : undefined}
+            />
           </div>
         </header>
 

@@ -72,8 +72,13 @@ export function AdminPaymentsPage() {
 
       const txs = (data || []) as Transaction[];
       const userIds = [...new Set(txs.map(t => t.user_id))];
-      const { data: profiles } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: userIds } });
-      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
+      // email lives on profiles_private (PII move, 20261221000000) — merge both tables
+      const [{ data: profiles }, { data: privProfiles }] = await Promise.all([
+        adminQuery({ table: 'profiles', select: 'id, name', in: { id: userIds } }),
+        adminQuery({ table: 'profiles_private', select: 'id, email', in: { id: userIds } }),
+      ]);
+      const privEmailMap = new Map((privProfiles || []).map(p => [p.id, p.email]));
+      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: privEmailMap.get(p.id) || null }]));
       setTransactions(txs.map(t => ({ ...t, user: profileMap.get(t.user_id) || null })));
     } catch (err) { 
       console.error(err); 

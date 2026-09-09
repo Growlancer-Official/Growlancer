@@ -340,8 +340,11 @@ export function ContractsPage() {
     }
   }, [contracts]);
 
+  // Earnings = money actually released to the wallet (completed contracts only).
+  // Active contracts are still in escrow — counting them here would overstate
+  // earnings and contradict the "Escrow Held" stat right next to it.
   const totalEarnings = contracts
-    .filter((c) => ['active', 'completed'].includes(c.status || ''))
+    .filter((c) => c.status === 'completed')
     .reduce((sum, c) => sum + c.freelancer_amount, 0);
 
   const totalEscrowHeld = Object.values(escrowBalances).reduce(

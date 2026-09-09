@@ -65,8 +65,13 @@ export function AdminProjectsPage() {
 
       const projs = (data || []) as AdminProject[];
       const clientIds = [...new Set(projs.map(p => p.client_id))];
-      const { data: clients } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: clientIds } });
-      const clientMap = new Map((clients || []).map(c => [c.id, { name: c.name, email: c.email }]));
+      // email lives on profiles_private (PII move, 20261221000000) — merge both tables
+      const [{ data: clients }, { data: privClients }] = await Promise.all([
+        adminQuery({ table: 'profiles', select: 'id, name', in: { id: clientIds } }),
+        adminQuery({ table: 'profiles_private', select: 'id, email', in: { id: clientIds } }),
+      ]);
+      const privEmailMap = new Map((privClients || []).map(p => [p.id, p.email]));
+      const clientMap = new Map((clients || []).map(c => [c.id, { name: c.name, email: privEmailMap.get(c.id) || null }]));
       const projectsWithClients = projs.map(p => ({ ...p, client: clientMap.get(p.client_id) || null }));
 
       setProjects(projectsWithClients);

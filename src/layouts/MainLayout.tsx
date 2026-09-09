@@ -141,7 +141,7 @@ export function MainLayout() {
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-16 z-40 bg-white border-b border-slate-200 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div className="lg:hidden fixed inset-x-0 top-16 z-[60] bg-white border-b border-slate-200 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
           <nav className="px-4 py-4 space-y-1">
             {/* Main Navigation */}
             <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-4 pb-1 pt-2">Browse</div>

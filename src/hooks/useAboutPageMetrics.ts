@@ -9,6 +9,8 @@ export type PlatformMetricsFile = {
   totalEscrowInr?: number | null;
   /** Average satisfaction % (live from reviews, min 5 reviews to show). */
   avgSatisfactionPercent?: number | null;
+  /** Distinct countries across live profiles (live from DB via RPC). */
+  countries?: number | null;
 };
 
 export type AboutStatCard = { value: string; label: string };
@@ -31,6 +33,7 @@ async function loadMetricsFile(): Promise<PlatformMetricsFile> {
     return {
       totalEscrowInr: (metrics.totalEscrowInr as number | null) ?? null,
       avgSatisfactionPercent: (metrics.avgSatisfactionPercent as number | null) ?? null,
+      countries: (metrics.countries as number | null) ?? null,
     };
   } catch {
     return {};
@@ -105,7 +108,7 @@ export function useAboutPageMetrics() {
       members: profileCount,
       escrowInr: file.totalEscrowInr ?? null,
       satisfactionPercent: file.avgSatisfactionPercent ?? null,
-      countries: null, // TODO: compute from profiles table
+      countries: file.countries ?? null,
     });
     setReady(true);
   }, []);

@@ -49,7 +49,7 @@ export function ClientReferralsPage() {
                 {referralCode}
                 <button
                   onClick={handleCopy}
-                  className="text-emerald-600 hover:text-emerald-700 transition-colors"
+                  className="-my-2 -mr-1 inline-flex h-10 w-10 items-center justify-center text-emerald-600 hover:text-emerald-700 transition-colors"
                 >
                   {copied ? (
                     <span className="text-xs font-bold">Copied!</span>

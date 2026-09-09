@@ -18,6 +18,7 @@ import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
+import { ModalShell } from '../../components/ModalShell';
 import type { UserRole } from '../../types/auth';
 
 interface AdminUser {                  id: string;
@@ -64,6 +65,8 @@ export function AdminUsersPage() {
     confirmLabel?: string;
     onConfirm: () => void | Promise<void>;
   } | null>(null);
+  // Suspend flow uses its own modal so we can capture a reason (replaces window.prompt)
+  const [suspendDialog, setSuspendDialog] = useState<{ userId: string; userName: string; reason: string } | null>(null);
   const toast = useToast();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -225,7 +228,11 @@ export function AdminUsersPage() {
       onConfirm: async () => {
         setActionLoading(`admin-${userId}`);
         try {
+          // Grant BOTH flags: profiles.role (UI role) AND profiles_private.is_admin
+          // (what verifyAdminSession actually checks). Setting only one silently
+          // creates an admin that can log in but cannot use the admin panel.
           await adminUpdate('profiles', userId, { role: 'admin' });
+          await adminUpdate('profiles_private', userId, { is_admin: true });
           await fetchUsers();
           toast.success(`"${userName}" is now an admin`);
           setConfirmDialog(null);
@@ -238,20 +245,28 @@ export function AdminUsersPage() {
     });
   };
 
-  const handleSuspendUser = async (userId: string, userName: string) => {
-    const reason = prompt(`🚫 Suspend "${userName}"? Enter reason (optional):`);
-    if (reason === null) return; // User cancelled prompt
+  const handleSuspendUser = (userId: string, userName: string) => {
+    // Modal + text input (NOT window.prompt — violates platform standards and
+    // returns null in embedded/headless contexts). Suspends in profiles_private,
+    // where suspended_at has lived since the PII move (migration 20261221000000).
+    setSuspendDialog({ userId, userName, reason: '' });
+    setOpenDropdown(null);
+  };
+
+  const confirmSuspendUser = async () => {
+    if (!suspendDialog) return;
+    const { userId, userName, reason } = suspendDialog;
     setActionLoading(`suspend-${userId}`);
     try {
-      await adminUpdate('profiles', userId, {
+      await adminUpdate('profiles_private', userId, {
         suspended_at: new Date().toISOString(),
-        suspend_reason: reason?.trim() || null,
+        suspend_reason: reason.trim() || null,
       });
       await fetchUsers();
-      
-      // Send suspension email (fire-and-forget)
+      toast.success(`"${userName}" suspended`);
+      // Send suspension email (fire-and-forget) — email lives on profiles_private
       const { data: profile } = await adminQuery({
-        table: 'profiles',
+        table: 'profiles_private',
         select: 'email',
         filters: { id: userId },
         limit: 1,
@@ -264,7 +279,7 @@ export function AdminUsersPage() {
             data: {
               recipient_email: profile[0].email,
               recipient_name: userName,
-              reason: reason?.trim() || undefined,
+              reason: reason.trim() || undefined,
             },
           },
         }).catch(err => console.error('[Email notification failed]', err));
@@ -273,7 +288,7 @@ export function AdminUsersPage() {
       console.error(err);
       toast.error('Failed to suspend user', err instanceof Error ? err.message : 'Unknown error');
     }
-    finally { setActionLoading(null); setOpenDropdown(null); }
+    finally { setActionLoading(null); setSuspendDialog(null); }
   };
 
   const handleReactivateUser = async (userId: string, userName: string) => {
@@ -286,7 +301,8 @@ export function AdminUsersPage() {
       onConfirm: async () => {
         setActionLoading(`reactivate-${userId}`);
         try {
-          await adminUpdate('profiles', userId, { suspended_at: null, suspend_reason: null });
+          // suspended_at lives on profiles_private (PII move, 20261221000000)
+          await adminUpdate('profiles_private', userId, { suspended_at: null, suspend_reason: null });
           await fetchUsers();
           toast.success(`"${userName}" reactivated successfully`);
           setConfirmDialog(null);
@@ -440,9 +456,15 @@ export function AdminUsersPage() {
                       {user.is_pro && <span className="ml-1 text-[8px] bg-amber-500/20 text-amber-500 px-1 py-0.5 rounded-full uppercase font-bold">PRO</span>}
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${user.onboarding_completed ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
-                        {user.onboarding_completed ? 'Active' : 'Pending'}
-                      </span>
+                      {user.suspended_at ? (
+                        <span className="px-2 py-0.5 text-[10px] font-bold rounded-full uppercase bg-red-500/10 text-red-400" title={user.suspend_reason || undefined}>
+                          Suspended
+                        </span>
+                      ) : (
+                        <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full uppercase ${user.onboarding_completed ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}`}>
+                          {user.onboarding_completed ? 'Active' : 'Pending'}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-slate-400 text-xs">{formatRelativeTime(user.created_at)}</td>
                     <td className="px-6 py-4 text-slate-500 text-[10px]">{user.referral_code || '—'}</td>
@@ -560,6 +582,56 @@ export function AdminUsersPage() {
           confirmLabel={confirmDialog.confirmLabel}
         />
       )}
+
+      {/* Suspend Modal — with optional reason input (no window.prompt) */}
+      <ModalShell
+        isOpen={!!suspendDialog}
+        onClose={() => setSuspendDialog(null)}
+        maxWidth="max-w-md"
+      >
+        {suspendDialog && (
+          <>
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-100 text-red-600 mb-4">
+              <Ban className="w-7 h-7" />
+            </div>
+            <h2 className="font-display text-lg font-bold text-slate-900 mb-2">Suspend User</h2>
+            <p className="text-slate-600 mb-4 leading-relaxed text-sm">
+              🚫 Suspend "{suspendDialog.userName}"? They will lose platform access. You can reactivate them later.
+            </p>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Reason (optional)</label>
+            <textarea
+              value={suspendDialog.reason}
+              onChange={(e) => setSuspendDialog({ ...suspendDialog, reason: e.target.value })}
+              placeholder="e.g. Terms of service violation — fraud reports"
+              rows={3}
+              className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-400 resize-none"
+            />
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setSuspendDialog(null)}
+                disabled={actionLoading === `suspend-${suspendDialog.userId}`}
+                className="flex-1 px-6 py-3 text-slate-700 font-medium rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSuspendUser}
+                disabled={actionLoading === `suspend-${suspendDialog.userId}`}
+                className="flex-1 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+              >
+                {actionLoading === `suspend-${suspendDialog.userId}` ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Suspend'
+                )}
+              </button>
+            </div>
+          </>
+        )}
+      </ModalShell>
     </div>
   );
 }

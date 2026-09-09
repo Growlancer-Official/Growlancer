@@ -18,7 +18,10 @@ const ROLE_STATUS_META: Record<string, { label: string; cls: string }> = {
 };
 
 export function ClientTeamProjectDetailPage() {
-  const { projectId } = useParams<{ projectId: string }>();
+  // Route declares /client/team-projects/:teamProjectId — the param name
+  // must match exactly or useParams() silently returns undefined and the
+  // page renders blank (defect caught in live E2E 2026-09-07).
+  const { teamProjectId } = useParams<{ teamProjectId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const toast = useToast();
@@ -40,11 +43,11 @@ export function ClientTeamProjectDetailPage() {
   }, [user]);
 
   const load = useCallback(async () => {
-    if (!projectId || !user) return;
+    if (!teamProjectId || !user) return;
     setLoading(true);
     setError(null);
     try {
-      const proj = await teamProjectsService.getProject(projectId);
+      const proj = await teamProjectsService.getProject(teamProjectId);
       if (proj.error || !proj.data) {
         setError(proj.error || 'Project not found');
         setLoading(false);
@@ -52,7 +55,7 @@ export function ClientTeamProjectDetailPage() {
       }
       setProject(proj.data);
 
-      const rolesRes = await teamProjectsService.getRoles(projectId);
+      const rolesRes = await teamProjectsService.getRoles(teamProjectId);
       if (rolesRes.error) {
         setError(rolesRes.error);
         setLoading(false);
@@ -68,7 +71,7 @@ export function ClientTeamProjectDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [projectId, user, loadContract]);
+  }, [teamProjectId, user, loadContract]);
 
   useEffect(() => {
     void load();
@@ -78,12 +81,12 @@ export function ClientTeamProjectDetailPage() {
   // freelancer adds a matching skill, or the role status/skills/budget change
   // server-side. No manual page reload needed.
   useEffect(() => {
-    if (!projectId) return;
+    if (!teamProjectId) return;
     const channel = supabase
-      .channel(uniqueChannelName('team-project-roles', projectId))
+      .channel(uniqueChannelName('team-project-roles', teamProjectId))
       .on(
         'postgres_changes',
-        { event: '*', schema: 'public', table: 'team_project_roles', filter: `team_project_id=eq.${projectId}` },
+        { event: '*', schema: 'public', table: 'team_project_roles', filter: `team_project_id=eq.${teamProjectId}` },
         (payload) => {
           if (payload.eventType === 'INSERT') {
             const incoming = payload.new as TeamRole;
@@ -113,7 +116,7 @@ export function ClientTeamProjectDetailPage() {
       .subscribe();
 
     return () => { void channel.unsubscribe(); };
-  }, [projectId, loadContract]);
+  }, [teamProjectId, loadContract]);
 
   const refreshRoleMatches = async (role: TeamRole) => {
     setRematching((prev) => ({ ...prev, [role.id]: true }));

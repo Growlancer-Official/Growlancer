@@ -179,57 +179,57 @@ export function ServicesPage() {
         </button>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+      {/* Stats — 2×2 on phones (4-across crushes each card to ~80px), 4-across from sm up */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-1.5">
-            <div className="p-3 bg-emerald-100 rounded-xl">
+            <div className="p-2.5 sm:p-3 bg-emerald-100 rounded-xl">
               <Package className="w-4 h-4 text-emerald-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xl font-bold text-slate-900">{services.length}</p>
-              <p className="text-sm text-slate-500">Total Services</p>
+              <p className="text-xs sm:text-sm text-slate-500">Total Services</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-1.5">
-            <div className="p-3 bg-blue-100 rounded-xl">
+            <div className="p-2.5 sm:p-3 bg-blue-100 rounded-xl">
               <Eye className="w-4 h-4 text-blue-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xl font-bold text-slate-900">
                 {services.reduce((sum, s) => sum + (s.views || 0), 0)}
               </p>
-              <p className="text-sm text-slate-500">Total Views</p>
+              <p className="text-xs sm:text-sm text-slate-500">Total Views</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-1.5">
-            <div className="p-3 bg-orange-100 rounded-xl">
+            <div className="p-2.5 sm:p-3 bg-orange-100 rounded-xl">
               <ShoppingBag className="w-4 h-4 text-orange-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xl font-bold text-slate-900">
                 {services.reduce((sum, s) => sum + (s.orders || 0), 0)}
               </p>
-              <p className="text-sm text-slate-500">Total Orders</p>
+              <p className="text-xs sm:text-sm text-slate-500">Total Orders</p>
             </div>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl border border-slate-100">
+        <div className="bg-white p-4 sm:p-6 rounded-xl border border-slate-100">
           <div className="flex items-center gap-1.5">
-            <div className="p-3 bg-purple-100 rounded-xl">
+            <div className="p-2.5 sm:p-3 bg-purple-100 rounded-xl">
               <Star className="w-4 h-4 text-purple-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xl font-bold text-slate-900">
                 {services.length > 0
                   ? (services.reduce((sum, s) => sum + (s.rating || 0), 0) / services.length).toFixed(1)
                   : '—'}
               </p>
-              <p className="text-sm text-slate-500">Avg Rating</p>
+              <p className="text-xs sm:text-sm text-slate-500">Avg Rating</p>
             </div>
           </div>
         </div>
@@ -406,13 +406,13 @@ export function ServicesPage() {
                     <button
                       onClick={() => navigate(`/dashboard/services/edit/${service.id}`)}
                       title="Edit service"
-                      className="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                      className="inline-flex h-9 w-9 items-center justify-center text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setDeleteConfirm(service.id)}
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="inline-flex h-9 w-9 items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

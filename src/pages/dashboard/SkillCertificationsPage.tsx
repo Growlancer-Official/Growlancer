@@ -161,15 +161,15 @@ export function SkillCertificationsPage() {
 
             return (
               <div key={test.id} className={`bg-white rounded-xl border p-5 ${isLocked ? 'border-slate-100 opacity-60' : 'border-slate-200 hover:shadow-md'} transition-all`}>
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`p-2.5 rounded-xl ${levelInfo.bgColor}`}><Icon className={`w-5 h-5 ${levelInfo.color}`} /></div>
-                    <div>
-                      <h3 className="font-bold text-slate-900">{test.skill}</h3>
-                      <p className="text-xs text-slate-500">{test.category}</p>
+                <div className="flex items-start justify-between gap-2 mb-3">
+                  <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                    <div className={`p-2.5 rounded-xl flex-shrink-0 ${levelInfo.bgColor}`}><Icon className={`w-5 h-5 ${levelInfo.color}`} /></div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-slate-900 truncate">{test.skill}</h3>
+                      <p className="text-xs text-slate-500 truncate">{test.category}</p>
                     </div>
                   </div>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${levelInfo.bgColor} ${levelInfo.color} ${levelInfo.borderColor}`}>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold border flex-shrink-0 ${levelInfo.bgColor} ${levelInfo.color} ${levelInfo.borderColor}`}>
                     {levelInfo.icon} {levelInfo.label}
                   </span>
                 </div>
@@ -208,15 +208,15 @@ export function SkillCertificationsPage() {
               {filteredCerts.map((cert) => {
                 const badgeInfo = skillCertificationService.getBadgeInfo(cert);
                 return (
-                  <div key={cert.id} className="bg-white rounded-xl border border-slate-100 p-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl ${badgeInfo.bgColor}`}>{badgeInfo.icon}</div>
-                      <div>
-                        <h3 className="font-bold text-slate-900">{cert.skill}</h3>
+                  <div key={cert.id} className="bg-white rounded-xl border border-slate-100 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0 ${badgeInfo.bgColor}`}>{badgeInfo.icon}</div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-slate-900 truncate">{cert.skill}</h3>
                         <p className="text-sm text-slate-500">{badgeInfo.label} • Score: {badgeInfo.scorePercent}%</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-shrink-0">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold border ${badgeInfo.bgColor} ${badgeInfo.color} ${badgeInfo.borderColor}`}>
                         <CheckCircle2 className="w-3.5 h-3.5 inline mr-1" />Verified
                       </span>

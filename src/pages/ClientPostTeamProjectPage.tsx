@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency, currencySymbol } from '../lib/currency';
 import { teamProjectsService, type TeamRoleSuggestion } from '../lib/teamProjects';
@@ -9,6 +9,8 @@ import { useToast } from '../components/Toast';
 
 interface RoleDraft {
   key: string;
+  /** DB id — set when this draft came from an existing role (edit mode). */
+  dbId?: string;
   role_title: string;
   required_skills: string;
   budget_min: string;
@@ -24,8 +26,17 @@ const nextRoleKey = () => `role_${Date.now()}_${roleKeyCounter++}`;
 
 export function ClientPostTeamProjectPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const toast = useToast();
+  // ?edit=<id> → edit an EXISTING team project (used by the detail page's
+  // "Add Role" link). Without edit mode this route silently ignored the param
+  // and would create a DUPLICATE project (playtest defect 2026-09-07).
+  const editingId = searchParams.get('edit');
+  const [loadingEdit, setLoadingEdit] = useState(!!editingId);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  /** DB ids of the roles that existed when the edit form loaded (for delete-on-remove). */
+  const [originalRoleIds, setOriginalRoleIds] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [totalBudgetEstimate, setTotalBudgetEstimate] = useState('');
@@ -33,6 +44,47 @@ export function ClientPostTeamProjectPage() {
     { key: nextRoleKey(), role_title: '', required_skills: '', budget_min: '', budget_max: '', matching: false, matched: false, matchError: null, suggestions: [] },
   ]);
   const [saving, setSaving] = useState(false);
+
+  // Load the existing project + roles when editing, then pre-populate the form.
+  useEffect(() => {
+    if (!editingId) return;
+    let cancelled = false;
+    (async () => {
+      setLoadingEdit(true);
+      const [projRes, rolesRes] = await Promise.all([
+        teamProjectsService.getProject(editingId),
+        teamProjectsService.getRoles(editingId),
+      ]);
+      if (cancelled) return;
+      if (projRes.error || !projRes.data) {
+        setLoadError(projRes.error || 'Project not found');
+        setLoadingEdit(false);
+        return;
+      }
+      const proj = projRes.data;
+      setTitle(proj.title || '');
+      setDescription(proj.description || '');
+      setTotalBudgetEstimate(proj.total_budget_estimate != null ? String(proj.total_budget_estimate) : '');
+      const drafts: RoleDraft[] = (rolesRes.data || []).map((r) => ({
+        key: nextRoleKey(),
+        dbId: r.id,
+        role_title: r.role_title,
+        required_skills: (r.required_skills || []).join(', '),
+        budget_min: r.budget_range_min != null ? String(r.budget_range_min) : '',
+        budget_max: r.budget_range_max != null ? String(r.budget_range_max) : '',
+        matching: false,
+        matched: (r.suggested_freelancers || []).length > 0,
+        matchError: null,
+        suggestions: r.suggested_freelancers || [],
+      }));
+      if (drafts.length > 0) setRoles(drafts);
+      setOriginalRoleIds(drafts.map((d) => d.dbId!).filter(Boolean));
+      setLoadingEdit(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [editingId]);
 
   const updateRole = (key: string, patch: Partial<RoleDraft>) => {
     setRoles((prev) => prev.map((r) => (r.key === key ? { ...r, ...patch } : r)));
@@ -108,6 +160,68 @@ export function ClientPostTeamProjectPage() {
 
     setSaving(true);
     try {
+      // ── EDIT MODE: update the existing project + reconcile roles ──
+      if (editingId) {
+        const upd = await teamProjectsService.updateProject(editingId, {
+          title: title.trim(),
+          description: description.trim() || undefined,
+          totalBudgetEstimate: totalBudgetEstimate ? Number(totalBudgetEstimate) : undefined,
+        });
+        if (upd.error) throw new Error(upd.error);
+
+        const existingDbIds = validRoles.filter((r) => r.dbId).map((r) => r.dbId!) as string[];
+        let saved = 0;
+        for (const r of validRoles) {
+          const skills = parseSkills(r.required_skills);
+          const budgetMin = r.budget_min ? Number(r.budget_min) : undefined;
+          const budgetMax = r.budget_max ? Number(r.budget_max) : undefined;
+          if (r.dbId) {
+            const res = await teamProjectsService.updateRole(r.dbId, {
+              role_title: r.role_title.trim(),
+              required_skills: skills,
+              budget_range_min: budgetMin ?? null,
+              budget_range_max: budgetMax ?? null,
+            });
+            if (res.error) {
+              toast.error('Partial save', `Role "${r.role_title}" failed to update: ${res.error}`);
+              continue;
+            }
+            saved++;
+          } else {
+            const res = await teamProjectsService.addRole({
+              teamProjectId: editingId,
+              roleTitle: r.role_title.trim(),
+              requiredSkills: skills,
+              budgetMin,
+              budgetMax,
+            });
+            if (res.error || !res.data) {
+              toast.error('Partial save', `Role "${r.role_title}" failed to save: ${res.error || 'unknown error'}.`);
+              continue;
+            }
+            saved++;
+            // Fire AI matching for the new role (best-effort)
+            if (skills.length > 0) {
+              void teamProjectsService.matchRole({
+                id: res.data.id,
+                required_skills: skills,
+                budget_range_max: res.data.budget_range_max,
+              });
+            }
+          }
+        }
+        // Roles removed from the form get deleted
+        const keptDbIds = new Set(existingDbIds);
+        const removed = originalRoleIds.filter((id) => !keptDbIds.has(id));
+        for (const id of removed) {
+          await teamProjectsService.deleteRole(id);
+        }
+
+        toast.success('Team project updated', `${saved} role(s) saved.`);
+        navigate(`/client/team-projects/${editingId}`);
+        return;
+      }
+
       // 1. Create the team project
       const proj = await teamProjectsService.createProject({
         clientId: user.id,
@@ -153,6 +267,36 @@ export function ClientPostTeamProjectPage() {
     }
   };
 
+  if (loadingEdit) {
+    return (
+      <div className="space-y-1.5">
+        <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-2 flex items-center gap-1">
+          ← Back to Team Projects
+        </button>
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <Users className="w-5 h-5 text-white" />
+          </div>
+          <h1 className="font-display text-xl font-bold text-slate-900">Loading project…</h1>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="space-y-1.5">
+        <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-2 flex items-center gap-1">
+          ← Back to Team Projects
+        </button>
+        <div className="bg-white rounded-xl p-6 border border-red-200">
+          <p className="text-sm font-semibold text-red-700 mb-1">Could not load this project</p>
+          <p className="text-sm text-slate-500">{loadError}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-1.5">
       <button onClick={() => navigate('/client/team-projects')} className="text-sm text-slate-500 hover:text-slate-800 mb-2 flex items-center gap-1">
@@ -163,7 +307,7 @@ export function ClientPostTeamProjectPage() {
         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
           <Users className="w-5 h-5 text-white" />
         </div>
-        <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">Post a Team Project <InfoTip title="How team projects work" text="Each role gets an independent contract — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee." />      </h1>
+        <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">{editingId ? 'Edit Team Project' : 'Post a Team Project'} <InfoTip title="How team projects work" text="Each role gets an independent contract — its own escrow, milestones and dispute. One member's issue never affects the rest of the team. Commission (5%) applies per contract — no separate team fee." />      </h1>
       </div>
       <p className="text-slate-600 mb-3">
         Hire a whole team for bigger projects — Designer, Developer, Writer — all in one place. Each freelancer has their <strong>own protected escrow</strong>.
@@ -339,7 +483,7 @@ export function ClientPostTeamProjectPage() {
             className="inline-flex items-center gap-3 px-6 py-3 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 disabled:opacity-60 shadow-lg"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
-            {saving ? 'Creating...' : 'Create Team Project'}
+            {saving ? (editingId ? 'Saving...' : 'Creating...') : (editingId ? 'Save Changes' : 'Create Team Project')}
           </button>
         </div>
       </form>

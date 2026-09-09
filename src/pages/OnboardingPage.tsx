@@ -717,7 +717,8 @@ export function OnboardingPage() {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={uploadingAvatar}
-                      className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg"
+                      className="absolute -bottom-1 -right-1 w-9 h-9 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg"
+                      aria-label="Change profile photo"
                     >
                       {uploadingAvatar ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -952,7 +953,8 @@ export function OnboardingPage() {
                           type="button"
                           onClick={() => clientLogoInputRef.current?.click()}
                           disabled={uploadingClientLogo}
-                          className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg"
+                          className="absolute -bottom-1 -right-1 w-9 h-9 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg"
+                      aria-label="Change profile photo"
                         >
                           {uploadingClientLogo ? (
                             <Loader2 className="w-4 h-4 animate-spin" />

@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
+  Clock,
   LayoutDashboard,
   Rss,
   Mail,
@@ -23,6 +24,7 @@ import {
   Bell,
   Scale,
   Shield,
+  LifeBuoy,
   Crown,
   Award,
   Trophy,
@@ -33,6 +35,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { notificationService } from '../lib/notifications';
 import { NotificationsPanel } from '../components/NotificationsPanel';
+import { AccountMenu } from '../components/AccountMenu';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
@@ -99,7 +102,14 @@ const accountLinks: SidebarLink[] = [
 
 const supportLinks: SidebarLink[] = [
   { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },
+  { id: 'tickets', path: '/dashboard/tickets', icon: LifeBuoy, label: 'Support Tickets' },
   { id: 'help-center', path: '/dashboard/help-center', icon: HelpCircle, label: 'Help Center' },
+];
+
+// Routed pages without a sidebar entry — the mobile header title falls back
+// to these before the generic "Workspace" default.
+const extraPageTitles: SidebarLink[] = [
+  { id: 'time-tracking', path: '/dashboard/time-tracking', icon: Clock, label: 'Time Tracking' },
 ];
 export function DashboardLayout() {
   const location = useLocation();
@@ -133,6 +143,16 @@ export function DashboardLayout() {
     if (path !== '/dashboard' && (currentPath === path || currentPath.startsWith(path + '/'))) return true;
     return false;
   };
+
+  // Every sidebar destination (grouped + account + support) — used for the
+  // mobile header's current-page title so pages like Wallet show their own
+  // name instead of falling back to "Workspace".
+  const allSidebarLinks = [
+    ...sidebarGroups.flatMap((group) => group.links),
+    ...accountLinks,
+    ...supportLinks,
+    ...extraPageTitles,
+  ];
 
   const getRatingBadge = () => {
     if (!userProfile) return 'New Freelancer';
@@ -659,7 +679,7 @@ export function DashboardLayout() {
             </button>
             <div className="lg:hidden min-w-0 flex-1 px-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 leading-none">Freelancer Dashboard</p>
-              <p className="mt-1 text-sm font-bold text-slate-800 truncate">{currentPath === '/dashboard' ? 'Overview' : (sidebarGroups.flatMap((group) => group.links).find((link) => isActive(link.path))?.label || 'Workspace')}</p>
+              <p className="mt-1 text-sm font-bold text-slate-800 truncate">{currentPath === '/dashboard' ? 'Overview' : (allSidebarLinks.find((link) => isActive(link.path))?.label || 'Workspace')}</p>
             </div>
             <div className="hidden sm:flex items-center gap-4 flex-1 min-w-0">
               <div className="relative w-full max-w-xs md:max-w-sm group">
@@ -683,7 +703,7 @@ export function DashboardLayout() {
                     navigate(q ? `/dashboard/feed?search=${encodeURIComponent(q)}` : '/dashboard/feed');
                   }}
                   aria-label="Search projects"
-                  className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-7 w-7 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-9 w-9 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                 >
                   <Search className="w-4 h-4" />
                 </button>
@@ -707,42 +727,19 @@ export function DashboardLayout() {
 
             <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
 
-            {/* User Menu */}
-            <button aria-label="Open account menu" className="flex items-center justify-center gap-1 sm:gap-3 min-h-10 min-w-10 pl-1 pr-1 sm:pr-3 py-1 hover:bg-slate-50 rounded-full transition-all group">
-              {user?.avatar ? (
-                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full overflow-hidden border-2 border-emerald-500/20 group-hover:border-emerald-500 transition-all">
-                  <img
-                    src={user.avatar}
-                    alt={user.name || 'User'}
-                    className="w-full h-full object-cover object-top"
-                    style={{
-                      objectPosition: 'center 20%',
-                      filter: 'brightness(1.05) contrast(1.02)'
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-slate-100 flex items-center justify-center border-2 border-emerald-500/20">
-                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
-                </div>
-              )}
-              <div className="text-left hidden lg:block">
-                <p className="text-sm font-bold leading-tight flex items-center gap-1.5">
-                  {user?.name || 'User'}
+            {/* User Menu — real dropdown (was a dead button with no onClick) */}
+            <AccountMenu
+              dashboardBase="/dashboard"
+              avatar={user?.avatar}
+              name={user?.name || 'User'}
+              subtitle={userProfile && userProfile.rating > 0 ? `${getRatingBadge()} · ★${userProfile.rating.toFixed(1)} (${userProfile.total_reviews})` : getRatingBadge()}
+              nameBadge={
+                <>
                   {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" />}
                   {isPro && <ProBadge size="xs" />}
-                </p>
-                <div className="flex items-center gap-1">
-                  <p className="text-[10px] text-slate-500 font-medium tracking-wide">{getRatingBadge()}</p>
-                  {userProfile && userProfile.rating > 0 && (
-                    <>
-                      <span className="text-[10px] text-emerald-600">★</span>
-                      <span className="text-[10px] text-slate-400">({userProfile.total_reviews})</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </button>
+                </>
+              }
+            />
           </div>
         </header>
 
