@@ -229,6 +229,21 @@ ticket create → admin reply → DB round-trip verified.
   domain + env vars on Vercel (vercel.json exists; vike SSR build noted),
   (5) RazorpayX payout activation + webhook URL config for auto-withdrawals.
 
+✅ 2026-09-10 search_path hardening (external hourly scan: 25 HIGH `definer_no_search_path`):
+- ROOT CAUSE: 61 public SECURITY DEFINER functions carried a QUOTED search_path token
+  (`search_path=""` or the broken `"public, pg_catalog"` on create_team_role_contract) —
+  an empty/bogus single token = effectively no search_path. Repo drift-monitor treated `""`
+  as healthy (20270118000000), so it never alerted; the external scan rightly flagged it.
+- Fix: 20270119000008 rebuilds every affected function from its own pg_get_functiondef with
+  the SET line rewritten to the canonical unquoted list `public, pg_catalog, auth`
+  (definition-preserving, 20270117 sweep pattern, idempotent multi-round). Bodies were
+  already fully schema-qualified → zero behavior change. Verified live: 0 quoted tokens
+  left, all 200 definer fns pinned, cron (refunds/withdrawals/milestones/drift) all
+  `succeeded` post-fix, 124 tests green.
+- NOTE for future functions: ALWAYS write `SET search_path = public, pg_catalog[, auth]`
+  UNQUOTED. `TO ''` or any quoted list is the defect family — never copy pg_dump's quoted
+  rendering.
+
 ⚠️ KYC provider — abhi `kyc_provider_config.mode = 'development'` (admin panel se toggle):
 users auto-verify instantly, rows honestly labelled `provider='dev_mode'`. Revenue aate hi
 admin → Verification → Production + provider token (SIRF REAL provider se VERIFIED; dev rows
