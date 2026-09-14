@@ -640,12 +640,13 @@ export function ClientDashboardLayout() {
             <div className="hidden sm:block h-8 w-px bg-slate-200"></div>
 
             {/* User Menu — real dropdown (was a dead button with no onClick) */}
+            {/* nameBadge uses placement="bottom": sticky header — upward tooltip would clip at viewport top */}
             <AccountMenu
               dashboardBase="/client"
               avatar={user?.avatar}
               name={user?.name || 'Client'}
               subtitle={clientStats && clientStats.rating > 0 ? `★${clientStats.rating.toFixed(1)} (${clientStats.total_reviews})` : undefined}
-              nameBadge={user?.verificationStatus === 'verified' ? <VerifiedBadge size="xs" tone="blue" /> : undefined}
+              nameBadge={user?.verificationStatus === 'verified' ? <VerifiedBadge size="xs" tone="blue" placement="bottom" /> : undefined}
             />
           </div>
         </header>

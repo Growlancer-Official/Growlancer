@@ -735,8 +735,10 @@ export function DashboardLayout() {
               subtitle={userProfile && userProfile.rating > 0 ? `${getRatingBadge()} · ★${userProfile.rating.toFixed(1)} (${userProfile.total_reviews})` : getRatingBadge()}
               nameBadge={
                 <>
-                  {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" />}
-                  {isPro && <ProBadge size="xs" />}
+                  {/* placement="bottom": these sit in the sticky header — an upward
+                      tooltip would be clipped by the viewport's top edge. */}
+                  {user?.verificationStatus === 'verified' && <VerifiedBadge size="xs" placement="bottom" />}
+                  {isPro && <ProBadge size="xs" placement="bottom" />}
                 </>
               }
             />
