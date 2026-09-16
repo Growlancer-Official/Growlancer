@@ -642,7 +642,32 @@ async function main() {
   // --strict: non-zero exit when ANY issue is found (CI regression gate).
   // Report mode (default) always exits 0 — findings live in the artifacts.
   if (args.strict && total > 0) {
-    console.error(`✖ strict mode: ${total} issue flag(s) across ${summary.loads} loads`);
+    // CI runs cannot download artifacts from the API without an admin token, so
+    // emit the digest as an ::error:: annotation — visible on the run summary
+    // and the merge box without any token. Keep it under the ~1KB per-message
+    // annotation limit: category headers + the largest offenders first.
+    const cat = (label, list, pick) => {
+      if (!list?.length) return;
+      const uniq = [...new Set(list.map(pick))];
+      console.error(`::error::${label}: ${uniq.slice(0, 8).join(' | ')}${uniq.length > 8 ? ` | +${uniq.length - 8} more` : ''}`);
+    };
+    const counts = (list) => [...new Map((list || []).map((x) => [x, x])).values()];
+    console.error(`::error::strict mode: ${total} issue flag(s) across ${summary.loads} loads — group=${GROUP} (full digest in the element-audit-results artifact)`);
+    cat('console-error', summary.consoleErrors.map((c) => c.errors).flat(), (e) => e.slice(0, 120));
+    cat('page-error', summary.pageErrors.map((c) => c.errors).flat(), (e) => e.slice(0, 120));
+    cat('http-failure', summary.httpFailures.map((f) => `${f.route}[${f.device}] ${f.status}`));
+    cat('bad-text', counts(summary.badText.map(([, s]) => s)));
+    cat('generic-button', counts(summary.genericButtons.map(([, s]) => s)));
+    cat('unnamed-interactive', counts(summary.unnamedInteractive.map(([k]) => k)));
+    cat('bad-placeholder', counts(summary.badPlaceholders.map(([, s]) => s)));
+    cat('unlabeled-input', counts(summary.unlabeledInputs.map(([, s]) => s)));
+    cat('broken-link', summary.brokenLinks.map((l) => `${l.from} → ${l.link} (${l.status})`));
+    cat('broken-image', counts(summary.brokenImages.map(([, s]) => s)));
+    cat('overflow', counts(summary.overflowOffenders.map(([, s]) => s)));
+    cat('duplicate-id', counts(summary.duplicateIds.map(([k]) => k)));
+    cat('heading-skip', summary.headingSkips);
+    cat('doc-issue', counts(summary.docIssues.map(([, s]) => s)));
+    cat('clipped-text', counts(summary.clippedText.map(([, s]) => s)));
     process.exit(1);
   }
 }

@@ -87,7 +87,7 @@ jobs:
   element-audit:
     name: Element audit (375/768/1280)
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     needs: [typecheck, lint, build]
     steps:
       - uses: actions/checkout@v4
@@ -128,7 +128,9 @@ jobs:
         run: |
           set -o pipefail
           for group in public auth dashboard client admin; do
-            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=$group --strict
+            # concurrency=2: 4 parallel Chrome contexts exhaust the 2-4 vCPU
+            # runner and cause navigation-timeout flakes; 2 is stable there.
+            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=$group --strict --concurrency=2
           done
 
       - name: Upload audit artifacts
