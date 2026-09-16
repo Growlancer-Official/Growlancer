@@ -648,26 +648,30 @@ async function main() {
     // annotation limit: category headers + the largest offenders first.
     const cat = (label, list, pick) => {
       if (!list?.length) return;
-      const uniq = [...new Set(list.map(pick))];
+      const map = pick || ((x) => x);
+      const uniq = [...new Set(list.map(map))];
       console.error(`::error::${label}: ${uniq.slice(0, 8).join(' | ')}${uniq.length > 8 ? ` | +${uniq.length - 8} more` : ''}`);
     };
-    const counts = (list) => [...new Map((list || []).map((x) => [x, x])).values()];
+    const uniq = (list) => [...new Set(list || [])];
     console.error(`::error::strict mode: ${total} issue flag(s) across ${summary.loads} loads — group=${GROUP} (full digest in the element-audit-results artifact)`);
-    cat('console-error', summary.consoleErrors.map((c) => c.errors).flat(), (e) => e.slice(0, 120));
-    cat('page-error', summary.pageErrors.map((c) => c.errors).flat(), (e) => e.slice(0, 120));
+    cat('console-error', uniq(summary.consoleErrors.flatMap((c) => c.errors)), (e) => e.slice(0, 120));
+    cat('page-error', uniq(summary.pageErrors.flatMap((c) => c.errors)), (e) => e.slice(0, 120));
     cat('http-failure', summary.httpFailures.map((f) => `${f.route}[${f.device}] ${f.status}`));
-    cat('bad-text', counts(summary.badText.map(([, s]) => s)));
-    cat('generic-button', counts(summary.genericButtons.map(([, s]) => s)));
-    cat('unnamed-interactive', counts(summary.unnamedInteractive.map(([k]) => k)));
-    cat('bad-placeholder', counts(summary.badPlaceholders.map(([, s]) => s)));
-    cat('unlabeled-input', counts(summary.unlabeledInputs.map(([, s]) => s)));
+    cat('bad-text', uniq(summary.badText.map(([s]) => s)));
+    cat('bad-currency', uniq(summary.badCurrency.map(([s]) => s)));
+    cat('generic-button', uniq(summary.genericButtons.map(([s]) => s)));
+    cat('hrefless-link', uniq(summary.hreflessLinks.map(([s]) => s)));
+    cat('unnamed-interactive', uniq(summary.unnamedInteractive.map(([k]) => k)));
+    cat('bad-placeholder', uniq(summary.badPlaceholders.map(([s]) => s)));
+    cat('unlabeled-input', uniq(summary.unlabeledInputs.map(([s]) => s)));
+    cat('external-link-issue', uniq(summary.externalLinkIssues.map(([s]) => s)));
     cat('broken-link', summary.brokenLinks.map((l) => `${l.from} → ${l.link} (${l.status})`));
-    cat('broken-image', counts(summary.brokenImages.map(([, s]) => s)));
-    cat('overflow', counts(summary.overflowOffenders.map(([, s]) => s)));
-    cat('duplicate-id', counts(summary.duplicateIds.map(([k]) => k)));
-    cat('heading-skip', summary.headingSkips);
-    cat('doc-issue', counts(summary.docIssues.map(([, s]) => s)));
-    cat('clipped-text', counts(summary.clippedText.map(([, s]) => s)));
+    cat('broken-image', uniq(summary.brokenImages.map(([s]) => s)));
+    cat('overflow', uniq(summary.overflowOffenders.map(([s]) => s)));
+    cat('duplicate-id', uniq(summary.duplicateIds.map(([k]) => k)));
+    cat('heading-skip', uniq(summary.headingSkips));
+    cat('doc-issue', uniq(summary.docIssues.map(([s]) => s)));
+    cat('clipped-text', uniq(summary.clippedText.map(([s]) => s)));
     process.exit(1);
   }
 }
