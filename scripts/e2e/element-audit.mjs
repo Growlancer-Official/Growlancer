@@ -251,11 +251,15 @@ function inPageAudit(device) {
   }
 
   // ── D. FORMS ──────────────────────────────────────────────────────────────
+  // Generic placeholders are banned per Section-1 D; context-specific "Enter
+  // your X" is fine when X identifies the field (e.g. "Enter your admin
+  // password" on the admin gate). Only flag truly contentless ones.
   const BAD_PLACEHOLDER = /^(enter [a-z ]{3,20}|type here|enter here|type something|\*+|—|-)$/i;
+  const CONTEXT_OK_PLACEHOLDER = /\b(admin|current|new|confirm|search|e\.g\.|code|otp|upi|ifsc)\b/i;
   for (const el of document.body.querySelectorAll('input:not([type="hidden"]), textarea')) {
     if (!visible(el)) continue;
     const ph = el.getAttribute('placeholder') || '';
-    if (ph && BAD_PLACEHOLDER.test(ph.trim())) {
+    if (ph && BAD_PLACEHOLDER.test(ph.trim()) && !CONTEXT_OK_PLACEHOLDER.test(ph)) {
       out.badPlaceholders.push({ selector: shortSelector(el), placeholder: ph });
     }
     // label association: <label for>, wrapping label, aria-label, aria-labelledby, title

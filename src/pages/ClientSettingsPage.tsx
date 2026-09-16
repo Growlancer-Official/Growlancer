@@ -346,7 +346,10 @@ export function ClientSettingsPage() {
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      // Expected when the backend is unreachable (offline dev, CI placeholder
+      // envs) — the form renders with defaults. Action errors below still log
+      // loudly via console.error.
+      console.warn('Could not load client profile (backend unreachable):', error instanceof Error ? error.message : error);
       setLoading(false);
     }
   }, [user?.id]);
