@@ -103,14 +103,22 @@ jobs:
       - name: Install Chrome for Testing
         run: npx --yes @puppeteer/browsers install chrome@stable --path "$HOME/.cache/chrome-for-testing"
 
+      # Build here (not via artifact download) so server.js has dist/ on disk.
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder_anon_key
+          VITE_APP_VERSION: 0.0.1
+        run: npm run build
+
       - name: Serve production build
         run: |
-          PORT=4174 node server.js &
+          PORT=4174 node server.js > server.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -sf http://127.0.0.1:4174/ >/dev/null; then break; fi
             sleep 1
           done
-          curl -sf http://127.0.0.1:4174/ >/dev/null || (echo "server did not start" && exit 1)
+          curl -sf http://127.0.0.1:4174/ >/dev/null || (echo "server did not start" && cat server.log && exit 1)
 
       # Strict mode: any Section-1 finding fails CI. Uses the build artifact
       # from the build job so the audited bundle is exactly what passed tests.
