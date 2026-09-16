@@ -808,6 +808,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyPress}
+            aria-label="Message to AI support"
             placeholder={user ? 'Ask me anything in any language...' : 'Type your question — we’ll help you get started...'}
             className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm"
             disabled={loading}
@@ -815,6 +816,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
           <button
             onClick={handleSend}
             disabled={loading || !input.trim()}
+            aria-label="Send message"
             className="px-4 py-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />

@@ -66,7 +66,7 @@ const termsSections: Section[] = [
             <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Client Fee</span>
-                <h4 className="text-3xl font-black text-slate-900 mt-1">5%</h4>
+                <h2 className="text-3xl font-black text-slate-900 mt-1">5%</h2>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                   Calculated and applied to the total project contract at checkout. Covers secure escrow processing, workspace creation, and dispute mediation rights.
                 </p>
@@ -75,7 +75,7 @@ const termsSections: Section[] = [
             <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Freelancer Fee</span>
-                <h4 className="text-3xl font-black text-slate-900 mt-1">0%</h4>
+                <h2 className="text-3xl font-black text-slate-900 mt-1">0%</h2>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
                   We believe in empowering creators. Growlancer charges freelancers zero percentage fees on standard contracts. The amount earned is the amount received in your wallet.
                 </p>
@@ -104,23 +104,23 @@ const termsSections: Section[] = [
           </p>
           <div className="relative border-l-2 border-emerald-500 pl-4 space-y-4 mb-3">
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">A. Contract Funding</h5>
+              <h3 className="font-bold text-slate-900 text-sm">A. Contract Funding</h3>
               <p className="text-slate-600 text-xs mt-1">Clients must fully fund the contract amount (milestone or project total + the 5% platform fee) into a secure Growlancer Escrow balance before the Freelancer starts working. This is designed to help confirm that funds are available before work begins.</p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas</h5>
+              <h3 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas</h3>
               <p className="text-slate-600 text-xs mt-1">Work progress is tracked transparently. Once the project begins, task milestones are automatically populated in the collaborative space and are updated dynamically as changes occur.</p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">C. Milestone Releases & Auto-Release</h5>
+              <h3 className="font-bold text-slate-900 text-sm">C. Milestone Releases & Auto-Release</h3>
               <p className="text-slate-600 text-xs mt-1">Upon delivery of the milestone files or services, the Client reviews the work within the review window (default 72 hours, adjustable 24 hours – 7 days). Once satisfied, the Client releases the escrow, transferring funds to the Freelancer's wallet. If the Client does not respond within the window, the payment releases automatically — funds are never held hostage by either party, and how many days the work took is irrelevant to the timer, which starts only at delivery. Releasing funds constitutes final acceptance of that milestone; a released payment is final and is not refundable except in cases of verified fraud or a clear violation of these Terms.</p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">D. Revisions & Extra Work</h5>
+              <h3 className="font-bold text-slate-900 text-sm">D. Revisions & Extra Work</h3>
               <p className="text-slate-600 text-xs mt-1">Each Service listing states the number of free revisions included in the base price. Requests within the included free revisions are covered at no additional cost. If the Client requests more revisions than included, the Freelancer may charge their published extra-revision rate or a mutually agreed price; the Client's consent is required before any paid extra work begins, and any such charges are payable through Growlancer Escrow. Unaddressed delivered work follows the platform's review-window escalation process so that no party is left without a resolution. Revision disputes are governed by Section 6 (Dispute Resolution & Mediation).</p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">E. Team Projects — Independent Contracts</h5>
+              <h3 className="font-bold text-slate-900 text-sm">E. Team Projects — Independent Contracts</h3>
               <p className="text-slate-600 text-xs mt-1">When a Client hires multiple freelancers through a Team Project, each freelancer is engaged under a <strong>separate, independent contract</strong> — with its own escrow, milestones, review window and dispute process. The Client is independently contracting with each freelancer; there is no single mega-contract covering the team. Each freelancer is individually responsible for their own deliverables, and Growlancer provides no cross-freelancer coordination or delivery guarantee — only payment protection (escrow) for each individual contract. If one member of the team fails to deliver, the other contracts <strong>are not</strong> cancelled or affected; each contract is resolved on its own terms. The 5% platform fee applies to each individual contract, with no separate "team fee".</p>
             </div>
           </div>
@@ -157,10 +157,10 @@ const termsSections: Section[] = [
             In the event of a coordination breakdown or standard mismatch in deliverables, users can trigger the official dispute process directly in their active Milestones tab.
           </p>
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-3 mb-3">
-            <h5 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+            <h3 className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-500"></span>
               The 3-Step Dispute Protocol:
-            </h5>
+            </h3>
             <ol className="list-decimal pl-5 text-xs text-slate-600 space-y-4">
               <li><strong>1. Coordination Check (48 Hours):</strong> Upon raising a dispute, the contract status is changed to "disputed". The workspace asset locker is frozen, preventing any further uploads or modifications. The client and freelancer are given 48 hours to communicate and resolve the issue mutually (e.g. adjust task requirements or agree to a partial refund).</li>
               <li><strong>2. AI-Assisted Audit:</strong> If no agreement is reached, either party may escalate the dispute to the Growlancer Dispute Center. Our AI Mediator may assist by evaluating workspace logs, chat archives, and task cards, and may propose a split ratio (e.g. 70% payout / 30% refund) as a non-binding starting point for resolution. AI assistance is provided to support, not replace, human judgment.</li>
@@ -317,7 +317,7 @@ const termsSections: Section[] = [
           </p>
           <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
             <div>
-              <h5 className="font-bold text-sm">Have legal or compliance questions?</h5>
+              <h3 className="font-bold text-sm">Have legal or compliance questions?</h3>
               <p className="text-xs text-slate-400 mt-1">Submit a support ticket and our team will review your inquiry.</p>
             </div>
             <Link
@@ -376,7 +376,7 @@ export function TermsPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -409,7 +409,7 @@ export function TermsPage() {
         {/* Sticky Sidebar Outline */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-4 bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
-            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Outline Navigation</h3>
+            <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Outline Navigation</h2>
             <div className="space-y-1">
               {sections.map((section) => {
                 const Icon = section.icon;

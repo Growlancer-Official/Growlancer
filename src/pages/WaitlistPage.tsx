@@ -38,14 +38,14 @@ export function WaitlistPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
               <Clock className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
-              <h3 className="text-sm font-bold text-slate-900 mb-1">Early Access</h3>
+              <h2 className="text-sm font-bold text-slate-900 mb-1">Early Access</h2>
               <p className="text-xs text-slate-500">
                 Be among the first to know when we launch in your country
               </p>
             </div>
             <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
               <Mail className="w-6 h-6 text-emerald-600 mb-2 mx-auto" />
-              <h3 className="text-sm font-bold text-slate-900 mb-1">Launch Updates</h3>
+              <h2 className="text-sm font-bold text-slate-900 mb-1">Launch Updates</h2>
               <p className="text-xs text-slate-500">
                 Get notified via email when your country is supported
               </p>

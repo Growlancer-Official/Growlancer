@@ -1465,6 +1465,7 @@ export function ProfessionalProfilePage() {
                         <input type={securityData.showNewPassword ? 'text' : 'password'} value={securityData.newPassword} onChange={(e) => setSecurityData({ ...securityData, newPassword: e.target.value })}
                           className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all pr-10" />
                         <button type="button" onClick={() => setSecurityData({ ...securityData, showNewPassword: !securityData.showNewPassword })}
+                          aria-label={securityData.showNewPassword ? 'Hide new password' : 'Show new password'}
                           className="absolute right-4 top-1/2 -translate-y-1/2">
                           {securityData.showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>

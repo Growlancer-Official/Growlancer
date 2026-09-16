@@ -85,7 +85,7 @@ export function AboutPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             <ArrowRight className="w-4 h-4 rotate-180" />
             Back to Home

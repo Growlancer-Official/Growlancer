@@ -124,6 +124,18 @@ karo:
 
 ---
 
+## Standing Rule: Har Change → Audit → Deploy (MANDATORY — founder ne explicit bola hai)
+
+Har koi bhi change (fix/feature/refactor) complete hone par, HAR BAAR, bina pooche:
+1. **Security audit** — full uncommitted diff ko upar diye Security Principles ke against scan karo
+   (secrets, money-path client-trust, RLS, webhook fail-open, IDOR, request-body user_id).
+   Untracked files bhi check karo (test artifacts me keys/logs ho sakte hain — `tests/e2e-artifacts/`
+   aur `.e2e/` gitignored hain, kabhi commit mat karna).
+2. **Verify** — `npm run typecheck` + `npm test` + (UI changes par) `npm run build`.
+3. **Commit + push to `origin main` REAL-TIME** — push = Vercel production deploy trigger.
+   "Deploy on GitHub" ka matlab yahi hai: commit hoke push ho gaya to deploy ho gaya. User ko
+   report me hamesha batao: kya commit hua, push hua ya nahi, aur deploy-abhi-live hai ya pending.
+
 ## Current Status (jaise-jaise fix hote gaye, ye section update karte rehna)
 
 ✅ Poora security audit complete — RLS (SELECT/UPDATE/DELETE saari policies), 27+ edge
@@ -144,6 +156,12 @@ users auto-verify instantly, rows honestly labelled `provider='dev_mode'`. Reven
 admin → Verification → Production + provider token (SIRF REAL provider se VERIFIED; dev rows
 dobara real verify karne honge). `document_hash` live par GENERATED column hai — function se
 kabhi write mat karna (428C9 error, silent pending-fail cause tha).
+
+✅ Pre-launch E2E hardening (Sep 16, 2026) — device-matrix + fullsite sweeps (13 devices /
+41 routes), auth+nav flow harness (`scripts/e2e/`), mobile viewport-meta launch-blocker,
+SPA-fallback hydration (#418) fix (`vite.config.ts` boot-splash), `server.js` static-first
+fallback, ~40 a11y/heading fixes. Report: `docs/PRE-LAUNCH-TEST-REPORT.md`. Test artifacts
+`tests/e2e-artifacts/` gitignored (console captures me anon-key JWTs ho sakte hain).
 
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.

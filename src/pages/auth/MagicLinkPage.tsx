@@ -132,7 +132,7 @@ export function MagicLinkPage() {
                 <div className="mt-6 text-center space-y-2">
                   <button
                     onClick={() => navigate(-1)}
-                    className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 transition-colors"
+                    className="inline-flex items-center gap-2 py-1 text-sm text-slate-500 hover:text-slate-700 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Back

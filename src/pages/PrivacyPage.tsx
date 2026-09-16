@@ -44,15 +44,15 @@ const privacySections: Section[] = [
           </p>
           <div className="space-y-4">
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">A. Account & Profile Information</h5>
+              <h3 className="font-bold text-slate-900 text-sm">A. Account & Profile Information</h3>
               <p className="text-slate-600 text-xs mt-1">Includes registered names, email addresses, verified credentials, portfolios, base rates, declared skills, and avatar images.</p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas Transactions</h5>
+              <h3 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas Transactions</h3>
               <p className="text-slate-600 text-xs mt-1">When active in a project workspace, our synchronization engines parse and log task cards on your Kanban board, collaborative scratchpad text entries, real-time message threads, and files uploaded to the shared asset locker. This helps coordinate states stay in sync on both freelancer and client screens in real time.</p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">C. Payment & Verification Parameters</h5>
+              <h3 className="font-bold text-slate-900 text-sm">C. Payment & Verification Parameters</h3>
               <p className="text-slate-600 text-xs mt-1">Escrow payment coordinates, withdrawal methods (UPI IDs, bank account details with IFSC), and transaction history are stored securely to comply with international KYC (Know Your Customer) and anti-money laundering (AML) protocols. We do not store credit card PIN details on our servers; payment card data is handled by our payment processors in accordance with their security standards.</p>
             </div>
           </div>
@@ -122,7 +122,7 @@ const privacySections: Section[] = [
           </p>
           <div className="space-y-4">
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">A. What We Collect &amp; Why</h5>
+              <h3 className="font-bold text-slate-900 text-sm">A. What We Collect &amp; Why</h3>
               <ul className="list-disc pl-5 text-slate-600 space-y-2 mt-1 text-sm">
                 <li><strong>Identity details:</strong> PAN number, full name as printed on the document, and (where provided) date of birth — used solely to verify your identity and confirm the record belongs to you.</li>
                 <li><strong>Document images:</strong> Uploaded front/back copies, used only to review your submission and removed once review is complete. We do not retain raw identity documents longer than necessary for the verification purpose.</li>
@@ -130,7 +130,7 @@ const privacySections: Section[] = [
               </ul>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">B. Automated Processing &amp; Development Mode</h5>
+              <h3 className="font-bold text-slate-900 text-sm">B. Automated Processing &amp; Development Mode</h3>
               <p className="text-slate-600 text-xs mt-1">
                 Verification is processed automatically by our systems. During Growlancer's pre-launch / development phase, verification may be performed through our <strong>development verification mode</strong>, which runs automated platform checks instead of a third-party identity verification provider. Verification records produced this way are clearly labelled internally as such.
               </p>
@@ -139,13 +139,13 @@ const privacySections: Section[] = [
               </p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">C. Third-Party Providers &amp; Consent</h5>
+              <h3 className="font-bold text-slate-900 text-sm">C. Third-Party Providers &amp; Consent</h3>
               <p className="text-slate-600 text-xs mt-1">
                 When a verification provider is active, we share only the minimum information required for verification (e.g., PAN, name, and date of birth) with that provider, under contractual safeguards, solely for the purpose of verifying your identity. We never sell your identity data. You give explicit consent before any submission, and you may withdraw consent or delete your account at any time; withdrawal may affect your ability to use verification-gated features.
               </p>
             </div>
             <div>
-              <h5 className="font-bold text-slate-900 text-sm">D. Retention &amp; Your Rights</h5>
+              <h3 className="font-bold text-slate-900 text-sm">D. Retention &amp; Your Rights</h3>
               <p className="text-slate-600 text-xs mt-1">
                 Verification records are retained while your account is active and thereafter only where required by law (e.g., anti-money-laundering and tax record-keeping). All rights in Section 8 below (access, correction, erasure, withdrawal of consent) apply to verification data, including the right to request correction of a name mismatch or deletion of your verification records.
               </p>
@@ -218,7 +218,7 @@ const privacySections: Section[] = [
           </p>
           <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
             <div>
-              <h5 className="font-bold text-sm">Have a privacy question?</h5>
+              <h3 className="font-bold text-sm">Have a privacy question?</h3>
               <p className="text-xs text-slate-400 mt-1">Create a support ticket and we'll get back to you — all requests are handled securely.</p>
             </div>
             <Link
@@ -277,7 +277,7 @@ export function PrivacyPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -310,7 +310,7 @@ export function PrivacyPage() {
         {/* Sticky Sidebar Outline */}
         <div className="lg:col-span-1">
           <div className="sticky top-24 space-y-4 bg-white rounded-xl p-4 border border-slate-200/50 shadow-sm max-h-[calc(100vh-10rem)] overflow-y-auto">
-            <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Outline Navigation</h3>
+            <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Outline Navigation</h2>
             <div className="space-y-1">
               {sections.map((section) => {
                 const Icon = section.icon;

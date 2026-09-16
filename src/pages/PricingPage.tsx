@@ -43,7 +43,7 @@ export function PricingPage() {
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
-          <Link to="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+          <Link to="/" className="inline-block py-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
             Back to Home
           </Link>
         </div>
@@ -342,7 +342,7 @@ export function PricingPage() {
           <div className="text-center mt-8">
             <Link
               to="/dashboard/pro"
-              className="inline-flex items-center gap-3 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
+              className="inline-flex items-center gap-3 py-1 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
             >
               See full Premium plan details
               <ArrowRight className="w-4 h-4" />

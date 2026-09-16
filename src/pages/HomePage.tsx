@@ -1234,6 +1234,7 @@ function WaitlistSection() {
                       onChange={e => setName(e.target.value)}
                       id="waitlist-name"
                       name="name"
+                      aria-label="Your name"
                       placeholder="Your name"
                       required
                       autoComplete="name"
@@ -1245,6 +1246,7 @@ function WaitlistSection() {
                       onChange={e => setEmail(e.target.value)}
                       id="waitlist-email"
                       name="email"
+                      aria-label="Email address"
                       placeholder="you@company.com"
                       required
                       autoComplete="email"
@@ -1257,8 +1259,15 @@ function WaitlistSection() {
                       onChange={e => setCountry(e.target.value)}
                       id="waitlist-country"
                       name="country"
+                      aria-label="Country"
                       required
-                      className="flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all [&>option]:text-slate-900"
+                      /* ⚠️ `w-full sm:flex-1` (not `flex-1`): the parent is
+                         `flex flex-col sm:flex-row`, and `flex-1` sets
+                         `flex-basis: 0%` — in a COLUMN flex container that is the
+                         main axis, so it collapsed this select to its content
+                         height (23px) and silently overrode `h-12`, leaving a
+                         tiny, misaligned country picker next to 48px inputs. */
+                      className="w-full sm:flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all [&>option]:text-slate-900"
                     >
                       <option value="">{countriesLoading ? 'Loading countries...' : 'Select your country'}</option>
                       {countries.map((c) => (

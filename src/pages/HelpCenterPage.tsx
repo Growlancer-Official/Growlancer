@@ -129,7 +129,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
               </Link>
               <Link
                 to="/"
-                className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+                className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Home
@@ -162,6 +162,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
         <input
           type="text"
+          aria-label="Search help questions"
           placeholder="Search questions..."
           value={searchTerm}
           onChange={(e) => {
@@ -176,7 +177,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         {/* Sidebar Filters */}
         <div className="lg:col-span-1 space-y-4">
-          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Topic Categories</h3>
+          <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Topic Categories</h2>
           <div className="space-y-1">
             {categories.map((cat) => (
               <button
@@ -253,7 +254,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
           {/* AI Support Banner */}
           <div className="mt-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-[2rem] p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl shadow-emerald-600/10">
             <div>
-              <h4 className="font-bold text-lg leading-tight">Need more help?</h4>
+              <h3 className="font-bold text-lg leading-tight">Need more help?</h3>
               <p className="text-emerald-100 text-xs mt-1">Our AI support assistant is available 24/7 to answer your questions instantly.</p>
             </div>
             <Link

@@ -33,3 +33,7 @@ supabase/.temp/
 *.pdf
 .tmp_payload.json
 .tmp_check.json
+
+# E2E run artifacts (throwaway; console captures may embed anon-key JWTs) — never commit.
+tests/e2e-artifacts/
+.e2e/

@@ -72,7 +72,7 @@ export function FeaturesPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             Back to Home
           </Link>
@@ -114,7 +114,7 @@ export function FeaturesPage() {
                   {feat.badge}
                 </span>
               </div>
-              <h3 className="font-display text-base font-extrabold text-slate-900 mb-2 leading-tight">{feat.title}</h3>
+              <h2 className="font-display text-base font-extrabold text-slate-900 mb-2 leading-tight">{feat.title}</h2>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">{feat.description}</p>
             </div>
           ))}

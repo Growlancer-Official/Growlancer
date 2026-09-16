@@ -9,13 +9,34 @@ export default {
   description:
     'Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly.',
   image: 'https://growlancer.com/og-image.png',
-  viewport: 'width=device-width, initial-scale=1.0, viewport-fit=cover',
+  // ⚠️ vike-react only understands 'responsive' | number here — any other
+  // string makes getViewportTag() return an EMPTY string, which silently
+  // dropped the <meta name="viewport"> tag from every rendered page. Without
+  // it mobile browsers fall back to a ~980px layout viewport and zoom the
+  // whole site out (the entire mobile UI rendered as a shrunken desktop).
+  // 'responsive' emits: width=device-width,initial-scale=1
+  viewport: 'responsive',
   favicon: '/UpdatedLogo.webp',
 
   // ─── Render mode ─────────────────────────────────────────
   // SSR enabled globally. Protected/dashboard routes handle auth
   // on the client side (useEffect in AuthContext).
   ssr: true,
+
+  // ─── Suspense-aware SSR (required by our lazy routes) ────
+  // Every non-SEO page in App.tsx is React.lazy()-loaded inside <Suspense>.
+  // vike-react defaults to `renderToString`, which CANNOT render Suspense:
+  // the first lazy route threw
+  //   "Switched to client rendering because the server rendering aborted due
+  //    to: The server used `renderToString` which does not support Suspense"
+  // on most pages — i.e. SSR silently gave up and those routes were rendered
+  // client-side only (no SEO HTML, one thrown React error per page load).
+  //
+  // `{ require: true, enable: false }` = use the Suspense-capable streaming
+  // renderer but await the whole HTML and send it as one string, so prerender
+  // output, the boot-splash injection and Vercel's static serving are all
+  // unchanged. (vike.dev/stream)
+  stream: { require: true, enable: false },
 
   // ─── React Strict Mode (was in main.tsx) ─────────────────
   reactStrictMode: true,

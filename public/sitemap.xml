@@ -91,6 +91,16 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://growlancer.com/refund-policy</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://growlancer.com/report</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
     <loc>https://growlancer.com/freelancers</loc>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

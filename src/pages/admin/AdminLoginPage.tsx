@@ -163,9 +163,9 @@ export function AdminLoginPage() {
             <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">
               Admin Email
             </label>
-            <input
-              type="email"
-              value={email}
+            <input                type="email"
+                aria-label="Admin email"
+                value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="admin@growlancer.com"
               autoFocus
@@ -182,6 +182,7 @@ export function AdminLoginPage() {
               <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
               <input
                 type={showPassword ? 'text' : 'password'}
+                aria-label="Admin password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="Enter your admin password"
@@ -190,6 +191,7 @@ export function AdminLoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

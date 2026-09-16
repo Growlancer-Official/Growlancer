@@ -10,6 +10,7 @@ import { VerifiedBadge } from '../components/VerifiedBadge';
 import { ProBadge } from '../components/ProBadge';
 import { razorpayService } from '../lib/razorpay';
 import { useAuth } from '../context/AuthContext';
+import { isValidUuid } from '../utils/validation';
 
 interface ServicePackage {
   tier: 'basic' | 'standard' | 'premium';
@@ -81,6 +82,15 @@ export function ServiceDetailPage() {
 
   useEffect(() => {
     if (!serviceId) return;
+
+    // 🛡️ Reject malformed ids before querying — `services.id` is a uuid column,
+    // so a non-UUID id makes Postgres answer HTTP 400 and the browser logs a red
+    // "Failed to load resource: 400" for a visit that is really just a 404.
+    if (!isValidUuid(serviceId)) {
+      setService(null);
+      setLoading(false);
+      return;
+    }
 
     const fetchService = async () => {
       setLoading(true);
@@ -179,7 +189,7 @@ export function ServiceDetailPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Service Not Found</h2>
           <p className="text-slate-500 mb-3">This service doesn't exist or is no longer available.</p>
-          <Link to="/" className="text-emerald-600 hover:underline font-medium">Go Home</Link>
+          <Link to="/" className="inline-flex items-center min-h-[44px] px-2 text-emerald-600 hover:underline font-medium">Go Home</Link>
         </div>
       </div>
     );
@@ -303,7 +313,7 @@ export function ServiceDetailPage() {
       {/* Back Navigation */}
       <div className="bg-white border-b border-slate-100">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-4">
-          <Link to="/services" className="flex items-center gap-3 text-sm text-slate-500 hover:text-emerald-600 transition-colors">
+          <Link to="/services" className="inline-flex items-center gap-3 min-h-[44px] text-sm text-slate-500 hover:text-emerald-600 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Back to Services
           </Link>

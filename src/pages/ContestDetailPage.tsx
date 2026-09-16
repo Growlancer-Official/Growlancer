@@ -296,7 +296,7 @@ export function ContestDetailPage() {
         <div className="text-center">
           <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-2" />
           <h2 className="text-xl font-bold text-slate-900 mb-2">Contest not found</h2>
-          <Link to="/contests" className="text-emerald-600 hover:underline">
+          <Link to="/contests" className="inline-flex items-center min-h-[44px] px-2 text-emerald-600 hover:underline">
             Back to contests
           </Link>
         </div>

@@ -1,7 +1,8 @@
 /* eslint-env node */
 import express from 'express';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import path, { dirname, join } from 'path';
+import fs from 'fs';
 import compression from 'compression';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -67,7 +68,31 @@ app.use((req, res) => {
     return res.status(404).json({ error: 'Not found' });
   }
 
-  // Serve index.html for all other routes (SPA routing)
+  // SPA routing — same semantics as Vercel's static-first fallback:
+  // serve the PRERENDERED page for its URL (correct title/canonical/SSR
+  // content), then fall back to index.html only for truly client-only
+  // routes (dashboard, onboarding, dynamic public pages…).
+  // NOTE: Vike prerenders to dist/client/<route>/index.html; dist/ mirrors
+  // dist/client/ (see vercelOutputWorkaroundPlugin in vite.config.ts), so a
+  // plain sendFile would path-traverse — always resolve via dist/client/.
+  const safePath = path.posix.normalize(req.path).replace(/^([.][.][/\\])+/, '');
+  const prerendered = join(DIST_DIR, 'client', safePath, 'index.html');
+  if (
+    !safePath.includes('..') &&
+    safePath !== '/' &&
+    fs.existsSync(prerendered) &&
+    fs.statSync(prerendered).isFile()
+  ) {
+    return res.sendFile(prerendered, (err) => {
+      if (err && !res.headersSent) {
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  }
+
+  // Client-only route: serve the app shell (boot splash covers the
+  // homepage-HTML flash; #root is cleared pre-hydration so React does a
+  // clean client render — see BOOT_SPLASH_HTML in vite.config.ts).
   res.sendFile(join(DIST_DIR, 'index.html'), (err) => {
     if (err) {
       res.status(500).json({ error: 'Internal server error' });

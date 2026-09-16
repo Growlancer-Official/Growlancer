@@ -5,6 +5,7 @@ import vike from 'vike/plugin';
 import path from 'path';
 import fs from 'fs';
 import { execSync } from 'node:child_process';
+import { PUBLIC_PRERENDER_URLS } from './pages/prerenderUrls';
 
 const LEGAL_PAGE_PATHS = [
   'src/pages/CookiesPage.tsx',
@@ -116,17 +117,18 @@ const BOOT_SPLASH_HTML = `<!-- __boot_splash_marker__ -->
     // Exact list of pages that ARE statically prerendered — their SSR content
     // is correct and needs no overlay. Everything else gets the boot splash
     // until the app hydrates the real route.
-    var prerendered = [
-      '/', '/how-it-works', '/features', '/categories', '/pricing', '/about',
-      '/philosophy', '/contact', '/internships', '/careers', '/help-center',
-      '/safety', '/guidelines', '/status', '/terms', '/privacy',
-      '/escrow-policy', '/cookies', '/freelancers', '/services', '/contests',
-      '/certificate', '/verify-certificate', '/auth/forgot-password',
-      '/auth/reset-password', '/auth/magic-link', '/auth/otp',
-      '/auth/email-confirm', '/auth/verify-email', '/waitlist',
-      '/payment/success', '/payment/cancel', '/not-found'
-    ];
+    var prerendered = __PRERENDERED_URLS__;
     if (prerendered.indexOf(path) !== -1) return;
+    // Non-prerendered path: the SPA fallback serves the prerendered HOMEPAGE
+    // HTML. vike-react hydrates whenever #root is non-empty, which would
+    // hydrate the wrong DOM (homepage markup vs dashboard React tree) and
+    // crash with React hydration error #418 on every device. Clearing #root
+    // makes vike-react fall back to a full client render instead — correct
+    // content, no mismatch. (Crawlers get the boot splash here either way:
+    // the homepage HTML served for these paths had the wrong title/canonical,
+    // so it was never useful content for them.)
+    var rootEl = document.getElementById('root');
+    if (rootEl) rootEl.innerHTML = '';
     var div = document.createElement('div');
     div.id = 'boot-overlay';
     div.innerHTML = '<div class="boot-spinner"></div>';
@@ -176,7 +178,7 @@ function bootSplashInjectPlugin(): Plugin {
         let html = fs.readFileSync(file, 'utf8');
         if (html.includes('__boot_splash_marker__')) continue;
         if (!html.includes('</body>')) continue;
-        html = html.replace('</body>', BOOT_SPLASH_HTML + '\n</body>');
+        html = html.replace('</body>', bootSplashHtml + '\n</body>');
         fs.writeFileSync(file, html);
       }
       console.log(`[boot-splash] Injected boot splash into ${files.length} HTML file(s)`);
@@ -185,6 +187,14 @@ function bootSplashInjectPlugin(): Plugin {
 }
 
 const legalLastUpdatedIso = getLegalDocsLastUpdatedIso();
+
+// Inject the shared prerender URL list into the inline boot-splash script.
+// The overlay is skipped for exactly the URLs Vike prerenders (see
+// pages/prerenderUrls.ts) — one source of truth, so the two can't drift.
+const bootSplashHtml = BOOT_SPLASH_HTML.replace(
+  '__PRERENDERED_URLS__',
+  JSON.stringify([...PUBLIC_PRERENDER_URLS])
+);
 
 export default defineConfig({
   define: {

@@ -45,6 +45,13 @@ function interpolate(template: string, params?: Record<string, string | number>)
 // ─── i18n Provider ───────────────────────────────────────────────────────────
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<SupportedLocale>(() => {
+    // 🛡️ SSR guard: this provider is rendered on the server by Vike, where
+    // `localStorage` does not exist. Without this check every single SSR
+    // request logged "[i18n] Could not read saved locale: ReferenceError:
+    // localStorage is not defined" — noisy false-positive errors that hid
+    // real ones in the server logs. The server always renders the default
+    // locale; the saved locale is applied on the client (see the effect below).
+    if (typeof window === 'undefined') return I18N_CONFIG.defaultLocale;
     // Try to restore saved locale
     try {
       const saved = localStorage.getItem('growlancer-locale');

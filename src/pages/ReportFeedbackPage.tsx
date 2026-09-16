@@ -123,7 +123,7 @@ export function ReportFeedbackPage() {
               <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
               <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
             </Link>
-            <Link to="/" className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
+            <Link to="/" className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
               <ArrowLeft className="w-4 h-4" />
               Back to Home
             </Link>
@@ -172,7 +172,7 @@ export function ReportFeedbackPage() {
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
-          <Link to="/" className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
+          <Link to="/" className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Link>
@@ -210,7 +210,7 @@ export function ReportFeedbackPage() {
                   <Clock className="w-5 h-5 text-emerald-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Reviewed Quickly</h4>
+                  <h2 className="font-bold text-slate-900 text-sm">Reviewed Quickly</h2>
                   <p className="text-xs text-slate-500">Our team triages reports daily</p>
                 </div>
               </div>
@@ -222,7 +222,7 @@ export function ReportFeedbackPage() {
                   <Zap className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Direct to Team</h4>
+                  <h2 className="font-bold text-slate-900 text-sm">Direct to Team</h2>
                   <p className="text-xs text-slate-500">Sent to growlancer.own@gmail.com</p>
                 </div>
               </div>
@@ -234,7 +234,7 @@ export function ReportFeedbackPage() {
                   <Lock className="w-5 h-5 text-purple-600" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-900 text-sm">Private & Secure</h4>
+                  <h2 className="font-bold text-slate-900 text-sm">Private & Secure</h2>
                   <p className="text-xs text-slate-500">Your details stay confidential</p>
                 </div>
               </div>
@@ -242,9 +242,9 @@ export function ReportFeedbackPage() {
 
             {/* Direct email fallback */}
             <div className="bg-gradient-to-br from-emerald-50 to-white rounded-xl p-3 border border-emerald-100 shadow-sm">
-              <h4 className="font-bold text-slate-900 text-sm mb-2 flex items-center gap-3">
+              <h2 className="font-bold text-slate-900 text-sm mb-2 flex items-center gap-3">
                 <Mail className="w-4 h-4 text-emerald-600" /> Prefer email?
-              </h4>
+              </h2>
               <p className="text-xs text-slate-500 mb-3">
                 You can always write to us directly — we read every message.
               </p>
@@ -315,8 +315,9 @@ export function ReportFeedbackPage() {
 
               {/* Category */}
               <div>
-                <label className="block text-sm font-bold text-slate-900 mb-2">Category <span className="text-slate-400 font-normal">(optional)</span></label>
+                <label htmlFor="report-category" className="block text-sm font-bold text-slate-900 mb-2">Category <span className="text-slate-400 font-normal">(optional)</span></label>
                 <select
+                  id="report-category"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
@@ -330,9 +331,10 @@ export function ReportFeedbackPage() {
 
               {/* Title */}
               <div>
-                <label className="block text-sm font-bold text-slate-900 mb-2">Short title <span className="text-red-500">*</span></label>
+                <label htmlFor="report-title" className="block text-sm font-bold text-slate-900 mb-2">Short title <span className="text-red-500">*</span></label>
                 <input
                   type="text"
+                  id="report-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={120}
@@ -343,8 +345,9 @@ export function ReportFeedbackPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-bold text-slate-900 mb-2">Details <span className="text-red-500">*</span></label>
+                <label htmlFor="report-details" className="block text-sm font-bold text-slate-900 mb-2">Details <span className="text-red-500">*</span></label>
                 <textarea
+                  id="report-details"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={6}
@@ -359,13 +362,14 @@ export function ReportFeedbackPage() {
 
               {/* Contact email */}
               <div>
-                <label className="block text-sm font-bold text-slate-900 mb-2">
+                <label htmlFor="report-email" className="block text-sm font-bold text-slate-900 mb-2">
                   Contact email <span className="text-slate-400 font-normal">(optional — for follow-ups)</span>
                 </label>
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                   <input
                     type="email"
+                    id="report-email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"

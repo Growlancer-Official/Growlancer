@@ -89,8 +89,15 @@ export function MainLayout() {
               </div>
             </Link>
 
-            {/* Desktop nav — professional text like Upwork/Fiverr */}
-            <nav className="hidden lg:flex items-center gap-0.5 text-[11px] text-slate-600">
+            {/* Desktop nav — professional text like Upwork/Fiverr.
+                ⚠️ `xl:flex`, NOT `lg:flex`: at the 1024px breakpoint this nav is
+                918px wide and the header needs ~1258px total, so between
+                1024px and ~1245px (iPad landscape, 11" iPad Pro, small laptop
+                windows, split-screen) the nav was cut off AND the Login/Signup
+                buttons were pushed off-screen (body overflow-x: clip hides
+                them, so they were unclickable). The hamburger menu is complete
+                and working, so 1024–1279px now uses it. */}
+            <nav className="hidden xl:flex items-center gap-0.5 text-[11px] text-slate-600">
               <Link to={ROUTES.HOW_IT_WORKS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">How it works</Link>
               <Link to={ROUTES.CATEGORIES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Categories</Link>
               <Link to={ROUTES.FREELANCERS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Find Talent</Link>
@@ -127,10 +134,15 @@ export function MainLayout() {
               )}
 
               {/* Mobile menu button */}
+              {/* 44×44 touch target (Apple HIG / WCAG 2.5.5). The negative
+                  margin keeps the extra 4px from widening the header row at
+                  320px, and the icon stays visually the same size. */}
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="lg:hidden inline-flex items-center justify-center h-10 w-10 rounded-lg ring-1 ring-slate-200 bg-white hover:bg-slate-50 transition-colors"
-                aria-label="Toggle menu"
+                className="xl:hidden inline-flex items-center justify-center h-11 w-11 -mr-1 rounded-lg ring-1 ring-slate-200 bg-white hover:bg-slate-50 transition-colors"
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileMenuOpen}
+                aria-controls="mobile-nav-panel"
               >
                 {mobileMenuOpen ? <X className="text-slate-700 w-5 h-5" /> : <Menu className="text-slate-700 w-5 h-5" />}
               </button>
@@ -141,7 +153,7 @@ export function MainLayout() {
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
-        <div className="lg:hidden fixed inset-x-0 top-16 z-40 bg-white border-b border-slate-200 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
+        <div id="mobile-nav-panel" className="xl:hidden fixed inset-x-0 top-16 z-40 bg-white border-b border-slate-200 shadow-lg max-h-[calc(100vh-4rem)] overflow-y-auto">
           <nav className="px-4 py-4 space-y-1">
             {/* Main Navigation */}
             <div className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider px-4 pb-1 pt-2">Browse</div>

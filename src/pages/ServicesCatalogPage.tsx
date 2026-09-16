@@ -131,6 +131,7 @@ export function ServicesCatalogPage() {
                 type="text"
                 id="service-search"
                 name="service-search"
+                aria-label="Search services"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search services..."
@@ -218,7 +219,7 @@ export function ServicesCatalogPage() {
           ) : services.length === 0 ? (
             <div className="text-center py-10 bg-white rounded-xl border border-slate-100">
               <Package className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-              <h3 className="text-lg font-bold text-slate-900 mb-2">No services found</h3>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">No services found</h2>
               <p className="text-slate-500 mb-3">Try adjusting your search or filters.</p>
               <button onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setMaxPrice(''); }} className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Clear Filters</button>
             </div>
@@ -262,9 +263,9 @@ export function ServicesCatalogPage() {
                       )}
                     </div>
 
-                    <h3 className="font-semibold text-slate-900 text-sm mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
+                    <h2 className="font-semibold text-slate-900 text-sm mb-2 line-clamp-2 group-hover:text-emerald-600 transition-colors">
                       {service.title}
-                    </h3>
+                    </h2>
 
                     {/* Tags */}
                     {service.tags && service.tags.length > 0 && (
@@ -316,7 +317,7 @@ export function ServicesCatalogPage() {
                   <div className="flex-1 p-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 mb-1 group-hover:text-emerald-600 transition-colors">{service.title}</h3>
+                        <h2 className="font-semibold text-slate-900 mb-1 group-hover:text-emerald-600 transition-colors">{service.title}</h2>
                         <p className="text-sm text-slate-500 line-clamp-2 mb-3">{service.description}</p>
                         <div className="flex items-center gap-3 text-xs text-slate-400">
                           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{service.delivery_days} days</span>

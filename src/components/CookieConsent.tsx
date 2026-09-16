@@ -208,10 +208,10 @@ export function CookieConsent() {
                     <Cookie className="w-6 h-6 text-emerald-400" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold text-white mb-1.5 flex items-center gap-3">
+                    <h2 className="text-base sm:text-lg font-bold text-white mb-1.5 flex items-center gap-3">
                       <Cookie className="w-5 h-5 text-emerald-400 sm:hidden" />
                       Your Privacy Matters
-                    </h3>
+                    </h2>
                     <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-2xl">
                       We use cookies and similar technologies to enhance your experience, analyze traffic, 
                       and personalize content. You can choose which categories to allow. 
@@ -231,21 +231,21 @@ export function CookieConsent() {
                 <div className="flex flex-row items-center flex-wrap justify-end gap-3 sm:gap-3 shrink-0">
                   <button
                     onClick={handleOpenCustomize}
-                    className="flex items-center justify-center gap-3 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    className="inline-flex items-center justify-center gap-3 px-3 sm:px-4 min-h-[44px] rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
                   >
                     <Settings className="w-4 h-4" />
                     Customize
                   </button>
                   <button
                     onClick={handleRejectAll}
-                    className="flex items-center justify-center gap-3 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    className="inline-flex items-center justify-center gap-3 px-3 sm:px-4 min-h-[44px] rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
                   >
                     <X className="w-4 h-4" />
                     Reject All
                   </button>
                   <button
                     onClick={handleAcceptAll}
-                    className="flex items-center justify-center gap-3 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
+                    className="inline-flex items-center justify-center gap-3 px-4 sm:px-5 min-h-[44px] rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
                   >
                     <Check className="w-4 h-4" />
                     Accept All

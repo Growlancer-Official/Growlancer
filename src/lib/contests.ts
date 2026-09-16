@@ -120,17 +120,22 @@ export const contestService = {
 
   // Get contest by ID
   async getContestById(contestId: string): Promise<Contest | null> {
+    // `.single()` raises PGRST116 (HTTP 406) whenever the contest does not
+    // exist, which is a normal "this contest was deleted / never existed"
+    // visit — not a failure. It filled the console with a red 406 + an error
+    // object on every such page view. `maybeSingle()` returns null instead so
+    // the page can show its friendly not-found state quietly.
     const { data, error } = await supabase
       .from('contests')
       .select('*')
       .eq('id', contestId)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      console.error('Error fetching contest:', error);
+      console.error('Error fetching contest:', error.message);
       return null;
     }
-    return data as unknown as Contest;
+    return (data as unknown as Contest) ?? null;
   },
 
   // Get client's contests

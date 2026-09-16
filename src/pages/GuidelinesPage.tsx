@@ -34,7 +34,7 @@ export function GuidelinesPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             Back to Home
           </Link>
@@ -70,7 +70,7 @@ export function GuidelinesPage() {
                 <CheckCircle className="w-6 h-6 text-emerald-600" />
               </div>
               <div>
-                <h3 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Do's</h3>
+                <h2 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Do's</h2>
                 <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Best Practices</p>
               </div>
             </div>
@@ -92,7 +92,7 @@ export function GuidelinesPage() {
                 <XCircle className="w-6 h-6 text-red-600" />
               </div>
               <div>
-                <h3 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Don'ts</h3>
+                <h2 className="font-display font-extrabold text-slate-900 text-base">Client & Creator Don'ts</h2>
                 <p className="text-xs text-slate-400 uppercase tracking-wider font-bold">Banned Operations</p>
               </div>
             </div>
@@ -116,7 +116,7 @@ export function GuidelinesPage() {
             <div className="h-10 w-10 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
               <Compass className="w-5 h-5 text-violet-700" />
             </div>
-            <h4 className="font-bold text-violet-950 text-sm">Team Projects — Independent Engagements</h4>
+            <h2 className="font-bold text-violet-950 text-sm">Team Projects — Independent Engagements</h2>
           </div>
           <p className="text-xs text-violet-900/80 leading-relaxed font-semibold">
             In a Team Project, the Client hires each freelancer under a <strong>separate, independent
@@ -137,7 +137,7 @@ export function GuidelinesPage() {
             <AlertTriangle className="w-5 h-5 text-amber-700 animate-pulse" />
           </div>
           <div>
-            <h4 className="font-bold text-amber-950 text-sm">Enforcement Protocol</h4>
+            <h2 className="font-bold text-amber-950 text-sm">Enforcement Protocol</h2>
             <p className="text-xs text-amber-900/80 leading-relaxed mt-1 font-semibold">
               Growlancer may use automated and human review processes to help maintain community standards. Violating these directives may result in actions such as workspace restrictions, wallet holds, or profile limitations, depending on the nature and severity of the violation. You can submit appeals via support tickets.
             </p>
