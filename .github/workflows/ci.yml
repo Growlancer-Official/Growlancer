@@ -1,39 +1,82 @@
-name: CI
+name: CI — Regression Guard + Element Audit
 
+# Runs on every push to main and every pull request.
+# Purpose: catch regressions (TypeScript, lint, build, white-screen guard,
+# element-level UI defects) BEFORE they reach production. If this workflow is
+# red, the deployment must NOT happen.
+#
+# Merge history: this file merges the original regression guard (typecheck,
+# lint, build with placeholder VITE_* envs — see commit before 8e75814) with
+# the element-audit job introduced in 8e75814. npm install is used instead of
+# npm ci deliberately: npm ci fails on the Actions runner for this React 19
+# lockfile while npm install (Vercel's install path) succeeds.
 on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Typecheck · Unit tests · Build
+  typecheck:
+    name: Typecheck (tsc)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
+        # Node 24 matches the local dev toolchain.
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Typecheck
+      - run: npm install --no-audit --no-fund
+      - name: TypeScript typecheck
         run: npm run typecheck
 
+  lint:
+    name: Lint (eslint)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm install --no-audit --no-fund
+      - name: ESLint
+        run: npm run lint
+
+  build:
+    name: Unit tests + Production build (+ white-screen guard)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm install --no-audit --no-fund
       - name: Unit tests
+        # VITE_* placeholders satisfy the non-empty check in src/lib/supabase.ts
+        # at import time (unit tests import the client). Real values are injected
+        # by Vercel at deploy time; tests never make live Supabase calls.
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder_anon_key
+          VITE_APP_VERSION: 0.0.1
         run: npm test
-
       - name: Production build
+        env:
+          VITE_SUPABASE_URL: https://placeholder.supabase.co
+          VITE_SUPABASE_ANON_KEY: placeholder_anon_key
+          VITE_APP_VERSION: 0.0.1
         run: npm run build
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -44,26 +87,24 @@ jobs:
   element-audit:
     name: Element audit (375/768/1280)
     runs-on: ubuntu-latest
-    needs: verify
+    timeout-minutes: 45
+    needs: [typecheck, lint, build]
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
+      - run: npm install --no-audit --no-fund
 
-      # element-audit.mjs uses playwright-core with a system Chrome. Ubuntu
-      # runners ship Chrome via this action's install step.
+      # element-audit.mjs uses playwright-core + a real Chrome binary.
       - name: Install Chrome for Testing
         run: npx --yes @puppeteer/browsers install chrome@stable --path "$HOME/.cache/chrome-for-testing"
 
-      - name: Build + serve production artifact
+      - name: Serve production build
         run: |
-          npm run build
           PORT=4174 node server.js &
           for i in $(seq 1 30); do
             if curl -sf http://127.0.0.1:4174/ >/dev/null; then break; fi
@@ -71,16 +112,16 @@ jobs:
           done
           curl -sf http://127.0.0.1:4174/ >/dev/null || (echo "server did not start" && exit 1)
 
-      - name: Run element audit (all groups, logged out)
+      # Strict mode: any Section-1 finding fails CI. Uses the build artifact
+      # from the build job so the audited bundle is exactly what passed tests.
+      - name: Run element audit (all groups, strict)
         env:
           E2E_CHROME_PATH: ${{ runner.home }}/.cache/chrome-for-testing/chrome-linux64/chrome
         run: |
           set -o pipefail
-          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=public
-          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=auth
-          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=dashboard
-          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=client
-          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=admin
+          for group in public auth dashboard client admin; do
+            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=$group --strict
+          done
 
       - name: Upload audit artifacts
         if: always()

@@ -634,6 +634,13 @@ async function main() {
   const total = results.reduce((s, r) => s + issueCount(r), 0);
   console.log(`\n✔ ${summary.loads} loads, ${total} raw issue flags`);
   console.log(`Artifacts:\n  ${mdPath}\n  ${jsonPath}`);
+
+  // --strict: non-zero exit when ANY issue is found (CI regression gate).
+  // Report mode (default) always exits 0 — findings live in the artifacts.
+  if (args.strict && total > 0) {
+    console.error(`✖ strict mode: ${total} issue flag(s) across ${summary.loads} loads`);
+    process.exit(1);
+  }
 }
 
 main().catch((err) => {
