@@ -163,6 +163,15 @@ SPA-fallback hydration (#418) fix (`vite.config.ts` boot-splash), `server.js` st
 fallback, ~40 a11y/heading fixes. Report: `docs/PRE-LAUNCH-TEST-REPORT.md`. Test artifacts
 `tests/e2e-artifacts/` gitignored (console captures me anon-key JWTs ho sakte hain).
 
+✅ Element-level UI audit (Sep 16, 2026) — `scripts/e2e/element-audit.mjs` (111 URLs ×
+375/768/1280, 5 groups) + interactive checks; 0 Critical/High/Medium defects.
+Report: `docs/UI-ELEMENT-AUDIT-REPORT.md`. dashboard/SupportTicketsPage ab routed hai
+(`/dashboard/support-tickets` + `/client/support-tickets`, dono sidebars) — orphan defect fixed.
+Authenticated runs: `scripts/e2e/login.mjs` (E2E_*_EMAIL/_PASSWORD env → `.e2e/*.json`
+storage states, gitignored) + element-audit `--storage`; logout/back-button security:
+`scripts/e2e/logout-flow.mjs`. CI: `.github/workflows/ci.yml` (typecheck+tests+build+
+element-audit on every push/PR).
+
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
 

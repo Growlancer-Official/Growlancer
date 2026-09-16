@@ -27,6 +27,7 @@ import {
   Award,
   Trophy,
   HelpCircle,
+  LifeBuoy,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -99,6 +100,7 @@ const accountLinks: SidebarLink[] = [
 
 const supportLinks: SidebarLink[] = [
   { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },
+  { id: 'support-tickets', path: '/dashboard/support-tickets', icon: LifeBuoy, label: 'Support Tickets' },
   { id: 'help-center', path: '/dashboard/help-center', icon: HelpCircle, label: 'Help Center' },
 ];
 export function DashboardLayout() {

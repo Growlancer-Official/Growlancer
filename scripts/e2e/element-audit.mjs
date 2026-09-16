@@ -51,6 +51,10 @@ const GROUP = args.group || 'all';
 const CONCURRENCY = Number(args.concurrency || 4);
 const OUT_DIR = path.resolve(args.out || 'tests/e2e-artifacts');
 const PREFIX = args.prefix || 'element-audit';
+// Optional authenticated run: playwright storage-state JSON (see scripts/e2e/login.mjs).
+// All groups then audit the LOGGED-IN surface — dashboards render real shells,
+// protected routes stop redirecting to the login modal.
+const STORAGE = args.storage || null;
 
 const VIEWPORTS = [
   { name: 'mobile-375', width: 375, height: 667, dpr: 2, mobile: true },
@@ -99,6 +103,7 @@ const ROUTE_GROUPS = {
     '/client/team-projects/create', '/client/team-projects/e2e-dummy-id',
     '/client/ai-assistant', '/client/find-talent', '/client/reviews',
     '/client/contests', '/client/contests/create', '/client/help-center',
+    '/client/support-tickets',
   ],
   admin: [
     '/admin', '/admin/users', '/admin/projects', '/admin/contracts',
@@ -360,12 +365,13 @@ function inPageAudit(device) {
 const IGNORED_URL_RE = /supabase\.co|sentry|google-analytics|posthog|razorpay\.com\/v\/1\/checkout|fonts\.gstatic|gstatic\.com|\/_vercel\/(insights|speed-insights)/;
 const isIgnored = (url) => IGNORED_URL_RE.test(url);
 
-async function auditOne(browser, route, device) {
+async function auditOne(browser, route, device, storageState) {
   const context = await browser.newContext({
     viewport: { width: device.width, height: device.height },
     deviceScaleFactor: device.dpr,
     isMobile: device.mobile,
     hasTouch: device.mobile,
+    ...(storageState ? { storageState } : {}),
     userAgent: device.mobile
       ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
       : undefined,
@@ -376,7 +382,10 @@ async function auditOne(browser, route, device) {
   const failedRequests = [];
 
   page.on('console', (msg) => {
-    if (msg.type() === 'error' && !isIgnored(msg.location()?.url || '')) {
+    const loc = msg.location()?.url || '';
+    // Also match the error TEXT: Vercel-insights refusals report the page URL
+    // as location, only the message names the _vercel script.
+    if (msg.type() === 'error' && !isIgnored(loc) && !isIgnored(msg.text())) {
       consoleErrors.push(msg.text().slice(0, 200));
     }
   });
@@ -523,8 +532,18 @@ function summarize(results) {
 async function main() {
   const exec = CHROME_CANDIDATES.find((p) => fs.existsSync(p));
   if (!exec) throw new Error('No Chrome binary found');
-  const routes = GROUP === 'all' ? Object.values(ROUTE_GROUPS).flat() : ROUTE_GROUPS[GROUP];
+  const routes = args.routes
+    ? args.routes.split(',').map((r) => (r.startsWith('/') ? r : `/${r}`))
+    : GROUP === 'all'
+      ? Object.values(ROUTE_GROUPS).flat()
+      : ROUTE_GROUPS[GROUP];
   if (!routes) throw new Error(`Unknown group: ${GROUP}`);
+  let storageState = null;
+  if (STORAGE) {
+    if (!fs.existsSync(STORAGE)) throw new Error(`Storage state not found: ${STORAGE}`);
+    storageState = JSON.parse(fs.readFileSync(STORAGE, 'utf8'));
+    console.log(`▶ authenticated run with storage: ${STORAGE}`);
+  }
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const browser = await chromium.launch({
@@ -541,7 +560,7 @@ async function main() {
   const results = await runPool(
     jobs,
     async (job) => {
-      const r = await auditOne(browser, job.route, job.device);
+      const r = await auditOne(browser, job.route, job.device, storageState);
       done++;
       const n = issueCount(r);
       console.log(`  [${done}/${jobs.length}] ${job.route.padEnd(38)} ${job.device.name.padEnd(12)} ${n ? `⚠ ${n} issue(s)` : 'ok'}`);

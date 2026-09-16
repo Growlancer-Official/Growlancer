@@ -25,6 +25,7 @@ import {
   Star,
   Trophy,
   HelpCircle,
+  LifeBuoy,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -92,6 +93,7 @@ const accountLinks: SidebarLink[] = [
 ];
 
 const supportLinks: SidebarLink[] = [
+  { id: 'support-tickets', path: '/client/support-tickets', icon: LifeBuoy, label: 'Support Tickets' },
   { id: 'help-center', path: '/client/help-center', icon: HelpCircle, label: 'Help Center' },
 ];
 

@@ -1,0 +1,121 @@
+// Growlancer E2E login helper — creates Playwright storage-states for
+// authenticated audit runs.
+//
+//   node scripts/e2e/login.mjs --base=http://127.0.0.1:4174 --role=freelancer
+//   node scripts/e2e/login.mjs --role=client --role2=admin
+//
+// Credentials come from env (never hardcode, never commit):
+//   E2E_FREELANCER_EMAIL / E2E_FREELANCER_PASSWORD
+//   E2E_CLIENT_EMAIL     / E2E_CLIENT_PASSWORD
+//   E2E_ADMIN_EMAIL      / E2E_ADMIN_PASSWORD
+//
+// Writes .e2e/<role>.json (gitignored) usable as --storage for
+// element-audit.mjs / device-audit.mjs.
+
+import fs from 'node:fs';
+import path from 'node:path';
+import { chromium } from 'playwright-core';
+
+const CHROME_CANDIDATES = [
+  process.env.E2E_CHROME_PATH,
+  `${process.env.LOCALAPPDATA}\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe`,
+  `${process.env.LOCALAPPDATA}\\ms-playwright\\chromium_headless_shell-1243\\chrome-headless-shell-win64\\chrome-headless-shell.exe`,
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  '/usr/bin/google-chrome',
+  '/usr/bin/chromium',
+].filter(Boolean);
+
+const args = Object.fromEntries(
+  process.argv.slice(2).map((a) => {
+    const [k, ...rest] = a.replace(/^--/, '').split('=');
+    return [k, rest.join('=') || 'true'];
+  })
+);
+
+const BASE = args.base || 'http://127.0.0.1:4174';
+const OUT_DIR = path.resolve('.e2e');
+
+const ROLES = {
+  freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, start: '/?modal=login' },
+  client: { email: process.env.E2E_CLIENT_EMAIL, password: process.env.E2E_CLIENT_PASSWORD, start: '/?modal=login' },
+  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD, start: '/admin' },
+};
+
+async function loginRole(browser, role) {
+  const cfg = ROLES[role];
+  if (!cfg) throw new Error(`Unknown role: ${role}`);
+  if (!cfg.email || !cfg.password) {
+    console.log(`⊘ ${role}: E2E_${role.toUpperCase()}_EMAIL / _PASSWORD not set — skipping (this is expected until test accounts exist)`);
+    return null;
+  }
+
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  const page = await context.newPage();
+
+  await page.goto(`${BASE}${cfg.start}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.waitForFunction(() => !document.getElementById('boot-overlay'), { timeout: 15000 }).catch(() => {});
+  await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
+
+  if (role === 'admin') {
+    await page.locator('input[type="email"], input[aria-label*="email" i]').first().fill(cfg.email);
+    await page.locator('input[type="password"]').first().fill(cfg.password);
+    await page.getByRole('button', { name: /access admin|sign in|log in/i }).first().click();
+  } else {
+    // Login modal on the homepage.
+    await page.locator('input[type="email"]').first().fill(cfg.email);
+    await page.locator('input[type="password"]').first().fill(cfg.password);
+    await page.getByRole('button', { name: /^log in$/i }).first().click();
+  }
+
+  // Wait for an authenticated marker: either a dashboard URL or the login
+  // modal disappearing + user menu appearing. Give Supabase round-trips time.
+  const deadline = Date.now() + 30000;
+  let ok = false;
+  while (Date.now() < deadline && !ok) {
+    ok = await page.evaluate(() => {
+      const url = location.pathname;
+      const text = document.body.innerText || '';
+      return url.startsWith('/dashboard') || url.startsWith('/client') || (url.startsWith('/admin') && !/admin login/i.test(text));
+    }).catch(() => false);
+    if (!ok) await page.waitForTimeout(500);
+  }
+
+  if (!ok) {
+    await context.close();
+    throw new Error(`${role}: login did not reach a dashboard within 30s — check credentials/test-account state`);
+  }
+
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  const file = path.join(OUT_DIR, `${role}.json`);
+  fs.writeFileSync(file, JSON.stringify(await context.storageState(), null, 2));
+  await context.close();
+  console.log(`✔ ${role} logged in → ${file}`);
+  return file;
+}
+
+async function main() {
+  const exec = CHROME_CANDIDATES.find((p) => fs.existsSync(p));
+  if (!exec) throw new Error('No Chrome binary found');
+  const browser = await chromium.launch({
+    executablePath: exec,
+    headless: true,
+    args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
+  });
+
+  const wanted = Object.keys(ROLES).filter((r) => args[r] || args.role === r || args.all === 'true');
+  const written = [];
+  for (const role of wanted) {
+    try {
+      const file = await loginRole(browser, role);
+      if (file) written.push(file);
+    } catch (err) {
+      console.error(`✖ ${role}: ${err.message}`);
+      process.exitCode = 1;
+    }
+  }
+  await browser.close();
+  console.log(written.length ? `\nstorage states: ${written.join(', ')}` : '\nno storage states written (set the E2E_*_EMAIL/_PASSWORD env vars first)');
+}
+
+main().catch((err) => { console.error(err); process.exit(1); });

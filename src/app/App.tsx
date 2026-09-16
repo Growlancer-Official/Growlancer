@@ -94,6 +94,7 @@ const AIAssistantPage = lazy(() => import('@pages/dashboard/AIAssistantPage').th
 const PortfolioPage = lazy(() => import('@pages/dashboard/PortfolioPage').then(m => ({ default: m.PortfolioPage })));
 const AnalyticsPage = lazy(() => import('@pages/dashboard/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const NotificationsCenterPage = lazy(() => import('@pages/dashboard/NotificationsCenterPage').then(m => ({ default: m.NotificationsCenterPage })));
+const SupportTicketsPage = lazy(() => import('@pages/dashboard/SupportTicketsPage'));
 const DisputeResolutionPage = lazy(() => import('@pages/dashboard/DisputeResolutionPage').then(m => ({ default: m.DisputeResolutionPage })));
 const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVerificationPage').then(m => ({ default: m.IdentityVerificationPage })));
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
@@ -296,6 +297,7 @@ function App() {
                 <Route path="inbox" element={<Navigate to="notifications" replace />} />
                 <Route path="disputes" element={<DisputeResolutionPage />} />
                 <Route path="dispute-resolution" element={<Navigate to="/dashboard/disputes" replace />} />
+                <Route path="support-tickets" element={<SupportTicketsPage />} />
                 <Route path="identity-verification" element={<IdentityVerificationPage />} />
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />
@@ -329,6 +331,7 @@ function App() {
                 <Route path="payments" element={<ClientPaymentsPage />} />
                 <Route path="settings" element={<ClientSettingsPage />} />
                 <Route path="verification" element={<IdentityVerificationPage />} />
+                <Route path="support-tickets" element={<SupportTicketsPage />} />
                 <Route path="referrals" element={<ClientReferralsPage />} />
                 <Route path="team-projects" element={<ClientTeamProjectsPage />} />
                 <Route path="team-projects/create" element={<ClientPostTeamProjectPage />} />
