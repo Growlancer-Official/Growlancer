@@ -75,7 +75,7 @@ export function MainLayout() {
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="h-16 flex items-center justify-between gap-3">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
+            <Link to="/" className="flex items-center gap-3 group shrink-0">
               <img 
                 src="/UpdatedLogo.webp" 
                 alt="Growlancer" 
@@ -96,27 +96,32 @@ export function MainLayout() {
                 windows, split-screen) the nav was cut off AND the Login/Signup
                 buttons were pushed off-screen (body overflow-x: clip hides
                 them, so they were unclickable). The hamburger menu is complete
-                and working, so 1024–1279px now uses it. */}
-            <nav className="hidden xl:flex items-center gap-0.5 text-[11px] text-slate-600">
-              <Link to={ROUTES.HOW_IT_WORKS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">How it works</Link>
-              <Link to={ROUTES.CATEGORIES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Categories</Link>
-              <Link to={ROUTES.FREELANCERS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Find Talent</Link>
-              <Link to={ROUTES.SERVICES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Services</Link>
-              <Link to={ROUTES.CONTESTS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Contests</Link>
-              <Link to={ROUTES.FEATURES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Features</Link>
-              <Link to={ROUTES.PRICING} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Pricing</Link>
-              <Link to={ROUTES.ABOUT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">About</Link>
-              <Link to={ROUTES.CONTACT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Contact</Link>
-              <Link to={ROUTES.HELP_CENTER} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Help</Link>
-              <Link to={ROUTES.INTERNSHIPS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Internships</Link>
-              <Link to={ROUTES.PHILOSOPHY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Philosophy</Link>
-              <Link to={ROUTES.SAFETY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Safety</Link>
-              <Link to={ROUTES.GUIDELINES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Guidelines</Link>
-              <Link to={ROUTES.STATUS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium">Status</Link>
+                and working, so 1024–1279px now uses it.
+                `min-w-0 overflow-x-auto`: on wide-font environments (Linux/
+                DejaVu system fonts) even 1280px was borderline — the nav now
+                SHRINKS and scrolls inside its own track instead of pushing the
+                Login/Signup buttons off-screen. Links are shrink-0 + nowrap so
+                they never squish or wrap. */}
+            <nav className="hidden xl:flex items-center gap-0.5 text-[11px] text-slate-600 min-w-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <Link to={ROUTES.HOW_IT_WORKS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">How it works</Link>
+              <Link to={ROUTES.CATEGORIES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Categories</Link>
+              <Link to={ROUTES.FREELANCERS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Find Talent</Link>
+              <Link to={ROUTES.SERVICES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Services</Link>
+              <Link to={ROUTES.CONTESTS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Contests</Link>
+              <Link to={ROUTES.FEATURES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Features</Link>
+              <Link to={ROUTES.PRICING} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Pricing</Link>
+              <Link to={ROUTES.ABOUT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">About</Link>
+              <Link to={ROUTES.CONTACT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Contact</Link>
+              <Link to={ROUTES.HELP_CENTER} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Help</Link>
+              <Link to={ROUTES.INTERNSHIPS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Internships</Link>
+              <Link to={ROUTES.PHILOSOPHY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Philosophy</Link>
+              <Link to={ROUTES.SAFETY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Safety</Link>
+              <Link to={ROUTES.GUIDELINES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Guidelines</Link>
+              <Link to={ROUTES.STATUS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Status</Link>
             </nav>
 
             {/* Right actions */}
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {!isAuthenticated && (
                 <>
                   <button onClick={handleOpenLogin} className="hidden sm:inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-medium text-slate-700 ring-1 ring-slate-200 bg-white hover:text-slate-900 hover:bg-slate-50 hover:ring-slate-300 transition-colors">Login</button>
