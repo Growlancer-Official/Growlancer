@@ -170,7 +170,12 @@ Report: `docs/UI-ELEMENT-AUDIT-REPORT.md`. dashboard/SupportTicketsPage ab route
 Authenticated runs: `scripts/e2e/login.mjs` (E2E_*_EMAIL/_PASSWORD env → `.e2e/*.json`
 storage states, gitignored) + element-audit `--storage`; logout/back-button security:
 `scripts/e2e/logout-flow.mjs`. CI: `.github/workflows/ci.yml` (typecheck+tests+build+
-element-audit on every push/PR).
+element-audit on every push/PR) — **first green full run: #413** (`28a0e86`). CI strict-audit
+debugging: failures surface as `::error::` annotations (check-runs API se public-readable,
+logs/artifacts admin-token-gated hain); runner uses Linux DejaVu fonts → header/nav layouts
+jo Windows par fit hain wahan overflow kar sakte hain (fixed: nav apna scroll-container).
+Expected-error console noise is downgraded to `console.warn` in lib code so strict-audit
+stays green.
 
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
