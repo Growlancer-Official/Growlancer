@@ -88,7 +88,9 @@ const subscriptionService = {
 
       return { success: true, plans: formattedPlans };
     } catch (error) {
-      console.error('Error fetching plans:', error);
+      // Expected when the backend is unreachable (offline dev, CI placeholder
+      // envs) — PricingPage falls back to hardcoded plans. Not an app defect.
+      console.warn('Could not load subscription plans (backend unreachable):', error instanceof Error ? error.message : error);
       return { success: false, error: 'Failed to fetch subscription plans.' };
     }
   },
