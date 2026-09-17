@@ -63,18 +63,19 @@ jobs:
           cache: npm
       - run: npm install --no-audit --no-fund
       - name: Unit tests
-        # VITE_* placeholders satisfy the non-empty check in src/lib/supabase.ts
-        # at import time (unit tests import the client). Real values are injected
-        # by Vercel at deploy time; tests never make live Supabase calls.
+        # VITE_* values are the PUBLIC Supabase anon key + project URL (shipped in
+        # every browser bundle; protected by RLS). Used here so the authenticated
+        # element-audit job can log the E2E test accounts into the real backend.
+        # Unit tests themselves never make live Supabase calls.
         env:
-          VITE_SUPABASE_URL: https://placeholder.supabase.co
-          VITE_SUPABASE_ANON_KEY: placeholder_anon_key
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder_anon_key' }}
           VITE_APP_VERSION: 0.0.1
         run: npm test
       - name: Production build
         env:
-          VITE_SUPABASE_URL: https://placeholder.supabase.co
-          VITE_SUPABASE_ANON_KEY: placeholder_anon_key
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder_anon_key' }}
           VITE_APP_VERSION: 0.0.1
         run: npm run build
       - name: Upload build artifact
@@ -113,10 +114,11 @@ jobs:
         run: npx --yes @puppeteer/browsers install chrome@stable --path "$HOME/.cache/chrome-for-testing"
 
       # Build here (not via artifact download) so server.js has dist/ on disk.
+      # Real (public) Supabase values so the authenticated audit below can log in.
       - name: Build
         env:
-          VITE_SUPABASE_URL: https://placeholder.supabase.co
-          VITE_SUPABASE_ANON_KEY: placeholder_anon_key
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder_anon_key' }}
           VITE_APP_VERSION: 0.0.1
         run: npm run build
 

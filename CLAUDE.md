@@ -182,9 +182,13 @@ fallback, ~40 a11y/heading fixes. Report: `docs/PRE-LAUNCH-TEST-REPORT.md`. Test
 375/768/1280, 5 groups) + interactive checks; 0 Critical/High/Medium defects.
 Report: `docs/UI-ELEMENT-AUDIT-REPORT.md`. dashboard/SupportTicketsPage ab routed hai
 (`/dashboard/support-tickets` + `/client/support-tickets`, dono sidebars) — orphan defect fixed.
-Authenticated runs: `scripts/e2e/login.mjs` (E2E_*_EMAIL/_PASSWORD env → `.e2e/*.json`
-storage states, gitignored) + element-audit `--storage`; logout/back-button security:
-`scripts/e2e/logout-flow.mjs`. CI: `.github/workflows/ci.yml` (typecheck+tests+build+
+Authenticated runs (LIVE in CI since `a3cb3a5`, Sep 17): 3 permanent E2E test-accounts
+(`scripts/e2e/create-test-accounts.mjs` — idempotent; emails in gitignored `.env.e2e`,
+secrets `E2E_*_EMAIL/_PASSWORD` in repo; admin profile role server-side 'admin' via
+bypass-hook one-off migration, repaired out of history) → CI builds with real (public)
+`VITE_SUPABASE_URL`/`_ANON_KEY` secrets so `login.mjs` reaches the live backend →
+authenticated element-audit per role-group + `logout-flow.mjs` (back-button security).
+GitHub Actions log me credentials `***`-masked print hote hain — logs share karna safe. CI: `.github/workflows/ci.yml` (typecheck+tests+build+
 element-audit on every push/PR) — **first green full run: #413** (`28a0e86`). CI strict-audit
 debugging: failures surface as `::error::` annotations (check-runs API se public-readable,
 logs/artifacts admin-token-gated hain); runner uses Linux DejaVu fonts → header/nav layouts
