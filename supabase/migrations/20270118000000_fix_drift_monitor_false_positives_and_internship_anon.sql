@@ -72,7 +72,6 @@ WITH CHECK (
   bucket_id = 'internship_resumes'::text
   AND (storage.foldername(name))[1] = 'resumes'
 );
-
 -- NEW: the public application flow — anon applicants CAN upload their resume.
 -- Scoped hard: only under resumes/, only .pdf, append-only (no UPDATE/DELETE
 -- for anon, no public read — bucket is private, admin reads via signed URLs).
@@ -85,7 +84,6 @@ WITH CHECK (
   AND (storage.foldername(name))[1] = 'resumes'
   AND lower(right(name, 4)) = '.pdf'
 );
-
 -- ── 2. Repair check_security_drift (both false-positive rules) ─────────────
 CREATE OR REPLACE FUNCTION public.check_security_drift()
 RETURNS integer
@@ -307,7 +305,6 @@ BEGIN
   RETURN v_new;
 END;
 $$;
-
 -- ── 3. Resolve stale/false-positive alerts ─────────────────────────────────
 -- 3a. open_storage_write alerts whose policy NOW carries an identity token
 --     (uid, role, or auth in either spelling — dynamic, rendering-proof),
@@ -334,7 +331,6 @@ WHERE a.category = 'open_storage_write'
         AND a.detail LIKE '%' || p.policyname || '%'
     )
   );
-
 -- 3b. definer_no_search_path alerts whose function NOW carries any
 --     search_path config (dynamic — covers the five pinned live plus any
 --     future stale rows).
@@ -351,7 +347,6 @@ WHERE a.category = 'definer_no_search_path'
       AND p.proconfig IS NOT NULL
       AND EXISTS (SELECT 1 FROM unnest(p.proconfig) c WHERE c LIKE 'search_path=%')
   );
-
 -- ── 4. Sanity guards ────────────────────────────────────────────────────────
 DO $sanity$
 DECLARE

@@ -3,7 +3,6 @@
 
 -- Grant the service_role ability to invoke the function
 GRANT USAGE ON SCHEMA cron TO service_role;
-
 -- Schedule the cron job to run daily at 00:00 UTC
 SELECT cron.schedule(
   'subscription-billing-daily',  -- job name

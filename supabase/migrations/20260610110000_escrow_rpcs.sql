@@ -35,7 +35,7 @@ BEGIN
   END IF;
 
   -- Calculate fees
-  v_platform_fee := ROUND(p_amount * 0.05, 2); -- 5% platform fee (matches frontend config)
+  v_platform_fee := ROUND(p_amount * 0.10, 2); -- 10% platform fee
   v_freelancer_amount := p_amount - v_platform_fee;
 
   -- Create contract
@@ -76,7 +76,6 @@ BEGIN
   RETURN v_contract_id;
 END;
 $$;
-
 -- ====================================================================
 -- 2. FUND ESCROW
 -- ====================================================================
@@ -134,7 +133,6 @@ BEGIN
   RETURN TRUE;
 END;
 $$;
-
 -- ====================================================================
 -- 3. RELEASE ESCROW
 -- ====================================================================
@@ -222,7 +220,6 @@ BEGIN
   RETURN TRUE;
 END;
 $$;
-
 -- ====================================================================
 -- GRANT EXECUTE PERMISSIONS
 -- ====================================================================

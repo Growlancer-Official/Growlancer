@@ -163,7 +163,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.project_match_components(uuid, uuid) FROM PUBLIC;
-
 -- ─── 2. Freelancer-scoped refresh — skill edits must NEVER wipe matches ─────
 CREATE OR REPLACE FUNCTION public.refresh_freelancer_project_matches(p_user_id uuid)
 RETURNS integer
@@ -248,7 +247,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.refresh_freelancer_project_matches(uuid) FROM PUBLIC;
-
 -- ─── 3. Backfill — re-score every open project with the skill-first engine ──
 DO $$
 DECLARE

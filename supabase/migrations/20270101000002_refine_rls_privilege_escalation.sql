@@ -13,7 +13,6 @@
 -- ───────────────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE
   USING (auth.uid() = id)
@@ -26,13 +25,11 @@ CREATE POLICY "Users can update own profile" ON public.profiles
     -- role must not escalate to 'admin' (freelancer↔client allowed for onboarding)
     AND role IN ('freelancer', 'client')
   );
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. FREELANCER_PROFILES — unchanged from previous migration
 -- ───────────────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "Freelancers can update own" ON public.freelancer_profiles;
-
 CREATE POLICY "Freelancers can update own" ON public.freelancer_profiles
   FOR UPDATE
   USING (auth.uid() = user_id)

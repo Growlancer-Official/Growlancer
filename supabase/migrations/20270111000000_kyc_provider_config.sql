@@ -17,7 +17,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 
 SET search_path = '';
-
 CREATE TABLE IF NOT EXISTS public.kyc_provider_config (
   id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
   provider TEXT NOT NULL DEFAULT 'surepass',
@@ -25,12 +24,9 @@ CREATE TABLE IF NOT EXISTS public.kyc_provider_config (
   configured_by UUID,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
 ALTER TABLE public.kyc_provider_config ENABLE ROW LEVEL SECURITY;
-
 -- Deny-all for browsers (no policies = no access). Service role bypasses RLS.
 REVOKE ALL ON public.kyc_provider_config FROM anon, authenticated;
-
 -- ── Helper: caller must be service context or verified admin ───────────────
 CREATE OR REPLACE FUNCTION public.kyc_config_assert_admin()
 RETURNS BOOLEAN
@@ -50,7 +46,6 @@ BEGIN
   );
 END;
 $$;
-
 -- ── Set / rotate the provider token ─────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.admin_set_kyc_provider_config(
   p_token TEXT,
@@ -95,7 +90,6 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'provider', p_provider, 'configured', true);
 END;
 $$;
-
 -- ── Clear the token (disables the automated engine — fail-safe review) ──────
 CREATE OR REPLACE FUNCTION public.admin_clear_kyc_provider_config()
 RETURNS JSONB
@@ -124,7 +118,6 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'configured', false);
 END;
 $$;
-
 -- ── Status (never returns the token) ────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.admin_get_kyc_provider_status()
 RETURNS JSONB
@@ -152,16 +145,12 @@ BEGIN
   );
 END;
 $$;
-
 -- EXECUTE hygiene
 REVOKE ALL ON FUNCTION public.kyc_config_assert_admin() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.kyc_config_assert_admin() TO authenticated, service_role;
-
 REVOKE ALL ON FUNCTION public.admin_set_kyc_provider_config(TEXT, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_set_kyc_provider_config(TEXT, TEXT) TO authenticated, service_role;
-
 REVOKE ALL ON FUNCTION public.admin_clear_kyc_provider_config() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_clear_kyc_provider_config() TO authenticated, service_role;
-
 REVOKE ALL ON FUNCTION public.admin_get_kyc_provider_status() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_get_kyc_provider_status() TO authenticated, service_role;

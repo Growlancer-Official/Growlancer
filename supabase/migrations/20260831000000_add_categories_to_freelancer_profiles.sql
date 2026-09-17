@@ -8,7 +8,6 @@
 
 ALTER TABLE public.freelancer_profiles
   ADD COLUMN IF NOT EXISTS categories TEXT[] DEFAULT '{}';
-
 -- Existing freelancers get their categories backfilled from their skills
 -- (match skill names against category names so no profile is left empty).
 UPDATE public.freelancer_profiles fp

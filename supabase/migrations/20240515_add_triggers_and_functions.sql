@@ -19,14 +19,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Trigger for new proposals
 DROP TRIGGER IF EXISTS trigger_new_proposal ON proposals;
 CREATE TRIGGER trigger_new_proposal
 AFTER INSERT ON proposals
 FOR EACH ROW
 EXECUTE FUNCTION notify_new_proposal();
-
 -- Function to create notification when proposal is accepted/rejected
 CREATE OR REPLACE FUNCTION notify_proposal_status()
 RETURNS TRIGGER AS $$
@@ -56,14 +54,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Trigger for proposal status changes
 DROP TRIGGER IF EXISTS trigger_proposal_status ON proposals;
 CREATE TRIGGER trigger_proposal_status
 AFTER UPDATE ON proposals
 FOR EACH ROW
 EXECUTE FUNCTION notify_proposal_status();
-
 -- Function to notify on new contract
 CREATE OR REPLACE FUNCTION notify_new_contract()
 RETURNS TRIGGER AS $$
@@ -86,14 +82,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Trigger for new contracts
 DROP TRIGGER IF EXISTS trigger_new_contract ON contracts;
 CREATE TRIGGER trigger_new_contract
 AFTER INSERT ON contracts
 FOR EACH ROW
 EXECUTE FUNCTION notify_new_contract();
-
 -- Function to notify on contract completion
 CREATE OR REPLACE FUNCTION notify_contract_completion()
 RETURNS TRIGGER AS $$
@@ -118,14 +112,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Trigger for contract completion
 DROP TRIGGER IF EXISTS trigger_contract_completion ON contracts;
 CREATE TRIGGER trigger_contract_completion
 AFTER UPDATE ON contracts
 FOR EACH ROW
 EXECUTE FUNCTION notify_contract_completion();
-
 -- Function to notify on new invite
 CREATE OR REPLACE FUNCTION notify_new_invite()
 RETURNS TRIGGER AS $$
@@ -141,14 +133,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Trigger for new invites
 DROP TRIGGER IF EXISTS trigger_new_invite ON invites;
 CREATE TRIGGER trigger_new_invite
 AFTER INSERT ON invites
 FOR EACH ROW
 EXECUTE FUNCTION notify_new_invite();
-
 -- Function to notify on new match
 CREATE OR REPLACE FUNCTION notify_new_match()
 RETURNS TRIGGER AS $$
@@ -165,14 +155,12 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Trigger for new matches
 DROP TRIGGER IF EXISTS trigger_new_match ON ai_matches;
 CREATE TRIGGER trigger_new_match
 AFTER INSERT ON ai_matches
 FOR EACH ROW
 EXECUTE FUNCTION notify_new_match();
-
 -- ==================== HELPER FUNCTIONS ====================
 
 -- Function to get user's dashboard stats
@@ -192,7 +180,6 @@ BEGIN
     (SELECT COALESCE(COUNT(*), 0)::INTEGER FROM usage_logs WHERE user_id = user_id AND feature = 'profile_view') as profile_views;
 END;
 $$ LANGUAGE plpgsql;
-
 -- Function to get client's dashboard stats
 CREATE OR REPLACE FUNCTION get_client_stats(user_id UUID)
 RETURNS TABLE (
@@ -210,7 +197,6 @@ BEGIN
     (SELECT COUNT(DISTINCT freelancer_id)::INTEGER FROM contracts WHERE client_id = user_id) as freelancers_hired;
 END;
 $$ LANGUAGE plpgsql;
-
 -- ==================== VIEW FOR DASHBOARD ====================
 
 -- Combined view for project feed with client info
@@ -223,7 +209,6 @@ SELECT
 FROM projects p
 LEFT JOIN profiles c ON p.client_id = c.id
 WHERE p.status = 'open';
-
 -- View for proposals with freelancer details
 CREATE OR REPLACE VIEW proposals_with_freelancers AS
 SELECT 
@@ -238,22 +223,17 @@ SELECT
 FROM proposals pr
 LEFT JOIN profiles f ON pr.freelancer_id = f.id
 LEFT JOIN freelancer_profiles fp ON f.id = fp.user_id;
-
 -- ==================== UPDATE EXISTING TABLES FOR MISSING COLUMNS ====================
 
 -- Add missing columns if they don't exist
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS visibility TEXT DEFAULT 'public';
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS deadline TIMESTAMPTZ;
 ALTER TABLE projects ADD COLUMN IF NOT EXISTS skills_required TEXT[] DEFAULT '{}';
-
 ALTER TABLE proposals ADD COLUMN IF NOT EXISTS estimated_duration INTEGER;
 ALTER TABLE proposals ADD COLUMN IF NOT EXISTS message TEXT;
-
 ALTER TABLE contracts ADD COLUMN IF NOT EXISTS escrow_funded BOOLEAN DEFAULT false;
 ALTER TABLE contracts ADD COLUMN IF NOT EXISTS milestones JSONB;
-
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT false;
-
 -- Create ai_matches table if it doesn't exist
 CREATE TABLE IF NOT EXISTS ai_matches (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -268,7 +248,6 @@ CREATE TABLE IF NOT EXISTS ai_matches (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(project_id, freelancer_id)
 );
-
 -- Create usage_logs table if it doesn't exist
 CREATE TABLE IF NOT EXISTS usage_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -278,7 +257,6 @@ CREATE TABLE IF NOT EXISTS usage_logs (
   metadata JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Create contract_files table if it doesn't exist  
 CREATE TABLE IF NOT EXISTS contract_files (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -290,12 +268,10 @@ CREATE TABLE IF NOT EXISTS contract_files (
   file_size INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Enable RLS on new tables
 ALTER TABLE ai_matches ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usage_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contract_files ENABLE ROW LEVEL SECURITY;
-
 -- RLS policies for new tables
 CREATE POLICY "Freelancers view own matches" ON ai_matches FOR SELECT USING (auth.uid() = freelancer_id);
 CREATE POLICY "Users view own usage" ON usage_logs FOR SELECT USING (auth.uid() = user_id);
@@ -303,21 +279,18 @@ CREATE POLICY "Contract participants view files" ON contract_files FOR SELECT US
   auth.uid() IN (SELECT freelancer_id FROM contracts WHERE id = contract_id)
   OR auth.uid() IN (SELECT client_id FROM contracts WHERE id = contract_id)
 );
-
 CREATE POLICY "Users insert own usage" ON usage_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Users upload contract files" ON contract_files FOR INSERT WITH CHECK (
   auth.uid() = uploader_id OR 
   auth.uid() IN (SELECT freelancer_id FROM contracts WHERE id = contract_id) OR
   auth.uid() IN (SELECT client_id FROM contracts WHERE id = contract_id)
 );
-
 -- Add missing indexes
 CREATE INDEX IF NOT EXISTS idx_ai_matches_freelancer ON ai_matches(freelancer_id);
 CREATE INDEX IF NOT EXISTS idx_ai_matches_project ON ai_matches(project_id);
 CREATE INDEX IF NOT EXISTS idx_ai_matches_score ON ai_matches(match_score DESC);
 CREATE INDEX IF NOT EXISTS idx_usage_logs_user_feature ON usage_logs(user_id, feature);
 CREATE INDEX IF NOT EXISTS idx_contract_files_contract ON contract_files(contract_id);
-
 -- Insert some sample data for testing
 INSERT INTO skills_reference (name, category) VALUES
 ('JavaScript', 'Programming'), ('TypeScript', 'Programming'), ('Python', 'Programming'),

@@ -12,11 +12,9 @@ DELETE FROM public.referral_stats rs
 WHERE NOT EXISTS (
   SELECT 1 FROM public.profiles p WHERE p.id = rs.user_id
 );
-
 -- Remove referrals where referrer profile no longer exists
 DELETE FROM public.referrals r
 WHERE NOT EXISTS (SELECT 1 FROM public.profiles p WHERE p.id = r.referrer_id);
-
 -- ==================== PROCESS REFERRAL RPC ====================
 
 -- Process a referral when a new user signs up with a referral code
@@ -82,7 +80,6 @@ BEGIN
   );
 END;
 $$;
-
 -- ==================== COMPLETE REFERRAL RPC ====================
 
 -- Mark a referral as "completed" when the referred user completes their first meaningful action
@@ -123,7 +120,6 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'referrer_id', v_referrer_id);
 END;
 $$;
-
 -- ==================== RLS POLICY FOR REFERRAL TABLES ====================
 
 -- Allow authenticated users to read all referrals (used for leaderboard building)
@@ -132,14 +128,12 @@ CREATE POLICY "Authenticated users can read referrals" ON public.referrals
   FOR SELECT
   TO authenticated
   USING (true);
-
 -- Allow authenticated users to insert into referrals (for referral processing)
 DROP POLICY IF EXISTS "Users can insert referrals" ON public.referrals;
 CREATE POLICY "Users can insert referrals" ON public.referrals
   FOR INSERT
   TO authenticated
   WITH CHECK (true);
-
 -- Allow authenticated users to update referrals (for status updates)
 DROP POLICY IF EXISTS "Users can update referrals" ON public.referrals;
 CREATE POLICY "Users can update referrals" ON public.referrals
@@ -147,21 +141,18 @@ CREATE POLICY "Users can update referrals" ON public.referrals
   TO authenticated
   USING (true)
   WITH CHECK (true);
-
 -- Allow authenticated users to read referral_stats (for leaderboard)
 DROP POLICY IF EXISTS "Authenticated users can read referral_stats" ON public.referral_stats;
 CREATE POLICY "Authenticated users can read referral_stats" ON public.referral_stats
   FOR SELECT
   TO authenticated
   USING (true);
-
 -- Allow authenticated users to insert into referral_stats (for initial creation by RPC)
 DROP POLICY IF EXISTS "Users can insert referral_stats" ON public.referral_stats;
 CREATE POLICY "Users can insert referral_stats" ON public.referral_stats
   FOR INSERT
   TO authenticated
   WITH CHECK (true);
-
 -- Allow authenticated users to update referral_stats (for increment by RPC)
 DROP POLICY IF EXISTS "Users can update referral_stats" ON public.referral_stats;
 CREATE POLICY "Users can update referral_stats" ON public.referral_stats
@@ -169,12 +160,10 @@ CREATE POLICY "Users can update referral_stats" ON public.referral_stats
   TO authenticated
   USING (true)
   WITH CHECK (true);
-
 -- ==================== INDEXES ====================
 
 -- Add index for looking up referrer by referral_code (speeds up process_referral)
 CREATE INDEX IF NOT EXISTS idx_profiles_referral_code ON public.profiles(referral_code)
   WHERE referral_code IS NOT NULL;
-
 -- Add index for looking up referrals by referred_user_id (speeds up complete_referral)
 CREATE INDEX IF NOT EXISTS idx_referrals_referred_user_id ON public.referrals(referred_user_id);

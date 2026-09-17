@@ -17,24 +17,18 @@ CREATE TABLE IF NOT EXISTS user_deletion_requests (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_deletion_requests_user_id ON user_deletion_requests(user_id);
 CREATE INDEX IF NOT EXISTS idx_deletion_requests_status ON user_deletion_requests(status);
-
 -- Enable RLS
 ALTER TABLE user_deletion_requests ENABLE ROW LEVEL SECURITY;
-
 -- RLS Policies
 CREATE POLICY "Users can view their own deletion requests" ON user_deletion_requests
   FOR SELECT USING (auth.uid() = user_id);
-
 CREATE POLICY "Users can create their own deletion requests" ON user_deletion_requests
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-
 CREATE POLICY "Users can update their own deletion requests" ON user_deletion_requests
   FOR UPDATE USING (auth.uid() = user_id);
-
 -- Function to request account deletion
 CREATE OR REPLACE FUNCTION request_account_deletion(
   p_user_id UUID,
@@ -87,7 +81,6 @@ BEGIN
   );
 END;
 $$;
-
 -- Function to cancel account deletion request
 CREATE OR REPLACE FUNCTION cancel_account_deletion(
   p_user_id UUID
@@ -124,7 +117,6 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'message', 'Deletion request cancelled successfully');
 END;
 $$;
-
 -- Function to process account deletion (called by edge function or scheduled job)
 CREATE OR REPLACE FUNCTION process_account_deletion(
   p_request_id UUID
@@ -167,7 +159,6 @@ BEGIN
   );
 END;
 $$;
-
 -- Function to check deletion request status
 CREATE OR REPLACE FUNCTION check_deletion_status(
   p_user_id UUID

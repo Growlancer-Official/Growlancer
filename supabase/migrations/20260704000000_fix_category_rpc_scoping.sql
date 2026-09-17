@@ -32,7 +32,6 @@ BEGIN
   RETURN result;
 END;
 $$;
-
 -- Fix get_active_freelancers_by_category: c.name → counts.name in outer jsonb_object_agg
 CREATE OR REPLACE FUNCTION public.get_active_freelancers_by_category()
 RETURNS JSONB

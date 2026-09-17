@@ -21,7 +21,6 @@
 
 -- ── Fix 1: anon se saare profiles privileges hatao ────────────────────────
 REVOKE ALL ON public.profiles FROM anon;
-
 -- Sirf safe public columns grant (marketplace visibility ke liye).
 -- email / phone / is_admin / suspend_reason / suspended_by kabhi nahi.
 GRANT SELECT (
@@ -49,7 +48,6 @@ CREATE POLICY "Admins can view admin_users" ON public.admin_users
   USING (
     EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
   );
-
 -- ── Verify helpers (audit script + drift monitor ke liye) ─────────────────
 -- anon ko profiles par SELECT(email)/SELECT(phone) false hona chahiye:
 --   SELECT has_column_privilege('anon','public.profiles','email','SELECT'); -- false
@@ -58,4 +56,4 @@ CREATE POLICY "Admins can view admin_users" ON public.admin_users
 --   SELECT has_column_privilege('anon','public.profiles','name','SELECT');  -- true
 -- admin_users par koi public policy nahi honi chahiye:
 --   SELECT count(*) FROM pg_policies
---   WHERE schemaname='public' AND tablename='admin_users' AND roles::text LIKE '%{public}%'; -- 0
+--   WHERE schemaname='public' AND tablename='admin_users' AND roles::text LIKE '%{public}%'; -- 0;

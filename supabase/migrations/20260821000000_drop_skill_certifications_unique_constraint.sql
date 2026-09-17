@@ -4,6 +4,5 @@
 -- The verification_code UNIQUE constraint remains for duplicate code prevention.
 ALTER TABLE public.skill_certifications
   DROP CONSTRAINT IF EXISTS skill_certifications_user_id_skill_key;
-
 -- Notify realtime
 SELECT pg_notify('pgrst', 'reload schema');

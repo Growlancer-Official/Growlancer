@@ -17,7 +17,6 @@ CREATE POLICY "Users can update own referrals"
   TO authenticated
   USING (auth.uid() = referrer_id OR auth.uid() = referred_user_id)
   WITH CHECK (auth.uid() = referrer_id OR auth.uid() = referred_user_id);
-
 DROP POLICY IF EXISTS "Users can update referral_stats" ON public.referral_stats;
 DROP POLICY IF EXISTS "Users can update own referral_stats" ON public.referral_stats;
 CREATE POLICY "Users can update own referral_stats"
@@ -26,7 +25,6 @@ CREATE POLICY "Users can update own referral_stats"
   TO authenticated
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
-
 -- ── 2. CONTEST VOTES: Prevent self-voting ─────────────────────────
 -- Votes link via submission_id (no direct contest_id column).
 -- Self-voting: a user votes on a submission they themselves made.
@@ -45,7 +43,6 @@ CREATE POLICY "Users can vote (not on own submission)"
         AND cs.freelancer_id = auth.uid()
     )
   );
-
 -- ── 3. CONTEST SUBMISSIONS: Prevent self-submission to own contest ──
 -- A client could submit to their own contest to farm entries.
 
@@ -69,7 +66,6 @@ CREATE POLICY "Freelancers can submit (not to own contest)"
         AND c.prize_funded = true
     )
   );
-
 -- ── 4. PROFILES_PRIVATE: Ensure SELECT is owner-only only ────────
 DO $$
 DECLARE
@@ -86,18 +82,15 @@ BEGIN
     RAISE NOTICE 'Dropped overly broad SELECT policy on profiles_private: %', pol.policyname;
   END LOOP;
 END $$;
-
 DROP POLICY IF EXISTS "Users can view own private profile" ON profiles_private;
 CREATE POLICY "Users can view own private profile"
   ON profiles_private
   FOR SELECT
   TO authenticated
   USING (auth.uid() = id);
-
 -- ── 5. WALLETS: Remove direct UPDATE policy for end users ────────
 -- Wallet balance changes MUST go through SECURITY DEFINER RPCs only.
 DROP POLICY IF EXISTS "Users can update own wallet" ON wallets;
-
 -- ── 6. DISPUTES: Participants + admin only ──────────────────────
 DO $$
 DECLARE
@@ -114,7 +107,6 @@ BEGIN
     RAISE NOTICE 'Dropped overly broad SELECT policy on disputes: %', pol.policyname;
   END LOOP;
 END $$;
-
 DROP POLICY IF EXISTS "Dispute participants can view disputes" ON disputes;
 CREATE POLICY "Dispute participants can view disputes"
   ON disputes
@@ -125,7 +117,6 @@ CREATE POLICY "Dispute participants can view disputes"
     OR auth.uid() = freelancer_id
     OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
-
 -- ── 7. INVITES: Participants only ───────────────────────────────
 DO $$
 DECLARE
@@ -142,7 +133,6 @@ BEGIN
     RAISE NOTICE 'Dropped overly broad SELECT policy on invites: %', pol.policyname;
   END LOOP;
 END $$;
-
 DROP POLICY IF EXISTS "Invites participants can view" ON invites;
 CREATE POLICY "Invites participants can view"
   ON invites
@@ -152,7 +142,6 @@ CREATE POLICY "Invites participants can view"
     auth.uid() = client_id
     OR auth.uid() = freelancer_id
   );
-
 -- ── 8. REFERRALS: Participants + admin only ─────────────────────
 DO $$
 DECLARE
@@ -169,7 +158,6 @@ BEGIN
     RAISE NOTICE 'Dropped overly broad SELECT policy on referrals: %', pol.policyname;
   END LOOP;
 END $$;
-
 DROP POLICY IF EXISTS "Referral participants can view" ON referrals;
 CREATE POLICY "Referral participants can view"
   ON referrals
@@ -180,7 +168,6 @@ CREATE POLICY "Referral participants can view"
     OR auth.uid() = referred_user_id
     OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
-
 -- ── 9. PROJECT_MATCHES: Participants only ───────────────────────
 DO $$
 DECLARE
@@ -197,7 +184,6 @@ BEGIN
     RAISE NOTICE 'Dropped overly broad SELECT policy on project_matches: %', pol.policyname;
   END LOOP;
 END $$;
-
 DROP POLICY IF EXISTS "Match participants can view" ON project_matches;
 CREATE POLICY "Match participants can view"
   ON project_matches

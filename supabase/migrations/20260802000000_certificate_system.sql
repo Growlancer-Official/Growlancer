@@ -13,7 +13,6 @@ ALTER TABLE public.skill_certifications
   ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS recipient_name TEXT,
   ADD COLUMN IF NOT EXISTS recipient_email TEXT;
-
 -- Create index for fast verification lookups
 CREATE INDEX IF NOT EXISTS idx_skill_certifications_verification_code 
   ON public.skill_certifications(verification_code);
@@ -21,7 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_skill_certifications_status
   ON public.skill_certifications(status);
 CREATE INDEX IF NOT EXISTS idx_skill_certifications_issued_by 
   ON public.skill_certifications(issued_by);
-
 -- Enable realtime for skill_certifications
 -- Note: IF NOT EXISTS is not supported in ALTER PUBLICATION for some PG versions
 -- Instead we use DO block for idempotency
@@ -37,7 +35,6 @@ BEGIN
   END IF;
 END
 $$;
-
 -- Function to generate unique verification code
 CREATE OR REPLACE FUNCTION public.generate_certificate_code()
 RETURNS TEXT
@@ -59,14 +56,11 @@ BEGIN
   RETURN code;
 END;
 $$;
-
 -- Grant access to service role
 GRANT EXECUTE ON FUNCTION public.generate_certificate_code TO service_role;
-
 -- Update existing rows with verification codes if they don't have one
 UPDATE public.skill_certifications 
 SET verification_code = 'GRW-CERT-' || upper(substr(md5(id::text || random()::text), 1, 5))
 WHERE verification_code IS NULL;
-
 -- Notify realtime
 SELECT pg_notify('pgrst', 'reload schema');

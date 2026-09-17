@@ -24,16 +24,13 @@ CREATE TABLE IF NOT EXISTS public.credential_verification_tokens (
   generated_by    UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   metadata        JSONB DEFAULT '{}'::jsonb
 );
-
 -- Index for fast token lookup (public verification)
 CREATE INDEX IF NOT EXISTS idx_verification_tokens_token
   ON public.credential_verification_tokens(token);
-
 -- Index for finding active token by credential
 CREATE INDEX IF NOT EXISTS idx_verification_tokens_credential_active
   ON public.credential_verification_tokens(credential_id, status)
   WHERE status = 'active';
-
 -- ─── 2. Credential Version History ──────────────────────────────────
 -- Tracks every version of a credential from creation to current.
 CREATE TABLE IF NOT EXISTS public.credential_version_history (
@@ -51,10 +48,8 @@ CREATE TABLE IF NOT EXISTS public.credential_version_history (
   new_qr_token    TEXT,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_credential_history_credential
   ON public.credential_version_history(credential_id, version_number DESC);
-
 -- ─── 3. Credential Audit Logs ───────────────────────────────────────
 -- Immutable audit trail for all credential-related admin actions.
 CREATE TABLE IF NOT EXISTS public.credential_audit_logs (
@@ -69,19 +64,15 @@ CREATE TABLE IF NOT EXISTS public.credential_audit_logs (
   new_values      JSONB DEFAULT '{}'::jsonb,
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_credential_audits_credential
   ON public.credential_audit_logs(credential_id, created_at DESC);
-
 CREATE INDEX IF NOT EXISTS idx_credential_audits_admin
   ON public.credential_audit_logs(admin_id, created_at DESC);
-
 -- ─── 4. Enable Realtime for new tables ──────────────────────────────
 ALTER PUBLICATION supabase_realtime ADD TABLE
   credential_verification_tokens,
   credential_version_history,
   credential_audit_logs;
-
 -- ═══════════════════════════════════════════════════════════════════
 -- RATE LIMITING — Separate table for public verification endpoint
 -- to prevent brute-force/enumeration of verification codes.
@@ -94,10 +85,8 @@ CREATE TABLE IF NOT EXISTS public.verification_rate_limits (
   request_count   INTEGER NOT NULL DEFAULT 1,
   window_start    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_verification_rate_limits_lookup
   ON public.verification_rate_limits(identifier, route, window_start DESC);
-
 -- RPC to clean up expired rate limit entries (called by edge function)
 CREATE OR REPLACE FUNCTION public.cleanup_verification_rate_limits()
 RETURNS void
@@ -109,10 +98,8 @@ BEGIN
   WHERE window_start < now() - interval '15 minutes';
 END;
 $$;
-
 -- Grant execute to anon for the cleanup RPC
 GRANT EXECUTE ON FUNCTION public.cleanup_verification_rate_limits TO anon, authenticated;
-
 -- ═══════════════════════════════════════════════════════════════════
 -- RPC: Generate a signed verification token for QR codes
 -- ═══════════════════════════════════════════════════════════════════
@@ -170,9 +157,7 @@ BEGIN
   END IF;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.generate_credential_token TO authenticated;
-
 -- RPC: Verify a credential by QR token (public)
 CREATE OR REPLACE FUNCTION public.verify_credential_by_token(
   p_token TEXT
@@ -231,9 +216,7 @@ BEGIN
   );
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.verify_credential_by_token TO anon, authenticated;
-
 -- ═══════════════════════════════════════════════════════════════════
 -- RPC: Audit log helper
 -- ═══════════════════════════════════════════════════════════════════
@@ -266,9 +249,7 @@ BEGIN
   RETURN v_id;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.insert_credential_audit_log TO authenticated;
-
 -- ═══════════════════════════════════════════════════════════════════
 -- RPC: Version history helper
 -- ═══════════════════════════════════════════════════════════════════
@@ -305,5 +286,4 @@ BEGIN
   RETURN v_id;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.insert_credential_version TO authenticated;

@@ -41,9 +41,7 @@ CREATE TABLE IF NOT EXISTS public.deletion_failures (
   report     JSONB,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-
 ALTER TABLE public.deletion_failures ENABLE ROW LEVEL SECURITY;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 1. Complete delete_user_all_data rewrite
 -- ─────────────────────────────────────────────────────────────────────
@@ -68,11 +66,7 @@ BEGIN
   BEGIN
     DELETE FROM storage.objects WHERE owner = p_user_id;
     v_steps := array_append(v_steps, 'storage.user_owned');
-  EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM NOT LIKE '%Direct deletion%' THEN
-      v_errors := v_errors || jsonb_build_object('step','storage.user_owned','error',SQLERRM);
-    END IF;
-  END;
+  EXCEPTION WHEN OTHERS THEN v_errors := v_errors || jsonb_build_object('step','storage.user_owned','error',SQLERRM); END;
 
   -- 2. Storage objects inside the user's contracts / disputes (before those rows go)
   BEGIN
@@ -83,11 +77,7 @@ BEGIN
            WHERE freelancer_id = p_user_id OR client_id = p_user_id
         );
     v_steps := array_append(v_steps, 'storage.contract_files');
-  EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM NOT LIKE '%Direct deletion%' THEN
-      v_errors := v_errors || jsonb_build_object('step','storage.contract_files','error',SQLERRM);
-    END IF;
-  END;
+  EXCEPTION WHEN OTHERS THEN v_errors := v_errors || jsonb_build_object('step','storage.contract_files','error',SQLERRM); END;
 
   BEGIN
     DELETE FROM storage.objects
@@ -97,11 +87,7 @@ BEGIN
            WHERE freelancer_id = p_user_id OR client_id = p_user_id
         );
     v_steps := array_append(v_steps, 'storage.dispute_evidence');
-  EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM NOT LIKE '%Direct deletion%' THEN
-      v_errors := v_errors || jsonb_build_object('step','storage.dispute_evidence','error',SQLERRM);
-    END IF;
-  END;
+  EXCEPTION WHEN OTHERS THEN v_errors := v_errors || jsonb_build_object('step','storage.dispute_evidence','error',SQLERRM); END;
 
   -- 3. NO-ACTION FK pre-cleanup (rows that reference the profile from OTHER
   --    people's records would block the profiles delete)
@@ -285,13 +271,13 @@ BEGIN
   EXCEPTION WHEN OTHERS THEN v_errors := v_errors || jsonb_build_object('step','wallet_payments','error',SQLERRM); END;
 
   BEGIN
-    -- paypal_disputes.transaction_id is TEXT; paypal_transactions.paypal_order_id
-    -- and razorpay_transactions.razorpay_order_id are UUID → cast only the text one
+    -- paypal_disputes → paypal_transactions → paypal_orders → user (no direct user_id)
     DELETE FROM public.paypal_disputes
       WHERE transaction_id IN (
-        SELECT id::text FROM public.paypal_transactions
+        SELECT id FROM public.paypal_transactions
          WHERE paypal_order_id IN (SELECT id FROM public.paypal_orders WHERE user_id = p_user_id)
       );
+    -- razorpay_transactions → razorpay_orders → user (no direct user_id)
     DELETE FROM public.razorpay_transactions
       WHERE razorpay_order_id IN (SELECT id FROM public.razorpay_orders WHERE user_id = p_user_id);
     DELETE FROM public.paypal_transactions
@@ -299,10 +285,6 @@ BEGIN
     DELETE FROM public.razorpay_orders WHERE user_id = p_user_id;
     DELETE FROM public.paypal_orders WHERE user_id = p_user_id;
     DELETE FROM public.transactions WHERE user_id = p_user_id;
-    -- payment_webhook_events is payload-keyed (no user_id); match order ids in JSONB
-    DELETE FROM public.payment_webhook_events
-      WHERE payload->>'order_id' IN (SELECT id::text FROM public.razorpay_orders WHERE user_id = p_user_id)
-         OR payload->'entity'->>'order_id' IN (SELECT id::text FROM public.razorpay_orders WHERE user_id = p_user_id);
     v_steps := array_append(v_steps, 'payments_orders');
   EXCEPTION WHEN OTHERS THEN v_errors := v_errors || jsonb_build_object('step','payments_orders','error',SQLERRM); END;
 
@@ -391,13 +373,11 @@ BEGIN
   );
 END;
 $$;
-
 -- Keep the function locked down (service-role only)
 REVOKE ALL ON FUNCTION public.delete_user_all_data(UUID) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.delete_user_all_data(UUID) FROM anon;
 REVOKE ALL ON FUNCTION public.delete_user_all_data(UUID) FROM authenticated;
 GRANT EXECUTE ON FUNCTION public.delete_user_all_data(UUID) TO service_role;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 2. purge_orphan_user_data() — maintenance sweep for deleted users whose
 --    data was left behind by the old broken deletion. Idempotent + locked.
@@ -442,12 +422,10 @@ BEGIN
   END;
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.purge_orphan_user_data() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.purge_orphan_user_data() FROM anon;
 REVOKE ALL ON FUNCTION public.purge_orphan_user_data() FROM authenticated;
 GRANT EXECUTE ON FUNCTION public.purge_orphan_user_data() TO service_role;
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 3. Trigger hardening — log any incomplete deletion so it is visible and
 --    can be re-run via purge_orphan_user_data()
@@ -483,16 +461,13 @@ BEGIN
   RETURN OLD;
 END;
 $$;
-
 -- Trigger functions are called as the table owner; lock down direct calls.
 REVOKE ALL ON FUNCTION public.handle_user_deleted() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS on_auth_user_deleted ON auth.users;
 CREATE TRIGGER on_auth_user_deleted
   AFTER DELETE ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_user_deleted();
-
 -- ─────────────────────────────────────────────────────────────────────
 -- 4. DATA REPAIR: admin profile id mismatch.
 --    profiles.id (11ad40cf…) ≠ auth.users.id (f0eed821…) → the admin's

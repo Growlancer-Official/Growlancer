@@ -39,6 +39,5 @@ BEGIN
   );
 END;
 $$;
-
 -- Allow anyone (including anon) to call this function
 GRANT EXECUTE ON FUNCTION public.get_public_platform_metrics() TO anon, authenticated;

@@ -38,10 +38,8 @@ CREATE POLICY "Users can update own subscriptions" ON public.subscriptions
   TO authenticated
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
-
 -- Explicitly deny client INSERTs (defence in depth — no policy = denied).
 DROP POLICY IF EXISTS "Users can insert own subscriptions" ON public.subscriptions;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. BEFORE UPDATE guard — browser sessions may only toggle
 --    cancel_at_period_end. Everything else is server-side only.
@@ -89,13 +87,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_subscription_client_update_guard ON public.subscriptions;
 CREATE TRIGGER trg_subscription_client_update_guard
   BEFORE UPDATE ON public.subscriptions
   FOR EACH ROW
   EXECUTE FUNCTION public.enforce_subscription_client_update_guard();
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 3. create_user_subscription — server-side creation (trial vs pending).
 --    One free trial per email, ever; paid rows start 'pending'.
@@ -200,10 +196,8 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'subscription_id', v_sub_id, 'trial', v_is_trial);
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.create_user_subscription(TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_user_subscription(TEXT) TO authenticated;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 4. pay_subscription_with_wallet — charge rows that were never paid. The
 --    already-active refusal now also requires a recorded payment_provider,
@@ -323,6 +317,5 @@ BEGIN
   );
 END;
 $$;
-
 REVOKE EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) TO authenticated;

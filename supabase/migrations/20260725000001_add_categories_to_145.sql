@@ -10,17 +10,14 @@ BEGIN
     ALTER TABLE public.categories ADD CONSTRAINT categories_name_key UNIQUE (name);
   END IF;
 END $$;
-
 -- Add 3D Modeling & Rendering (position 1, alphabetical)
 INSERT INTO public.categories (name, slug, display_order)
 VALUES ('3D Modeling & Rendering', '3d-modeling-rendering', 1)
 ON CONFLICT (name) DO UPDATE SET display_order = EXCLUDED.display_order;
-
 -- Add Accounting (position 2, alphabetical)  
 INSERT INTO public.categories (name, slug, display_order)
 VALUES ('Accounting', 'accounting', 2)
 ON CONFLICT (name) DO UPDATE SET display_order = EXCLUDED.display_order;
-
 -- Update all 145 display orders to match FALLBACK_CATEGORIES alphabetical order
 UPDATE public.categories SET display_order = 1 WHERE name = '3D Modeling & Rendering';
 UPDATE public.categories SET display_order = 2 WHERE name = 'Accounting';

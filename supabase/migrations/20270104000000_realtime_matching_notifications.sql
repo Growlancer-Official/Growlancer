@@ -47,7 +47,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.matching_text_array(anyelement) FROM PUBLIC;
-
 -- ─── 1. Server-side match engine (category-first, merit-only) ──────────────
 -- Recreates generate_project_matches() drift-tolerantly (the repo 20261005
 -- version assumed text[]; live columns are jsonb). Semantics preserved:
@@ -188,7 +187,6 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.generate_project_matches(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.generate_project_matches(uuid) TO authenticated, service_role;
-
 -- ─── 2. Non-destructive upsert variant (freelancer-completion path) ────────
 -- Same scoring, but never deletes existing rows and never re-notifies:
 -- ON CONFLICT DO NOTHING keeps matches stable when any freelancer updates.
@@ -320,7 +318,6 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.upsert_project_matches(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.upsert_project_matches(uuid) TO service_role;
-
 -- ─── 3. Triggers: match the moment a project is posted / reopened ──────────
 CREATE OR REPLACE FUNCTION public.trg_auto_match_projects_fn()
 RETURNS trigger
@@ -334,14 +331,12 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.trg_auto_match_projects_fn() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS trg_auto_match_projects ON public.projects;
 CREATE TRIGGER trg_auto_match_projects
 AFTER INSERT OR UPDATE OF status ON public.projects
 FOR EACH ROW
 WHEN (NEW.status = 'open' AND NEW.category IS NOT NULL AND NEW.category <> '')
 EXECUTE FUNCTION public.trg_auto_match_projects_fn();
-
 -- ─── 4. Trigger: match a freelancer against open projects when their ───────
 --     professional profile is created/updated with categories. Idempotent
 --     (upsert + ON CONFLICT DO NOTHING) so profile edits never duplicate
@@ -372,13 +367,11 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.trg_auto_match_freelancer_fn() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS trg_auto_match_freelancer ON public.freelancer_profiles;
 CREATE TRIGGER trg_auto_match_freelancer
 AFTER INSERT OR UPDATE OF categories ON public.freelancer_profiles
 FOR EACH ROW
 EXECUTE FUNCTION public.trg_auto_match_freelancer_fn();
-
 -- ═══════════════════════════════════════════════════════════════════════════
 -- NOTIFICATION TRIGGERS (restored — all absent on live)
 -- Every function writes the LIVE schema: action_url + metadata.
@@ -412,13 +405,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_new_proposal ON public.proposals;
 CREATE TRIGGER trigger_new_proposal
 AFTER INSERT ON public.proposals
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_proposal();
-
 -- 2. Proposal accepted/rejected → notify the FREELANCER
 CREATE OR REPLACE FUNCTION public.notify_proposal_status()
 RETURNS TRIGGER
@@ -449,13 +440,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_proposal_status ON public.proposals;
 CREATE TRIGGER trigger_proposal_status
 AFTER UPDATE ON public.proposals
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_proposal_status();
-
 -- 3. New contract → notify BOTH freelancer AND client
 CREATE OR REPLACE FUNCTION public.notify_new_contract()
 RETURNS TRIGGER
@@ -485,13 +474,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_new_contract ON public.contracts;
 CREATE TRIGGER trigger_new_contract
 AFTER INSERT ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_contract();
-
 -- 4. Contract completed → notify BOTH users
 CREATE OR REPLACE FUNCTION public.notify_contract_completion()
 RETURNS TRIGGER
@@ -523,13 +510,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_contract_completion ON public.contracts;
 CREATE TRIGGER trigger_contract_completion
 AFTER UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_contract_completion();
-
 -- 5. New invite → notify the FREELANCER
 CREATE OR REPLACE FUNCTION public.notify_new_invite()
 RETURNS TRIGGER
@@ -558,13 +543,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_new_invite ON public.invites;
 CREATE TRIGGER trigger_new_invite
 AFTER INSERT ON public.invites
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_invite();
-
 -- 6. Escrow funded → notify the FREELANCER
 CREATE OR REPLACE FUNCTION public.notify_escrow_funded()
 RETURNS TRIGGER
@@ -587,13 +570,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_escrow_funded ON public.escrow;
 CREATE TRIGGER trigger_escrow_funded
 AFTER UPDATE ON public.escrow
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_escrow_funded();
-
 -- 7. Milestone released → notify the FREELANCER
 CREATE OR REPLACE FUNCTION public.notify_milestone_released()
 RETURNS TRIGGER
@@ -618,13 +599,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_milestone_released ON public.escrow;
 CREATE TRIGGER trigger_milestone_released
 AFTER UPDATE ON public.escrow
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_milestone_released();
-
 -- 8. NEW MATCH → notify the FREELANCER
 -- FIXED vs 20260908000000: uses action_url + metadata (the `link` column no
 -- longer exists) and dedupes per (freelancer, project) so profile-completion
@@ -655,13 +634,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_new_match ON public.ai_matches;
 CREATE TRIGGER trigger_new_match
 AFTER INSERT ON public.ai_matches
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_match();
-
 -- ─── Grants (RLS-safe: triggers run SECURITY DEFINER, but the fireable ─────
 --     roles need EXECUTE like the 20261025 restore) ────────────────────────
 GRANT EXECUTE ON FUNCTION public.notify_new_proposal() TO authenticated, service_role;
@@ -672,13 +649,11 @@ GRANT EXECUTE ON FUNCTION public.notify_new_invite() TO authenticated, service_r
 GRANT EXECUTE ON FUNCTION public.notify_escrow_funded() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.notify_milestone_released() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.notify_new_match() TO authenticated, service_role;
-
 -- ─── Backfill: generate matches for every existing open project ───────────
 SELECT count(*) AS backfilled_matches FROM (
   SELECT public.generate_project_matches(id)
   FROM public.projects
   WHERE status = 'open' AND category IS NOT NULL AND category <> ''
 ) AS backfill;
-
 -- Refresh PostgREST schema cache so the new/changed functions are exposed
 NOTIFY pgrst, 'reload schema';

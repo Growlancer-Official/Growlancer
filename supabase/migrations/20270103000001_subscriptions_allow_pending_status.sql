@@ -13,6 +13,5 @@
 -- (pre-payment), trial, active (paid), cancelled, expired, past_due.
 -- ═══════════════════════════════════════════════════════════════════════════
 ALTER TABLE public.subscriptions DROP CONSTRAINT IF EXISTS subscriptions_status_check;
-
 ALTER TABLE public.subscriptions ADD CONSTRAINT subscriptions_status_check
   CHECK (status IN ('pending', 'trial', 'active', 'cancelled', 'expired', 'past_due'));

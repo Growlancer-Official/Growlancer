@@ -37,7 +37,6 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 
 SET search_path = '';
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 1. Provider-engine columns
 -- ───────────────────────────────────────────────────────────────────────────
@@ -52,11 +51,9 @@ ALTER TABLE public.identity_verifications
     )),
   ADD COLUMN IF NOT EXISTS review_reason TEXT,
   ADD COLUMN IF NOT EXISTS failed_at TIMESTAMPTZ;
-
 CREATE INDEX IF NOT EXISTS idx_identity_verifications_provider_reference
   ON public.identity_verifications (provider_reference)
   WHERE provider_reference IS NOT NULL;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. Status CHECK: add 'review' (replace whatever check constraint exists)
 -- ───────────────────────────────────────────────────────────────────────────
@@ -79,7 +76,6 @@ BEGIN
     EXECUTE format('ALTER TABLE public.identity_verifications DROP CONSTRAINT %I', con_name);
   END LOOP;
 END $$;
-
 -- Named constraint so future migrations can reference it deterministically.
 -- (Re-add only if a constraint with this name is not already present.)
 DO $$
@@ -94,7 +90,6 @@ BEGIN
       CHECK (status IN ('pending', 'verified', 'rejected', 'review'));
   END IF;
 END $$;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 3. RLS hardening
 --    Users: INSERT own pending row + SELECT own rows. NO UPDATE policy for
@@ -102,7 +97,6 @@ END $$;
 --    Admins: SELECT all + UPDATE (exception handling only).
 -- ───────────────────────────────────────────────────────────────────────────
 DROP POLICY IF EXISTS "Users can update own identity verification" ON public.identity_verifications;
-
 DROP POLICY IF EXISTS "Users can insert own identity verification" ON public.identity_verifications;
 CREATE POLICY "Users can insert own pending verification"
   ON public.identity_verifications FOR INSERT
@@ -115,13 +109,11 @@ CREATE POLICY "Users can insert own pending verification"
     AND verification_provider IS NOT DISTINCT FROM 'manual'
     AND verified_at IS NULL
   );
-
 -- The kyc-submit edge function inserts with the service key (bypasses RLS);
 -- keep browser INSERT grants intact for the tightened policy above. UPDATE is
 -- revoked — row state is exclusively backend-controlled.
 GRANT SELECT, INSERT ON public.identity_verifications TO authenticated;
 REVOKE UPDATE ON public.identity_verifications FROM authenticated;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 4. Badge sync trigger (the missing piece — fixes admin-approve desync too)
 -- ───────────────────────────────────────────────────────────────────────────
@@ -166,13 +158,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_kyc_sync_profile_status ON public.identity_verifications;
 CREATE TRIGGER trg_kyc_sync_profile_status
   AFTER UPDATE OF status ON public.identity_verifications
   FOR EACH ROW
   EXECUTE FUNCTION public.kyc_sync_profile_status_fn();
-
 REVOKE ALL ON FUNCTION public.kyc_sync_profile_status_fn() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.kyc_sync_profile_status_fn() FROM anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.kyc_sync_profile_status_fn() TO service_role;

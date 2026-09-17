@@ -22,7 +22,6 @@
 
 -- ── 1. Re-bind contest_submissions INSERT policy to current OIDs ──────────
 DROP POLICY IF EXISTS "Freelancers can submit (not to own contest)" ON public.contest_submissions;
-
 CREATE POLICY "Freelancers can submit (not to own contest)"
   ON public.contest_submissions
   FOR INSERT
@@ -41,7 +40,6 @@ CREATE POLICY "Freelancers can submit (not to own contest)"
         AND c.prize_funded = true
     )
   );
-
 -- Sanity guard: policy must exist
 DO $$
 DECLARE
@@ -57,7 +55,6 @@ BEGIN
     RAISE EXCEPTION 'contest_submissions INSERT policy re-creation failed';
   END IF;
 END $$;
-
 -- Also refresh the other policies on this table that reference `contests`
 -- (SELECT policy has no cross-table refs; UPDATE policies do — recreate them
 -- defensively so a dangling OID can never resurface here).
@@ -80,7 +77,6 @@ CREATE POLICY "Contest owners can update submission status"
         AND c.client_id = auth.uid()
     )
   );
-
 DROP POLICY IF EXISTS "Freelancers can update their own submissions" ON public.contest_submissions;
 CREATE POLICY "Freelancers can update their own submissions"
   ON public.contest_submissions
@@ -88,7 +84,6 @@ CREATE POLICY "Freelancers can update their own submissions"
   TO authenticated
   USING (auth.uid() = freelancer_id)
   WITH CHECK (auth.uid() = freelancer_id);
-
 -- ── 2. Fix the submission-count trigger function (TRUE root cause) ────────
 -- The live function had search_path TO 'public, pg_catalog' written as ONE
 -- quoted string — Postgres parses that as a single (invalid) schema name and
@@ -113,7 +108,6 @@ BEGIN
   RETURN NULL;
 END;
 $function$;
-
 -- Sanity: the function must now resolve public.contests (qualified source +
 -- valid multi-schema search_path).
 DO $$
@@ -127,7 +121,6 @@ BEGIN
     RAISE EXCEPTION 'update_contest_submission_count still uses unqualified contests ref';
   END IF;
 END $$;
-
 -- ── 2b. notify_contest_submission: search_path='' is correct (fully-qualified
 -- body), leave as is — trigger functions cannot be smoke-called directly.
 

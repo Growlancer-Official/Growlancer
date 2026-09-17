@@ -16,10 +16,8 @@ CREATE TABLE IF NOT EXISTS public.opportunity_events (
   source text NOT NULL DEFAULT 'marketplace',
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 CREATE INDEX IF NOT EXISTS idx_opportunity_events_freelancer_recent
   ON public.opportunity_events(freelancer_id, created_at DESC);
-
 -- 2. workspaces — collaboration spaces for contracts
 CREATE TABLE IF NOT EXISTS public.workspaces (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -31,7 +29,6 @@ CREATE TABLE IF NOT EXISTS public.workspaces (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- 3. workspace_members — member list for each workspace
 CREATE TABLE IF NOT EXISTS public.workspace_members (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -42,7 +39,6 @@ CREATE TABLE IF NOT EXISTS public.workspace_members (
   created_at timestamptz NOT NULL DEFAULT now(),
   UNIQUE(workspace_id, user_id)
 );
-
 -- 4. team_invitations — project team invites
 CREATE TABLE IF NOT EXISTS public.team_invitations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -55,7 +51,6 @@ CREATE TABLE IF NOT EXISTS public.team_invitations (
   expires_at timestamptz NOT NULL DEFAULT (now() + INTERVAL '7 days'),
   UNIQUE(project_id, freelancer_id)
 );
-
 -- 5. milestones — contract/project milestones
 CREATE TABLE IF NOT EXISTS public.milestones (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -67,7 +62,6 @@ CREATE TABLE IF NOT EXISTS public.milestones (
   due_date date,
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- 6. workspace_activity_logs — activity audit trail
 CREATE TABLE IF NOT EXISTS public.workspace_activity_logs (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -77,7 +71,6 @@ CREATE TABLE IF NOT EXISTS public.workspace_activity_logs (
   metadata jsonb NOT NULL DEFAULT '{}',
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- 7. fraud_events — fraud detection records (admin-only)
 CREATE TABLE IF NOT EXISTS public.fraud_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,30 +81,24 @@ CREATE TABLE IF NOT EXISTS public.fraud_events (
   metadata jsonb NOT NULL DEFAULT '{}',
   created_at timestamptz NOT NULL DEFAULT now()
 );
-
 -- ===================================================================
 -- Add RLS policies on all 7 tables
 -- ===================================================================
 
 -- 1. opportunity_events
 ALTER TABLE IF EXISTS public.opportunity_events ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Freelancers view own events" ON public.opportunity_events;
 CREATE POLICY "Freelancers view own events" ON public.opportunity_events
   FOR SELECT TO authenticated USING (freelancer_id = auth.uid());
-
 DROP POLICY IF EXISTS "Clients view project events" ON public.opportunity_events;
 CREATE POLICY "Clients view project events" ON public.opportunity_events
   FOR SELECT TO authenticated USING (client_id = auth.uid());
-
 DROP POLICY IF EXISTS "Admins view all events" ON public.opportunity_events;
 CREATE POLICY "Admins view all events" ON public.opportunity_events
   FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- 2. workspaces
 ALTER TABLE IF EXISTS public.workspaces ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Members view own workspaces" ON public.workspaces;
 CREATE POLICY "Members view own workspaces" ON public.workspaces
   FOR SELECT TO authenticated
@@ -123,15 +110,12 @@ CREATE POLICY "Members view own workspaces" ON public.workspaces
       WHERE workspace_id = id AND user_id = auth.uid()
     )
   );
-
 DROP POLICY IF EXISTS "Admins view all workspaces" ON public.workspaces;
 CREATE POLICY "Admins view all workspaces" ON public.workspaces
   FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- 3. workspace_members
 ALTER TABLE IF EXISTS public.workspace_members ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Members view workspace members" ON public.workspace_members;
 CREATE POLICY "Members view workspace members" ON public.workspace_members
   FOR SELECT TO authenticated
@@ -142,31 +126,24 @@ CREATE POLICY "Members view workspace members" ON public.workspace_members
       WHERE wm.workspace_id = workspace_id AND wm.user_id = auth.uid()
     )
   );
-
 DROP POLICY IF EXISTS "Admins view workspace members" ON public.workspace_members;
 CREATE POLICY "Admins view workspace members" ON public.workspace_members
   FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- 4. team_invitations
 ALTER TABLE IF EXISTS public.team_invitations ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Freelancers view own invites" ON public.team_invitations;
 CREATE POLICY "Freelancers view own invites" ON public.team_invitations
   FOR SELECT TO authenticated USING (freelancer_id = auth.uid());
-
 DROP POLICY IF EXISTS "Clients view sent invites" ON public.team_invitations;
 CREATE POLICY "Clients view sent invites" ON public.team_invitations
   FOR SELECT TO authenticated USING (invited_by = auth.uid());
-
 DROP POLICY IF EXISTS "Admins view team invites" ON public.team_invitations;
 CREATE POLICY "Admins view team invites" ON public.team_invitations
   FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- 5. milestones
 ALTER TABLE IF EXISTS public.milestones ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Contract parties view milestones" ON public.milestones;
 CREATE POLICY "Contract parties view milestones" ON public.milestones
   FOR SELECT TO authenticated
@@ -177,15 +154,12 @@ CREATE POLICY "Contract parties view milestones" ON public.milestones
       AND (client_id = auth.uid() OR freelancer_id = auth.uid())
     )
   );
-
 DROP POLICY IF EXISTS "Admins view milestones" ON public.milestones;
 CREATE POLICY "Admins view milestones" ON public.milestones
   FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- 6. workspace_activity_logs
 ALTER TABLE IF EXISTS public.workspace_activity_logs ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Members view activity logs" ON public.workspace_activity_logs;
 CREATE POLICY "Members view activity logs" ON public.workspace_activity_logs
   FOR SELECT TO authenticated
@@ -195,15 +169,12 @@ CREATE POLICY "Members view activity logs" ON public.workspace_activity_logs
       WHERE wm.workspace_id = workspace_id AND wm.user_id = auth.uid()
     )
   );
-
 DROP POLICY IF EXISTS "Admins view activity logs" ON public.workspace_activity_logs;
 CREATE POLICY "Admins view activity logs" ON public.workspace_activity_logs
   FOR SELECT TO authenticated
   USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- 7. fraud_events
 ALTER TABLE IF EXISTS public.fraud_events ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Admins view fraud events" ON public.fraud_events;
 CREATE POLICY "Admins view fraud events" ON public.fraud_events
   FOR SELECT TO authenticated

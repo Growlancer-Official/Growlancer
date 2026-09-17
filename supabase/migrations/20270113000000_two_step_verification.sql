@@ -13,17 +13,13 @@
 -- ── 1. Identity documents are optional (PAN verified by number) ──────────
 ALTER TABLE public.identity_verifications
   ALTER COLUMN document_url DROP NOT NULL;
-
 ALTER TABLE public.identity_verifications
   ALTER COLUMN document_url_back DROP NOT NULL;
-
 -- ── 2. Optional client business identity columns ─────────────────────────
 ALTER TABLE public.client_profiles
   ADD COLUMN IF NOT EXISTS udyam_number TEXT;
-
 ALTER TABLE public.client_profiles
   ADD COLUMN IF NOT EXISTS business_pan TEXT;
-
 -- ── 3. Server-side normalization (self-attested → format checks only) ────
 -- Mirrors validate_client_gstin: blank allowed, non-blank must be
 -- well-formed. business_pan uses the standard PAN shape; udyam accepts the
@@ -57,11 +53,9 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_normalize_client_business_ids ON public.client_profiles;
 CREATE TRIGGER trg_normalize_client_business_ids
   BEFORE INSERT OR UPDATE OF business_pan, udyam_number ON public.client_profiles
   FOR EACH ROW EXECUTE FUNCTION public.normalize_client_business_ids();
-
 -- RLS: client_profiles owner-update policy (auth.uid() = user_id) covers the
--- new columns automatically; nothing else to change here.
+-- new columns automatically; nothing else to change here.;

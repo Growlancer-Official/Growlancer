@@ -14,37 +14,31 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(identifier, route, window_start)
 );
-
 -- ==================== INDEXES ====================
 
 CREATE INDEX IF NOT EXISTS idx_rate_limits_lookup
   ON rate_limits(identifier, route, window_start);
-
 CREATE INDEX IF NOT EXISTS idx_rate_limits_cleanup
   ON rate_limits(window_start);
-
 -- ==================== CLEANUP FUNCTION ====================
 
 -- Deletes expired rate limit records older than 24 hours
 CREATE OR REPLACE FUNCTION cleanup_expired_rate_limits()
 RETURNS void
 LANGUAGE plpgsql SECURITY DEFINER
-SET search_path TO 'public, pg_catalog'
 AS $$
 BEGIN
-  DELETE FROM public.rate_limits
+  DELETE FROM rate_limits
   WHERE window_start < NOW() - INTERVAL '24 hours';
 END;
 $$;
-
 -- ==================== ROW LEVEL SECURITY ====================
 
 ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
-
 -- Only the edge functions (service_role) need access; anon users should not
 -- query this table directly. Default deny-all policy is sufficient.
 -- Service role bypasses RLS, so no explicit policies are needed for edge functions.
 
 -- ==================== SCHEDULED CLEANUP (optional) ====================
--- Scheduled cleanup (enabled on the live DB):
+-- To enable automatic cleanup, uncomment:
 -- SELECT cron.schedule('cleanup-rate-limits', '0 3 * * *', 'SELECT cleanup_expired_rate_limits();');

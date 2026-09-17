@@ -130,9 +130,7 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- Grant execute to authenticated users (the RPC itself handles authorization)
 GRANT EXECUTE ON FUNCTION release_milestone(UUID, INT) TO authenticated;
-
 COMMENT ON FUNCTION release_milestone(UUID, INT) IS
   'Atomically release a milestone with FOR UPDATE locking. Prevents race conditions from concurrent milestone releases.';

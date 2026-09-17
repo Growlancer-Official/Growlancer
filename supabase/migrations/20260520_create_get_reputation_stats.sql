@@ -52,6 +52,5 @@ BEGIN
   RETURN NEXT;
 END;
 $function$;
-
 -- Grant execute to authenticated users (required for RPC calls from client)
 GRANT EXECUTE ON FUNCTION public.get_reputation_stats(UUID) TO authenticated;

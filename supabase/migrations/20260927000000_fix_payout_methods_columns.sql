@@ -78,7 +78,6 @@ BEGIN
 
   RAISE NOTICE 'payout_methods flat columns ensured';
 END $$;
-
 -- ─── Recreate get_payout_methods: return flat fields + ifsc_code + upi_id ─────
 CREATE OR REPLACE FUNCTION public.get_payout_methods(p_user_id uuid)
 RETURNS jsonb
@@ -127,5 +126,4 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_payout_methods(uuid) TO authenticated;

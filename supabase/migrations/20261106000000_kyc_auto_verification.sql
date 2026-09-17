@@ -10,13 +10,11 @@ ALTER TABLE public.identity_verifications
 ALTER TABLE public.identity_verifications
   ADD CONSTRAINT identity_verifications_document_type_check
   CHECK (document_type IN ('passport', 'drivers_license', 'national_id', 'aadhaar', 'pan', 'other'));
-
 -- 2. Extra applicant details + provider tag.
 ALTER TABLE public.identity_verifications
   ADD COLUMN IF NOT EXISTS full_name TEXT,
   ADD COLUMN IF NOT EXISTS date_of_birth TEXT,
   ADD COLUMN IF NOT EXISTS verification_provider TEXT DEFAULT 'manual';
-
 -- 3. Format validation per document type (syntax check — the first layer of
 --    industry KYC. Manual admin review handles genuine edge cases).
 CREATE OR REPLACE FUNCTION public.kyc_validate_document_number(p_type TEXT, p_number TEXT)
@@ -32,7 +30,6 @@ AS $$
     ELSE length(coalesce(p_number, '')) >= 6
   END
 $$;
-
 -- 4. Verify a single pending row (used by the trigger + the cron sweep).
 CREATE OR REPLACE FUNCTION public.kyc_verify_row(p_id UUID)
 RETURNS void
@@ -73,7 +70,6 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- 5. Auto-verify immediately on submit.
 CREATE OR REPLACE FUNCTION public.kyc_auto_verify_trigger_fn()
 RETURNS trigger
@@ -88,12 +84,10 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_kyc_auto_verify ON public.identity_verifications;
 CREATE TRIGGER trg_kyc_auto_verify
   AFTER INSERT OR UPDATE OF status ON public.identity_verifications
   FOR EACH ROW EXECUTE FUNCTION public.kyc_auto_verify_trigger_fn();
-
 -- 6. Bulk sweep — the 10-minute safety net for anything the trigger missed.
 CREATE OR REPLACE FUNCTION public.auto_verify_kyc()
 RETURNS integer
@@ -112,7 +106,6 @@ BEGIN
   RETURN v_count;
 END;
 $$;
-
 -- Schedule the sweep every 10 minutes (Supabase pg_cron, when available).
 DO $$
 BEGIN
@@ -124,16 +117,13 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- 7. RLS — users can submit + update their own verification rows.
 DROP POLICY IF EXISTS "Users can insert own identity verification" ON public.identity_verifications;
 CREATE POLICY "Users can insert own identity verification"
   ON public.identity_verifications FOR INSERT
   WITH CHECK (auth.uid() = user_id);
-
 DROP POLICY IF EXISTS "Users can update own identity verification" ON public.identity_verifications;
 CREATE POLICY "Users can update own identity verification"
   ON public.identity_verifications FOR UPDATE
   USING (auth.uid() = user_id);
-
 GRANT SELECT, INSERT, UPDATE ON public.identity_verifications TO authenticated;

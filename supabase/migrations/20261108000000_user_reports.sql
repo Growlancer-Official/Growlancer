@@ -20,14 +20,11 @@ create table if not exists public.user_reports (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create index if not exists user_reports_created_at_idx on public.user_reports (created_at desc);
 create index if not exists user_reports_status_idx on public.user_reports (status);
 create index if not exists user_reports_user_id_idx on public.user_reports (user_id);
-
 -- ── Row Level Security ───────────────────────────────────────────────────────
 alter table public.user_reports enable row level security;
-
 -- Anyone (authenticated or guest) may submit a report. When authenticated, the
 -- user_id is forced to the caller so reports can never be spoofed as another user.
 -- (Drop-first makes this migration idempotent so `supabase db push --include-all`
@@ -40,13 +37,11 @@ create policy "user_reports_insert_anyone" on public.user_reports
     or
     (auth.uid() is null and user_id is null)
   );
-
 -- Users can read their own reports (track status over time).
 drop policy if exists "user_reports_select_own" on public.user_reports;
 create policy "user_reports_select_own" on public.user_reports
   for select to authenticated
   using (user_id = auth.uid());
-
 -- Admins can read and update all reports (admin-data edge function uses
 -- service_role and bypasses RLS, but keep a direct path for the dashboard).
 drop policy if exists "user_reports_admin_all" on public.user_reports;
@@ -54,7 +49,6 @@ create policy "user_reports_admin_all" on public.user_reports
   for all to authenticated
   using (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true))
   with check (exists (select 1 from public.profiles p where p.id = auth.uid() and p.is_admin = true));
-
 -- No public update/delete — status changes happen through the admin panel only.
 
 -- ── Realtime ───────────────────────────────────────────────────────────────────

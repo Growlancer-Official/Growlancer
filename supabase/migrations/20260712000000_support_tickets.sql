@@ -3,7 +3,6 @@
 
 -- Enable extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
 -- Support tickets table
 CREATE TABLE IF NOT EXISTS support_tickets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -19,7 +18,6 @@ CREATE TABLE IF NOT EXISTS support_tickets (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   resolved_at TIMESTAMPTZ
 );
-
 -- Ticket messages / replies
 CREATE TABLE IF NOT EXISTS ticket_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -29,34 +27,28 @@ CREATE TABLE IF NOT EXISTS ticket_messages (
   is_internal BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
 CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets(status);
 CREATE INDEX IF NOT EXISTS idx_support_tickets_created_at ON support_tickets(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id ON ticket_messages(ticket_id);
 CREATE INDEX IF NOT EXISTS idx_ticket_messages_created_at ON ticket_messages(created_at ASC);
-
 -- Enable RLS
 ALTER TABLE support_tickets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ticket_messages ENABLE ROW LEVEL SECURITY;
-
 -- Users can view their own tickets
 CREATE POLICY "Users view own tickets"
   ON support_tickets FOR SELECT
   USING (user_id = auth.uid());
-
 -- Users can create their own tickets
 CREATE POLICY "Users create own tickets"
   ON support_tickets FOR INSERT
   WITH CHECK (user_id = auth.uid());
-
 -- Users can update their own tickets (only certain fields)
 CREATE POLICY "Users update own tickets"
   ON support_tickets FOR UPDATE
   USING (user_id = auth.uid())
   WITH CHECK (user_id = auth.uid());
-
 -- Users can view messages on their tickets
 CREATE POLICY "Users view ticket messages"
   ON ticket_messages FOR SELECT
@@ -67,7 +59,6 @@ CREATE POLICY "Users view ticket messages"
       AND support_tickets.user_id = auth.uid()
     )
   );
-
 -- Users can add messages to their own tickets
 CREATE POLICY "Users add ticket messages"
   ON ticket_messages FOR INSERT
@@ -80,7 +71,6 @@ CREATE POLICY "Users add ticket messages"
     AND user_id = auth.uid()
     AND is_internal = FALSE
   );
-
 -- Enable realtime for support tickets
 ALTER PUBLICATION supabase_realtime ADD TABLE support_tickets;
 ALTER PUBLICATION supabase_realtime ADD TABLE ticket_messages;

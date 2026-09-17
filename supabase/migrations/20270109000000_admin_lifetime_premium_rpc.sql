@@ -143,7 +143,6 @@ BEGIN
   );
 END;
 $$;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. REVOKE lifetime Premium by email (undo path — grant must be reversible)
 -- ───────────────────────────────────────────────────────────────────────────
@@ -228,7 +227,6 @@ BEGIN
   );
 END;
 $$;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 3. EXECUTE hygiene: PUBLIC/anon revoked; authenticated (admin-checked
 --    inside the function) and service_role allowed.
@@ -237,7 +235,6 @@ REVOKE ALL ON FUNCTION public.admin_grant_lifetime_premium(TEXT) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.admin_grant_lifetime_premium(TEXT) FROM anon;
 GRANT EXECUTE ON FUNCTION public.admin_grant_lifetime_premium(TEXT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_grant_lifetime_premium(TEXT) TO service_role;
-
 REVOKE ALL ON FUNCTION public.admin_revoke_lifetime_premium(TEXT) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.admin_revoke_lifetime_premium(TEXT) FROM anon;
 GRANT EXECUTE ON FUNCTION public.admin_revoke_lifetime_premium(TEXT) TO authenticated;

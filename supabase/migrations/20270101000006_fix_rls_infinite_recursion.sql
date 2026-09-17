@@ -16,7 +16,6 @@
 -- ───────────────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-
 CREATE POLICY "Users can update own profile" ON public.profiles
   FOR UPDATE
   USING (auth.uid() = id)
@@ -24,18 +23,15 @@ CREATE POLICY "Users can update own profile" ON public.profiles
     auth.uid() = id
     AND role IN ('freelancer', 'client')
   );
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. FREELANCER_PROFILES — fix recursive WITH CHECK
 -- ───────────────────────────────────────────────────────────────────────────
 
 DROP POLICY IF EXISTS "Freelancers can update own" ON public.freelancer_profiles;
-
 CREATE POLICY "Freelancers can update own" ON public.freelancer_profiles
   FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 3. Helper: should we bypass privilege checks?
 -- ───────────────────────────────────────────────────────────────────────────
@@ -50,7 +46,6 @@ AS $$
     false
   );
 $$;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 4. BEFORE UPDATE trigger on profiles — block is_pro, verification_status,
 --    role→admin self-escalation
@@ -82,13 +77,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS protect_privilege_columns ON public.profiles;
 CREATE TRIGGER protect_privilege_columns
   BEFORE UPDATE ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.protect_profiles_privilege_columns();
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 5. BEFORE UPDATE trigger on freelancer_profiles — block verification_status,
 --    seller_level self-escalation
@@ -116,13 +109,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS protect_privilege_columns ON public.freelancer_profiles;
 CREATE TRIGGER protect_privilege_columns
   BEFORE UPDATE ON public.freelancer_profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.protect_freelancer_profiles_privilege_columns();
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 6. Add bypass flag to SECURITY DEFINER functions that modify protected cols
 -- ───────────────────────────────────────────────────────────────────────────
@@ -175,7 +166,6 @@ BEGIN
   RETURN v_level;
 END;
 $function$;
-
 -- kyc_auto_verify_trigger_fn: add set_config before profile/freelancer_profiles updates
 CREATE OR REPLACE FUNCTION public.kyc_auto_verify_trigger_fn()
 RETURNS trigger
@@ -271,7 +261,6 @@ BEGIN
   RETURN NEW;
 END;
 $function$;
-
 -- grant_admin_role: add set_config before UPDATE
 CREATE OR REPLACE FUNCTION public.grant_admin_role(p_user_id UUID)
 RETURNS jsonb
@@ -300,9 +289,7 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'message', 'Admin role granted');
 END;
 $$;
-
 REVOKE EXECUTE ON FUNCTION public.grant_admin_role(UUID) FROM authenticated, anon;
-
 -- pay_subscription_with_wallet: add set_config before is_pro UPDATE
 -- NOTE: we add the bypass flag to the EXISTING function body.
 -- Since we can't surgically edit, we recreate with the bypass added.
@@ -408,6 +395,5 @@ BEGIN
   );
 END;
 $$;
-
 REVOKE EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) TO authenticated;

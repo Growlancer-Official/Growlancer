@@ -140,7 +140,6 @@ BEGIN
   );
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.admin_grant_lifetime_premium(TEXT) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.admin_grant_lifetime_premium(TEXT) FROM anon;
 GRANT EXECUTE ON FUNCTION public.admin_grant_lifetime_premium(TEXT) TO authenticated;

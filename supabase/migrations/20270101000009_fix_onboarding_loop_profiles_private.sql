@@ -41,7 +41,6 @@ BEGIN
       WITH CHECK (auth.uid() = id);
   END IF;
 END $$;
-
 -- ── 2. Fix complete_onboarding to use UPSERT ──
 -- Handles the case where profiles_private row doesn't exist yet.
 CREATE OR REPLACE FUNCTION public.complete_onboarding()
@@ -70,10 +69,8 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$;
-
 -- Allow authenticated users to call this
 GRANT EXECUTE ON FUNCTION public.complete_onboarding() TO authenticated;
-
 -- ── 3. Fix create_user_profile to also create profiles_private row ──
 -- The RPC inserts into profiles with columns that were dropped (email, etc).
 -- Fix: insert ONLY valid profiles columns + create profiles_private row.

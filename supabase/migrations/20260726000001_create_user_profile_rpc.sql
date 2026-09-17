@@ -61,10 +61,8 @@ BEGIN
   RETURN result;
 END;
 $$;
-
 -- Grant execute to anon and authenticated roles
 GRANT EXECUTE ON FUNCTION public.create_user_profile TO anon, authenticated;
-
 -- ====================================================================
 -- FIX: Also re-enable the INSERT RLS policy for profiles
 -- to allow upsert via RPC call with SECURITY DEFINER

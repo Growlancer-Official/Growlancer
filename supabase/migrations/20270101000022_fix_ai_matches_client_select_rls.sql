@@ -9,7 +9,6 @@
 -- to read matches for their own projects.
 
 DROP POLICY IF EXISTS "Clients view their project matches" ON public.ai_matches;
-
 CREATE POLICY "Clients view their project matches"
 ON public.ai_matches FOR SELECT
 TO authenticated

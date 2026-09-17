@@ -49,16 +49,31 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
-          npx supabase migration list --project-ref "$SUPABASE_PROJECT_REF" --output json > /tmp/migs.json
-          node -e "
-            const rows = JSON.parse(require('fs').readFileSync('/tmp/migs.json', 'utf8'));
-            const bad = rows.filter(r => (r.local || null) !== (r.remote || null));
-            if (bad.length) {
-              for (const r of bad) console.error('::error::migration drift:', r.name || r.version, 'local=' + (r.local || 'missing'), 'remote=' + (r.remote || 'missing'));
-              process.exit(1);
-            }
-            console.log('Migration drift: none —', rows.length, 'migrations in sync.');
-          "
+          # NOTE: `migration list --output json` is NOT supported by the CLI —
+          # it prints a human table. Compare REMOTE-applied versions (column 2)
+          # against repo migration files; both sides must match exactly.
+          cat > /tmp/driftcheck.mjs << 'EOF'
+          import fs from 'fs';
+          import { execSync } from 'child_process';
+          const ref = process.env.SUPABASE_PROJECT_REF;
+          const out = execSync('npx supabase migration list --project-ref ' + ref, {encoding:'utf8', stdio:['ignore','pipe','ignore'], shell:true});
+          const remote = new Set();
+          for (const line of out.split(/\r?\n/)) {
+            if (!line.includes('|')) continue;
+            const c = line.split('|').map(s => s.trim().replace(/`/g, ''));
+            if (c.length >= 2 && /^\d{6,}$/.test(c[1])) remote.add(c[1]);
+          }
+          const files = fs.readdirSync('supabase/migrations').filter(f => f.endsWith('.sql') && f !== 'README.md');
+          const fileVersions = new Set(files.map(f => f.match(/^(\d{6,})/)?.[1]).filter(Boolean));
+          const remoteOnly = [...remote].filter(v => !fileVersions.has(v));
+          const localOnly = [...fileVersions].filter(v => !remote.has(v));
+          console.log('files:', files.length, '| remote-applied:', remote.size);
+          if (remoteOnly.length) for (const v of remoteOnly) console.error('::error::remote-only migration (in DB, missing from repo): ' + v);
+          if (localOnly.length) for (const v of localOnly) console.error('::error::local-only migration (in repo, never applied to DB): ' + v);
+          if (remoteOnly.length || localOnly.length) { console.error('::error::migration drift detected — resolve with `supabase migration fetch` or a new migration BEFORE deploying'); process.exit(1); }
+          console.log('Migration drift: NONE — repo and live DB in sync.');
+          EOF
+          node /tmp/driftcheck.mjs
 
       - name: Apply pending migrations (db push — no-op when in sync)
         env:

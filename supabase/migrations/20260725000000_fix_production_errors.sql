@@ -30,7 +30,6 @@
 UPDATE auth.users
 SET email_confirmed_at = NOW()
 WHERE email_confirmed_at IS NULL;
-
 -- Create a trigger to auto-confirm new signups (dev/pre-launch workaround)
 -- This bypasses the need for SMTP configuration
 CREATE OR REPLACE FUNCTION auto_confirm_email()
@@ -49,14 +48,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- Attach trigger to auth.users (fires after INSERT)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION auto_confirm_email();
-
 -- Set SITE_URL for email redirects
 -- UPDATE: This is set in Supabase Dashboard, not via SQL
 -- Go to: Supabase Dashboard → Authentication → Settings → Redirect URLs
@@ -130,7 +127,6 @@ BEGIN
 
   RAISE NOTICE 'All payout_methods columns added and data migrated successfully';
 END $$;
-
 -- ====================================================================
 -- SECTION 3: CREATE AVATARS STORAGE BUCKET
 -- (Error: "Bucket not found")
@@ -149,7 +145,6 @@ ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
-
 -- Portfolio-images bucket
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
@@ -163,59 +158,50 @@ ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
-
 -- RLS Policies for avatars bucket
 DROP POLICY IF EXISTS "Public can view avatars" ON storage.objects;
 CREATE POLICY "Public can view avatars" ON storage.objects FOR SELECT
 USING (bucket_id = 'avatars');
-
 DROP POLICY IF EXISTS "Users can upload their own avatars" ON storage.objects;
 CREATE POLICY "Users can upload their own avatars" ON storage.objects FOR INSERT TO authenticated
 WITH CHECK (
   bucket_id = 'avatars'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 DROP POLICY IF EXISTS "Users can update their own avatars" ON storage.objects;
 CREATE POLICY "Users can update their own avatars" ON storage.objects FOR UPDATE TO authenticated
 USING (
   bucket_id = 'avatars'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 DROP POLICY IF EXISTS "Users can delete their own avatars" ON storage.objects;
 CREATE POLICY "Users can delete their own avatars" ON storage.objects FOR DELETE TO authenticated
 USING (
   bucket_id = 'avatars'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 -- RLS Policies for portfolio-images bucket
 DROP POLICY IF EXISTS "Public can view portfolio images" ON storage.objects;
 CREATE POLICY "Public can view portfolio images" ON storage.objects FOR SELECT
 USING (bucket_id = 'portfolio-images');
-
 DROP POLICY IF EXISTS "Users can upload their own portfolio images" ON storage.objects;
 CREATE POLICY "Users can upload their own portfolio images" ON storage.objects FOR INSERT TO authenticated
 WITH CHECK (
   bucket_id = 'portfolio-images'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 DROP POLICY IF EXISTS "Users can update their own portfolio images" ON storage.objects;
 CREATE POLICY "Users can update their own portfolio images" ON storage.objects FOR UPDATE TO authenticated
 USING (
   bucket_id = 'portfolio-images'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 DROP POLICY IF EXISTS "Users can delete their own portfolio images" ON storage.objects;
 CREATE POLICY "Users can delete their own portfolio images" ON storage.objects FOR DELETE TO authenticated
 USING (
   bucket_id = 'portfolio-images'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 -- ====================================================================
 -- SECTION 4: REFRESH PostgREST SCHEMA CACHE
 -- ====================================================================
@@ -223,7 +209,6 @@ USING (
 -- recognizes the new columns immediately (otherwise PGRST204 persists).
 
 NOTIFY pgrst, 'reload schema';
-
 -- Also refresh the pg_stat_statements if available
 SELECT pg_stat_statements_reset() WHERE EXISTS (
   SELECT 1 FROM pg_extension WHERE extname = 'pg_stat_statements'

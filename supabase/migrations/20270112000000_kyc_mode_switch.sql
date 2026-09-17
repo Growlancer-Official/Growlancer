@@ -25,12 +25,10 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 
 SET search_path = '';
-
 -- ── Mode column (default = production = fail-safe) ──────────────────────────
 ALTER TABLE public.kyc_provider_config
   ADD COLUMN IF NOT EXISTS mode TEXT NOT NULL DEFAULT 'production'
   CHECK (mode IN ('production', 'development'));
-
 -- ── Set mode (admin-only, audited) ──────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.admin_set_kyc_mode(p_mode TEXT)
 RETURNS JSONB
@@ -66,7 +64,6 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'mode', p_mode);
 END;
 $$;
-
 -- ── Status now also reports the active mode (never the token) ───────────────
 CREATE OR REPLACE FUNCTION public.admin_get_kyc_provider_status()
 RETURNS JSONB
@@ -100,7 +97,6 @@ BEGIN
   );
 END;
 $$;
-
 -- EXECUTE hygiene
 REVOKE ALL ON FUNCTION public.admin_set_kyc_mode(TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.admin_set_kyc_mode(TEXT) TO authenticated, service_role;

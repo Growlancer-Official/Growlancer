@@ -44,13 +44,11 @@ BEGIN
   );
 END;
 $$;
-
 -- Keep the orchestrator locked down (service-role only; pg_cron runs as postgres)
 REVOKE ALL ON FUNCTION public.run_weekly_cleanup() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.run_weekly_cleanup() FROM anon;
 REVOKE ALL ON FUNCTION public.run_weekly_cleanup() FROM authenticated;
 GRANT EXECUTE ON FUNCTION public.run_weekly_cleanup() TO service_role;
-
 -- Point the weekly job at the orchestrator (idempotent: delete + reschedule)
 DO $$
 BEGIN
@@ -59,7 +57,6 @@ EXCEPTION WHEN OTHERS THEN
   RAISE NOTICE 'Could not delete existing cron job (managed Supabase): %', SQLERRM;
 END;
 $$;
-
 SELECT cron.schedule(
   'cleanup-orphaned-data',
   '0 3 * * 0',  -- every Sunday 03:00 UTC

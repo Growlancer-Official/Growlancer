@@ -44,7 +44,6 @@ BEGIN
   );
 END;
 $fn$;
-
 -- The remaining four are money-path functions: re-apply their EXACT live
 -- definitions (captured below) plus the SET clause — no logic drift.
 DO $fix$
@@ -72,7 +71,6 @@ BEGIN
   END LOOP;
 END;
 $fix$;
-
 -- ── 2. Storage: intern resumes bucket — require authentication ─────────────
 -- NOTE: 20270118000000 later re-scopes this same policy (resumes/ folder
 -- only) and adds the anon application-flow policy. The DROP guards here make
@@ -83,7 +81,6 @@ CREATE POLICY "Authenticated users can upload internship resumes"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (bucket_id = 'internship_resumes'::text);
-
 -- ── 3. Storage: contest submissions — scope to authenticated explicitly ────
 DROP POLICY IF EXISTS "Authenticated users can upload contest submissions" ON storage.objects;
 CREATE POLICY "Authenticated users can upload contest submissions"

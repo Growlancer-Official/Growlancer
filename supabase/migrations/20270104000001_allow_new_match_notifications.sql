@@ -4,7 +4,6 @@
 -- 'contest' (contest system, allowed by 20260817000000).
 ALTER TABLE public.notifications
   DROP CONSTRAINT IF EXISTS notifications_type_check;
-
 ALTER TABLE public.notifications
   ADD CONSTRAINT notifications_type_check CHECK (
     type = ANY (ARRAY[
@@ -13,5 +12,4 @@ ALTER TABLE public.notifications
       'verification', 'milestone', 'ticket', 'payout', 'new_match', 'contest'
     ]::text[])
   );
-
 NOTIFY pgrst, 'reload schema';

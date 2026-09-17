@@ -19,11 +19,9 @@ ON CONFLICT (id) DO UPDATE SET
   public = false,
   file_size_limit = 10485760,
   allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'application/pdf']::text[];
-
 -- Drop any existing public read policies on verification-documents
 DROP POLICY IF EXISTS "Public can view verification documents" ON storage.objects;
 DROP POLICY IF EXISTS "Authenticated users can view verification documents" ON storage.objects;
-
 -- Users can upload to their own folder
 DROP POLICY IF EXISTS "Users can upload their own verification documents" ON storage.objects;
 CREATE POLICY "Users can upload their own verification documents" ON storage.objects FOR INSERT TO authenticated
@@ -31,7 +29,6 @@ WITH CHECK (
   bucket_id = 'verification-documents'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 -- Users can view their own documents (via signed URLs)
 DROP POLICY IF EXISTS "Users can view own verification documents" ON storage.objects;
 CREATE POLICY "Users can view own verification documents" ON storage.objects FOR SELECT TO authenticated
@@ -39,7 +36,6 @@ USING (
   bucket_id = 'verification-documents'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 -- Admins can view all verification documents
 DROP POLICY IF EXISTS "Admins can view all verification documents" ON storage.objects;
 CREATE POLICY "Admins can view all verification documents" ON storage.objects FOR SELECT TO authenticated
@@ -47,7 +43,6 @@ USING (
   bucket_id = 'verification-documents'
   AND EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
 );
-
 -- Users can update their own documents
 DROP POLICY IF EXISTS "Users can update own verification documents" ON storage.objects;
 CREATE POLICY "Users can update own verification documents" ON storage.objects FOR UPDATE TO authenticated
@@ -55,7 +50,6 @@ USING (
   bucket_id = 'verification-documents'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 -- Users can delete their own documents
 DROP POLICY IF EXISTS "Users can delete own verification documents" ON storage.objects;
 CREATE POLICY "Users can delete own verification documents" ON storage.objects FOR DELETE TO authenticated
@@ -63,7 +57,6 @@ USING (
   bucket_id = 'verification-documents'
   AND (storage.foldername(name))[1] = auth.uid()::text
 );
-
 -- ====================================================================
 -- 2. IDENTITY_VERIFICATIONS TABLE (missing from migrations)
 -- ====================================================================
@@ -81,30 +74,24 @@ CREATE TABLE IF NOT EXISTS identity_verifications (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Enable RLS
 ALTER TABLE identity_verifications ENABLE ROW LEVEL SECURITY;
-
 -- Users can view their own verification
 DROP POLICY IF EXISTS "Users can view own identity verification" ON identity_verifications;
 CREATE POLICY "Users can view own identity verification" ON identity_verifications
   FOR SELECT USING (auth.uid() = user_id);
-
 -- Users can insert their own verification
 DROP POLICY IF EXISTS "Users can insert own identity verification" ON identity_verifications;
 CREATE POLICY "Users can insert own identity verification" ON identity_verifications
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-
 -- Admins can view all verifications
 DROP POLICY IF EXISTS "Admins can view all identity verifications" ON identity_verifications;
 CREATE POLICY "Admins can view all identity verifications" ON identity_verifications
   FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- Admins can update verifications
 DROP POLICY IF EXISTS "Admins can update identity verifications" ON identity_verifications;
 CREATE POLICY "Admins can update identity verifications" ON identity_verifications
   FOR UPDATE USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- ====================================================================
 -- 3. DISPUTES TABLE (missing from migrations)
 -- ====================================================================
@@ -123,30 +110,24 @@ CREATE TABLE IF NOT EXISTS disputes (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Enable RLS
 ALTER TABLE disputes ENABLE ROW LEVEL SECURITY;
-
 -- Participants can view their own disputes
 DROP POLICY IF EXISTS "Dispute participants can view" ON disputes;
 CREATE POLICY "Dispute participants can view" ON disputes
   FOR SELECT USING (auth.uid() = raised_by OR auth.uid() = raised_against);
-
 -- Users can raise disputes
 DROP POLICY IF EXISTS "Users can raise disputes" ON disputes;
 CREATE POLICY "Users can raise disputes" ON disputes
   FOR INSERT WITH CHECK (auth.uid() = raised_by);
-
 -- Admins can view all disputes
 DROP POLICY IF EXISTS "Admins can view all disputes" ON disputes;
 CREATE POLICY "Admins can view all disputes" ON disputes
   FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- Admins can update disputes
 DROP POLICY IF EXISTS "Admins can update disputes" ON disputes;
 CREATE POLICY "Admins can update disputes" ON disputes
   FOR UPDATE USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- ====================================================================
 -- 4. WAITLIST TABLE (for India-only gating)
 -- ====================================================================
@@ -160,20 +141,16 @@ CREATE TABLE IF NOT EXISTS waitlist (
   user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Enable RLS
 ALTER TABLE waitlist ENABLE ROW LEVEL SECURITY;
-
 -- Admins can view waitlist
 DROP POLICY IF EXISTS "Admins can view waitlist" ON waitlist;
 CREATE POLICY "Admins can view waitlist" ON waitlist
   FOR SELECT USING (EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'));
-
 -- Users can insert themselves into waitlist
 DROP POLICY IF EXISTS "Users can join waitlist" ON waitlist;
 CREATE POLICY "Users can join waitlist" ON waitlist
   FOR INSERT WITH CHECK (true);
-
 -- ====================================================================
 -- 5. RLS ON ORPHANED TABLES (milestones, workspaces, etc.)
 -- ====================================================================
@@ -195,7 +172,6 @@ BEGIN
     END IF;
   END LOOP;
 END $$;
-
 -- ====================================================================
 -- 6. INDEXES
 -- ====================================================================

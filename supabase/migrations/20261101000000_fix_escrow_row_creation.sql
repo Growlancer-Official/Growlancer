@@ -93,7 +93,6 @@ BEGIN
   RETURN TRUE;
 END;
 $function$;
-
 -- ============================================================
 -- DATA REPAIR: existing contracts marked funded but with no escrow row
 -- ============================================================
@@ -105,7 +104,6 @@ FROM public.contracts c
 WHERE c.escrow_funded = true
   AND c.status = 'active'
   AND NOT EXISTS (SELECT 1 FROM public.escrow e WHERE e.contract_id = c.id);
-
 -- Credit client wallets once for the repaired escrows
 INSERT INTO public.wallets (user_id, balance, escrow_balance, currency)
 SELECT c.client_id, 0, c.amount, 'INR'
@@ -116,7 +114,6 @@ WHERE c.escrow_funded = true
 ON CONFLICT (user_id) DO UPDATE SET
   escrow_balance = public.wallets.escrow_balance + EXCLUDED.escrow_balance,
   updated_at = NOW();
-
 -- REVERSE REPAIR: contracts funded via the old fund() path (escrow row
 -- status = 'funded' but escrow_funded flag never set) → mark funded so UI
 -- and reality match again.

@@ -44,8 +44,6 @@ BEGIN
     WHERE id = p_id;
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.kyc_verify_row(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.kyc_verify_row(uuid) TO service_role;
-
 NOTIFY pgrst, 'reload schema';

@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS payout_methods (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- ==================== AUTO-UPDATE UPDATED_AT ====================
 
 -- Trigger function to automatically update the updated_at timestamp
@@ -32,45 +31,37 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Attach trigger to payout_methods table
 DROP TRIGGER IF EXISTS trigger_payout_methods_updated_at ON payout_methods;
 CREATE TRIGGER trigger_payout_methods_updated_at
 BEFORE UPDATE ON payout_methods
 FOR EACH ROW
 EXECUTE FUNCTION update_payout_methods_updated_at();
-
 -- ==================== ROW LEVEL SECURITY ====================
 
 ALTER TABLE payout_methods ENABLE ROW LEVEL SECURITY;
-
 -- Users can SELECT their own payout methods
 DROP POLICY IF EXISTS "Users can view own payout methods" ON payout_methods;
 CREATE POLICY "Users can view own payout methods" ON payout_methods
   FOR SELECT USING (auth.uid() = user_id);
-
 -- Users can INSERT their own payout methods
 DROP POLICY IF EXISTS "Users can insert own payout methods" ON payout_methods;
 CREATE POLICY "Users can insert own payout methods" ON payout_methods
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-
 -- Users can UPDATE their own payout methods
 DROP POLICY IF EXISTS "Users can update own payout methods" ON payout_methods;
 CREATE POLICY "Users can update own payout methods" ON payout_methods
   FOR UPDATE USING (auth.uid() = user_id);
-
 -- Users can DELETE their own payout methods
 DROP POLICY IF EXISTS "Users can delete own payout methods" ON payout_methods;
 CREATE POLICY "Users can delete own payout methods" ON payout_methods
   FOR DELETE USING (auth.uid() = user_id);
-
 -- Admins can SELECT all payout methods
 DROP POLICY IF EXISTS "Admins can view all payout methods" ON payout_methods;
 CREATE POLICY "Admins can view all payout methods" ON payout_methods
   FOR SELECT USING (
     EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
   );
-
 -- ==================== ENSURE SINGLE DEFAULT PAYOUT METHOD ====================
 
 -- Function/trigger to ensure only ONE method can be default per user
@@ -90,7 +81,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Attach trigger to payout_methods table
 DROP TRIGGER IF EXISTS trigger_ensure_single_default_payout ON payout_methods;
 CREATE TRIGGER trigger_ensure_single_default_payout
@@ -98,7 +88,6 @@ AFTER INSERT OR UPDATE OF is_default ON payout_methods
 FOR EACH ROW
 WHEN (NEW.is_default = true)
 EXECUTE FUNCTION ensure_single_default_payout_method();
-
 -- ==================== INDEXES ====================
 
 CREATE INDEX IF NOT EXISTS idx_payout_methods_user_id ON payout_methods(user_id);

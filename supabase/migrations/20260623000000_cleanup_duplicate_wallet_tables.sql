@@ -13,10 +13,8 @@
 -- wallet_balances was an earlier design using cents-based columns
 -- (available_balance_cents, pending_balance_cents, etc.)
 DROP TABLE IF EXISTS wallet_balances CASCADE;
-
 -- wallet_transactions was an earlier design using cents-based columns
 DROP TABLE IF EXISTS wallet_transactions CASCADE;
-
 -- ==================== ENSURE WALLET EXISTS FOR ALL USERS ====================
 
 -- Function to backfill wallets for existing users who may not have one
@@ -32,13 +30,10 @@ BEGIN
   ON CONFLICT (user_id) DO NOTHING;
 END;
 $$;
-
 -- Run the backfill
 SELECT backfill_missing_wallets();
-
 -- Drop the one-time backfill function
 DROP FUNCTION IF EXISTS backfill_missing_wallets();
-
 -- ==================== INDEX ====================
 
 -- Ensure index exists for fast lookups

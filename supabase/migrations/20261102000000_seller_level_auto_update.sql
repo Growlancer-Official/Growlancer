@@ -58,7 +58,6 @@ BEGIN
   RETURN v_level;
 END;
 $function$;
-
 -- Trigger: recompute whenever a contract reaches 'completed'
 CREATE OR REPLACE FUNCTION public.recompute_seller_level_trigger()
 RETURNS trigger
@@ -73,12 +72,10 @@ BEGIN
   RETURN NEW;
 END;
 $function$;
-
 DROP TRIGGER IF EXISTS trg_recompute_seller_level ON public.contracts;
 CREATE TRIGGER trg_recompute_seller_level
 AFTER INSERT OR UPDATE OF status ON public.contracts
 FOR EACH ROW EXECUTE FUNCTION public.recompute_seller_level_trigger();
-
 -- Backfill every existing freelancer profile
 DO $$
 DECLARE r RECORD;

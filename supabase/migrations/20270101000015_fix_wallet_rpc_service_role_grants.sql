@@ -17,7 +17,6 @@ GRANT EXECUTE ON FUNCTION public.release_wallet_funds(UUID, NUMERIC) TO authenti
 GRANT EXECUTE ON FUNCTION public.process_withdrawal_complete(UUID) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.cancel_withdrawal(UUID, UUID) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.get_wallet_balance(UUID) TO authenticated, service_role;
-
 -- ====================================================================
 -- 2. RELAX auth.uid() CHECKS IN WALLET RPCs
 -- ====================================================================
@@ -81,7 +80,6 @@ BEGIN
   );
 END;
 $$;
-
 -- HOLD WALLET FUNDS
 CREATE OR REPLACE FUNCTION public.hold_wallet_funds(p_user_id UUID, p_amount NUMERIC)
 RETURNS JSONB
@@ -126,7 +124,6 @@ BEGIN
   );
 END;
 $$;
-
 -- RELEASE WALLET FUNDS
 CREATE OR REPLACE FUNCTION public.release_wallet_funds(p_user_id UUID, p_amount NUMERIC)
 RETURNS JSONB
@@ -171,7 +168,6 @@ BEGIN
   );
 END;
 $$;
-
 -- GET WALLET BALANCE
 CREATE OR REPLACE FUNCTION public.get_wallet_balance(p_user_id UUID)
 RETURNS JSONB

@@ -9,7 +9,6 @@ ALTER TABLE public.withdrawals DROP CONSTRAINT IF EXISTS withdrawals_method_chec
 ALTER TABLE public.withdrawals
   ADD CONSTRAINT withdrawals_method_check
   CHECK (method = ANY (ARRAY['paypal','bank','upi','crypto','razorpay_payout','bank_transfer']::text[]));
-
 -- ============================================================
 -- 2. SUBSCRIPTION TRIAL — one free trial ever, then pay
 -- enforce_subscription_trial_guard already exists; make sure the
@@ -22,11 +21,9 @@ BEFORE INSERT ON public.subscriptions
 FOR EACH ROW
 WHEN (NEW.status = 'trial')
 EXECUTE FUNCTION public.enforce_subscription_trial_guard();
-
 UPDATE public.subscription_plans
 SET trial_days = CASE WHEN role = 'client' THEN 7 ELSE 1 END
 WHERE price > 0 AND trial_days <> CASE WHEN role = 'client' THEN 7 ELSE 1 END;
-
 -- ============================================================
 -- 3. VERIFICATION (BOTH USERS) — freelancer_profiles was supposed
 -- to have verification_status but the migration never ran here, so
@@ -36,11 +33,9 @@ WHERE price > 0 AND trial_days <> CASE WHEN role = 'client' THEN 7 ELSE 1 END;
 -- ============================================================
 ALTER TABLE public.freelancer_profiles
   ADD COLUMN IF NOT EXISTS verification_status TEXT NOT NULL DEFAULT 'unverified';
-
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS verification_status TEXT NOT NULL DEFAULT 'unverified',
   ADD COLUMN IF NOT EXISTS kyc_verified_at TIMESTAMPTZ;
-
 UPDATE public.profiles p
 SET verification_status = COALESCE(fp.verification_status, 'unverified'),
     kyc_verified_at = p.kyc_verified_at

@@ -9,14 +9,12 @@ SET trial_days = 14,
 WHERE role = 'freelancer'
   AND price > 0
   AND trial_days = 7;
-
 -- Update client plans to stay at 7-day trial
 UPDATE public.subscription_plans
 SET description = '7-day free trial. Find the best freelancers with AI-powered hiring.'
 WHERE role = 'client'
   AND price > 0
   AND trial_days = 7;
-
 -- Ensure the subscriptions table has realtime enabled for live updates
 DO $$
 BEGIN
@@ -30,7 +28,6 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- Add a policy so the subscription notification RPC can be called
 CREATE OR REPLACE FUNCTION public.notify_subscription_change()
 RETURNS trigger
@@ -50,7 +47,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- Trigger to send realtime notification on subscription changes
 DROP TRIGGER IF EXISTS trg_subscription_change_notify ON public.subscriptions;
 CREATE TRIGGER trg_subscription_change_notify

@@ -6,7 +6,6 @@
 -- ============================================================
 ALTER TABLE public.identity_verifications
   ADD COLUMN IF NOT EXISTS document_url_back TEXT;
-
 -- Ensure the realtime publication includes identity_verifications so the
 -- pending → verified flip pushes live to both freelancer & client dashboards.
 DO $pub$

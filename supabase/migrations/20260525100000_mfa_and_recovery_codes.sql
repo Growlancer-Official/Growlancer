@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS user_mfa_settings (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 27. RECOVERY_CODES
 -- One-time use recovery codes for MFA backup access
 CREATE TABLE IF NOT EXISTS recovery_codes (
@@ -26,23 +25,18 @@ CREATE TABLE IF NOT EXISTS recovery_codes (
   used_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_mfa_settings_user_id ON user_mfa_settings(user_id);
 CREATE INDEX IF NOT EXISTS idx_recovery_codes_user_id ON recovery_codes(user_id);
 CREATE INDEX IF NOT EXISTS idx_recovery_codes_used ON recovery_codes(user_id, used);
-
 -- Enable RLS
 ALTER TABLE user_mfa_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE recovery_codes ENABLE ROW LEVEL SECURITY;
-
 -- RLS Policies
 CREATE POLICY "Users manage own MFA settings" ON user_mfa_settings
   FOR ALL USING (auth.uid() = user_id);
-
 CREATE POLICY "Users manage own recovery codes" ON recovery_codes
   FOR ALL USING (auth.uid() = user_id);
-
 -- Function to generate recovery codes for a user
 CREATE OR REPLACE FUNCTION generate_recovery_codes(
   p_user_id UUID
@@ -74,7 +68,6 @@ BEGIN
   RETURN v_codes;
 END;
 $$;
-
 -- Function to verify a recovery code
 CREATE OR REPLACE FUNCTION verify_recovery_code(
   p_user_id UUID,
@@ -107,7 +100,6 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- Function to get remaining recovery codes count
 CREATE OR REPLACE FUNCTION get_recovery_codes_count(
   p_user_id UUID
@@ -125,7 +117,6 @@ BEGIN
   RETURN v_count;
 END;
 $$;
-
 -- Function to enable MFA for a user
 CREATE OR REPLACE FUNCTION enable_user_mfa(
   p_user_id UUID,
@@ -149,7 +140,6 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'mfa_id', v_mfa_id);
 END;
 $$;
-
 -- Function to disable MFA for a user
 CREATE OR REPLACE FUNCTION disable_user_mfa(
   p_user_id UUID
@@ -170,7 +160,6 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$;
-
 -- Function to get MFA status
 CREATE OR REPLACE FUNCTION get_mfa_status(
   p_user_id UUID

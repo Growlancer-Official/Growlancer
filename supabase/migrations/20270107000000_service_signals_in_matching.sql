@@ -69,7 +69,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.freelancer_match_signals(uuid) FROM PUBLIC;
-
 -- ─── 2. Shared scoring engine — skill-first + service signals ──────────────
 CREATE OR REPLACE FUNCTION public.project_match_components(p_project_id uuid, p_freelancer_id uuid)
 RETURNS TABLE (
@@ -215,7 +214,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.project_match_components(uuid, uuid) FROM PUBLIC;
-
 -- ─── 3. Freelancer-scoped refresh — profile ∪ service signals ──────────────
 CREATE OR REPLACE FUNCTION public.refresh_freelancer_project_matches(p_user_id uuid)
 RETURNS integer
@@ -292,7 +290,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.refresh_freelancer_project_matches(uuid) FROM PUBLIC;
-
 -- ─── 4. Services changes trigger a live freelancer re-match ────────────────
 CREATE OR REPLACE FUNCTION public.trg_service_match_refresh_fn()
 RETURNS trigger
@@ -318,19 +315,16 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.trg_service_match_refresh_fn() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS trg_service_match_refresh ON public.services;
 CREATE TRIGGER trg_service_match_refresh
 AFTER INSERT OR UPDATE OF category, skills, active, status ON public.services
 FOR EACH ROW
 EXECUTE FUNCTION public.trg_service_match_refresh_fn();
-
 DROP TRIGGER IF EXISTS trg_service_match_refresh_delete ON public.services;
 CREATE TRIGGER trg_service_match_refresh_delete
 AFTER DELETE ON public.services
 FOR EACH ROW
 EXECUTE FUNCTION public.trg_service_match_refresh_fn();
-
 -- ─── 5. Backfill — re-score every open project (now sees service signals) ──
 DO $$
 DECLARE

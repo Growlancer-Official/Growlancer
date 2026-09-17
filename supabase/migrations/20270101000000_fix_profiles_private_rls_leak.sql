@@ -19,7 +19,6 @@
 -- 1. Drop the dangerous policy that applies to ALL roles
 DROP POLICY IF EXISTS "Service role full access on profiles_private"
   ON public.profiles_private;
-
 -- 2. Recreate it restricted to service_role ONLY
 --    (service_role bypasses RLS anyway, but this documents intent and
 --     prevents the policy from accidentally applying to authenticated users)
@@ -29,8 +28,7 @@ CREATE POLICY "Service role full access on profiles_private"
   TO service_role
   USING (true)
   WITH CHECK (true);
-
 -- 3. Verify: the owner policies still work correctly
 --    "Owner reads own private profile"  — USING (auth.uid() = id)
 --    "Owner updates own private profile" — USING (auth.uid() = id) WITH CHECK (auth.uid() = id)
---    These are unaffected by this migration.
+--    These are unaffected by this migration.;

@@ -7,12 +7,10 @@ ALTER TABLE public.subscription_plans ADD COLUMN IF NOT EXISTS is_active BOOLEAN
 ALTER TABLE public.subscription_plans ADD COLUMN IF NOT EXISTS ai_messages_limit INTEGER NOT NULL DEFAULT 10;
 ALTER TABLE public.subscription_plans ADD COLUMN IF NOT EXISTS ai_priority BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.subscription_plans ADD COLUMN IF NOT EXISTS trial_days INTEGER NOT NULL DEFAULT 0;
-
 -- Seed data is handled by 20260618000000_fix_subscription_plans_schema.sql
 
 -- Ensure RLS is enabled for subscription_plans (already exists, but ensure it's readable)
 ALTER TABLE IF EXISTS public.subscription_plans ENABLE ROW LEVEL SECURITY;
-
 -- Allow all authenticated users to read subscription plans
 DROP POLICY IF EXISTS "Anyone can view active subscription plans" ON public.subscription_plans;
 CREATE POLICY "Anyone can view active subscription plans"
@@ -20,7 +18,6 @@ CREATE POLICY "Anyone can view active subscription plans"
   FOR SELECT
   TO authenticated
   USING (is_active = true);
-
 -- Only admins can insert/update/delete subscription plans
 DROP POLICY IF EXISTS "Admins can manage subscription plans" ON public.subscription_plans;
 CREATE POLICY "Admins can manage subscription plans"
@@ -39,7 +36,6 @@ CREATE POLICY "Admins can manage subscription plans"
       WHERE id = auth.uid() AND role = 'admin'
     )
   );
-
 -- Enable realtime for subscription_plans
 DO $$
 BEGIN

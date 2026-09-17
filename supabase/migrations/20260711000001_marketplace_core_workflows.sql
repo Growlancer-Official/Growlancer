@@ -2,18 +2,15 @@
 -- invite/proposal-to-contract automation, collaboration, escrow, referrals, and cleanup.
 
 create extension if not exists pgcrypto;
-
 alter table if exists public.projects add column if not exists subcategory text;
 alter table if exists public.projects add column if not exists required_skills text[] default '{}';
 alter table if exists public.projects add column if not exists active_contract_id uuid;
-
 alter table if exists public.freelancer_profiles add column if not exists category text;
 alter table if exists public.freelancer_profiles add column if not exists subcategories text[] default '{}';
 alter table if exists public.freelancer_profiles add column if not exists verification_status text default 'unverified';
 alter table if exists public.freelancer_profiles add column if not exists response_time_minutes integer default 1440;
 alter table if exists public.freelancer_profiles add column if not exists profile_quality_score numeric default 50;
 alter table if exists public.freelancer_profiles add column if not exists recent_activity_at timestamptz default now();
-
 create table if not exists public.ai_matches (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects(id) on delete cascade,
@@ -33,13 +30,11 @@ create table if not exists public.ai_matches (
   updated_at timestamptz not null default now(),
   unique(project_id, freelancer_id)
 );
-
 alter table if exists public.ai_matches add column if not exists fairness_score integer default 0;
 alter table if exists public.ai_matches add column if not exists verification_score integer default 0;
 alter table if exists public.ai_matches add column if not exists response_score integer default 0;
 alter table if exists public.ai_matches add column if not exists workload_penalty integer default 0;
 alter table if exists public.ai_matches add column if not exists updated_at timestamptz default now();
-
 create table if not exists public.opportunity_events (
   id uuid primary key default gen_random_uuid(),
   project_id uuid references public.projects(id) on delete cascade,
@@ -49,10 +44,8 @@ create table if not exists public.opportunity_events (
   source text not null default 'marketplace',
   created_at timestamptz not null default now()
 );
-
 create index if not exists idx_opportunity_events_freelancer_recent on public.opportunity_events(freelancer_id, created_at desc);
 create index if not exists idx_ai_matches_project_score on public.ai_matches(project_id, match_score desc);
-
 create table if not exists public.workspaces (
   id uuid primary key default gen_random_uuid(),
   contract_id uuid unique references public.contracts(id) on delete cascade,
@@ -63,7 +56,6 @@ create table if not exists public.workspaces (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
 create table if not exists public.workspace_members (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
@@ -73,7 +65,6 @@ create table if not exists public.workspace_members (
   created_at timestamptz not null default now(),
   unique(workspace_id, user_id)
 );
-
 create table if not exists public.team_invitations (
   id uuid primary key default gen_random_uuid(),
   project_id uuid not null references public.projects(id) on delete cascade,
@@ -85,7 +76,6 @@ create table if not exists public.team_invitations (
   expires_at timestamptz not null default (now() + interval '7 days'),
   unique(project_id, freelancer_id)
 );
-
 create table if not exists public.milestones (
   id uuid primary key default gen_random_uuid(),
   contract_id uuid references public.contracts(id) on delete cascade,
@@ -96,7 +86,6 @@ create table if not exists public.milestones (
   due_date date,
   created_at timestamptz not null default now()
 );
-
 create table if not exists public.workspace_activity_logs (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid references public.workspaces(id) on delete cascade,
@@ -105,7 +94,6 @@ create table if not exists public.workspace_activity_logs (
   metadata jsonb not null default '{}',
   created_at timestamptz not null default now()
 );
-
 create table if not exists public.fraud_events (
   id uuid primary key default gen_random_uuid(),
   user_id uuid references public.profiles(id) on delete cascade,
@@ -115,9 +103,7 @@ create table if not exists public.fraud_events (
   metadata jsonb not null default '{}',
   created_at timestamptz not null default now()
 );
-
 alter table if exists public.invites add column if not exists updated_at timestamptz default now();
-
 -- Safely add/replace status column with full constraint
 -- Drop old constraint first to avoid migration errors
 do $$
@@ -130,7 +116,6 @@ begin
     alter table public.invites drop constraint if exists invites_status_check;
   end if;
 end $$;
-
 alter table if exists public.invites add column if not exists status text default 'pending';
 alter table if exists public.invites add column if not exists status_check text default 'pending';
 alter table if exists public.contracts add column if not exists milestones jsonb default '[]';
@@ -139,14 +124,12 @@ alter table if exists public.contracts add column if not exists end_date date;
 alter table if exists public.contracts add column if not exists proposal_id uuid;
 alter table if exists public.contracts add column if not exists platform_fee numeric default 0;
 alter table if exists public.contracts add column if not exists freelancer_amount numeric default 0;
-
 -- Normalize previous invite status — keep 'pending' to match existing constraint
 update public.invites set status = 'pending' where status is null;
 delete from public.invites i using public.profiles p where i.freelancer_id = p.id and p.deleted_at is not null;
 delete from public.invites i using public.profiles p where i.client_id = p.id and p.deleted_at is not null;
 delete from public.proposals pr using public.profiles p where pr.freelancer_id = p.id and p.deleted_at is not null;
 delete from public.ai_matches m using public.profiles p where m.freelancer_id = p.id and p.deleted_at is not null;
-
 -- Remove duplicate invites before creating unique index
 delete from public.invites i using (
   select project_id, freelancer_id, min(created_at) as keep_from
@@ -158,17 +141,13 @@ delete from public.invites i using (
 where i.project_id = dup.project_id
   and i.freelancer_id = dup.freelancer_id
   and (i.created_at IS DISTINCT FROM dup.keep_from OR i.created_at IS NULL);
-
 create unique index if not exists idx_invites_unique_live
   on public.invites(project_id, freelancer_id)
   where status in ('pending','accepted');
-
 create unique index if not exists idx_proposals_unique_project_freelancer
   on public.proposals(project_id, freelancer_id);
-
 -- Drop first to allow signature changes
 drop function if exists public.generate_project_matches(uuid);
-
 create or replace function public.generate_project_matches(p_project_id uuid)
 returns setof public.ai_matches
 language plpgsql
@@ -265,10 +244,8 @@ begin
   return query select * from public.ai_matches where project_id = p_project_id order by match_score desc;
 end;
 $$;
-
 -- Drop first to allow signature changes
 drop function if exists public.create_contract_workspace_from_invite(uuid);
-
 create or replace function public.create_contract_workspace_from_invite(p_invite_id uuid)
 returns uuid
 language plpgsql
@@ -318,10 +295,8 @@ begin
   return v_contract_id;
 end;
 $$;
-
 -- Drop first to allow signature changes
 drop function if exists public.after_invite_accept_contract();
-
 create or replace function public.after_invite_accept_contract()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
@@ -331,14 +306,11 @@ begin
   return new;
 end;
 $$;
-
 drop trigger if exists trg_after_invite_accept_contract on public.invites;
 create trigger trg_after_invite_accept_contract after update of status on public.invites
 for each row execute function public.after_invite_accept_contract();
-
 -- Drop first to allow signature changes
 drop function if exists public.create_contract_with_escrow(uuid, uuid, uuid, numeric, uuid);
-
 create or replace function public.create_contract_with_escrow(
   p_project_id uuid, p_freelancer_id uuid, p_proposal_id uuid, p_amount numeric, p_client_id uuid
 ) returns jsonb language plpgsql security definer set search_path = public as $$
@@ -375,7 +347,6 @@ begin
   return jsonb_build_object('contract_id', v_contract_id, 'workspace_id', v_workspace_id);
 end;
 $$;
-
 create or replace view public.referral_leaderboard as
 select p.id as user_id, p.name, p.avatar,
        count(r.id)::integer as total_referrals,
@@ -386,7 +357,6 @@ join public.profiles p on p.id = r.referrer_id and p.deleted_at is null
 group by p.id, p.name, p.avatar
 having count(*) filter (where r.status in ('converted','paid','completed')) > 0
 order by successful_conversions desc, referral_earnings desc, total_referrals desc;
-
 create or replace view public.distribution_analytics as
 select freelancer_id,
        count(*) filter (where event_type = 'impression')::integer as impressions,
@@ -396,7 +366,6 @@ select freelancer_id,
        max(created_at) as last_event_at
 from public.opportunity_events
 group by freelancer_id;
-
 -- Add tables to publication if not already members
 do $$
 declare
