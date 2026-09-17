@@ -53,6 +53,13 @@
 | Freelancers search (Section-1H) | ✅ nonsense query → "No freelancers found · Try adjusting your filters… · Clear All Filters" empty-state |
 | PaymentCallback states (Section-1H) | ✅ `/payment/cancel` → truthful cancel copy; `/payment/success` without params → "Missing PayPal return parameters" (fail-closed, no fake success); bogus outcome → "Invalid payment callback path" |
 | Cookie banner "Customize" + "Accept All" | ✅ Customize modal lists 4 categories (Necessary ALWAYS ON), Save persists granular prefs; Accept All persists all-true; both dismiss banner |
+| StatusPage | ✅ honest pre-launch copy ("no fabricated uptime percentages"), live DB/Realtime checks with latency |
+| HelpCenter | ✅ 12 FAQs, accordion answers expand with specific content, topic filters, `/contact` link |
+| Contests (catalog + detail) | ✅ zero-contest truthful counters (0 active / ₹0 prizes), specific empty-state + CTA; bad contest id → graceful "Contest not found · Back to contests" |
+| Services (catalog + detail) | ✅ 3-tier package cards, ₹-formatted prices (Basic/Standard/Premium), revision policy, "Continue to Order" CTA |
+| PublicFreelancerProfile | ✅ verified-badge with honest "platform verification · not a government-issued ID" copy, zero-state counters, Contact CTA |
+| All 15 policy/marketing routes | ✅ HTTP 200 each (terms/privacy/cookies/escrow-policy/refund-policy/features/how-it-works/philosophy/safety/guidelines/internships/about/contact/pricing/categories) |
+| External-link hygiene | ✅ all 28 `target="_blank"` anchors carry `rel="noopener noreferrer"` (script-verified across src/); footer deliberately has no social/external links |
 | ErrorBoundary fallback + Retry | ✅ 3/3 unit tests (fallback paints, retry recovers) — no white-screen-of-death path |
 
 ---
