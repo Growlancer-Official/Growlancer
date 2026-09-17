@@ -132,9 +132,24 @@ Har koi bhi change (fix/feature/refactor) complete hone par, HAR BAAR, bina pooc
    Untracked files bhi check karo (test artifacts me keys/logs ho sakte hain — `tests/e2e-artifacts/`
    aur `.e2e/` gitignored hain, kabhi commit mat karna).
 2. **Verify** — `npm run typecheck` + `npm test` + (UI changes par) `npm run build`.
-3. **Commit + push to `origin main` REAL-TIME** — push = Vercel production deploy trigger.
-   "Deploy on GitHub" ka matlab yahi hai: commit hoke push ho gaya to deploy ho gaya. User ko
+3. **Frontend + Backend DONO push to `origin main` REAL-TIME** — frontend push = Vercel deploy;
+   backend changes (`supabase/functions/**`, `supabase/migrations/**`, `supabase/config.toml`) push =
+   **`backend-deploy.yml` auto-runs**: migration drift-check (fail-closed) → `db push` → saare edge
+   functions redeploy. Matlab frontend aur backend HAMESHA saath deploy hote hain, real-time me.
+   "Deploy on GitHub" ka matlab yahi hai: commit hoke push ho gaya to dono deploy ho gaye. User ko
    report me hamesha batao: kya commit hua, push hua ya nahi, aur deploy-abhi-live hai ya pending.
+
+### Backend deploy rules (naya — founder directive: backend bhi all-time real-time push)
+- **Repo = source-of-truth, live DB nahi.** Koi bhi DB/RPC/RLS change pehle migration file me,
+  phir push (workflow apply karega). Dashboard/SQL-Editor se direct production change KABHI nahi.
+- **Backend push se pehle LOCAL drift-check**: `npx supabase migration list` — ek bhi
+  local≠remote row = pehle resolve karo, push mat karo (workflow bhi fail-closed gate hai).
+- **Functions deploy hamesha repo se** (workflow loop, `_shared` skip). Manual `functions deploy`
+  sirf emergency me, uske baad turant commit+push taaki repo wapas source-of-truth ho.
+- **Secrets**: functions ke secrets `npx supabase secrets list` se naam-verify hota hai; VALUES
+  kabhi print/commit nahi karni. Repo me `SUPABASE_ACCESS_TOKEN` GitHub secret chahiye (one-time).
+- **Money-path migration** (escrow/wallet/RLS) push = money-touching change — push se pehle
+  Security Principles §2/§9 checklist khud se verify karo, phir hi push.
 
 ## Current Status (jaise-jaise fix hote gaye, ye section update karte rehna)
 

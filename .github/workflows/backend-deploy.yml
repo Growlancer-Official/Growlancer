@@ -1,0 +1,85 @@
+name: Backend Deploy (Supabase)
+
+# Standing rule (founder): backend changes deploy to production in real time,
+# same cadence as the frontend (Vercel). Any push touching supabase/** runs:
+#   1. Migration drift check — repo migrations must match the live DB exactly
+#      (fail-closed: out of sync = no deploy, investigate first)
+#   2. supabase db push — applies any pending migrations (no-op when in sync)
+#   3. functions deploy — every edge function redeployed from repo source
+#      (defaults: verify_jwt honored from config.toml — never loosened here)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/**'
+      - 'supabase/migrations/**'
+      - 'supabase/config.toml'
+      - '.github/workflows/backend-deploy.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: backend-deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  SUPABASE_PROJECT_REF: zttwsjehcgaicziqyxpq
+
+jobs:
+  deploy:
+    name: Drift-check → db push → functions deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Guard — access token present (fail with setup instructions)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          if [ -z "$SUPABASE_ACCESS_TOKEN" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN repo secret is missing. One-time setup: Supabase Dashboard → Account → Access Tokens → generate, then add it as the SUPABASE_ACCESS_TOKEN secret in this repo (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - name: Migration drift check (repo vs live DB — fail-closed)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          npx supabase migration list --project-ref "$SUPABASE_PROJECT_REF" --output json > /tmp/migs.json
+          node -e "
+            const rows = JSON.parse(require('fs').readFileSync('/tmp/migs.json', 'utf8'));
+            const bad = rows.filter(r => (r.local || null) !== (r.remote || null));
+            if (bad.length) {
+              for (const r of bad) console.error('::error::migration drift:', r.name || r.version, 'local=' + (r.local || 'missing'), 'remote=' + (r.remote || 'missing'));
+              process.exit(1);
+            }
+            console.log('Migration drift: none —', rows.length, 'migrations in sync.');
+          "
+
+      - name: Apply pending migrations (db push — no-op when in sync)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          npx supabase db push --project-ref "$SUPABASE_PROJECT_REF"
+
+      - name: Deploy all edge functions from repo source
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -e
+          failed=0
+          for dir in supabase/functions/*/; do
+            name=$(basename "$dir")
+            if [ "$name" = "_shared" ]; then continue; fi
+            echo "::group::deploy $name"
+            if ! npx supabase functions deploy "$name" --project-ref "$SUPABASE_PROJECT_REF"; then
+              echo "::error::functions deploy failed: $name"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done
+          exit $failed
