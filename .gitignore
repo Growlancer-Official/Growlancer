@@ -37,3 +37,4 @@ supabase/.temp/
 # E2E run artifacts (throwaway; console captures may embed anon-key JWTs) — never commit.
 tests/e2e-artifacts/
 .e2e/
+.env.e2e

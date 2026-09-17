@@ -87,8 +87,17 @@ jobs:
   element-audit:
     name: Element audit (375/768/1280)
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     needs: [typecheck, lint, build]
+    # E2E_* secrets enable the authenticated pass below; empty string = not
+    # set (fork PRs / before setup) and the guarded steps self-skip.
+    env:
+      E2E_FREELANCER_EMAIL: ${{ secrets.E2E_FREELANCER_EMAIL }}
+      E2E_FREELANCER_PASSWORD: ${{ secrets.E2E_FREELANCER_PASSWORD }}
+      E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
+      E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -131,6 +140,32 @@ jobs:
             # concurrency=2: 4 parallel Chrome contexts exhaust the 2-4 vCPU
             # runner and cause navigation-timeout flakes; 2 is stable there.
             node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=$group --strict --concurrency=2
+          done
+
+      # Authenticated element audit + logout/back-button security. Runs only
+      # when the E2E_* repo secrets exist (absent on fork PRs). login.mjs
+      # writes storage states to .e2e/ (gitignored); each audit group uses the
+      # matching role's storage so protected pages render logged-in.
+      - name: Authenticated audit + logout security (freelancer/client/admin)
+        if: ${{ env.E2E_FREELANCER_EMAIL != '' }}
+        env:
+          E2E_CHROME_PATH: ${{ runner.home }}/.cache/chrome-for-testing/chrome-linux64/chrome
+        run: |
+          set -o pipefail
+          node scripts/e2e/login.mjs --base=http://127.0.0.1:4174 --all
+          if [ -f .e2e/freelancer.json ]; then
+            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=dashboard --strict --concurrency=2 --storage=.e2e/freelancer.json
+          fi
+          if [ -f .e2e/client.json ]; then
+            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=client --strict --concurrency=2 --storage=.e2e/client.json
+          fi
+          if [ -f .e2e/admin.json ]; then
+            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=admin --strict --concurrency=2 --storage=.e2e/admin.json
+          fi
+          for role in freelancer client admin; do
+            if [ -f .e2e/$role.json ]; then
+              node scripts/e2e/logout-flow.mjs --base=http://127.0.0.1:4174 --role=$role
+            fi
           done
 
       - name: Upload audit artifacts
