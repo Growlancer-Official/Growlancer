@@ -16,6 +16,17 @@ export function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Escape closes the mobile menu (Section-1G: every dismissible overlay must
+  // close on Escape, not just the toggle button). No-op when menu is closed.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setMobileMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [mobileMenuOpen]);
+
   // Check URL params to open modal on page load
   useEffect(() => {
     const params = new URLSearchParams(location.search);
