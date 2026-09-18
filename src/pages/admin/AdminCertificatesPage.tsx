@@ -544,7 +544,7 @@ export function AdminCertificatesPage() {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex gap-1 p-1 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+      <div className="flex gap-1 p-1 rounded-2xl flex-wrap" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
         <button
           onClick={() => setActiveTab('interns')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${

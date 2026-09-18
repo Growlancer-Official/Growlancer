@@ -62,10 +62,13 @@ async function loginRole(browser, role) {
     await page.locator('input[type="password"]').first().fill(cfg.password);
     await page.getByRole('button', { name: /access admin|sign in|log in/i }).first().click();
   } else {
-    // Login modal on the homepage.
-    await page.locator('input[type="email"]').first().fill(cfg.email);
-    await page.locator('input[type="password"]').first().fill(cfg.password);
-    await page.getByRole('button', { name: /^log in$/i }).first().click();
+    // Login modal on the homepage. Scope strictly to the modal form: a bare
+    // getByRole('button', /^log in$/i) also matches the header's "Log in"
+    // button, which re-opens the modal instead of submitting it.
+    const form = page.locator('form').filter({ has: page.locator('input[type="password"]') }).first();
+    await form.locator('input[type="email"]').first().fill(cfg.email);
+    await form.locator('input[type="password"]').first().fill(cfg.password);
+    await form.locator('button[type="submit"]').first().click();
   }
 
   // Wait for an authenticated marker: either a dashboard URL or the login

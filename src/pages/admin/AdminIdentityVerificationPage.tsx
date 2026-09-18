@@ -726,7 +726,7 @@ export function AdminIdentityVerificationPage() {
         }}
       >
         {/* Tabs */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           {tabs.map((tab) => (
             <button
               key={tab.id}

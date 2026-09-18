@@ -306,7 +306,7 @@ export function ClientFreelancerSearchPage() {
               <button onClick={() => handleToggleNotify(search)} className="p-1 text-slate-400 hover:text-emerald-600" title={search.notify_new_results ? 'Notifications on' : 'Notifications off'}>
                 {search.notify_new_results ? <Bell className="w-4 h-4 text-emerald-500" /> : <BellOff className="w-4 h-4" />}
               </button>
-              <button onClick={() => handleDeleteSaved(search.id)} className="p-1 text-slate-400 hover:text-red-500">
+              <button onClick={() => handleDeleteSaved(search.id)} aria-label="Delete saved search" className="p-1 text-slate-400 hover:text-red-500">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>

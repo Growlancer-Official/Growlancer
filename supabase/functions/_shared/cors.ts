@@ -13,6 +13,21 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
 ];
 
+// Pattern-allowed origins (reflected individually):
+// - Vercel preview / branch-alias deployments of THIS project only. The team
+//   slug suffix is REQUIRED on purpose: a bare `growlancer-*.vercel.app`
+//   pattern would also match any third-party Vercel project that simply names
+//   itself `growlancer-something`.
+// - local dev / E2E on any loopback port (loopback is not attacker-reachable).
+// No `Access-Control-Allow-Credentials` is ever sent and every edge function
+// authenticates via JWT, so a reflected origin only controls browser
+// readability of a response it already had to authenticate for.
+const ALLOWED_ORIGIN_PATTERNS: RegExp[] = [
+  /^https:\/\/growlancer-[a-z0-9-]+-mrkhan154212s-projects\.vercel\.app$/,
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+];
+
 /**
  * Returns CORS headers for the given request origin.
  * - Known origin → reflects it back (proper per-origin CORS)
@@ -25,7 +40,10 @@ export function getCorsHeaders(
   origin: string | null,
   methods: string = 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
 ): Record<string, string> {
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (
+    (origin && ALLOWED_ORIGINS.includes(origin)) ||
+    (origin && ALLOWED_ORIGIN_PATTERNS.some((re) => re.test(origin)))
+  ) {
     return {
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',

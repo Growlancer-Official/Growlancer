@@ -697,6 +697,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
                 {!message.isStreaming && message.content && (
                   <button
                     onClick={() => handleCopy(message.content, message.id)}
+                    aria-label={copiedId === message.id ? 'Copied' : 'Copy message'}
                     className="opacity-70 hover:opacity-100 transition-opacity"
                   >
                     {copiedId === message.id ? (

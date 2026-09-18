@@ -606,6 +606,7 @@ export function CreateServicePage() {
             <button
               type="button"
               onClick={() => handleAddSkill(skillInput)}
+              aria-label="Add skill"
               className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
             >
               <Plus className="w-4 h-4" />

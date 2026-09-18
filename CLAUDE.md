@@ -178,8 +178,13 @@ SPA-fallback hydration (#418) fix (`vite.config.ts` boot-splash), `server.js` st
 fallback, ~40 a11y/heading fixes. Report: `docs/PRE-LAUNCH-TEST-REPORT.md`. Test artifacts
 `tests/e2e-artifacts/` gitignored (console captures me anon-key JWTs ho sakte hain).
 
-✅ Element-level UI audit (Sep 16, 2026) — `scripts/e2e/element-audit.mjs` (111 URLs ×
-375/768/1280, 5 groups) + interactive checks; 0 Critical/High/Medium defects.
+✅ Element-level UI audit (Sep 16-18, 2026) — `scripts/e2e/element-audit.mjs` (111 URLs ×
+375/768/1280, 5 groups) + interactive checks + **authenticated sweep** (real session per role).
+Defect log: 11 entries — 2 High (waitlist fake-success; CORS allow-list blocked every
+browser edge-function call outside `localhost:5173`), 4 Medium, 2 Low fixed; 1 Low open
+(dashboard card headers H3-directly-under-H1 → tracked refactor). The 5 raw-noise classes
+from the authenticated pass were harness false-positives and were fixed IN the harness, not
+silenced. Full detail: `docs/UI-ELEMENT-AUDIT-REPORT.md` §4 + §8.
 Report: `docs/UI-ELEMENT-AUDIT-REPORT.md`. dashboard/SupportTicketsPage ab routed hai
 (`/dashboard/support-tickets` + `/client/support-tickets`, dono sidebars) — orphan defect fixed.
 Authenticated runs (LIVE in CI since `a3cb3a5`, Sep 17): 3 permanent E2E test-accounts

@@ -49,6 +49,7 @@ export function ClientReferralsPage() {
                 {referralCode}
                 <button
                   onClick={handleCopy}
+                  aria-label="Copy referral code"
                   className="text-emerald-600 hover:text-emerald-700 transition-colors"
                 >
                   {copied ? (
