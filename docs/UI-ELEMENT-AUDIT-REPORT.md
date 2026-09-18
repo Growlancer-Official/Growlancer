@@ -27,7 +27,10 @@
 | I. Responsive — overflow offenders (non-scroller) | ✅ 0 findings at 375/768/1280 |
 | Global — page/console errors, 4xx, dup ids, heading skips, title/lang/viewport | ✅ 0 findings |
 
-**Element-level defects found in the entire sweep: 0 Critical · 0 High · 0 Medium · 1 Low** (dead code, below).
+**Element-level defects found by the logged-out sweep: 0 Critical · 0 High · 0 Medium · 1 Low** (dead code, below).
+
+**Full-project totals including the authenticated sweep (§8): 0 Critical · 2 High · 4 Medium · 4 Low**
+(2 Low fixed, 2 Low open/flagged) — 10 product defects + 2 harness/tooling bugs, all listed in §4 and §8.
 
 ---
 
@@ -227,6 +230,7 @@ Artifacts: `tests/e2e-artifacts/element-audit-{public,auth,dashboard,client,admi
 ## 7. Final summary (logged-out surface)
 
 - **Pages covered: 87/87** from the Section-3 inventory (99 page components total incl. shared variants; every Section-3 entry appears in §3 with its audited URL — none skipped).
+- **Authenticated re-run (§8)**: the same 87 pages × 3 viewports, now with a real signed-in session per role → **336 loads, 0 recorded issues**, plus `logout-flow` 5/5 for freelancer, client and admin.
 - **333 page loads** across 375/768/1280, all five groups, production build.
 - **Issues found: 0 Critical · 0 High · 0 Medium · 1 Low** (orphan `dashboard/SupportTicketsPage.tsx`).
 - **Shared components spot-checked:** LoginModal, SignupModal, Toast provider, CookieConsent, ErrorBoundary (+ 3 new unit tests), LoadingSkeleton paths via graceful dummy-id states, CountrySelect (145 countries in waitlist), ProBadge/VerifiedBadge (freelancers listing), AIChatSupport (contact page + send-state reactivity), Pagination/ImageUpload/IndustrySelect/CategoryPicker — present-and-clean wherever they render in the logged-out surface; their data-driven branches are in §5.
@@ -284,3 +288,41 @@ route renders, loads live data (₹ values via `formatCurrency`), and passes the
 categories as the public surface — no blank states, no unnamed buttons, no overflow, no failed
 fetches. Two of the defects above (CORS, dead share buttons) were only visible *because* this
 pass exists; neither could have been found by the logged-out sweep.
+
+### 8.1 Post-fix verification (production build, all five groups)
+
+Run against `dist/` served by `server.js` (same artifact Vercel serves), strict mode, after every
+fix above — including the ones in this pass:
+
+| Group | Session | Loads | Raw issue flags |
+|---|---|---|---|
+| public + auth-shell (`--group=public`) | none | 105 | **0** |
+| `--group=auth` | none | 36 | **0** |
+| `--group=dashboard` | freelancer | 72 | **0** |
+| `--group=client` | client | 72 | **0** |
+| `--group=admin` | admin | 51 | **0** |
+| **total** | | **336** | **0** |
+
+`logout-flow.mjs` — **5/5 checks for all three roles** (freelancer, client, admin): login reaches
+the dashboard → logout lands on a logged-out surface → no stored session survives → browser-Back
+does not resurrect protected content → direct protected-URL re-entry is blocked. (Admin was
+previously not coverable at all: the role was missing from the script's config, so CI's
+`--role=admin` iteration threw.)
+
+**Live production check of the CORS fix** (`OPTIONS` pre-flight against the deployed `withdrawal`
+function, after Backend Deploy #6 redeployed the functions from the repo):
+
+| Request `Origin` | `Access-Control-Allow-Origin` |
+|---|---|
+| `https://growlancer.com` | reflected ✅ |
+| `https://growlancer-abc123-mrkhan154212s-projects.vercel.app` (preview) | reflected ✅ |
+| `https://growlancer-git-main-mrkhan154212s-projects.vercel.app` (branch alias) | reflected ✅ |
+| `http://127.0.0.1:4176` (E2E loopback) | reflected ✅ |
+| `https://growlancer-evil.vercel.app` (third-party lookalike) | **none** ✅ |
+| `https://evil.com` | **none** ✅ |
+
+### 8.2 New observation logged (not fixed — design decision)
+
+| # | Severity | Area | Description | Evidence | Status |
+|---|---|---|---|---|---|
+| 12 | **Low** | Cookie consent banner vs. dashboard sidebar | The consent banner is a fixed `z-50 bottom-0` full-width bar, so until it is dismissed it sits **on top of** the dashboard sidebar's bottom controls (Homepage / Logout) — those two clicks are swallowed while the banner is up. Impact is limited: the banner is the first interactive thing on the page and disappears on Accept / Reject / Customize, and the same Logout action remains reachable from the header profile menu, so no user is locked out. | `logout-flow.mjs`: clicking sidebar Logout while the banner was up produced a Playwright "subtree intercepts pointer events" timeout against `div.fixed.bottom-0.left-0.right-0.z-50` (the banner's own root class in `CookieConsent.tsx:187`); dismissed → flow passes 5/5 | **Open (flagged)** — the E2E now accepts consent first. A fix (reserve bottom space while consent is undecided, or dock the banner clear of the sidebar) is a visual/design change to a compliance surface, so it is left for an explicit call rather than changed silently. |

@@ -37,9 +37,16 @@ const BASE = args.base || 'http://127.0.0.1:4174';
 const ROLE = args.role || 'freelancer';
 const OUT_DIR = path.resolve('tests/e2e-artifacts');
 
+// What a logged-OUT visitor sees on the protected route. Freelancer/client
+// fall back to the site-wide login modal ("Welcome back"); /admin has its own
+// in-app gate ("Restricted Access — Authorized Personnel Only"). Either one
+// means "not signed in" and is what we assert after logout.
+const LOGGED_OUT_GUARD = /welcome back|restricted access|authorized personnel|log ?in|sign ?in/i;
+
 const CFG = {
-  freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, dash: '/dashboard', marker: 'Dashboard' },
-  client: { email: process.env.E2E_CLIENT_EMAIL, password: process.env.E2E_CLIENT_PASSWORD, dash: '/client', marker: 'Client' },
+  freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, dash: '/dashboard', start: '/?modal=login', modalLogin: true },
+  client: { email: process.env.E2E_CLIENT_EMAIL, password: process.env.E2E_CLIENT_PASSWORD, dash: '/client', start: '/?modal=login', modalLogin: true },
+  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD, dash: '/admin', start: '/admin', modalLogin: false },
 }[ROLE];
 if (!CFG) throw new Error(`Unknown role: ${ROLE}`);
 if (!CFG.email || !CFG.password) {
@@ -51,6 +58,26 @@ const results = [];
 function record(step, pass, detail) {
   results.push({ step, pass, detail });
   console.log(`  ${pass ? '✓' : '✖'} ${step}${detail ? ` — ${detail}` : ''}`);
+}
+
+// Dismiss the cookie-consent banner if it is up. Called twice on purpose: on
+// the first load it can be covered by the login modal's backdrop (the click is
+// swallowed), so it is retried once the dashboard has painted.
+async function dismissConsentBanner(page) {
+  for (const name of [/accept all/i, /reject all/i]) {
+    const btn = page.getByRole('button', { name }).first();
+    if (await btn.isVisible({ timeout: 2500 }).catch(() => false)) {
+      const clicked = await btn
+        .click({ timeout: 5000 })
+        .then(() => true)
+        .catch(() => false);
+      if (clicked) {
+        await page.waitForTimeout(300);
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 async function main() {
@@ -65,12 +92,25 @@ async function main() {
   const page = await context.newPage();
 
   // 1. Login
-  await page.goto(`${BASE}/?modal=login`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.goto(`${BASE}${CFG.start}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForFunction(() => !document.getElementById('boot-overlay'), { timeout: 15000 }).catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-  await page.locator('input[type="email"]').first().fill(CFG.email);
-  await page.locator('input[type="password"]').first().fill(CFG.password);
-  await page.getByRole('button', { name: /^log in$/i }).first().click();
+
+  await dismissConsentBanner(page);
+  if (CFG.modalLogin) {
+    // Scope strictly to the modal form: a bare getByRole('button', /^log in$/i)
+    // also matches the header's "Log in" button, which only re-opens the modal,
+    // so the form would never be submitted.
+    const form = page.locator('form').filter({ has: page.locator('input[type="password"]') }).first();
+    await form.locator('input[type="email"]').first().fill(CFG.email);
+    await form.locator('input[type="password"]').first().fill(CFG.password);
+    await form.locator('button[type="submit"]').first().click();
+  } else {
+    // /admin renders its own login gate whose submit button is role=button.
+    await page.locator('input[type="email"], input[aria-label*="email" i]').first().fill(CFG.email);
+    await page.locator('input[type="password"]').first().fill(CFG.password);
+    await page.getByRole('button', { name: /access admin|sign in|log in/i }).first().click();
+  }
 
   await page.waitForURL((u) => u.pathname.startsWith(CFG.dash), { timeout: 30000 })
     .then(() => record('login reaches dashboard', true, page.url()))
@@ -86,10 +126,17 @@ async function main() {
   }
 
   // 2. Find and click logout (sidebar footer / account menu).
+  // The consent banner is a fixed `z-50 bottom-0` bar that sits ON TOP of the
+  // dashboard sidebar's bottom controls (Homepage / Logout), so it must be
+  // dismissed before the click can land. That overlap is logged as a Low UI
+  // observation in docs/UI-ELEMENT-AUDIT-REPORT.md §8 — the banner itself is
+  // covered by the element audit and the dedicated spot-checks.
+  await dismissConsentBanner(page);
   const logoutBtn = page.getByRole('button', { name: /log ?out/i }).first();
   const logoutVisible = await logoutBtn.isVisible().catch(() => false);
   if (logoutVisible) {
-    await logoutBtn.click();
+    await logoutBtn.scrollIntoViewIfNeeded().catch(() => {});
+    await logoutBtn.click({ timeout: 15000 });
   } else {
     // Open the account/avatar menu first, then click Logout inside it.
     const avatar = page.locator('button:has(img), [aria-label*="menu" i], [aria-label*="account" i]').last();
@@ -97,15 +144,47 @@ async function main() {
     await page.getByRole('button', { name: /log ?out/i }).first().click();
   }
 
-  // 3. Session cleared + redirected to logged-out surface
-  await page.waitForURL((u) => u.pathname === '/' || u.pathname.includes('login'), { timeout: 15000 })
-    .then(() => record('logout redirects to logged-out surface', true, page.url()))
-    .catch(() => record('logout redirects to logged-out surface', false, `still at ${page.url()}`));
+  // 3. Session cleared + a logged-out surface is shown. Depending on the role
+  //    that is either a navigation away (/ or /login) or the route's own gate
+  //    rendering in place (/admin keeps the URL) — poll, don't assume.
+  let landedLoggedOut = false;
+  let landedWhere = '';
+  for (let i = 0; i < 30 && !landedLoggedOut; i++) {
+    const s = await page
+      .evaluate(() => ({ path: location.pathname, text: (document.body.innerText || '').slice(0, 800) }))
+      .catch(() => ({ path: '', text: '' }));
+    landedWhere = `${s.path}`;
+    landedLoggedOut = s.path === '/' || s.path.includes('login') || !s.path.startsWith(CFG.dash) || LOGGED_OUT_GUARD.test(s.text);
+    if (!landedLoggedOut) await page.waitForTimeout(500);
+  }
+  record('logout lands on a logged-out surface', landedLoggedOut, landedWhere || page.url());
 
-  const authKeysAfterLogout = await page.evaluate(() =>
-    Object.keys(localStorage).filter((k) => k.includes('auth-token')).length
+  // The contract is "no stored session remains" — assert that no auth-token key
+  // still holds an access token. Key NAMES are reported for debugging; the
+  // values are never printed (they contain the JWT).
+  const leftover = await page.evaluate(() =>
+    Object.keys(localStorage)
+      .filter((k) => k.includes('auth-token'))
+      .map((k) => {
+        const raw = localStorage.getItem(k);
+        let hasAccessToken = false;
+        try {
+          const parsed = JSON.parse(raw);
+          hasAccessToken = Boolean(parsed && (parsed.access_token || parsed.currentSession));
+        } catch {
+          hasAccessToken = Boolean(raw && raw.length > 40);
+        }
+        return { key: k, hasAccessToken };
+      })
   );
-  record('supabase auth-token cleared from storage', authKeysAfterLogout === 0, `keys: ${authKeysAfterLogout}`);
+  const liveSessions = leftover.filter((l) => l.hasAccessToken);
+  record(
+    'no stored session survives logout',
+    liveSessions.length === 0,
+    liveSessions.length === 0
+      ? 'auth-token keys hold no session'
+      : `keys still holding a session: ${liveSessions.map((l) => l.key).join(', ')}`
+  );
 
   // 4. Browser BACK must not resurrect the dashboard.
   await page.goBack().catch(() => {});
@@ -115,13 +194,10 @@ async function main() {
   const afterBack = await page.evaluate(() => ({
     path: location.pathname,
     text: (document.body.innerText || '').slice(0, 400),
-    hasLoginModal: (document.body.innerText || '').includes('Welcome back'),
   }));
-  const protectedResurrected =
-    afterBack.path.startsWith(CFG.dash) &&
-    !afterBack.hasLoginModal &&
-    !/log in|sign in|welcome back/i.test(afterBack.text);
-  record('browser-back after logout does NOT render protected content', !protectedResurrected, `path=${afterBack.path} loginModal=${afterBack.hasLoginModal}`);
+  const guardShown = LOGGED_OUT_GUARD.test(afterBack.text);
+  const protectedResurrected = afterBack.path.startsWith(CFG.dash) && !guardShown;
+  record('browser-back after logout does NOT render protected content', !protectedResurrected, `path=${afterBack.path} guardShown=${guardShown}`);
 
   // 5. Direct URL re-entry is blocked again.
   await page.goto(`${BASE}${CFG.dash}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
@@ -129,10 +205,10 @@ async function main() {
   await page.waitForTimeout(800);
   const reentry = await page.evaluate(() => ({
     path: location.pathname,
-    hasLoginModal: (document.body.innerText || '').includes('Welcome back'),
+    text: (document.body.innerText || '').slice(0, 600),
   }));
-  const blocked = reentry.hasLoginModal || !reentry.path.startsWith(CFG.dash);
-  record('direct protected-URL re-entry blocked after logout', blocked, `path=${reentry.path} loginModal=${reentry.hasLoginModal}`);
+  const blocked = LOGGED_OUT_GUARD.test(reentry.text) || !reentry.path.startsWith(CFG.dash);
+  record('direct protected-URL re-entry blocked after logout', blocked, `path=${reentry.path}`);
 
   await browser.close();
 

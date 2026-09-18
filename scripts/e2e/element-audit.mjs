@@ -315,15 +315,16 @@ function inPageAudit(device) {
   const overflowing = [];
   for (const el of document.body.querySelectorAll('*')) {
     if (!visible(el)) continue;
-    const cs = getComputedStyle(el);
-    if (cs.position === 'fixed') continue;
-    // Skip children of fixed-position containers (off-canvas sidebars, modal
-    // panels): they inherit the container's viewport-anchored transform
+    // Skip elements inside ANY fixed-position ancestor (off-canvas sidebars,
+    // modal panels): they inherit the container's viewport-anchored transform
     // (e.g. -translate-x-full when closed) and are not document-flow overflow.
-    for (let pa = el.parentElement; pa && pa !== document.body; pa = pa.parentElement) {
-      if (getComputedStyle(pa).position === 'fixed') { cs.position = 'fixed-parent'; break; }
+    // NOTE: computed style objects are read-only — track the outcome in a
+    // local flag, never by writing back to the CSSStyleDeclaration.
+    let underFixedAncestor = getComputedStyle(el).position === 'fixed';
+    for (let pa = el.parentElement; !underFixedAncestor && pa && pa !== document.body; pa = pa.parentElement) {
+      if (getComputedStyle(pa).position === 'fixed') underFixedAncestor = true;
     }
-    if (cs.position === 'fixed-parent') continue;
+    if (underFixedAncestor) continue;
     const r = el.getBoundingClientRect();
     if (r.right > vw + 1 || r.left < -1) overflowing.push({ el, r });
   }
