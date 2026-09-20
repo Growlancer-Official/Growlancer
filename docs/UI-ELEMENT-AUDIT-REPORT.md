@@ -417,3 +417,100 @@ stale; re-run create-test-accounts.mjs --push-secrets`, instead of the old
 | # | Severity | Area | Description | Status |
 |---|---|---|---|---|
 | 22 | **Info / design** | `admin-data` table scope | The generic admin proxy writes to `wallets`, `escrow` and `transactions` directly (pre-existing, unchanged by this pass). Money tables are supposed to change only through `SECURITY DEFINER` RPCs with their ledger invariants (Security Principle §2) — an admin-console write bypasses those. The admin UI does not appear to use the financial tables' write paths, so the narrowing is likely safe, but it is a money-path decision, not a UI-audit one. | **Open (flagged for the founder)** — either drop the financial tables from the proxy's `ALLOWED_TABLES` (write side) or route admin adjustments through dedicated RPCs. |
+
+## 10. Launch readiness — stale-column cleanup, honest stats, clean production data (2026-09-20)
+
+### 10.1 The rest of the profiles-PII fallout (migration `20270119000009`)
+
+The §9 sweep fixed the *client* call sites. A schema-vs-`prosrc` scan of every `public`
+function then showed **nine more** that still read columns `20261221000000` had moved to
+`profiles_private`. Every one fails at runtime with `42703`, and because most wrap each
+statement in `EXCEPTION WHEN OTHERS` the failures were silent:
+
+| Function | Live effect before the fix |
+|---|---|
+| `process_referral` | every referral code rejected — the lookup filtered on `profiles.referral_code` |
+| `request_account_deletion` | users could not even request deletion (the `SELECT email … FROM profiles` aborted first) |
+| `process_account_deletion` | queued deletions never completed |
+| `delete_user_all_data` | read `role, email` in one statement *inside its own handler* → both `NULL`, so the role-specific row and every email-scoped table (waitlist, newsletter, contact inquiries, internship applications, verification rate limits) survived account deletion |
+| `purge_orphan_user_data` | orphan cron failed on every run |
+| `is_admin_user`, `is_user_suspended` | dead but broken admin checks |
+| `admin_signup` | live again: anon-callable `SECURITY DEFINER` with the hardcoded `CHANGE_ME_TO_YOUR_SECRET_CODE` (repo dropped it in `20260904000000`) |
+| `handle_new_user`, `handle_new_profile_private` | orphaned (no trigger) and unattachable — both write `NEW.email` |
+
+Two grant holes surfaced while auditing the above:
+
+* `process_account_deletion` was granted to `PUBLIC`/`anon`/`authenticated` with **no caller
+  check at all** — any visitor holding a request UUID could hard-delete that account. It is
+  service-role-only now (the `process-deletion` edge function runs as service role) and the
+  client-side helper was removed so it cannot be wired to a user session by accident.
+* `is_admin_user` / `is_user_suspended` were anon-executable; anonymous visitors could have
+  enumerated which ids are admins.
+
+Because two of the bodies are hundreds of lines long, they are **patched from their existing
+definition** instead of retyped, and each patch `RAISE`s when its anchor does not match — a
+missed patch fails the migration rather than silently doing nothing. Three assertions close the
+migration: the dropped functions must be gone, all seven fixed functions must read
+`profiles_private`, and no function may use qualified access to a moved column.
+
+`db push` rejected the first attempt with `42P13` (`cannot remove parameter defaults`): the live
+`process_referral` and `request_account_deletion` both declare a default, which `CREATE OR
+REPLACE` may not drop. Restored, with the reason documented in the file.
+
+### 10.2 The drift gate could never deploy a migration
+
+The workflow's pre-push check compared repo files against remote-applied versions and failed on
+**either** direction — but a migration file that is in the repo and not yet applied *is the
+normal pending state*, i.e. exactly what the next step pushes. Every new migration was therefore
+rejected as "local-only drift" before `db push` ever ran, which is why this repo had never
+deployed one. Now:
+
+* `pre` mode — only **remote-only** (live but missing from the repo) is drift; pending local
+  migrations are reported and allowed through.
+* after `db push`, a new `post` step re-runs both directions, so a push that silently failed to
+  apply something still fails the build.
+
+Verified by extracting the embedded script from the workflow and running all three cases:
+pending → exit 0, pending-after-push → exit 1, remote-only → exit 1.
+
+### 10.3 Production data is now the real thing
+
+Eight test accounts (`qafreelancer`, `qaclient`, `playtest`, `freelancer.test@mydomain.com`,
+`client.test@mydomain.com`, and the three `e2e.*@growlancer-test.com`) were removed through
+`delete_user_all_data` — the same cascade a real account deletion takes — each reporting
+`errors: []`. The `email_scoped` step executing is itself the proof for §10.1's most damaging
+entry: before this migration it silently skipped.
+
+Live after the wipe: contracts, escrow, reviews, projects, services and transactions all **0**,
+and `get_public_platform_metrics()` returns
+`{ totalEscrowInr: 0, totalReviews: 0, avgSatisfactionPercent: null, countries: 2 }`.
+Six profiles remain (the founder's accounts and real signups), so the honest public numbers are
+**Members 6 · Escrow ₹0 · Satisfaction "New" · Countries 2**.
+
+### 10.4 Verified in a browser (production build, `server.js` on :4176)
+
+| Check | Result |
+|---|---|
+| About stat cards | `["6","₹0","New","2"]` — live DB values, "New" until 5 reviews exist |
+| Canvas animating | yes, continuous typing loop |
+| Canvas reads fresh data per cycle | yes — `live DB @ 14:58:01` then `live DB @ 14:58:18` in one 25s sample |
+| Canvas content | `6 registered members · 2 countries`, `₹0 protected in escrow`, `no ratings yet` |
+| Console errors | only the local-dev `/_vercel/insights` 404s (`E2E_IGNORE_VERCEL_404`) |
+
+Two behaviour fixes were needed for that: the hook hardcoded `countries: null` (the RPC has
+returned it since `20270119000001`), which is why the canvas printed `— countries`; and the
+realtime channel subscribed to `escrow`, whose RLS policy allows only the two contract parties —
+no public visitor could ever receive an event, so it now subscribes to `profiles` and `reviews`
+only and escrow stays on the poll + per-cycle refresh.
+
+### 10.5 Test accounts no longer live in production
+
+The authenticated element-audit needs three disposable accounts, but leaving them in production
+inflates the very metrics §10.3 just cleaned. CI now seeds them at the start of the job and
+removes them in an `always()` step (`scripts/e2e/remove-test-accounts.mjs`, idempotent — a
+missing account reports `already_absent`). The create script also accepts its credentials from
+the environment now, so CI recreates the accounts *with the passwords it logs in with* (and never
+writes known secrets to a runner's disk). Seeding needs `SUPABASE_URL` +
+`SUPABASE_SERVICE_ROLE_KEY` repo secrets; without them both steps self-skip and the authenticated
+pass stays off, exactly as before. Verified the teardown script live: `removed=0
+already_absent=3 failed=0`.

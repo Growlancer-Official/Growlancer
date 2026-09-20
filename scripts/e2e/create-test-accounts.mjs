@@ -5,8 +5,9 @@
 //   node scripts/e2e/create-test-accounts.mjs            # create or repair
 //   node scripts/e2e/create-test-accounts.mjs --rotate   # new random passwords + push secrets
 //
-// Requires in .env.local (never committed):
-//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+// Requires (never committed):
+//   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY — from the environment first (CI),
+//   falling back to .env.local for local runs.
 // Optional for --rotate (GitHub CLI must be authed):
 //   GH_REPO (or it will use Growlancer-Official/Growlancer)
 //
@@ -29,10 +30,12 @@ function readEnvKey(file, key) {
   return m ? m[1].trim() : null;
 }
 
-const SUPABASE_URL = readEnvKey(ENV_LOCAL, 'SUPABASE_URL');
-const SERVICE_KEY = readEnvKey(ENV_LOCAL, 'SUPABASE_SERVICE_ROLE_KEY');
+// Environment wins so CI can run without a local .env.local file; the file is the
+// local convenience fallback. Never printed either way.
+const SUPABASE_URL = process.env.SUPABASE_URL || readEnvKey(ENV_LOCAL, 'SUPABASE_URL');
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || readEnvKey(ENV_LOCAL, 'SUPABASE_SERVICE_ROLE_KEY');
 if (!SUPABASE_URL || !SERVICE_KEY) {
-  console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY in .env.local — aborting.');
+  console.error('Missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (env or .env.local) — aborting.');
   process.exit(1);
 }
 
@@ -99,10 +102,16 @@ async function setAdminRole(id) {
 const rotate = process.argv.includes('--rotate');
 const results = [];
 const secretLines = [];
+// CI passes the passwords it will log in with (repo secrets); using them keeps the
+// recreated accounts login-able. Without this, CI would generate a random password
+// nothing else knows and the authenticated pass would fail.
+let usedExternalPassword = false;
 
 for (const acct of ACCOUNTS) {
   const existing = await adminGetByEmail(acct.email);
-  const existingEnvPassword = readEnvKey(ENV_E2E, `E2E_${acct.role.toUpperCase()}_PASSWORD`);
+  const envVarPassword = process.env[`E2E_${acct.role.toUpperCase()}_PASSWORD`];
+  const existingEnvPassword = envVarPassword || readEnvKey(ENV_E2E, `E2E_${acct.role.toUpperCase()}_PASSWORD`);
+  if (envVarPassword) usedExternalPassword = true;
   const password = rotate || !existingEnvPassword ? strongPassword() : existingEnvPassword;
 
   let id = existing?.id || null;
@@ -132,8 +141,10 @@ for (const acct of ACCOUNTS) {
   results.push(`${acct.role}: OK (profile=${profileSt}${adminSt ? `, admin-role=${adminSt}` : ''})`);
 }
 
-// Write gitignored .env.e2e (merge-preserve comments not needed; it is machine-managed)
-if (secretLines.length) {
+// Write gitignored .env.e2e (merge-preserve comments not needed; it is machine-managed).
+// Skipped when the passwords came from the environment (CI) so known secrets are
+// never written to a runner's disk.
+if (secretLines.length && !usedExternalPassword) {
   fs.writeFileSync(ENV_E2E, `# E2E test credentials — GITIGNORED, never commit\n${secretLines.join('\n')}\n`);
 }
 

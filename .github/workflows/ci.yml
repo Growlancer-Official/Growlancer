@@ -92,6 +92,13 @@ jobs:
     needs: [typecheck, lint, build]
     # E2E_* secrets enable the authenticated pass below; empty string = not
     # set (fork PRs / before setup) and the guarded steps self-skip.
+    #
+    # The accounts are seeded at the start of this job and deleted at the end
+    # (always), so they never linger in production between runs — live member
+    # counts and admin tables only ever show real accounts. Seeding needs
+    # SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY as repo secrets; without the
+    # service key the seed/teardown steps skip and the authenticated pass stays
+    # off, exactly as before.
     env:
       E2E_FREELANCER_EMAIL: ${{ secrets.E2E_FREELANCER_EMAIL }}
       E2E_FREELANCER_PASSWORD: ${{ secrets.E2E_FREELANCER_PASSWORD }}
@@ -99,6 +106,8 @@ jobs:
       E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -145,6 +154,12 @@ jobs:
           done
 
       # Authenticated element audit + logout/back-button security. Runs only
+      # Seed the disposable accounts right before use. Recreated with the same
+      # passwords CI logs in with, so this also repairs a rotated/stale secret.
+      - name: Seed E2E test accounts (live only for this run)
+        if: ${{ env.SUPABASE_SERVICE_ROLE_KEY != '' && env.E2E_FREELANCER_PASSWORD != '' }}
+        run: node scripts/e2e/create-test-accounts.mjs
+
       # when the E2E_* repo secrets exist (absent on fork PRs). login.mjs
       # writes storage states to .e2e/ (gitignored); each audit group uses the
       # matching role's storage so protected pages render logged-in.
@@ -169,6 +184,12 @@ jobs:
               node scripts/e2e/logout-flow.mjs --base=http://127.0.0.1:4174 --role=$role
             fi
           done
+
+      # Teardown runs even when the audit failed: leaving test accounts live is the
+      # outcome this job must never produce, so cleanup is unconditional.
+      - name: Remove E2E test accounts from production
+        if: ${{ always() && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/e2e/remove-test-accounts.mjs
 
       - name: Upload audit artifacts
         if: always()

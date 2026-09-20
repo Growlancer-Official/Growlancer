@@ -224,14 +224,58 @@ write 403 (column guard hold karta hai), CORS preflight matrix sahi, login 3/3 r
 + `f6b61a4` pushed to main (Backend Deploy ✓, drift-check clean). Details:
 `docs/UI-ELEMENT-AUDIT-REPORT.md` §9.
 
+✅ Stale-profile-column cleanup + launch-data wipe (Sep 20, 2026, `20270119000009`) — pichhle
+sweep ke baad bhi 9 DB functions `profiles` ke un columns ko padh rahe the jo `20261221000000` ne
+`profiles_private` me bhej diye the. Sab runtime par 42703 dete the, aur `EXCEPTION WHEN OTHERS`
+me chhup jaate the: `process_referral` har referral code reject karta tha;
+`request_account_deletion` / `process_account_deletion` chalti hi nahi thi (account deletion shuru hi
+nahi hota); `delete_user_all_data` ek hi statement me role+email padhta tha apne handler ke andar →
+dono NULL → role-specific row aur saari email-scoped PII (waitlist/newsletter/contact/internship)
+deletion ke baad bachi rehti thi; `purge_orphan_user_data` har run fail; `is_admin_user` /
+`is_user_suspended` dead-but-broken; `admin_signup` (anon-callable SECURITY DEFINER + hardcoded
+secret) live wapas aa gaya tha; `handle_new_user` / `handle_new_profile_private` orphaned. Do grant
+holes bhi band: `process_account_deletion` PUBLIC ko granted tha bina caller-check ke (jaan-boojh ke
+delete), aur dono admin checks anon-executable the. Migration me 3 fail-closed assertions hain, aur
+lambi bodies retype karne ke bajaye patch ki gayi hain (anchor mismatch = migration fail, silent no-op
+nahi). `db push` ne dava diya tha ki `process_referral`/`request_account_deletion` ke DEFAULTs
+drop nahi kiye ja sakte (42P13) — isliye wo defaults waise hi rakhe gaye.
+
+⚠️ CI ka drift-gate bug (fix ho gaya): pre-push check har naye migration file ko "local-only drift"
+maan ke fail kar deta tha — matlab repo ke through koi naya migration deploy hi nahi ho sakta tha
+(silently). Ab `pre` mode me sirf **remote-only** (DB me hai, repo me nahi) hi drift hai aur pending
+migration pass ho jaata hai; `db push` ke baad naya `post` step dono direction check karta hai.
+
+✅ Live launch data clean (Sep 20, 2026) — 8 test accounts (`qafreelancer`, `qaclient`, `playtest`,
+`freelancer.test@mydomain.com`, `client.test@mydomain.com`, 3 `e2e.*@growlancer-test.com`)
+`delete_user_all_data` se fully cascade karke delete kiye (har ek `errors: []`, aur `email_scoped` step
+chala = upar wala fix proven). Ab live: contracts/escrow/reviews/projects/services/transactions
+**0**, aur `get_public_platform_metrics()` → `{escrow: 0, reviews: 0, satisfaction: null, countries: 2}`.
+Bache 6 profiles real accounts hain (founder + signups), isliye About/Home aise dikhte hain:
+**Members 6 · Escrow ₹0 · Satisfaction "New" · Countries 2** — sab DB-backed, koi fake number nahi.
+About ka real-time canvas ab **har typing cycle par fresh DB values** padhta hai (`LiveCodeTerminal`
+`onCycle` → `refresh()`, aur pehle `countries` hook me hardcoded `null` tha → "— countries" print hota
+tha). Realtime channel sirf un tables par hai jo anonymous visitor sach me padh sakta hai (profiles,
+reviews) — escrow ki RLS policy sirf contract parties ko deti hai, isliye wo ab public page par
+subscribe nahi hota (warna unauthorized console error). Marketing copy se "join thousands of
+clients" claim bhi hata diya.
+
+⚠️ CI self-seeding (founder action chahiye): ab test accounts production me permanently nahi rehte —
+CI job unhe start par seed karti hai aur `always()` teardown step se hata deti hai
+(`scripts/e2e/remove-test-accounts.mjs`, idempotent, "already_absent" par safe). Authenticated pass
+chalane ke liye repo secrets me `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` add karne honge; jab tak
+wo nahi hain, seed/teardown self-skip karte hain aur authenticated pass pehle ki tarah off rehta hai.
+Saath me `E2E_*_PASSWORD` secrets bhi wapas chahiye (ya `node scripts/e2e/create-test-accounts.mjs
+--rotate --push-secrets`).
+
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
 
 ⚠️ Known CI red (Sep 20, 2026): CI ka element-audit job fail ho raha hai kyunki `E2E_FREELANCER_*`
 GitHub secret stale hai — Supabase auth logs me `400 invalid_credentials` (client/admin login theek
-chal rahe hain, local `.env.e2e` se teeno roles login karte hain). Fix: repo me
-`node scripts/e2e/create-test-accounts.mjs --push-secrets` (ya `--rotate --push-secrets`). Login
-helper ab ye reason khud report karta hai (timeout ki jagah). Details: report §9.3.
+chal rahe hain, local `.env.e2e` se teeno roles login karte hain). Login helper ab ye reason khud
+report karta hai (timeout ki jagah). Note: teardown ke baad account dobara chahiye to CI ka seed step
+(for that `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` secrets chahiye) use khud bana lega, ya locally
+`node scripts/e2e/create-test-accounts.mjs --rotate --push-secrets`. Details: report §9.3.
 
 ⚠️ Flagged (founder ka call chahiye): `admin-data` proxy `wallets` / `escrow` / `transactions` par
 bhi direct write karta hai — money tables Security Principle §2 ke hisaab se sirf SECURITY DEFINER
