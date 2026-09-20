@@ -300,6 +300,15 @@ unke liye layout bilkul same. 3 tests contract lock karte hain.
 `E2E_FREELANCER_EMAIL` par nahi. Stale secret gate kholé rakhta tha aur accounts gone the → job
 credentials par fail hota tha, product par nahi. Ab missing config = pass **skip**, fail nahi.
 
+✅ Country stat + ownership fix (Sep 20, 2026, `20270119000011`) — "Countries with members" 1 hi
+country ko 2 dikha raha tha: OAuth country-gate `IN` bhejta hai, onboarding `India`, aur
+count(DISTINCT) dono ko alag gin raha tha. Ab `normalize_country()` reference table se canonical
+name store karta hai (dono paths converge), purani rows backfill, metric normalized value ginta hai.
+Saath me `update_user_country` arbitrary `p_user_id` accept kar raha tha bina caller check ke (koi bhi
+user kisi ka bhi country badal sakta tha) — ab owner-only. Verify: do throwaway accounts se 6/6
+(owner `IN` → `India`; cross-user write → Unauthorized, victim untouched); live: 6 profiles,
+stored `India`, metric `{countries: 1}`, About `6 / ₹0 / New / 1`.
+
 ⚠️ Pending (jaan-boojh ke chhoda, plan report §11.6 me): heading hierarchy (defect #11) — 89 `<h3>`
 hain dashboard/client/admin pages me aur wo ek hi construct nahi (kuch card headers = H2 hone chahiye,
 kuch card ke andar ke sub-headings jinme H3-under-H2 sahi hai). Class signature se distinguish nahi hota

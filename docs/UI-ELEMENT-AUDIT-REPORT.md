@@ -598,3 +598,27 @@ the offending selectors. A blind promotion would move sub-headings to `H2` as we
 an accepted cosmetic skip for a genuinely wrong outline — a worse outcome for AT users than the
 status quo, which the harness explicitly accepts. The fix is a per-page review of the three
 layouts, deliberate and reviewable, which is exactly how the entry was originally logged.
+
+### 11.7 "Countries with members" said 2 for a one-country platform — and the write path was ownerless
+
+Checking that stat after launch cleanup exposed two problems, one cosmetic-looking and one not.
+
+**The stat was wrong by construction.** `profiles.country` is written from two client paths in two
+formats: the OAuth country gate sends the ISO code (`p_country: 'IN'`, AuthCallbackPage), while
+onboarding sends the form's location value (a name, e.g. `'India'`). The metric is
+`COUNT(DISTINCT country)`, so the single real country counted as two — and every future signup
+would land in one of the two formats, meaning the stat could never have become right on its own.
+
+**The write path had no owner.** `update_user_country` accepted an arbitrary `p_user_id` from the
+request body with no caller check, so any authenticated user could rewrite any other profile's
+country (Security Principle #6).
+
+Migration `20270119000011` fixes both at the source: a shared `normalize_country()` resolves values
+against the `countries` reference table by name then ISO code; `update_user_country` requires the
+caller to *be* the user and stores the canonical name; existing rows are backfilled; the metric
+counts the normalized value; and an assertion refuses any profile still holding a bare code.
+
+Verified live with two throwaway accounts (`verify-country-fix.mjs`, **6/6**): owner sets `'IN'` →
+row stores `'India'`; owner targeting another user → `Unauthorized`, victim untouched; both
+accounts remove themselves. Live afterwards: 6 profiles, `stored_countries = 'India'`,
+`get_public_platform_metrics() → { countries: 1 }`, and the About page renders `6 / ₹0 / New / 1`.
