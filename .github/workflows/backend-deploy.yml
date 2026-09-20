@@ -68,18 +68,22 @@ jobs:
             exit 1
           fi
 
-      - name: Migration drift check (repo vs live DB — fail-closed)
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
+      # NOTE: `migration list --output json` is NOT supported by the CLI — it
+      # prints a human table. Compare REMOTE-applied versions (column 2) against
+      # repo migration files. --db-url avoids the interactive password prompt.
+      #
+      # `pre`  (before db push): only remote-only entries are drift. A migration
+      #        that exists in the repo but is not applied yet is PENDING — that is
+      #        precisely what the next step pushes, so it must not fail the gate.
+      #        (Treating it as drift made every new migration undeployable.)
+      # `post` (after db push): both directions must be empty, which proves the
+      #        push actually landed every pending migration.
+      - name: Write migration drift-check helper
         run: |
-          # NOTE: `migration list --output json` is NOT supported by the CLI —
-          # it prints a human table. Compare REMOTE-applied versions (column 2)
-          # against repo migration files; both sides must match exactly.
-          # --db-url avoids the interactive DB-password prompt (CI has none).
           cat > /tmp/driftcheck.mjs << 'EOF'
           import fs from 'fs';
           import { execSync } from 'child_process';
+          const mode = process.argv[2] || 'pre';
           const dbUrl = process.env.SUPABASE_DB_URL;
           const out = execSync('npx supabase migration list --db-url ' + JSON.stringify(dbUrl), {encoding:'utf8', stdio:['ignore','pipe','ignore'], shell:true});
           const remote = new Set();
@@ -92,13 +96,30 @@ jobs:
           const fileVersions = new Set(files.map(f => f.match(/^(\d{6,})/)?.[1]).filter(Boolean));
           const remoteOnly = [...remote].filter(v => !fileVersions.has(v));
           const localOnly = [...fileVersions].filter(v => !remote.has(v));
-          console.log('files:', files.length, '| remote-applied:', remote.size);
-          if (remoteOnly.length) for (const v of remoteOnly) console.error('::error::remote-only migration (in DB, missing from repo): ' + v);
-          if (localOnly.length) for (const v of localOnly) console.error('::error::local-only migration (in repo, never applied to DB): ' + v);
-          if (remoteOnly.length || localOnly.length) { console.error('::error::migration drift detected — resolve with `supabase migration fetch` or a new migration BEFORE deploying'); process.exit(1); }
-          console.log('Migration drift: NONE — repo and live DB in sync.');
+          console.log('mode:', mode, '| files:', files.length, '| remote-applied:', remote.size, '| pending:', localOnly.length);
+          for (const v of remoteOnly) console.error('::error::remote-only migration (in DB, missing from repo): ' + v);
+          if (mode === 'post') {
+            for (const v of localOnly) console.error('::error::local-only migration (still not applied after db push): ' + v);
+          }
+          const failed = mode === 'post' ? (remoteOnly.length || localOnly.length) : remoteOnly.length;
+          if (failed) {
+            console.error('::error::migration drift detected — resolve with `supabase migration fetch` (adopt what is live) or a new migration file BEFORE deploying');
+            process.exit(1);
+          }
+          if (mode === 'post') {
+            console.log('Post-push OK — every repo migration is applied and nothing is live-only.');
+          } else if (localOnly.length) {
+            console.log('Pre-flight OK — ' + localOnly.length + ' migration(s) pending; db push will apply them.');
+          } else {
+            console.log('Pre-flight OK — repo and live DB already in sync.');
+          }
           EOF
-          node /tmp/driftcheck.mjs
+
+      - name: Migration drift check (repo vs live DB — fail-closed)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
+        run: node /tmp/driftcheck.mjs pre
 
       - name: Apply pending migrations (db push — no-op when in sync)
         env:
@@ -106,6 +127,12 @@ jobs:
           SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
         run: |
           npx supabase db push --db-url "$SUPABASE_DB_URL"
+
+      - name: Verify migrations applied (repo == live DB)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
+        run: node /tmp/driftcheck.mjs post
 
       - name: Deploy all edge functions from repo source
         env:
