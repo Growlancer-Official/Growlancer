@@ -42,13 +42,8 @@ const ROLES = {
   admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD, start: '/admin' },
 };
 
-async function loginRole(browser, role) {
+async function attemptLogin(browser, role) {
   const cfg = ROLES[role];
-  if (!cfg) throw new Error(`Unknown role: ${role}`);
-  if (!cfg.email || !cfg.password) {
-    console.log(`⊘ ${role}: E2E_${role.toUpperCase()}_EMAIL / _PASSWORD not set — skipping (this is expected until test accounts exist)`);
-    return null;
-  }
 
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
@@ -130,6 +125,34 @@ async function loginRole(browser, role) {
   await context.close();
   console.log(`✔ ${role} logged in → ${file}`);
   return file;
+}
+
+/**
+ * Auth can fail transiently on a CI runner (cold environment, shared-IP rate
+ * limiting on the auth endpoint) — one flaky attempt used to drop a role and
+ * leave the authenticated half of the audit running logged-out. Retry the
+ * whole flow in a fresh context before declaring the role unusable.
+ */
+async function loginRole(browser, role) {
+  const cfg = ROLES[role];
+  if (!cfg) throw new Error(`Unknown role: ${role}`);
+  if (!cfg.email || !cfg.password) {
+    console.log(`⊘ ${role}: E2E_${role.toUpperCase()}_EMAIL / _PASSWORD not set — skipping (this is expected until test accounts exist)`);
+    return null;
+  }
+
+  const ATTEMPTS = 3;
+  let lastError = null;
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    try {
+      return await attemptLogin(browser, role);
+    } catch (err) {
+      lastError = err;
+      console.error(`↻ ${role}: attempt ${attempt}/${ATTEMPTS} failed — ${err.message}`);
+      if (attempt < ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, attempt * 10000));
+    }
+  }
+  throw lastError;
 }
 
 async function main() {
