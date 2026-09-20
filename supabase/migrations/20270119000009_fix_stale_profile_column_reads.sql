@@ -91,10 +91,13 @@ DROP FUNCTION IF EXISTS public.handle_new_user();
 DROP FUNCTION IF EXISTS public.handle_new_profile_private();
 
 -- ─── 3. Referrals: referral_code lives on profiles_private ─────────────────
+-- NOTE: the DEFAULTs on p_new_user_email / p_reason are load-bearing — CREATE OR
+-- REPLACE cannot remove an existing default (SQLSTATE 42P13), and dropping them
+-- would break the callers that pass only the leading arguments.
 CREATE OR REPLACE FUNCTION public.process_referral(
   p_referral_code text,
   p_new_user_id uuid,
-  p_new_user_email text
+  p_new_user_email text DEFAULT ''
 )
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -152,7 +155,7 @@ $$;
 -- ─── 4. Account deletion: request → process → cascade ──────────────────────
 CREATE OR REPLACE FUNCTION public.request_account_deletion(
   p_user_id uuid,
-  p_reason text
+  p_reason text DEFAULT NULL
 )
 RETURNS jsonb
 LANGUAGE plpgsql
