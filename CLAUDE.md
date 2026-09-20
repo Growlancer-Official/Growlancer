@@ -227,6 +227,12 @@ write 403 (column guard hold karta hai), CORS preflight matrix sahi, login 3/3 r
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
 
+⚠️ Known CI red (Sep 20, 2026): CI ka element-audit job fail ho raha hai kyunki `E2E_FREELANCER_*`
+GitHub secret stale hai — Supabase auth logs me `400 invalid_credentials` (client/admin login theek
+chal rahe hain, local `.env.e2e` se teeno roles login karte hain). Fix: repo me
+`node scripts/e2e/create-test-accounts.mjs --push-secrets` (ya `--rotate --push-secrets`). Login
+helper ab ye reason khud report karta hai (timeout ki jagah). Details: report §9.3.
+
 ⚠️ Flagged (founder ka call chahiye): `admin-data` proxy `wallets` / `escrow` / `transactions` par
 bhi direct write karta hai — money tables Security Principle §2 ke hisaab se sirf SECURITY DEFINER
 RPCs se change hone chahiye. UI in write-paths ko use karta nazar nahi aata, par ye money-path

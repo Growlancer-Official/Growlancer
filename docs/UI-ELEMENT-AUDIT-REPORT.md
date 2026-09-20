@@ -385,6 +385,33 @@ all functions redeployed from repo):
 | `OPTIONS` pre-flight, `internship-applications` + `kyc-submit` | `growlancer.com`, a project Vercel **preview** alias and `127.0.0.1:4176` reflected ✅; `growlancer-evil.vercel.app` and `evil.com` get **no** CORS headers ✅; `kyc-submit` no longer returns `*` |
 | `login.mjs --all` (all three roles, fresh sessions) | 3/3 logged in, token persisted — the new empty-session guard did not trip |
 
+### 9.3 CI state — the authenticated audit is red on a stale secret (open, needs the founder)
+
+Three consecutive pushes (`511da5e`, `dc58c7f`, `6201994`) failed the **element-audit job** while
+`lint`, `typecheck` and `unit tests + build` stayed green, and all **five logged-out sweeps passed
+with 0 raw issue flags** (105 / 36 / 72 / 72 / 51 loads). The failure is confined to the federated
+login step: `client` and `admin` log in, **`freelancer` never does**.
+
+This is *not* a product regression — the evidence is unambiguous:
+
+| Evidence | Result |
+|---|---|
+| Local `login.mjs --all=true` against the same build, same backend | **3/3 roles log in** (twice, ~40s each) |
+| Supabase auth logs for the CI window (`07:20Z–07:35Z`) | **3× `400 invalid_credentials`** on `/token` (the 3 retry attempts) + 2× `200` (client, admin) |
+| History | `freelancer` logged in fine in CI on 2026-09-18 (`35335644255`), i.e. the secret went stale *after* that run — `.env.e2e` was rewritten at 18:19 local that day, and `create-test-accounts.mjs` only refreshes GitHub secrets when run with `--push-secrets` |
+
+**Action needed (founder):** re-run `node scripts/e2e/create-test-accounts.mjs --push-secrets`
+(reuses the current `.env.e2e` passwords) or `--rotate --push-secrets` (new passwords), so the
+`E2E_FREELANCER_EMAIL` / `E2E_FREELANCER_PASSWORD` repo secrets match the account again. Secret
+*values* are never printed or committed by that script.
+
+**Harness hardening already in place** so this can never masquerade as flakiness again: the login
+helper waits on the stored Supabase session (not on a redirect), retries a role 3× in fresh
+contexts, and now watches `/auth/v1/token` — a reject is reported as
+`auth endpoint rejected the sign-in (400 invalid_credentials) — the E2E_FREELANCER_* secrets are
+stale; re-run create-test-accounts.mjs --push-secrets`, instead of the old
+"did not reach a dashboard within 30s".
+
 ### 9.2 Flagged, not changed (needs an explicit call)
 
 | # | Severity | Area | Description | Status |
