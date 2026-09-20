@@ -3,21 +3,8 @@
 // Updates withdrawal records and transactions accordingly
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getCorsHeaders } from '../_shared/cors.ts'
 
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0]
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  }
-}
 
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin')

@@ -4,6 +4,7 @@ import {
   ArrowRight, Trash2
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
+import { fetchProfileDirectory } from '../../lib/adminProfileDirectory';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -64,9 +65,9 @@ export function AdminProjectsPage() {
       const data = (await adminQuery(opts)).data;
 
       const projs = (data || []) as AdminProject[];
-      const clientIds = [...new Set(projs.map(p => p.client_id))];
-      const { data: clients } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: clientIds } });
-      const clientMap = new Map((clients || []).map(c => [c.id, { name: c.name, email: c.email }]));
+      // `email` moved to profiles_private (migration 20261221000000) — querying
+      // it from profiles rejected the whole request and blanked the table.
+      const clientMap = await fetchProfileDirectory(projs.map(p => p.client_id));
       const projectsWithClients = projs.map(p => ({ ...p, client: clientMap.get(p.client_id) || null }));
 
       setProjects(projectsWithClients);
@@ -183,6 +184,7 @@ export function AdminProjectsPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              aria-label="Search projects"
               placeholder="Search projects..." className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
           </div>
           <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}

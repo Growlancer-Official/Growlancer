@@ -91,7 +91,18 @@ async function loginRole(browser, role) {
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   const file = path.join(OUT_DIR, `${role}.json`);
-  fs.writeFileSync(file, JSON.stringify(await context.storageState(), null, 2));
+  const state = await context.storageState();
+  // Guard against writing an empty session: if the Supabase token never landed
+  // in storage, every downstream --storage run would silently audit the
+  // logged-out surface instead of failing loudly here.
+  const hasToken = state.origins.some((o) =>
+    o.localStorage.some((e) => e.name.includes('auth-token') && e.value.includes('access_token'))
+  );
+  if (!hasToken) {
+    await context.close();
+    throw new Error(`${role}: session reached the dashboard but no auth token was persisted — refusing to write a useless storage state`);
+  }
+  fs.writeFileSync(file, JSON.stringify(state, null, 2));
   await context.close();
   console.log(`✔ ${role} logged in → ${file}`);
   return file;

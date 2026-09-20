@@ -634,6 +634,7 @@ export function IdentityVerificationPage() {
                             maxLength={10}
                             value={pan}
                             onChange={(e) => setPan(e.target.value.toUpperCase())}
+                            aria-label="Personal PAN number"
                             placeholder="ABCDE1234F"
                             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
                           />
@@ -734,6 +735,7 @@ export function IdentityVerificationPage() {
                                 setBizError(check.valid ? null : check.error || null);
                                 setBizSavedMsg(null);
                               }}
+                              aria-label="GSTIN (optional)"
                               placeholder="22AAAAA0000A1Z5"
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
                             />
@@ -750,6 +752,7 @@ export function IdentityVerificationPage() {
                                 setBizError(check.valid ? null : check.error || null);
                                 setBizSavedMsg(null);
                               }}
+                              aria-label="Udyam registration number (optional)"
                               placeholder="UDYAM-XX-00-0000000"
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                             />
@@ -766,6 +769,7 @@ export function IdentityVerificationPage() {
                                 setBizError(check.valid ? null : check.error || null);
                                 setBizSavedMsg(null);
                               }}
+                              aria-label="Business PAN (optional)"
                               placeholder="ABCDE1234F"
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
                             />

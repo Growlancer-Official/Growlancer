@@ -703,6 +703,7 @@ export function CreateServicePage() {
                       type="text"
                       value={pkg.title}
                       onChange={(e) => updatePackage(pkg.tier, { title: e.target.value })}
+                      aria-label={`${meta.label} package — custom name (optional)`}
                       className="w-full px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white"
                       placeholder={meta.label}
                     />
@@ -713,6 +714,7 @@ export function CreateServicePage() {
                       <label className="block text-xs font-medium text-slate-600 mb-1">Delivery (days)</label>
                       <input
                         type="number"
+                        aria-label={`${meta.label} package — delivery time in days`}
                         min="0"
                         value={pkg.delivery_days}
                         onChange={(e) => {
@@ -726,6 +728,7 @@ export function CreateServicePage() {
                       <label className="block text-xs font-medium text-slate-600 mb-1">Revisions</label>
                       <input
                         type="number"
+                        aria-label={`${meta.label} package — number of revisions`}
                         min="0"
                         value={pkg.revisions}
                         onChange={(e) => {
@@ -747,6 +750,7 @@ export function CreateServicePage() {
                             type="text"
                             value={d}
                             onChange={(e) => updatePackageDeliverable(pkg.tier, i, e.target.value)}
+                            aria-label={`${meta.label} package — deliverable ${i + 1}`}
                             className="flex-1 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all bg-white text-sm"
                             placeholder={i === 0 ? `e.g., ${meta.label} design with 3 pages` : 'Another deliverable'}
                           />
@@ -844,6 +848,7 @@ export function CreateServicePage() {
                 value={addonInput.title}
                 onChange={(e) => setAddonInput({ ...addonInput, title: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAddon())}
+                aria-label="Add-on name"
                 className="flex-1 min-w-[180px] px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                 placeholder="e.g., 48-hour fast delivery"
               />
@@ -854,12 +859,14 @@ export function CreateServicePage() {
                 value={addonInput.price}
                 onChange={(e) => setAddonInput({ ...addonInput, price: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddAddon())}
+                aria-label="Add-on price"
                 className="w-28 px-3 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                 placeholder={`Price ${currencySymbol()}`}
               />
               <button
                 type="button"
                 onClick={handleAddAddon}
+                aria-label="Add add-on"
                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center justify-center gap-3"
               >
                 <Plus className="w-4 h-4" />
@@ -892,6 +899,7 @@ export function CreateServicePage() {
                 type="button"
                 role="switch"
                 aria-checked={formData.accepts_tips}
+                aria-label="Accept tips from clients"
                 onClick={() => setFormData({ ...formData, accepts_tips: !formData.accepts_tips })}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors flex-shrink-0 ${
                   formData.accepts_tips ? 'bg-emerald-600' : 'bg-slate-300'
@@ -925,6 +933,7 @@ export function CreateServicePage() {
               <button
                 type="button"
                 onClick={handleAddFeature}
+                aria-label="Add feature"
                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
@@ -981,6 +990,7 @@ export function CreateServicePage() {
               <button
                 type="button"
                 onClick={handleCustomTag}
+                aria-label="Add tag"
                 className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />

@@ -217,6 +217,7 @@ export function AdminWithdrawalsPage() {
                 max={500000}
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
+                aria-label={`Withdrawal amount in ${currencySymbol()}`}
                 placeholder="100 – 5,00,000"
                 className="w-full pl-8 pr-3 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 placeholder:text-slate-600"
               />

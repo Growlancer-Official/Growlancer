@@ -242,6 +242,7 @@ export function ServicesPage() {
           <input
             type="text"
             placeholder="Search services..."
+            aria-label="Search my services"
             value={searchTerm}
             onChange={e => handleSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"

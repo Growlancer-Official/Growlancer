@@ -204,7 +204,28 @@ jo Windows par fit hain wahan overflow kar sakte hain (fixed: nav apna scroll-co
 Expected-error console noise is downgraded to `console.warn` in lib code so strict-audit
 stays green.
 
+✅ Profiles-PII fallout sweep (Sep 20, 2026) — migration `20261221000000` ne `email`,
+`onboarding_completed`, `suspended_at`, `is_admin` aur `bio` `profiles` se hata diye the, par kuch
+call-sites peeche reh gaye the → poore admin console ke tables khaali aa rahe the (metrics, users,
+projects, contracts, payments, subscriptions, certificates), aur `subscription-billing-cron`,
+`milestone-auto-release`, `email-notifications`, `ai-matching` bhi chup-chaap fail ho rahe the.
+Fix: naya shared helper `src/lib/adminProfileDirectory.ts` (naam `profiles` se, email
+`profiles_private` se) + `admin-data` me `profiles_private` allow (column-guard ke saath: `is_admin`
+/ `email` / `phone` proxy se write nahi ho sakte). CORS recurrence bhi close hui — 16 edge
+functions apni purani private allowlist (sirf `localhost:5173` + prod) chal rahe the aur `kyc-submit`
+/ `verify-document` `*` wildcard de rahe the; sab `_shared/cors.ts` par aa gaye, aur
+`src/test/cors.test.ts` ab fail karta hai agar koi dobara apna CORS likhe. Admin a11y ke 5 inputs +
+2 icon-buttons fix, `login.mjs` tokenless session likhne se mana karta hai, CSP me
+`cdn.fontshare.com` add. Verify: typecheck + 150 tests + build clean; dashboard 72/0, client 72/0,
+admin 51 loads par 0 a11y (data errors sirf backend deploy ke baad clear honge).
+Details: `docs/UI-ELEMENT-AUDIT-REPORT.md` §9.
+
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
+
+⚠️ Flagged (founder ka call chahiye): `admin-data` proxy `wallets` / `escrow` / `transactions` par
+bhi direct write karta hai — money tables Security Principle §2 ke hisaab se sirf SECURITY DEFINER
+RPCs se change hone chahiye. UI in write-paths ko use karta nazar nahi aata, par ye money-path
+decision hai — chup-chaap change nahi kiya (report §9.2).
 
 Jab in dono ka fix aaye, ye status-section update kar dena taaki future sessions ko pata rahe.

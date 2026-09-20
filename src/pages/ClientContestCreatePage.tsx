@@ -187,6 +187,7 @@ export function ClientContestCreatePage() {
                   min="1"
                   value={formData.prize_amount}
                   onChange={(e) => setFormData({ ...formData, prize_amount: e.target.value })}
+                  aria-label="First prize amount"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                   placeholder="500"
                 />
@@ -199,6 +200,7 @@ export function ClientContestCreatePage() {
                   min="0"
                   value={formData.second_prize}
                   onChange={(e) => setFormData({ ...formData, second_prize: e.target.value })}
+                  aria-label="Second prize amount"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                   placeholder="250"
                 />
@@ -211,6 +213,7 @@ export function ClientContestCreatePage() {
                   min="0"
                   value={formData.third_prize}
                   onChange={(e) => setFormData({ ...formData, third_prize: e.target.value })}
+                  aria-label="Third prize amount"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                   placeholder="100"
                 />
@@ -226,6 +229,7 @@ export function ClientContestCreatePage() {
                   min={new Date().toISOString().split('T')[0]}
                   value={formData.end_date}
                   onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
+                  aria-label="Contest end date"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                 />
               </div>
@@ -237,6 +241,7 @@ export function ClientContestCreatePage() {
                   min="0"
                   value={formData.max_submissions}
                   onChange={(e) => setFormData({ ...formData, max_submissions: e.target.value })}
+                  aria-label="Maximum submissions per participant (0 means unlimited)"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                   placeholder="0"
                 />
@@ -265,6 +270,7 @@ export function ClientContestCreatePage() {
               <button
                 type="button"
                 onClick={handleCustomSkill}
+                aria-label="Add skill"
                 className="inline-flex items-center justify-center gap-3 px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />

@@ -824,6 +824,7 @@ export function ProjectFeedPage() {
             <input
               type="text"
               placeholder="Search projects..."
+              aria-label="Search projects"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 w-48"

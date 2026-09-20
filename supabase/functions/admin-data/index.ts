@@ -8,7 +8,7 @@ import { sendEmail } from '../_shared/brevo.ts'
 
 // Allowed tables for admin CRUD operations — restricts the generic proxy
 const ALLOWED_TABLES = [
-  'profiles', 'freelancer_profiles', 'client_profiles',
+  'profiles', 'profiles_private', 'freelancer_profiles', 'client_profiles',
   'projects', 'proposals', 'contracts', 'escrow',
   'transactions', 'withdrawals', 'subscriptions', 'subscription_plans',
   'services', 'messages', 'notifications', 'reviews',
@@ -30,6 +30,22 @@ const ALLOWED_TABLES = [
   'milestones', 'workspace_activity_logs', 'fraud_events',
   'deletion_failures',
 ];
+
+// profiles_private holds PII + the admin flag itself. The admin console only
+// ever flips suspension / onboarding state on it, so writes through this
+// generic proxy are narrowed to those columns — otherwise a single admin
+// request could rewrite `is_admin` (granting admin to anyone), `email` or
+// `phone` on any row.
+const ALLOWED_PRIVATE_PROFILE_COLUMNS = [
+  'id', 'suspended_at', 'suspend_reason', 'suspended_by', 'banned_at', 'onboarding_completed',
+];
+
+/** Keys in an profiles_private payload that this proxy refuses to write. */
+function disallowedPrivateProfileColumns(payload: Record<string, unknown>): string[] {
+  return Object.keys(payload || {}).filter(
+    (key) => !ALLOWED_PRIVATE_PROFILE_COLUMNS.includes(key),
+  );
+}
 
 // Rate limiting for failed admin auth: max 10 failed attempts per IP per 15 minutes
 import { getCorsHeaders } from '../_shared/cors.ts';
@@ -1136,6 +1152,14 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      if (table === 'profiles_private') {
+        const rejected = disallowedPrivateProfileColumns(insertData)
+        if (rejected.length > 0) {
+          return new Response(JSON.stringify({ error: `Column(s) not allowed on profiles_private: ${rejected.join(', ')}` }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      }
 
       const { data, error } = await supabaseClient
         .from(table)
@@ -1167,6 +1191,14 @@ Deno.serve(async (req) => {
         return new Response(JSON.stringify({ error: `Table '${table}' is not allowed for admin updates` }), {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
+      }
+      if (table === 'profiles_private') {
+        const rejected = disallowedPrivateProfileColumns(updateData)
+        if (rejected.length > 0) {
+          return new Response(JSON.stringify({ error: `Column(s) not allowed on profiles_private: ${rejected.join(', ')}` }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
       }
 
       const idCol = id_field || 'id'

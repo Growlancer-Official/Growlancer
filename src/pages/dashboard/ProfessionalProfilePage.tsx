@@ -952,13 +952,13 @@ export function ProfessionalProfilePage() {
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleAvatarUpload} className="hidden" />
-              <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}
+              <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} aria-label="Upload profile photo"
                 className="absolute bottom-0 right-0 w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg">
                 {uploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
               </button>
 
               {profile?.avatar && (
-                <button onClick={() => setConfirmAvatarDelete(true)} className="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow">
+                <button onClick={() => setConfirmAvatarDelete(true)} aria-label="Remove profile photo" className="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}

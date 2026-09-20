@@ -13,6 +13,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { sendEmail } from '../_shared/brevo.ts';
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
 
@@ -77,22 +78,6 @@ function buildSupportTicketHtml(name: string, ticketId: string, ticketSubject?: 
   )
 }
 
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-}
 
 // ─── Email Sender (Brevo) ────────────────────────────────────────────────
 // Real transactional email via the shared Brevo helper. Falls back to a
@@ -548,22 +533,34 @@ Deno.serve(async (req) => {
       if (disputeId) {
         const { data: d } = await supabase
           .from('disputes')
-          .select('client_id, freelancer_id, client:profiles!disputes_client_id_fkey(email), freelancer:profiles!disputes_freelancer_id_fkey(email)')
+          .select('client_id, freelancer_id')
           .eq('id', disputeId)
           .maybeSingle();
         const callerIsParty = !!d &&
           (d.client_id === user.id || d.freelancer_id === user.id);
-        const partyEmails = [
-          String((d?.client as { email?: string } | null)?.email ?? '').toLowerCase(),
-          String((d?.freelancer as { email?: string } | null)?.email ?? '').toLowerCase(),
-        ].filter(Boolean);
+        // Emails come from profiles_private — the old embedded
+        // profiles(email) join broke once migration 20261221000000 dropped
+        // the column, which silently denied every legitimate dispute email.
+        let partyEmails: string[] = [];
+        if (callerIsParty && d) {
+          const { data: parties } = await supabase
+            .from('profiles_private')
+            .select('email')
+            .in('id', [d.client_id, d.freelancer_id]);
+          partyEmails = (parties ?? [])
+            .map((p) => String(p.email ?? '').trim().toLowerCase())
+            .filter(Boolean);
+        }
         recipientAuthorized = callerIsParty && partyEmails.includes(requestedEmail);
       }
     } else {
       // The recipient must be a registered user who shares a contract
       // with the caller (escrow, milestone, or dispute counterparty).
+      // Look the recipient up by email in profiles_private (email moved there
+      // in migration 20261221000000; filtering profiles by email returned
+      // nothing, so every counterparty email was rejected as unauthorized).
       const { data: recipientProfile } = await supabase
-        .from('profiles')
+        .from('profiles_private')
         .select('id')
         .eq('email', requestedEmail)
         .maybeSingle();

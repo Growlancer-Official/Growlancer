@@ -359,7 +359,7 @@ export function AdminDisputesPage() {
             <span className="ml-1 opacity-60">({disputes.filter(d => status === 'all' || d.status === status).length})</span>
           </button>
         ))}
-        <button onClick={() => void fetchDisputes()} className="ml-auto p-1.5 hover:bg-white/5 rounded-lg text-slate-400 transition-colors">
+        <button onClick={() => void fetchDisputes()} aria-label="Refresh disputes" className="ml-auto p-1.5 hover:bg-white/5 rounded-lg text-slate-400 transition-colors">
           <RefreshCw className={'w-4 h-4 ' + (loading ? 'animate-spin' : '')} />
         </button>
       </div>

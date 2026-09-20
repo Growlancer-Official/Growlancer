@@ -32,8 +32,10 @@ app.use((req, res, next) => {
   // Baseline CSP: Vite dev server injects inline scripts/styles, so keep
   // 'unsafe-inline' for style and allow self + Razorpay/PayPal scripts.
   // Google Fonts (fonts.googleapis.com / fonts.gstatic.com) and Fontshare
-  // (api.fontshare.com) are loaded via <link> in pages/+Head.tsx — they must
-  // be allowed in style-src/font-src or the typography silently breaks.
+  // (api.fontshare.com + cdn.fontshare.com, which serves the actual woff2)
+  // are loaded via <link> in pages/+Head.tsx — they must be allowed in
+  // style-src/font-src or the typography silently breaks. Must stay in sync
+  // with vercel.json, which carries the production header.
   // Supabase realtime uses wss:// so connect-src includes wss://*.supabase.co.
   res.setHeader(
     'Content-Security-Policy',
@@ -41,8 +43,8 @@ app.use((req, res, next) => {
       "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://*.paypal.com https://*.paypalobjects.com; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; " +
       "img-src 'self' data: blob: https:; " +
-      "font-src 'self' data: https://fonts.gstatic.com https://api.fontshare.com; " +
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.paypal.com https://api.razorpay.com https://checkout.razorpay.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.fontshare.com https://o4511722119495680.ingest.us.sentry.io; " +
+      "font-src 'self' data: https://fonts.gstatic.com https://api.fontshare.com https://cdn.fontshare.com; " +
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.paypal.com https://api.razorpay.com https://checkout.razorpay.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.fontshare.com https://cdn.fontshare.com https://o4511722119495680.ingest.us.sentry.io; " +
       "frame-src 'self' https://checkout.razorpay.com https://*.paypal.com; " +
       "media-src 'self' blob:; " +
       "object-src 'none'; base-uri 'self'; form-action 'self'"

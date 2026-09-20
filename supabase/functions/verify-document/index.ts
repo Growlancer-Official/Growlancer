@@ -15,6 +15,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 interface VerifyRequest {
   image_url: string;
@@ -134,11 +135,11 @@ async function fetchImageAsBase64(url: string, userId: string): Promise<string> 
 }
 
 serve(async (req: Request) => {
+  // Shared allowlist instead of a wildcard — document verification payloads
+  // are PII and must not be readable by arbitrary websites.
   const headers = {
+    ...getCorsHeaders(req.headers.get('origin'), 'POST, OPTIONS'),
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 
   if (req.method === 'OPTIONS') {

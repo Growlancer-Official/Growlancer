@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import { AI_API_KEY, callAI } from '../_shared/ai.ts';
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -21,22 +22,6 @@ const CLIENT_FAIR_USE_DAILY_LIMIT = 60; // client fields — abuse guard only
 const ROUTE = 'ai-writer';
 const MAX_INPUT_LEN = 2000;
 
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-}
 
 const FIELDS = [
   'project_title',

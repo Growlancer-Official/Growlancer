@@ -5,6 +5,7 @@
 //      BREVO_API_KEY is configured (graceful no-op fallback otherwise)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendEmail } from '../_shared/brevo.ts'
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const REPORT_EMAIL = Deno.env.get('REPORT_EMAIL') ?? 'growlancer.own@gmail.com'
 const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
@@ -19,22 +20,6 @@ function escapeHtml(str: string): string {
     .replace(/'/g, '&#039;');
 }
 
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-  };
-}
 
 // ─── Email Sender (Brevo when configured — graceful no-op otherwise) ───────
 async function sendReportEmail(payload: {

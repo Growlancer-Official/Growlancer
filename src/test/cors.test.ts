@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { getCorsHeaders } from '../../supabase/functions/_shared/cors';
 
 /**
@@ -73,5 +76,51 @@ describe('getCorsHeaders allowlist', () => {
       'POST, OPTIONS'
     );
     expect(getCorsHeaders('https://evil.com', 'POST, OPTIONS')).toEqual({});
+  });
+});
+
+/**
+ * The allowlist is only a single source of truth if nothing else re-implements
+ * it. 16 edge functions used to carry a private copy that still permitted only
+ * `localhost:5173` + production — every browser call from a Vercel preview or
+ * another dev port was blocked, and two more answered with a `*` wildcard.
+ * This test fails if any function starts hand-rolling CORS again.
+ */
+describe('edge functions all use the shared CORS helper', () => {
+  const functionsDir = path.resolve(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '../../supabase/functions',
+  );
+
+  const functionSources = fs
+    .readdirSync(functionsDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name !== '_shared')
+    .map((entry) => path.join(functionsDir, entry.name, 'index.ts'))
+    .filter((file) => fs.existsSync(file))
+    .map((file) => ({ name: path.relative(functionsDir, file), source: fs.readFileSync(file, 'utf8') }));
+
+  it('finds the edge functions (guards against a broken path)', () => {
+    expect(functionSources.length).toBeGreaterThan(20);
+  });
+
+  it('no function sets Access-Control-Allow-Origin on its own', () => {
+    const offenders = functionSources
+      .filter(({ source }) => source.includes('Access-Control-Allow-Origin'))
+      .map(({ name }) => name);
+    expect(offenders).toEqual([]);
+  });
+
+  it('no function keeps a private origin allowlist', () => {
+    const offenders = functionSources
+      .filter(({ source }) => source.includes('ALLOWED_ORIGINS'))
+      .map(({ name }) => name);
+    expect(offenders).toEqual([]);
+  });
+
+  it('no function answers with a wildcard Access-Control-Allow-Origin', () => {
+    const offenders = functionSources
+      .filter(({ source }) => /Access-Control-Allow-Origin['"]?\s*:\s*['"]\*/.test(source))
+      .map(({ name }) => name);
+    expect(offenders).toEqual([]);
   });
 });

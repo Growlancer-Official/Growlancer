@@ -7,6 +7,7 @@
 
 import { supabase } from './supabase';
 import { adminQuery, adminUpdate } from './adminDataProxy';
+import { fetchProfileDirectory } from './adminProfileDirectory';
 
 export type CertificateType = 'skill_test' | 'platform' | 'internship' | 'achievement' | 'lor';
 export type CertStatus = 'active' | 'revoked' | 'expired';
@@ -181,11 +182,12 @@ export async function getAllCertificates(options?: {
     const { data } = await adminQuery<Certificate>(opts);
     const certs = data || [];
 
-    // Fetch issuer names
+    // Fetch issuer names + emails. `email` moved to profiles_private
+    // (migration 20261221000000) — querying it from profiles rejected the
+    // whole request, so every issuer rendered as missing.
     const issuerIds = [...new Set(certs.map(c => c.issued_by).filter(Boolean))] as string[];
     if (issuerIds.length > 0) {
-      const { data: profiles } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: issuerIds } });
-      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
+      const profileMap = await fetchProfileDirectory(issuerIds);
       certs.forEach(c => {
         c.issuer = c.issued_by ? profileMap.get(c.issued_by) || null : null;
       });

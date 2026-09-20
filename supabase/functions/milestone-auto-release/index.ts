@@ -213,18 +213,21 @@ serve(async (req: Request) => {
         },
       });
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email, name')
-        .eq('id', r.clientId)
-        .maybeSingle();
+      // `email` moved to profiles_private (migration 20261221000000) — keeping
+      // it in the profiles select made this lookup fail, so the client silently
+      // never received the auto-release reminder.
+      const [{ data: profile }, { data: clientPrivate }] = await Promise.all([
+        supabase.from('profiles').select('name').eq('id', r.clientId).maybeSingle(),
+        supabase.from('profiles_private').select('email').eq('id', r.clientId).maybeSingle(),
+      ]);
+      const clientEmail = String(clientPrivate?.email ?? '').trim();
 
-      if (profile?.email) {
+      if (clientEmail) {
         await sendEmailSafe({
-          to: profile.email,
-          toName: profile.name || 'there',
+          to: clientEmail,
+          toName: profile?.name || 'there',
           subject: `Review pending — auto-release in ~${hoursLeftRound}h`,
-          htmlBody: `<p>Hi ${escapeHtml(profile.name || 'there')},</p>
+          htmlBody: `<p>Hi ${escapeHtml(profile?.name || 'there')},</p>
             <p>The freelancer delivered the full project on your contract.</p>
             <p>If you do not review and release the payment within the next <strong>~${hoursLeftRound} hours</strong>,
             the escrow will be released to the freelancer automatically.</p>
@@ -266,19 +269,20 @@ serve(async (req: Request) => {
         },
       });
 
-      // Email the client too (they may not be in-app).
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('email, name')
-        .eq('id', r.clientId)
-        .maybeSingle();
+      // Email the client too (they may not be in-app). `email` lives in
+      // profiles_private since migration 20261221000000.
+      const [{ data: profile }, { data: clientPrivate }] = await Promise.all([
+        supabase.from('profiles').select('name').eq('id', r.clientId).maybeSingle(),
+        supabase.from('profiles_private').select('email').eq('id', r.clientId).maybeSingle(),
+      ]);
+      const clientEmail = String(clientPrivate?.email ?? '').trim();
 
-      if (profile?.email) {
+      if (clientEmail) {
         await sendEmailSafe({
-          to: profile.email,
-          toName: profile.name || 'there',
+          to: clientEmail,
+          toName: profile?.name || 'there',
           subject: `Review pending — auto-release in ~${hoursLeftRound}h`,
-          htmlBody: `<p>Hi ${escapeHtml(profile.name || 'there')},</p>
+          htmlBody: `<p>Hi ${escapeHtml(profile?.name || 'there')},</p>
             <p>The freelancer delivered <strong>"${escapeHtml(r.title)}"</strong> on your contract.</p>
             <p>If you do not review and release the payment within the next <strong>~${hoursLeftRound} hours</strong>,
             the escrow will be released to the freelancer automatically.</p>

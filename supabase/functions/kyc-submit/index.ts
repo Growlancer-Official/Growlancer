@@ -32,6 +32,7 @@
 
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
@@ -79,11 +80,8 @@ async function resolveProviderConfig(service: any): Promise<{
   return { token: envToken.trim() || null, mode: 'production', source: envToken ? 'env' : 'none' };
 }
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, apikey, x-client-info',
-};
+// CORS comes from the shared allowlist (no wildcard): KYC payloads are PII,
+// so only known app origins may read the response.
 
 // ── Rate limiting (DB-backed, same pattern as verify-document) ──────────────
 async function checkRateLimit(client: any, identifier: string): Promise<boolean> {
@@ -313,6 +311,8 @@ async function findDuplicateIdentity(
 // Main handler
 // ═══════════════════════════════════════════════════════════════════════════
 serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req.headers.get('origin'), 'POST, OPTIONS');
+
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
 
   try {

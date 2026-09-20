@@ -326,3 +326,61 @@ function, after Backend Deploy #6 redeployed the functions from the repo):
 | # | Severity | Area | Description | Evidence | Status |
 |---|---|---|---|---|---|
 | 12 | **Low** | Cookie consent banner vs. dashboard sidebar | The consent banner is a fixed `z-50 bottom-0` full-width bar, so until it is dismissed it sits **on top of** the dashboard sidebar's bottom controls (Homepage / Logout) — those two clicks are swallowed while the banner is up. Impact is limited: the banner is the first interactive thing on the page and disappears on Accept / Reject / Customize, and the same Logout action remains reachable from the header profile menu, so no user is locked out. | `logout-flow.mjs`: clicking sidebar Logout while the banner was up produced a Playwright "subtree intercepts pointer events" timeout against `div.fixed.bottom-0.left-0.right-0.z-50` (the banner's own root class in `CookieConsent.tsx:187`); dismissed → flow passes 5/5 | **Open (flagged)** — the E2E now accepts consent first. A fix (reserve bottom space while consent is undecided, or dock the banner clear of the sidebar) is a visual/design change to a compliance surface, so it is left for an explicit call rather than changed silently. |
+
+---
+
+## 9. Second authenticated pass — the profiles PII fallout (2026-09-20)
+
+**Why:** re-running the authenticated admin sweep (fresh production build, same 17 admin URLs ×
+3 viewports) still showed **every admin route failing to load its data** (`Failed to fetch …`,
+`FunctionsHttpError`, `FunctionsFetchError`). The cause turned out to be far wider than the admin
+console: the profiles PII split (migration `20261221000000`) moved `email`, `phone`, `is_admin`,
+`onboarding_completed`, `referral_code` and `suspended_at` off `public.profiles`, but **only part
+of the codebase was migrated at the time**. Anything still reading a moved column *from
+`profiles`* is rejected by PostgREST for the whole request — and because those reads sit inside
+`try { … }` blocks, the failure surfaced as **empty tables and generic toasts** instead of an
+error anyone would notice. `bio` is gone from `profiles` too (it lives on `freelancer_profiles`).
+
+**Live schema check (source of truth, `information_schema` via the Supabase MCP):**
+
+| table | columns |
+|---|---|
+| `profiles` | `id, role, name, avatar, is_pro, created_at, updated_at, rating, total_reviews, deleted_at, country, verification_status, kyc_verified_at, name_changed_at` |
+| `profiles_private` | `id, email, phone, is_admin, suspended_at, suspend_reason, suspended_by, banned_at, onboarding_completed, referral_code, created_at, updated_at` |
+
+**Defects this pass found and closed** (continuing the §4/§8 log):
+
+| # | Severity | Area | Description | Evidence | Status |
+|---|---|---|---|---|---|
+| 13 | **High** | Admin console — 7 pages | `profiles_private` was **not in `admin-data`'s `ALLOWED_TABLES`**, and the admin surfaces still asked `profiles` for `email` / `onboarding_completed` / `suspended_at` (all moved). Every admin request was rejected: users, projects, contracts, payments, subscriptions, finance and certificates rendered **empty tables**, the dashboard's metrics and anomaly detectors showed nothing, and suspend/reactivate wrote to columns that no longer exist. | Authenticated admin run: 24 page errors (`Failed to fetch user stats`, `Failed to fetch subscriptions`, …) on `/admin`, `/admin/users`, `/admin/projects`, `/admin/contracts`, `/admin/payments`, `/admin/finance`, `/admin/subscriptions`; live schema check above | **Closed** — new shared helper `src/lib/adminProfileDirectory.ts` (name from `profiles`, email from `profiles_private`) with 6 call sites migrated; `AdminDashboard` metrics + both anomaly detectors read `profiles_private`; `admin-data` allows `profiles_private` **with a column guard** (`is_admin` / `email` / `phone` cannot be rewritten through the generic proxy). 5 unit tests. |
+| 14 | **High** | `subscription-billing-cron` | `.select('*, profiles!inner(email, name), …')` — the embedded join referenced a dropped column, so the whole subscription query failed: **expired trials were never converted, renewals were never charged, and no billing/trial/renewal email went out.** Nobody would have seen an error, because the cron only logs its own `results` array. | repo-wide scan for moved columns + live schema check | **Closed** — join keeps `profiles!inner(name)`, emails resolve from `profiles_private` via a new `fetchPrivateEmails()` batch helper; `sendBillingEmail` now logs a warning instead of silently "sending" to an empty address. |
+| 15 | **Medium** | `milestone-auto-release` | Two `profiles.select('email, name')` lookups (full-project auto-release reminder + per-milestone reminder) failed the same way → the client never received the "escrow will be released in ~Nh" email, even though the notification row was inserted. | source read + live schema check | **Closed** — `name` from `profiles`, `email` from `profiles_private` (both spots). |
+| 16 | **Medium** | `email-notifications` | Recipient authorization used an embedded `profiles(email)` join for disputes and `.eq('email', …)` on `profiles` for counterparties — both broken, so **every legitimate dispute/counterparty email was rejected as `Forbidden`** (403) while looking like a security decision. | source read + live schema check | **Closed** — dispute branch reads `client_id`/`freelancer_id` then the two parties' emails from `profiles_private`; recipient lookup by email now queries `profiles_private`. Authorization semantics unchanged (caller must still be a party / share a contract). |
+| 17 | **Medium** | `ai-matching` | `profiles.bio` was selected for the freelancer pool — `bio` was dropped from `profiles`, so the query failed and the function returned "Failed to fetch freelancers": **AI matching was dead for every client** (a free-for-life promise feature). | source read + live schema check | **Closed** — `bio` moved into the `freelancer_profiles` sub-select where the column actually lives. |
+| 18 | **Medium** | Edge functions — CORS, recurrence | Defect #5 was closed only for functions importing `_shared/cors.ts`. **16 functions still carried a private copy** of the allowlist that permitted `localhost:5173` + production only — so browser calls from a Vercel **preview** deployment or any other dev/E2E port were blocked, which is exactly what the admin sweep showed on `/admin/internships` (`FunctionsFetchError` = blocked pre-flight, not a server error). Two more, `kyc-submit` and `verify-document` (both PII flows), answered with a **`Access-Control-Allow-Origin: *` wildcard**. | repo-wide scan (`ALLOWED_ORIGINS` in 16 functions; wildcard in 2) + authenticated run | **Closed** — all 16 migrated to the shared helper (their method lists folded into the shared default superset; call sites unchanged), both wildcards narrowed to the shared allowlist. `src/test/cors.test.ts` now **fails if any function re-implements CORS or answers with a wildcard** (2 new guard tests). |
+| 19 | **Low** | Admin a11y | 5 inputs with no accessible name (2 search boxes whose placeholders are <20 chars per HTML-AAM rules, a withdrawal amount box whose `<label>` had no `for`, 2 date filters) and 2 unnamed icon-only refresh buttons. | Authenticated admin run: `unlabeledInputs` / `unnamedInteractive` selectors | **Closed** — `aria-label` on all 7, matching the action each performs. |
+| 20 | **Low** | CSP / typography | `font-src` was missing `cdn.fontshare.com`, which serves the actual woff2 files — the Fontshare typeface silently fell back to a system font in production. | CSP inspection vs. the `<link>` tags in `pages/+Head.tsx` | **Closed** — `cdn.fontshare.com` added to `font-src` **and** `connect-src` in both `server.js` and `vercel.json` (they must stay in sync; noted in the comment). |
+| 21 | *(tooling)* | `scripts/e2e/login.mjs` | The role login wrote a storage-state file even when **no auth token was persisted**, so a broken login produced a "successful" audit of the *logged-out* surface — a silent false-negative for the whole authenticated sweep. | storage-state probe (no `sb-*-auth-token` in `localStorage`) | **Closed** — the script now refuses to write a tokenless session and fails loudly instead. |
+
+### 9.1 Verification after this pass (production build, `server.js` on :4176)
+
+| Group | Session | Loads | Raw issue flags | Notes |
+|---|---|---|---|---|
+| `--group=dashboard` | freelancer | 72 | **0** | no page/console errors, no a11y findings |
+| `--group=client` | client | 72 | **0** | idem |
+| `--group=admin` | admin | 51 | **0 a11y** | 24 console errors were the admin-data rejections above (10 distinct × 3 viewports) |
+
+`npm run typecheck` clean · `npm test` **150 passed** (11 files — includes the new
+`adminProfileDirectory` tests and the CORS guard tests) · `npm run build` clean.
+
+> **Still to verify after deploy:** the admin-data fix lives in an edge function, so the 24 admin
+> console errors can only clear once the backend deploy republishes it. The frontend half is
+> verified; the backend half is verified *by inspection + the unit/guard tests* until that deploy
+> lands (then re-run `--group=admin` for a clean 0-error artifact, and `OPTIONS` pre-flights against
+> the 18 migrated functions).
+
+### 9.2 Flagged, not changed (needs an explicit call)
+
+| # | Severity | Area | Description | Status |
+|---|---|---|---|---|
+| 22 | **Info / design** | `admin-data` table scope | The generic admin proxy writes to `wallets`, `escrow` and `transactions` directly (pre-existing, unchanged by this pass). Money tables are supposed to change only through `SECURITY DEFINER` RPCs with their ledger invariants (Security Principle §2) — an admin-console write bypasses those. The admin UI does not appear to use the financial tables' write paths, so the narrowing is likely safe, but it is a money-path decision, not a UI-audit one. | **Open (flagged for the founder)** — either drop the financial tables from the proxy's `ALLOWED_TABLES` (write side) or route admin adjustments through dedicated RPCs. |

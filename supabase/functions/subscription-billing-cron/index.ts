@@ -49,7 +49,32 @@ async function sendBillingEmail(params: {
   htmlBody: string;
 }): Promise<boolean> {
   void params.toName;
-  return sendEmail({ to: params.to, subject: params.subject, html: params.htmlBody });
+  const to = String(params.to ?? '').trim();
+  if (!to) {
+    // Never let a missing address look like a delivered email.
+    console.warn(`[billing] skipping email "${params.subject}" — no address on file`);
+    return false;
+  }
+  return sendEmail({ to, subject: params.subject, html: params.htmlBody });
+}
+
+/**
+ * Resolve user emails from profiles_private (migration 20261221000000 moved
+ * `email` off public.profiles — the old embedded profiles(email) join made the
+ * whole subscription query fail, so trials and renewals silently stopped).
+ */
+async function fetchPrivateEmails(userIds: string[]): Promise<Map<string, string>> {
+  const unique = [...new Set(userIds.filter(Boolean))];
+  if (unique.length === 0) return new Map();
+  const { data, error } = await supabase
+    .from('profiles_private')
+    .select('id, email')
+    .in('id', unique);
+  if (error) {
+    console.error('[billing] failed to load emails from profiles_private:', error.message);
+    return new Map();
+  }
+  return new Map((data ?? []).map((row) => [row.id, String(row.email ?? '').trim()]));
 }
 
 // ── REAL renewal charge via Razorpay saved-card token ────────────────────────
@@ -171,16 +196,17 @@ serve(async (req: Request) => {
     // 1. Process trial subscriptions that have expired
     const { data: expiredTrials, error: trialError } = await supabase
       .from('subscriptions')
-      .select('*, profiles!inner(email, name), subscription_plans!inner(price, trial_days, name)')
+      .select('*, profiles!inner(name), subscription_plans!inner(price, trial_days, name)')
       .eq('status', 'trial')
       .lt('trial_end_date', now);
 
     if (trialError) console.error('Error fetching expired trials:', trialError);
 
     if (expiredTrials) {
+      const trialEmails = await fetchPrivateEmails(expiredTrials.map((s) => s.user_id));
       for (const sub of expiredTrials) {
         try {
-          const userEmail = (sub.profiles as any)?.email;
+          const userEmail = trialEmails.get(sub.user_id) ?? '';
           const userName = (sub.profiles as any)?.name || 'User';
           const planName = (sub.subscription_plans as any)?.name || 'Pro';
           const price = Number((sub.subscription_plans as any)?.price) || 0;
@@ -274,14 +300,15 @@ serve(async (req: Request) => {
 
     const { data: upcomingExpiry } = await supabase
       .from('subscriptions')
-      .select('*, profiles!inner(email, name), subscription_plans!inner(name, trial_days)')
+      .select('*, profiles!inner(name), subscription_plans!inner(name, trial_days)')
       .eq('status', 'trial')
       .gte('trial_end_date', reminderEnd + 'T00:00:00')
       .lt('trial_end_date', reminderEnd + 'T23:59:59');
 
     if (upcomingExpiry) {
+      const reminderEmails = await fetchPrivateEmails(upcomingExpiry.map((s) => s.user_id));
       for (const sub of upcomingExpiry) {
-        const userEmail = (sub.profiles as any)?.email;
+        const userEmail = reminderEmails.get(sub.user_id) ?? '';
         const userName = (sub.profiles as any)?.name || 'User';
         const planName = (sub.subscription_plans as any)?.name || 'Pro';
 
@@ -305,14 +332,15 @@ serve(async (req: Request) => {
 
     const { data: renewingSubs } = await supabase
       .from('subscriptions')
-      .select('*, profiles!inner(email, name), subscription_plans!inner(price, name)')
+      .select('*, profiles!inner(name), subscription_plans!inner(price, name)')
       .eq('status', 'active')
       .gte('subscription_end_date', renewalWindowStart.toISOString())
       .lt('subscription_end_date', renewalWindowEnd.toISOString());
 
     if (renewingSubs) {
+      const renewalEmails = await fetchPrivateEmails(renewingSubs.map((s) => s.user_id));
       for (const sub of renewingSubs) {
-        const userEmail = (sub.profiles as any)?.email;
+        const userEmail = renewalEmails.get(sub.user_id) ?? '';
         const userName = (sub.profiles as any)?.name || 'User';
         const planName = (sub.subscription_plans as any)?.name || 'Pro';
         const price = Number((sub.subscription_plans as any)?.price) || 0;

@@ -3,6 +3,7 @@ import {
   Zap, Crown, Loader2, RefreshCw, Search, Ban, Mail, RotateCcw, Clock, Trash2
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
+import { fetchProfileDirectory } from '../../lib/adminProfileDirectory';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -68,9 +69,9 @@ export function AdminSubscriptionsPage() {
       const plansData = (plansRes.data || []) as SubscriptionPlan[];
       const subsData = (subsRes.data || []) as UserSubscription[];
 
-      const userIds = [...new Set(subsData.map(s => s.user_id))];
-      const { data: profiles } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: userIds } });
-      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
+      // `email` moved to profiles_private (migration 20261221000000) — querying
+      // it from profiles rejected the whole request and blanked the table.
+      const profileMap = await fetchProfileDirectory(subsData.map(s => s.user_id));
       const planMap = new Map(plansData.map(p => [p.id, { name: p.name, price: p.price }]));
 
       setPlans(plansData);

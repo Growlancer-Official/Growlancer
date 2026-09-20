@@ -314,6 +314,7 @@ export function ClientPostProjectPage() {
                 <label className="block text-sm font-medium text-slate-700 mb-2">Deadline</label>
                 <input
                   type="date"
+                  aria-label="Project deadline"
                   value={formData.deadline}
                   onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"

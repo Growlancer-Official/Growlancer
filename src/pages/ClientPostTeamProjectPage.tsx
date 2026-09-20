@@ -224,7 +224,7 @@ export function ClientPostTeamProjectPage() {
             <div key={role.key} className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Role {idx + 1}</span>
-                <button type="button" onClick={() => removeRole(role.key)} disabled={roles.length <= 1} className="text-slate-400 hover:text-red-500 disabled:opacity-30">
+                <button type="button" onClick={() => removeRole(role.key)} disabled={roles.length <= 1} aria-label={`Remove role ${idx + 1}`} className="text-slate-400 hover:text-red-500 disabled:opacity-30">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
