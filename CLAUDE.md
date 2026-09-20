@@ -216,9 +216,13 @@ functions apni purani private allowlist (sirf `localhost:5173` + prod) chal rahe
 / `verify-document` `*` wildcard de rahe the; sab `_shared/cors.ts` par aa gaye, aur
 `src/test/cors.test.ts` ab fail karta hai agar koi dobara apna CORS likhe. Admin a11y ke 5 inputs +
 2 icon-buttons fix, `login.mjs` tokenless session likhne se mana karta hai, CSP me
-`cdn.fontshare.com` add. Verify: typecheck + 150 tests + build clean; dashboard 72/0, client 72/0,
-admin 51 loads par 0 a11y (data errors sirf backend deploy ke baad clear honge).
-Details: `docs/UI-ELEMENT-AUDIT-REPORT.md` §9.
+`cdn.fontshare.com` add. Real data render hone par 3 aur galat column-name nikle (`projects.skills`,
+`subscriptions.end_date`, aur `invoices` allow-list me hi nahi tha) — teeno live schema ke against fix.
+Verify (dono backend deploys ke baad, LIVE): typecheck + 150 tests + build clean; dashboard 72/0,
+client 72/0, **admin 51 loads par 0 raw flags** (real rows ke saath); admin-data probes 200+, `is_admin`
+write 403 (column guard hold karta hai), CORS preflight matrix sahi, login 3/3 roles. Deploy: `511da5e`
++ `f6b61a4` pushed to main (Backend Deploy ✓, drift-check clean). Details:
+`docs/UI-ELEMENT-AUDIT-REPORT.md` §9.
 
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.

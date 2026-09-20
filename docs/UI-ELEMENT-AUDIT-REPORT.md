@@ -361,6 +361,7 @@ error anyone would notice. `bio` is gone from `profiles` too (it lives on `freel
 | 19 | **Low** | Admin a11y | 5 inputs with no accessible name (2 search boxes whose placeholders are <20 chars per HTML-AAM rules, a withdrawal amount box whose `<label>` had no `for`, 2 date filters) and 2 unnamed icon-only refresh buttons. | Authenticated admin run: `unlabeledInputs` / `unnamedInteractive` selectors | **Closed** — `aria-label` on all 7, matching the action each performs. |
 | 20 | **Low** | CSP / typography | `font-src` was missing `cdn.fontshare.com`, which serves the actual woff2 files — the Fontshare typeface silently fell back to a system font in production. | CSP inspection vs. the `<link>` tags in `pages/+Head.tsx` | **Closed** — `cdn.fontshare.com` added to `font-src` **and** `connect-src` in both `server.js` and `vercel.json` (they must stay in sync; noted in the comment). |
 | 21 | *(tooling)* | `scripts/e2e/login.mjs` | The role login wrote a storage-state file even when **no auth token was persisted**, so a broken login produced a "successful" audit of the *logged-out* surface — a silent false-negative for the whole authenticated sweep. | storage-state probe (no `sb-*-auth-token` in `localStorage`) | **Closed** — the script now refuses to write a tokenless session and fails loudly instead. |
+| 23 | **Medium** | Admin console — real data | Once admin-data answered again the tables finally rendered rows — which exposed **three more wrong column names** that an empty table could never show: `projects.skills` (live column is `skills_required`), `subscriptions.end_date` (does not exist — the canonical pair is `subscription_start_date` / `subscription_end_date`, `expiry_date` is the legacy mirror; the *cancel* action was writing `end_date` and silently failing too), and `invoices` was **missing from `ALLOWED_TABLES`**, so the finance page could never load. | post-deploy probe of each page's exact query: `500 column projects.skills does not exist`, `500 column subscriptions.end_date does not exist`, `403 Table 'invoices' is not allowed` | **Closed** — all three queries corrected against the live schema (verified 200 with rows), and the row-select/Copy-URL icon buttons that only exist when rows render got accessible names. |
 
 ### 9.1 Verification after this pass (production build, `server.js` on :4176)
 
@@ -368,16 +369,21 @@ error anyone would notice. `bio` is gone from `profiles` too (it lives on `freel
 |---|---|---|---|---|
 | `--group=dashboard` | freelancer | 72 | **0** | no page/console errors, no a11y findings |
 | `--group=client` | client | 72 | **0** | idem |
-| `--group=admin` | admin | 51 | **0 a11y** | 24 console errors were the admin-data rejections above (10 distinct × 3 viewports) |
+| `--group=admin` | admin | 51 | **0** | first run after the backend deploy — real rows in every table, no console errors |
 
 `npm run typecheck` clean · `npm test` **150 passed** (11 files — includes the new
 `adminProfileDirectory` tests and the CORS guard tests) · `npm run build` clean.
 
-> **Still to verify after deploy:** the admin-data fix lives in an edge function, so the 24 admin
-> console errors can only clear once the backend deploy republishes it. The frontend half is
-> verified; the backend half is verified *by inspection + the unit/guard tests* until that deploy
-> lands (then re-run `--group=admin` for a clean 0-error artifact, and `OPTIONS` pre-flights against
-> the 18 migrated functions).
+**Live verification after the two backend deploys** (`backend-deploy.yml`: drift-check → `db push` →
+all functions redeployed from repo):
+
+| Check | Result |
+|---|---|
+| `admin-data` query on `profiles_private`, `invoices`, `projects`, `subscriptions` (admin session, prod URL) | **200** with rows — the pages' exact payloads |
+| `admin-data` write of `is_admin` through the generic proxy | **403** `Column(s) not allowed on profiles_private: is_admin` — the new column guard holds in production |
+| `admin-data` write of `suspended_at` / `suspend_reason` (the legitimate suspend path) | guard passes it through (PostgREST then reports the row does not exist, as expected for a probe UUID) |
+| `OPTIONS` pre-flight, `internship-applications` + `kyc-submit` | `growlancer.com`, a project Vercel **preview** alias and `127.0.0.1:4176` reflected ✅; `growlancer-evil.vercel.app` and `evil.com` get **no** CORS headers ✅; `kyc-submit` no longer returns `*` |
+| `login.mjs --all` (all three roles, fresh sessions) | 3/3 logged in, token persisted — the new empty-session guard did not trip |
 
 ### 9.2 Flagged, not changed (needs an explicit call)
 
