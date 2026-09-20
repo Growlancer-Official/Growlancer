@@ -812,6 +812,9 @@ export function AdminInternshipsPage() {
                   onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}>
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
+                    aria-label={selectedIds.has(app.id)
+                      ? `Deselect ${app.full_name} from bulk actions`
+                      : `Select ${app.full_name} for bulk actions`}
                     className="mt-0.5 shrink-0 hover:text-emerald-400 transition-colors"
                   >
                     {selectedIds.has(app.id) ? (

@@ -674,6 +674,9 @@ export function AdminCertificatesPage() {
                       <div className="flex items-start gap-4 flex-1 min-w-0">
                         <button
                           onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
+                          aria-label={bulkSelectedIds.has(app.id)
+                            ? `Deselect ${app.full_name} from bulk actions`
+                            : `Select ${app.full_name} for bulk actions`}
                           className="mt-2 shrink-0 hover:text-emerald-400 transition-colors"
                         >
                           {bulkSelectedIds.has(app.id) ? (
@@ -714,6 +717,7 @@ export function AdminCertificatesPage() {
                                       {isLOR ? 'LOR' : 'Certificate'} URL
                                     </span>
                                     <button onClick={() => { navigator.clipboard.writeText(url); setCopiedId(`hdr-${app.id}`); setTimeout(() => setCopiedId(null), 2000); }}
+                                      aria-label={`Copy ${isLOR ? 'letter of recommendation' : 'certificate'} URL for ${app.full_name}`}
                                       className="flex items-center gap-0.5 text-[9px] text-slate-500 hover:text-emerald-400 transition-colors">
                                       {copiedId === `hdr-${app.id}` ? <CheckCheck className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                                     </button>

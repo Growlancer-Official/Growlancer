@@ -16,7 +16,14 @@ interface SubscriptionPlan {
 
 interface UserSubscription {
   id: string; user_id: string; plan_id: string; status: string;
-  start_date: string | null; end_date: string | null; created_at: string;
+  // The live table carries BOTH generations of columns: legacy `start_date` /
+  // `expiry_date` and the canonical `subscription_start_date` /
+  // `subscription_end_date` (what the billing cron and the user-facing
+  // subscription page use). Selecting `end_date` rejected the whole request —
+  // that column does not exist, which is why this page showed nothing.
+  start_date: string | null; expiry_date: string | null;
+  subscription_start_date: string | null; subscription_end_date: string | null;
+  created_at: string;
   payment_provider: string | null;
   payment_subscription_id: string | null;
   profile?: { name: string; email: string } | null;
@@ -59,7 +66,7 @@ export function AdminSubscriptionsPage() {
         adminQuery({ table: 'subscription_plans', select: '*', order: 'price', orderDir: 'asc' }),
         adminQuery({
           table: 'subscriptions',
-          select: 'id, user_id, plan_id, status, start_date, end_date, created_at, payment_provider, payment_subscription_id',
+          select: 'id, user_id, plan_id, status, start_date, expiry_date, subscription_start_date, subscription_end_date, created_at, payment_provider, payment_subscription_id',
           order: 'created_at',
           orderDir: 'desc',
           limit: 100,
@@ -118,11 +125,15 @@ export function AdminSubscriptionsPage() {
             }
           }
 
+          // Write the canonical end column (plus the legacy mirror) — `end_date`
+          // does not exist on the live table, so this update used to fail.
+          const cancelledAt = new Date().toISOString();
           await adminUpdate('subscriptions', subId, {
             status: 'cancelled',
-            end_date: new Date().toISOString(),
+            subscription_end_date: cancelledAt,
+            expiry_date: cancelledAt,
             cancel_at_period_end: true,
-            updated_at: new Date().toISOString(),
+            updated_at: cancelledAt,
           });
           await fetchData();
           toast.success(`Subscription cancelled for "${userName}"`);
@@ -288,8 +299,11 @@ export function AdminSubscriptionsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-[10px] text-slate-500">
-                        {sub.start_date ? new Date(sub.start_date).toLocaleDateString() : '—'}
-                        {sub.end_date ? ` → ${new Date(sub.end_date).toLocaleDateString()}` : ''}
+                        {(() => {
+                          const start = sub.subscription_start_date || sub.start_date;
+                          const end = sub.subscription_end_date || sub.expiry_date;
+                          return `${start ? new Date(start).toLocaleDateString() : '—'}${end ? ` → ${new Date(end).toLocaleDateString()}` : ''}`;
+                        })()}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-right">

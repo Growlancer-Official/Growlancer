@@ -13,7 +13,7 @@ import { formatBudgetRange } from '../../utils/date';
 interface AdminProject {
   id: string; title: string; description: string;
   budget_min: number | null; budget_max: number | null;
-  status: string; category: string | null; skills: string[];
+  status: string; category: string | null; skills_required: string[] | null;
   client_id: string; created_at: string; visibility: string | null;
   client?: { name: string; email: string } | null;
 }
@@ -55,7 +55,9 @@ export function AdminProjectsPage() {
     try {
       const opts: any = {
         table: 'projects',
-        select: 'id, title, description, budget_min, budget_max, status, category, skills, client_id, created_at, visibility',
+        // `projects.skills` does not exist — the live column is skills_required.
+        // Selecting the wrong name rejected the request and left the table empty.
+        select: 'id, title, description, budget_min, budget_max, status, category, skills_required, client_id, created_at, visibility',
         order: 'created_at',
         orderDir: 'desc',
         limit: 100,
