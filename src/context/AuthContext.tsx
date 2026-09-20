@@ -1314,10 +1314,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           created = await createUserProfile(data.user.id, email, name, role, referralCode);
         }
 
+        // A signup that succeeds but leaves no profile row is the worst outcome:
+        // the auth account is real, so the user cannot simply sign up again, yet
+        // every protected page needs that row. It is recoverable (syncAuthUser
+        // recreates it on the next load), but it must never be silent — report it
+        // loudly and tell the user what will happen.
+        let profileDeferred = false;
         if (created) {
           devLog('[Auth] Profile created immediately for:', email);
         } else {
-          devWarn('[Auth] Profile creation deferred');
+          profileDeferred = true;
+          devError('[Auth] Profile creation failed twice for', email, '— account exists without a profile row; it will be recreated on the next load');
         }
 
         // ✅ Auto-login: only attempt when email is already confirmed (auto-confirm
@@ -1382,10 +1389,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setIsLoading(false);
         return {
           success: true,
-          message: loginData?.user
-            ? 'Account created successfully! Welcome to Growlancer.'
-            : 'Account created! Check your inbox for a verification link, then log in with your email and password.',
-          needsVerification: !loginData?.user,
+          message: profileDeferred
+            ? 'Account created, but we could not finish setting up your profile. Reload the page (or sign in again) to complete it — if it keeps happening, contact support.'
+            : loginData?.user
+              ? 'Account created successfully! Welcome to Growlancer.'
+              : 'Account created! Check your inbox for a verification link, then log in with your email and password.',
+          needsVerification: !loginData?.user && !profileDeferred,
         };
       }
 

@@ -108,6 +108,10 @@ jobs:
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # Single source of truth for "the authenticated pass can run": seeding needs
+      # the service key, and logging in needs the passwords. Any of these missing
+      # (fork PR, pre-setup) keeps the pass off instead of failing the build.
+      can_seed_e2e: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY != '' && secrets.SUPABASE_URL != '' && secrets.E2E_FREELANCER_PASSWORD != '' && secrets.E2E_CLIENT_PASSWORD != '' && secrets.E2E_ADMIN_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -153,18 +157,22 @@ jobs:
             node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=$group --strict --concurrency=2
           done
 
-      # Authenticated element audit + logout/back-button security. Runs only
       # Seed the disposable accounts right before use. Recreated with the same
       # passwords CI logs in with, so this also repairs a rotated/stale secret.
       - name: Seed E2E test accounts (live only for this run)
-        if: ${{ env.SUPABASE_SERVICE_ROLE_KEY != '' && env.E2E_FREELANCER_PASSWORD != '' }}
+        if: ${{ env.can_seed_e2e == 'true' }}
         run: node scripts/e2e/create-test-accounts.mjs
 
-      # when the E2E_* repo secrets exist (absent on fork PRs). login.mjs
-      # writes storage states to .e2e/ (gitignored); each audit group uses the
-      # matching role's storage so protected pages render logged-in.
+      # Authenticated element audit + logout/back-button security. This needs
+      # accounts that can LOG IN, and the only durable way to guarantee that is to
+      # create them here — so the gate is "can we seed", not "do stale secrets
+      # exist". With the service key missing the pass is skipped rather than run
+      # against accounts that may no longer exist, which is what used to keep this
+      # job red for reasons that had nothing to do with the code under test.
+      # login.mjs writes storage states to .e2e/ (gitignored); each audit group
+      # uses the matching role's storage so protected pages render logged-in.
       - name: Authenticated audit + logout security (freelancer/client/admin)
-        if: ${{ env.E2E_FREELANCER_EMAIL != '' }}
+        if: ${{ env.can_seed_e2e == 'true' }}
         env:
           E2E_CHROME_PATH: ${{ runner.home }}/.cache/chrome-for-testing/chrome-linux64/chrome
         run: |
@@ -188,7 +196,7 @@ jobs:
       # Teardown runs even when the audit failed: leaving test accounts live is the
       # outcome this job must never produce, so cleanup is unconditional.
       - name: Remove E2E test accounts from production
-        if: ${{ always() && env.SUPABASE_SERVICE_ROLE_KEY != '' }}
+        if: ${{ always() && env.can_seed_e2e == 'true' }}
         run: node scripts/e2e/remove-test-accounts.mjs
 
       - name: Upload audit artifacts

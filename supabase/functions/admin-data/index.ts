@@ -31,6 +31,30 @@ const ALLOWED_TABLES = [
   'deletion_failures',
 ];
 
+// Ledger-bearing tables. These stay READABLE here (the admin console lists them)
+// but are not writable through this generic proxy: a raw row update bypasses the
+// balance/escrow invariants that Security Principle §2 requires to live only in
+// SECURITY DEFINER RPCs (row locking, idempotency guard, ledger entry). No client
+// code writes them through this proxy — every call site is a read or a realtime
+// subscription — so this only closes the hole, it does not remove a capability.
+// Anything that genuinely needs to move money must go through an RPC.
+const WRITE_BLOCKED_TABLES = ['wallets', 'escrow', 'transactions'];
+
+/** 403 body when an admin tries to write a ledger-bearing table. */
+function writeBlockedResponse(
+  table: string,
+  verb: string,
+  corsHeaders: Record<string, string>,
+): Response | null {
+  if (!WRITE_BLOCKED_TABLES.includes(table)) return null;
+  return new Response(
+    JSON.stringify({
+      error: `${table} is read-only through this endpoint (${verb} blocked). Financial rows must change through their SECURITY DEFINER RPC so the ledger invariants hold.`,
+    }),
+    { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+  );
+}
+
 // profiles_private holds PII + the admin flag itself. The admin console only
 // ever flips suspension / onboarding state on it, so writes through this
 // generic proxy are narrowed to those columns — otherwise a single admin
@@ -1152,6 +1176,9 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      const blockedInsert = writeBlockedResponse(table, 'insert', corsHeaders);
+      if (blockedInsert) return blockedInsert;
+
       if (table === 'profiles_private') {
         const rejected = disallowedPrivateProfileColumns(insertData)
         if (rejected.length > 0) {
@@ -1192,6 +1219,9 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      const blockedUpdate = writeBlockedResponse(table, 'update', corsHeaders);
+      if (blockedUpdate) return blockedUpdate;
+
       if (table === 'profiles_private') {
         const rejected = disallowedPrivateProfileColumns(updateData)
         if (rejected.length > 0) {
@@ -1234,6 +1264,8 @@ Deno.serve(async (req) => {
           status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         })
       }
+      const blockedDelete = writeBlockedResponse(table, 'delete', corsHeaders);
+      if (blockedDelete) return blockedDelete;
 
       const idCol = id_field || 'id'
       const { data, error } = await supabaseClient

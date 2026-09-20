@@ -151,7 +151,7 @@ export async function createUserProfile(
   });
 
   if (rpcError) {
-    console.warn('[Auth] create_user_profile RPC failed (non-fatal):', rpcError?.message || rpcError);
+    console.error('[Auth] create_user_profile RPC failed:', rpcError?.message || rpcError);
     
     // 🆕 Check if the email already exists (duplicate email with different auth ID)
     // This can happen if user signs up again with same email after previous account was deleted
@@ -203,7 +203,7 @@ export async function createUserProfile(
       }, { onConflict: 'id', ignoreDuplicates: false });
       
       if (insertError) {
-        console.warn('[Auth] Direct profile insert also failed (non-fatal):', insertError.message);
+        console.error('[Auth] Direct profile insert also failed:', insertError.message);
         return null;
       }
       

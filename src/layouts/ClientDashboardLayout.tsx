@@ -417,7 +417,11 @@ export function ClientDashboardLayout() {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 sticky top-0 h-screen hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
+      {
+        /* h-screen minus the cookie banner's published height (0px when it is not
+           showing), so a first visit never buries Homepage / Logout under it. */
+      }
+      <aside className="w-64 sticky top-0 h-[calc(100vh-var(--consent-banner-h,0px))] hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 mb-5 px-2">
           <img 

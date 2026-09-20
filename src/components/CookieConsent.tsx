@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Cookie,
@@ -107,6 +107,7 @@ export function CookieConsent() {
   const [showCustomize, setShowCustomize] = useState(false);
   const [customPrefs, setCustomPrefs] = useState(getDefaultPreferences());
   const [animateIn, setAnimateIn] = useState(false);
+  const bannerRef = useRef<HTMLDivElement | null>(null);
 
   // Load existing consent on mount
   useEffect(() => {
@@ -123,6 +124,33 @@ export function CookieConsent() {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // The banner is fixed to the bottom of the viewport, so on dashboard/client
+  // routes it sat on top of the full-height sidebars — their last two actions
+  // (Homepage / Logout) were unreachable until consent was given. Publish the
+  // banner's real measured height (it reflows: the action buttons wrap on narrow
+  // screens) so those layouts can reserve exactly that much space, and clear it
+  // the moment the banner goes away. Unset = 0px, i.e. full-height as before.
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!showBanner || consent || !el) {
+      document.documentElement.style.removeProperty('--consent-banner-h');
+      return;
+    }
+
+    const apply = () => {
+      document.documentElement.style.setProperty('--consent-banner-h', `${el.offsetHeight}px`);
+    };
+    apply();
+
+    const observer = new ResizeObserver(apply);
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty('--consent-banner-h');
+    };
+  }, [showBanner, consent]);
 
   const handleAcceptAll = useCallback(() => {
     const prefs = saveConsent({
@@ -184,6 +212,7 @@ export function CookieConsent() {
 
       {/* Main Banner */}
       <div
+        ref={bannerRef}
         className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
           animateIn ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
         }`}
