@@ -267,6 +267,46 @@ wo nahi hain, seed/teardown self-skip karte hain aur authenticated pass pehle ki
 Saath me `E2E_*_PASSWORD` secrets bhi wapas chahiye (ya `node scripts/e2e/create-test-accounts.mjs
 --rotate --push-secrets`).
 
+✅ Launch-readiness closure (Sep 20, 2026, `20270119000010`) — `request_account_deletion` ne
+`pg_proc` reading ke baad BHI kaam nahi kiya: ek real user se chalane par `23502` aaya, kyunki
+`user_deletion_requests.confirm_token` / `confirm_token_expires_at` NOT NULL hain bina default ke aur
+INSERT dono nahi de raha tha (aur `notifications.link` likh raha tha, jo column exist hi nahi karta —
+sahi naam `action_url` hai). Matlab account deletion pehle se hi **kabhi** start nahi ho sakta tha.
+Ab token 64-hex-char UUID entropy ke saath generate hota hai + fail-closed assertion NOT NULL columns
+check karta hai. Asli user bankar end-to-end verify kiya (create → sign-in → profile → referral →
+deletion request → full cascade): **9/9 checks**, `delete_user_all_data` `errors: []` aur
+`email_scoped` step chala; throwaway account `finally` me khud ko delete kar deta hai. **Lesson:** do
+round catalog-reading ne wo constraint nahi dekha jo ek asli call ne turant pakad liya — schema
+introspection write-time rejection nahi dikha sakti.
+
+✅ Signup silent-failure band — signup ke peeche ab koi DB trigger nahi hai (`handle_new_user`
+orphaned tha, drop kar diya), isliye profile row sirf browser ke `create_user_profile` call se banti
+hai — aur wo failure `devWarn` tha jab user ko "Account created successfully" dikh raha tha. Ab dono
+fallbacks `console.error` karte hain aur user ko saaf message milta hai (auth account sach me banta
+hai, isliye failure report karna galat hota aur email occupied hone ki wajah se user phas jaata).
+
+✅ `admin-data` money-path band (defect #22 closed) — `wallets` / `escrow` / `transactions` par
+insert/update/delete ab 403, read jaise tha waise. In rows ko sirf SECURITY DEFINER RPCs se badalna
+hota hai (Security Principle §2); app ka har call-site read ya realtime subscription hai, isliye koi
+capability nahi gayi.
+
+✅ Cookie banner overlap fix — first-visit banner `fixed bottom-0` hai aur dashboard/client sidebar
+full-height, isliye Homepage/Logout live consent tak unreachable the. Ab banner apni **measured**
+height `--consent-banner-h` me publish karta hai (ResizeObserver, narrow screens ke wrap ke liye) aur
+dono sidebars `100vh` se subtract karte hain — unset = `0px`, yaani jinhone already answer kar diya
+unke liye layout bilkul same. 3 tests contract lock karte hain.
+
+✅ CI gate theek — authenticated audit ab `can_seed_e2e` par gated hai (service key + teeno passwords),
+`E2E_FREELANCER_EMAIL` par nahi. Stale secret gate kholé rakhta tha aur accounts gone the → job
+credentials par fail hota tha, product par nahi. Ab missing config = pass **skip**, fail nahi.
+
+⚠️ Pending (jaan-boojh ke chhoda, plan report §11.6 me): heading hierarchy (defect #11) — 89 `<h3>`
+hain dashboard/client/admin pages me aur wo ek hi construct nahi (kuch card headers = H2 hone chahiye,
+kuch card ke andar ke sub-headings jinme H3-under-H2 sahi hai). Class signature se distinguish nahi hota
+aur audit artifacts sirf skip count rakhte hain, selectors nahi — isliye blind promotion accepted
+cosmetic skip ko galat outline se badal sakta hai. Per-page review chahiye, wahi jo originally log
+hua tha.
+
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
 

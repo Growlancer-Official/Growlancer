@@ -514,3 +514,87 @@ writes known secrets to a runner's disk). Seeding needs `SUPABASE_URL` +
 `SUPABASE_SERVICE_ROLE_KEY` repo secrets; without them both steps self-skip and the authenticated
 pass stays off, exactly as before. Verified the teardown script live: `removed=0
 already_absent=3 failed=0`.
+
+## 11. Launch-readiness closure (2026-09-20)
+
+### 11.1 Account deletion could never start — found by using it, not by reading it
+
+§10.1 fixed `request_account_deletion` as far as `pg_proc` could show. It was still broken:
+exercising it as a **real user** (an admin-created auth account calling the RPC with its own
+token) returned
+
+```
+HTTP 400  code 23502  "Failing row contains (…, pending, null, null, …)"
+```
+
+`user_deletion_requests.confirm_token` and `confirm_token_expires_at` are `NOT NULL` with no
+default and the `INSERT` supplied neither, so the row could never be written. The same statement
+also wrote `notifications.link` — a column that does not exist (the real one is `action_url`) —
+which would have failed next. Migration `20270119000010` fixes both: the token is 64 hex chars of
+UUID entropy expiring with the 7-day cooldown, returned to the owner for a future confirm flow, and
+a fail-closed assertion requires every `NOT NULL` column without a default to be supplied.
+
+**This is the lesson worth keeping:** two rounds of catalog reading missed a constraint that a
+single real call exposed instantly. Schema introspection cannot see what the database will reject
+at write time.
+
+Verified end-to-end as a throwaway live account (created → signed in → profile created → referral
+resolved → deletion requested → full cascade), **9/9 checks**, including
+`delete_user_all_data` reporting `errors: []` with the `email_scoped` step present. The account
+removes itself in a `finally` block, and the live DB afterwards is back to 6 profiles / 0 contracts
+/ 0 escrow / 0 transactions.
+
+| Check | Before | After |
+|---|---|---|
+| `request_account_deletion` (as the owner) | HTTP 400 · `23502` | HTTP 200 · `success: true` |
+| `process_referral` resolves a real code | referrer never found | `success: true`, referrer id returned |
+| `create_user_profile` (as the user) | untested | HTTP 200, rows in `profiles` **and** `profiles_private` |
+| `delete_user_all_data` | (unreachable) | `errors: []`, `email_scoped` ran |
+
+### 11.2 A signup that leaves no profile is no longer silent
+
+Signup has no database trigger behind it — `handle_new_user` was orphaned and is now dropped — so a
+new account gets its `profiles` row only if the browser's `create_user_profile` call succeeds, and
+the caller treated failure as non-fatal: `devWarn`, then **"Account created successfully"**. A
+visitor could be told they had an account while nothing they needed existed. The auth account is
+genuinely created, so reporting failure would be wrong and would strand them (the email is taken);
+the fix is to stop hiding it — `console.error` on both the RPC and the direct-insert fallback, and
+a user-facing message that names what happens next instead of a success banner.
+
+### 11.3 The admin proxy can no longer move money
+
+`admin-data` now refuses `insert` / `update` / `delete` against `wallets`, `escrow` and
+`transactions` (403 with the reason), while still listing them for reads. Those rows must change
+only through their `SECURITY DEFINER` RPCs so balance locking, idempotency guards and ledger
+entries hold — Security Principle §2. Every call site in the app is a read or a realtime
+subscription, so nothing loses a capability. Defect #22 (§9.2) is now closed by narrowing the
+proxy rather than by trusting the UI to stay away.
+
+### 11.4 Cookie banner no longer buries the sidebar
+
+The first-visit banner is `fixed bottom-0` and the dashboard/client sidebars are full-height, so
+its last two actions (Homepage / Logout) were unreachable until consent was given. The banner now
+publishes its **measured** height as `--consent-banner-h` (a `ResizeObserver`, so the action-button
+wrap on narrow screens is covered) and both sidebars subtract it from `100vh`. Unset = `0px`, i.e.
+byte-identical layout for anyone who has already answered. Three tests lock the set/clear contract.
+This was the design call §4 left open; it is now a space reservation rather than a z-index fight.
+
+### 11.5 CI stops failing for reasons unrelated to the code
+
+The authenticated audit was gated on `E2E_FREELANCER_EMAIL != ''` — a *stale* secret kept the gate
+open while the accounts behind it were gone, so the job failed on credentials rather than on the
+product. The gate is now `can_seed_e2e`: the service key **and** all three passwords must be
+present, because that is what actually makes the pass runnable (CI seeds the accounts itself and
+removes them in an `always()` step). Missing config now means the pass is *skipped*, not failed.
+
+### 11.6 Deliberately NOT done — heading hierarchy (#11)
+
+Defect #11 (card headers `H3` directly under the page `H1`, 51 accepted skips) remains open, and it
+is the one item from this list I chose not to complete. There are **89 `<h3>` elements** across the
+dashboard/client/admin pages and they are not one construct: some are card headers that should be
+`H2`, others are sub-headings *inside* a card for which `H3`-under-`H2` is already correct. There
+is no class signature that separates them, and the audit artifacts record only the skip count, not
+the offending selectors. A blind promotion would move sub-headings to `H2` as well and could trade
+an accepted cosmetic skip for a genuinely wrong outline — a worse outcome for AT users than the
+status quo, which the harness explicitly accepts. The fix is a per-page review of the three
+layouts, deliberate and reviewable, which is exactly how the entry was originally logged.
