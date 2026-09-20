@@ -48,6 +48,23 @@ async function attemptLogin(browser, role) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
   const page = await context.newPage();
 
+  // Capture the auth endpoint's answer. Without this, a stale CI credential
+  // secret looks exactly like a slow redirect ("no session after 60s") — the
+  // auth logs showed `400 invalid_credentials`, which the run should say out
+  // loud instead of leaving the operator to guess.
+  let authFailure = null;
+  page.on('response', async (res) => {
+    if (!res.url().includes('/auth/v1/token') || res.status() < 400) return;
+    let detail = res.statusText;
+    try {
+      const body = await res.json();
+      detail = [body?.error_code || body?.error, body?.msg || body?.error_description]
+        .filter(Boolean).join(' — ') || `${res.status}`;
+    } catch { /* non-JSON error body — keep the status text */ }
+    authFailure = `${res.status()} ${detail}`;
+    console.error(`✖ ${role}: auth endpoint rejected the sign-in: ${authFailure}`);
+  });
+
   await page.goto(`${BASE}${cfg.start}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForFunction(() => !document.getElementById('boot-overlay'), { timeout: 15000 }).catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
@@ -98,8 +115,11 @@ async function attemptLogin(browser, role) {
   }
 
   if (!ok) {
+    const seen = await page.evaluate(() => location.pathname + location.search).catch(() => 'unknown');
     await context.close();
-    throw new Error(`${role}: no authenticated session after 60s — check credentials/test-account state`);
+    throw new Error(authFailure
+      ? `${role}: auth endpoint rejected the sign-in (${authFailure}) — the E2E_${role.toUpperCase()}_* secrets are stale; re-run create-test-accounts.mjs --push-secrets`
+      : `${role}: no authenticated session after 60s (url=${seen}) — check credentials/test-account state`);
   }
 
   // A session is enough for the audit (it navigates to every route itself), but
@@ -141,7 +161,7 @@ async function loginRole(browser, role) {
     return null;
   }
 
-  const ATTEMPTS = 3;
+  const ATTEMPTS = Number(process.env.E2E_LOGIN_ATTEMPTS || 3);
   let lastError = null;
   for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
     try {
