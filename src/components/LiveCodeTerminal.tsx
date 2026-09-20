@@ -14,6 +14,11 @@ interface LiveCodeTerminalProps {
   endPauseMs?: number;
   /** Extra classes for the container (e.g. spacing). */
   className?: string;
+  /**
+   * Called right before each loop restarts, so the caller can re-read live data
+   * and every pass prints fresh numbers instead of replaying the previous ones.
+   */
+  onCycle?: () => void;
 }
 
 /** Flatten all lines into a single array of { char, className } so we can type continuously. */
@@ -35,6 +40,7 @@ export function LiveCodeTerminal({
   linePauseMs = 450,
   endPauseMs = 3200,
   className = '',
+  onCycle,
 }: LiveCodeTerminalProps) {
   const flat = useMemo(() => flattenLines(lines), [lines]);
 
@@ -52,6 +58,9 @@ export function LiveCodeTerminal({
   const [typed, setTyped] = useState(0);
   const [reduced, setReduced] = useState(false);
   const firstRun = useRef(true);
+  // Keep the callback in a ref: a new identity must not restart the typing loop.
+  const onCycleRef = useRef(onCycle);
+  onCycleRef.current = onCycle;
 
   // Respect prefers-reduced-motion — render the full script statically.
   useEffect(() => {
@@ -72,8 +81,11 @@ export function LiveCodeTerminal({
     if (flat.length === 0) return;
 
     if (typed >= flat.length) {
-      // Finished — wait, then restart the loop.
-      const t = window.setTimeout(() => setTyped(0), endPauseMs);
+      // Finished — wait, re-read live data, then restart the loop.
+      const t = window.setTimeout(() => {
+        onCycleRef.current?.();
+        setTyped(0);
+      }, endPauseMs);
       return () => window.clearTimeout(t);
     }
 

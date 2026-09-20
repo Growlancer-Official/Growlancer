@@ -11,19 +11,32 @@ function formatInrFull(inr: number): string {
 }
 
 export function AboutPage() {
-  const { stats, ready, raw } = useAboutPageMetrics();
+  const { stats, ready, raw, refresh } = useAboutPageMetrics();
 
-  // Real content — inject live platform numbers into the terminal script.
+  // Real content — inject live platform numbers into the terminal script. Every
+  // value here comes from the database (RPC + live counts) and re-renders on the
+  // realtime subscriptions, so each typing cycle prints fresh numbers.
   const terminalLines = useMemo<TerminalLine[]>(() => {
     const members = raw.members != null ? raw.members.toLocaleString('en-US') : '—';
     const escrow = raw.escrowInr != null ? formatInrFull(raw.escrowInr) : formatCurrency(0);
-    const sat = raw.satisfactionPercent != null ? `${Math.round(raw.satisfactionPercent)}%` : '—';
     const countries = raw.countries != null ? raw.countries.toLocaleString('en-US') : '—';
+    const reviews = raw.totalReviews ?? 0;
+    // Satisfaction is only meaningful from 5 reviews up; before that say so
+    // honestly instead of printing a dash that looks broken.
+    const satisfaction =
+      reviews >= 5 && raw.satisfactionPercent != null
+        ? `${Math.round(raw.satisfactionPercent)}% satisfaction`
+        : 'no ratings yet';
+    const syncedAt = raw.syncedAt
+      ? raw.syncedAt.toLocaleTimeString('en-IN', {
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+        })
+      : '—';
     return [
-      [{ text: '// Real-Time Canvas Synced Init', className: 'text-emerald-600' }],
+      [{ text: `// Real-Time Canvas Synced Init · live DB @ ${syncedAt}`, className: 'text-emerald-600' }],
       [
         { text: 'const workspace = await Growlancer.createWorkspace(contractId);' },
-        { text: `  // ${members} members online`, className: 'text-slate-400' },
+        { text: `  // ${members} registered members · ${countries} countries`, className: 'text-slate-400' },
       ],
       [
         { text: 'await workspace.mountKanbanBoard();' },
@@ -32,11 +45,11 @@ export function AboutPage() {
       [{ text: 'await workspace.mountScratchpad({ focusLock: true });' }],
       [
         { text: 'await workspace.escrow.verifyFunding();', className: 'text-amber-500' },
-        { text: `  // ${escrow} secured`, className: 'text-slate-400' },
+        { text: `  // ${escrow} protected in escrow`, className: 'text-slate-400' },
       ],
       [
         {
-          text: `// ${sat} satisfaction · ${countries} countries — ready to co-work seamlessly!`,
+          text: `// ${satisfaction} · ${countries} countries — ready to co-work seamlessly!`,
           className: 'text-slate-400',
         },
       ],
@@ -173,7 +186,10 @@ export function AboutPage() {
                 <span className="w-3.5 h-3.5 rounded-full bg-green-400"></span>
               </div>
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/30 text-xs font-mono text-slate-600">
-                <LiveCodeTerminal lines={terminalLines} className="space-y-4" />
+                {/* Each pass re-reads the live numbers, so the canvas never replays
+                    a stale snapshot — a new signup or escrow release shows up on the
+                    next cycle. */}
+                <LiveCodeTerminal lines={terminalLines} className="space-y-4" onCycle={refresh} />
               </div>
               <div className="flex items-center gap-3 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
@@ -347,7 +363,7 @@ export function AboutPage() {
               Ready to experience modern co-working?
             </h2>
             <p className="text-emerald-100 text-sm leading-relaxed max-w-md mx-auto">
-              Join thousands of clients and freelancers who have already bridged dashboard gaps and secured their contracts through active escrow.
+              Join the clients and freelancers bridging dashboard gaps and securing their contracts through active escrow.
             </p>
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link

@@ -9,6 +9,10 @@ export type PlatformMetricsFile = {
   totalEscrowInr?: number | null;
   /** Average satisfaction % (live from reviews, min 5 reviews to show). */
   avgSatisfactionPercent?: number | null;
+  /** Total reviews behind the satisfaction number (0 = nothing to average yet). */
+  totalReviews?: number | null;
+  /** Distinct countries across live profiles. */
+  countries?: number | null;
 };
 
 export type AboutStatCard = { value: string; label: string };
@@ -31,6 +35,10 @@ async function loadMetricsFile(): Promise<PlatformMetricsFile> {
     return {
       totalEscrowInr: (metrics.totalEscrowInr as number | null) ?? null,
       avgSatisfactionPercent: (metrics.avgSatisfactionPercent as number | null) ?? null,
+      totalReviews: (metrics.totalReviews as number | null) ?? null,
+      // The RPC has returned `countries` since 20270119000001 — the hook used to
+      // hardcode null here, which left the About canvas printing "— countries".
+      countries: (metrics.countries as number | null) ?? null,
     };
   } catch {
     return {};
@@ -55,20 +63,29 @@ function buildCards(profileCount: number | null, file: PlatformMetricsFile): Abo
       ? 'Registered members (live count unavailable)'
       : 'Registered members (live)';
 
+  // A brand-new platform honestly has ₹0 in escrow — show the real number, not
+  // a placeholder, so the counter is never "fake" for the first real users.
   const pay = file.totalEscrowInr;
   const paymentsValue =
     pay === null || pay === undefined ? '—' : formatInrShort(Number(pay));
   const paymentsLabel = 'Escrow protected (INR)';
 
+  // Satisfaction needs 5+ reviews before an average means anything; below that
+  // the honest answer is "new", not a fake percentage or a broken dash.
+  const reviews = file.totalReviews ?? 0;
   const sat = file.avgSatisfactionPercent;
-  const satValue =
-    sat === null || sat === undefined ? '—' : formatPercent(Number(sat));
-  const satLabel = 'Satisfaction';
+  const satValue = reviews >= 5 && sat !== null && sat !== undefined ? formatPercent(Number(sat)) : 'New';
+  const satLabel =
+    reviews >= 5 ? 'Satisfaction' : `Satisfaction — ${reviews === 0 ? 'no ratings yet' : `${reviews}/5 ratings`}`;
+
+  const countries = file.countries;
+  const countriesValue = countries === null || countries === undefined ? '—' : Number(countries).toLocaleString('en-US');
 
   return [
     { value: users, label: usersLabel },
     { value: paymentsValue, label: paymentsLabel },
     { value: satValue, label: satLabel },
+    { value: countriesValue, label: 'Countries with members' },
   ];
 }
 
@@ -83,14 +100,19 @@ export type AboutMetricsRaw = {
   members: number | null;
   escrowInr: number | null;
   satisfactionPercent: number | null;
+  totalReviews: number | null;
   countries: number | null;
+  /** When these numbers were last pulled from the database (shown as freshness). */
+  syncedAt: Date | null;
 };
 
 const EMPTY_RAW: AboutMetricsRaw = {
   members: null,
   escrowInr: null,
   satisfactionPercent: null,
+  totalReviews: null,
   countries: null,
+  syncedAt: null,
 };
 
 export function useAboutPageMetrics() {
@@ -105,7 +127,9 @@ export function useAboutPageMetrics() {
       members: profileCount,
       escrowInr: file.totalEscrowInr ?? null,
       satisfactionPercent: file.avgSatisfactionPercent ?? null,
-      countries: null, // TODO: compute from profiles table
+      totalReviews: file.totalReviews ?? null,
+      countries: file.countries ?? null,
+      syncedAt: new Date(),
     });
     setReady(true);
   }, []);
@@ -118,11 +142,27 @@ export function useAboutPageMetrics() {
     };
     document.addEventListener('visibilitychange', onVisible);
 
+    // Every number on this page has a live source: a signup changes the member
+    // count, a new review changes satisfaction. Subscribe to those two so the
+    // panel updates within seconds instead of waiting for the 60s poll.
+    //
+    // Escrow is deliberately NOT subscribed: its RLS policy allows only the two
+    // contract parties, so a public/marketing visitor would never receive an
+    // event. The secured total still stays current via the poll and the
+    // per-cycle refresh (LiveCodeTerminal onCycle), which covers the release /
+    // refund transitions that actually move it.
     const channel = supabase
-      .channel(uniqueChannelName('about-page-profile-count'))
+      .channel(uniqueChannelName('about-page-live-metrics'))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'profiles' },
+        () => {
+          void refresh();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reviews' },
         () => {
           void refresh();
         }

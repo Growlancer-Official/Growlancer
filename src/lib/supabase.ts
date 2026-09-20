@@ -282,7 +282,6 @@ export type RpcName =
   | 'request_account_deletion'
   | 'cancel_account_deletion'
   | 'check_deletion_status'
-  | 'process_account_deletion'
   | 'get_mfa_status'
   | 'generate_recovery_codes'
   | 'verify_recovery_code'
@@ -400,10 +399,10 @@ export const dbFunctions = {
     callRpc('check_deletion_status', {
       p_user_id: userId,
     }),
-  processAccountDeletion: (requestId: string) =>
-    callRpc('process_account_deletion', {
-      p_request_id: requestId,
-    }),
+  // NOTE: process_account_deletion is intentionally NOT exposed here. It is a
+  // destructive RPC (hard-deletes a user across every table) and is granted to
+  // service_role only; supabase/functions/process-deletion calls it server-side
+  // after verifying the request itself.
   // Two-Factor Authentication (2FA)
   getMFAStatus: (userId: string) =>
     callRpc('get_mfa_status', {
