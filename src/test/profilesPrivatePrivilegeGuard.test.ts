@@ -216,3 +216,76 @@ describe('profiles_private privilege boundary (migration 20270119000013)', () =>
     ).toEqual([]);
   });
 });
+
+/**
+ * The drift monitor (migration 20270119000014) is what makes this bug class
+ * self-detecting: it alerts when a trust-shaped column becomes writable by the
+ * authenticated role on an owner-scoped table with no protect_* guard — the
+ * exact shape of the profiles_private.is_admin hole. These assertions keep the
+ * detector and the guards from drifting apart.
+ */
+const DRIFT = fs.readFileSync(
+  path.join(ROOT, 'supabase/migrations/20270119000014_drift_monitor_trust_columns.sql'),
+  'utf8',
+);
+
+/** Comments carry prose (and apostrophes) that would be parsed as values. */
+function stripSqlComments(sql: string): string {
+  return sql.replace(/--[^\n]*/g, '');
+}
+
+const DRIFT_SQL = stripSqlComments(DRIFT);
+
+function sqlList(re: RegExp, source: string, label: string): string[] {
+  const m = re.exec(source);
+  expect(m, `${label} not found in the drift monitor migration`).not.toBeNull();
+  return [...(m as RegExpExecArray)[1].matchAll(/'([^']+)'/g)].map((x) => x[1]);
+}
+
+const DRIFT_TRUST_COLUMNS = sqlList(
+  /a\.attname IN \(\s*([\s\S]*?)\)\s*OR \(a\.attname = 'role'/,
+  DRIFT_SQL,
+  'trust-column list',
+);
+const DRIFT_EXCEPTIONS = sqlList(
+  /NOT IN \(\s*([\s\S]*?)\)\s*ORDER BY/,
+  DRIFT_SQL,
+  'exception list',
+);
+
+describe('security drift monitor (migration 20270119000014)', () => {
+  it('watches every column the privilege lock protects', () => {
+    for (const col of GUARDED) {
+      expect(DRIFT_TRUST_COLUMNS, `${col} is not watched by the drift sweep`).toContain(col);
+    }
+    expect(DRIFT_TRUST_COLUMNS).toContain('reputation_score');
+    expect(DRIFT_TRUST_COLUMNS).toContain('seller_level');
+  });
+
+  it('keeps its exception list closed and documented', () => {
+    // Adding an unguarded trust column must be a deliberate act: it means
+    // widening this list (with a reason) rather than letting the monitor scream.
+    expect([...DRIFT_EXCEPTIONS].sort()).toEqual(
+      [
+        'reviews.rating',
+        'certifications.verified',
+        'freelancer_skills.is_verified',
+        'payout_methods.is_verified',
+        'services.rating',
+      ].sort(),
+    );
+  });
+
+  it('sweeps the self-writable columns from the hourly monitor, server-side only', () => {
+    expect(DRIFT).toContain('CREATE OR REPLACE FUNCTION public.self_writable_trust_columns()');
+    expect(DRIFT).toMatch(
+      /REVOKE ALL ON FUNCTION public\.self_writable_trust_columns\(\) FROM PUBLIC, anon, authenticated/,
+    );
+    expect(DRIFT).toContain('self_writable_trust_column'); // the alert category
+    expect(DRIFT).toMatch(/EXECUTE v_new/); // the patch actually applies
+    // Fail-closed: the migration must refuse to land if the live schema is dirty
+    expect(DRIFT).toMatch(/Unguarded trust column\(s\) present/);
+    // …and must prove the detector works rather than merely being quiet
+    expect(DRIFT).toMatch(/_drift_probe_trust/);
+  });
+});

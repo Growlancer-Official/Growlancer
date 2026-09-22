@@ -868,3 +868,76 @@ Kept here because both produce *green results that mean nothing*:
 - The four dead trust columns in §13.3.
 - The credential audit writers still accept `p_admin_id` / `p_admin_email` from the browser (§12.4) —
   unchanged, still the founder's call.
+
+---
+
+## 14. Runtime pentest + self-detecting drift monitor (2026-09-22)
+
+The §13 work proved the locks exist *in the catalog* via rolled-back SQL probes. It could not prove what
+an actual browser session can do, because a browser reaches the API through PostgREST, RLS and the
+column privileges together, carrying a real user JWT. §14 closes that gap, and then makes the whole bug
+class self-detecting so it cannot come back quietly.
+
+### 14.1 The runtime pentest (`scripts/e2e/pentest-privileges.mjs`)
+
+Creates one throwaway account (service-role admin API, `email_confirm`), signs in with it for a genuine
+user JWT, drives every attempt over real HTTP, then deletes the account through the same full-cascade
+path a real deletion takes — in a `finally`, so an interrupted run leaves nothing behind.
+
+| probe (authenticated as a real user) | result |
+|---|---|
+| `PATCH profiles_private { is_admin: true }` | **refused** — 403 `42501` |
+| `PATCH profiles_private { suspended_at/suspend_reason/banned_at: null }` | **refused** — 403 `42501` |
+| `POST profiles_private { …, is_admin: true }` | **refused** — 403 `42501` |
+| `PATCH profiles { rating: 5.0, total_reviews: 999 }` | **refused** — 400 `P0001` |
+| `PATCH freelancer_profiles { rating, total_reviews, reputation_score, weighted_rating }` | **refused** — 400 `P0001` |
+| `RPC update_wallet_balance` (self-credit) | **refused** — 403 `42501` |
+| `RPC hold_wallet_funds` | **refused** — 403 `42501` |
+| `RPC grant_admin_role` (non-admin) | refused — `{success:false, error:"Unauthorized: admins only"}` |
+| after the attempts: `is_admin`, suspension state, rating/reputation, `role`, wallet balance | all unchanged |
+| legitimate paths: `create_user_profile`, onboarding flag, `complete_onboarding()`, profile name | all still work |
+| teardown | `delete_user_all_data` ok, no auth row left, 0 orphan rows, live counts back to 6 |
+
+**The probe found a flaw in itself first, and it is the same trap as §13.6.** The `freelancer_profiles`
+attempt initially reported `HTTP 200 []` — which my check treated as a failure. It is not: PostgREST
+answers 200 with an empty array when RLS/privileges filtered every row out, because that account had no
+`freelancer_profiles` row yet, so the guard was never reached. The script now creates the row first (so
+the guard is genuinely exercised) and decides an escape by **rows actually changed**, not by HTTP status.
+Treating a bare `!res.ok` as "refused" would have missed a landed write just as easily as it
+misreported a no-op.
+
+### 14.2 The class is now self-detecting (`20270119000014`)
+
+The `security_drift_monitor` cron only knew about RLS-disabled tables, open policies, missing
+`search_path` and PII exposure. It now also sweeps for the shape that produced the `is_admin` hole:
+
+- new `self_writable_trust_columns()` — a trust-shaped column (admin/role/verification/suspension/
+  reputation column names) that the `authenticated` role can still `UPDATE`, on a table whose write
+  policy is owner-scoped, with no `protect_*` trigger attached. Server-only (`anon`/`authenticated`
+  revoked); `role` is only trust-shaped on the two profile tables, so it is matched there and nowhere
+  else;
+- `check_security_drift()` patched from its live definition to alert per finding
+  (`self_writable_trust_column`, `critical` for admin/role columns, `high` otherwise) — the existing
+  hourly job and admin email path carry the alert, no new cron;
+- the exclusion list is the documented set from §13.3 plus `reviews.rating` (a review's own author may
+  edit their review by design), and a unit test asserts that list cannot grow silently.
+
+**Verified with a positive control, not just a quiet run.** The migration creates a violator shaped
+exactly like the original hole inside its own transaction, requires the detector to flag it, drops it,
+and then requires the live schema to yield **zero** findings — so a broken detector fails the deploy
+just as loudly as an unguarded column does. Dry run against the live database: positive control
+flagged, baseline 0 findings, `check_security_drift()` returns 0, 0 alerts written. A negative control
+(silently adding `profiles_private.is_admin` to the exception list) fails the unit test.
+
+### 14.3 Observation: two pre-existing ghost profiles
+
+The leftover check after the pentest surfaced two `profiles` rows created 2026-08-28 whose
+`auth.users` row no longer exists (`pemin@growlancer.com`, `piveme@growlancer.com`). They are **not**
+from this work — my probes left zero rows behind — and the cascade is not broken:
+`purge_orphan_user_data()` was run inside a rolled-back transaction and deleted both across all 32
+steps with `errors: []`, and the weekly `cleanup-orphaned-data` job has been succeeding every Sunday.
+
+Two consequences worth a decision: the public member count (`6`) includes two accounts that can never
+log in, and those two email addresses are still retained in `profiles_private`. The next weekly run
+(Sunday 03:00 UTC) should clear them; purging now is one command, but deleting profile rows is
+irreversible, so it is the founder's call rather than a silent cleanup.

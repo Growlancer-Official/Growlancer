@@ -361,6 +361,44 @@ phases ke beech leak ho raha tha; test ka lazy regex zero-width match kar ke vac
 dono fix hue aur negative-control se prove hue. Verify: typecheck + 185 tests (7 naye
 `src/test/profilesPrivatePrivilegeGuard.test.ts`) + build clean. Details: report §13.
 
+✅ Runtime pentest + self-detecting drift monitor (Sep 22, 2026, `20270119000014`) — §13 ne SQL-level
+(rolled-back) probes se locks prove kiye the; browser PostgREST/RLS/ACL ke through aata hai, isliye
+ab **real HTTP pentest** bhi hai: `scripts/e2e/pentest-privileges.mjs` ek throwaway account banata hai
+(service-role admin API, `email_confirm`), uske real JWT se 8 escapes try karta hai, phir usi
+full-cascade path se account delete karta hai (`finally` me, isliye interrupted run bhi kuch nahi
+chhodta). Result: `is_admin` self-grant / suspension self-lift / INSERT-with-is_admin → 403 `42501`;
+`profiles.rating` + `freelancer_profiles` reputation inflate → 400 `P0001`; wallet self-credit +
+`hold_wallet_funds` → 403 `42501`; `grant_admin_role` non-admin → Unauthorized; values unchanged
+(is_admin/suspension/rating/role/balance sab), legit paths (`create_user_profile`, onboarding flag,
+`complete_onboarding()`, profile name) intact, teardown 0 leftovers (live counts wapas 6). **Probe ne
+apni hi ek galti pakdi** (same trap as §13.6): `HTTP 200 []` ko failure samajh raha tha, jabki wo
+"0 rows matched" hai — account ke paas `freelancer_profiles` row hi nahi thi, isliye guard reach hi
+nahi hua; ab script pehle row banata hai aur escape ka faisla **rows-changed** se karta hai, HTTP
+status se nahi. Saath me class **self-detecting** ho gayi: naya server-only
+`self_writable_trust_columns()` (trust-shaped column + `authenticated` UPDATE + owner-scoped policy +
+koi `protect_*` trigger nahi) aur `check_security_drift()` usko hourly sweep karta hai
+(`self_writable_trust_column` alert, admin/role ke liye `critical`) — koi naya cron nahi, existing
+alert-email path hi use hota hai. Migration **positive control** ke saath aata hai: apne transaction me
+ek violator table banata hai, detector se usse flag karwata hai, drop karta hai, phir live schema se
+**0 findings** maangta hai — yaani detector toota ho to deploy fail hota hai. Dry run (live DB,
+rolled back): positive control flagged, baseline 0, `check_security_drift()` 0 return, 0 alerts.
+Negative control (exception list me chupke `profiles_private.is_admin` daalna) unit test fail karta
+hai. Verify: `npm run typecheck` + **188 tests** (10 `profilesPrivatePrivilegeGuard.test.ts` me) +
+build clean. Details: report §14 (runtime table + drift monitor).
+
+⚠️ Observation (founder ka call, is pass me delete nahi kiya): 2 **ghost profiles** live hain
+(`pemin@growlancer.com`, `piveme@growlancer.com`, Aug 28 create) jinki `auth.users` row nahi hai —
+ye pentest se nahi aayi (probes ne 0 rows chhode), aur cascade tootа nahi: `purge_orphan_user_data()`
+rolled-back transaction me chala ke dono ko 32 steps me `errors: []` ke saath delete kar deta hai, aur
+weekly `cleanup-orphaned-data` har Sunday succeed ho raha hai. Do asar: public member count `6` me 2
+aise accounts hain jo login kar hi nahi sakte, aur unke email `profiles_private` me abhi bhi pade hain.
+Agla weekly run (Sunday 03:00 UTC) inhe clear kar dega; abhi purge karna ek command hai par profile
+rows delete karna irreversible hai — isliye founder ka call.
+
+⚠️ Pending (CI hook): `scripts/e2e/pentest-privileges.mjs` ko CI me chalane ke liye repo secrets me
+`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` + `VITE_SUPABASE_ANON_KEY` chahiye (wahi jo seed step ke
+liye pending hain) — tab tak ye locally/manually chalana hoga.
+
 ⚠️ Flagged (chhota, dead-column hygiene — is pass me nahi chhua): `certifications.verified`,
 `freelancer_skills.is_verified`, `payout_methods.is_verified`, `services.rating` bhi owner-update policy
 + no trigger ke saath self-writable hain, LEKIN poore app/edge codebase me inhe koi padhta hi nahi (4
