@@ -134,9 +134,11 @@ async function paypalFetch(path: string, options: RequestInit = {}): Promise<any
   return JSON.parse(body);
 }
 
-async function rollbackWithdrawal(supabaseClient: any, withdrawalId: string, userId: string, amount: number, errorReason: string): Promise<void> {
+async function rollbackWithdrawal(withdrawalId: string, userId: string, amount: number, errorReason: string): Promise<void> {
   console.error(`[ROLLBACK] Withdrawal ${withdrawalId} failed: ${errorReason}`, { userId, amount });
-  try { await supabaseClient.rpc('release_wallet_funds', { p_user_id: userId, p_amount: amount }); } catch (e) { console.error(`[ROLLBACK] Release wallet funds failed for ${userId}, amount=${amount}:`, e); }
+  // Money RPCs run on the service-role client: 20270119000012 revoked EXECUTE
+  // from anon/authenticated, and the amounts/ids here are server-derived.
+  try { await supabaseAdmin.rpc('release_wallet_funds', { p_user_id: userId, p_amount: amount }); } catch (e) { console.error(`[ROLLBACK] Release wallet funds failed for ${userId}, amount=${amount}:`, e); }
   try { await supabaseAdmin.from('withdrawals').update({ status: 'failed', failure_reason: errorReason, updated_at: new Date().toISOString() }).eq('id', withdrawalId); } catch (e) { console.error(`[ROLLBACK] Withdrawal status update failed for ${withdrawalId}:`, e); }
   try { await supabaseAdmin.from('transactions').update({ status: 'failed', description: `Withdrawal failed: ${errorReason}` }).eq('metadata->>withdrawal_id', withdrawalId); } catch { /* non-critical — transaction record is secondary */ }
 }
@@ -278,8 +280,9 @@ Deno.serve(async (req) => {
       const { data: withdrawal, error: withdrawalError } = await supabaseAdmin.from('withdrawals').insert(insertData).select().single()
       if (withdrawalError) throw withdrawalError
 
-      // Hold wallet funds
-      const { data: holdResult, error: holdError } = await supabaseClient.rpc('hold_wallet_funds', { p_user_id: user.id, p_amount: amount })
+      // Hold wallet funds — service-role client, and p_user_id comes from the
+      // verified session (never from the request body).
+      const { data: holdResult, error: holdError } = await supabaseAdmin.rpc('hold_wallet_funds', { p_user_id: user.id, p_amount: amount })
       if (holdError || !holdResult?.success) {
         await supabaseAdmin.from('withdrawals').delete().eq('id', withdrawal.id)
         throw new Error(holdResult?.error || 'Failed to hold funds')
@@ -335,7 +338,7 @@ Deno.serve(async (req) => {
           // Without this, completed payouts left the money stuck in pending_balance
           // forever (freelancer's available balance under-counted by the amount).
           if (payoutStatus === 'completed') {
-            await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
+            await supabaseAdmin.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
           }
 
           await supabaseAdmin.from('transactions').update({
@@ -379,7 +382,7 @@ Deno.serve(async (req) => {
 
           // 🛡️ Finalize completed payouts (see razorpay path above)
           if (payoutStatus === 'completed') {
-            await supabaseClient.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
+            await supabaseAdmin.rpc('process_withdrawal_complete', { p_withdrawal_id: withdrawal.id })
           }
 
           await supabaseAdmin.from('transactions').update({
@@ -429,7 +432,7 @@ Deno.serve(async (req) => {
         }
 
         // ── REAL FAILURE → Rollback ──
-        await rollbackWithdrawal(supabaseClient, withdrawal.id, user.id, amount, errorMsg)
+        await rollbackWithdrawal(withdrawal.id, user.id, amount, errorMsg)
         
         // Send failure notification email (fire-and-forget)
         sendNotificationEmail(

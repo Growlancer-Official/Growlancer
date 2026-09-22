@@ -309,15 +309,16 @@ export type RpcName =
   | 'get_projects_by_category'
   | 'get_wallet_balance'
   | 'get_wallet_balance_v2'
-  | 'update_wallet_balance'
-  | 'hold_wallet_funds'
-  | 'release_wallet_funds'
-  | 'process_withdrawal_complete'
+  // update_wallet_balance / hold_wallet_funds / release_wallet_funds /
+  // process_withdrawal_complete are NOT callable from the browser — migration
+  // 20270119000012 revoked EXECUTE from anon/authenticated (service_role only).
+  // The withdrawal edge function drives them with its service-role client.
   | 'cancel_withdrawal'
   | 'get_payout_methods'
   | 'set_default_payout_method'
   | 'delete_payout_method'
-  | 'cleanup_verification_rate_limits'
+  // cleanup_verification_rate_limits is server-only (20270119000012); the
+  // verification-rate-limit cleanup now runs from pg_cron.
   | 'generate_credential_token'
   | 'insert_credential_version'
   | 'insert_credential_audit_log'
@@ -340,8 +341,8 @@ export type RpcName =
   | 'attach_dispute_evidence'
   | 'freeze_contract'
   | 'unfreeze_contract'
-  | 'process_pending_refunds'
-  | 'process_no_response_disputes'
+  // process_pending_refunds / process_no_response_disputes are pg_cron-only
+  // (server-only since 20270119000012).
   | 'create_user_subscription'
   | 'get_ai_writer_usage';
 
@@ -381,10 +382,9 @@ export const dbFunctions = {
       p_contract_id: contractId,
       p_client_id: clientId,
     }),
-  generateProjectMatches: (projectId: string) =>
-    supabase.rpc('generate_project_matches', {
-      p_project_id: projectId,
-    }),
+  // NOTE: generate_project_matches / upsert_project_matches are no longer
+  // browser-callable (20270119000012 revoked the anon grant; the live AI path
+  // is the ai-matching edge function).
   // Account Deletion
   requestAccountDeletion: (userId: string, reason?: string) =>
     callRpc('request_account_deletion', {
@@ -510,27 +510,10 @@ export const dbFunctions = {
   }) => callRpc('get_projects_by_category', params as Record<string, unknown>),
 
   // === WALLET RPCS ===
+  // Only the read is browser-safe; the money writers were deliberately removed
+  // (20270119000012 revoked their EXECUTE from every user role).
   getWalletBalance: (userId: string) =>
     callRpc('get_wallet_balance_v2', { p_user_id: userId }),
-  updateWalletBalance: (userId: string, amount: number) =>
-    callRpc('update_wallet_balance', {
-      p_user_id: userId,
-      p_amount: amount,
-    }),
-  holdWalletFunds: (userId: string, amount: number) =>
-    callRpc('hold_wallet_funds', {
-      p_user_id: userId,
-      p_amount: amount,
-    }),
-  releaseWalletFunds: (userId: string, amount: number) =>
-    callRpc('release_wallet_funds', {
-      p_user_id: userId,
-      p_amount: amount,
-    }),
-  processWithdrawalComplete: (withdrawalId: string) =>
-    callRpc('process_withdrawal_complete', {
-      p_withdrawal_id: withdrawalId,
-    }).single(),
   cancelWithdrawal: (withdrawalId: string, userId: string) =>
     callRpc('cancel_withdrawal', {
       p_withdrawal_id: withdrawalId,

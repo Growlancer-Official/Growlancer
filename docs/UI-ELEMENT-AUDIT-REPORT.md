@@ -622,3 +622,99 @@ Verified live with two throwaway accounts (`verify-country-fix.mjs`, **6/6**): o
 row stores `'India'`; owner targeting another user → `Unauthorized`, victim untouched; both
 accounts remove themselves. Live afterwards: 6 profiles, `stored_countries = 'India'`,
 `get_public_platform_metrics() → { countries: 1 }`, and the About page renders `6 / ₹0 / New / 1`.
+
+## 12. Authorization hardening — the IDOR + EXECUTE-grant sweep (2026-09-22)
+
+Every previous pass in this report audited a *flow* (login, escrow, KYC, a launch blocker). This one
+audited the *boundary*: which functions a caller can reach at all, and what each one checks once
+reached. Migration `20270119000012_authorization_hardening.sql`.
+
+**21 functions had no caller check on a parameter that decides whose data they touch.** Thirteen
+notification/push/wallet-read/match RPCs (`get_notification_preferences`, `get_notifications_by_category`,
+`archive_notification`, `restore_notification`, `archive_all_read_notifications`, `register_push_token`,
+`unregister_push_token`, `get_user_push_tokens`, `get_wallet_balance`, `get_wallet_balance_v2`, …) took
+an arbitrary `p_user_id` and acted on it — any authenticated user could read another user's
+notifications, push-token list and wallet balance, or overwrite their preferences. `create_user_profile`
+was anon-callable with a caller-supplied `p_id`, so an unauthenticated caller could rewrite another
+profile's name and `profiles_private.email`/`referral_code`. `get_team_role_contract` trusted a
+client-supplied `p_client_id`; `generate_project_matches`/`upsert_project_matches` exposed AI compute on
+any project id to `anon`; `generate_credential_token` rotated any credential's QR token; and the
+credential audit writers (`insert_credential_audit_log`, `insert_credential_version`) let *any*
+authenticated user append forged audit/version rows.
+
+Guards are injected from each function's own definition text (no bodies retyped), and the migration
+asserts every one landed.
+
+**20 functions were revoked to service_role only** — `update_wallet_balance` (its owner branch allowed
+self-crediting, i.e. free money, and it was still granted to `authenticated`), `hold_wallet_funds` /
+`release_wallet_funds` / `process_withdrawal_complete` (the withdrawal edge function now drives them with
+its service-role client in the same commit, and only ever passes the id from the verified session), the
+payment/webhook internals, the cron/maintenance set, and `get_user_email` (PII). `service_role` keeps
+explicit grants, which the migration re-grants defensively and asserts.
+
+**Three things were deliberately kept reachable, in writing:** `create_user_profile` must stay
+`anon`-callable because signup with email confirmation has no session yet (the guard — create only for
+the just-signed-up auth row, never overwrite an existing profile — is the boundary); `join_waitlist`
+stays anonymous for the pre-signup form; and shared `cleanup_expired_rate_limits` stays callable because
+it only deletes rows older than 24h while ~16 edge functions call it best-effort on hot paths (revoking
+would add a 403 round-trip per request for no gain — the daily cron is the backstop).
+`cleanup_verification_rate_limits` did **not** get that exemption: its DELETE window is exactly the
+public certificate-verification endpoint's live rate-limit window, so an anonymous caller could wipe it.
+It is server-only now and a `cleanup-verification-rate-limits` cron job replaces the browser as its
+trigger.
+
+### 12.1 A real signup bug surfaced while writing the guard
+
+`create_user_profile` read `referral_code` off `public.profiles`, but that column moved to
+`profiles_private` in `20261221000000` — so it raised `42703` on every signup that passes a referral
+code, i.e. every real one, and silently fell through to the browser's direct-insert fallback. Section 0
+of the migration repairs the lookup and an assertion refuses the stale read coming back.
+
+### 12.2 The dry run caught three defects that reading the catalog could not
+
+Prior experience in this report (§11.1) was that introspection does not show what a write-time
+rejection does. The same held here, so the migration's logic was executed against the live database
+inside a **rolled-back transaction** before pushing. It failed three times, each a real defect:
+
+1. `pg_get_functiondef` returns the body **verbatim**, so a body written with a lowercase `begin` has no
+   uppercase `BEGIN` for a case-sensitive anchor to find — the migration would have aborted at deploy.
+2. A whole-line `BEGIN` anchor does not exist in `get_wallet_balance_v2`: that function's entire body sits
+   on one line.
+3. Worse, injecting a guard that ends in a `-- …` line comment into that one-line body commented out the
+   rest of it — the function would have been installed broken.
+
+The final anchor is the first word-boundary `BEGIN` inside the verbatim body (case-insensitive), with a
+whole-line cross-check that refuses an ambiguous match, and the injection terminates the trailing comment
+with a newline. All three failure modes are named in the migration's comments so the next auditor does
+not re-derive them.
+
+### 12.3 Verified
+
+| Check | How | Result |
+|---|---|---|
+| Every guard lands | dry run, all 21 injections + full assertion block | pass |
+| Owner read/write still works | probe as the owner (`get_wallet_balance`, `get_wallet_balance_v2`, `create_user_profile` upsert) | pass |
+| Cross-user access refused | probe with a foreign `p_user_id` / `p_id` | `Unauthorized` |
+| Signup path (no session) | probe as `anon` for a just-created auth row | row written to `profiles` + `profiles_private` |
+| Stale/foreign auth row | probe as `anon` for a 2-day-old auth row, and for an existing profile | `Unauthorized` |
+| Service-role path | probe as `service_role` (the CI seed script's path) | pass |
+| Admin-only writers | probe as non-admin (refused) and as admin (allowed) | pass |
+| Grant matrix | catalog assertions: 20 server-only (no anon/authenticated, `service_role` intact), 19 anon-revoked, 21 guarded | pass |
+| App never calls a server-only RPC | `src/test/serverOnlyRpcs.test.ts`, list read from the migration | pass (25 tests) |
+| Whole repo | `npm run typecheck` + `npm test` (178) + `npm run build` | clean |
+
+Production was not modified by any of this: every dry run ended in `ROLLBACK`, and a follow-up catalog
+query confirmed 0 guarded functions, `test_simple_rpc` still present, no new cron job and no probe rows.
+
+### 12.4 Flagged, not changed
+
+The credential audit writers now require an admin, but they still accept `p_admin_id` / `p_admin_email`
+from the browser — an admin can mislabel who performed an action. The admin console passes the real
+values, so the practical impact is audit-trail integrity inside the admin team; coercing those fields to
+`auth.uid()` is an API change worth its own decision rather than a silent edit here.
+
+The guarded `create_user_profile` still lets a session-less caller *create* a profile for an auth row
+less than an hour old. Someone who already knew a brand-new signup's UUID could pre-fill that row — but
+the owner's own first authenticated call overwrites it (the guard only blocks anonymous rewrites), and
+matching `p_email` against `auth.users.email` to narrow it further risks breaking signup on an email
+normalization mismatch. Left as-is, deliberately.

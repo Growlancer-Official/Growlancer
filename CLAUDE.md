@@ -309,6 +309,33 @@ user kisi ka bhi country badal sakta tha) — ab owner-only. Verify: do throwawa
 (owner `IN` → `India`; cross-user write → Unauthorized, victim untouched); live: 6 profiles,
 stored `India`, metric `{countries: 1}`, About `6 / ₹0 / New / 1`.
 
+✅ Authorization hardening + signup repair (Sep 22, 2026, `20270119000012`) — systematic IDOR +
+EXECUTE-grant audit: **21 functions** ko caller-ownership/admin guard mila (13 notification/push/
+wallet-read/match RPCs arbitrary `p_user_id` le rahe the → koi bhi kisi ka bhi notifications/push
+tokens/wallet balance padh sakta tha; `create_user_profile` anon-callable tha aur kisi ka bhi profile
+overwrite kar sakta tha; `get_team_role_contract`, `generate_project_matches`/`upsert_project_matches`,
+`generate_credential_token`, aur credential audit writers bina check ke). **20 functions server-only**
+(anon+authenticated se EXECUTE revoke, service_role re-granted + asserted) — including
+`update_wallet_balance` (owner-branch se self-credit ho raha tha), `hold/release_wallet_funds` +
+`process_withdrawal_complete` (withdrawal edge ab apne service-role client se call karta hai),
+payment/webhook internals, cron/maintenance, `get_user_email` (PII). `cleanup_verification_rate_limits`
+bhi server-only (uska 15-min DELETE hi public verify ka live window tha) → `cleanup-verification-rate-limits`
+cron add hua; shared `cleanup_expired_rate_limits` jaan-boojh ke callable rakha (24h se purani rows hi
+delete karta hai, ~16 edge functions use karte hain). `create_user_profile` par `anon` grant bacha
+(email confirmation on hone par signUp ke turant baad session nahi hota) — guard sirf just-signed-up
+auth row ko create karne deta hai, existing profile overwrite nahi. Saath me real bug fix:
+`create_user_profile` `referral_code` `profiles` se padh raha tha (42703 since `20261221000000`) — yaani
+har real signup RPC par fail ho kar browser ke fallback par ja raha tha.
+**Dry-run ne 3 defects pakde** (rolled-back transaction, live DB par): lowercase `begin` par case-
+sensitive anchor fail; `get_wallet_balance_v2` ka poora body single line me hai (whole-line anchor nahi
+milta); aur single-line body par guard ka trailing `-- comment` baaki body ko kha jaata tha. Ab anchor =
+verbatim body me pehla word-boundary BEGIN (case-insensitive) + whole-line cross-check, aur injection
+newline ke saath band hota hai. Verify: catalog-confirmed grants, 10 functional probes (owner pass /
+cross-user Unauthorized / anon signup-create pass / service_role pass / admin-only pass) + poora
+assertion block (21/20/19 counts) live par rolled-back transaction me chala; typecheck + 178 tests +
+build clean; naya `src/test/serverOnlyRpcs.test.ts` list migration se padh kar enforce karta hai ki koi
+app code server-only RPC ka naam dobara na likhe.
+
 ⚠️ Pending (jaan-boojh ke chhoda, plan report §11.6 me): heading hierarchy (defect #11) — 89 `<h3>`
 hain dashboard/client/admin pages me aur wo ek hi construct nahi (kuch card headers = H2 hone chahiye,
 kuch card ke andar ke sub-headings jinme H3-under-H2 sahi hai). Class signature se distinguish nahi hota
