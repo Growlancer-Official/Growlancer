@@ -336,6 +336,37 @@ assertion block (21/20/19 counts) live par rolled-back transaction me chala; typ
 build clean; naya `src/test/serverOnlyRpcs.test.ts` list migration se padh kar enforce karta hai ki koi
 app code server-only RPC ka naam dobara na likhe.
 
+✅ Privilege-column lock (Sep 22, 2026, `20270119000013`) — independent deep-audit pass ne `20270119000012`
+ke BAAD ek aur class pakdi: **self-writable trust columns**. (a) `profiles_private.is_admin` —
+`20261221000000` ne flag ko `profiles` se yahan move kiya, par naye table ko na column-locked RLS policy
+mili (sirf `USING/WITH CHECK (auth.uid() = id)`) na protect-trigger, aur ACL table-wide UPDATE/INSERT
+deta tha → probe me self `is_admin=true` **ALLOWED rows=1**. Impact sirf flag-flip nahi: `admin-data` ka
+`verifyAdminSession` **sirf** `profiles_private.is_admin` padhta hai, yaani ek PATCH = poora admin proxy
+(saare users ki email/PII, payments, escrow, contracts, suspension writes). Saath hi
+`suspended_at`/`suspend_reason`/`banned_at` bhi self-writable the → suspended/banned user khud apna ban
+hata sakta tha (ALLOWED rows=1). (b) **Reputation columns**: `profiles.rating`/`total_reviews` aur
+`freelancer_profiles.rating`/`total_reviews`/`reputation_score`/`weighted_rating` kisi guard me nahi the →
+self `rating=5.0, total_reviews=999` **ALLOWED rows=1**; ye wahi numbers hain jo client-side search,
+matches, proposals, invites aur "top rated" gate render karte hain → merit-based ranking promise ka direct
+break. Fix (dono layers, codebase ke existing patterns): table-wide UPDATE/INSERT revoke + sirf
+client-write columns (`id, email, phone, referral_code, onboarding_completed, created_at, updated_at`) ka
+column-grant, plus `protect_profiles_private_privilege_columns()` BEFORE INSERT OR UPDATE trigger
+(INSERT bhi, warna naya row `is_admin=true` ke saath aata hai); reputation ke liye dono purane guard
+extend hue aur `update_reputation_score` (in columns ka **akela** legitimate writer, review-trigger se
+chalta hai) ko `app.bypass_privilege_check` flag mila. Legit paths intact (dry run): service_role admin
+suspend ALLOWED, signup-shape INSERT ALLOWED, email update ALLOWED, `complete_onboarding()` definer path
+ALLOWED, `update_reputation_score` ALLOWED; self-writes BLOCKED (ACL 42501, aur ACL jaan-boojh kar wapas
+kholne par trigger P0001). **Dry-run ne 2 harness bugs bhi pakde** (stale `app.bypass_privilege_check`
+phases ke beech leak ho raha tha; test ka lazy regex zero-width match kar ke vacuous pass de raha tha) —
+dono fix hue aur negative-control se prove hue. Verify: typecheck + 185 tests (7 naye
+`src/test/profilesPrivatePrivilegeGuard.test.ts`) + build clean. Details: report §13.
+
+⚠️ Flagged (chhota, dead-column hygiene — is pass me nahi chhua): `certifications.verified`,
+`freelancer_skills.is_verified`, `payout_methods.is_verified`, `services.rating` bhi owner-update policy
++ no trigger ke saath self-writable hain, LEKIN poore app/edge codebase me inhe koi padhta hi nahi (4
+columns = 0 readers) — isliye blast-radius badhane ke bajaye flag kiya. Jab in tables ko koi use kare,
+`20270119000013` ka pattern laga dena (ACL column-grant ya guard + assertion).
+
 ⚠️ Pending (jaan-boojh ke chhoda, plan report §11.6 me): heading hierarchy (defect #11) — 89 `<h3>`
 hain dashboard/client/admin pages me aur wo ek hi construct nahi (kuch card headers = H2 hone chahiye,
 kuch card ke andar ke sub-headings jinme H3-under-H2 sahi hai). Class signature se distinguish nahi hota

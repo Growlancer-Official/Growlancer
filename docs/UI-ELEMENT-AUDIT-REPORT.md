@@ -718,3 +718,153 @@ less than an hour old. Someone who already knew a brand-new signup's UUID could 
 the owner's own first authenticated call overwrites it (the guard only blocks anonymous rewrites), and
 matching `p_email` against `auth.users.email` to narrow it further risks breaking signup on an email
 normalization mismatch. Left as-is, deliberately.
+
+---
+
+## 13. Independent deep-audit pass — self-writable trust columns (2026-09-22)
+
+A second, independent senior-dev/security review of everything that landed after
+`SECURITY_AUDIT_REPORT.md` (2 Aug) raised two CRITICALs. One was already closed before this pass ran;
+the other was **real, live, and worse than reported**. The systematic sweep that followed turned up a
+third, of the same class, that neither report had named.
+
+### 13.1 CRITICAL #1 — `update_wallet_balance` self-credit: already closed, re-verified
+
+The report described `20270101000019` handing `authenticated` back the wallet writers after the
+service-role regression. §12 (`20270119000012`) had already revoked those grants and switched the
+withdrawal edge function to its service-role client (`Backend Deploy #14`). Re-checked against the
+live catalog in this pass:
+
+| function | anon | authenticated | service_role |
+|---|---|---|---|
+| `update_wallet_balance` | ✗ | ✗ | ✓ |
+| `hold_wallet_funds` / `release_wallet_funds` | ✗ | ✗ | ✓ |
+| `process_withdrawal_complete` | ✗ | ✗ | ✓ |
+| `fund_escrow` | ✗ | ✓ — intentional (a client funds its *own* escrow, caller/contract-guarded since `20270101000016`) | ✓ |
+
+No frontend code calls any of them (repo-wide grep), so revoking cost no capability.
+
+### 13.2 CRITICAL #2 — `profiles_private.is_admin` is self-writable: confirmed and worse
+
+`20261221000000` moved `is_admin` / suspension state off `public.profiles` and protected `profiles`
+with a column-locked RLS policy *and* a `BEFORE UPDATE` trigger. The new table inherited neither:
+
+- its UPDATE policy is `USING (auth.uid() = id) WITH CHECK (auth.uid() = id)` — row ownership only;
+- the table-wide ACL granted `UPDATE`/`INSERT` on **every** column to `anon` and `authenticated`;
+- no `protect_*` trigger is attached (`profiles` and `freelancer_profiles` both have one).
+
+Confirmed live, as a real authenticated session, inside a rolled-back transaction:
+
+| probe | result |
+|---|---|
+| `UPDATE profiles_private SET is_admin = true` (own row) | **ALLOWED** rows=1 |
+| `UPDATE profiles_private SET suspended_at/banned_at = NULL` (own row) | **ALLOWED** rows=1 |
+| `UPDATE profiles.role = 'admin'` (own row) | blocked — *"Cannot self-promote to admin"* |
+
+The impact is larger than the report assumed. `admin-data`'s `verifyAdminSession` reads **only**
+`profiles_private.is_admin`, so one PATCH hands the caller the entire admin proxy: every user's email
+and PII, payments, escrow, contracts, plus suspension writes. Clearing `suspended_at` / `banned_at` is
+how a suspended or banned account lifts its own ban. This is the exact bug reported against
+`profiles` — relocated, never re-fixed.
+
+### 13.3 The systematic sweep (why the sibling bugs were findable)
+
+Rather than read tables by hand, the class was enumerated: every `public` table that has (a) a column
+matching a trust pattern (`is_admin|is_pro|role|verification_status|suspended*|banned*|rating|
+total_reviews|seller_level|is_verified|verified`), (b) an owner-scoped `UPDATE`/`ALL` policy, and
+(c) no protect trigger. `profiles_private` came out alone in the *critical* column — and four siblings
+came with it:
+
+| table.column | writable by owner? | readers in app + edge code | disposition |
+|---|---|---|---|
+| `certifications.verified` | yes | **none** (the app uses `skill_certifications`) | flagged, not changed |
+| `freelancer_skills.is_verified` | yes | **none** | flagged, not changed |
+| `payout_methods.is_verified` | yes | **none** | flagged, not changed |
+| `services.rating` | yes | **none** rendered | flagged, not changed |
+
+They are genuinely self-writable, but nothing in the product reads them, so the exploit is a write to
+a column no surface displays. Widening this migration's blast radius to four more trigger attachments
+for zero reader-visible gain was the wrong trade; they are named here and in `CLAUDE.md` so the next
+person to *use* one of those columns applies the same pattern.
+
+### 13.4 Third finding — reputation is self-inflatable (merit-promise break)
+
+Neither guard covered the numbers every client surface renders
+(`ClientFreelancerSearchPage`, `ClientMatchesPage`, `ClientProposalsPage`, `InvitesPage`,
+`OverviewPage`'s "top rated" gate):
+
+| probe (own row, rolled back) | result |
+|---|---|
+| `profiles` → `rating = 5.0, total_reviews = 999` | **ALLOWED** rows=1 |
+| `freelancer_profiles` → `rating`, `total_reviews`, `reputation_score = 100`, `weighted_rating` | **ALLOWED** rows=1 |
+
+Neither `protect_profiles_privilege_columns` (is_pro / verification_status / role) nor
+`protect_freelancer_profiles_privilege_columns` (verification_status / seller_level) looked at them.
+A freelancer could award themselves a perfect record with no contract and no review — a direct break
+of the non-negotiable merit-based ranking rule in `CLAUDE.md`.
+
+### 13.5 The fix (`20270119000013`) and how it was proven
+
+Two independent layers for `profiles_private`, one extension for reputation:
+
+1. **Privilege layer** — table-wide `UPDATE`/`INSERT` revoked from `anon` + `authenticated`,
+   re-granted per column only for the columns the browser legitimately writes (`id, email, phone,
+   referral_code, onboarding_completed, created_at, updated_at`). This also closes the INSERT path no
+   UPDATE trigger can (`is_admin = true` on a first insert).
+2. **Trigger layer** — `protect_profiles_private_privilege_columns()`, `BEFORE INSERT OR UPDATE`,
+   mirroring the existing pattern, exempting the bypass GUC and `service_role`.
+3. **Reputation** — both guards extended, and `update_reputation_score` (the *only* writer of those
+   columns, driven by the `on_review_change` trigger) given the bypass flag every other server
+   recompute already sets. Its body is **patched from its live definition** rather than retyped, and
+the patch `RAISE`s if its anchor stops matching.
+
+The dry run executed the real migration file against the live database, inside a rolled-back
+transaction, with the ACL deliberately reopened to isolate the trigger:
+
+| probe | result |
+|---|---|
+| `is_admin = true` / suspension write (ACL intact) | **BLOCKED** `42501 permission denied for table profiles_private` |
+| `is_admin = true` / suspension write (ACL reopened → trigger only) | **BLOCKED** `P0001 Cannot self-modify is_admin column` / *"…suspension state"* |
+| INSERT with `is_admin = true` / `suspended_at` (trigger only) | **BLOCKED** `P0001 Cannot self-grant admin` / *"…suspension state"* |
+| signup-shape INSERT (`id, email, is_admin=false, onboarding_completed`) | INSERTED — no false positive |
+| legitimate email / referral_code / phone / onboarding update | ALLOWED rows=1 |
+| no-op update naming a guarded column | ALLOWED — the *trigger* has no false positive (the ACL refuses it one layer up) |
+| `profiles.rating` + `freelancer_profiles` reputation inflate | **BLOCKED** `P0001 Cannot self-modify rating column` |
+| `complete_onboarding()` (SECURITY DEFINER path) | ALLOWED |
+| admin suspend + `is_admin` write as `service_role`, bypass flag false | ALLOWED — the admin console path survives |
+| `update_reputation_score()` (review-trigger path) | ALLOWED, score returned |
+| every assertion in the migration's own block (5a–5f) | PASSED |
+
+### 13.6 Two harness defects the dry run caught (both were mine)
+
+Kept here because both produce *green results that mean nothing*:
+
+1. **A stale transaction-local flag.** `complete_onboarding()` calls
+   `set_config('app.bypass_privilege_check','true', true)`. Because that is transaction-local, every
+   later probe in the same transaction took the bypass branch — the first run therefore reported the
+   re-opened ACL and the service_role path as "ALLOWED" for the wrong reason. Re-run with the flag
+   explicitly cleared; only then do those rows mean anything.
+2. **A lazy regex that matched zero characters.** The new test's call-site scanner used
+   `([\s\S]{0,300}?)`, which always matches the empty string, so it found **0** write sites and its two
+   "no offenders" assertions passed vacuously. A floor assertion (`WRITES.length` must find the two
+   known `authService` call sites) exposed it immediately. The parser now requires the write method to
+   be the *next* call in the chain, fails loudly on any payload it cannot read, and was validated with
+   two negative controls: injecting `is_admin: true` into an app write fails the test, and adding a
+   guarded column to the migration's marker list fails the test.
+
+### 13.7 Verified
+
+| Check | Result |
+|---|---|
+| Migration run end-to-end against live DB, rolled back | pass (all 6 assertion groups + 17 probes) |
+| `npm run typecheck` | clean |
+| `npm test` | **185** pass (178 + 7 new in `src/test/profilesPrivatePrivilegeGuard.test.ts`) |
+| `npm run build` | clean |
+| Negative controls (app-code injection, migration marker tampering) | both fail the test as intended |
+| Production data | untouched — every probe ended in `ROLLBACK` |
+
+### 13.8 Flagged, not changed
+
+- The four dead trust columns in §13.3.
+- The credential audit writers still accept `p_admin_id` / `p_admin_email` from the browser (§12.4) —
+  unchanged, still the founder's call.
