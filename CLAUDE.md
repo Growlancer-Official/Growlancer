@@ -462,8 +462,18 @@ hain. Harness ke escrow aggregates ab hard-coded nahi hain, live invariant hain:
 `escrow_balance == sum(escrows still held)` — koi bhi cross-member leak isko tod dega. Is pass me apne
 hi 2 defects pakde: (i) `count(*) FROM public.check_security_drift()` **hamesha 1** deta hai (function
 scalar `integer` return karta hai) — assertion kabhi fail ho hi nahi sakti thi; ab direct call +
-`src/test/serviceRoleContextGuard.test.ts`; (ii) hard-coded `3 × rate` expectation galat thi. Sab
-live DB par rolled-back transactions me dry-run hua. Details: report §17.
+`src/test/serviceRoleContextGuard.test.ts`; (ii) hard-coded `3 × rate` expectation galat thi; aur
+(iii) reason-based probe ka predicate `errorCode()` par bana tha, jo `code || message` deta hai —
+SQLSTATE ke saath message drop ho jata hai, isliye "refusal ne apni wajah batayi" wali assertion
+kabhi pass ho hi nahi sakti thi (escape har run me sahi refuse ho raha tha, probe use failure bata
+raha tha); ab `errorReason()` helper. Sab live DB par rolled-back transactions me dry-run hua.
+Verify (Backend Deploy **#20** ke baad, LIVE): typecheck + **193 tests** + build clean; pentest
+**103 checks / 40 escapes / 0 failures** — service-role milestone leg ab escrow release karke
+freelancer ko **5000.00 credit** karta hai (pehle `false` / `0.00`), aur teeno jagah
+`escrow_balance == sum(held escrows)` hold karta hai (20000=20000, 20000=20000, 15000=15000); live
+schema: dono functions helper use karte hain, legacy singular parameter kahin nahi,
+`stale_jwt_claim_check()` = **0** findings, monitor usse sweep karta hai, `anon` dono naye functions
+execute nahi kar sakta, open alerts 0. Details: report §17.
 
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas

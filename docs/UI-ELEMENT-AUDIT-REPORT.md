@@ -1211,9 +1211,29 @@ what it claims.
 3. The migration's first draft also needed its detector to be comment-aware (above) and shipped the
    `count(*)` form. Both were caught in rolled-back dry runs against the live database, before anything
    was committed.
+4. **A reason-based refusal predicate that could never match.** The cross-client team-hire probe
+   required the refusal to *name its reason* (`not found for this client`) but built its detail string
+   from `errorCode()`, which returns `code || message` — so a PostgREST error carrying a SQLSTATE
+   yields only `P0001` and the message is dropped. The escape was refused correctly on every run; the
+   probe reported it as a failure anyway. Fixed with an `errorReason()` helper (SQLSTATE **and**
+   message), which is what an assertion about *why* something was refused actually needs.
 
 ### 17.5 Verified (post-deploy)
 
-Filled in after the deploy: the harness re-run against the deployed backend — the service-role milestone
-leg must release the escrow **and** credit the freelancer, every aggregate invariant must hold, and
-teardown must leave no rows.
+Re-run against the deployed backend (three throwaway accounts, real JWTs, real HTTP): **103 checks,
+40 escape attempts, 0 failures**, teardown leaves `contracts` / `projects` / `team_projects` at 0.
+The legs that matter:
+
+| what the run proves | result |
+|---|---|
+| the service-role milestone path releases member B's escrow **and** pays B | `escrow_released=true credited=5000.00` (was `false` / `0.00`) |
+| `escrow_balance` == sum of held escrows, after funding | `20000 = 20000` |
+| ...and after member A's dispute | `20000 = 20000` (a dispute moves no money) |
+| ...and after member B was paid | `15000 = 15000` |
+| member B's release left A's and C's escrow rows untouched | `A=disputed/5000 C=funded/5000` |
+| member C's refund request did not touch A's or C's held funds | `A=disputed/5000 C=funded/5000` |
+| cross-member release / dispute / refund / milestone write / escrow read | all refused |
+
+Live schema after the deploy: both functions call the helper and no longer read the legacy parameter,
+`stale_jwt_claim_check()` returns **0** findings, the monitor sweeps it, `anon` cannot execute either
+new function, and open security alerts are 0. Deploy: Backend Deploy **#20, success**.
