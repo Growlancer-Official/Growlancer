@@ -424,6 +424,47 @@ control** migration ke andar hi (planted violator flag hona chahiye, warna deplo
 migration live par rolled-back transactions me dry-run hua. Verify: typecheck + 188 tests + build
 clean; deploy ke baad pentest **72/72 pass**. Details: report §15.
 
+✅ Team Projects contract isolation (Sep 23, 2026, `20270119000017`) — verify kiya ki ek member ka
+dispute / refund / milestone outcome doosre member ke escrow ko touch nahi karta. Pehle saare live
+`escrow` writers (17 `UPDATE escrow` sites) padhe: design contract-scoped hai (`WHERE contract_id = …`)
+aur escrow RLS participants-only — par 3-role runtime probe ne **teen real defects** nikaale:
+**F1 BLOCKER** — team contract **kabhi ban hi nahi sakta tha**: `create_team_role_contract` design se
+`project_id = NULL` bhejta hai, par `contracts.project_id` NOT NULL tha → har call `23502`, yaani Team
+Projects ne aaj tak kisi ko hire hi nahi kiya tha (team tables live bane the, repo migration
+`20261229000000` ek-character stub hai, isliye drift pakda nahi gaya). **F2 HIGH** — koi bhi signed-in
+user kisi aur ke team project par contract attach kar sakta tha (SECURITY DEFINER, `team_projects`
+ownership check hi nahi; guard NULL-unsafe) + arbitrary freelancer ko fake "You've been hired!"
+notification. Ab `auth.uid() IS NULL` bail-out + explicit ownership check + **one role = one contract**
+(role → `filled`). **F3 HIGH** — hourly auto-release milestone ko `released` mark karta tha par escrow
+`funded` reh jaata tha aur freelancer ko **0.00** credit hota tha, client ke aggregate `escrow_balance`
+me phantom funds chhoot jaate the — jo doosre contracts ke release `GREATEST(…, 0)` se kaat-te the;
+yahi ek jagah thi jahan ek member ka outcome doosre ke accounting tak pahunch sakta tha. Runtime par
+ab proven: A ka dispute sirf A ka escrow freeze karta hai (B/C `funded` + `active`), B ka release A/C
+rows ko chhoota hi nahi, C ka refund A/C ko nahi, cross-member release/dispute/refund/milestone sab
+refused, B A ka escrow padh nahi sakta. **Flagged, not changed:** `freeze_contract`/`unfreeze_contract`
+dono parties ka `wallets.is_frozen` set karte hain (team project me wo shared client wallet hai) — par
+us column ka koi reader nahi hai, isliye semantics nahi badle. Details: report §16.
+
+✅ Cron ka service-role check legacy GUC padh raha tha (Sep 23, 2026, `20270119000018`) — §16 ka F3
+fix bhi actually kaam **nahi** kar raha tha: `release_escrow` ne service-role branch ko legacy singular
+`current_setting('request.jwt.claim.role', …)` se probe kiya, jo current PostgREST set hi nahi karta
+(plural `request.jwt.claims` JSON set hota hai; Supabase ka `auth.role()` dono padhta hai). Cron ke
+liye bhi probe `''` → `Unauthorized` → milestone `released`, wallet **0.00**, escrow `funded`. Wahi
+stale probe `auto_release_contract` (delivered-but-unpaid path, pehle koi probe nahi tha) me bhi thi.
+Catalog sweep: schema me sirf yahi **2** functions legacy singular parameter padhte the. Fix: shared
+`is_service_role_context()` dono idioms probe karta hai (`current_setting('role')` + `auth.role()`,
+NULL-safe — plain session `none` deta hai), aur dono functions usi ko use karte hain. Saath me naya
+server-only detector `stale_jwt_claim_check()` (match se pehle SQL comments strip karta hai, warna
+fix ke apne comments hi flag ho jate) ab hourly `check_security_drift()` me sweep hota hai — fix se
+pehle baseline par usne **exactly wahi 2 toote functions** flag kiye, aur migration me **positive**
+(planted violator flag hona chahiye) + **negative** (sirf prose me naam ho to flag nahi) dono controls
+hain. Harness ke escrow aggregates ab hard-coded nahi hain, live invariant hain:
+`escrow_balance == sum(escrows still held)` — koi bhi cross-member leak isko tod dega. Is pass me apne
+hi 2 defects pakde: (i) `count(*) FROM public.check_security_drift()` **hamesha 1** deta hai (function
+scalar `integer` return karta hai) — assertion kabhi fail ho hi nahi sakti thi; ab direct call +
+`src/test/serviceRoleContextGuard.test.ts`; (ii) hard-coded `3 × rate` expectation galat thi. Sab
+live DB par rolled-back transactions me dry-run hua. Details: report §17.
+
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas
 aa jata hai, isliye pehle ke hardening ke baad bhi ye wapas aa gaye. Zyadatar NULL-safe hain

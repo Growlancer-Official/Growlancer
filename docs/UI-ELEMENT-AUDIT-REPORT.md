@@ -1066,3 +1066,154 @@ recorded here for a follow-up pass rather than mass-revoked in a money-path chan
 `is_user_admin()` must **keep** its grant: it is evaluated inside an RLS policy
 (`user_reports_admin_all`), so revoking it from `anon` would break policy evaluation rather than
 harden it.
+
+---
+
+## 16. Team Projects: one member's outcome must not reach another member (2026-09-23)
+
+The question was narrow: *does one member's dispute, refund or milestone failure touch another
+member's escrow?* Reading every live writer of `escrow` (all 17 `UPDATE escrow` sites) showed the
+**design** is contract-scoped — each write keys on `WHERE contract_id = …`, and the escrow RLS policy
+is participants-only. The runtime probe (§15's harness, extended) drives a 3-role team project to
+prove it. Doing that turned up three real defects, all fixed in `20270119000017`.
+
+### 16.1 F1 (BLOCKER) — a team contract could never be created
+
+`create_team_role_contract` inserts `project_id = NULL` by design (a team role has no client
+`projects` row; it links through `team_project_id`), but `contracts.project_id` was `NOT NULL`.
+**Every** call died with `23502 null value in column "project_id" … violates not-null constraint`,
+reproduced against production. Team Projects had never been able to hire anyone, so the isolation
+question could not even be asked of a real team contract. The team tables were created live while the
+repo migration `20261229000000` is a one-character stub, so this drifted in unnoticed.
+
+Fix: `ALTER TABLE contracts ALTER COLUMN project_id DROP NOT NULL` — it only *permits* NULLs; every
+non-team contract keeps its `project_id`, and joins by `project_id` correctly skip team contracts.
+
+### 16.2 F2 (HIGH) — a stranger could attach a contract to someone else's team project
+
+The RPC verified that the *role* belonged to the team project, and that `p_client_id` matched the
+caller — never that the **team project** belonged to the caller. It is `SECURITY DEFINER`, so RLS did
+not protect it: another client could create a contract on a stranger's team project *and* send a fake
+"You've been hired!" notification to an arbitrary freelancer. The guard was also NULL-unsafe
+(`NULL <> uuid` is NULL, i.e. falsy) — the same shape as §15's three findings.
+
+Fix: `auth.uid() IS NULL` bail-out, an explicit `team_projects.client_id = p_client_id` ownership
+check, and **one role = one contract** (the role flips to `filled`) so a seat cannot be hired twice
+into two escrows.
+
+### 16.3 F3 (HIGH) — the hourly auto-release marked milestones paid but never paid
+
+`auto_release_milestone` (service-role cron) calls `release_escrow`, whose live definition had lost
+the service-role bypass that `20261211000000` added. It only checked
+`p_client_id IS DISTINCT FROM auth.uid()`, and `auth.uid()` is NULL for the cron, so the call raised
+`'Unauthorized'` — which `auto_release_milestone` **catches** and reports as `escrow_released: false`.
+Production therefore observably did: milestone flipped to `released`, escrow left `funded`, freelancer
+credited **0.00**, and the client's aggregate `escrow_balance` left holding phantom funds — phantom
+funds that every *other* contract's release then subtracts from with `GREATEST(…, 0)`. That is the one
+place a member's milestone outcome could reach another member's accounting.
+
+### 16.4 Anti-regression
+
+`20270119000017` ships catalog-level assertions (nullable `project_id`; all three parts of the F2 patch
+present; the F3 branch present *and* the owner check retained; and that `team_project_roles.status`
+really can hold `filled`). The functional proof is the runtime probe: hire through the real RPC, then
+dispute / refund / release members independently and check every other member's escrow row, contract
+row and wallet.
+
+### 16.5 Verified (runtime, three throwaway accounts)
+
+Hire works through the real RPC for all three roles; re-hiring a `filled` role is refused; attaching to
+a foreign team project is refused. Then, with the same client funding all three contracts:
+
+| probe | result |
+|---|---|
+| member A raises a dispute on its own contract | succeeds |
+| A's dispute froze **only** A's escrow | `A=disputed B=funded C=funded` |
+| B and C contracts stay `active` and unfrozen while A is disputed | yes |
+| A's own milestone edits stay frozen | refused |
+| B still works and marks *its* milestone delivered | yes |
+| B's release left A's and C's escrow rows untouched | amounts and statuses identical |
+| C's refund request did not touch A's escrow or C's held funds | yes |
+| B releases A's escrow / B disputes A / B refunds A / B writes A's milestones | all refused |
+| B reads A's escrow row | refused (RLS) |
+
+### 16.6 Flagged, not changed
+
+`freeze_contract` / `unfreeze_contract` set `wallets.is_frozen` for **both** parties. In a team project
+that is the one shared client wallet, so unfreezing contract A clears the flag a freeze on contract B
+owns. It is a real cross-contract coupling, but `wallets.is_frozen` has **no readers** anywhere in the
+app or edge code, so there is no behaviour to correct today. Changing admin fraud-freeze semantics with
+zero runtime effect is exactly the kind of "fix" that quietly alters intent; the pattern is recorded
+here for when something reads it.
+
+---
+
+## 17. The cron's "is this the service role?" check read a GUC PostgREST no longer sets (2026-09-23)
+
+### 17.1 F4 (HIGH) — §16.3's fix did not actually work
+
+`20270119000017` restored `release_escrow`'s service-role branch but probed it with the **legacy
+singular per-claim parameter** (`current_setting('request.jwt.claim.role', true)`). Current PostgREST
+sets the **plural** `request.jwt.claims` JSON and no longer sets the singular per-claim parameters —
+Supabase's own `auth.role()` reads both for exactly this reason. So the probe evaluated to `''` for
+service-role calls too, and the runtime probe still reported `escrow release failed: Unauthorized`.
+
+A catalog sweep found the same stale probe in `auto_release_contract` (the delivered-but-unpaid path),
+which no probe had exercised — the same silent failure class, on the *other* cron. Those two were the
+**only** functions in the schema reading the legacy singular parameter (nothing reads `.sub` / `.email`
+that way; `auth.uid()` carries the plural fallback).
+
+### 17.2 Two idioms, one of them unreliable
+
+| idiom | status |
+|---|---|
+| `current_setting('role', true)` — PostgREST's `SET LOCAL ROLE` | what `fund_escrow` / `create_user_profile` already gate on; subtle inside a `SECURITY DEFINER` function, where the effective role is the owner's |
+| `auth.role()` — singular **and** plural claims | unaffected by role switching |
+| `request.jwt.claim.role` — singular only | **broken**: reads NULL/`''` on current PostgREST |
+
+Rather than bet on one, `20270119000018` adds a single shared helper `is_service_role_context()` that
+accepts either, NULL-safely (`NULLIF(…, 'none')`, because a plain session with no `SET ROLE` reports
+`none`, not NULL). Both probes are unforgeable from a browser: a client JWT can only yield
+`authenticated`.
+
+### 17.3 The bug class is detected now
+
+New server-only `stale_jwt_claim_check()` flags any function whose **code** decides authority from the
+legacy singular parameter without the plural fallback, and the existing hourly `check_security_drift()`
+sweeps it (category `stale_jwt_claim_check`, severity high) through the current admin-email path — no
+new cron. Baseline before the fix: it flagged **exactly the two broken functions**, which is how the
+detector was shown to work on real code and not only on a planted sample.
+
+The detector strips SQL comments before matching (block comments first, then line comments, with a
+`(^|[^-])` guard so a `--` inside a token cannot truncate a line). Without that, the fix's own
+explanatory comments — which necessarily name the legacy parameter — would make the patched functions
+flag *themselves*. The migration ships a **positive control** (a planted legacy-parameter guard must be
+flagged) *and* a **negative control** (a function that only *mentions* the parameter in prose must not
+be), so a detector that is merely quiet, or merely noisy, fails the deploy.
+
+### 17.4 Defects in the *harness and assertions* that this pass caught
+
+Honest accounting — all three were mine, and all three are the same class: a check that does not mean
+what it claims.
+
+1. **`SELECT count(*) … FROM public.check_security_drift()` is always 1.** The function returns a
+   scalar `integer`, so `count(*)` counts the single row carrying that integer; the assertion could
+   never fail and reported "1 new alert" on a **clean** schema. It was caught only because the failure
+   message had been made self-diagnosing in the same pass — it printed `(details unavailable)`, i.e.
+   *nothing was inserted*, which contradicted the count. Fixed to call the function directly, and
+   unit-tested (`src/test/serviceRoleContextGuard.test.ts`) so the pattern cannot come back.
+2. **Three escrow aggregate assertions pinned a hard-coded number.** `escrow_balance == 3 × rate`
+   ignored the other funded contracts the same client still held, so it read a correct `25 000` as a
+   failure. Replaced with a live **invariant**: the client-level `escrow_balance` must equal the sum of
+   the escrows still held (statuses `funded`/`disputed`/`frozen`) for that client. That is a stronger
+   isolation test than a constant and it survives the harness gaining or losing contracts — any
+   cross-member leak, including the §16.3 phantom-funds class, breaks it.
+3. The migration's first draft also needed its detector to be comment-aware (above) and shipped the
+   `count(*)` form. Both were caught in rolled-back dry runs against the live database, before anything
+   was committed.
+
+### 17.5 Verified (post-deploy)
+
+Filled in after the deploy: the harness re-run against the deployed backend — the service-role milestone
+leg must release the escrow **and** credit the freelancer, every aggregate invariant must hold, and
+teardown must leave no rows.
