@@ -11,6 +11,12 @@
 //
 // Writes .e2e/<role>.json (gitignored) usable as --storage for
 // element-audit.mjs / device-audit.mjs.
+//
+// --require-all: strict mode for CI. A role whose credentials are missing, or
+// that fails to log in, fails the run instead of being skipped. Without it a
+// half-configured environment produces "some roles logged in" and exit 0, which
+// is how an authenticated audit ends up reported as green while never having
+// rendered a single logged-in page.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -35,6 +41,8 @@ const args = Object.fromEntries(
 
 const BASE = args.base || 'http://127.0.0.1:4174';
 const OUT_DIR = path.resolve('.e2e');
+// CI sets this: an inactive authenticated pass must never look like a green one.
+const REQUIRE_ALL = args['require-all'] === 'true';
 
 const ROLES = {
   freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, start: '/?modal=login' },
@@ -157,7 +165,14 @@ async function loginRole(browser, role) {
   const cfg = ROLES[role];
   if (!cfg) throw new Error(`Unknown role: ${role}`);
   if (!cfg.email || !cfg.password) {
-    console.log(`⊘ ${role}: E2E_${role.toUpperCase()}_EMAIL / _PASSWORD not set — skipping (this is expected until test accounts exist)`);
+    const names = `E2E_${role.toUpperCase()}_EMAIL / E2E_${role.toUpperCase()}_PASSWORD`;
+    const message = `${role}: ${names} not set`;
+    if (REQUIRE_ALL) {
+      // Fail-closed: the caller asked for every role explicitly, so "not set"
+      // is a misconfiguration to fix, not a condition to tolerate.
+      throw new Error(`${message} — --require-all was requested, refusing to skip this role`);
+    }
+    console.log(`⊘ ${message} — skipping (this is expected until test accounts exist)`);
     return null;
   }
 
@@ -197,6 +212,24 @@ async function main() {
   }
   await browser.close();
   console.log(written.length ? `\nstorage states: ${written.join(', ')}` : '\nno storage states written (set the E2E_*_EMAIL/_PASSWORD env vars first)');
+
+  // Strict mode: the authenticated audit consumes exactly one storage state per
+  // role. If any is missing the audit would silently render logged-out pages and
+  // still report green, so refuse to hand over a partial set.
+  if (REQUIRE_ALL) {
+    if (wanted.length === 0) {
+      console.error('::error::--require-all was set but no role was requested (expected --all).');
+      process.exitCode = 1;
+      return;
+    }
+    const missing = wanted.filter((r) => !written.some((f) => path.basename(f, '.json') === r));
+    if (missing.length) {
+      console.error(
+        `::error::--require-all could not log in: ${missing.join(', ')}. Storage states written: ${written.length}/${wanted.length}. The authenticated audit would otherwise run logged out and report a false green.`
+      );
+      process.exitCode = 1;
+    }
+  }
 }
 
 main().catch((err) => { console.error(err); process.exit(1); });

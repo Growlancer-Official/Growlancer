@@ -1300,3 +1300,94 @@ can leave the platform**: escrow releases credit wallets, and withdrawals queue.
 
 Lesson worth keeping: **every probe assertion must be checked against the unit and the column the
 database actually uses.** Three of these four were wrong-column/wrong-unit mistakes, not logic errors.
+
+---
+
+## 19. A skipped guardrail no longer looks green (2026-09-23)
+
+This pass fixes a reporting defect, not a code defect. Both security guardrails in CI were
+*conditional on secrets that were absent*, so they skipped — and the job reported **success**. The
+job's own step list said so:
+
+```
+Run element audit (all groups, strict)                          success   <- anonymous pages only
+Seed E2E test accounts (live only for this run)                 skipped
+Authenticated audit + logout security (freelancer/client/admin) skipped
+```
+
+`.github/workflows/backend-deploy.yml` had the same shape for the pentest: `::notice:: ... SKIPPED`
+followed by `exit 0`. The earlier "known CI red" for the authenticated pass was not fixed, it was
+*skipped* — which reads as green. So the platform's most important runtime checks (the dashboard,
+client and admin sweeps, the logout/back-button security pass, and the whole privilege + money-path
+pentest) have never run in CI, while CI looked healthy.
+
+### 19.1 What changed
+
+**(a) `ci.yml` — a fail-closed guard step, first in the job.** `Guard — authenticated-audit secrets
+present (fail-closed)` asserts every credential the job consumes and, on a missing one, emits
+`::error::` naming it (plus the one-line setup) and `exit 1`. It runs before the Chrome download and
+the build, so a misconfigured run fails in seconds. The `can_seed_e2e` environment gate — the silent
+switch this defect was built on — is gone entirely.
+
+**(b) The authenticated audit can no longer run partially or logged-out.** Each audit used to be
+wrapped in `if [ -f .e2e/<role>.json ]`, so a role that failed to log in was dropped and the rest
+still ran — a green result from a partial sweep. `login.mjs` gained `--require-all`: a missing
+credential or a failed login now throws and sets a non-zero exit instead of `return null`, and the
+workflow requires all three storage states on disk before running any audit, then runs all three
+audits and all three logout flows unconditionally.
+
+**(c) `backend-deploy.yml` — the guard runs before the deploy.** `Guard — pentest secrets present
+(fail-closed)` fails *ahead of* the drift check, `db push` and the functions deploy, on the reasoning
+that a deploy whose security verification cannot run must not be recorded as successful. The skip
+branch inside the pentest step is gone (a leftover check there fails rather than skips, as belt and
+braces).
+
+**(d) One skip is tolerated, and only one.** A fork PR structurally cannot read repository secrets —
+GitHub does not expose them to fork-triggered workflows. That path emits `::warning::` saying the pass
+did **not** run and that the run's green covers anonymous pages only. It is gated on *both* the
+`pull_request` event and the fork flag, so the flag alone on a push run cannot be used as a bypass
+(verified by executing the guard).
+
+This deliberately **inverts** a policy the repo had written down: "missing config = pass-skip, fail
+nahi". That policy is why a green check could hide an inactive guardrail. For these two guardrails the
+rule is now the opposite, and `src/test/ciGuardrails.test.ts` enforces it.
+
+### 19.2 Evidence
+
+10 assertions in `src/test/ciGuardrails.test.ts` read the workflows and hold the invariants: every
+credential in the audit job's env must be asserted by the guard (so adding a new one without guarding
+it fails), `exit 0` may appear only in the fork branch, no `continue-on-error`, no `if [ -f .e2e/`
+around the audits, the deploy guard must precede every deploy step, and the pentest step may contain
+neither `::notice::` nor `SKIPPED`.
+
+Four **negative controls** were run — weakening the workflow each time had to turn the test red:
+
+| mutation | result |
+|---|---|
+| CI guard `exit 1` → `exit 0` | test failed ✅ |
+| `can_seed_e2e` gate reintroduced | test failed ✅ |
+| pentest `::notice:: SKIPPED` reintroduced | test failed ✅ |
+| deploy pre-flight guard removed | test failed ✅ |
+
+All four fired and the workflow files were restored byte-identical. The guards' bash logic was also
+**executed** (not just read), 8/8: all secrets present → proceeds; service key missing → fails naming
+it; an `E2E_*` password missing → fails naming it; fork PR → honest warning, exit 0; fork flag on a
+push run → still fails; deploy guard same three ways.
+
+The absence assertions strip comments first — without that, the comment *explaining why the old gate
+was removed* is what fails the test. Same lesson as §18: assert against the executable text.
+
+### 19.3 Consequence — one secret to add, or these stay red on purpose
+
+`gh secret list` shows the repo already has the six `E2E_*_EMAIL/_PASSWORD` secrets and both
+`VITE_SUPABASE_*` values. Exactly **one** secret is missing: **`SUPABASE_SERVICE_ROLE_KEY`**
+(`SUPABASE_URL` now falls back to the already-present `VITE_SUPABASE_URL`, which holds the same public
+value, so it does not need adding). Until it is added:
+
+- CI's `element-audit` job fails at the guard, and
+- every backend deploy fails at the pre-flight guard, **before** deploying.
+
+That is the intended behaviour, not a regression: red is the honest state for a run whose
+verification cannot execute. Adding the secret turns both green and activates, for the first time in
+CI, the dashboard/client/admin sweeps, the logout-security pass and the privilege + money-path
+pentest against production.

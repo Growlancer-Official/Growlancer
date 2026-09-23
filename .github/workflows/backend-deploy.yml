@@ -68,6 +68,26 @@ jobs:
             exit 1
           fi
 
+      # Fail-closed BEFORE anything deploys. The pentest below is the only thing
+      # that proves the deploy landed the latest locks and guards, so a deploy
+      # whose verification cannot run must not be recorded as a successful one.
+      # It used to print `::notice:: ... SKIPPED` and exit 0, which made the
+      # deploy green while its security check had never executed.
+      - name: Guard — pentest secrets present (fail-closed)
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          missing=""
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then missing="$missing SUPABASE_SERVICE_ROLE_KEY"; fi
+          if [ -z "$VITE_SUPABASE_ANON_KEY" ]; then missing="$missing VITE_SUPABASE_ANON_KEY"; fi
+          if [ -n "$missing" ]; then
+            echo "::error::Privilege + money-path pentest CANNOT RUN — missing repository secret(s):$missing. Failing BEFORE the deploy on purpose: no migration or function deploy is recorded as successful when its security verification was skipped."
+            echo "::error::One-time setup — add both under Settings → Secrets and variables → Actions: SUPABASE_SERVICE_ROLE_KEY (Supabase Dashboard → Project Settings → API → service_role key) and VITE_SUPABASE_ANON_KEY (the public anon key, same value the frontend ships)."
+            exit 1
+          fi
+          echo "Pentest secrets present — the deploy will be verified against production when it finishes."
+
       # NOTE: `migration list --output json` is NOT supported by the CLI — it
       # prints a human table. Compare REMOTE-applied versions (column 2) against
       # repo migration files. --db-url avoids the interactive password prompt.
@@ -160,8 +180,8 @@ jobs:
       # logic is live. Any landed escape exits 1.
       #
       # Needs SUPABASE_SERVICE_ROLE_KEY (admin user creation + full-cascade
-      # teardown) and VITE_SUPABASE_ANON_KEY (user sign-in): add them once in
-      # Settings → Secrets and variables → Actions if absent. SUPABASE_URL is
+      # teardown) and VITE_SUPABASE_ANON_KEY (user sign-in) — both are asserted
+      # by the pre-flight guard step at the top of this job. SUPABASE_URL is
       # derived from the project ref — it must be the REST/edge endpoint, NOT the
       # Postgres pooler URL the migration steps use.
       - name: Privilege + money-path pentest (against deployed DB)
@@ -170,8 +190,11 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
+          # Belt and braces: if a secret ever disappears between the pre-flight
+          # guard and here, fail rather than quietly reporting an unverified
+          # deploy. There is deliberately no skip path left in this step.
           if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
-            echo "::notice::Privilege pentest SKIPPED — add SUPABASE_SERVICE_ROLE_KEY and VITE_SUPABASE_ANON_KEY as repo secrets to run it against production on every backend deploy. The DB locks are still asserted inside the migrations themselves, so this skip does not leave them unverified."
-            exit 0
+            echo "::error::Pentest secrets vanished after the pre-flight guard — refusing to report a green deploy with an unrun security check."
+            exit 1
           fi
           node scripts/e2e/pentest-privileges.mjs

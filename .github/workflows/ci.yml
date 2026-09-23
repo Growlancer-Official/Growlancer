@@ -90,15 +90,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     needs: [typecheck, lint, build]
-    # E2E_* secrets enable the authenticated pass below; empty string = not
-    # set (fork PRs / before setup) and the guarded steps self-skip.
+    # E2E_* secrets enable the authenticated pass below. The accounts are seeded
+    # at the start of this job and deleted at the end (always), so they never
+    # linger in production between runs — live member counts and admin tables
+    # only ever show real accounts.
     #
-    # The accounts are seeded at the start of this job and deleted at the end
-    # (always), so they never linger in production between runs — live member
-    # counts and admin tables only ever show real accounts. Seeding needs
-    # SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY as repo secrets; without the
-    # service key the seed/teardown steps skip and the authenticated pass stays
-    # off, exactly as before.
+    # FAIL-CLOSED (see the guard step): the authenticated audit + logout-security
+    # pass used to be gated on `can_seed_e2e`, so a missing secret made them skip
+    # and the job reported SUCCESS — a green check standing on top of a guardrail
+    # that never ran. Now the job fails and names the missing secrets instead.
+    # SUPABASE_URL falls back to the public VITE_SUPABASE_URL (same value, already
+    # a repo secret) so there is exactly one secret to add: the service-role key.
     env:
       E2E_FREELANCER_EMAIL: ${{ secrets.E2E_FREELANCER_EMAIL }}
       E2E_FREELANCER_PASSWORD: ${{ secrets.E2E_FREELANCER_PASSWORD }}
@@ -106,14 +108,39 @@ jobs:
       E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
-      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      # Single source of truth for "the authenticated pass can run": seeding needs
-      # the service key, and logging in needs the passwords. Any of these missing
-      # (fork PR, pre-setup) keeps the pass off instead of failing the build.
-      can_seed_e2e: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY != '' && secrets.SUPABASE_URL != '' && secrets.E2E_FREELANCER_PASSWORD != '' && secrets.E2E_CLIENT_PASSWORD != '' && secrets.E2E_ADMIN_PASSWORD != '' }}
     steps:
       - uses: actions/checkout@v4
+
+      # Runs FIRST, before the Chrome download and the build: if the authenticated
+      # audit cannot run, there is no point spending two minutes getting to a step
+      # that would have to be skipped anyway.
+      - name: Guard — authenticated-audit secrets present (fail-closed)
+        id: e2e_guard
+        run: |
+          REQUIRED="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY E2E_FREELANCER_EMAIL E2E_FREELANCER_PASSWORD E2E_CLIENT_EMAIL E2E_CLIENT_PASSWORD E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD"
+
+          # A fork PR structurally cannot read repository secrets. That is the one
+          # case where the pass is skipped instead of failing — and it is said out
+          # loud, so it can never be mistaken for a passing guardrail.
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+            echo "::warning::Authenticated audit + logout security NOT RUN — this is a fork PR and repository secrets are not exposed to fork-triggered workflows. The anonymous strict pass above still ran. Treat this run's green as covering anonymous pages only."
+            echo "run_authenticated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          missing=""
+          for name in $REQUIRED; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Authenticated audit + logout security DID NOT RUN — missing repository secret(s):$missing. Failing here deliberately: a guardrail that silently skips is indistinguishable from one that passes, so a green build must never hide it."
+            echo "::error::One-time setup — add SUPABASE_SERVICE_ROLE_KEY (Supabase Dashboard → Project Settings → API → service_role key) under Settings → Secrets and variables → Actions. The E2E_*_EMAIL/_PASSWORD secrets already exist; regenerate the accounts with: node scripts/e2e/create-test-accounts.mjs --rotate --push-secrets"
+            exit 1
+          fi
+          echo "All authenticated-audit secrets present — the dashboard/client/admin sweeps and the logout-security pass will run."
+          echo "run_authenticated=true" >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
         with:
@@ -160,43 +187,47 @@ jobs:
       # Seed the disposable accounts right before use. Recreated with the same
       # passwords CI logs in with, so this also repairs a rotated/stale secret.
       - name: Seed E2E test accounts (live only for this run)
-        if: ${{ env.can_seed_e2e == 'true' }}
+        if: ${{ steps.e2e_guard.outputs.run_authenticated == 'true' }}
         run: node scripts/e2e/create-test-accounts.mjs
 
       # Authenticated element audit + logout/back-button security. This needs
       # accounts that can LOG IN, and the only durable way to guarantee that is to
-      # create them here — so the gate is "can we seed", not "do stale secrets
-      # exist". With the service key missing the pass is skipped rather than run
-      # against accounts that may no longer exist, which is what used to keep this
-      # job red for reasons that had nothing to do with the code under test.
+      # create them here (the seed step above) with the same passwords CI logs in
+      # with.
+      #
+      # --require-all + the on-disk check make this step fail-closed on its own:
+      # previously each audit was wrapped in `if [ -f .e2e/<role>.json ]`, so a
+      # role that failed to log in was silently dropped and the remaining audits
+      # ran — a green result from a partial sweep. Now all three storage states
+      # must exist before any audit runs.
       # login.mjs writes storage states to .e2e/ (gitignored); each audit group
       # uses the matching role's storage so protected pages render logged-in.
       - name: Authenticated audit + logout security (freelancer/client/admin)
-        if: ${{ env.can_seed_e2e == 'true' }}
+        if: ${{ steps.e2e_guard.outputs.run_authenticated == 'true' }}
         env:
           E2E_CHROME_PATH: ${{ runner.home }}/.cache/chrome-for-testing/chrome-linux64/chrome
         run: |
           set -o pipefail
-          node scripts/e2e/login.mjs --base=http://127.0.0.1:4174 --all
-          if [ -f .e2e/freelancer.json ]; then
-            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=dashboard --strict --concurrency=2 --storage=.e2e/freelancer.json
-          fi
-          if [ -f .e2e/client.json ]; then
-            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=client --strict --concurrency=2 --storage=.e2e/client.json
-          fi
-          if [ -f .e2e/admin.json ]; then
-            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=admin --strict --concurrency=2 --storage=.e2e/admin.json
-          fi
+          node scripts/e2e/login.mjs --base=http://127.0.0.1:4174 --all --require-all
+
           for role in freelancer client admin; do
-            if [ -f .e2e/$role.json ]; then
-              node scripts/e2e/logout-flow.mjs --base=http://127.0.0.1:4174 --role=$role
+            if [ ! -f ".e2e/$role.json" ]; then
+              echo "::error::no storage state for $role — the $role audit would run logged out and report a false green, so refusing to continue."
+              exit 1
             fi
+          done
+
+          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=dashboard --strict --concurrency=2 --storage=.e2e/freelancer.json
+          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=client --strict --concurrency=2 --storage=.e2e/client.json
+          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=admin --strict --concurrency=2 --storage=.e2e/admin.json
+          for role in freelancer client admin; do
+            node scripts/e2e/logout-flow.mjs --base=http://127.0.0.1:4174 --role=$role
           done
 
       # Teardown runs even when the audit failed: leaving test accounts live is the
       # outcome this job must never produce, so cleanup is unconditional.
       - name: Remove E2E test accounts from production
-        if: ${{ always() && env.can_seed_e2e == 'true' }}
+        if: ${{ always() && steps.e2e_guard.outputs.run_authenticated == 'true' }}
         run: node scripts/e2e/remove-test-accounts.mjs
 
       - name: Upload audit artifacts

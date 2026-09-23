@@ -259,13 +259,13 @@ reviews) — escrow ki RLS policy sirf contract parties ko deti hai, isliye wo a
 subscribe nahi hota (warna unauthorized console error). Marketing copy se "join thousands of
 clients" claim bhi hata diya.
 
-⚠️ CI self-seeding (founder action chahiye): ab test accounts production me permanently nahi rehte —
-CI job unhe start par seed karti hai aur `always()` teardown step se hata deti hai
-(`scripts/e2e/remove-test-accounts.mjs`, idempotent, "already_absent" par safe). Authenticated pass
-chalane ke liye repo secrets me `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` add karne honge; jab tak
-wo nahi hain, seed/teardown self-skip karte hain aur authenticated pass pehle ki tarah off rehta hai.
-Saath me `E2E_*_PASSWORD` secrets bhi wapas chahiye (ya `node scripts/e2e/create-test-accounts.mjs
---rotate --push-secrets`).
+✅ CI self-seeding + fail-closed guard (Sep 23, 2026 — `src/test/ciGuardrails.test.ts`) — test
+accounts production me permanently nahi rehte: CI job unhe start par seed karti hai aur `always()`
+teardown step se hata deti hai (`scripts/e2e/remove-test-accounts.mjs`, idempotent,
+"already_absent" par safe). Ab guard **self-skip nahi karta** — dekho neeche wala ✅ entry: missing
+secret = job RED, aur founder ke paas sirf **ek** secret add karna hai (`SUPABASE_SERVICE_ROLE_KEY`;
+`SUPABASE_URL` ab `VITE_SUPABASE_URL` se fallback leta hai, aur chhe `E2E_*` secrets already set hain
+— `gh secret list` se verified).
 
 ✅ Launch-readiness closure (Sep 20, 2026, `20270119000010`) — `request_account_deletion` ne
 `pg_proc` reading ke baad BHI kaam nahi kiya: ek real user se chalane par `23502` aaya, kyunki
@@ -296,9 +296,11 @@ height `--consent-banner-h` me publish karta hai (ResizeObserver, narrow screens
 dono sidebars `100vh` se subtract karte hain — unset = `0px`, yaani jinhone already answer kar diya
 unke liye layout bilkul same. 3 tests contract lock karte hain.
 
-✅ CI gate theek — authenticated audit ab `can_seed_e2e` par gated hai (service key + teeno passwords),
-`E2E_FREELANCER_EMAIL` par nahi. Stale secret gate kholé rakhta tha aur accounts gone the → job
-credentials par fail hota tha, product par nahi. Ab missing config = pass **skip**, fail nahi.
+✅ CI gate theek — authenticated audit ab seed-capability par gated hai (service key + teeno
+passwords), `E2E_FREELANCER_EMAIL` par nahi. Stale secret gate kholé rakhta tha aur accounts gone the
+→ job credentials par fail hota tha, product par nahi. **UPDATE (Sep 23, 2026):** ye "missing config
+= pass skip" policy ab ULAT di gayi hai — neeche wali fail-closed entry dekho. Silent skip hi
+asli defect tha: green check ek aise guardrail ke upar baith raha tha jo kabhi chala hi nahi.
 
 ✅ Country stat + ownership fix (Sep 20, 2026, `20270119000011`) — "Countries with members" 1 hi
 country ko 2 dikha raha tha: OAuth country-gate `IN` bhejta hai, onboarding `India`, aur
@@ -510,10 +512,38 @@ me listed hain. Dhyan: `is_user_admin()` ko grant **rakhna hi** hai — wo RLS p
 ✅ CI pentest wired (Sep 23, 2026) — `backend-deploy.yml` me `db push` + functions deploy ke BAAD
 ek step `scripts/e2e/pentest-privileges.mjs` chalata hai (throwaway accounts, real JWTs, real HTTP).
 `SUPABASE_URL` project-ref se derive hota hai (REST/edge endpoint — pooler DSN **nahi**, wo sirf
-migration steps ke liye hai). `SUPABASE_SERVICE_ROLE_KEY` + `VITE_SUPABASE_ANON_KEY` repo secrets nahi
-hain to step fail nahi karta — **skip** karta hai `::notice::` ke saath (repo ka established pattern:
-missing config = pass-skip, fail nahi), aur DB locks to migration ke andar hi asserted hain. Secrets
-add karte hi har backend deploy par production ke against apne aap chalega.
+migration steps ke liye hai). **UPDATE (Sep 23, 2026):** is step ka `::notice::` + `exit 0` skip path
+hata diya gaya hai — ab missing secret par deploy **RED** hota hai (aur pre-flight guard ke wajah se
+kuch deploy hone se PEHLE hi fail ho jaata hai). Details neeche wali fail-closed entry me.
+
+✅ Guardrails ab fail-closed hain — skipped guardrail green nahi dikhta (Sep 23, 2026) — asli defect
+status-reporting ka tha, code ka nahi: authenticated element-audit + logout-security pass
+`can_seed_e2e` par gated the, aur privilege pentest ka apna `::notice:: ... SKIPPED; exit 0` tha.
+Secret missing = step chup-chaap skip + job SUCCESS = green check ek aise guardrail ke upar jo kabhi
+chala hi nahi (aur isi wajah se CI ke "dashboard/client/admin sweeps kabhi fail nahi hue" — wo chalte
+hi nahi the). Ab: (a) `ci.yml` me ek pehla **Guard — authenticated-audit secrets present (fail-closed)**
+step hai jo Chrome download/build se PEHLE har required secret assert karta hai aur missing par
+`::error::` ke saath `exit 1` deta hai (naam ke saath, plus one-line setup instructions) — `can_seed_e2e`
+gate poori tarah hata diya; (b) `login.mjs` ko `--require-all` mila — creds missing ya login fail hon
+to throw + non-zero (pehle `return null` se role chup-chaap drop hota tha, aur step me
+`if [ -f .e2e/<role>.json ]` wrappers the isliye aadha-adhoora sweep bhi green ho jaata tha) — ab teenon
+storage states on-disk assert hote hain, teenon audits + teenon logout flows unconditional; (c)
+`backend-deploy.yml` me **Guard — pentest secrets present (fail-closed)** pre-flight step hai jo
+`db push`/functions deploy se PEHLE fail karta hai (jis deploy ki security verification nahi chali wo
+successful deploy count nahi hoga) aur pentest step me skip path hi nahi bacha. Sirf ek honest skip
+tolerated hai: **fork PR** (GitHub fork-triggered workflows ko repo secrets deta hi nahi) — wo bhi
+`::warning::` ke saath "NOT RUN" bolta hai, aur `pull_request` event + fork flag dono check hote hain
+isliye push run par wo bypass nahi ban sakta (verified). **Founder action: sirf ek secret chahiye —
+`SUPABASE_SERVICE_ROLE_KEY`** (baaki sab `gh secret list` me maujood hai; `SUPABASE_URL` ab
+`secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL` se aata hai). Jab tak wo nahi hai, main par CI ka
+element-audit job aur backend deploy **jaan-boojh kar RED** rahenge — yahi feature hai. Verify: 10
+naye `src/test/ciGuardrails.test.ts` assertions (job-env ke har credential ka guard me hona,
+`exit 0` sirf fork branch me, deploy guard ka ordering, koi `continue-on-error` nahi), **4 negative
+controls** (guard ka `exit 1`→`exit 0`, `can_seed_e2e` wapas, pentest ka skip wapas, deploy guard
+hatana — chaaron par test RED hua aur file byte-restore hui), aur dono guards ka bash logic **chala ke**
+verify kiya (8/8: present→pass, koi bhi secret missing→fail naam ke saath, fork PR→honest skip,
+fork flag push run par ignore). Negative assertion comments strip karke lagti hai (warna "purana gate
+kyun hataya" wala comment hi test fail kar deta) — wahi §18 lesson.
 
 ⚠️ Flagged (chhota, dead-column hygiene — is pass me nahi chhua): `certifications.verified`,
 `freelancer_skills.is_verified`, `payout_methods.is_verified`, `services.rating` bhi owner-update policy
