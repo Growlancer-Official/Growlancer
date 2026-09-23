@@ -1237,3 +1237,66 @@ The legs that matter:
 Live schema after the deploy: both functions call the helper and no longer read the legacy parameter,
 `stale_jwt_claim_check()` returns **0** findings, the monitor sweeps it, `anon` cannot execute either
 new function, and open security alerts are 0. Deploy: Backend Deploy **#20, success**.
+
+---
+
+## 18. One Razorpay payment chain, driven end to end (2026-09-23)
+
+`scripts/e2e/razorpay-chain.mjs` creates a throwaway client + freelancer and a real contract, then
+drives the gateway chain and reports the first step that stops it. It **refuses to run unless the
+deployed credentials report `key_id_mode: 'test'`** — a live-key run could move real money, so it
+aborts rather than guesses.
+
+### 18.1 What the run proves
+
+| step | result |
+|---|---|
+| deployed Razorpay credentials | **configured and authenticating**, mode = `test` |
+| `create_order` (contract escrow) | **a real gateway order** (`order_TfORNMzB0QuleL`) |
+| amount is server-derived | db amount `5250` = ₹5000 contract + ₹250 (flat 5%) — the client never sends a price |
+| forged `verify_payment` signature | refused: `Invalid payment signature` |
+| unsigned webhook | refused `401 Invalid signature`, and the escrow stayed `pending` (fail-closed) |
+| payment authorization | **BLOCKED — interactive** (see 18.2) |
+| escrow funding | works via the wallet path; ₹5250 in, platform_fee ₹250 booked |
+| milestone release | freelancer credited **₹5000.00** |
+| RazorpayX fund account | created in test mode (`fa_…`) |
+| payout | **BLOCKED — RazorpayX payouts are not enabled** (see 18.3) |
+
+Money integrity held throughout: the queued withdrawal left the freelancer's wallet at
+`balance 4000 / pending 1000` — funds **held, not lost** — with a `withdrawals` row (`status=pending`,
+2% fee ₹20, net ₹980) and a retry path that exists (`growlancer-stale-withdrawal-recovery`, every 15
+minutes). Teardown is verified clean, and the six accounts left by earlier `--keep` runs were removed
+by the same cascade (`errors: []`, no auth rows).
+
+### 18.2 Break 1 — the authorization step cannot be automated, by design
+
+A payment is authorized only inside Razorpay's **hosted checkout** (an interactive card form). No
+script can complete it, and that is the correct posture, not a gap: `verify_payment` rejects a forged
+signature and the webhook rejects an unsigned body, so a caller cannot self-authorize a payment. The
+consequence is that the **webhook → escrow funding** leg can only be exercised by a real (test-mode)
+payment made by a human — it has never run in production, and neither has the gateway-funded escrow
+path. Everything downstream is proven, but through the wallet path.
+
+### 18.3 Break 2 — the last mile is not enabled on the account
+
+`POST /v1/payouts` answers **404 `The requested URL was not found on the server`**, which the edge
+function classifies as a config/not-ready error and therefore **queues** (funds held, retried by the
+cron) instead of hard-failing. Per the function's own comment this means RazorpayX payouts are not
+enabled on the account (`RAZORPAY_ACCOUNT_NUMBER` / Payouts product activation). So today **no money
+can leave the platform**: escrow releases credit wallets, and withdrawals queue.
+
+### 18.4 Defects found in the probe itself (all mine, all fixed here)
+
+1. `create_order`'s id lives at `data.razorpay_order.id` — reading `data.razorpay_order_id` reported a
+   successful order as `order=none`.
+2. `razorpay_orders.amount` stores **rupees**, not paise; the assertion compared paise and read a
+   correct ₹5250 as a failure.
+3. Two wrong column names (`provider_payout_id` instead of `razorpay_payout_id`, `error_message`
+   instead of `failure_reason`). PostgREST answers an unknown column with a 400 whose body is an error
+   object, and the probe read that as "no row" — the safe direction, but it hid the provider error
+   that named the real cause.
+4. A fresh client has no wallet balance, and `payout_methods.details` is `NOT NULL` without a default
+   (the app mirrors the flat fields into it) — the probe now does both.
+
+Lesson worth keeping: **every probe assertion must be checked against the unit and the column the
+database actually uses.** Three of these four were wrong-column/wrong-unit mistakes, not logic errors.

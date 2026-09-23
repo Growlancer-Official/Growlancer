@@ -475,6 +475,30 @@ schema: dono functions helper use karte hain, legacy singular parameter kahin na
 `stale_jwt_claim_check()` = **0** findings, monitor usse sweep karta hai, `anon` dono naye functions
 execute nahi kar sakta, open alerts 0. Details: report §17.
 
+✅ Ek poora Razorpay chain real test-mode me drive kiya (Sep 23, 2026) — naya
+`scripts/e2e/razorpay-chain.mjs`: throwaway client + freelancer + real contract, phir gateway chain,
+aur **wahi step report karta hai jahan chain rukti hai**. Script **live keys par chalne se mana karta
+hai** (`key_id_mode === 'test'` hona zaroori), kyunki live run sach me paisa move kar sakta hai.
+Nateeja: deployed credentials **configured aur authenticating** hain, mode = `test`; `create_order`
+ne **asli gateway order** diya (`order_TfORNMzB0QuleL`), amount server-side DB se aaya (₹5000 contract
++ ₹250 flat 5% = ₹5250, client koi price nahi bhejta); forged `verify_payment` signature → `Invalid
+payment signature`; unsigned webhook → `401`, aur escrow `pending` hi raha (fail-closed). Escrow
+funding (wallet path) + milestone release kaam karte hain — freelancer ko **₹5000.00 credit** hua.
+**Do break points, dono honest:** (1) **payment authorization interactive hai** — Razorpay ke hosted
+checkout me hi hoti hai, koi script complete nahi kar sakti (ye gap nahi, sahi posture hai: forged
+signature aur unsigned webhook dono refuse hote hain) — isliye **webhook → escrow-funding leg** sirf
+ek real (test-mode) human payment se exercise ho sakta hai, aur wo abhi tak production me kabhi chala
+nahi; (2) **last mile:** `POST /v1/payouts` → **404 `The requested URL was not found on the server`**
+= RazorpayX Payouts product account par enabled nahi hai (function ise config/not-ready maan ke
+**queue** karta hai, hard-fail nahi) — isliye aaj **platform se paisa bahar nahi ja sakta**: release
+wallet credit karta hai, withdrawal queue hoti hai. Money integrity hold kari: queued withdrawal ne
+wallet `balance 4000 / pending 1000` chhoda (funds **held, lost nahi**), retry cron
+(`growlancer-stale-withdrawal-recovery`, har 15 min) maujood hai, teardown clean (`errors: []`), aur
+`--keep` se bache 6 accounts bhi usi cascade se hat gaye. Probe ke 4 apne defects bhi pakde/fix kiye
+(order-id ka path `data.razorpay_order.id`; `razorpay_orders.amount` **rupees** me hai paise me nahi;
+`razorpay_payout_id` + `failure_reason` column naam; client wallet zero + `payout_methods.details`
+NOT NULL) — inme se 3 wrong-column/wrong-unit galtiyan thi, logic error nahi. Details: report §18.
+
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas
 aa jata hai, isliye pehle ke hardening ke baad bhi ye wapas aa gaye. Zyadatar NULL-safe hain
