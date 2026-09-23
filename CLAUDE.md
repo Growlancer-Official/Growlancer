@@ -153,6 +153,11 @@ Har koi bhi change (fix/feature/refactor) complete hone par, HAR BAAR, bina pooc
 
 ## Current Status (jaise-jaise fix hote gaye, ye section update karte rehna)
 
+📋 **Launch readiness — founder ke liye single checklist: `docs/LAUNCH-READINESS.md`.** Har baaki
+blocker ek owner-action + verification step ke saath hai (A: real money se pehle zaroori config/
+supply, B: engineering backlog jo go-ahead mangta hai, C: verified-working cheezein taaki dobara
+na ki jaayein). Koi bhi naya blocker mile to usi file me update karo, ye section nahi phulana.
+
 ✅ Poora security audit complete — RLS (SELECT/UPDATE/DELETE saari policies), 27+ edge
 functions, saari RPC grants — sab verified/fixed (wallet-balance direct-manipulation, escrow
 amount-tampering, open RLS policies, webhook fail-open, IDORs — sab close ho chuke).
