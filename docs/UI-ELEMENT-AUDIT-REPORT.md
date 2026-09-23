@@ -1391,3 +1391,90 @@ That is the intended behaviour, not a regression: red is the honest state for a 
 verification cannot execute. Adding the secret turns both green and activates, for the first time in
 CI, the dashboard/client/admin sweeps, the logout-security pass and the privilege + money-path
 pentest against production.
+
+---
+
+## 20. Are the AI features actually calling a model? (2026-09-23)
+
+`scripts/e2e/ai-providers.mjs` answers that from a real signed-in session — real
+accounts, real JWTs, the real HTTP edge — because the three functions fail in
+**three different shapes**, and two of them are invisible from outside:
+
+| function | key missing | key present, gateway rejects | working |
+|---|---|---|---|
+| `ai-assistant` | 500 `AI service is not configured` | 500 `<gateway message>` | 200 SSE, real text + model name |
+| `ai-writer` | 500 `AI service is not configured` | **502** `AI generation failed` | 200 `{ success, text }` |
+| `ai-matching` | 200 `ai_enhanced: false` | 200 `ai_enhanced: false` | 200 `ai_enhanced: true`, `ai_score` + reason |
+
+`ai-matching` is the dangerous one: it is designed to *always* work so matching
+never breaks, which means a missing or dead credential degrades it to
+deterministic scoring behind a `200 success` response that looks healthy. The
+probe therefore separates unconfigured from gateway-rejected from genuinely
+working, using the shape of the failure rather than an HTTP status.
+
+### 20.1 Result — all three are genuinely calling a model
+
+| function | verdict | evidence |
+|---|---|---|
+| `ai-assistant` | **WORKING** | live SSE stream, `model="deepseek/deepseek-chat-v3-0324"`, generated the exact single word asked for: `"PONG"` |
+| `ai-writer` | **WORKING** | real generated text: `"Landing Page Design for Small Bakery Business"` |
+| `ai-matching` | **WORKING** | `ai_enhanced=true`, `1/1` candidates carry a model-authored score: `ai_score=100`, `reason="Perfect skill match and experience fit."` |
+
+No silent fallback anywhere: the credential is present, authenticates, and the
+gateway returns real completions through the same path a browser uses. (The
+frontend *also* has a client-side deterministic engine it falls back to when the
+edge call fails — that path was not exercised here, and remains a fallback, not
+the normal route.)
+
+Why the probe cannot be a vacuous pass: it seeds the full prerequisite state
+first — a throwaway client, a throwaway freelancer whose **category and skills
+match the project** (otherwise `if (!AI_API_KEY || candidates.length === 0)
+return null` makes `ai_enhanced` false for a reason unrelated to credentials),
+and the project itself. It also proves it is reaching the live functions: an
+anonymous call to all three is refused with **401**. If those came back 200, the
+"working" verdicts would be worthless.
+
+### 20.2 New finding — `ai-matching` never checks project ownership
+
+A signed-in user who is **not** the project's client gets `200 success` with
+`ai_enhanced=true` and a real match list for someone else's project. The function
+authenticates the caller and then fetches the project with the service-role
+client, so any authenticated account can trigger real AI spend and write
+`ai_matches` rows against any project id it can guess. Severity is moderate, not
+critical: it requires a session, and no money moves — but it is real cost, real
+writes into another user's project, and it is the same class of gap migration
+`20270119000012` closed in 21 other functions. The only legitimate caller is the
+client's own match page. **Flagged, not fixed** — see 20.3.
+
+### 20.3 Why this could not be fixed and shipped in the same pass
+
+The fix is a migration with an owner check on `ai-matching`. It cannot be
+deployed right now: the pre-flight guard added in §19 asserts
+`SUPABASE_SERVICE_ROLE_KEY` and fails **before** `db push`, and that secret is
+still absent — Backend Deploy #21 confirmed this by failing at step 6 with steps
+7–11 (drift check, `db push`, migrations verify, functions deploy, pentest) all
+skipped. So no backend change can reach production until the secret is added.
+Writing an undeployable migration would only add a pending file to the drift
+gate, so the finding is reported with its fix shape instead.
+
+### 20.4 Defects found in the probe itself (all mine, all fixed here)
+
+1. `create_user_profile` takes `p_id / p_email / p_name / p_role /
+   p_referral_code`. Passing `p_user_id` made PostgREST answer **404 (function
+   not found)**, and because the probe did not check that response, the missing
+   `profiles` row surfaced later as a foreign-key violation on
+   `freelancer_profiles`. The call is now checked.
+2. `delete_user_all_data` takes `p_user_id` only; extra arguments produced a 404
+   that the teardown swallowed as a note. Now mirrored exactly, with the cascade
+   result checked and a leftovers assertion on the seeded rows.
+3. The first version would have been unfalsifiable — "all three working" with no
+   proof the probe reached the live functions. The anonymous-401 boundary check
+   exists to falsify it.
+
+Same lesson as §18, one level up: **a probe must be able to fail.** Checking the
+response you just ignored is what turned a mystery foreign-key error into two
+one-line fixes.
+
+Teardown is verified clean (both accounts deleted via the full-cascade path,
+`clean`, no leftovers) and the live database is back to baseline: 4 profiles,
+0 projects, 0 ai_matches, 0 orphans, 0 probe projects.

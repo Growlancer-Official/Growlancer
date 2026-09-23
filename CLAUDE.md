@@ -501,6 +501,35 @@ wallet `balance 4000 / pending 1000` chhoda (funds **held, lost nahi**), retry c
 `razorpay_payout_id` + `failure_reason` column naam; client wallet zero + `payout_methods.details`
 NOT NULL) — inme se 3 wrong-column/wrong-unit galtiyan thi, logic error nahi. Details: report §18.
 
+✅ AI providers live-verified (Sep 23, 2026) — naya `scripts/e2e/ai-providers.mjs` real signed-in session se
+poochta hai ki teen AI functions sach me model call kar rahe hain ya chup-chaap deterministic par gir rahe
+hain. Ye zaroori tha kyunki teeno **alag tareeke se** fail hote hain: `ai-assistant`/`ai-writer` key
+missing par 500 "AI service is not configured" dete hain (fail closed), `ai-writer` gateway reject par
+**502** deta hai, par `ai-matching` **hamesha 200 `success`** deta hai — key na ho ya dead ho to sirf
+`ai_enhanced: false` aata hai, jo bahar se bilkul healthy dikhta hai. Probe pehle poori prerequisite
+state seed karta hai (throwaway client + aisa throwaway freelancer jiska category+skills project se
+match kare + project) warna `candidates.length === 0` ki wajah se `ai_enhanced` false aata hai
+credentials ki wajah se nahi. **Nateeja: teeno WORKING** — `ai-assistant` live SSE me
+`model="deepseek/deepseek-chat-v3-0324"` ke saath asli output ("PONG"), `ai-writer` asli text
+("Landing Page Design for Small Bakery Business"), `ai-matching` `ai_enhanced=true` + model-authored
+`ai_score=100` / reason. **Vacuous pass nahi:** anonymous call teeno par **401** deta hai (agar 200
+aata to verdict bekaar hota). Teardown clean, DB baseline par wapas (4 profiles, 0 projects,
+0 ai_matches, 0 orphans). Probe ke 3 apne defects bhi pakde/fix kiye: `create_user_profile` ke param
+naam (`p_id/p_email/p_name/p_role/p_referral_code` — galat naam par PostgREST **404** deta hai, aur
+response ignore karne se missing profile baad me FK violation bankar nikla), `delete_user_all_data`
+me extra args (wahi 404), aur pehla version unfalsifiable tha (isi liye 401 boundary check add hua).
+Details: report §20.
+
+⚠️ Flagged (verified at runtime, jaan-boojh ke fix nahi kiya): **`ai-matching` project ownership
+check hi nahi karta** — jo user project ka client nahi hai wo bhi `200 success` + `ai_enhanced=true` +
+asli match list paata hai (runtime par proven), yaani koi bhi signed-in account kisi ko bhi project-id
+par real AI spend karwa sakta hai aur uske `ai_matches` rows likhwa sakta hai. Severity moderate
+(session chahiye, paisa move nahi hota) par yahi class `20270119000012` ne 21 doosre functions me
+band ki thi. Fix shape: migration me owner check. **Deploy abhi possible nahi hai** — §19 ka pre-flight
+guard `SUPABASE_SERVICE_ROLE_KEY` par `db push` se PEHLE fail karta hai (Backend Deploy #21 ne step 6
+par fail hoke step 7–11 skip kar diye), isliye jab tak wo secret add nahi hota, koi bhi backend
+change production tak nahi pahunch sakta. Founder go-ahead milte hi ek migration me fix ho sakta hai.
+
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas
 aa jata hai, isliye pehle ke hardening ke baad bhi ye wapas aa gaye. Zyadatar NULL-safe hain
