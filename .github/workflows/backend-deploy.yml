@@ -151,3 +151,27 @@ jobs:
             echo "::endgroup::"
           done
           exit $failed
+
+      # Privilege-escalation + money-path pentest: throwaway accounts, real user
+      # JWTs, every escape attempt over real HTTP (PostgREST + the withdrawal
+      # edge function) — all must be refused, and the legitimate owner path at
+      # each step must still work. Runs AFTER db push so it proves the deploy
+      # landed the latest locks, and AFTER functions deploy so new RPC/guard
+      # logic is live. Any landed escape exits 1.
+      #
+      # Needs SUPABASE_SERVICE_ROLE_KEY (admin user creation + full-cascade
+      # teardown) and VITE_SUPABASE_ANON_KEY (user sign-in): add them once in
+      # Settings → Secrets and variables → Actions if absent. SUPABASE_URL is
+      # derived from the project ref — it must be the REST/edge endpoint, NOT the
+      # Postgres pooler URL the migration steps use.
+      - name: Privilege + money-path pentest (against deployed DB)
+        env:
+          SUPABASE_URL: https://${{ env.SUPABASE_PROJECT_REF }}.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
+            echo "::notice::Privilege pentest SKIPPED — add SUPABASE_SERVICE_ROLE_KEY and VITE_SUPABASE_ANON_KEY as repo secrets to run it against production on every backend deploy. The DB locks are still asserted inside the migrations themselves, so this skip does not leave them unverified."
+            exit 0
+          fi
+          node scripts/e2e/pentest-privileges.mjs

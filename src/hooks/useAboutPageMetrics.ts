@@ -13,6 +13,11 @@ export type PlatformMetricsFile = {
   totalReviews?: number | null;
   /** Distinct countries across live profiles. */
   countries?: number | null;
+  /**
+   * Living accounts that can still sign in — the RPC counts profiles joined to
+   * auth.users, so orphans (a profile whose auth row is gone) are excluded.
+   */
+  memberCount?: number | null;
 };
 
 export type AboutStatCard = { value: string; label: string };
@@ -39,19 +44,10 @@ async function loadMetricsFile(): Promise<PlatformMetricsFile> {
       // The RPC has returned `countries` since 20270119000001 — the hook used to
       // hardcode null here, which left the About canvas printing "— countries".
       countries: (metrics.countries as number | null) ?? null,
+      memberCount: (metrics.memberCount as number | null) ?? null,
     };
   } catch {
     return {};
-  }
-}
-
-async function loadProfileCount(): Promise<number | null> {
-  try {
-    const { count, error } = await supabase.from('profiles').select('id', { count: 'exact', head: true }).is('deleted_at', null);
-    if (error) return null;
-    return typeof count === 'number' ? count : 0;
-  } catch {
-    return null;
   }
 }
 
@@ -121,10 +117,14 @@ export function useAboutPageMetrics() {
   const [raw, setRaw] = useState<AboutMetricsRaw>(EMPTY_RAW);
 
   const refresh = useCallback(async () => {
-    const [file, profileCount] = await Promise.all([loadMetricsFile(), loadProfileCount()]);
-    setStats(buildCards(profileCount, file));
+    // One source of truth for every number, including members: the RPC's
+    // memberCount is a profiles⋈auth.users count, so an orphaned profile (auth
+    // row gone) can never inflate the public member card.
+    const file = await loadMetricsFile();
+    const memberCount = file.memberCount ?? null;
+    setStats(buildCards(memberCount, file));
     setRaw({
-      members: profileCount,
+      members: memberCount,
       escrowInr: file.totalEscrowInr ?? null,
       satisfactionPercent: file.avgSatisfactionPercent ?? null,
       totalReviews: file.totalReviews ?? null,

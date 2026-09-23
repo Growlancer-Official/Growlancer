@@ -941,3 +941,128 @@ Two consequences worth a decision: the public member count (`6`) includes two ac
 log in, and those two email addresses are still retained in `profiles_private`. The next weekly run
 (Sunday 03:00 UTC) should clear them; purging now is one command, but deleting profile rows is
 irreversible, so it is the founder's call rather than a silent cleanup.
+
+## 15. Escrow money paths driven end to end over HTTP (2026-09-23)
+
+§14 proved the *privilege* escapes against the live API. §15 extends the same harness to the money
+paths, because that is where the company's risk actually sits: an escrow that can be frozen,
+released, or fabricated by someone who should not be able to touch it.
+
+`scripts/e2e/pentest-privileges.mjs` now creates **three** throwaway accounts — a client, a
+freelancer, and a third that is deliberately *not* a party to the contract — builds real contracts
+through the real `create_contract_with_escrow` RPC (the project/proposal rows are seeded with the
+service role; the contract itself is created by the client's own JWT), then drives:
+
+    fund escrow → release → dispute → withdraw
+
+with the cross-party, non-admin and **anonymous** attempt at each step, plus the legitimate owner
+operation, which must still succeed. 72 checks; **34 are escape attempts**.
+
+### 15.1 What the first run found (7 failures, all reproducible)
+
+| # | probe | observed (production) |
+|---|---|---|
+| 1 | `complete_onboarding()` then a plain profile rename, five times | **0/5 wrote** — `400 22P02 invalid input syntax for type boolean: ""` |
+| 2 | anonymous `create_contract_with_escrow` | **LANDED** — returned a contract uuid |
+| 3 | anonymous `raise_contract_dispute` | **LANDED** — `{"success": true, "dispute_id": …}` |
+| 4 | user INSERTs a `withdrawals` row with `status: 'completed'` | **LANDED** — `201`, row created |
+| 5 | user flips their own pending withdrawal to `completed`, amount `999999` | **LANDED** — `amount=999999.00` |
+| 6 | the seeded withdrawal afterwards | `status=completed amount=999999` |
+| 7 | row count after the refused edge-function calls | 2 instead of 1 (consequence of #4) |
+
+### 15.2 Finding 1 — an anonymous caller can freeze any contract
+
+`raise_contract_dispute` was EXECUTE-granted to `anon` (the PUBLIC default ACL, regranted when the
+function was later re-created), and its guard is written as
+
+```sql
+IF auth.uid() NOT IN (v_contract.client_id, v_contract.freelancer_id) THEN
+```
+
+For a caller with no session `auth.uid()` is NULL, so the expression is `NULL NOT IN (…)` → **NULL,
+not TRUE** — the guard never fires. One unauthenticated request flips a contract to `disputed` and
+freezes its escrow. The same NULL-unsafe shape sat in `create_contract_with_escrow`
+(`p_client_id <> auth.uid()`, and the inserts below are scoped by the *supplied* id, not the session)
+and in `cancel_withdrawal` (`p_user_id <> auth.uid()`, which moves held funds back to balance — it
+returned "Withdrawal not found" only because the probe id did not exist).
+
+**Fix — two layers, because either one can regress:**
+
+1. **ACL** (`20270119000016`): `REVOKE ALL … FROM PUBLIC, anon` on 30 money/escrow/contract-authority
+   RPCs, re-granting `authenticated` + `service_role`. Every real caller is signed in — the React app
+   through PostgREST, the edge functions through the caller's JWT or the service role, and
+   `pg_cron`/triggers as the owner. `get_public_platform_metrics` is deliberately excluded: it is
+   read-only and powers the public marketing pages. This is the layer a NULL-safety mistake in any
+   single guard cannot defeat.
+2. **Guard**: the three NULL-unsafe guards become explicitly NULL-safe (`IF auth.uid() IS NULL`) so a
+   future grant regression still cannot fail open.
+
+### 15.3 Finding 2 — the withdrawals ledger was client-writable
+
+```sql
+CREATE POLICY "Users can create own withdrawals" ON withdrawals FOR INSERT
+  WITH CHECK (user_id = auth.uid());          -- any amount, any status
+CREATE POLICY "Users can cancel own withdrawals" ON withdrawals FOR UPDATE
+  USING (user_id = auth.uid());               -- no WITH CHECK at all
+```
+
+A user could therefore forge a `completed` withdrawal record, or rewrite their own row's `amount` —
+and the probe did exactly that against production. All writers are the withdrawal edge function
+(service role, which bypasses RLS) and the owner-guarded `cancel_withdrawal()` RPC; grep confirmed the
+app only ever **SELECTs** this table (`withdrawal.ts`, `WalletPage.tsx`), so dropping both policies
+removes no capability. The owner-scoped SELECT stays.
+
+### 15.4 Finding 3 — a regression from §13/§14: profile writes died after onboarding
+
+`should_bypass_privilege_check()` read the bypass flag as
+
+```sql
+COALESCE(current_setting('app.bypass_privilege_check', true)::boolean, false)
+```
+
+`set_config(…, true)` is transaction-local, but on a **pooled** connection the placeholder is left as
+the *empty string* once that transaction commits — not unset. The next request served by that
+connection then evaluates `''::boolean`, which raises `22P02`, and every write that runs a guard
+(`profiles`, `profiles_private`, `freelancer_profiles`) fails 400 for whoever is unlucky enough to
+be routed there. `complete_onboarding()`, subscription activation, KYC transitions and admin grants
+all set that flag, so this was live and probabilistic — exactly the "it works for me" class of bug.
+Reproduced 5/5 in the harness; fixed with `NULLIF(current_setting(…, true), '')`, which keeps the
+unset (NULL) case working too. §14 did not catch it because whether it fires depends on which pooled
+connection serves the *next* request.
+
+### 15.5 The class is detected now, not just fixed
+
+`20270119000016` adds two server-only predicates and sweeps them from the existing hourly
+`check_security_drift()` (no new cron, same admin-email path):
+
+- `anon_reachable_money_rpc()` — a SECURITY DEFINER function that touches a money/escrow table and
+  can be executed by `anon`. Live baseline after the revokes: **0**.
+- `client_writable_money_tables()` — an `anon`/`authenticated` write policy on
+  `wallets` / `escrow` / `transactions` / `withdrawals` / `refunds` / `refund_requests` /
+  `platform_revenue` / `invoices`, excluding admin-gated policies. Live baseline after the drop: **0**.
+
+Both ships with a **positive control** inside the migration's own transaction — a planted
+anon-executable money RPC and a planted owner-scoped write policy on `withdrawals` must each be
+flagged, then dropped — so a detector that is merely quiet fails the deploy. The full migration was
+also dry-run against the live database inside rolled-back transactions before it was committed.
+
+### 15.6 Verified (post-deploy)
+
+Re-run against the deployed database: **all 72 checks pass, 0 escapes landed**, the legit path at
+every step works, and teardown leaves no rows (contracts, projects and both throwaway accounts
+back to their pre-run counts). The margin note is the §13.6 lesson repeating — the probe caught **its
+own** flaw first: an early version judged a `PATCH` by HTTP status alone, which would have reported a
+silent no-op as a refusal; every table assertion now reads **rows actually changed**.
+
+### 15.7 Flagged, not changed
+
+The same sweep that found the anon grant shows it is not isolated: **33** SECURITY DEFINER functions
+are still EXECUTE-granted to `anon` (the PUBLIC default ACL is regranted whenever a function is
+re-created, which is how these came back after earlier hardening). Most are NULL-safe by
+construction — `grant_admin_role` returns "Unauthorized: admins only", and the probe confirms the
+admin/dispute/refund paths are safe — but they have no business being reachable without a session.
+`20270119000016` revokes the money-touching ones; the remaining account/MFA/referral helpers are
+recorded here for a follow-up pass rather than mass-revoked in a money-path change. Note also that
+`is_user_admin()` must **keep** its grant: it is evaluated inside an RLS policy
+(`user_reports_admin_all`), so revoking it from `anon` would break policy evaluation rather than
+harden it.

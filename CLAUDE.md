@@ -386,18 +386,59 @@ Negative control (exception list me chupke `profiles_private.is_admin` daalna) u
 hai. Verify: `npm run typecheck` + **188 tests** (10 `profilesPrivatePrivilegeGuard.test.ts` me) +
 build clean. Details: report §14 (runtime table + drift monitor).
 
-⚠️ Observation (founder ka call, is pass me delete nahi kiya): 2 **ghost profiles** live hain
-(`pemin@growlancer.com`, `piveme@growlancer.com`, Aug 28 create) jinki `auth.users` row nahi hai —
-ye pentest se nahi aayi (probes ne 0 rows chhode), aur cascade tootа nahi: `purge_orphan_user_data()`
-rolled-back transaction me chala ke dono ko 32 steps me `errors: []` ke saath delete kar deta hai, aur
-weekly `cleanup-orphaned-data` har Sunday succeed ho raha hai. Do asar: public member count `6` me 2
-aise accounts hain jo login kar hi nahi sakte, aur unke email `profiles_private` me abhi bhi pade hain.
-Agla weekly run (Sunday 03:00 UTC) inhe clear kar dega; abhi purge karna ek command hai par profile
-rows delete karna irreversible hai — isliye founder ka call.
+✅ Member count honest + ghosts gone (Sep 23, 2026, `20270119000015`) — jo 2 **ghost profiles**
+(`pemin@` / `piveme@growlancer.com`, Aug 28) flagged the, wo migration ke andar hi
+`purge_orphan_user_data()` se hat gaye (idempotent, fail par poora rollback, aur post-purge assertion
+ki koi orphan bacha nahi). Saath me `get_public_platform_metrics()` ab `memberCount` deta hai = living
+profiles ⋈ `auth.users` (yaani jo abhi bhi sign-in kar sakte hain), `profiles.count` nahi — live ab
+**4** (pehle 6). Hook ka purana `profiles` count-query bhi hata diya: members ab usi RPC ke
+`memberCount` se aata hai, isliye ek hi source-of-truth hai. **Regression jo isi pass me pakdi gayi:**
+us hook me `.join('auth.users', …)` likha gaya tha, jo supabase-js me exist hi nahi karta (typecheck
+fail) — ab hata diya.
 
-⚠️ Pending (CI hook): `scripts/e2e/pentest-privileges.mjs` ko CI me chalane ke liye repo secrets me
-`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` + `VITE_SUPABASE_ANON_KEY` chahiye (wahi jo seed step ke
-liye pending hain) — tab tak ye locally/manually chalana hoga.
+✅ Escrow money-path runtime pentest + 3 live fixes (Sep 23, 2026, `20270119000016`) — §14 ka harness
+gaye ab **teen** throwaway accounts (client + freelancer + ek non-party) ke saath poora money path
+real HTTP par drive karta hai: `create_contract_with_escrow` → fund → release → dispute → withdraw,
+har step par cross-party / non-admin / **anonymous** attempt (refuse hona chahiye) + owner path
+(kaam karna chahiye). 72 checks, 34 escape attempts. Pehle run me 7 failures:
+**(a) HIGH** — `raise_contract_dispute` `anon` ke liye EXECUTE-granted tha aur uska guard
+`auth.uid() NOT IN (…)` NULL-safe nahi (anon ke liye `NULL NOT IN` = NULL = falsy, guard fire h
+i nahi karta) → ek unauthenticated request kisi bhi contract ka escrow freeze kar sakta tha; wahi shape
+`create_contract_with_escrow` (`p_client_id <> auth.uid()`, anon ne **contract bana diya**) aur
+`cancel_withdrawal` (held funds balance me wapas) me bhi thi. Fix do layer me: 30 money/contract RPCs
+se `PUBLIC, anon` ke grants revoke (`authenticated` + `service_role` re-grant; `get_public_platform_metrics`
+jaan-boojh kar chhoda — public marketing pages usi se chalte hain), PLUS teeno guards ko `auth.uid()
+IS NULL` se NULL-safe banaya. **(b) HIGH** — `withdrawals` par `authenticated` ki INSERT + UPDATE
+dono policies thi (`UPDATE` me `WITH CHECK` hi nahi tha): user khud ka `completed` withdrawal row
+forge kar sakta tha aur amount `999999` likh sakta tha — dono probe ne production par lande. Dono
+policies drop (writer sirf withdrawal edge fn = service_role, aur owner-guarded `cancel_withdrawal()`
+RPC; app sirf SELECT karta hai, capability koi nahi gayi). **(c) CRITICAL regression** —
+`should_bypass_privilege_check()` flag ko `current_setting('app.bypass_privilege_check', true)::boolean`
+se padhta tha; transaction-local `set_config` **pooled connection** par commit ke baad placeholder ko
+empty string chhod jata hai, aur agli request par `''::boolean` → `22P02` → us connection par profile
+writes 400 ho jaate the (`complete_onboarding`, subscription/KYC/admin-grant — sab ye flag set karte
+hain). Harness me 5/5 reproduce hua; `NULLIF(current_setting(…, true), '')` se fix. Iske saath hi
+class **self-detecting** hai: hourly `check_security_drift()` ab `anon_reachable_money_rpc()` (0
+baseline) aur `client_writable_money_tables()` (0 baseline) sweep karta hai, dono ke **positive
+control** migration ke andar hi (planted violator flag hona chahiye, warna deploy fail), aur poora
+migration live par rolled-back transactions me dry-run hua. Verify: typecheck + 188 tests + build
+clean; deploy ke baad pentest **72/72 pass**. Details: report §15.
+
+⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
+functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas
+aa jata hai, isliye pehle ke hardening ke baad bhi ye wapas aa gaye. Zyadatar NULL-safe hain
+(`grant_admin_role` → "Unauthorized: admins only"), par bina session reachable nahi hone chahiye.
+`20270119000016` ne money-touching waale revoke kar diye; baaki account/MFA/referral helpers report §15.7
+me listed hain. Dhyan: `is_user_admin()` ko grant **rakhna hi** hai — wo RLS policy
+(`user_reports_admin_all`) ke andar evaluate hota hai, revoke karne se policy hi toot jayegi.
+
+✅ CI pentest wired (Sep 23, 2026) — `backend-deploy.yml` me `db push` + functions deploy ke BAAD
+ek step `scripts/e2e/pentest-privileges.mjs` chalata hai (throwaway accounts, real JWTs, real HTTP).
+`SUPABASE_URL` project-ref se derive hota hai (REST/edge endpoint — pooler DSN **nahi**, wo sirf
+migration steps ke liye hai). `SUPABASE_SERVICE_ROLE_KEY` + `VITE_SUPABASE_ANON_KEY` repo secrets nahi
+hain to step fail nahi karta — **skip** karta hai `::notice::` ke saath (repo ka established pattern:
+missing config = pass-skip, fail nahi), aur DB locks to migration ke andar hi asserted hain. Secrets
+add karte hi har backend deploy par production ke against apne aap chalega.
 
 ⚠️ Flagged (chhota, dead-column hygiene — is pass me nahi chhua): `certifications.verified`,
 `freelancer_skills.is_verified`, `payout_methods.is_verified`, `services.rating` bhi owner-update policy
