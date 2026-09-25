@@ -1673,3 +1673,40 @@ deploy).
 
 Both defects in this migration were found by running it — one by `db push`, one by the migration's own
 control. Neither was findable by reading it, and the tests that read it passed the whole time.
+
+### §21.11 Live, and the audit is finally green (Sep 25, 2026)
+
+A third deploy found the third defect: `function "public.delete_payout_method(uuid)" does not exist`
+(42883). Assertions 8a/8c rebuilt each function name into a `name+arglist` string and cast it to
+`regprocedure` — but the real signatures are `(uuid, uuid)` and 6-7 arguments. **A fail-closed
+assertion that is wrong about the schema it asserts on does not fail closed, it just fails.** Both now
+resolve through `pg_proc.oid`, so they cannot disagree with the functions they guard.
+
+Verified read-only against live *before* pushing, one query per assumption: the trio carries 3 anon
+grants and the internal writers 4 app-role grants (both must fall to 0), there are no overloads to
+double-count, the `null_unsafe_auth_guard()` baseline is exactly the five functions this migration
+patches, and the three rewritten policies all land in `qual`.
+
+**Then it deployed.** `db push` ✓, drift check ✓, every edge function redeployed ✓, curated pentest ✓,
+and the whole-surface audit — the suite that found all ten defects — now reports:
+
+```
+110 check(s), 0 failure(s), 3 vacuous note(s)
+```
+
+Nine of the ten findings are simply gone at runtime. The tenth, `get_profile_views`, was **reclassified
+rather than fixed**, and the difference matters:
+
+- A public freelancer's view count is rendered to visitors by `PublicFreelancerProfilePage.tsx`, so it
+  is a public metric, not a leak. It now lives in an explicit `PUBLIC_BY_DESIGN` allowlist **with the
+  caller that depends on it**, the allowlist's membership is itself checked (a stale entry fails), and
+  the probe still fails if the function ever returns rows, an object or PII instead of a bare counter.
+- `record_profile_view` is anon-callable **and writes**: anyone can increment any freelancer's public
+  view counter. That is an abuse vector, not a data leak, and whether a vanity number needs protecting
+  is the founder's call — so it is reported as an `observe` note on every run instead of being quietly
+  accepted or quietly failed.
+
+Three of the run's 113 outcomes are `vacuous` and say so: 31 of 47 private tables are still empty (an
+anon read of an empty table proves nothing), and no wallet currently holds escrow, so that invariant
+holds trivially today. A green run that hides which checks had nothing to bite on is the failure mode
+this suite was built to avoid.

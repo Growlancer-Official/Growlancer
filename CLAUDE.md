@@ -581,15 +581,35 @@ arithmetic hata diya. **Controls:** asli defect asli migration me wapas daala �
 (sahi line); restore → **GREEN**, file byte-identical. Verify: typecheck + lint + **218 tests** (17
 files) clean; 269 migrations lexically clean. Details: report §21.9.
 
+✅ `20270119000019` LIVE (Sep 25, 2026) — secret add hone ke baad deploy ne **apne aap 3 defect**
+nikaale, ek-ek karke: (1) `db push` par `syntax error ... 42601` (ek quote kam, `DO` body me) → fix +
+naya lexer guard; (2) phir migration ka **apna positive control** fail hua: `self_referential_policy_predicate()`
+sirf qualified spelling (`x.y = x.y`) match karta tha, planted `owner_id = owner_id` chhoot raha tha →
+dono spellings add, control ab **dono** plant karke dono demand karta hai (`v_count <> 2` = deploy fail);
+(3) phir `has_function_privilege('anon', ('public.'||fn||'(uuid)')::regprocedure, ...)` par
+`function "public.delete_payout_method(uuid)" does not exist` (42883) — asli signature `(uuid, uuid)`
+hai, yaani **fail-closed assertion jo apne schema ke baare me galat ho wo fail-closed nahi hota, sirf
+fail hota hai** → ab OID se resolve hota hai (pg_proc.oid), naam+arglist guess nahi. Teeno fix push karne
+se pehle live par read-only verify kiye gaye (baseline: trio ke 3 anon grants, internals ke 4 app-role
+grants, `null_unsafe_auth_guard()` baseline = theek wahi 5 functions jo ye migration patch karti hai,
+post-rewrite detector 0, koi overload nahi). **Deploy ke baad LIVE:** `db push` ✓, drift-check ✓, saare
+edge functions redeploy ✓, pentest ✓, aur naya **whole-surface audit 110 checks / 0 failure / 3 vacuous**
+(pehle 10 failures the — 9 fix ho gaye, aur 10th `get_profile_views` ko **public-by-design** reclassify
+kiya: public freelancer profile page visitor ko count dikhata hai; harness me ab explicit
+`PUBLIC_BY_DESIGN` allowlist hai jiski membership khud check hoti hai, aur probe ab bhi fail karega agar
+wo counter ki jagah rows/PII lautaye). **Flagged (product call, fail nahi kiya):** `record_profile_view`
+bhi anon-callable hai aur **likhta** hai — koi bhi bina login kisi bhi freelancer ka public view-counter
+badha sakta hai (vanity metric, data leak nahi) — harness me `observe` note ke roop me dikhta hai. Details:
+report §21.10 + §21.11.
+
 ⚠️ Flagged (verified at runtime, jaan-boojh ke fix nahi kiya): **`ai-matching` project ownership
 check hi nahi karta** — jo user project ka client nahi hai wo bhi `200 success` + `ai_enhanced=true` +
 asli match list paata hai (runtime par proven), yaani koi bhi signed-in account kisi ko bhi project-id
 par real AI spend karwa sakta hai aur uske `ai_matches` rows likhwa sakta hai. Severity moderate
 (session chahiye, paisa move nahi hota) par yahi class `20270119000012` ne 21 doosre functions me
-band ki thi. Fix shape: migration me owner check. **Deploy abhi possible nahi hai** — §19 ka pre-flight
-guard `SUPABASE_SERVICE_ROLE_KEY` par `db push` se PEHLE fail karta hai (Backend Deploy #21 ne step 6
-par fail hoke step 7–11 skip kar diye), isliye jab tak wo secret add nahi hota, koi bhi backend
-change production tak nahi pahunch sakta. Founder go-ahead milte hi ek migration me fix ho sakta hai.
+band ki thi. Fix shape: migration me owner check. **Deploy path ab khula hai** (Sep 25, 2026 se
+`SUPABASE_SERVICE_ROLE_KEY` repo secret maujood hai, backend changes real-time push par jaate hain) —
+yaani founder go-ahead milte hi ye ek migration me fix hoke turant live ho sakta hai.
 
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas

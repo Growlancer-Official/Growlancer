@@ -394,6 +394,19 @@ try {
   }
 
   /**
+   * Functions that are DELIBERATELY callable without a session, each with the
+   * caller that depends on it. Kept as an explicit list for the same reason as
+   * the migration's detectors: "reachable by anon" is a finding unless someone
+   * wrote down why it isn't, and a silent exception is how a leak gets to live
+   * inside a passing audit. Membership is itself checked below, so this list
+   * cannot go stale without saying so.
+   */
+  const PUBLIC_BY_DESIGN = new Map([
+    ['get_profile_views', 'src/pages/PublicFreelancerProfilePage.tsx renders the count to visitors'],
+    ['record_profile_view', 'same page records one view per browser session'],
+  ]);
+
+  /**
    * Each probe: call as anon with the victim's real id, then judge the response.
    * `judge` returns { held, evidence }. `held === false` is a live finding.
    */
@@ -473,15 +486,25 @@ try {
       },
     },
     {
+      // Judged as an intentional public metric, not as a leak — but it must stay
+      // a metric. Returning a number is fine (the public profile page renders it);
+      // returning rows, an object or PII is a regression this still fails on.
       fn: 'get_profile_views',
       args: () => ({ p_user_id: victim.id }),
-      label: "get_profile_views returns no other user's counter",
+      label: 'get_profile_views stays a bare public counter (no rows, no PII)',
       judge: (r) => {
         const b = Array.isArray(r.body) ? r.body[0] : r.body;
-        const leaked = !refused(r) && typeof b === 'number' && b > 0;
+        if (typeof b === 'number') {
+          return {
+            held: true,
+            evidence: `public by design — returned the counter ${b} (${PUBLIC_BY_DESIGN.get('get_profile_views')})`,
+          };
+        }
         return {
-          held: !leaked,
-          evidence: leaked ? `returned the victim's count ${b}` : `returned ${JSON.stringify(b ?? r.status)}`,
+          held: refused(r),
+          evidence: refused(r)
+            ? `hardened instead of public (${errorCode(r)}) — update PUBLIC_BY_DESIGN if that is intended`
+            : `returned ${JSON.stringify(b ?? r.status)} — not a bare counter`,
         };
       },
     },
@@ -670,6 +693,29 @@ try {
     const { held, evidence } = await probe.judge(r, victim);
     record('anon-rpc', probe.label, held, evidence);
   }
+
+  // The allowlist above must describe the live surface, not a memory of it: if an
+  // entry is no longer anon-reachable it is stale and should be deleted, and if a
+  // function is anon-reachable without an entry it is a finding — which the probes
+  // above already report, one by one.
+  for (const [fn, why] of PUBLIC_BY_DESIGN) {
+    const r = await anonRest('POST', `rpc/${fn}`, { p_user_id: victim.id });
+    record(
+      'public-by-design',
+      `${fn} is reachable without a session, and is documented as such`,
+      !refused(r),
+      refused(r) ? `no longer anon-callable (${errorCode(r)}) — remove it from PUBLIC_BY_DESIGN: ${why}` : why,
+    );
+  }
+
+  // Reported, not failed: this one writes. Anyone can inflate any freelancer's
+  // profile-view counter, which is an abuse vector rather than a data leak, and
+  // whether a vanity number needs protecting is a product call — so it is said
+  // out loud instead of being silently accepted or silently failed.
+  observe(
+    'record_profile_view is anon-callable and writes',
+    'an unauthenticated caller can increment any freelancer\'s public view counter',
+  );
 
   // The payout read is the one that matters most; if the seed failed, say so
   // rather than banking a pass that never had a row to leak.
