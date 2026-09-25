@@ -551,10 +551,35 @@ negative control migration ke andar) ab hourly sweep me hain. Harness ke **5 apn
 fix hue (PostgREST insert ka khaali body → null ids, shared row ordering, invalid `role: 'owner'`,
 HTTP 500 ko "blocked" ginna, aur FK error ko refusal samajhna). Verify: typecheck + lint + **213
 tests** + build clean; 9 negative controls RED/GREEN; risky parts live par rolled-back
-transactions me dry-run. **⚠️ Fix committed hai par deploy NAHI hua** — `supabase/**` `Backend
-Deploy` se jaata hai jiska pre-flight guard `SUPABASE_SERVICE_ROLE_KEY` ke bina `db push` se pehle
-fail karta hai, isliye ye critical fix tab tak live nahi hoga jab tak wo ek secret add na ho.
-Details: report §21.
+transactions me dry-run. Details: report §21 (+ §21.9 neeche).
+
+✅ Deploy blocker clear + usi deploy ne apni hi ek defect pakdi (Sep 25, 2026) — pehle
+`SUPABASE_SERVICE_ROLE_KEY` repo secret set hua (local `.env.local` se stdin ke through, value kabhi
+print/commit nahi hui), phir Backend Deploy re-run: fail-closed guard ✓, drift check ✓ — aur
+**`db push` FAIL** hua: `syntax error at or near "' || chr(10) ||" (SQLSTATE 42601)`, statement 17.
+Wajah: `20270119000019` ke `DO $patch_guards$` body me ek quote kam thi (`''Unauthorized');` ki jagah
+`''Unauthorized'');` chahiye tha) → literal ek token pehle band, `' || chr(10) ||` naya literal ban
+gaya. Ye typecheck + lint + build + **213 tests** + 10 guard tests + 9 negative controls sab pass
+karke nikla — kyunki wo sab migration ko TEXT ki tarah padhte hain; kisi ne parser se nahi poocha
+(wahi §18/§13.6 lesson, ek level gehra).
+
+✅ Naya lexical guard — `src/test/sqlMigrationSyntax.test.ts` (5 tests) poore **269 migrations** ko ek
+asli single-pass lexer se check karta hai (single-quoted literals + `''`, `E'…'` escape strings — repo
+inka use karta hai, double-quoted identifiers, `--` aur nested `/* */`, aur `$tag$` bodies jo **in
+place** lex hote hain — tag STACK, recursion+offset nahi — isliye `DO` body ke andar ka stray quote
+apni asli line par pakda jaata hai, jahan ye defect tha). Har finding ka `line` aur `snippet` ek hi
+number se aate hain. Guard banate waqt 3 cheezein seekhi: (a) pehla version toote migration ko
+**clean** batata tha — `$tag$` bodies opaque the aur uska synthetic control isliye pass ho gaya tha ki
+usme COMMENT line nahi thi (`line-comment` ka reset `switch` me likha tha jahan newline branch
+`continue` kar chuki hoti hai → pehle `--` ke baad lexer hamesha "comment me" reh kar sab kuch pass
+kar deta tha, yaani chup-chaap guard karna band — bilkul isi session wali class); (b) valid SQL bhi
+reject ho raha tha: repo legit `'{` … `}'::jsonb` multi-line JSON templates likhta hai (4) aur
+`$g$…$g$` strings jinme closing tag se pehle `-- comment` hota hai (21) — inke liye rule: **jo tag
+body ko band karta hai wo us body ka content nahi ho sakta**, isliye body ke andar comment state se
+closing tag jeetta hai; (c) recursion ke offset se line numbers ek se off ho rahe the → poora offset
+arithmetic hata diya. **Controls:** asli defect asli migration me wapas daala → **RED, line 287 par**
+(sahi line); restore → **GREEN**, file byte-identical. Verify: typecheck + lint + **218 tests** (17
+files) clean; 269 migrations lexically clean. Details: report §21.9.
 
 ⚠️ Flagged (verified at runtime, jaan-boojh ke fix nahi kiya): **`ai-matching` project ownership
 check hi nahi karta** — jo user project ka client nahi hai wo bhi `200 success` + `ai_enhanced=true` +

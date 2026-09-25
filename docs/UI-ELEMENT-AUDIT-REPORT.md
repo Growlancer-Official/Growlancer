@@ -1596,3 +1596,57 @@ changes deploy through `Backend Deploy (Supabase)`, whose pre-flight guard fails
 while `SUPABASE_SERVICE_ROLE_KEY` is missing (Backend Deploy #21 proved it: steps 7–11 skipped).
 So the security fix is *ready* but cannot ship until that one secret is added. The suite now also
 runs as a deploy step, after the curated pentest.
+
+*(Superseded: the secret was added on Sep 25 and the deploy did run — §21.9 below covers what it
+found and the local guard that now catches that class.)*
+
+### §21.9 The deploy found a defect in the fix itself (Sep 25, 2026)
+
+The secret was added, the deploy re-ran, the fail-closed guard and the drift check both passed — and
+`db push` **failed**:
+
+```
+Applying migration 20270119000019_surface_audit_authorization_fixes.sql...
+ERROR: syntax error at or near "' || chr(10) ||" (SQLSTATE 42601)
+At statement: 17
+```
+
+One quote was missing inside the `DO $patch_guards$` body: `''Unauthorized');` where
+`''Unauthorized'');` was meant. The literal therefore ended one token early, `' || chr(10) ||`
+started a new one, and plpgsql rejected the body when the `DO` ran. It had passed typecheck, lint,
+build, **213 tests**, ten guard tests and nine negative controls — because every one of those reads
+the migration as TEXT. Nothing in the suite had ever asked a parser about it.
+
+That is the same lesson as §18 and §13.6, one level deeper: a check that inspects text is not a check
+that the database will accept the text. So the classes are now split:
+
+- **`20270119000019`** deploys (the fix above is live), and
+- **`src/test/sqlMigrationSyntax.test.ts`** (5 tests) lexes **all 269 migrations** locally — a real
+  single-pass lexer over single-quoted literals with `''` escaping, `E'…'` escape strings (which this
+  repo does use), double-quoted identifiers, `--` and nested `/* */` comments, and `$tag$` bodies.
+  Bodies are lexed **in place** (a tag stack, not a recursion) so a stray quote inside a `DO` body is
+  caught at its true line, which is where this defect lived.
+
+Three findings from building it, each worth knowing:
+
+1. **The first version certified the broken migration as clean.** It lexed `$tag$` bodies as opaque
+   text — the defect is *inside* one — and its own synthetic control passed only because that control
+   had no comment line: a `line-comment` reset written inside the `switch` was unreachable, because
+   the newline branch above it `continue`s first. After the first `--`, the lexer stayed "inside a
+   comment" for the rest of the file and reported everything as fine. A guard that silently stops
+   guarding, reported as a pass — the exact class this session has been chasing.
+2. It then rejected **legitimate** SQL: this repo writes multi-line JSON templates
+   (`'{` … `}'::jsonb`, 4 of them) and embeds guard text in `$g$…$g$` strings whose content ends with
+   a `-- comment` before the closing tag (21 of them). Both are legal. The rule that resolves the
+   second is worth stating: **a tag that closes a body cannot be part of that body's content**, so a
+   closing tag wins over comment state inside a body.
+3. Line numbers drifted by one while bodies were recursed into with an offset. Replaced with one
+   absolute pass and a tag stack — the arithmetic is gone, so that class of error is gone with it,
+   and the control asserts `problems[0].line` against the line whose text it prints.
+
+**Controls:** the real defect re-introduced into the real migration → **RED, pointing at line 287**
+(the true buggy line); restored → **GREEN**, file byte-identical. Plus an inline control with comment
+lines before and after the desync, and a control that comment lines containing apostrophes do not
+upset the following lines.
+
+**Verified:** typecheck + lint + **218 tests** (17 files) clean; 269 migrations lexically clean.

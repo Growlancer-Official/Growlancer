@@ -284,7 +284,7 @@ BEGIN
       '  -- authz-guard: NULL-safe owner-or-admin-or-server (20270119000019)' || chr(10) ||
       '  IF auth.uid() IS NULL THEN' || chr(10) ||
       '    IF current_setting(''role'', true) IS DISTINCT FROM ''service_role'' THEN' || chr(10) ||
-      '      RETURN jsonb_build_object(''success'', false, ''error'', ''Unauthorized');' || chr(10) ||
+      '      RETURN jsonb_build_object(''success'', false, ''error'', ''Unauthorized'');' || chr(10) ||
       '    END IF;' || chr(10) ||
       '  ELSIF v_withdrawal.user_id IS DISTINCT FROM auth.uid() AND NOT EXISTS (');
     EXECUTE v_src;
