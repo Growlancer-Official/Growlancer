@@ -1478,3 +1478,121 @@ one-line fixes.
 Teardown is verified clean (both accounts deleted via the full-cascade path,
 `clean`, no leftovers) and the live database is back to baseline: 4 profiles,
 0 projects, 0 ai_matches, 0 orphans, 0 probe projects.
+
+---
+
+## §21 — Whole-surface runtime audit (Sep 25, 2026)
+
+**What was run.** `scripts/e2e/surface-audit.mjs`, a new suite that goes *broad* where
+`pentest-privileges.mjs` goes deep. It walks the live surface the way a browser reaches it
+(PostgREST + RLS + ACL + a real JWT) and asserts four things across **113 tables / 233 functions /
+298 policies / 12 buckets**:
+
+| section | what it proves |
+|---|---|
+| A. anon RPC matrix | all 23 curated anon-executable `SECURITY DEFINER` helpers that take a caller-supplied id must refuse an unauthenticated caller |
+| B. cross-user RPC | the same helpers must refuse a *different* signed-in user |
+| C. cross-user tables | 22 owner-scoped tables: one signed-in user reads zero of another's rows |
+| C2. cross-tenant | two seeded workspaces: a member of one reads nothing from the other, **with a positive control** so "0 rows" can never be confused with "unreachable" |
+| D. anon tables | 47 private tables: an anonymous visitor reads zero rows |
+| E. invariants | negative balances, orphan profiles, honest member count, `escrow_balance == held escrow`, and the four self-detection sweeps |
+
+Result: **108 checks, 10 failures**, each reproduced before any fix was written.
+
+### The critical ones — an unauthenticated caller could reach payout PII
+
+| # | finding | runtime evidence |
+|---|---|---|
+| F1 | `get_payout_methods(p_user_id)` returned **another user's** payout details to an **anon** caller | `LEAKED 4 payout row(s)` including `upi_id`, bank name, IFSC, holder name, masked account, email, phone, Razorpay fund-account id |
+| F2 | `delete_payout_method` — **anon deleted the victim's payout method** | response `{"success":true}`, row gone |
+| F3 | `set_default_payout_method` — anon flipped the victim's method to default | `is_default` became true |
+| F4 | `update_reputation_score` — anon ran the **only** writer of the merit-ranking columns | HTTP 200, returned `0` |
+| F5 | `_refund_audit` / `_refund_history_event` / `_refund_notify` — internal writers, no guard, anon-executable | anon **INSERTED a payment audit row**; the history writer executed its body and failed only on the seeded foreign key |
+| F6 | workspace RLS was recursive **and** tautological | `42P17 infinite recursion detected in policy for relation "workspace_members"` — every authenticated read returned HTTP 500 |
+| F7 | `service_offers` insert check compared a column to itself | `services.freelancer_id = freelancer_id` resolved into the subquery |
+| F8 | dead `razorpay_transactions` policy compared two `razorpay_orders` columns | latent full-table read |
+
+**Root cause of F1–F3 (and a further two functions):** the guard was written as
+
+```sql
+IF p_user_id <> auth.uid() THEN ...
+```
+
+For an anonymous caller `auth.uid()` is `NULL`, so the comparison is `NULL`, so the branch never
+runs. It reads as a guard and behaves as no guard at all. This is the **third** appearance of the
+class (20270119000016 `raise_contract_dispute`, 20270119000017's NULL-unsafe `NOT IN`, and now five
+functions at once) — which is why it now has a detector rather than another one-off fix.
+
+A catalog scan with the new detector found **five** live instances, two of which nobody had looked
+at: `release_milestone` (money path) and `process_withdrawal_complete`. Neither is reachable today
+(one is server-only, the other needs a session), so there was no live hole — but both relied on the
+same accident to let the service role through, and a future grant change would have turned either
+into one.
+
+### F6 is also why the "fix" needed a positive control
+
+`workspace_members`' policy subqueried `workspace_members`, so Postgres could not evaluate it at
+all, and its predicate also collapsed to `wm.workspace_id = wm.workspace_id` (an unqualified name
+resolving to the inner scope). Fixing only the recursion would have shipped a **cross-tenant
+leak**; fixing only the tautology would have left the table broken. The membership test therefore
+moved into a `SECURITY DEFINER` helper taking the ids as **arguments**, which closes both at once.
+Validated in a rolled-back transaction with two seeded workspaces:
+
+```
+caller is admin? false
+POS own members (want 1)                1
+NEG other members (want 0)              0
+POS own activity log (want 1)           1
+NEG other activity log (want 0)         0
+POS own workspace row (want 1)          1
+NEG other workspace row (want 0)        0
+```
+
+The positive rows are the point: a fix that denied everyone would satisfy every "NEG" line. (The
+first attempt at this probe used the *founder's* profile as the member, and a "NEG" line came back
+`1` — because admins legitimately see all workspaces. Picking a non-admin pair is what made the
+control meaningful.)
+
+### Not a defect, deliberately
+
+`get_profile_views` / `record_profile_view` are anon-reachable **by design** — the public
+freelancer profile page calls them for a public view counter (checked against the call site, not
+assumed). The residual property worth knowing: anyone can inflate a profile-view counter. That is
+inherent to a public counter and is recorded rather than "fixed".
+
+### Harness defects found and fixed in the suite itself
+
+Five, all of the same family — a probe reporting a result it had not earned:
+
+1. PostgREST returns an **empty body** on insert by default, so `body[0].id` was `undefined` and the
+   destructive probes ran with `p_method_id: null`, i.e. they proved nothing while looking healthy.
+2. One shared payout row for four probes meant whichever ran second read a row the first had already
+   deleted — a harness ordering artefact reported as a product bug.
+3. `role: 'owner'` violates `workspace_members_role_check`
+   (`client|lead|contributor|reviewer`), and the failed insert was ignored.
+4. The cross-tenant probes counted `HTTP 500` as "blocked" — an error is neither a pass nor a leak.
+   They now require the same read to **succeed** for the caller's own workspace first.
+5. `_refund_history_event` was judged on "did it error?", which a foreign-key violation satisfies.
+   It is now judged on whether the error is **authorization-shaped** — a FK error means the body ran,
+   which is the opposite of a refusal.
+
+### The fix migration
+
+`supabase/migrations/20270119000019_surface_audit_authorization_fixes.sql` — nine sections: the
+NULL-safe guards, narrowed grants, server-only internal writers, the workspace helper + three policy
+rewrites, the two remaining policy repairs, **two new detectors** (`null_unsafe_auth_guard()`,
+`self_referential_policy_predicate()`) with **positive and negative controls** inside the migration,
+a fail-closed assertion block, and an anchored patch wiring both detectors into the hourly
+`check_security_drift()` sweep.
+
+**Verified:** typecheck + lint + **213 tests** + build clean (10 new in
+`src/test/surfaceAuditAuthorizationGuard.test.ts`) · **9 negative controls** (revert each fix →
+test RED; restore → GREEN, file byte-identical) · the migration's risky parts dry-run against live
+in rolled-back transactions (the policy rewrite, the helper semantics, and the two detector
+predicates).
+
+**Not deployed yet, and this is the blocker:** the fix is committed to the repo, but `supabase/**`
+changes deploy through `Backend Deploy (Supabase)`, whose pre-flight guard fails before `db push`
+while `SUPABASE_SERVICE_ROLE_KEY` is missing (Backend Deploy #21 proved it: steps 7–11 skipped).
+So the security fix is *ready* but cannot ship until that one secret is added. The suite now also
+runs as a deploy step, after the curated pentest.

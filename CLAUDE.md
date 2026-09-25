@@ -525,6 +525,37 @@ response ignore karne se missing profile baad me FK violation bankar nikla), `de
 me extra args (wahi 404), aur pehla version unfalsifiable tha (isi liye 401 boundary check add hua).
 Details: report §20.
 
+✅ Whole-surface runtime audit — payout PII leak band (Sep 25, 2026, `20270119000019`) — naya
+`scripts/e2e/surface-audit.mjs` poore surface par chalta hai (113 tables, 233 functions, 298
+policies): anon-executable SECDEF helpers caller-supplied id ke saath, 22 owner-scoped tables
+do signed-in users ke beech, 47 private tables anon ke saamne, cross-tenant workspaces (positive
+control ke saath), aur DB invariants. **10 real failures mile**, teen CRITICAL: (a)
+`get_payout_methods(p_user_id)` ne ek **anon** caller ko doosre user ki poora payout details de
+diye (upi_id, bank, IFSC, holder name, masked account, email, phone) — runtime par `LEAKED 4
+payout row(s)`; (b) `delete_payout_method` ne anon se victim ka payout method **delete kar diya**
+(`{"success":true}`); (c) `set_default_payout_method` ne anon se default flip kar diya. Root cause:
+guard `IF p_user_id <> auth.uid()` tha — anon ke liye `auth.uid()` NULL hai, to comparison NULL, to
+branch chala hi nahi. Class ab **paanch** functions me thi (usme `release_milestone` aur
+`process_withdrawal_complete` bhi, jo aaj reachable nahi par wahi accident par depend karte the) —
+isi liye ab one-off fix ke bajaye detector hai. Saath me: `update_reputation_score` (merit-ranking
+columns ka akela writer) anon-callable tha, `_refund_audit`/`_refund_history_event`/`_refund_notify`
+bina guard ke anon-callable the (anon ne payment audit row **insert** kar li), aur **workspace RLS
+toota hua tha** — `42P17 infinite recursion detected in policy for workspace_members` (har
+authenticated read HTTP 500) aur usi clause me `wm.workspace_id = wm.workspace_id` ta utology (sirf
+recursion fix karna cross-tenant leak deta). Membership test ab `is_workspace_member(ws, user)`
+SECURITY DEFINER helper me — ids **arguments** se — jo dono ek saath band karta hai; rolled-back
+transaction me 2 seeded workspaces par prove: own members/logs/workspace = 1, doosre ka = 0.
+`service_offers` insert check aur ek dead `razorpay_transactions` policy bhi theek. Naye detectors
+`null_unsafe_auth_guard()` + `self_referential_policy_predicate()` (dono me positive **aur**
+negative control migration ke andar) ab hourly sweep me hain. Harness ke **5 apne defects** bhi
+fix hue (PostgREST insert ka khaali body → null ids, shared row ordering, invalid `role: 'owner'`,
+HTTP 500 ko "blocked" ginna, aur FK error ko refusal samajhna). Verify: typecheck + lint + **213
+tests** + build clean; 9 negative controls RED/GREEN; risky parts live par rolled-back
+transactions me dry-run. **⚠️ Fix committed hai par deploy NAHI hua** — `supabase/**` `Backend
+Deploy` se jaata hai jiska pre-flight guard `SUPABASE_SERVICE_ROLE_KEY` ke bina `db push` se pehle
+fail karta hai, isliye ye critical fix tab tak live nahi hoga jab tak wo ek secret add na ho.
+Details: report §21.
+
 ⚠️ Flagged (verified at runtime, jaan-boojh ke fix nahi kiya): **`ai-matching` project ownership
 check hi nahi karta** — jo user project ka client nahi hai wo bhi `200 success` + `ai_enhanced=true` +
 asli match list paata hai (runtime par proven), yaani koi bhi signed-in account kisi ko bhi project-id

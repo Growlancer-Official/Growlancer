@@ -198,3 +198,26 @@ jobs:
             exit 1
           fi
           node scripts/e2e/pentest-privileges.mjs
+
+      # Whole-surface audit, run after the curated pentest above.
+      #
+      # The pentest proves a chosen set of paths in depth; this proves the REST of
+      # the surface in breadth — every private table read as an anonymous visitor,
+      # every owner-scoped table read across two signed-in users, and every
+      # anon-executable helper that takes a caller-supplied id called as anon with
+      # a real victim id. It is what caught the payout-method leak and the
+      # workspace RLS recursion, neither of which the curated list touched.
+      #
+      # It exits 1 on any finding and prints `vacuous` notes where a probe had no
+      # data to hide, so an empty table is never counted as a pass.
+      - name: Whole-surface audit (anon x cross-user x invariants)
+        env:
+          SUPABASE_URL: https://${{ env.SUPABASE_PROJECT_REF }}.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: |
+          if [ -z "$SUPABASE_SERVICE_ROLE_KEY" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
+            echo "::error::Audit secrets vanished after the pre-flight guard — refusing to report a green deploy with an unrun security check."
+            exit 1
+          fi
+          node scripts/e2e/surface-audit.mjs

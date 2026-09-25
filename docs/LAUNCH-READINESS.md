@@ -70,7 +70,7 @@ charged: that is the failure mode to look for, and it is the reason this item ex
 
 ---
 
-### A3. Add `SUPABASE_SERVICE_ROLE_KEY` as a GitHub repository secret
+### A3. Add `SUPABASE_SERVICE_ROLE_KEY` as a GitHub repository secret — **now also blocks a live security fix**
 
 **Why:** it blocks more than it looks. Verified consequences today:
 
@@ -80,6 +80,7 @@ charged: that is the failure mode to look for, and it is the reason this item ex
 | **every backend deploy** | Backend Deploy #21 failed at step 6; drift check, `db push`, migrations verify, functions deploy and the pentest were all **skipped** |
 | the privilege + money-path pentest | never runs automatically |
 | any future migration (including the fix for §B1) | `db push` is behind the same guard |
+| **a critical fix that is already written and committed** | `20270119000019` (anon payout-PII read, anon destructive delete, broken workspace RLS) cannot reach production until this secret exists |
 
 **Your action:** Supabase dashboard → Project Settings → API → **service_role** key → GitHub →
 Settings → Secrets and variables → Actions → New repository secret → name `SUPABASE_SERVICE_ROLE_KEY`.
@@ -202,6 +203,7 @@ setting or a supply problem.
 
 | # | Item | Evidence | Owner action | Verify |
 |---|---|---|---|---|
+| B0 | **The whole-surface audit findings are fixed in code but NOT deployed** — an unaauthenticated caller could read/delete any payout method, `update_reputation_score` was anon-callable, three internal refund writers had no guard, and the workspace RLS policies were recursive (HTTP 500 for every signed-in user) *and* tautological | all of it reproduced at runtime by `scripts/e2e/surface-audit.mjs`; fix is committed as `20270119000019` with two new detectors | **do A3** — it is the single action that unblocks this deploy | `node scripts/e2e/surface-audit.mjs` → 0 failures, and the workspace positive control passes |
 | B1 | **`ai-matching` never checks project ownership** | verified at runtime: a signed-in non-owner got `200 success`, `ai_enhanced=true` and a real match list — i.e. real AI spend and `ai_matches` rows against someone else's project | say go; one migration with an owner check (**blocked by A3**) | `node scripts/e2e/ai-providers.mjs` → *non-owner matching: ENFORCED* |
 | B2 | **`admin-data` proxies direct writes to money tables** (`wallets`, `escrow`, `transactions`) — Security Principle §2 says these change only via `SECURITY DEFINER` RPCs | flagged in report §9.2; no UI path appears to use them | decide: remove the write passthrough or scope it to `service_role` | probe returns **403** for those writes, reads still work |
 | B3 | **SECURITY DEFINER helpers still reachable without a session** | measured today: **86 of 204** `public` SECURITY DEFINER functions satisfy `has_function_privilege('anon', …)` (broad measure; includes PUBLIC default grants — report §15.7's explicit-grant count was 33). Money-touching ones were already revoked; the hourly monitor reports 0 open alerts | decide the revoke list. **Do not revoke `is_user_admin()`** — RLS policies evaluate it and the policies would break | the listing matches your intended set; `select public.check_security_drift();` → 0 |
@@ -218,6 +220,7 @@ setting or a supply problem.
 | Area | Proven | Re-verify with |
 |---|---|---|
 | Authorization + money-path locks | **103 checks, 40 escape attempts, 0 failures** against production: anon / cross-party / non-admin refused at every step, owner paths still work | `node scripts/e2e/pentest-privileges.mjs` |
+| Whole-surface breadth | **113 tables / 233 functions / 298 policies** walked over real HTTP: 47 private tables unreadable by anon, 22 owner-scoped tables unreadable across users, 23 anon-executable helpers probed with a real victim id, DB invariants + the four drift sweeps | `node scripts/e2e/surface-audit.mjs` (exits 1 while §B0 is undeployed) |
 | Escrow isolation across team members | one member's dispute/release/refund leaves the others untouched; `escrow_balance == sum(held escrows)` at every step | same script |
 | AI providers are real | all three **call a model** — assistant streams SSE as `deepseek/deepseek-chat-v3-0324`, writer returns real text, matching returns `ai_enhanced=true` with model-written scores; anonymous calls are refused `401`. Independently, the deployed `AI_MODEL` digest **matches `sha256("deepseek/deepseek-chat-v3-0324")`** | `node scripts/e2e/ai-providers.mjs` |
 | Gateway security posture | forged `verify_payment` signature → `Invalid payment signature`; unsigned webhook → `401` with escrow left `pending` (fail-closed) | `node scripts/e2e/razorpay-chain.mjs` |
