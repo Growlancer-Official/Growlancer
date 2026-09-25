@@ -582,10 +582,16 @@ DECLARE
   v_text text;
 BEGIN
   -- 8a. The payout trio is no longer reachable without a session.
-  SELECT count(*) INTO v_count FROM (
-    VALUES ('get_payout_methods'), ('delete_payout_method'), ('set_default_payout_method')
-  ) AS t(fn)
-  WHERE has_function_privilege('anon', ('public.' || t.fn || '(uuid)')::regprocedure, 'EXECUTE');
+  --     Resolved by OID, not by rebuilding a name+arglist string: the first
+  --     deploy of this migration did the latter and died on
+  --     `function "public.delete_payout_method(uuid)" does not exist` — the real
+  --     signature is (uuid, uuid). A fail-closed assertion that is wrong about
+  --     the schema it asserts on cannot fail closed, it just fails.
+  SELECT count(*) INTO v_count
+    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+   WHERE n.nspname = 'public'
+     AND p.proname IN ('get_payout_methods', 'delete_payout_method', 'set_default_payout_method')
+     AND has_function_privilege('anon', p.oid, 'EXECUTE');
   IF v_count <> 0 THEN
     RAISE EXCEPTION 'ASSERTION FAILED: % of the payout trio is still EXECUTE-granted to anon', v_count;
   END IF;
@@ -615,13 +621,14 @@ BEGIN
     RAISE EXCEPTION 'ASSERTION FAILED: only % of the payout trio keeps IS DISTINCT FROM auth.uid()', v_count;
   END IF;
 
-  -- 8c. Internal writers are server-only.
-  SELECT count(*) INTO v_count FROM (
-    VALUES
-      ('_refund_audit'), ('_refund_history_event'), ('_refund_notify'), ('update_reputation_score')
-  ) AS t(fn)
-  WHERE has_function_privilege('anon', ('public.' || t.fn || '(uuid)')::regprocedure, 'EXECUTE')
-     OR has_function_privilege('authenticated', ('public.' || t.fn || '(uuid)')::regprocedure, 'EXECUTE');
+  -- 8c. Internal writers are server-only. Same OID-based resolution as 8a —
+  --     these carry 6-7 arguments, so a `(uuid)` probe would not even resolve.
+  SELECT count(*) INTO v_count
+    FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+   WHERE n.nspname = 'public'
+     AND p.proname IN ('_refund_audit', '_refund_history_event', '_refund_notify', 'update_reputation_score')
+     AND (has_function_privilege('anon', p.oid, 'EXECUTE')
+          OR has_function_privilege('authenticated', p.oid, 'EXECUTE'));
   IF v_count <> 0 THEN
     RAISE EXCEPTION 'ASSERTION FAILED: % internal writer(s) still reachable by an app role', v_count;
   END IF;
