@@ -1650,3 +1650,26 @@ lines before and after the desync, and a control that comment lines containing a
 upset the following lines.
 
 **Verified:** typecheck + lint + **218 tests** (17 files) clean; 269 migrations lexically clean.
+
+### §21.10 The next deploy, and the control that caught the detector (Sep 25, 2026)
+
+With the quote fixed the migration **parsed** — and aborted on its own positive control:
+
+```
+ERROR: POSITIVE CONTROL FAILED: self_referential_policy_predicate() did not flag a planted
+       `owner_id = owner_id` tautology (SQLSTATE P0001)
+```
+
+The detector's pattern required a **qualified** comparison (`x.y = x.y`) — the shape that was
+actually live (`wm.workspace_id = wm.workspace_id`) — so the planted unqualified control went
+unnoticed. A self-detecting class that only sees one spelling of its own defect is half a detector.
+
+Widened to both spellings, then checked against the live schema before pushing (read-only, via
+`execute_sql`): the unqualified arm matches `owner_id = owner_id` and **not** the qualified form (they
+need separate arms), it adds **no** findings across the rest of production's policies, and once the
+four policies this migration rewrites are accounted for the post-patch assertion still sees **0**.
+The control now plants **both** spellings and demands **both** be flagged (`v_count <> 2` fails the
+deploy).
+
+Both defects in this migration were found by running it — one by `db push`, one by the migration's own
+control. Neither was findable by reading it, and the tests that read it passed the whole time.

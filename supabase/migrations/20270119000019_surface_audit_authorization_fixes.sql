@@ -449,6 +449,8 @@ AS $function$
          CASE
            WHEN coalesce(p.qual, '') || ' ' || coalesce(p.with_check, '')
                 ~ '([a-z_]+)\.([a-z_]+)\s*=\s*\1\.\2'
+             OR coalesce(p.qual, '') || ' ' || coalesce(p.with_check, '')
+                ~ '([a-z_][a-z_0-9]*)\s*=\s*\1\M'
              THEN 'tautology'
            ELSE 'self_reference'
          END
@@ -458,6 +460,12 @@ AS $function$
        -- `x.y = x.y` — always true, so the clause constrains nothing
        coalesce(p.qual, '') || ' ' || coalesce(p.with_check, '')
          ~ '([a-z_]+)\.([a-z_]+)\s*=\s*\1\.\2'
+       -- ...and the unqualified spelling of the same mistake (`owner_id =
+       -- owner_id`), which the qualified pattern above does NOT match — verified
+       -- on the live schema: this arm adds no findings, so widening it cannot
+       -- start failing the post-patch assertion below.
+       OR coalesce(p.qual, '') || ' ' || coalesce(p.with_check, '')
+          ~ '([a-z_][a-z_0-9]*)\s*=\s*\1\M'
        -- the policy subqueries its own relation, which recurses during
        -- policy evaluation
        OR coalesce(p.qual, '') || ' ' || coalesce(p.with_check, '')
@@ -519,16 +527,25 @@ BEGIN
   END IF;
   DROP FUNCTION public.__surface_audit_null_safe();
 
-  -- 7c. A tautological policy must be flagged.
+  -- 7c. A tautological policy must be flagged — in BOTH spellings. The first
+  --     deploy of this migration did exactly this and shipped a detector that
+  --     only saw the qualified form: the planted `owner_id = owner_id` came back
+  --     unflagged, this control fired, and `db push` aborted. That abort is the
+  --     control earning its place — the qualified arm is the shape that was live
+  --     (`wm.workspace_id = wm.workspace_id`), so both arms need a control that
+  --     actually exercises them.
   CREATE TABLE public.__surface_audit_violator (id uuid PRIMARY KEY, owner_id uuid);
   ALTER TABLE public.__surface_audit_violator ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "__surface_audit_tautology" ON public.__surface_audit_violator
+  CREATE POLICY "__surface_audit_tautology_unqualified" ON public.__surface_audit_violator
     FOR SELECT TO authenticated
     USING (owner_id = owner_id);
+  CREATE POLICY "__surface_audit_tautology_qualified" ON public.__surface_audit_violator
+    FOR SELECT TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.__surface_audit_violator wm WHERE wm.owner_id = wm.owner_id));
   v_count := (SELECT count(*) FROM public.self_referential_policy_predicate()
               WHERE table_name = '__surface_audit_violator' AND kind = 'tautology');
-  IF v_count = 0 THEN
-    RAISE EXCEPTION 'POSITIVE CONTROL FAILED: self_referential_policy_predicate() did not flag a planted `owner_id = owner_id` tautology';
+  IF v_count <> 2 THEN
+    RAISE EXCEPTION 'POSITIVE CONTROL FAILED: self_referential_policy_predicate() flagged % of 2 planted tautologies (needs both `owner_id = owner_id` and `x.owner_id = x.owner_id`)', v_count;
   END IF;
 
   -- 7d. A policy that subqueries its own table must be flagged as recursion.
