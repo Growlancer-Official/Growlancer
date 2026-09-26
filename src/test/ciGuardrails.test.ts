@@ -180,7 +180,7 @@ describe('the E2E seed cannot write to an account it does not own', () => {
   });
 
   it('fails the step instead of printing OK for an unusable account', () => {
-    for (const code of ['CREATE_FAILED', 'UPDATE_FAILED', 'PROFILE_FAILED', 'ADMIN_ROLE_FAILED']) {
+    for (const code of ['CREATE_FAILED', 'UPDATE_FAILED', 'PROFILE_FAILED', 'STATE_FAILED', 'ADMIN_ROLE_FAILED']) {
       expect(CREATE_ACCOUNTS).toContain(code);
     }
     expect(CREATE_ACCOUNTS).toMatch(/if \(failures\.length\)[\s\S]{0,300}process\.exit\(1\)/);
@@ -188,6 +188,14 @@ describe('the E2E seed cannot write to an account it does not own', () => {
     expect(CREATE_ACCOUNTS.indexOf('failures.length')).toBeLessThan(
       CREATE_ACCOUNTS.indexOf("'--push-secrets'")
     );
+  });
+
+  it('leaves the accounts fully onboarded — the state the audits assume', () => {
+    // onboardingCompleted === false routes every login to /onboarding, so
+    // logout-flow's "login reaches the dashboard" step could never pass.
+    expect(CREATE_ACCOUNTS).toContain('onboarding_completed: true');
+    expect(CREATE_ACCOUNTS).toMatch(/setOnboardedState\(id, 'India'\)/);
+    expect(CREATE_ACCOUNTS).toMatch(/onboardingCompleted !== true \|\| state\.country !== 'India'/);
   });
 
   it('reads the admin grant back instead of trusting an HTTP 200', () => {

@@ -125,6 +125,41 @@ async function setAdminRole(id) {
   return { status: rpc.status, success: body?.success === true, error: body?.error || null };
 }
 
+/**
+ * Put the account into the state the audits assume: fully onboarded, India.
+ *
+ * getPostAuthPath() sends anyone with onboardingCompleted === false to
+ * /onboarding — correct app behaviour, but it means a freshly seeded account
+ * can never "log in and reach the dashboard", which is exactly what
+ * logout-flow's first step asserts (it failed in CI on 2026-09-26). The country
+ * gate diverts non-India profiles the same way. complete_onboarding() and
+ * update_user_country() are caller-scoped (auth.uid()), so a service-role seed
+ * writes the two fields directly — the same values onboarding itself writes —
+ * and reads both back.
+ */
+async function setOnboardedState(id, country) {
+  const patch = async (table, body) => {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+      method: 'PATCH', headers: H, body: JSON.stringify(body),
+    });
+    return res.ok;
+  };
+  const okPriv = await patch('profiles_private', { onboarding_completed: true, updated_at: new Date().toISOString() });
+  const okProf = await patch('profiles', { country, updated_at: new Date().toISOString() });
+  if (!okPriv || !okProf) return null;
+
+  const read = async (table, select) => {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}&select=${select}`, { headers: H });
+    if (!res.ok) return null;
+    const rows = await res.json().catch(() => null);
+    return Array.isArray(rows) && rows.length ? rows[0] : null;
+  };
+  const priv = await read('profiles_private', 'onboarding_completed');
+  const prof = await read('profiles', 'country');
+  if (!priv || !prof) return null;
+  return { onboardingCompleted: priv.onboarding_completed === true, country: prof.country };
+}
+
 /** Read the admin flag back — the state the admin audit actually depends on. */
 async function adminFlagOf(id) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles_private?id=eq.${id}&select=is_admin`, { headers: H });
@@ -183,6 +218,13 @@ for (const acct of ACCOUNTS) {
   if (profileSt !== 200) {
     console.error(`✗ ${acct.role}: profile ensure failed (${profileSt})`);
     failures.push(`${acct.role}: PROFILE_FAILED`);
+    continue;
+  }
+
+  const state = await setOnboardedState(id, 'India');
+  if (!state || state.onboardingCompleted !== true || state.country !== 'India') {
+    console.error(`✗ ${acct.role}: not in the audited state (onboardingCompleted=${state ? state.onboardingCompleted : 'unreadable'}, country=${state ? state.country : 'unreadable'})`);
+    failures.push(`${acct.role}: STATE_FAILED`);
     continue;
   }
   let adminSt = null;
