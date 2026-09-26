@@ -4,9 +4,10 @@
 setting, a secret, a product decision — followed by the exact way to prove it is done. Anything that
 could be verified or fixed in code has already been verified and is listed in **§C**.
 
-Last verified: **2026-09-23**. Live state at that moment: 4 real members, 4 wallets all zero,
+Last verified: **2026-09-26**. Live state: 4 real members, 4 wallets all zero,
 **0** contracts / escrow / withdrawals / orders / transactions / invoices / revenue / KYC rows,
-0 orphan profiles, **0 open security alerts**.
+0 orphan profiles, **0 open security alerts**, and the full browser layer (anonymous + authenticated
+sweeps + logout security) green in CI for the first time (run `36237099675`).
 
 > Honest scope: this lists what is *proven to work* and what is *still unproven*. Nobody can promise
 > "no error, anywhere, ever" — the same pass that wrote this found four defects in its own probes.
@@ -70,9 +71,16 @@ charged: that is the failure mode to look for, and it is the reason this item ex
 
 ---
 
-### A3. Add `SUPABASE_SERVICE_ROLE_KEY` as a GitHub repository secret — **now also blocks a live security fix**
+### A3. Add `SUPABASE_SERVICE_ROLE_KEY` as a GitHub repository secret — ✅ **DONE (2026-09-26)**
 
-**Why:** it blocks more than it looks. Verified consequences today:
+**Done and verified:** the secret was added on Sep 25; backend deploys now run the whole chain
+end-to-end (drift-check → `db push` → functions → pentest **103 checks / 0 failures** → whole-surface
+audit **110 checks / 0 failures**, run `36235190403`); migrations `20270119000019/20/21` are live; and
+CI's authenticated audit + logout pass runs and is green (run `36237099675`: anonymous 336 loads / 0
+flags, authenticated 195 loads / 0 flags, logout 5/5 × 3 roles, teardown `removed=3 failed=0`). The
+table below is kept as the record of what the missing secret used to block.
+
+**Original rationale:** it blocked more than it looked. Verified consequences at the time:
 
 | blocked thing | evidence |
 |---|---|
@@ -187,15 +195,15 @@ fresh visitor can browse a real listing, open a freelancer profile, and start a 
 ### Recommended order
 
 ```
-A3 (unblocks all backend work)
- → A2 (prove money in)            → A1 (prove money out)
+A2 (prove money in by hand once)  → A1 (prove money out once)
  → A4, A5, A6 (one-time config decisions)
  → A7 (lock the gates)
  → A8 (supply)                    → §B backlog
 ```
 
 A2 and A1 together are the "can this platform actually move money" gate. Everything else in §A is a
-setting or a supply problem.
+setting or a supply problem. (A3 was the old first step — it is done, and everything it unblocked
+runs green on every push.)
 
 ---
 
@@ -203,8 +211,8 @@ setting or a supply problem.
 
 | # | Item | Evidence | Owner action | Verify |
 |---|---|---|---|---|
-| B0 | **The whole-surface audit findings are fixed in code but NOT deployed** — an unaauthenticated caller could read/delete any payout method, `update_reputation_score` was anon-callable, three internal refund writers had no guard, and the workspace RLS policies were recursive (HTTP 500 for every signed-in user) *and* tautological | all of it reproduced at runtime by `scripts/e2e/surface-audit.mjs`; fix is committed as `20270119000019` with two new detectors | **do A3** — it is the single action that unblocks this deploy | `node scripts/e2e/surface-audit.mjs` → 0 failures, and the workspace positive control passes |
-| B1 | **`ai-matching` never checks project ownership** | verified at runtime: a signed-in non-owner got `200 success`, `ai_enhanced=true` and a real match list — i.e. real AI spend and `ai_matches` rows against someone else's project | say go; one migration with an owner check (**blocked by A3**) | `node scripts/e2e/ai-providers.mjs` → *non-owner matching: ENFORCED* |
+| B0 | ~~**The whole-surface audit findings are fixed in code but NOT deployed**~~ — ✅ **DONE 2026-09-26**: `20270119000019` deployed, live audit = **110 checks / 0 failure / 3 vacuous** | all of it reproduced at runtime by `scripts/e2e/surface-audit.mjs`; fix committed as `20270119000019` with two new detectors | ~~do A3~~ nothing left | re-run `node scripts/e2e/surface-audit.mjs` any time (currently 0 failures) |
+| B1 | **`ai-matching` never checks project ownership** | verified at runtime: a signed-in non-owner got `200 success`, `ai_enhanced=true` and a real match list — i.e. real AI spend and `ai_matches` rows against someone else's project | say go; one migration with an owner check (**deploy path now open — a go-ahead is enough**) | `node scripts/e2e/ai-providers.mjs` → *non-owner matching: ENFORCED* |
 | B2 | **`admin-data` proxies direct writes to money tables** (`wallets`, `escrow`, `transactions`) — Security Principle §2 says these change only via `SECURITY DEFINER` RPCs | flagged in report §9.2; no UI path appears to use them | decide: remove the write passthrough or scope it to `service_role` | probe returns **403** for those writes, reads still work |
 | B3 | **SECURITY DEFINER helpers still reachable without a session** | measured today: **86 of 204** `public` SECURITY DEFINER functions satisfy `has_function_privilege('anon', …)` (broad measure; includes PUBLIC default grants — report §15.7's explicit-grant count was 33). Money-touching ones were already revoked; the hourly monitor reports 0 open alerts | decide the revoke list. **Do not revoke `is_user_admin()`** — RLS policies evaluate it and the policies would break | the listing matches your intended set; `select public.check_security_drift();` → 0 |
 | B4 | **Dead columns, self-writable** (`certifications.verified`, `freelancer_skills.is_verified`, `payout_methods.is_verified`, `services.rating`) | 4 columns, **0 readers** in app/edge code — so no live impact, deferred to avoid blast radius | apply the §13 pattern (ACL column-grant or guard + assertion) when you first use these tables | a self-update probe on each column is blocked |
@@ -220,7 +228,7 @@ setting or a supply problem.
 | Area | Proven | Re-verify with |
 |---|---|---|
 | Authorization + money-path locks | **103 checks, 40 escape attempts, 0 failures** against production: anon / cross-party / non-admin refused at every step, owner paths still work | `node scripts/e2e/pentest-privileges.mjs` |
-| Whole-surface breadth | **113 tables / 233 functions / 298 policies** walked over real HTTP: 47 private tables unreadable by anon, 22 owner-scoped tables unreadable across users, 23 anon-executable helpers probed with a real victim id, DB invariants + the four drift sweeps | `node scripts/e2e/surface-audit.mjs` (exits 1 while §B0 is undeployed) |
+| Whole-surface breadth | **113 tables / 233 functions / 298 policies** walked over real HTTP: 47 private tables unreadable by anon, 22 owner-scoped tables unreadable across users, 23 anon-executable helpers probed with a real victim id, DB invariants + the four drift sweeps | `node scripts/e2e/surface-audit.mjs` (currently **0 failures**, 3 honest vacuous notes) |
 | Escrow isolation across team members | one member's dispute/release/refund leaves the others untouched; `escrow_balance == sum(held escrows)` at every step | same script |
 | AI providers are real | all three **call a model** — assistant streams SSE as `deepseek/deepseek-chat-v3-0324`, writer returns real text, matching returns `ai_enhanced=true` with model-written scores; anonymous calls are refused `401`. Independently, the deployed `AI_MODEL` digest **matches `sha256("deepseek/deepseek-chat-v3-0324")`** | `node scripts/e2e/ai-providers.mjs` |
 | Gateway security posture | forged `verify_payment` signature → `Invalid payment signature`; unsigned webhook → `401` with escrow left `pending` (fail-closed) | `node scripts/e2e/razorpay-chain.mjs` |
@@ -229,7 +237,8 @@ setting or a supply problem.
 | Financial write paths | wallet/escrow/transactions are not client-writable; withdrawal rows can no longer be forged or amount-tampered | pentest script (pass A) |
 | Cron payouts | service-role milestone release now credits for real (`credited=5000.00`, previously `false / 0.00`) | pentest script (service-role leg) |
 | Frontend health | live site loads with **0 console errors**; all assets and public RPCs return 200 | open the site, watch the console |
-| Build health | typecheck + lint + **203 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
+| Browser layer (element + logout) | anonymous **336 loads / 0 flags** at 375/768/1280; authenticated dashboard **72/0** + client **72/0** + admin **51/0**; logout-security **5/5 × 3 roles**; seed→teardown leaves 0 accounts behind | CI run `36237099675`, or locally: `PORT=4174 node server.js` → `node scripts/e2e/login.mjs --all --require-all` → the audit/logout scripts |
+| Build health | typecheck + lint + **225 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards — currently **0 findings, 0 open alerts** | `select public.check_security_drift();` |
 
 ---
@@ -240,6 +249,7 @@ Money can currently come **in** only through paths nobody has ever exercised end
 go **out** at all until RazorpayX Payouts is enabled and `RAZORPAY_ACCOUNT_NUMBER` is set — so the
 honest readiness state is **"invite-only beta with money handled manually"**, not public launch.
 The engineering underneath is in better shape than expected: authorization, escrow isolation, the AI
-features, the webhooks' fail-closed posture and the build are all verified working, and the remaining
-code findings are a short backlog rather than a rewrite. The fastest path to public launch is
-**A3 → A2 → A1** — unblock the guardrails, prove money in by hand once, prove money out once.
+features, the webhooks' fail-closed posture, the build **and the full browser layer** are all verified
+working, and the remaining code findings are a short backlog rather than a rewrite. The fastest path to
+public launch is **A2 → A1** — prove money in by hand once, prove money out once (the guardrails that
+used to gate this are done and green).
