@@ -1789,6 +1789,11 @@ diverts non-India profiles. A freshly seeded account has both empty, so the logo
 same two values the app's onboarding writes, reads both back, and fails closed if they are not what the
 audits depend on.
 
+**First fully green run: `36237099675`** (2026-09-26, after both fixture fixes) — anonymous
+336 loads / 0 flags, login 3/3, authenticated dashboard 72/0 + client 72/0 + admin 51/0,
+**logout-security 5/5 × 3 roles**, teardown `removed=3 already_absent=0 failed=0`. 531 page loads,
+zero issues, one clean seed→audit→teardown lifecycle.
+
 Verified with the same accounts against the local production build: **logout-security 5/5 for freelancer,
 client and admin** — login reaches the right dashboard, logout clears the session, browser-back does not
 resurrect protected content, direct URL re-entry is blocked.

@@ -629,6 +629,8 @@ GitHub se sign-in karta hai). Local browser layer (same accounts, production bui
 **5/5 × 3 roles**, dashboard 72/0, client 72/0; 6 naye guardrail tests + negative controls (dono defect
 wapas daal ke RED, restore par GREEN). Details: report §22.
 
+**Final green run `36237099675` (Sep 26, CI #green):** anonymous 336/0, authenticated dashboard 72/0 + client 72/0 + admin 51/0, logout 5/5 × 3 roles, teardown `removed=3 failed=0` — pehli baar poora browser layer (guard → seed → login → sweeps → logout-security → cleanup) ek hi run me green hua.
+
 ⚠️ Flagged (verified at runtime, jaan-boojh ke fix nahi kiya): **`ai-matching` project ownership
 check hi nahi karta** — jo user project ka client nahi hai wo bhi `200 success` + `ai_enhanced=true` +
 asli match list paata hai (runtime par proven), yaani koi bhi signed-in account kisi ko bhi project-id
