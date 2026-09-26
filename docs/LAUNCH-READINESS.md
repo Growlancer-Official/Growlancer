@@ -6,8 +6,9 @@ could be verified or fixed in code has already been verified and is listed in **
 
 Last verified: **2026-09-26**. Live state: 4 real members, 4 wallets all zero,
 **0** contracts / escrow / withdrawals / orders / transactions / invoices / revenue / KYC rows,
-0 orphan profiles, **0 open security alerts**, and the full browser layer (anonymous + authenticated
-sweeps + logout security) green in CI for the first time (run `36237099675`).
+0 orphan profiles, **0 open security alerts**, the full browser layer (anonymous + authenticated
+sweeps + logout security) green in CI (runs `36237099675` and `36253003439`), and the last flagged
+engineering leak (`ai-matching` ownership, §B1) fixed and live (Backend Deploy `36253003395`).
 
 > Honest scope: this lists what is *proven to work* and what is *still unproven*. Nobody can promise
 > "no error, anywhere, ever" — the same pass that wrote this found four defects in its own probes.
@@ -212,7 +213,7 @@ runs green on every push.)
 | # | Item | Evidence | Owner action | Verify |
 |---|---|---|---|---|
 | B0 | ~~**The whole-surface audit findings are fixed in code but NOT deployed**~~ — ✅ **DONE 2026-09-26**: `20270119000019` deployed, live audit = **110 checks / 0 failure / 3 vacuous** | all of it reproduced at runtime by `scripts/e2e/surface-audit.mjs`; fix committed as `20270119000019` with two new detectors | ~~do A3~~ nothing left | re-run `node scripts/e2e/surface-audit.mjs` any time (currently 0 failures) |
-| B1 | **`ai-matching` never checks project ownership** | verified at runtime: a signed-in non-owner got `200 success`, `ai_enhanced=true` and a real match list — i.e. real AI spend and `ai_matches` rows against someone else's project | say go; one migration with an owner check (**deploy path now open — a go-ahead is enough**) | `node scripts/e2e/ai-providers.mjs` → *non-owner matching: ENFORCED* |
+| B1 | ~~**`ai-matching` never checks project ownership**~~ — ✅ **DONE 2026-09-26** (commit `78e5f43`): the project fetch is owner-scoped in the WHERE clause (JWT identity, not request body) before any rate-limit insert, AI spend or match rewrite; a non-owner gets 404; guarded in source by `src/test/aiMatchingOwnership.test.ts` (7 tests, negative control included) | runtime-proven live on the deployed function (Backend Deploy `36253003395`): owner path still `ai_enhanced=true`, non-owner refused | nothing left | `node scripts/e2e/ai-providers.mjs` → *non-owner matching: ENFORCED* |
 | B2 | **`admin-data` proxies direct writes to money tables** (`wallets`, `escrow`, `transactions`) — Security Principle §2 says these change only via `SECURITY DEFINER` RPCs | flagged in report §9.2; no UI path appears to use them | decide: remove the write passthrough or scope it to `service_role` | probe returns **403** for those writes, reads still work |
 | B3 | **SECURITY DEFINER helpers still reachable without a session** | measured today: **86 of 204** `public` SECURITY DEFINER functions satisfy `has_function_privilege('anon', …)` (broad measure; includes PUBLIC default grants — report §15.7's explicit-grant count was 33). Money-touching ones were already revoked; the hourly monitor reports 0 open alerts | decide the revoke list. **Do not revoke `is_user_admin()`** — RLS policies evaluate it and the policies would break | the listing matches your intended set; `select public.check_security_drift();` → 0 |
 | B4 | **Dead columns, self-writable** (`certifications.verified`, `freelancer_skills.is_verified`, `payout_methods.is_verified`, `services.rating`) | 4 columns, **0 readers** in app/edge code — so no live impact, deferred to avoid blast radius | apply the §13 pattern (ACL column-grant or guard + assertion) when you first use these tables | a self-update probe on each column is blocked |
@@ -230,7 +231,7 @@ runs green on every push.)
 | Authorization + money-path locks | **103 checks, 40 escape attempts, 0 failures** against production: anon / cross-party / non-admin refused at every step, owner paths still work | `node scripts/e2e/pentest-privileges.mjs` |
 | Whole-surface breadth | **113 tables / 233 functions / 298 policies** walked over real HTTP: 47 private tables unreadable by anon, 22 owner-scoped tables unreadable across users, 23 anon-executable helpers probed with a real victim id, DB invariants + the four drift sweeps | `node scripts/e2e/surface-audit.mjs` (currently **0 failures**, 3 honest vacuous notes) |
 | Escrow isolation across team members | one member's dispute/release/refund leaves the others untouched; `escrow_balance == sum(held escrows)` at every step | same script |
-| AI providers are real | all three **call a model** — assistant streams SSE as `deepseek/deepseek-chat-v3-0324`, writer returns real text, matching returns `ai_enhanced=true` with model-written scores; anonymous calls are refused `401`. Independently, the deployed `AI_MODEL` digest **matches `sha256("deepseek/deepseek-chat-v3-0324")`** | `node scripts/e2e/ai-providers.mjs` |
+| AI providers are real | all three **call a model** — assistant streams SSE as `deepseek/deepseek-chat-v3-0324`, writer returns real text, matching returns `ai_enhanced=true` with model-written scores; anonymous calls are refused `401`, and a signed-in **non-owner is refused 404** (matching is owner-only; §B1 closed). Independently, the deployed `AI_MODEL` digest **matches `sha256("deepseek/deepseek-chat-v3-0324")`** | `node scripts/e2e/ai-providers.mjs` |
 | Gateway security posture | forged `verify_payment` signature → `Invalid payment signature`; unsigned webhook → `401` with escrow left `pending` (fail-closed) | `node scripts/e2e/razorpay-chain.mjs` |
 | Signup / deletion / referral chain | 9/9 end-to-end as a real user; `delete_user_all_data` returns `errors: []`; no orphan profiles | — |
 | Honest public numbers | member count counts only accounts that can still sign in (**4**, not 6); escrow ₹0 is real, not placeholder | `select * from get_public_platform_metrics();` |
@@ -238,7 +239,7 @@ runs green on every push.)
 | Cron payouts | service-role milestone release now credits for real (`credited=5000.00`, previously `false / 0.00`) | pentest script (service-role leg) |
 | Frontend health | live site loads with **0 console errors**; all assets and public RPCs return 200 | open the site, watch the console |
 | Browser layer (element + logout) | anonymous **336 loads / 0 flags** at 375/768/1280; authenticated dashboard **72/0** + client **72/0** + admin **51/0**; logout-security **5/5 × 3 roles**; seed→teardown leaves 0 accounts behind | CI run `36237099675`, or locally: `PORT=4174 node server.js` → `node scripts/e2e/login.mjs --all --require-all` → the audit/logout scripts |
-| Build health | typecheck + lint + **225 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
+| Build health | typecheck + lint + **232 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards — currently **0 findings, 0 open alerts** | `select public.check_security_drift();` |
 
 ---

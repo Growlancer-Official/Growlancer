@@ -631,14 +631,19 @@ wapas daal ke RED, restore par GREEN). Details: report §22.
 
 **Final green run `36237099675` (Sep 26, CI #green):** anonymous 336/0, authenticated dashboard 72/0 + client 72/0 + admin 51/0, logout 5/5 × 3 roles, teardown `removed=3 failed=0` — pehli baar poora browser layer (guard → seed → login → sweeps → logout-security → cleanup) ek hi run me green hua.
 
-⚠️ Flagged (verified at runtime, jaan-boojh ke fix nahi kiya): **`ai-matching` project ownership
-check hi nahi karta** — jo user project ka client nahi hai wo bhi `200 success` + `ai_enhanced=true` +
-asli match list paata hai (runtime par proven), yaani koi bhi signed-in account kisi ko bhi project-id
-par real AI spend karwa sakta hai aur uske `ai_matches` rows likhwa sakta hai. Severity moderate
-(session chahiye, paisa move nahi hota) par yahi class `20270119000012` ne 21 doosre functions me
-band ki thi. Fix shape: migration me owner check. **Deploy path ab khula hai** (Sep 25, 2026 se
-`SUPABASE_SERVICE_ROLE_KEY` repo secret maujood hai, backend changes real-time push par jaate hain) —
-yaani founder go-ahead milte hi ye ek migration me fix hoke turant live ho sakta hai.
+✅ ai-matching ownership band (Sep 26, 2026, `78e5f43`) — pichhla ⚠️ ab history hai: jo user project
+ka client nahi hai wo pehle `200 success` + `ai_enhanced=true` + asli match list paata tha (runtime par
+proven), yaani koi bhi signed-in account kisi ko bhi project-id par real AI spend karwa sakta tha aur
+uske `ai_matches` rows likhwa sakta tha — wahi class jo `20270119000012` ne 21 doosre functions me band
+ki thi. Ab project fetch WHERE clause me hi owner-scoped hai (`client_id = authData.user.id`, identity
+verified JWT se, request body se nahi) aur rate-limit insert, AI gateway spend aur `ai_matches` rewrite
+— teeno se PEHLE chalta hai; non-owner ko `404 Project not found` milta hai. Reorder ne ek subtle
+doosra hole bhi band kiya: per-minute rate-limit `project_id` par keyed thi, yaani non-owner kisi ka
+bucket flood karke owner ka matching 429-block kar sakta tha. Runtime proof (Backend Deploy
+`36253003395` ke baad live probe): non-owner → *ENFORCED, HTTP 404*, owner path `ai_enhanced=true`
+(model-authored scores), teardown clean. Probe ab hard assert karta hai (`not_enforced` = run RED), aur
+`src/test/aiMatchingOwnership.test.ts` (7 tests, negative control ke saath) source-level guard hai.
+Suite: **232 tests / 19 files**.
 
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas

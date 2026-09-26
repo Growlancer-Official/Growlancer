@@ -1446,6 +1446,22 @@ writes into another user's project, and it is the same class of gap migration
 `20270119000012` closed in 21 other functions. The only legitimate caller is the
 client's own match page. **Flagged, not fixed** — see 20.3.
 
+**Closed 2026-09-26 (commit `78e5f43`).** With the deploy path open again, the fix shipped in the
+edge function itself (no migration needed — the leak lived in the service-role fetch, not in SQL):
+the project fetch is **owner-scoped in the WHERE clause** (`.eq('client_id', authData.user.id)`,
+identity from the verified JWT, never the request body) and now runs **before** the rate-limit
+insert, the AI gateway call and the `ai_matches` delete/insert. A non-owner request is
+indistinguishable from a missing project (`404 Project not found`). The reorder also closed a
+second, subtler hole the probe had not looked for: the per-minute rate limit used to key on
+`project_id`, so a non-owner could have flooded someone else's bucket into 429s — ownership now
+gates that too. Proven live against the deployed function (Backend Deploy `36253003395`, run of
+`scripts/e2e/ai-providers.mjs`): *non-owner matching: ENFORCED — HTTP 404*, while the owner path
+still returns `ai_enhanced=true` with model-authored scores, and both throwaway accounts tear down
+clean. The probe's non-owner check was simultaneously hardened from "report as evidence" to a
+hard assertion (`not_enforced` fails the run), and a source-level guardrail
+(`src/test/aiMatchingOwnership.test.ts`, 7 tests) locks the invariant — its negative control
+reintroduces the exact defect and proves the detector can fail. Suite: **232 tests / 19 files**.
+
 ### 20.3 Why this could not be fixed and shipped in the same pass
 
 The fix is a migration with an owner check on `ai-matching`. It cannot be
