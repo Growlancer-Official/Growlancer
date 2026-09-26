@@ -1710,3 +1710,100 @@ Three of the run's 113 outcomes are `vacuous` and say so: 31 of 47 private table
 anon read of an empty table proves nothing), and no wallet currently holds escrow, so that invariant
 holds trivially today. A green run that hides which checks had nothing to bite on is the failure mode
 this suite was built to avoid.
+
+## §22 — The browser layer finally ran, and the harness hit a real person (Sep 26, 2026)
+
+**What was run.** `SUPABASE_SERVICE_ROLE_KEY` was added to the repo, so the §19 fail-closed guard could
+*pass* for the first time. Run `36235190397` is the first run in this project's history in which the guard,
+the live seed, the three authenticated sweeps and the logout-security pass were all reachable.
+
+| layer | result (run 36235190397) |
+|---|---|
+| anonymous strict pass — public · auth · dashboard · client · admin at 375/768/1280 | **✓ 336 loads, 0 raw issue flags** (105 / 36 / 72 / 72 / 51) |
+| seed: 3 disposable accounts, live | ✓ created |
+| login 3/3 (`--require-all`) | ✓ |
+| authenticated dashboard (freelancer) | ✓ 72 loads, 0 flags |
+| authenticated client | ✓ 72 loads, 0 flags |
+| authenticated admin | ✓ 51 loads, 0 flags |
+| logout-security × 3 roles | ✖ **freelancer, step 1: "login reaches dashboard — still at /"** |
+
+So the browser layer works — and the *fixture* underneath it did not. Three separate defects, each one
+only visible because the previous one had been fixed.
+
+### 22.1 The seed wrote to a real account (found by probing the live DB, not the logs)
+
+`scripts/e2e/create-test-accounts.mjs` looked accounts up with `GET /auth/v1/admin/users?email=…`.
+**GoTrue silently ignores that parameter** and returns page 1 of the users list, so `body.users?.[0]` was
+whoever came first — a real person, not the E2E account. Reproduced live: a bogus address and a real one
+return byte-identical pages.
+
+The seed therefore took its "account already exists" branch and, against that real user:
+
+| what the seed did | effect |
+|---|---|
+| `PUT /auth/v1/admin/users/<real id>` | reset their password to a value that also lived in a repo secret |
+| `create_user_profile(<real id>, 'e2e.admin@…', 'E2E Admin', 'admin')` | overwrote `profiles.name` and `profiles_private.email` |
+| `grant_admin_role(<real id>)` | **refused** — `is_admin` stayed false (the 20270119000013 guard held) |
+
+Evidence that made it unambiguous rather than inferred: `profiles.name_changed_at =
+2026-09-25T09:57:52.862802Z`, one second into that run's seed step, with `auth.users.updated_at` on the same
+date. The account is a GitHub OAuth signup, so the password was never their login path — the visible harm
+is the identity (their name and email on every admin, notification and directory surface).
+
+**Repair** (`20270119000020_repair_seed_identity_leak.sql`): restore the private email from the
+authoritative `auth.users.email`, restore the name with the same rule the app uses at signup
+(`user_metadata.name` → email local part), clear the `name_changed_at` stamp the seed consumed — scoped to
+accounts carrying one of the seed's addresses/names while their auth identity is *not* an E2E one, with
+post-conditions that fail the deploy if the leak class survives. Verified live: `name=mdmirankhan78`,
+`email=mdmirankhan78@gmail.com`, `leaks=0`.
+
+The password cannot be reconstructed from a hash, so it was replaced with a fresh random value through the
+admin API (never printed). The account still signs in with GitHub.
+
+**Why it happened at all:** the only way to flag an E2E admin had been a one-off bypass migration, so the
+seeding path had never been exercised end to end. The first run able to use it used it against production.
+
+### 22.2 The admin sweep would have audited a login screen
+
+The seed printed `admin-role=200` while `is_admin` stayed false: `grant_admin_role` refuses a service-role
+caller — `auth.uid()` is NULL, so "the caller must be an existing admin" is false — and it reports that
+refusal **inside a 200 body** (`{"success":false,…}`), which a status-only check cannot see.
+
+Left alone, the admin sweep would have rendered `AdminLoginPage` (what `AdminAuthGuard` gives an
+unauthorized visitor) and audited 51 logged-out loads as "admin". Fixed in three places:
+
+- `20270119000021` — `grant_admin_role` accepts the service-role context through `is_service_role_context()`
+  (§17's helper) while keeping the admin-only check for every other caller; asserted by OID and by
+  definition text. Before/after controls run on live in rolled-back transactions: before
+  `{"success":false,"error":"Unauthorized: admins only"}`, after `{"success":true}` with `is_admin_now=true`.
+- the seed reads `is_admin` back through REST and fails the step unless it is a literal `true`.
+- `login.mjs` requires the admin **console** — identified by the login form's own
+  `input[aria-label="Admin password"]` — instead of accepting a stored session.
+
+### 22.3 The accounts were not onboarded, so "login reaches the dashboard" could never pass
+
+`getPostAuthPath()` sends anyone with `onboardingCompleted === false` to `/onboarding`, and the country gate
+diverts non-India profiles. A freshly seeded account has both empty, so the logout flow's first step
+(`waitForURL(/dashboard/)`) failed exactly as designed — correct app behaviour, incomplete fixture.
+`complete_onboarding()` and `update_user_country()` are caller-scoped (`auth.uid()`), so the seed writes the
+same two values the app's onboarding writes, reads both back, and fails closed if they are not what the
+audits depend on.
+
+Verified with the same accounts against the local production build: **logout-security 5/5 for freelancer,
+client and admin** — login reaches the right dashboard, logout clears the session, browser-back does not
+resurrect protected content, direct URL re-entry is blocked.
+
+### 22.4 A false alarm worth recording
+
+The local client sweep first reported **134 flags** (132 console errors, 2 mobile overflows). They were a
+*teardown race*, not product defects: CI's teardown deleted the accounts at 10:36:08 and the local audit
+started at 10:36:40, so the app fetched no profile, tried `create_user_profile` (refused), then a direct
+`profiles` insert (permission denied) and logged both — loudly, which is exactly what the "no silent
+failures" rule asks for. Re-run against live accounts: **72 loads, 0 flags**. Recorded so nobody chases it.
+
+### 22.5 The lesson
+
+Every defect here has the same shape: **a fixture that cannot prove the state the audit assumes.** The
+email→id lookup could not prove which account it found; the admin grant could not prove it granted; the
+seed could not prove the account was onboarded. Each is now a read-back that fails the step, and the
+sequence is what surfaced them — a false green in the seed becomes a red audit one layer up.

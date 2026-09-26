@@ -602,6 +602,33 @@ bhi anon-callable hai aur **likhta** hai — koi bhi bina login kisi bhi freelan
 badha sakta hai (vanity metric, data leak nahi) — harness me `observe` note ke roop me dikhta hai. Details:
 report §21.10 + §21.11.
 
+✅ Browser layer pehli baar poora chala — aur uske ne teen fixture defects pakde (Sep 26, 2026,
+`20270119000020` + `20270119000021`) — secret add hone ke baad CI ka element-audit job pehli baar
+*actually* chala: anonymous strict 336 loads/0 flags, seed ✓, login 3/3, authenticated dashboard 72/0,
+client 72/0, admin 51/0 — phir logout-flow freelancer ke pehle step par fail hua ("login reaches
+dashboard — still at /"). Teeno defects ek hi shape ke the: **fixture wo state prove nahi kar sakta tha
+jo audit maanta hai.** (a) **CRITICAL** — `create-test-accounts.mjs` account lookup
+`GET /auth/v1/admin/users?email=…` se karta tha, jise **GoTrue chup-chaap ignore** karta hai (page 1
+lauta deta hai; live par bogus email aur real email bilkul same response dete hain) → `users[0]` ek **asli
+user** nikla aur seed ne uske upar `PUT /admin/users/<id>` (password reset) + `create_user_profile`
+(name/email overwrite) chalaya; `grant_admin_role` refuse hua to `is_admin` false hi raha (20270119000013
+ka guard hold kiya). Evidence: `profiles.name_changed_at` = 2026-09-25T09:57:52Z (seed step ki pehli
+second), `auth.users.updated_at` same date; victim GitHub OAuth signup tha (password uska login path nahi).
+(b) **`grant_admin_role`** service-role caller ko `200` + `{"success":false,"error":"Unauthorized: admins
+only"}` deta tha (auth.uid() NULL) → admin sweep admin **login screen** ko "admin" ginne wala tha; ab
+`is_service_role_context()` (§17 helper) accept karta hai, admin-check intact, OID se asserted; seed
+`is_admin` REST se read-back karta hai aur `login.mjs` admin **console** maangta hai (stored session kaafi
+nahi). (c) Seeded accounts `onboarding_completed=false`/`country=null` the — `getPostAuthPath()` aise
+profile ko `/onboarding` bhejta hai, isliye "login reaches dashboard" kabhi pass ho hi nahi sakta tha; ab
+seed wahi do values likhta hai jo app ka onboarding likhta hai + read-back. **Repair:** `20270119000020`
+ne victim ka `name`/`email` wapas kiya (app ke apne rule se: `user_metadata.name` → email local part) aur
+seed ka chhoda hua `name_changed_at` clear kiya, narrow predicate + fail-closed assertions ke saath; live
+verify: `mdmirankhan78` / `mdmirankhan78@gmail.com` / `leaks=0`. Leaked password hash se restore nahi ho
+sakta tha, isliye admin API se fresh random value se replace kiya (value kabhi print nahi hui; account
+GitHub se sign-in karta hai). Local browser layer (same accounts, production build): logout-security
+**5/5 × 3 roles**, dashboard 72/0, client 72/0; 6 naye guardrail tests + negative controls (dono defect
+wapas daal ke RED, restore par GREEN). Details: report §22.
+
 ⚠️ Flagged (verified at runtime, jaan-boojh ke fix nahi kiya): **`ai-matching` project ownership
 check hi nahi karta** — jo user project ka client nahi hai wo bhi `200 success` + `ai_enhanced=true` +
 asli match list paata hai (runtime par proven), yaani koi bhi signed-in account kisi ko bhi project-id
@@ -671,12 +698,11 @@ hua tha.
 ⚠️ Pending (chhote items): currency-consistency prep (multi-currency future ke liye), team-
 project freelancer notification/accept-step.
 
-⚠️ Known CI red (Sep 20, 2026): CI ka element-audit job fail ho raha hai kyunki `E2E_FREELANCER_*`
-GitHub secret stale hai — Supabase auth logs me `400 invalid_credentials` (client/admin login theek
-chal rahe hain, local `.env.e2e` se teeno roles login karte hain). Login helper ab ye reason khud
-report karta hai (timeout ki jagah). Note: teardown ke baad account dobara chahiye to CI ka seed step
-(for that `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` secrets chahiye) use khud bana lega, ya locally
-`node scripts/e2e/create-test-accounts.mjs --rotate --push-secrets`. Details: report §9.3.
+✅ CI element-audit job ka purana red band (Sep 26, 2026) — pehle wali "`E2E_FREELANCER_*` secret
+stale" wajah ab history hai: `--rotate --push-secrets` ne email+password dono repo secrets ko seed ke
+hardcoded emails se align kar diya, aur uske baad ka fail (logout-flow step 1) asli fixture defect tha
+(`onboarding_completed=false`), jo `20270119000020`/seed fix ke saath gaya. E2E accounts ab CI ke apne
+seed/teardown cycle me rehte hain (production me permanently nahi). Details: report §9.3 + §22.
 
 ⚠️ Flagged (founder ka call chahiye): `admin-data` proxy `wallets` / `escrow` / `transactions` par
 bhi direct write karta hai — money tables Security Principle §2 ke hisaab se sirf SECURITY DEFINER
