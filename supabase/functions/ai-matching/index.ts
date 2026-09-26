@@ -260,6 +260,25 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // 🔒 Project ownership — the project is fetched OWNER-SCOPED so a signed-in
+    // non-owner can never trigger AI spend (or overwrite ai_matches) against
+    // someone else's project. The caller's id comes from the verified JWT,
+    // never from the request body. No row → 404 (existence of other users'
+    // projects is not disclosed).
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('id, client_id, title, category, skills_required, budget_min, budget_max, experience_level, description')
+      .eq('id', project_id)
+      .eq('client_id', authData.user.id)
+      .single();
+
+    if (projectError || !project) {
+      return new Response(JSON.stringify({ error: 'Project not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Rate limit check
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = project_id || clientIP;
@@ -287,20 +306,6 @@ Deno.serve(async (req: Request) => {
         code: 'fair_usage_limit',
       }), {
         status: 429,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Fetch project details
-    const { data: project, error: projectError } = await supabase
-      .from('projects')
-      .select('id, title, category, skills_required, budget_min, budget_max, experience_level, description')
-      .eq('id', project_id)
-      .single();
-
-    if (projectError || !project) {
-      return new Response(JSON.stringify({ error: 'Project not found' }), {
-        status: 404,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

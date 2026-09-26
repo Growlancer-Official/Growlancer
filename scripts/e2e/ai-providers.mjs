@@ -355,10 +355,11 @@ async function probeAuthBoundary() {
 /**
  * Does a signed-in NON-owner get to run AI matching on someone else's project?
  *
- * `ai-matching` authenticates the caller but never checks that the project is
- * theirs. It costs real AI spend per call and writes ai_matches rows for that
- * project. Reported as evidence, not asserted away — whether it should be
- * owner-only is a product decision (a client's own page is the only caller).
+ * ai-matching costs real AI spend per call and rewrites the project's
+ * ai_matches rows, so it MUST be owner-only. This is a hard check: a non-owner
+ * call must be refused (404 — the project is fetched owner-scoped, so a
+ * non-owner's request is indistinguishable from a missing one). A 200 success
+ * here is `not_enforced` and fails the run.
  */
 async function probeNonOwnerMatching(account, projectId) {
   const res = await edge('ai-matching', account.token, { project_id: projectId });
