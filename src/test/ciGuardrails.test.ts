@@ -34,12 +34,13 @@ const readWorkflow = (file: string) =>
 
 const CI = readWorkflow('ci.yml');
 const DEPLOY = readWorkflow('backend-deploy.yml');
-const LOGIN = fs
-  .readFileSync(
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../scripts/e2e/login.mjs'),
-    'utf8'
-  )
-  .replace(/\r\n/g, '\n');
+const readScript = (file: string) =>
+  fs
+    .readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), `../../scripts/e2e/${file}`), 'utf8')
+    .replace(/\r\n/g, '\n');
+
+const LOGIN = readScript('login.mjs');
+const CREATE_ACCOUNTS = readScript('create-test-accounts.mjs');
 
 /**
  * Drop line comments (YAML `#` and shell `#` alike) before asserting that a
@@ -153,6 +154,66 @@ describe('ci.yml — the authenticated audit cannot silently not-run', () => {
     expect(LOGIN).toContain("args['require-all']");
     // A missing credential must throw in strict mode rather than return null.
     expect(LOGIN).toMatch(/REQUIRE_ALL[\s\S]{0,400}throw new Error/);
+  });
+});
+
+describe('the E2E seed cannot write to an account it does not own', () => {
+  /**
+   * On 2026-09-25 this script reset a REAL user's password and overwrote their
+   * profile name + email. Cause: `GET /auth/v1/admin/users?email=…` — GoTrue
+   * silently ignores that parameter and returns the first page of users, so
+   * `users[0]` was whoever happened to come first, and the seed took its
+   * "account already exists" branch against them. A lookup that cannot verify
+   * what it found is not a lookup.
+   */
+  it('matches the email locally instead of asking the API to filter', () => {
+    // The exact broken call — prose in comments is allowed to mention it.
+    expect(CREATE_ACCOUNTS).not.toContain('/auth/v1/admin/users?email=');
+    expect(CREATE_ACCOUNTS).not.toContain('body.users?.[0]');
+    expect(CREATE_ACCOUNTS).toContain('per_page=200');
+    expect(CREATE_ACCOUNTS).toMatch(/\.find\(\(u\) => \(u\.email \|\| ''\)\.trim\(\)\.toLowerCase\(\) === wanted\)/);
+  });
+
+  it('proves the id it is about to write to carries the account email', () => {
+    expect(CREATE_ACCOUNTS).toMatch(/adminGetById\(id\)/);
+    expect(CREATE_ACCOUNTS).toContain('WRONG_USER');
+  });
+
+  it('fails the step instead of printing OK for an unusable account', () => {
+    for (const code of ['CREATE_FAILED', 'UPDATE_FAILED', 'PROFILE_FAILED', 'ADMIN_ROLE_FAILED']) {
+      expect(CREATE_ACCOUNTS).toContain(code);
+    }
+    expect(CREATE_ACCOUNTS).toMatch(/if \(failures\.length\)[\s\S]{0,300}process\.exit\(1\)/);
+    // Never push secrets derived from a half-built account set.
+    expect(CREATE_ACCOUNTS.indexOf('failures.length')).toBeLessThan(
+      CREATE_ACCOUNTS.indexOf("'--push-secrets'")
+    );
+  });
+
+  it('reads the admin grant back instead of trusting an HTTP 200', () => {
+    // grant_admin_role refuses with 200 + {success:false}; that is how the admin
+    // sweep was once seeded with an account that could not see admin pages.
+    expect(CREATE_ACCOUNTS).toContain('success === true');
+    expect(CREATE_ACCOUNTS).toMatch(/profiles_private\?id=eq\.\$\{id\}&select=is_admin/);
+    expect(CREATE_ACCOUNTS).toContain('flagged !== true');
+  });
+
+  it('requires the admin CONSOLE, not just a stored session', () => {
+    // A signed-in non-admin gets AdminLoginPage at /admin; auditing that page
+    // would report the logged-out surface as green.
+    expect(LOGIN).toContain('input[aria-label="Admin password"]');
+    expect(LOGIN).toContain("role === 'admin' ? sawRoute : sawSession || sawRoute");
+  });
+
+  it('reports the auth endpoint\'s real reason, not a getter\'s source', () => {
+    // Playwright's statusText is a METHOD; stringifying the bare function made a
+    // whole CI run fail with `400 status() { return this._initializer.status; }`.
+    expect(LOGIN).toContain('res.statusText()');
+    // The bare property (function itself) must not come back — asserted as a
+    // shape, since writing it once was exactly the defect.
+    expect(LOGIN).not.toMatch(/res\.statusText(?!\()/);
+    // And it reads the error body, so invalid_credentials is nameable.
+    expect(LOGIN).toMatch(/error_code[\s\S]{0,200}error_description/);
   });
 });
 

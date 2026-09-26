@@ -70,10 +70,32 @@ async function adminCreate(email, password, name) {
   return { status: res.status, id: body.id || null, error: body.msg || body.message || null };
 }
 
+/**
+ * Look an auth user up by email — by listing and comparing locally, never by
+ * asking the API to filter.
+ *
+ * GoTrue silently IGNORES an `email` query parameter: `/admin/users?email=…`
+ * returns the first page of users whatever you pass (verified live — a bogus
+ * address returns exactly the same rows as a real one). The old version took
+ * `users[0]` from that reply, so on 2026-09-25 the seed "found" a real account
+ * and pointed its password reset + profile write at that person instead of
+ * creating the test account. Indexing into a list without comparing the email
+ * is the whole bug: match explicitly, and treat "no exact match" as absent.
+ */
 async function adminGetByEmail(email) {
-  const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, { headers: H });
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users?per_page=200`, { headers: H });
+  if (!res.ok) throw new Error(`list users failed: HTTP ${res.status}`);
   const body = await res.json().catch(() => ({ users: [] }));
-  return body.users?.[0] || null;
+  const users = Array.isArray(body) ? body : body.users || [];
+  const wanted = email.trim().toLowerCase();
+  return users.find((u) => (u.email || '').trim().toLowerCase() === wanted) || null;
+}
+
+/** Re-read one auth user — used to prove the id we write to carries our email. */
+async function adminGetById(id) {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${id}`, { headers: H });
+  if (!res.ok) return null;
+  return res.json().catch(() => null);
 }
 
 async function adminUpdatePassword(id, password) {
@@ -96,12 +118,27 @@ async function setAdminRole(id) {
   const rpc = await fetch(`${SUPABASE_URL}/rest/v1/rpc/grant_admin_role`, {
     method: 'POST', headers: H, body: JSON.stringify({ p_user_id: id }),
   });
-  return rpc.status;
+  // A refusal arrives as HTTP 200 with success:false ("Unauthorized: admins
+  // only"), so the status alone is not evidence — that is exactly how the admin
+  // sweep was once seeded with an account that could not see admin pages.
+  const body = await rpc.json().catch(() => null);
+  return { status: rpc.status, success: body?.success === true, error: body?.error || null };
+}
+
+/** Read the admin flag back — the state the admin audit actually depends on. */
+async function adminFlagOf(id) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/profiles_private?id=eq.${id}&select=is_admin`, { headers: H });
+  if (!res.ok) return null;
+  const rows = await res.json().catch(() => null);
+  return Array.isArray(rows) && rows.length ? rows[0].is_admin === true : false;
 }
 
 const rotate = process.argv.includes('--rotate');
 const results = [];
 const secretLines = [];
+// Anything that leaves an account missing or half-built is a failure: a seeded
+// account the audit cannot use must fail the step, not print a line and exit 0.
+const failures = [];
 // CI passes the passwords it will log in with (repo secrets); using them keeps the
 // recreated accounts login-able. Without this, CI would generate a random password
 // nothing else knows and the authenticated pass would fail.
@@ -119,7 +156,7 @@ for (const acct of ACCOUNTS) {
     const created = await adminCreate(acct.email, password, acct.name);
     if (created.status !== 200 || !created.id) {
       console.error(`✗ ${acct.role}: admin create failed (${created.status}) ${created.error || ''}`);
-      results.push(`${acct.role}: CREATE_FAILED`);
+      failures.push(`${acct.role}: CREATE_FAILED`);
       continue;
     }
     id = created.id;
@@ -127,14 +164,40 @@ for (const acct of ACCOUNTS) {
     const st = await adminUpdatePassword(id, password);
     if (st !== 200) {
       console.error(`✗ ${acct.role}: password update failed (${st})`);
-      results.push(`${acct.role}: UPDATE_FAILED`);
+      failures.push(`${acct.role}: UPDATE_FAILED`);
       continue;
     }
   }
 
+  // Prove the id we are about to write to is really this account. The lookup can
+  // only return an exact email match now, but the authenticated audit logs in as
+  // these addresses — "the API probably did what we asked" is not good enough.
+  const confirmed = await adminGetById(id);
+  if (!confirmed || (confirmed.email || '').trim().toLowerCase() !== acct.email.toLowerCase()) {
+    console.error(`✗ ${acct.role}: the resolved user id does not carry this account's email — refusing to write to it`);
+    failures.push(`${acct.role}: WRONG_USER`);
+    continue;
+  }
+
   const profileSt = await ensureProfile(id, acct.email, acct.name, acct.role);
+  if (profileSt !== 200) {
+    console.error(`✗ ${acct.role}: profile ensure failed (${profileSt})`);
+    failures.push(`${acct.role}: PROFILE_FAILED`);
+    continue;
+  }
   let adminSt = null;
-  if (acct.role === 'admin') adminSt = await setAdminRole(id);
+  if (acct.role === 'admin') {
+    const granted = await setAdminRole(id);
+    const flagged = await adminFlagOf(id);
+    if (granted.status !== 200 || !granted.success || flagged !== true) {
+      // The admin sweep renders admin routes only for a real admin; without the
+      // flag it would audit the admin login screen and report that as green.
+      console.error(`✗ ${acct.role}: admin flag not set (http=${granted.status}, success=${granted.success}, is_admin=${flagged})${granted.error ? ` — ${granted.error}` : ''}`);
+      failures.push(`${acct.role}: ADMIN_ROLE_FAILED`);
+      continue;
+    }
+    adminSt = `${granted.status} (is_admin verified)`;
+  }
 
   secretLines.push(`E2E_${acct.role.toUpperCase()}_EMAIL=${acct.email}`);
   secretLines.push(`E2E_${acct.role.toUpperCase()}_PASSWORD=${password}`);
@@ -149,6 +212,11 @@ if (secretLines.length && !usedExternalPassword) {
 }
 
 console.log(results.join('\n'));
+
+if (failures.length) {
+  console.error(`\n✗ create-test-accounts: ${failures.length} account(s) unusable — ${failures.join(', ')}`);
+  process.exit(1);
+}
 
 // Optionally push GitHub secrets
 if (process.argv.includes('--push-secrets')) {

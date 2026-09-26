@@ -63,12 +63,20 @@ async function attemptLogin(browser, role) {
   let authFailure = null;
   page.on('response', async (res) => {
     if (!res.url().includes('/auth/v1/token') || res.status() < 400) return;
-    let detail = res.statusText;
+    // `statusText` is a METHOD in Playwright — assigning the bare function and
+    // stringifying it printed a getter's source code instead of the reason, so a
+    // whole CI run failed with "400 status() { return this._initializer.status; }"
+    // and nobody could tell invalid_credentials from a rate limit.
+    let detail = res.statusText() || `${res.status()}`;
     try {
-      const body = await res.json();
-      detail = [body?.error_code || body?.error, body?.msg || body?.error_description]
-        .filter(Boolean).join(' — ') || `${res.status}`;
-    } catch { /* non-JSON error body — keep the status text */ }
+      const raw = (await res.text()).trim();
+      if (raw) {
+        let body = null;
+        try { body = JSON.parse(raw); } catch { /* not JSON — fall back to the raw text */ }
+        detail = (body && [body.error_code || body.error, body.msg || body.error_description]
+          .filter(Boolean).join(' — ')) || raw.slice(0, 200);
+      }
+    } catch { /* body already consumed — keep the status text */ }
     authFailure = `${res.status()} ${detail}`;
     console.error(`✖ ${role}: auth endpoint rejected the sign-in: ${authFailure}`);
   });
@@ -107,8 +115,17 @@ async function attemptLogin(browser, role) {
 
   const onAuthenticatedRoute = () => page.evaluate(() => {
     const url = location.pathname;
-    const text = document.body.innerText || '';
-    return url.startsWith('/dashboard') || url.startsWith('/client') || (url.startsWith('/admin') && !/admin login/i.test(text));
+    return url.startsWith('/dashboard') || url.startsWith('/client') || url.startsWith('/admin');
+  }).catch(() => false);
+
+  // The admin CONSOLE — not the admin login screen. AdminAuthGuard renders
+  // AdminLoginPage for anyone unauthorized, so `/admin` by itself proves
+  // nothing: a signed-in non-admin sits on a login form, and an element audit
+  // of that page reports the logged-out surface as green. Identified by the
+  // login form's own input rather than by prose in the page.
+  const onAdminConsole = () => page.evaluate(() => {
+    if (!location.pathname.startsWith('/admin')) return false;
+    return !document.querySelector('input[aria-label="Admin password"]');
   }).catch(() => false);
 
   const deadline = Date.now() + 60000;
@@ -117,8 +134,9 @@ async function attemptLogin(browser, role) {
   let sawRoute = false;
   while (Date.now() < deadline && !ok) {
     sawSession = (await hasSession()) || sawSession;
-    sawRoute = (await onAuthenticatedRoute()) || sawRoute;
-    ok = sawSession || sawRoute;
+    sawRoute = (await (role === 'admin' ? onAdminConsole() : onAuthenticatedRoute())) || sawRoute;
+    // Admin: a stored session is not enough — only the console counts.
+    ok = role === 'admin' ? sawRoute : sawSession || sawRoute;
     if (!ok) await page.waitForTimeout(500);
   }
 
@@ -127,7 +145,9 @@ async function attemptLogin(browser, role) {
     await context.close();
     throw new Error(authFailure
       ? `${role}: auth endpoint rejected the sign-in (${authFailure}) — the E2E_${role.toUpperCase()}_* secrets are stale; re-run create-test-accounts.mjs --push-secrets`
-      : `${role}: no authenticated session after 60s (url=${seen}) — check credentials/test-account state`);
+      : role === 'admin'
+        ? `${role}: the admin console never rendered after 60s (url=${seen}) — check that the account has is_admin=true (create-test-accounts.mjs verifies it) and that /admin is not showing the login screen`
+        : `${role}: no authenticated session after 60s (url=${seen}) — check credentials/test-account state`);
   }
 
   // A session is enough for the audit (it navigates to every route itself), but
