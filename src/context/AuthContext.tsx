@@ -1394,7 +1394,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             : loginData?.user
               ? 'Account created successfully! Welcome to Growlancer.'
               : 'Account created! Check your inbox for a verification link, then log in with your email and password.',
-          needsVerification: !loginData?.user && !profileDeferred,
+          // Verification is a property of the EMAIL, not of profile setup. With
+          // real email verification on, signUp() returns no session, so the user
+          // MUST reach the verify screen — even in the rare case the profile row
+          // still has to be deferred (syncAuthUser recreates it on first load).
+          // Coupling this to `profileDeferred` silently rerouted a successful
+          // signup to /dashboard — which, having no session, bounced it into the
+          // login modal — every time the profile read-back hiccuped.
+          needsVerification: !loginData?.user,
         };
       }
 

@@ -216,7 +216,38 @@ export async function createUserProfile(
   
   if (import.meta.env.DEV) console.log('[Auth] create_user_profile RPC success:', JSON.stringify(rpcData));
 
-  return fetchUserProfile(userId);
+  // The row EXISTS — `create_user_profile` is SECURITY DEFINER and returned 2xx,
+  // and its own guard only ever permits creation for a just-signed-up auth row.
+  // Reading it back afterwards is best-effort: with real email verification ON
+  // signUp() yields NO session, so RLS refuses the `profiles` SELECT (42501
+  // permission denied) and the read-back *cannot* succeed for the very user who
+  // just created the row.
+  //
+  // Returning that null as this function's result reported a successful signup
+  // as a FAILED profile creation. That flipped `needsVerification` to false in
+  // AuthContext.signUp, so every real email signup was routed to /dashboard
+  // instead of the verify-email page — and /dashboard, having no session,
+  // bounced the user into the login modal. The confirmation email was sent the
+  // whole time; the screen telling them to open it was simply unreachable.
+  const profile = await fetchUserProfile(userId);
+  if (profile) return profile;
+
+  // Only fill in the row we just created when the read-back was blocked by the
+  // absence of a session — i.e. the unconfirmed-signup case above. A signed-in
+  // caller whose read-back failed (suspended, transient error) keeps the old
+  // `null`, so nothing here can hand a live session a profile it does not have.
+  const { data: sessionData } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+  if (sessionData?.session) return null;
+
+  return {
+    id: userId,
+    email,
+    name,
+    role: safeRole,
+    referralCode: code,
+    onboardingCompleted: false,
+    isPro: false,
+  };
 }
 
 // ---------------------------------------------------------------------------
