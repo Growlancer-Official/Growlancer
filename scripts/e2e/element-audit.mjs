@@ -23,6 +23,15 @@
 //   node scripts/e2e/element-audit.mjs --base=http://localhost:4174 --group=public
 //   groups: public | auth | dashboard | client | admin | all
 //
+// AUTHENTICATED RUNS FAIL CLOSED: when --storage=<role>.json is passed, every
+// route under that role's protected surface must render authenticated chrome
+// (a logout control, still on the role's surface, no logged-out gate). A dead
+// storage state used to be invisible — /client simply redirected to the
+// homepage and /admin rendered its login gate, so the sweep reported "0 issues"
+// while auditing logged-out pages. That is now an authViolation, it is counted
+// as an issue, and it fails the run even without --strict (a run that could not
+// authenticate proves nothing about the pages it claims to cover).
+//
 // Artifacts land in tests/e2e-artifacts/ (gitignored).
 
 import fs from 'node:fs';
@@ -55,6 +64,13 @@ const PREFIX = args.prefix || 'element-audit';
 // All groups then audit the LOGGED-IN surface — dashboards render real shells,
 // protected routes stop redirecting to the login modal.
 const STORAGE = args.storage || null;
+// Role inferred from the storage filename (login.mjs writes `.e2e/<role>.json`),
+// used to decide which routes MUST render authenticated chrome. An unreadable
+// name is treated as the strictest case: all three protected surfaces.
+const ROLE = STORAGE ? path.basename(STORAGE).replace(/\.json$/, '') : null;
+const AUTH_PREFIXES = STORAGE
+  ? { freelancer: ['/dashboard'], client: ['/client'], admin: ['/admin'] }[ROLE] || ['/dashboard', '/client', '/admin']
+  : [];
 
 const VIEWPORTS = [
   { name: 'mobile-375', width: 375, height: 667, dpr: 2, mobile: true },
@@ -380,6 +396,40 @@ function inPageAudit(device) {
   if (!document.documentElement.getAttribute('lang')) out.docIssues.push('missing <html lang>');
   if (device.mobile && !document.querySelector('meta[name="viewport"]')) out.docIssues.push('missing viewport meta');
 
+  // ── Auth integrity evidence (used only when --storage was passed) ──────────
+  // Three shapes were measured against a dead storage state, one per role:
+  //   /dashboard → stays on the path but renders an empty shell (no logout)
+  //   /client    → redirects to / and renders the marketing homepage
+  //   /admin     → renders its own "Restricted Access" login gate
+  // All three would otherwise be audited as ordinary pages and pass.
+  const bodyText = (document.body.innerText || '').replace(/\s+/g, ' ');
+  // The logout control is NOT findable by text alone. Measured 2026-09-28 over
+  // 3 roles × 3 viewports × 3 routes (27 loads) with live sessions:
+  //   freelancer/client → literal <span>Logout</span> in the sidebar → TEXT
+  //   admin             → icon-only <button title="Logout from Admin">, whose
+  //                       label is an ATTRIBUTE and therefore absent from both
+  //                       innerText and textContent → ATTRIBUTE
+  // text-only matched 18/27 (9 false positives, every one of them admin) and
+  // attribute-only matched 9/27; the union matched 27/27. Either signal alone
+  // fails a healthy surface, so the union is what makes this guard usable.
+  const LOGOUT_TEXT_RE = /\b(log\s?out|sign\s?out)\b/i;
+  // Real logged-out gates only. "Welcome back" is deliberately NOT here: it is
+  // the HEALTHY /dashboard greeting, and reaching for it as a gate reason is how
+  // the first version of this guard produced a false positive.
+  const LOGGED_OUT_GATE_RE = /restricted access|authorized personnel only|admin login/i;
+  const logoutAttrEl = document.querySelector(
+    '[title*="logout" i],[aria-label*="logout" i],[title*="sign out" i],[aria-label*="sign out" i],[data-testid*="logout" i],[data-testid*="sign-out" i]',
+  );
+  const logoutText = LOGOUT_TEXT_RE.test(bodyText);
+  out.authChrome = {
+    path: location.pathname,
+    logoutControl: logoutText || Boolean(logoutAttrEl),
+    // Which half of the union matched — kept per load so the artifact proves
+    // WHICH chrome was seen, not merely that something matched.
+    logoutSignal: logoutText ? 'text' : logoutAttrEl ? 'attribute' : null,
+    loggedOutGate: (bodyText.match(LOGGED_OUT_GATE_RE) || [null])[0],
+  };
+
   return out;
 }
 
@@ -390,6 +440,23 @@ function inPageAudit(device) {
 // 404 and get CORS-refused on every page. Environment artifact, never a product bug.
 const IGNORED_URL_RE = /supabase\.co|sentry|google-analytics|posthog|razorpay\.com\/v\/1\/checkout|fonts\.gstatic|gstatic\.com|\/_vercel\/(insights|speed-insights)/;
 const isIgnored = (url) => IGNORED_URL_RE.test(url);
+
+// ── Auth session events: the race-proof half of the auth guard ───────────────
+// DOM shape alone is NOT a trustworthy discriminator for "is this session
+// alive". Measured 2026-09-28 against a revoked admin storage state: /admin/users
+// rendered its "Restricted Access" gate at ~1.0 s and then FLIPPED BACK to the
+// stale authenticated layout — logout button present — at ~1.4 s, while a live
+// session only painted its logout control at ~2.2 s. A snapshot can therefore
+// both lag and flap, and 6 of 12 revoked loads still matched the logout control.
+//
+// GoTrue traffic is an event, not a shape. Measured over those same loads:
+//   live    → POST /auth/v1/token?grant_type=refresh_token 200, GET /auth/v1/user 200
+//   revoked → POST /auth/v1/token?grant_type=refresh_token 400, and NO /auth/v1/user at all
+// Fail-closed rule: a load whose GoTrue responses ALL failed never proved it held
+// a session, so any authenticated chrome it renders is stale by definition.
+const AUTH_ENDPOINT_RE = /\/auth\/v1\/(token|user)$/;
+const fmtAuthEvents = (events) =>
+  events.map((e) => `${e.endpoint}${e.grant ? `?${e.grant}` : ''}=${e.status}`).join(', ') || 'no GoTrue traffic';
 
 async function auditOne(browser, route, device, storageState) {
   const context = await browser.newContext({
@@ -406,6 +473,7 @@ async function auditOne(browser, route, device, storageState) {
   const consoleErrors = [];
   const pageErrors = [];
   const failedRequests = [];
+  const authEvents = [];
 
   page.on('console', (msg) => {
     const loc = msg.location()?.url || '';
@@ -423,6 +491,22 @@ async function auditOne(browser, route, device, storageState) {
   page.on('response', (res) => {
     if (res.status() < 400 || isIgnored(res.url())) return;
     failedRequests.push({ url: res.url().slice(0, 140), status: res.status() });
+  });
+  // GoTrue session events (see AUTH_ENDPOINT_RE). Recorded for every load; only
+  // consulted on authenticated runs, where they can outvote the DOM shape.
+  page.on('response', (res) => {
+    let u;
+    try {
+      u = new URL(res.url());
+    } catch {
+      return;
+    }
+    if (!AUTH_ENDPOINT_RE.test(u.pathname)) return;
+    authEvents.push({
+      endpoint: u.pathname.split('/').pop(),
+      grant: u.searchParams.get('grant_type') || undefined,
+      status: res.status(),
+    });
   });
 
   let httpStatus = null;
@@ -452,6 +536,22 @@ async function auditOne(browser, route, device, storageState) {
     pageErrors.push(`audit-eval: ${String(err.message || err).slice(0, 200)}`);
   }
 
+  // Auth-chrome re-check (authenticated runs only). On a slow mobile load the
+  // sidebar/drawer — and with it the logout control — can paint after the audit
+  // snapshot was taken (measured once on /dashboard/support-tickets at 375px,
+  // with no console/page error and HTTP 200). A single bounded re-read keeps a
+  // real dead session flagged (it never gains a control) while a page that was
+  // simply still rendering does not become a false positive.
+  if (storageState && audit?.authChrome && audit.authChrome.logoutControl === false) {
+    try {
+      await page.waitForTimeout(1500);
+      const recheck = await page.evaluate(inPageAudit, { mobile: device.mobile });
+      if (recheck?.authChrome) audit.authChrome = recheck.authChrome;
+    } catch {
+      /* keep the first reading — the retry must never hide a dead session */
+    }
+  }
+
   // E: verify internal links resolve (once per page, on the desktop pass).
   let linkChecks = null;
   if (device.name === 'desktop-1280' && audit?.internalLinks?.length) {
@@ -468,12 +568,57 @@ async function auditOne(browser, route, device, storageState) {
     }
   }
 
+  // ── Auth integrity: refuse to report a pass for a page we were never on ────
+  // Scoped to the storage state's own surface, so intra-surface redirects
+  // (/client/inbox → /client/notifications) stay legitimate while leaving the
+  // surface (a dead session: /client → /) does not.
+  // GoTrue's own verdict on this load, derived from events rather than shape.
+  const authOk = authEvents.filter((e) => e.status >= 200 && e.status < 300);
+  const authSession = { events: authEvents, dead: authEvents.length > 0 && authOk.length === 0 };
+
+  const authViolations = [];
+  const rolePrefix = AUTH_PREFIXES.find((p) => route === p || route.startsWith(`${p}/`));
+  if (storageState && rolePrefix) {
+    const chrome = audit?.authChrome || null;
+    const norm = (p) => (p && p.length > 1 ? p.replace(/\/+$/, '') : p);
+    const pathNorm = norm(chrome?.path);
+    const prefixNorm = norm(rolePrefix);
+    const leftSurface = chrome?.path && !(pathNorm === prefixNorm || (pathNorm || '').startsWith(`${prefixNorm}/`));
+    // A logout control (by text OR by attribute — see the union note in
+    // inPageAudit) is the proof of authenticated chrome. The gate wording is
+    // only the *reason* a control is missing; it is never itself a trigger.
+    // Appended to whichever DOM reason fires, so a rejection is never ambiguous
+    // about WHY the load was refused (and infra 5xx stays distinguishable).
+    const authNote = authSession.dead ? ` [GoTrue rejected every session check: ${fmtAuthEvents(authEvents)}]` : '';
+    if (!chrome) authViolations.push('auth state could not be read (page did not evaluate)' + authNote);
+    else if (!chrome.logoutControl) {
+      authViolations.push(
+        (chrome.loggedOutGate
+          ? `logged-out gate rendered ("${chrome.loggedOutGate}") with no logout control`
+          : leftSurface
+            ? `left the authenticated surface → ${chrome.path} (no logout control)`
+            : 'no logout control — page is not authenticated chrome') + authNote,
+      );
+    } else if (leftSurface) {
+      authViolations.push(`authenticated, but on the wrong surface → ${chrome.path}` + authNote);
+    } else if (authSession.dead) {
+      // The DOM said "signed in" but GoTrue never accepted this load's session:
+      // the exact stale-chrome case the shape-based guard used to miss when it
+      // flapped back to the old layout.
+      authViolations.push(
+        `stale authenticated chrome: GoTrue rejected every session check (${fmtAuthEvents(authEvents)}), yet a logout control was rendered`,
+      );
+    }
+  }
+
   await context.close();
 
   return {
     route,
     device: device.name,
     httpStatus,
+    authViolations,
+    authSession,
     consoleErrors: consoleErrors.slice(0, 5),
     pageErrors: pageErrors.slice(0, 5),
     failedRequests: failedRequests.slice(0, 5),
@@ -497,6 +642,7 @@ async function runPool(items, worker, concurrency) {
 
 function issueCount(r) {
   return (
+    (r.authViolations?.length || 0) +
     (r.pageErrors?.length || 0) +
     (r.consoleErrors?.length || 0) +
     (r.badText?.length || 0) +
@@ -534,6 +680,29 @@ function summarize(results) {
   return {
     loads: results.length,
     routes: [...new Set(results.map((r) => r.route))].length,
+    authViolations: results
+      .filter((r) => r.authViolations?.length)
+      .map((r) => ({ route: r.route, device: r.device, errors: r.authViolations })),
+    // Evidence, not decoration: an authenticated run must be able to show WHICH
+    // chrome proved each load was signed in (text vs attribute), so a green run
+    // cannot silently degrade into "matched nothing" on every route.
+    authChrome: STORAGE
+      ? {
+          text: results.filter((r) => r.authChrome?.logoutSignal === 'text').length,
+          attribute: results.filter((r) => r.authChrome?.logoutSignal === 'attribute').length,
+          none: results.filter((r) => r.authChrome && !r.authChrome.logoutSignal).length,
+        }
+      : null,
+    // The event half of the guard: how many loads GoTrue actually accepted.
+    // `noTraffic` is legitimate (a still-valid access token needs no round trip),
+    // which is exactly why `dead` — and not "did not prove it" — is the trigger.
+    authSession: STORAGE
+      ? {
+          accepted: results.filter((r) => r.authSession && r.authSession.events?.length && !r.authSession.dead).length,
+          noTraffic: results.filter((r) => r.authSession && !r.authSession.events?.length).length,
+          dead: results.filter((r) => r.authSession?.dead).length,
+        }
+      : null,
     pageErrors: results.filter((r) => r.pageErrors?.length).map((r) => ({ route: r.route, device: r.device, errors: r.pageErrors })),
     consoleErrors: results.filter((r) => r.consoleErrors?.length).map((r) => ({ route: r.route, device: r.device, errors: r.consoleErrors })),
     badText: by('badText'),
@@ -568,7 +737,7 @@ async function main() {
   if (STORAGE) {
     if (!fs.existsSync(STORAGE)) throw new Error(`Storage state not found: ${STORAGE}`);
     storageState = JSON.parse(fs.readFileSync(STORAGE, 'utf8'));
-    console.log(`▶ authenticated run with storage: ${STORAGE}`);
+    console.log(`▶ authenticated run with storage: ${STORAGE} (role: ${ROLE || 'unknown'})`);
   }
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -606,6 +775,28 @@ async function main() {
   const lines = [
     `# Growlancer element audit — ${GROUP}`,
     `Base: ${BASE} · ${summary.routes} routes × ${VIEWPORTS.length} viewports = ${summary.loads} loads`,
+    `Authenticated run: ${STORAGE ? `yes (${STORAGE})` : 'no (anonymous)'}`,
+    '',
+    `## Auth integrity (must be empty on an authenticated run): ${summary.authViolations.length}`,
+    ...summary.authViolations.map((a) => `- ${a.route} [${a.device}]: ${a.errors.join('; ')}`),
+    ...(summary.authChrome
+      ? [
+          `## Auth chrome proof: ${summary.authChrome.text} load(s) via logout TEXT · ${summary.authChrome.attribute} via logout ATTRIBUTE · ${summary.authChrome.none} with no control`,
+          ...results
+            .filter((r) => r.authChrome && !r.authChrome.logoutSignal)
+            .map((r) => `- ${r.route} [${r.device}] → ${r.authChrome.path} (no logout control)`),
+        ]
+      : []),
+    ...(summary.authSession
+      ? [
+          `## Auth session proof: ${summary.authSession.accepted} load(s) had a GoTrue session check SUCCEED · ` +
+            `${summary.authSession.noTraffic} had no GoTrue traffic (still-valid token) · ` +
+            `${summary.authSession.dead} REJECTED by GoTrue`,
+          ...results
+            .filter((r) => r.authSession?.dead)
+            .map((r) => `- ${r.route} [${r.device}] GoTrue: ${fmtAuthEvents(r.authSession.events)}`),
+        ]
+      : []),
     '',
     `## Page/console errors: ${summary.pageErrors.length + summary.consoleErrors.length}`,
     ...[...summary.pageErrors, ...summary.consoleErrors].map((e) => `- ${e.route} [${e.device}]: ${JSON.stringify(e.errors).slice(0, 160)}`),
@@ -659,7 +850,31 @@ async function main() {
 
   const total = results.reduce((s, r) => s + issueCount(r), 0);
   console.log(`\n✔ ${summary.loads} loads, ${total} raw issue flags`);
+  if (summary.authChrome) {
+    console.log(
+      `Auth integrity evidence: ${summary.authChrome.text} load(s) proved signed-in by logout TEXT, ` +
+        `${summary.authChrome.attribute} by logout ATTRIBUTE, ${summary.authChrome.none} with no logout control.`,
+    );
+    console.log(
+      `Auth session evidence: ${summary.authSession?.accepted ?? 0} load(s) had a SUCCESSFUL GoTrue check, ` +
+        `${summary.authSession?.noTraffic ?? 0} had no GoTrue traffic, ${summary.authSession?.dead ?? 0} were REJECTED by GoTrue.`,
+    );
+  }
   console.log(`Artifacts:\n  ${mdPath}\n  ${jsonPath}`);
+
+  // An authenticated run that was NOT authenticated fails unconditionally:
+  // its "green" would otherwise cover logged-out pages (see the header note).
+  if (summary.authViolations.length) {
+    const uniqRoutes = [...new Set(summary.authViolations.map((a) => a.route))];
+    console.error(
+      `::error::auth integrity: ${summary.authViolations.length} load(s) of an AUTHENTICATED run rendered a logged-out surface ` +
+        `on ${uniqRoutes.length} route(s) (${uniqRoutes.slice(0, 6).join(', ')}${uniqRoutes.length > 6 ? ', …' : ''}). ` +
+        `(logout chrome seen: text=${summary.authChrome?.text ?? 0} attribute=${summary.authChrome?.attribute ?? 0} none=${summary.authChrome?.none ?? 0}; ` +
+        `GoTrue-rejected loads=${summary.authSession?.dead ?? 0}). ` +
+        `The storage state is stale/expired — re-run login.mjs and repeat the sweep. This run proves nothing about those pages.`,
+    );
+    process.exit(1);
+  }
 
   // --strict: non-zero exit when ANY issue is found (CI regression gate).
   // Report mode (default) always exits 0 — findings live in the artifacts.

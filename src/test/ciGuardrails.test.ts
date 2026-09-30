@@ -225,6 +225,93 @@ describe('the E2E seed cannot write to an account it does not own', () => {
   });
 });
 
+const ELEMENT_AUDIT = readScript('element-audit.mjs');
+const LOGOUT_FLOW = readScript('logout-flow.mjs');
+
+describe('the authenticated sweeps cannot pass on a logged-out surface', () => {
+  /**
+   * Measured 2026-09-27 against three DEAD storage states — each one rendered a
+   * logged-out page that the sweep would have reported as clean:
+   *   /dashboard → stayed on the path, empty shell, no logout control
+   *   /client    → redirected to / and audited the marketing homepage 72 times
+   *   /admin     → rendered its own "Restricted Access" login gate 51 times
+   * login.mjs verifies the session AT LOGIN TIME; nothing re-verified it during
+   * the sweep, so a session that died mid-run produced a false green. The audit
+   * now carries its own proof that each protected load WAS authenticated.
+   */
+  it('records the auth chrome each authenticated load actually rendered', () => {
+    expect(ELEMENT_AUDIT).toContain('authChrome');
+    expect(ELEMENT_AUDIT).toMatch(/logoutControl:/);
+    expect(ELEMENT_AUDIT).toMatch(/loggedOutGate:/);
+  });
+
+  it('detects the logout control by text OR attribute — either alone fails a healthy surface', () => {
+    /**
+     * Measured 2026-09-28 with live sessions, 3 roles × 3 viewports × 3 routes:
+     *   text-only      → 18/27 matches (9 false positives, every one of them admin)
+     *   attribute-only →  9/27 matches
+     *   union          → 27/27 matches
+     * The admin header's logout is an icon-only <button title="Logout from Admin">,
+     * so its label is an ATTRIBUTE and appears in neither innerText nor
+     * textContent; the freelancer/client sidebars carry a literal <span>Logout</span>
+     * and no such attribute. A revert to the text-only regex would make the admin
+     * sweep permanently unrunnable — the exact gate this guard exists to close.
+     */
+    expect(ELEMENT_AUDIT).toMatch(/title\*="logout" i/);
+    expect(ELEMENT_AUDIT).toMatch(/aria-label\*="logout" i/);
+    expect(ELEMENT_AUDIT).toMatch(/logoutControl:\s*logoutText \|\| Boolean\(logoutAttrEl\)/);
+    // The old text-only form must not come back.
+    expect(ELEMENT_AUDIT).not.toMatch(/logoutControl:\s*\//);
+    // The per-load signal is artifact evidence, not an internal detail.
+    expect(ELEMENT_AUDIT).toMatch(/logoutSignal:/);
+  });
+
+  it('fails a dead session from GoTrue traffic, not from DOM shape (which flaps)', () => {
+    /**
+     * Measured 2026-09-28 against a revoked admin storage state: chrome shape is
+     * not a trustworthy discriminator. /admin/users rendered its "Restricted
+     * Access" gate at ~1.0 s and then FLIPPED BACK to the stale authenticated
+     * layout — logout button present — at ~1.4 s, while live loads only painted
+     * their logout control at ~2.2 s. 6 of 12 revoked loads still matched the
+     * logout control, so a shape-only guard can pass a dead session.
+     * GoTrue traffic is an event, not a shape: live → token/refresh 200 + user
+     * 200; revoked → token/refresh 400 and no user call at all. A load whose
+     * GoTrue responses ALL failed never proved it held a session.
+     */
+    // The event source, and the fail-closed verdict derived from it.
+    expect(ELEMENT_AUDIT).toContain('AUTH_ENDPOINT_RE = /\\/auth\\/v1\\/(token|user)$/');
+    expect(ELEMENT_AUDIT).toContain('dead: authEvents.length > 0 && authOk.length === 0');
+    // It must be able to reject a load whose DOM *looked* authenticated.
+    expect(ELEMENT_AUDIT).toContain('stale authenticated chrome');
+    expect(ELEMENT_AUDIT).toMatch(/else if \(authSession\.dead\)/);
+    // Evidence flows into the artifact and the CI annotation, so a green run
+    // still shows WHY each load was accepted (or was rejected).
+    expect(ELEMENT_AUDIT).toMatch(/authSession: STORAGE/);
+    expect(ELEMENT_AUDIT).toContain('GoTrue-rejected loads=');
+  });
+
+  it('counts a logged-out surface as an issue and fails the run regardless of --strict', () => {
+    expect(ELEMENT_AUDIT).toMatch(/function issueCount[\s\S]{0,200}authViolations/);
+    expect(ELEMENT_AUDIT).toContain('left the authenticated surface');
+    expect(ELEMENT_AUDIT).toMatch(/if \(summary\.authViolations\.length\)[\s\S]{0,1200}process\.exit\(1\)/);
+    expect(ELEMENT_AUDIT).toMatch(/::error::auth integrity/);
+  });
+
+  it('scopes the check to the storage state\'s own surface, not every redirect', () => {
+    // /client/inbox → /client/notifications is legitimate app behaviour while
+    // signed in; leaving /client altogether is the dead-session signature.
+    expect(ELEMENT_AUDIT).toMatch(/freelancer: \['\/dashboard'\], client: \['\/client'\], admin: \['\/admin'\]/);
+    expect(ELEMENT_AUDIT).toContain('startsWith(`${prefixNorm}/`)');
+  });
+
+  it('no longer skips the logout pass with exit 0 when its credentials are missing', () => {
+    expect(LOGOUT_FLOW).not.toContain('Skipping (exit 0)');
+    const credentialCheck = LOGOUT_FLOW.slice(0, LOGOUT_FLOW.indexOf('const results'));
+    expect(credentialCheck).toMatch(/if \(!CFG\.email \|\| !CFG\.password\)[\s\S]{0,800}process\.exit\(1\)/);
+    expect(credentialCheck).toContain('::error::');
+  });
+});
+
 describe('backend-deploy.yml — a deploy is never green with an unrun pentest', () => {
   const guard = stepBlock(DEPLOY, 'Guard — pentest secrets present (fail-closed)');
   const pentest = stepBlock(DEPLOY, 'Privilege + money-path pentest (against deployed DB)');

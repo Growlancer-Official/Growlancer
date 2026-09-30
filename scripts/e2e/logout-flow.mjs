@@ -50,8 +50,16 @@ const CFG = {
 }[ROLE];
 if (!CFG) throw new Error(`Unknown role: ${ROLE}`);
 if (!CFG.email || !CFG.password) {
-  console.error(`⊘ E2E_${ROLE.toUpperCase()}_EMAIL/_PASSWORD not set — cannot run logout flow. Skipping (exit 0).`);
-  process.exit(0);
+  // FAIL CLOSED (the same rule login.mjs enforces with --require-all): a
+  // logout-security pass that skips with exit 0 is indistinguishable from one
+  // that passed, so it is worse than a red run. CI asserts these secrets in its
+  // guard step before this script is reached, which means landing here is a
+  // broken harness, not a missing product feature — and that must be loud.
+  console.error(
+    `::error::E2E_${ROLE.toUpperCase()}_EMAIL/_PASSWORD not set — the logout-security pass DID NOT RUN for ${ROLE}. ` +
+      `Refusing to exit 0: a skipped guardrail is not a passing one.`,
+  );
+  process.exit(1);
 }
 
 const results = [];
