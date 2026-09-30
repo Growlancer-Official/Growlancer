@@ -63,7 +63,7 @@ export function AuthCallbackPage() {
           // method instead of creating a second account.
           if (/already registered|already exists|already.*in use|duplicate/i.test(rawDescription)) {
             setErrorMessage(
-              'This email is already used professionally on Growlancer. Please log in with your email and password instead.'
+              'This email is already used professionally on Growlancer. Continue with the provider the account was created with — or contact support if you previously signed up with email.'
             );
           } else {
             setErrorMessage(rawDescription || 'Authentication failed. Please try again.');
@@ -320,7 +320,7 @@ export function AuthCallbackPage() {
               devLog('[AuthCallback] PKCE code present but no session — link likely expired/invalid');
               setStatus('error');
               setErrorMessage(
-                'This verification link is invalid or has expired. Please sign up again to receive a fresh link, or request a resend from the verify-email page.'
+                'This verification link is invalid or has expired. Once signed in, you can request a fresh verification email from Settings → Account.'
               );
               return;
             }
@@ -361,7 +361,7 @@ export function AuthCallbackPage() {
           setStatus('error');
           setErrorMessage(
             isOAuthProvider
-              ? 'LinkedIn/GitHub sign-in session could not be established. This usually means the redirect URL is not configured in the Supabase Dashboard. Please try again, or use email sign-in instead.'
+              ? 'LinkedIn/GitHub sign-in session could not be established. This usually means the redirect URL is not configured in the Supabase Dashboard. Please try again — if it keeps failing, contact support.'
               : 'No session found. Please try logging in again.'
           );
           return;
@@ -371,11 +371,12 @@ export function AuthCallbackPage() {
 
         // ── 6. Handle specific actions ──
         if (detectedAction === 'recovery') {
-          // Password reset — stay on page, show success, redirect to reset page
-          setStatus('success');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          if (cancelled) return;
-          safeNavigate(() => navigate('/auth/reset-password', { replace: true }));
+          // Password recovery no longer exists (GitHub/LinkedIn sign-in only).
+          // An old reset link must not dead-end on a removed route.
+          setStatus('error');
+          setErrorMessage(
+            'Password reset is no longer available on Growlancer. Please sign in with GitHub or LinkedIn instead.'
+          );
           return;
         }          if (detectedAction === 'email_change') {
           // Sync the new email into profiles_private via SECURITY DEFINER RPC

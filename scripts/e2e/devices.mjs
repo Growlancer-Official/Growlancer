@@ -36,7 +36,7 @@ export const KEY_ROUTES = [
   '/services',
   '/contests',
   '/help-center',
-  '/auth/forgot-password',
+  '/auth/verify-email',
   '/dashboard',
 ];
 
@@ -68,10 +68,7 @@ export const PUBLIC_ROUTES = [
   '/waitlist',
   '/certificate',
   '/verify-certificate',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-  '/auth/magic-link',
-  '/auth/otp',
+  // Email/password auth pages removed — GitHub/LinkedIn only (see App.tsx).
   '/auth/email-confirm',
   '/auth/verify-email',
   '/payment/success',

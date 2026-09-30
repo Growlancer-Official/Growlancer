@@ -88,7 +88,6 @@ const AUTH_ACTION_PATHS = [
   '/auth/callback',
   '/auth/email-confirm',
   '/auth/verify-email',
-  '/auth/reset-password',
 ];
 
 /**

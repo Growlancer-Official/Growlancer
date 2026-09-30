@@ -2,9 +2,11 @@
 //
 //   node scripts/e2e/logout-flow.mjs --base=http://127.0.0.1:4174 --role=freelancer
 //
-// Requires E2E_<ROLE>_EMAIL / E2E_<ROLE>_PASSWORD env vars (see login.mjs).
+// Requires E2E_<ROLE>_EMAIL / E2E_<ROLE>_PASSWORD env vars (see login.mjs),
+// plus SUPABASE_URL (or VITE_SUPABASE_URL) and VITE_SUPABASE_ANON_KEY to
+// exchange them for a session.
 // Verifies:
-//   1. login reaches the dashboard
+//   1. a real session reaches the dashboard
 //   2. logout click clears the session and lands on home/login
 //   3. BROWSER BACK after logout does NOT resurrect the protected page
 //      (no stale dashboard content renders; app shows logged-out surface)
@@ -37,6 +39,9 @@ const BASE = args.base || 'http://127.0.0.1:4174';
 const ROLE = args.role || 'freelancer';
 const OUT_DIR = path.resolve('tests/e2e-artifacts');
 
+const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
+const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+
 // What a logged-OUT visitor sees on the protected route. Freelancer/client
 // fall back to the site-wide login modal ("Welcome back"); /admin has its own
 // in-app gate ("Restricted Access — Authorized Personnel Only"). Either one
@@ -44,9 +49,9 @@ const OUT_DIR = path.resolve('tests/e2e-artifacts');
 const LOGGED_OUT_GUARD = /welcome back|restricted access|authorized personnel|log ?in|sign ?in/i;
 
 const CFG = {
-  freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, dash: '/dashboard', start: '/?modal=login', modalLogin: true },
-  client: { email: process.env.E2E_CLIENT_EMAIL, password: process.env.E2E_CLIENT_PASSWORD, dash: '/client', start: '/?modal=login', modalLogin: true },
-  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD, dash: '/admin', start: '/admin', modalLogin: false },
+  freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, dash: '/dashboard' },
+  client: { email: process.env.E2E_CLIENT_EMAIL, password: process.env.E2E_CLIENT_PASSWORD, dash: '/client' },
+  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD, dash: '/admin' },
 }[ROLE];
 if (!CFG) throw new Error(`Unknown role: ${ROLE}`);
 if (!CFG.email || !CFG.password) {
@@ -60,6 +65,39 @@ if (!CFG.email || !CFG.password) {
       `Refusing to exit 0: a skipped guardrail is not a passing one.`,
   );
   process.exit(1);
+}
+
+/** supabase-js v2's default storage key for the configured project. */
+function storageKeyFor(url) {
+  return `sb-${new URL(url).host.split('.')[0]}-auth-token`;
+}
+
+/**
+ * Exchange the test account's credentials for a real session. The product's
+ * sign-in is GitHub/LinkedIn only — there is no form to fill — so the harness
+ * performs the same credential exchange the app used to do and seeds the
+ * result, which is exactly what supabase-js persists after a sign-in.
+ */
+async function fetchSession() {
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: CFG.email, password: CFG.password }),
+  });
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    /* non-JSON error body — the status below is the fallback */
+  }
+  if (!res.ok || !body?.access_token) {
+    const detail =
+      [body?.error_code || body?.error, body?.msg || body?.error_description]
+        .filter(Boolean)
+        .join(' — ') || `HTTP ${res.status}`;
+    throw new Error(`${ROLE}: auth endpoint rejected the sign-in (${detail})`);
+  }
+  return body;
 }
 
 const results = [];
@@ -96,33 +134,29 @@ async function main() {
     headless: true,
     args: ['--no-sandbox', '--disable-dev-shm-usage', '--disable-gpu'],
   });
+  // 1. Establish a real session and land on the role's dashboard.
+  const session = await fetchSession();
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  await context.addInitScript(
+    ([key, value]) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        /* storage unavailable — the checks below will fail loudly */
+      }
+    },
+    [storageKeyFor(SUPABASE_URL), JSON.stringify(session)]
+  );
   const page = await context.newPage();
 
-  // 1. Login
-  await page.goto(`${BASE}${CFG.start}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.goto(`${BASE}${CFG.dash}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForFunction(() => !document.getElementById('boot-overlay'), { timeout: 15000 }).catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
-
   await dismissConsentBanner(page);
-  if (CFG.modalLogin) {
-    // Scope strictly to the modal form: a bare getByRole('button', /^log in$/i)
-    // also matches the header's "Log in" button, which only re-opens the modal,
-    // so the form would never be submitted.
-    const form = page.locator('form').filter({ has: page.locator('input[type="password"]') }).first();
-    await form.locator('input[type="email"]').first().fill(CFG.email);
-    await form.locator('input[type="password"]').first().fill(CFG.password);
-    await form.locator('button[type="submit"]').first().click();
-  } else {
-    // /admin renders its own login gate whose submit button is role=button.
-    await page.locator('input[type="email"], input[aria-label*="email" i]').first().fill(CFG.email);
-    await page.locator('input[type="password"]').first().fill(CFG.password);
-    await page.getByRole('button', { name: /access admin|sign in|log in/i }).first().click();
-  }
 
   await page.waitForURL((u) => u.pathname.startsWith(CFG.dash), { timeout: 30000 })
-    .then(() => record('login reaches dashboard', true, page.url()))
-    .catch(async () => record('login reaches dashboard', false, `still at ${page.url()}`));
+    .then(() => record('session reaches dashboard', true, page.url()))
+    .catch(async () => record('session reaches dashboard', false, `still at ${page.url()}`));
 
   if (!results[0].pass) {
     await browser.close();
@@ -155,37 +189,68 @@ async function main() {
   // 3. Session cleared + a logged-out surface is shown. Depending on the role
   //    that is either a navigation away (/ or /login) or the route's own gate
   //    rendering in place (/admin keeps the URL) — poll, don't assume.
+  //    ⚠️ A FAILED read (evaluate throws while the logout navigation is
+  //    starting) is NOT evidence of logout — treating path:'' as logged-out
+  //    made the poll exit before signOut finished, and every later step then
+  //    raced the in-flight navigation (measured 2026-09-30: with a seeded
+  //    session the click-to-navigate gap is milliseconds, so this fired on
+  //    almost every run). Only a DEFINITIVE signal counts: a real navigation
+  //    away from the dashboard, or the logged-out gate rendered on it.
   let landedLoggedOut = false;
   let landedWhere = '';
-  for (let i = 0; i < 30 && !landedLoggedOut; i++) {
+  const deadline = Date.now() + 30000;
+  while (Date.now() < deadline && !landedLoggedOut) {
     const s = await page
       .evaluate(() => ({ path: location.pathname, text: (document.body.innerText || '').slice(0, 800) }))
-      .catch(() => ({ path: '', text: '' }));
-    landedWhere = `${s.path}`;
-    landedLoggedOut = s.path === '/' || s.path.includes('login') || !s.path.startsWith(CFG.dash) || LOGGED_OUT_GUARD.test(s.text);
+      .then((r) => r)
+      .catch(() => null); // navigation in flight — keep polling, never conclude
+    if (s) {
+      landedWhere = `${s.path}`;
+      const navigatedAway = s.path !== '' && !s.path.startsWith(CFG.dash);
+      const gateOnDash = s.path.startsWith(CFG.dash) && LOGGED_OUT_GUARD.test(s.text);
+      landedLoggedOut = navigatedAway || gateOnDash;
+    }
     if (!landedLoggedOut) await page.waitForTimeout(500);
   }
+  // The logout navigation (window.location.href = '/') may still be settling;
+  // wait for the next document before reading storage, or the check reads the
+  // pre-logout document and reports a session that is already being cleared.
+  await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
+  await page.waitForTimeout(500);
   record('logout lands on a logged-out surface', landedLoggedOut, landedWhere || page.url());
 
   // The contract is "no stored session remains" — assert that no auth-token key
   // still holds an access token. Key NAMES are reported for debugging; the
   // values are never printed (they contain the JWT).
-  const leftover = await page.evaluate(() =>
-    Object.keys(localStorage)
-      .filter((k) => k.includes('auth-token'))
-      .map((k) => {
-        const raw = localStorage.getItem(k);
-        let hasAccessToken = false;
-        try {
-          const parsed = JSON.parse(raw);
-          hasAccessToken = Boolean(parsed && (parsed.access_token || parsed.currentSession));
-        } catch {
-          hasAccessToken = Boolean(raw && raw.length > 40);
-        }
-        return { key: k, hasAccessToken };
-      })
-  );
-  const liveSessions = leftover.filter((l) => l.hasAccessToken);
+  // Poll, don't sample once: the storage write races the logout navigation, and
+  // a single read mid-navigation sees the PRE-logout document (measured
+  // 2026-09-30 — the standalone probe showed storage is actually EMPTY after
+  // logout; the failure was reading too early). The check is satisfied the
+  // moment a read shows no live session, and the loop only exits early on that
+  // positive proof — never on a read error.
+  let liveSessions = [{ key: 'unread', hasAccessToken: true }];
+  const storageDeadline = Date.now() + 15000;
+  while (Date.now() < storageDeadline) {
+    liveSessions = await page
+      .evaluate(() =>
+        Object.keys(localStorage)
+          .filter((k) => k.includes('auth-token'))
+          .map((k) => {
+            const raw = localStorage.getItem(k);
+            let hasAccessToken = false;
+            try {
+              const parsed = JSON.parse(raw);
+              hasAccessToken = Boolean(parsed && (parsed.access_token || parsed.currentSession));
+            } catch {
+              hasAccessToken = Boolean(raw && raw.length > 40);
+            }
+            return { key: k, hasAccessToken };
+          })
+      )
+      .catch(() => [{ key: 'unread', hasAccessToken: true }]);
+    if (liveSessions.length === 0) break;
+    await page.waitForTimeout(500);
+  }
   record(
     'no stored session survives logout',
     liveSessions.length === 0,
@@ -207,16 +272,25 @@ async function main() {
   const protectedResurrected = afterBack.path.startsWith(CFG.dash) && !guardShown;
   record('browser-back after logout does NOT render protected content', !protectedResurrected, `path=${afterBack.path} guardShown=${guardShown}`);
 
-  // 5. Direct URL re-entry is blocked again.
+  // 5. Direct URL re-entry is blocked again. The block lands through
+  //    ProtectedRoute after auth init resolves (up to ~5s on a cold start),
+  //    so poll for the definitive signal instead of a fixed sleep.
   await page.goto(`${BASE}${CFG.dash}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForFunction(() => !document.getElementById('boot-overlay'), { timeout: 15000 }).catch(() => {});
-  await page.waitForTimeout(800);
-  const reentry = await page.evaluate(() => ({
-    path: location.pathname,
-    text: (document.body.innerText || '').slice(0, 600),
-  }));
-  const blocked = LOGGED_OUT_GUARD.test(reentry.text) || !reentry.path.startsWith(CFG.dash);
-  record('direct protected-URL re-entry blocked after logout', blocked, `path=${reentry.path}`);
+  let reentryBlocked = false;
+  let reentryState = '';
+  const reentryDeadline = Date.now() + 15000;
+  while (Date.now() < reentryDeadline && !reentryBlocked) {
+    const s = await page
+      .evaluate(() => ({ path: location.pathname, text: (document.body.innerText || '').slice(0, 600) }))
+      .catch(() => null);
+    if (s) {
+      reentryState = `path=${s.path}`;
+      reentryBlocked = LOGGED_OUT_GUARD.test(s.text) || (s.path !== '' && !s.path.startsWith(CFG.dash));
+    }
+    if (!reentryBlocked) await page.waitForTimeout(500);
+  }
+  record('direct protected-URL re-entry blocked after logout', reentryBlocked, reentryState || 'unreadable');
 
   await browser.close();
 

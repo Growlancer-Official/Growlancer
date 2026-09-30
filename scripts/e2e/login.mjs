@@ -4,10 +4,23 @@
 //   node scripts/e2e/login.mjs --base=http://127.0.0.1:4174 --role=freelancer
 //   node scripts/e2e/login.mjs --role=client --role2=admin
 //
+// ⚠️ The PRODUCT no longer has an email/password form — GitHub/LinkedIn is the
+// only sign-in. It would be dishonest to drive a form that users cannot see, so
+// this helper now performs the same credential exchange the app does, straight
+// against GoTrue (`POST /auth/v1/token?grant_type=password`), and seeds the
+// resulting session into the browser's localStorage before the app boots. That
+// is exactly what `supabase.auth.signInWithPassword` would persist — the audits
+// then run against a session that is real, refreshable and server-verified.
+//
+// Test accounts keep their email+password: `create-test-accounts.mjs` creates
+// them through the admin API (which does not go through the UI either).
+//
 // Credentials come from env (never hardcode, never commit):
 //   E2E_FREELANCER_EMAIL / E2E_FREELANCER_PASSWORD
 //   E2E_CLIENT_EMAIL     / E2E_CLIENT_PASSWORD
 //   E2E_ADMIN_EMAIL      / E2E_ADMIN_PASSWORD
+// plus the public backend coordinates:
+//   SUPABASE_URL (or VITE_SUPABASE_URL) / VITE_SUPABASE_ANON_KEY
 //
 // Writes .e2e/<role>.json (gitignored) usable as --storage for
 // element-audit.mjs / device-audit.mjs.
@@ -44,67 +57,83 @@ const OUT_DIR = path.resolve('.e2e');
 // CI sets this: an inactive authenticated pass must never look like a green one.
 const REQUIRE_ALL = args['require-all'] === 'true';
 
+const SUPABASE_URL = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').replace(/\/+$/, '');
+const ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
+
 const ROLES = {
-  freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, start: '/?modal=login' },
-  client: { email: process.env.E2E_CLIENT_EMAIL, password: process.env.E2E_CLIENT_PASSWORD, start: '/?modal=login' },
-  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD, start: '/admin' },
+  freelancer: { email: process.env.E2E_FREELANCER_EMAIL, password: process.env.E2E_FREELANCER_PASSWORD, landing: '/dashboard' },
+  client: { email: process.env.E2E_CLIENT_EMAIL, password: process.env.E2E_CLIENT_PASSWORD, landing: '/client' },
+  admin: { email: process.env.E2E_ADMIN_EMAIL, password: process.env.E2E_ADMIN_PASSWORD, landing: '/admin' },
 };
+
+/** supabase-js v2's default storage key for the configured project. */
+function storageKeyFor(url) {
+  return `sb-${new URL(url).host.split('.')[0]}-auth-token`;
+}
+
+/**
+ * Exchange the test account's credentials for a real session — the same call
+ * the app's password flow used to make. Failures carry GoTrue's own reason
+ * (`error_code` + `error_description`/`msg`) so a stale CI secret is named
+ * instead of guessed at.
+ */
+async function fetchSession(role) {
+  const cfg = ROLES[role];
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { apikey: ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: cfg.email, password: cfg.password }),
+  });
+  let body = null;
+  try {
+    body = await res.json();
+  } catch {
+    /* non-JSON error body — fall back to the status below */
+  }
+  if (!res.ok || !body?.access_token) {
+    const detail =
+      [body?.error_code || body?.error, body?.msg || body?.error_description]
+        .filter(Boolean)
+        .join(' — ') || `HTTP ${res.status}`;
+    throw new Error(
+      `${role}: auth endpoint rejected the sign-in (${detail}) — the E2E_${role.toUpperCase()}_* secrets are stale; re-run create-test-accounts.mjs --push-secrets`
+    );
+  }
+  return body;
+}
 
 async function attemptLogin(browser, role) {
   const cfg = ROLES[role];
 
+  // Session first (outside the browser): a dead credential fails here with a
+  // named reason instead of masquerading as a slow redirect.
+  const session = await fetchSession(role);
+
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+  // Seed the persisted session BEFORE the app boots — this is the same
+  // localStorage entry supabase-js writes after a successful sign-in.
+  await context.addInitScript(
+    ([key, value]) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        /* storage unavailable — the audit below will fail loudly */
+      }
+    },
+    [storageKeyFor(SUPABASE_URL), JSON.stringify(session)]
+  );
   const page = await context.newPage();
 
-  // Capture the auth endpoint's answer. Without this, a stale CI credential
-  // secret looks exactly like a slow redirect ("no session after 60s") — the
-  // auth logs showed `400 invalid_credentials`, which the run should say out
-  // loud instead of leaving the operator to guess.
-  let authFailure = null;
-  page.on('response', async (res) => {
-    if (!res.url().includes('/auth/v1/token') || res.status() < 400) return;
-    // `statusText` is a METHOD in Playwright — assigning the bare function and
-    // stringifying it printed a getter's source code instead of the reason, so a
-    // whole CI run failed with "400 status() { return this._initializer.status; }"
-    // and nobody could tell invalid_credentials from a rate limit.
-    let detail = res.statusText() || `${res.status()}`;
-    try {
-      const raw = (await res.text()).trim();
-      if (raw) {
-        let body = null;
-        try { body = JSON.parse(raw); } catch { /* not JSON — fall back to the raw text */ }
-        detail = (body && [body.error_code || body.error, body.msg || body.error_description]
-          .filter(Boolean).join(' — ')) || raw.slice(0, 200);
-      }
-    } catch { /* body already consumed — keep the status text */ }
-    authFailure = `${res.status()} ${detail}`;
-    console.error(`✖ ${role}: auth endpoint rejected the sign-in: ${authFailure}`);
-  });
-
-  await page.goto(`${BASE}${cfg.start}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  await page.goto(`${BASE}${cfg.landing}`, { waitUntil: 'domcontentloaded', timeout: 45000 });
   await page.waitForFunction(() => !document.getElementById('boot-overlay'), { timeout: 15000 }).catch(() => {});
   await page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {});
 
-  if (role === 'admin') {
-    await page.locator('input[type="email"], input[aria-label*="email" i]').first().fill(cfg.email);
-    await page.locator('input[type="password"]').first().fill(cfg.password);
-    await page.getByRole('button', { name: /access admin|sign in|log in/i }).first().click();
-  } else {
-    // Login modal on the homepage. Scope strictly to the modal form: a bare
-    // getByRole('button', /^log in$/i) also matches the header's "Log in"
-    // button, which re-opens the modal instead of submitting it.
-    const form = page.locator('form').filter({ has: page.locator('input[type="password"]') }).first();
-    await form.locator('input[type="email"]').first().fill(cfg.email);
-    await form.locator('input[type="password"]').first().fill(cfg.password);
-    await form.locator('button[type="submit"]').first().click();
-  }
-
   // Wait for an authenticated marker. The real ground truth is the Supabase
-  // session landing in localStorage (that is what the storage state needs), so
-  // a live session counts as success even if the SPA redirect is slow — a CI
-  // runner is much slower than a local machine and used to fail here while the
-  // token was already stored. A session with no navigation gets one nudge.
-  const landing = role === 'admin' ? '/admin' : role === 'client' ? '/client' : '/dashboard';
+  // session in localStorage (that is what the storage state needs), so a live
+  // session counts as success even if the SPA redirect is slow — a CI runner is
+  // much slower than a local machine and used to fail here while the token was
+  // already stored. A session with no navigation gets one nudge.
+  const landing = cfg.landing;
 
   const hasSession = () => page.evaluate(() => {
     const key = Object.keys(localStorage).find((k) => k.includes('auth-token'));
@@ -143,11 +172,9 @@ async function attemptLogin(browser, role) {
   if (!ok) {
     const seen = await page.evaluate(() => location.pathname + location.search).catch(() => 'unknown');
     await context.close();
-    throw new Error(authFailure
-      ? `${role}: auth endpoint rejected the sign-in (${authFailure}) — the E2E_${role.toUpperCase()}_* secrets are stale; re-run create-test-accounts.mjs --push-secrets`
-      : role === 'admin'
-        ? `${role}: the admin console never rendered after 60s (url=${seen}) — check that the account has is_admin=true (create-test-accounts.mjs verifies it) and that /admin is not showing the login screen`
-        : `${role}: no authenticated session after 60s (url=${seen}) — check credentials/test-account state`);
+    throw new Error(role === 'admin'
+      ? `${role}: the admin console never rendered after 60s (url=${seen}) — check that the account has is_admin=true (create-test-accounts.mjs verifies it) and that /admin is not showing the login screen`
+      : `${role}: no authenticated session after 60s (url=${seen}) — check credentials/test-account state`);
   }
 
   // A session is enough for the audit (it navigates to every route itself), but
@@ -171,7 +198,7 @@ async function attemptLogin(browser, role) {
   }
   fs.writeFileSync(file, JSON.stringify(state, null, 2));
   await context.close();
-  console.log(`✔ ${role} logged in → ${file}`);
+  console.log(`✔ ${role} session seeded → ${file}`);
   return file;
 }
 
@@ -193,6 +220,12 @@ async function loginRole(browser, role) {
       throw new Error(`${message} — --require-all was requested, refusing to skip this role`);
     }
     console.log(`⊘ ${message} — skipping (this is expected until test accounts exist)`);
+    return null;
+  }
+  if (!SUPABASE_URL || !ANON_KEY) {
+    const message = `${role}: SUPABASE_URL / VITE_SUPABASE_ANON_KEY not set — cannot exchange credentials for a session`;
+    if (REQUIRE_ALL) throw new Error(`${message} — --require-all was requested, refusing to skip this role`);
+    console.log(`⊘ ${message} — skipping`);
     return null;
   }
 

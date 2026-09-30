@@ -2,13 +2,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests (no account needed, safe against the real backend):
 //   1. Protected routes redirect unauthenticated users to /?modal=login
-//   2. Login modal: empty submit → validation errors; invalid email → error
-//   3. Login modal: wrong password → REAL backend error, app must not crash
-//   4. Signup modal: empty submit → validation errors; password mismatch
-//   5. /auth/forgot-password: empty/invalid email errors
-//   6. /auth/otp: input present, invalid-format submit handled
-//   7. /auth/magic-link: email validation
-//   8. Every auth page loads with zero console/page errors on mobile + desktop
+//   2. Login modal: GitHub + LinkedIn present, enabled, and NO password form
+//   3. Signup modal: role choice + providers; no email/password form;
+//      provider click without a role is refused inline
+//   4. Remaining auth pages + removed-route deep links degrade gracefully
+//   5. Every auth page loads with zero console/page errors on mobile + desktop
 //
 // Usage:
 //   node scripts/e2e/auth-flows.mjs --base=http://localhost:4173
@@ -142,93 +140,45 @@ for (const vp of VIEWPORTS) {
       realErrors.concat(pageErrors).slice(0, 2).join(' | '));
   }
 }
-
 // ─────────────────────────────────────────────────────────────────────────────
-// 2. Login modal validation
+// 2. Login modal — OAuth-only surface
 // ─────────────────────────────────────────────────────────────────────────────
 for (const vp of VIEWPORTS) {
-  const { consoleErrors, pageErrors, auth400 } = await withPage(vp, async (page) => {
+  const { consoleErrors, pageErrors } = await withPage(vp, async (page) => {
     await page.goto(`${BASE}/?modal=login`, { waitUntil: 'domcontentloaded', timeout: 30000 });
     await sleep(6500); // auth init timeout is 5s
     const modal = page.locator('text=Welcome back').first();
     const visible = await modal.isVisible({ timeout: 5000 }).catch(() => false);
     record('login modal opens via ?modal=login', vp.name, visible);
-    const rootAlive = await page.evaluate(() => !!document.querySelector('#root'));
-    if (!rootAlive) {
-      record('page dead (no #root) — skipping login-form checks', vp.name, false);
-      return;
-    }
+    if (!visible) return;
 
-    // Empty submit → HTML5/validation blocks or inline errors
-    // ⚠️ Scope ALL field locators to the modal overlay — the homepage behind
-    // it also has `input[type=email]` (waitlist) and a submit form, and those
-    // come FIRST in DOM order. Unscoped `.first()` grabs the wrong element.
+    // ⚠️ Scope ALL locators to the modal overlay — the homepage behind it
+    // also has an email input (waitlist) that comes FIRST in DOM order.
     const modalScope = page.locator('div.fixed.inset-0').first();
-    const emailInput = modalScope.locator('input[type="email"], input[name="email"]').first();
-    const pwInput = modalScope.locator('input[type="password"]').first();
-    const hasEmail = await emailInput.isVisible({ timeout: 4000 }).catch(() => false);
-    const hasPw = hasEmail ? await pwInput.isVisible().catch(() => false) : false;
-    record('login form fields present (email+password)', vp.name, hasEmail && hasPw);
+    record('GitHub provider button present', vp.name,
+      await modalScope.locator('button:has-text("Continue with GitHub")').first().isVisible({ timeout: 4000 }).catch(() => false));
+    record('LinkedIn provider button present', vp.name,
+      await modalScope.locator('button:has-text("Continue with LinkedIn")').first().isVisible({ timeout: 4000 }).catch(() => false));
+    // The email/password form is gone BY DESIGN — assert it stays gone,
+    // otherwise an accidental regression would reintroduce the phishing
+    // surface the OAuth-only flow removed.
+    record('no password field in the login modal', vp.name,
+      !(await modalScope.locator('input[type="password"]').first().isVisible().catch(() => false)));
 
-    if (hasEmail && hasPw) {
-      // Scope to the LOGIN MODAL's submit button — `has-text("Log In")` also
-      // matches the header "Login" button, and an unscoped `form` matches the
-      // homepage waitlist form behind the modal.
-      const loginBtn = modalScope.locator('form button[type="submit"]').first();
-      await loginBtn.click();
-      await sleep(1200);
-      const stillThere = await modal.isVisible().catch(() => false);
-      const invalid = await emailInput.evaluate((el) => !el.checkValidity() || el.value === '');
-      record('empty login submit blocked', vp.name, stillThere || invalid);
-
-      // Invalid email format
-      await emailInput.fill('not-an-email');
-      await pwInput.fill('whatever123');
-      await loginBtn.click();
-      await sleep(1200);
-      const blockedByValidation = await emailInput.evaluate((el) => !el.checkValidity());
-      const errVisible = await page
-        .locator('text=/invalid|valid email/i')
-        .first()
-        .isVisible({ timeout: 1500 })
-        .catch(() => false);
-      record('invalid email format blocked', vp.name, blockedByValidation || errVisible);
-
-      // Wrong password → real backend call → error message, no crash
-      const testEmail = `e2e-no-such-user-${Date.now()}@example.com`;
-      await emailInput.fill(testEmail);
-      await pwInput.fill('WrongPassword123!');
-      await loginBtn.click();
-      // Poll for the inline error (LoginModal renders <p class="text-red-600">)
-      let errShown = false;
-      for (let i = 0; i < 20; i++) {
-        await sleep(500);
-        errShown = await page
-          .locator('.text-red-600, [role="alert"]')
-          .first()
-          .isVisible()
-          .catch(() => false);
-        if (errShown) break;
-      }
-      const modalStillThere = await modal.isVisible().catch(() => false);
-      const appAlive = await page.evaluate(() => !!document.querySelector('#root'));
-      record('wrong-credentials handled with error message (no crash)', vp.name, appAlive && errShown && modalStillThere,
-        errShown ? 'error message visible' : 'no error message appeared');
+    // Both providers must be live and clickable (a permanently disabled
+    // button would lock every user out). Clicking is deliberately avoided:
+    // it would navigate away to the provider.
+    for (const name of ['Continue with GitHub', 'Continue with LinkedIn']) {
+      const btn = modalScope.getByRole('button', { name }).first();
+      record(`${name} is enabled`, vp.name, await btn.isEnabled().catch(() => false));
     }
   });
-  // The 400 from the wrong-credential attempt is EXPECTED backend behavior
-  // (Supabase rejects bad credentials with HTTP 400); the app surfaces it as
-  // an inline error — verified above. Don't count it as a hard failure.
-  const isExpectedAuth400 = (e) => /Failed to load resource.*400/.test(e) && auth400.length > 0;
-  const realErrors = consoleErrors.filter(
-    (e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e) && !isExpectedAuth400(e)
-  );
+  const realErrors = consoleErrors.filter((e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e));
   record('no hard errors in login flow', vp.name, realErrors.length === 0 && pageErrors.length === 0,
     realErrors.concat(pageErrors).slice(0, 2).join(' | '));
 }
-
 // ─────────────────────────────────────────────────────────────────────────────
-// 3. Signup modal validation
+// 3. Signup modal — role choice + OAuth, no form to fill
 // ─────────────────────────────────────────────────────────────────────────────
 for (const vp of VIEWPORTS) {
   const { consoleErrors, pageErrors } = await withPage(vp, async (page) => {
@@ -240,123 +190,60 @@ for (const vp of VIEWPORTS) {
     const signupBtn = page.locator('button:has-text("Signup"), button:has-text("Sign Up")').first();
     await signupBtn.click();
     await sleep(1500);
-    const modalTexts = ['Create your account', 'Join Growlancer', 'Sign up', 'Get started'];
-    let modalVisible = false;
-    for (const t of modalTexts) {
-      if (await page.locator(`text=/${t}/i`).first().isVisible({ timeout: 1500 }).catch(() => false)) {
-        modalVisible = true;
-        break;
-      }
-    }
+    const modalVisible = await page.locator('text=Create your account').first().isVisible({ timeout: 3000 }).catch(() => false);
     record('signup modal opens from header', vp.name, modalVisible);
+    if (!modalVisible) return;
 
-    if (modalVisible) {
-      const fields = {
-        name: await page.locator('input[name="fullName"], input[name="name"], input[placeholder*="name" i]').first().isVisible({ timeout: 2000 }).catch(() => false),
-        email: await page.locator('input[type="email"]').first().isVisible().catch(() => false),
-        password: await page.locator('input[type="password"]').first().isVisible().catch(() => false),
-      };
-      record('signup fields present', vp.name, fields.email && fields.password, JSON.stringify(fields));
+    const modalScope = page.locator('div.fixed.inset-0').first();
+    record('role choice present (Freelance / Hire Talent)', vp.name,
+      (await modalScope.locator('text=Freelance').first().isVisible().catch(() => false)) &&
+      (await modalScope.locator('text=Hire Talent').first().isVisible().catch(() => false)));
+    record('GitHub + LinkedIn buttons present', vp.name,
+      (await modalScope.locator('button:has-text("Continue with GitHub")').first().isVisible().catch(() => false)) &&
+      (await modalScope.locator('button:has-text("Continue with LinkedIn")').first().isVisible().catch(() => false)));
+    // No email/password/name/phone form — the profile comes from the provider.
+    record('no password field in the signup modal', vp.name,
+      !(await modalScope.locator('input[type="password"]').first().isVisible().catch(() => false)));
+    record('no email field in the signup modal', vp.name,
+      !(await modalScope.locator('input[type="email"]').first().isVisible().catch(() => false)));
 
-      const submit = page.locator('button:has-text("Create"), button:has-text("Sign Up"), button:has-text("Get Started")').last();
-      if (await submit.isVisible().catch(() => false)) {
-        await submit.click();
-        await sleep(1200);
-        const invalid = await page.evaluate(() => {
-          const bad = Array.from(document.querySelectorAll('input[required]')).find(
-            (i) => !i.checkValidity() || !i.value
-          );
-          return !!bad || !!document.querySelector('text-error, .text-red-500, [role="alert"]');
-        });
-        record('empty signup submit blocked', vp.name, invalid);
-      }
-    }
+    // A provider click without a role must be refused inline — and must NOT
+    // navigate away to the provider.
+    await modalScope.locator('button:has-text("Continue with GitHub")').first().click();
+    await sleep(800);
+    const roleError = await modalScope.locator('text=/choose Freelance or Hire Talent/i').first().isVisible({ timeout: 2500 }).catch(() => false);
+    record('provider click without a role is blocked', vp.name, roleError && page.url().startsWith(BASE), `url: ${page.url()}`);
   });
   const realErrors = consoleErrors.filter((e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e));
   record('no hard errors in signup flow', vp.name, realErrors.length === 0 && pageErrors.length === 0,
     realErrors.concat(pageErrors).slice(0, 2).join(' | '));
 }
-
 // ─────────────────────────────────────────────────────────────────────────────
-// 4. Auth pages: forgot-password / otp / magic-link
+// 4. Remaining auth pages (email-confirm / verify-email) + removed-route degrade
 // ─────────────────────────────────────────────────────────────────────────────
+// The email/password pages (forgot-password / reset-password / magic-link /
+// otp) were REMOVED — GitHub/LinkedIn is the only auth. Old deep links (from
+// bookmarks or stale emails) must render the app gracefully, never crash.
 const AUTH_PAGES = [
-  {
-    url: '/auth/forgot-password',
-    checks: async (page, vpName) => {
-      const email = page.locator('input[type="email"]').first();
-      const hasEmail = await email.isVisible({ timeout: 5000 }).catch(() => false);
-      record('forgot-password: email field present', vpName, hasEmail);
-      if (!hasEmail) return;
-      const submit = page.locator('button[type="submit"], button:has-text("Send")').first();
-      await submit.click();
-      await sleep(1200);
-      const blocked = await email.evaluate((el) => !el.checkValidity() || el.value === '');
-      const inlineErr = await page.locator('text=/required|valid email|enter your/i').first().isVisible({ timeout: 1500 }).catch(() => false);
-      record('forgot-password: empty submit blocked', vpName, blocked || inlineErr);
-      await email.fill('not-an-email');
-      await submit.click();
-      await sleep(1200);
-      const invalidBlocked = await email.evaluate((el) => !el.checkValidity());
-      const invalidErr = await page.locator('text=/valid email|invalid/i').first().isVisible({ timeout: 1500 }).catch(() => false);
-      record('forgot-password: invalid email blocked', vpName, invalidBlocked || invalidErr);
-    },
-  },
-  {
-    url: '/auth/otp',
-    checks: async (page, vpName) => {
-      // Email-first flow: user enters email, THEN the code input appears.
-      // Sending a real OTP would spam the backend, so only verify the email
-      // field + validation; the code-input step is covered by manual checks.
-      const emailField = page.locator('input[type="email"]').first();
-      const hasEmail = await emailField.isVisible({ timeout: 5000 }).catch(() => false);
-      record('otp: email field present (email-first flow)', vpName, hasEmail);
-      if (hasEmail) {
-        await emailField.fill('not-an-email');
-        const submit = page.locator('button[type="submit"], button:has-text("Send")').first();
-        if (await submit.isVisible().catch(() => false)) {
-          await submit.click();
-          await sleep(1200);
-          const blocked = await emailField.evaluate((el) => !el.checkValidity());
-          const inlineErr = await page.locator('text=/valid email|invalid|required/i').first().isVisible({ timeout: 1500 }).catch(() => false);
-          record('otp: invalid email blocked', vpName, blocked || inlineErr);
-        }
-      }
-    },
-  },
-  {
-    url: '/auth/magic-link',
-    checks: async (page, vpName) => {
-      const email = page.locator('input[type="email"]').first();
-      const hasEmail = await email.isVisible({ timeout: 5000 }).catch(() => false);
-      record('magic-link: email field present', vpName, hasEmail);
-      if (!hasEmail) return;
-      const submit = page.locator('button[type="submit"], button:has-text("Send"), button:has-text("Magic")').first();
-      await submit.click();
-      await sleep(1200);
-      const blocked = await email.evaluate((el) => !el.checkValidity() || el.value === '');
-      record('magic-link: empty submit blocked', vpName, blocked);
-      await email.fill('not-an-email');
-      await submit.click();
-      await sleep(1200);
-      const invalidBlocked = await email.evaluate((el) => !el.checkValidity());
-      record('magic-link: invalid email blocked', vpName, invalidBlocked);
-    },
-  },
+  '/auth/email-confirm',
+  '/auth/verify-email',
+  '/auth/forgot-password', // removed route — must degrade gracefully
 ];
 
 for (const vp of VIEWPORTS) {
-  for (const ap of AUTH_PAGES) {
+  for (const route of AUTH_PAGES) {
     const { consoleErrors, pageErrors } = await withPage(vp, async (page) => {
-      await page.goto(`${BASE}${ap.url}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.goto(`${BASE}${route}`, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await sleep(3000);
-      await ap.checks(page, vp.name);
+      const appAlive = await page.evaluate(() => !!document.querySelector('#root'));
+      record(`page renders app shell: ${route}`, vp.name, appAlive);
     });
     const realErrors = consoleErrors.filter((e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e));
-    record(`auth page clean: ${ap.url}`, vp.name, realErrors.length === 0 && pageErrors.length === 0,
+    record(`auth page clean: ${route}`, vp.name, realErrors.length === 0 && pageErrors.length === 0,
       realErrors.concat(pageErrors).slice(0, 2).join(' | '));
   }
 }
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Report

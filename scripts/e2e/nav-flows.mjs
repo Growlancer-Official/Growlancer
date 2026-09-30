@@ -247,16 +247,13 @@ for (const vp of [MOBILE, DESKTOP]) {
       record('login→signup switch button present', DESKTOP.name, false);
     }
 
-    // Forgot password navigates
-    const forgot = modalScope.locator('button:has-text("Forgot Password?"), a:has-text("Forgot Password?")').first();
-    if (await forgot.isVisible().catch(() => false)) {
-      await forgot.click();
-      await sleep(2000);
-      record('forgot-password navigates to /auth/forgot-password', DESKTOP.name,
-        page.url().includes('/auth/forgot-password'), page.url());
-    } else {
-      record('forgot-password control present', DESKTOP.name, false);
-    }
+    // OAuth-only auth surface: both provider buttons present, no password form.
+    const githubBtn = modalScope.locator('button:has-text("Continue with GitHub")').first();
+    const linkedinBtn = modalScope.locator('button:has-text("Continue with LinkedIn")').first();
+    record('login modal shows GitHub + LinkedIn', DESKTOP.name,
+      (await githubBtn.isVisible().catch(() => false)) && (await linkedinBtn.isVisible().catch(() => false)));
+    record('login modal has NO password form', DESKTOP.name,
+      !(await modalScope.locator('input[type="password"]').first().isVisible().catch(() => false)));
 
     // Escape closes modal (fresh open). Wait for the modal to actually be
     // open first — pressing Escape too early (auth-init window) can race the

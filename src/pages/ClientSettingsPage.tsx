@@ -10,7 +10,7 @@ import { InfoTip } from '../components/InfoTip';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { ReauthDialog } from '../components/ReauthDialog';
 import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../lib/reauth';
-import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
+import { EmailVerificationCard } from '../components/EmailVerificationCard';
 import { IndustrySelect } from '../components/IndustrySelect';
 import { getNameChangeLock } from '../lib/nameChangeLock';
 import { validateOptionalGstin, normalizeGstin } from '../lib/gst';
@@ -181,62 +181,6 @@ export function ClientSettingsPage() {
   const [recoveryCodes, setRecoveryCodes] = useState<string[]>([]);
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  // ── Email verification state ──
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [checkingEmailVerification, setCheckingEmailVerification] = useState(true);
-  const [sendingVerification, setSendingVerification] = useState(false);
-  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function checkEmailVerified() {
-      try {
-        const { data } = await supabase.auth.getUser();
-        setEmailVerified(!!data?.user?.email_confirmed_at);
-      } catch {
-        setEmailVerified(false);
-      } finally {
-        setCheckingEmailVerification(false);
-      }
-    }
-    checkEmailVerified();
-  }, []);
-
-  // Send a fresh verification email (OAuth users with unconfirmed email can
-  // verify later from here — the app never blocks them from the dashboard).
-  const handleSendVerificationEmail = async () => {
-    setSendingVerification(true);
-    setVerificationMessage(null);
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: accountData.email,
-        options: {
-          // 🎯 Confirm link lands on EmailConfirmPage ("close this window")
-          // NO ?type= query — see VerifyEmailPage resend (query suffix breaks
-          // the GoTrue allowlist glob → homepage flash; type arrives in fragment).
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
-        },
-      });
-      if (error) {
-        // Supabase User (not the app's AuthUser) carries app_metadata — fetch
-        // it fresh so OAuth users get a recovery hint instead of a raw error.
-        const { data: meta } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
-        const provider = meta?.user?.app_metadata?.provider as string | undefined;
-        const oauthHint =
-          provider === 'github' || provider === 'linkedin_oidc'
-            ? ` If you signed up with ${provider === 'github' ? 'GitHub' : 'LinkedIn'}, make sure your email is public/verified on the provider, or use Sign up with email instead.`
-            : '';
-        setVerificationMessage(`Could not send verification email: ${error.message}${oauthHint}`);
-      } else {
-        setVerificationMessage('Verification email sent! Check your inbox (and spam folder).');
-      }
-    } catch {
-      setVerificationMessage('Failed to send verification email. Please try again.');
-    } finally {
-      setSendingVerification(false);
-    }
-  };
 
   // ── Billing / Payment Methods state ──
   const [savedCards, setSavedCards] = useState<SavedPaymentCard[]>([]);
@@ -1116,9 +1060,8 @@ export function ClientSettingsPage() {
         </div>
       </div>
 
-      {/* Email verification recommendation — industry-standard: nudge unverified
-          users to confirm their email; hidden automatically once confirmed */}
-      <EmailVerificationBanner />
+      {/* Email verification — real-time status, send/resend any time */}
+      <EmailVerificationCard />
 
       {/* Messages */}
       {successMessage && (
@@ -1393,39 +1336,7 @@ export function ClientSettingsPage() {
                         <p className="font-medium text-slate-900">{accountData.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {checkingEmailVerification ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                      ) : emailVerified ? (
-                        <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
-                          <Check className="w-4 h-4" /> Verified
-                        </span>
-                      ) : (
-                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
-                          <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
-                            <AlertCircle className="w-4 h-4" /> Not Verified
-                          </span>
-                          <button
-                            onClick={handleSendVerificationEmail}
-                            disabled={sendingVerification}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
-                          >
-                            {sendingVerification ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <RefreshCw className="w-4 h-4" />
-                            )}
-                            {sendingVerification ? 'Sending...' : 'Verify Email'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
-                  {verificationMessage && (
-                    <p className={`text-xs mt-2 ${verificationMessage.includes('Could not') || verificationMessage.includes('Failed') ? 'text-red-500' : 'text-emerald-600'}`}>
-                      {verificationMessage}
-                    </p>
-                  )}
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <User className="w-5 h-5 text-slate-400" />

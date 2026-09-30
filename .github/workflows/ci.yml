@@ -109,6 +109,7 @@ jobs:
       E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
       E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
       SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - uses: actions/checkout@v4
@@ -119,7 +120,7 @@ jobs:
       - name: Guard — authenticated-audit secrets present (fail-closed)
         id: e2e_guard
         run: |
-          REQUIRED="SUPABASE_URL SUPABASE_SERVICE_ROLE_KEY E2E_FREELANCER_EMAIL E2E_FREELANCER_PASSWORD E2E_CLIENT_EMAIL E2E_CLIENT_PASSWORD E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD"
+          REQUIRED="SUPABASE_URL VITE_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY E2E_FREELANCER_EMAIL E2E_FREELANCER_PASSWORD E2E_CLIENT_EMAIL E2E_CLIENT_PASSWORD E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD"
 
           # A fork PR structurally cannot read repository secrets. That is the one
           # case where the pass is skipped instead of failing — and it is said out

@@ -94,8 +94,9 @@ const ROUTE_GROUPS = {
     '/certificate', '/verify-certificate', '/certificate/e2e-dummy-code',
   ],
   auth: [
-    '/auth/callback', '/auth/forgot-password', '/auth/reset-password',
-    '/auth/magic-link', '/auth/otp', '/auth/email-confirm', '/auth/verify-email',
+    // Email/password auth pages were removed (GitHub/LinkedIn only) — the
+    // routes are gone from App.tsx, so they are no longer audited as pages.
+    '/auth/callback', '/auth/email-confirm', '/auth/verify-email',
     '/onboarding', '/onboarding/freelancer', '/onboarding/client',
     '/waitlist', '/this-route-does-not-exist',
   ],

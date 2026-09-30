@@ -206,6 +206,17 @@ describe('the E2E seed cannot write to an account it does not own', () => {
     expect(CREATE_ACCOUNTS).toContain('flagged !== true');
   });
 
+  it('consumes the anonymous key it exchanges credentials with', () => {
+    // The token grant is called with the public anon key; a missing key would
+    // make every login attempt fail with a confusing 401 instead of a named
+    // misconfiguration, so the job env carries it and the guard asserts it.
+    const ciGuard = stepBlock(CI, 'Guard — authenticated-audit secrets present (fail-closed)');
+    const required = /REQUIRED="([^"]+)"/.exec(ciGuard)?.[1]?.split(/\s+/) ?? [];
+    expect(required).toContain('VITE_SUPABASE_ANON_KEY');
+    const consumed = jobEnvKeys(CI, 'element-audit');
+    expect(consumed).toContain('VITE_SUPABASE_ANON_KEY');
+  });
+
   it('requires the admin CONSOLE, not just a stored session', () => {
     // A signed-in non-admin gets AdminLoginPage at /admin; auditing that page
     // would report the logged-out surface as green.
@@ -214,14 +225,15 @@ describe('the E2E seed cannot write to an account it does not own', () => {
   });
 
   it('reports the auth endpoint\'s real reason, not a getter\'s source', () => {
-    // Playwright's statusText is a METHOD; stringifying the bare function made a
-    // whole CI run fail with `400 status() { return this._initializer.status; }`.
-    expect(LOGIN).toContain('res.statusText()');
-    // The bare property (function itself) must not come back — asserted as a
-    // shape, since writing it once was exactly the defect.
-    expect(LOGIN).not.toMatch(/res\.statusText(?!\()/);
-    // And it reads the error body, so invalid_credentials is nameable.
+    // login.mjs performs the credential exchange directly against GoTrue
+    // (`POST /auth/v1/token?grant_type=password`) and seeds the session — the
+    // product's sign-in is GitHub/LinkedIn only, so there is no form to fill.
+    expect(LOGIN).toContain('grant_type=password');
+    expect(LOGIN).toContain('addInitScript');
+    // It reads the error body, so invalid_credentials is nameable.
     expect(LOGIN).toMatch(/error_code[\s\S]{0,200}error_description/);
+    // The session it writes must be the real thing, verified in storage.
+    expect(LOGIN).toContain('storageKeyFor');
   });
 });
 
