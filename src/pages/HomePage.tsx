@@ -70,12 +70,13 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
             </div>
 
             <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 opacity-0 translate-y-2 animate-fade-up animation-delay-80 font-display leading-[1.1]">
-              Freelancing,<br />
-              <span className="text-emerald-600">Reinvented with AI</span>
+              Hire the right talent,
+              <br />
+              <span className="text-emerald-600">instantly. With AI.</span>
             </h1>
 
             <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed max-w-lg opacity-0 translate-y-2 animate-fade-up animation-delay-140">
-              <strong className="text-slate-800">Growlancer is an AI-powered freelancing marketplace</strong> that connects talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly — with intelligent matching, protected escrow payments, and a shared workspace.
+              <strong className="text-slate-800">Growlancer</strong> is India's AI-powered freelancing marketplace. AI ranks the best-fit profiles in seconds — not a flood of generic proposals. Protected escrow, a shared workspace, and real-time updates from brief to paid.
             </p>
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-200">
@@ -95,29 +96,38 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
               </button>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-500 opacity-0 translate-y-2 animate-fade-up animation-delay-260">
+            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600 opacity-0 translate-y-2 animate-fade-up animation-delay-260">
               <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="text-emerald-600 w-4 h-4" />
-                <span>No spam proposals</span>
+                <span>Protected escrow</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Clock3 className="text-emerald-600 w-4 h-4" />
-                <span>No endless searching</span>
+                <span>Instant AI matches</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <BadgeCheck className="text-emerald-600 w-4 h-4" />
-                <span>Smarter matches</span>
+                <span>No spam proposals</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Users className="text-emerald-600 w-4 h-4" />
+                <span>Shared workspace</span>
               </span>
             </div>
 
+            {/* Trusted by */}
+            <div className="mt-7 text-xs sm:text-sm text-slate-400 opacity-0 translate-y-2 animate-fade-up animation-delay-300">
+              Trusted by <span className="font-semibold text-slate-600">1000+</span> members across India
+            </div>
+
             {/* Stats Cards */}
-            <div className="mt-8 grid grid-cols-3 gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-320">
+            <div className="mt-6 grid grid-cols-3 gap-2 opacity-0 translate-y-2 animate-fade-up animation-delay-340">
               {[
                 { label: 'For clients', title: 'Shortlist in seconds', desc: 'AI ranks best-fit profiles' },
                 { label: 'For freelancers', title: 'Get discovered', desc: 'Matched to relevant work' },
                 { label: 'For teams', title: 'One workspace', desc: 'Escrow, files, feedback' },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl bg-white ring-1 ring-slate-200/70 p-3.5 shadow-sm hover:shadow-md hover:ring-emerald-200/50 transition-all duration-200">
+                <div key={item.label} className="rounded-xl bg-white ring-1 ring-slate-200/70 p-3 shadow-sm hover:shadow-md hover:ring-emerald-200/50 transition-all duration-200">
                   <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{item.label}</div>
                   <div className="mt-1 text-sm font-semibold tracking-tight text-slate-900">{item.title}</div>
                   <div className="mt-0.5 text-xs text-slate-500">{item.desc}</div>
@@ -753,7 +763,10 @@ function LiveServicesSection() {
         const { data } = await supabase
           .from('services')
           .select('id, title, category, image_url, price, packages, created_at, freelancer:profiles!services_freelancer_id_fkey(name, avatar)')
-          .eq('active', true)
+          // `status` is the source of truth (matches ServiceDetailPage) — the
+          // old `active`-only filter listed services the freelancer had
+          // deactivated, because the dashboard toggle writes only `status`.
+          .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(8);
         if (mounted && data) setServices(data as unknown as LiveService[]);
@@ -771,7 +784,14 @@ function LiveServicesSection() {
       .channel('homepage-live-services')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'services', filter: 'active=eq.true' },
+        { event: 'INSERT', schema: 'public', table: 'services', filter: 'status=eq.active' },
+        () => void load()
+      )
+      .on(
+        'postgres_changes',
+        // UPDATE matters: a freelancer DEACTIVATING a service must drop it off
+        // the homepage in real time, not just new publications appearing.
+        { event: 'UPDATE', schema: 'public', table: 'services' },
         () => void load()
       )
       .on(

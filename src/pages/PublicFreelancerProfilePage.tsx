@@ -229,7 +229,10 @@ export function PublicFreelancerProfilePage() {
             .from('services')
             .select('id, title, description, category, image_url, price, packages, delivery_days, revisions, extra_revision_price, tags, active')
             .eq('freelancer_id', userKey)
-            .eq('active', true)
+            // `status` is the source of truth (matches the detail page) — the
+            // old `active`-only filter showed services the freelancer had
+            // deactivated (the dashboard toggle writes only `status`).
+            .eq('status', 'active')
             .order('created_at', { ascending: false }),
         ]);
 

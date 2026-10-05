@@ -116,10 +116,26 @@ export function AIGenerateModal({
         body: { field, input: prompt, context: context ?? {} },
       });
       if (invokeError) {
-        const msg = (data as any)?.error || 'AI generation failed. Please try again.';
+        // functions.invoke returns data=null for every non-2xx response in this
+        // supabase-js version (it throws FunctionsHttpError BEFORE parsing the
+        // body) — the real payload (limit messages, used/limit) lives on
+        // error.context, the raw Response. Reading it is what makes 429 quota
+        // errors show their real message + meter update instead of the generic
+        // "AI generation failed" that looked like a broken generator.
+        let payload: Record<string, unknown> | null = null;
+        const ctx = (invokeError as unknown as { context?: Response }).context;
+        if (ctx && typeof ctx.json === 'function') {
+          payload = await ctx.json().catch(() => null);
+        }
+        console.error('AI generation failed:', invokeError.message, payload ?? '');
+        const msg = (payload?.error as string) || 'AI generation failed. Please try again.';
         if (msg === 'daily_limit_reached' || msg === 'fair_use_limit_reached') {
-          setError((data as any)?.message || 'Daily AI writing limit reached.');
-          reportUsage({ isPro: !!(data as any)?.isPro, used: (data as any)?.used ?? (data as any)?.limit ?? 5, limit: (data as any)?.limit ?? 5 });
+          setError((payload?.message as string) || 'Daily AI writing limit reached.');
+          reportUsage({
+            isPro: !!(payload?.isPro),
+            used: (payload?.used as number) ?? (payload?.limit as number) ?? 5,
+            limit: (payload?.limit as number) ?? 5,
+          });
         } else {
           setError(msg);
         }

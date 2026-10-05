@@ -56,7 +56,10 @@ export function ServicesCatalogPage() {
           *,
           freelancer:profiles!services_freelancer_id_fkey(name, avatar, rating)
         `)
-        .eq('active', true);
+        // `status` is the source of truth (matches ServiceDetailPage). The old
+        // `active`-only filter listed services the freelancer had DEACTIVATED,
+        // because the dashboard toggle wrote only `status`.
+        .eq('status', 'active');
 
       if (maxPrice) query = query.lte('price', Number(maxPrice));
 

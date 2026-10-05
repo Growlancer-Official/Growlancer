@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase';
+import { useProStatus } from '../hooks/useProStatus';
 import { useToast } from './Toast';
 import { TipNote } from './TipNote';
 import type { SupportOption, SupportTopic } from '../lib/supportTopics';
@@ -44,6 +45,9 @@ interface AIChatSupportProps {
 
 export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', chatMode: explicitMode, supportTopics = [] }: AIChatSupportProps) {
   const { user } = useAuth();
+  // Real-time Pro status — Pro freelancers have unlimited AI messages, so the
+  // usage meter must NOT render for them (a "0/10" bar would be a lie).
+  const { isPro: userIsPro } = useProStatus();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -127,34 +131,43 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
     }
   }, [messages, user, context, chatMode, CHAT_STORAGE_KEY]);
 
-  // Fetch AI usage stats for freelancers (free tier limit display)
-  useEffect(() => {
+  // Fetch AI usage stats for freelancers (free tier limit display). Exposed as
+  // a callback so the meter also refreshes AFTER each message — the server
+  // logs usage server-side, and the old mount-only fetch meant the bar never
+  // moved while chatting ("rate limit not working in real time").
+  const refreshAiUsage = useCallback(async () => {
     if (!user || context !== 'freelancer') return;
-    const fetchUsage = async () => {
-      try {
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
-        // Aggregate across rows — usage_logs can hold several rows per month,
-        // and maybeSingle() would throw once a second row exists (usage meter
-        // would silently stop showing).
-        const { data: rows } = await supabase
-          .from('usage_logs')
-          .select('usage_count')
-          .eq('user_id', user.id)
-          .eq('feature_type', 'ai_message')
-          .gte('created_at', startOfMonth.toISOString());
-        const used = (rows || []).reduce(
-          (sum, r) => sum + (Number((r as { usage_count?: number }).usage_count) || 0),
-          0
-        );
-        setAiUsage({ used, limit: 10 });
-      } catch {
-        // non-critical
-      }
-    };
-    void fetchUsage();
+    try {
+      const startOfMonth = new Date();
+      startOfMonth.setDate(1);
+      startOfMonth.setHours(0, 0, 0, 0);
+      // Aggregate across rows — usage_logs can hold several rows per month,
+      // and maybeSingle() would throw once a second row exists (usage meter
+      // would silently stop showing).
+      const { data: rows, error } = await supabase
+        .from('usage_logs')
+        .select('usage_count')
+        .eq('user_id', user.id)
+        // Must match the ai-assistant edge function's feature_type ('ai_assistant'):
+        // the usage_logs CHECK constraint only allows ai_chat/ai_matching/
+        // ai_assistant/profile_view — the old ai_message value never inserted.
+        .eq('feature_type', 'ai_assistant')
+        .gte('created_at', startOfMonth.toISOString());
+      if (error) throw error;
+      const used = (rows || []).reduce(
+        (sum, r) => sum + (Number((r as { usage_count?: number }).usage_count) || 0),
+        0
+      );
+      setAiUsage({ used, limit: 10 });
+    } catch (err) {
+      // non-critical — but log so a broken meter is discoverable
+      console.error('Failed to fetch AI usage:', err);
+    }
   }, [user, context]);
+
+  useEffect(() => {
+    void refreshAiUsage();
+  }, [refreshAiUsage]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -248,6 +261,11 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
+        // 429 message_limit carries the authoritative used/limit — sync the
+        // meter immediately instead of waiting for the next fetch.
+        if (data?.code === 'message_limit' && typeof data.used === 'number') {
+          setAiUsage({ used: data.used, limit: data.limit ?? 10 });
+        }
         throw new Error(data.error || 'Failed to get AI response');
       }
 
@@ -330,6 +348,10 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         )
       );
       setStreamingContent('');
+
+      // Real-time meter — the server just logged this message; reflect it now
+      // instead of waiting for the next mount.
+      void refreshAiUsage();
 
       // ⚠️ Usage is recorded SERVER-SIDE by the ai-assistant edge function (for
       // non-Pro users). Do NOT insert another usage_logs row here — that would
@@ -580,7 +602,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
             <strong>AI Support</strong> tab for account, payment or dispute issues — your conversations stay separate and private.
           </TipNote>
         )}
-        {chatMode === 'assistant' && context === 'freelancer' && aiUsage && (
+        {chatMode === 'assistant' && context === 'freelancer' && aiUsage && !userIsPro && (
           <div className="flex items-center justify-between mt-2 px-1">
             <div className="flex items-center gap-2">
               <div className="w-full bg-slate-100 rounded-full h-1.5 w-32">

@@ -112,9 +112,18 @@ async function checkRateLimit(
   return true;
 }
 
+// usage_logs.feature_type value for the AI assistant. The table's CHECK
+// constraint (usage_logs_feature_type_check) only allows ai_chat / ai_matching
+// / ai_assistant / profile_view. The old ai_message value violated the
+// constraint on EVERY insert (silently — the error was never checked), so
+// usage never accumulated and the monthly limit could never fire.
+const AI_USAGE_FEATURE = 'ai_assistant';
+
 /**
  * Freelancer AI message limit: free users get 10 messages/month,
  * Pro subscribers (₹299/month) get unlimited. Clients are always free.
+ * Reads SUM across rows — usage_logs legally holds several rows per
+ * (user, month); maybeSingle() would break once a second row exists.
  */
 async function checkMessageLimit(
   supabase: ReturnType<typeof createClient>,
@@ -144,15 +153,21 @@ async function checkMessageLimit(
   startOfMonth.setDate(1);
   startOfMonth.setHours(0, 0, 0, 0);
 
-  const { data: usage } = await supabase
+  const { data: usageRows, error: usageReadError } = await supabase
     .from('usage_logs')
     .select('usage_count')
     .eq('user_id', userId)
-    .eq('feature_type', 'ai_message')
-    .gte('created_at', startOfMonth.toISOString())
-    .maybeSingle();
+    .eq('feature_type', AI_USAGE_FEATURE)
+    .gte('created_at', startOfMonth.toISOString());
 
-  const used = usage?.usage_count ?? 0;
+  if (usageReadError) {
+    console.error('[ai-assistant] usage read failed:', usageReadError.message);
+  }
+
+  const used = (usageRows ?? []).reduce(
+    (sum, row) => sum + (Number((row as { usage_count?: number }).usage_count) || 0),
+    0
+  );
   const limit = 10;
 
   return { allowed: used < limit, isPro: false, used, limit };
@@ -363,28 +378,21 @@ Deno.serve(async (req: Request) => {
       }
     }
 
-    // Log AI usage for freelancers (server-side only)
+    // Log AI usage for freelancers (server-side only). One row per message —
+    // race-free under concurrent sends, and the limit-read sums across rows.
+    // The insert error is CHECKED and LOUD: the old code ignored it, which is
+    // exactly how a CHECK-constraint violation silently disabled this quota.
     if (user_role === 'freelancer' && !isPro) {
-      const startOfMonth = new Date();
-      startOfMonth.setDate(1);
-      startOfMonth.setHours(0, 0, 0, 0);
-      // Upsert: increment usage_count for this month
-      const { data: existing } = await supabase
+      const { error: usageInsertError } = await supabase
         .from('usage_logs')
-        .select('id, usage_count')
-        .eq('user_id', user_id)
-        .eq('feature_type', 'ai_message')
-        .gte('created_at', startOfMonth.toISOString())
-        .maybeSingle();
-      if (existing) {
-        await supabase
-          .from('usage_logs')
-          .update({ usage_count: (existing.usage_count ?? 0) + 1 })
-          .eq('id', existing.id);
-      } else {
-        await supabase
-          .from('usage_logs')
-          .insert({ user_id, feature_type: 'ai_message', usage_count: 1 });
+        .insert({
+          user_id,
+          feature_type: AI_USAGE_FEATURE,
+          usage_count: 1,
+          metadata: { route: ROUTE, recorded_at: new Date().toISOString() },
+        });
+      if (usageInsertError) {
+        console.error('[ai-assistant] usage log insert failed:', usageInsertError.message);
       }
     }
 

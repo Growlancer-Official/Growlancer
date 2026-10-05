@@ -118,9 +118,13 @@ export function ServicesPage() {
   const handleToggleStatus = async (service: Tables<'services'>) => {
     try {
       const newStatus = service.status === 'active' ? 'inactive' : 'active';
+      // Write BOTH columns: public surfaces (catalog, homepage, profiles) and
+      // the detail page read `status`, while legacy consumers read the boolean
+      // `active`. Updating only one let a "deactivated" service keep selling
+      // publicly (active stayed true).
       const { error } = await supabase
         .from('services')
-        .update({ status: newStatus })
+        .update({ status: newStatus, active: newStatus === 'active' } as any)
         .eq('id', service.id);
 
       if (error) throw error;

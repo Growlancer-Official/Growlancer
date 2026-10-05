@@ -338,11 +338,13 @@ const subscriptionService = {
       // Aggregate: usage_logs can legally hold MULTIPLE rows per (user, month)
       // (each billing/tracking pass inserts its own row). maybeSingle() would
       // error on the second row and silently kill the usage meter — sum instead.
+      // feature_type must match the ai-assistant edge function ('ai_assistant') —
+      // the usage_logs CHECK constraint rejects any other value.
       const { data: usageRows, error: usageError } = await supabase
         .from('usage_logs')
         .select('usage_count')
         .eq('user_id', userId)
-        .eq('feature_type', 'ai_message')
+        .eq('feature_type', 'ai_assistant')
         .gte('created_at', startOfMonth.toISOString());
 
       if (usageError) throw usageError;

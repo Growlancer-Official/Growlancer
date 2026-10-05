@@ -211,20 +211,25 @@ Deno.serve(async (req: Request) => {
         : FREE_DAILY_LIMIT;
 
     // ─── DAILY USAGE (rate_limits, window = UTC day) ───
+    // Read the accumulated `count` column — NOT the row count. rate_limits has
+    // UNIQUE (identifier, route, window_start), so there is exactly ONE row
+    // per user/route/day; counting rows always yields ≤ 1, which is how the
+    // old check could never fire (the cap was decorative).
     const windowStart = todayStart();
     try {
       await supabase.rpc('cleanup_expired_rate_limits');
     } catch {
       // Non-critical
     }
-    const { count, error: countError } = await supabase
+    const { data: usageRow, error: countError } = await supabase
       .from('rate_limits')
-      .select('*', { count: 'exact', head: true })
+      .select('count')
       .eq('identifier', user_id)
       .eq('route', ROUTE)
-      .gte('window_start', windowStart);
+      .gte('window_start', windowStart)
+      .maybeSingle();
 
-    const used = count ?? 0;
+    const used = Number(usageRow?.count ?? 0);
     if (!countError && used >= limit) {
       return json(429, {
         error: clientFree ? 'fair_use_limit_reached' : 'daily_limit_reached',
@@ -240,15 +245,24 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const insertRes = await supabase
-      .from('rate_limits')
-      .upsert(
-        { identifier: user_id, route: ROUTE, count: 1, window_start: windowStart },
-        { onConflict: 'identifier,route,window_start' }
-      );
-    if (insertRes.error) {
-      console.error('[ai-writer] usage insert failed:', insertRes.error.message);
+    // Atomic increment via the server-only SECURITY DEFINER RPC. The old
+    // `{ count: 1 }` upsert RESET the counter to 1 on every generation
+    // (unique key above), so nothing ever accumulated and `used >= limit`
+    // could never be true. increment_rate_limit does count = count + 1 and
+    // returns the new value; if it ever fails, log LOUDLY and degrade to the
+    // pre-increment estimate rather than silently skipping accounting.
+    const { data: incrementedCount, error: incrementError } = await supabase
+      .rpc('increment_rate_limit', {
+        p_identifier: user_id,
+        p_route: ROUTE,
+        p_window_start: windowStart,
+      });
+    if (incrementError) {
+      console.error('[ai-writer] usage increment failed:', incrementError.message);
     }
+    const usedAfter = typeof incrementedCount === 'number'
+      ? incrementedCount
+      : used + 1;
 
     // ─── GENERATE ───
     const { system, user } = buildPrompt(field, input, context);
@@ -271,7 +285,7 @@ Deno.serve(async (req: Request) => {
       return json(502, { error: 'AI returned an empty response. Please try again.' });
     }
 
-    return json(200, { success: true, text, isPro, used: used + 1, limit, remaining: Math.max(0, limit - (used + 1)), freeForClients: clientFree });
+    return json(200, { success: true, text, isPro, used: usedAfter, limit, remaining: Math.max(0, limit - usedAfter), freeForClients: clientFree });
   } catch (err) {
     console.error('[ai-writer] unexpected error:', err?.message || err);
     return json(500, { error: 'Something went wrong. Please try again.' });
