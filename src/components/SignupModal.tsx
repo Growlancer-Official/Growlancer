@@ -212,9 +212,8 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
             </label>
           </div>
           {role === null && (
-            <p className="text-xs text-orange-500 font-medium ml-1 flex items-center gap-1">
-              <AlertCircle className="w-3.5 h-3.5" />
-              Please select a role to continue
+            <p className="text-xs text-slate-400 ml-1">
+              Choose one to continue — the providers stay locked until you do.
             </p>
           )}
         </div>

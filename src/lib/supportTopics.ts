@@ -172,17 +172,17 @@ export const FREELANCER_SUPPORT_TOPICS: SupportTopic[] = [
       {
         text: 'What\u2019s going on with your account?',
         options: [
-          { label: 'I can\u2019t log in / forgot password', next: 1 },
+          { label: 'I can\u2019t log in', next: 1 },
           { label: 'Email verification issues', next: 2 },
         ],
       },
       {
-        text: 'Use **Forgot password** on the login screen to reset your password instantly — you\u2019ll receive a reset link via email. Check your spam folder if it doesn\u2019t arrive within a few minutes. You can also try logging in with LinkedIn or GitHub if you linked those during signup.',
-        options: [{ label: 'Got it — thanks!', done: 'Password resets are instant — check your email and follow the link. You\u2019ll be back in no time! 🔐' }, { label: 'Email issues', next: 2 }],
+        text: 'Growlancer signs you in with **GitHub** or **LinkedIn** — we never store a password for your account, so there is nothing to reset here. If you can\u2019t sign in, make sure you\u2019re still able to log in to your GitHub/LinkedIn account (recover it on their site if needed), then come back and continue with the same provider you used to sign up.',
+        options: [{ label: 'Got it — thanks!', done: 'Use the same GitHub/LinkedIn account you signed up with and you\u2019re back in — no password involved. 🔐' }, { label: 'Email issues', next: 2 }],
       },
       {
-        text: 'For email verification, check your inbox (and spam folder) for the verification email. You can resend it from the login page by clicking **Resend Verification**. If you signed up with LinkedIn or GitHub, your email is already verified through OAuth.',
-        options: [{ label: 'Got it — thanks!', done: 'Email verification is quick — check your inbox and click the link. If you used LinkedIn/GitHub, you\u2019re already verified! ✅' }],
+        text: 'If you signed up with LinkedIn or GitHub, your email is already verified through OAuth — nothing to do. For older email/password accounts, check your inbox (and spam folder) for the verification email; you can see live verification status and resend it from the **Email verification** card in your account settings.',
+        options: [{ label: 'Got it — thanks!', done: 'LinkedIn/GitHub sign-ups are verified automatically. Older accounts can resend from the settings card. ✅' }],
       },
     ],
   },
