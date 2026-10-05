@@ -279,14 +279,29 @@ async function main() {
   await page.waitForFunction(() => !document.getElementById('boot-overlay'), { timeout: 15000 }).catch(() => {});
   let reentryBlocked = false;
   let reentryState = '';
-  const reentryDeadline = Date.now() + 15000;
+  // A cold load on a congested runner can sit on the boot overlay (SPA fallback
+  // serves homepage HTML, then #root is cleared until React mounts) far longer
+  // than the guard needs to paint once it actually boots. Un-booted or empty
+  // time must not eat the guard window — extend it (bounded) instead of
+  // failing on a page that never got its chance to render. Real failures
+  // (dashboard text visible without the guard) never extend anything.
+  const REENTRY_HARD_CAP = Date.now() + 60000;
+  let reentryDeadline = Math.min(Date.now() + 15000, REENTRY_HARD_CAP);
   while (Date.now() < reentryDeadline && !reentryBlocked) {
     const s = await page
-      .evaluate(() => ({ path: location.pathname, text: (document.body.innerText || '').slice(0, 600) }))
+      .evaluate(() => ({
+        path: location.pathname,
+        text: (document.body.innerText || '').slice(0, 600),
+        booting: !!document.getElementById('boot-overlay'),
+      }))
       .catch(() => null);
     if (s) {
-      reentryState = `path=${s.path}`;
+      const bodySnippet = s.text ? s.text.replace(/\s+/g, ' ').slice(0, 120) : 'empty';
+      reentryState = `path=${s.path} boot=${s.booting ? 'visible' : 'gone'} body="${bodySnippet}"`;
       reentryBlocked = LOGGED_OUT_GUARD.test(s.text) || (s.path !== '' && !s.path.startsWith(CFG.dash));
+      if (!reentryBlocked && (s.booting || !s.text)) {
+        reentryDeadline = Math.min(Date.now() + 15000, REENTRY_HARD_CAP);
+      }
     }
     if (!reentryBlocked) await page.waitForTimeout(500);
   }
