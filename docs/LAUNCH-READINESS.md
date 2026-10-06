@@ -239,7 +239,7 @@ runs green on every push.)
 | Cron payouts | service-role milestone release now credits for real (`credited=5000.00`, previously `false / 0.00`) | pentest script (service-role leg) |
 | Frontend health | live site loads with **0 console errors**; all assets and public RPCs return 200 | open the site, watch the console |
 | Browser layer (element + logout) | anonymous **336 loads / 0 flags** at 375/768/1280; authenticated dashboard **72/0** + client **72/0** + admin **51/0**; logout-security **5/5 × 3 roles**; seed→teardown leaves 0 accounts behind | CI run `36237099675`, or locally: `PORT=4174 node server.js` → `node scripts/e2e/login.mjs --all --require-all` → the audit/logout scripts |
-| Build health | typecheck + lint + **275 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
+| Build health | typecheck + lint + **284 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards — currently **0 findings, 0 open alerts** | `select public.check_security_drift();` |
 
 ---
