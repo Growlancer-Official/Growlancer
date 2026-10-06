@@ -290,6 +290,45 @@ function scanSql(sql: string): Problem[] {
   return problems;
 }
 
+/**
+ * Finds fail-closed signature assertions that are GUARANTEED to fail: they
+ * compare `pg_get_function_identity_arguments()` against a hand-written string
+ * that uses a type ALIAS. Postgres prints the CANONICAL spelling, so
+ * `'p_window_start timestamptz'` is compared against
+ * `'p_window_start timestamp with time zone'` and the assertion fires on every
+ * run — the migration can never apply. That is the opposite of fail-closed.
+ *
+ * 20270119000022 shipped exactly this and the deploy aborted at `db push`
+ * (SQLSTATE P0001) before a single statement reached the database. The correct
+ * pattern — already used by 20270119000009 — resolves the function by OID with
+ * `to_regprocedure(...)`. Line comments are stripped first so prose that merely
+ * names the helper cannot trip the check.
+ */
+const NORMALIZED_TYPE_ALIASES = [
+  'int', 'int2', 'int4', 'int8', 'bool', 'float4', 'float8',
+  'timetz', 'timestamptz', 'varchar', 'char', 'bpchar', 'decimal',
+];
+
+function identityArgAliasAssertions(sql: string): string[] {
+  const stripped = sql.replace(/--[^\n]*/g, '');
+  const findings: string[] = [];
+  const re = /pg_get_function_identity_arguments\s*\([^)]*\)\s*=\s*'([^']*)'/gi;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(stripped)) !== null) {
+    const args = m[1];
+    const index = m.index;
+    const alias = NORMALIZED_TYPE_ALIASES.find((a) => new RegExp(`\\b${a}\\b`, 'i').test(args));
+    if (alias) {
+      const line = stripped.slice(0, index).split('\n').length;
+      findings.push(
+        `line ${line}: identity-args assertion against '${args}' uses the alias '${alias}' — ` +
+          `Postgres prints the canonical type name, so this can never match (resolve by OID instead)`,
+      );
+    }
+  }
+  return findings;
+}
+
 describe('SQL migrations are lexically well-formed', () => {
   const files = sqlFiles(SQL_ROOT);
 
@@ -385,5 +424,36 @@ describe('SQL migrations are lexically well-formed', () => {
     ].join('\n');
 
     expect(scanSql(fixed)).toEqual([]);
+  });
+
+  it('no migration asserts identity arguments against a normalized type alias', () => {
+    const offenders: string[] = [];
+    for (const file of files) {
+      for (const finding of identityArgAliasAssertions(fs.readFileSync(file, 'utf8'))) {
+        offenders.push(`${path.relative(ROOT, file).replace(/\\/g, '/')} ${finding}`);
+      }
+    }
+    expect(
+      offenders,
+      `\nA fail-closed assertion that is wrong about its own schema is not fail-closed — it just fails.\n` +
+        offenders.join('\n') +
+        '\n',
+    ).toEqual([]);
+  });
+
+  it('the alias detector catches the 20270119000022 defect (and prose does not trip it)', () => {
+    const defect =
+      '  and pg_get_function_identity_arguments(p.oid)\n' +
+      "        = 'p_identifier text, p_route text, p_window_start timestamptz'";
+    expect(identityArgAliasAssertions(defect)).toHaveLength(1);
+
+    // the OID-based spelling must pass
+    const oidFix = "  if to_regprocedure('public.increment_rate_limit(text,text,timestamptz)') is null then";
+    expect(identityArgAliasAssertions(oidFix)).toEqual([]);
+
+    // a line comment that merely names the helper must not be flagged
+    expect(
+      identityArgAliasAssertions("-- pg_get_function_identity_arguments(p.oid) = 'p_x timestamptz'"),
+    ).toEqual([]);
   });
 });

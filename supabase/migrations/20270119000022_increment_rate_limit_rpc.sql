@@ -45,15 +45,12 @@ grant execute on function public.increment_rate_limit(text, text, timestamptz) t
 -- must be executable by service_role, and must NOT be callable by anon.
 do $$
 begin
-  if not exists (
-    select 1
-    from pg_proc p
-    join pg_namespace n on n.oid = p.pronamespace
-    where n.nspname = 'public'
-      and p.proname = 'increment_rate_limit'
-      and pg_get_function_identity_arguments(p.oid)
-            = 'p_identifier text, p_route text, p_window_start timestamptz'
-  ) then
+  -- Resolve by OID via to_regprocedure — NEVER string-match the argument list.
+  -- pg_get_function_identity_arguments prints `timestamp with time zone` for
+  -- `timestamptz`, so a guessed string is wrong about its own schema and turns
+  -- a fail-closed assertion into a guaranteed failure on every run (the exact
+  -- lesson from the 20270119000019 signature assertion).
+  if to_regprocedure('public.increment_rate_limit(text,text,timestamptz)') is null then
     raise exception 'increment_rate_limit was not created with the expected signature';
   end if;
 

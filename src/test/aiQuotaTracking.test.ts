@@ -97,6 +97,10 @@ describe('ai-writer daily quota (atomic increment)', () => {
     expect(migration).toMatch(/revoke execute .* from authenticated/);
     expect(migration).toMatch(/grant execute .* to service_role/);
     expect(migration).toContain('raise exception');
+    // The signature assertion must resolve the function by OID. String-matching
+    // pg_get_function_identity_arguments is wrong for `timestamptz` (Postgres
+    // prints "timestamp with time zone"), which aborted the deploy at `db push`.
+    expect(migration).toContain("to_regprocedure('public.increment_rate_limit(text,text,timestamptz)')");
   });
 });
 
