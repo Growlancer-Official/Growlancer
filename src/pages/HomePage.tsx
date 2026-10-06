@@ -30,15 +30,20 @@ const CARD_CLASS = 'rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm';
 // ═══════════════════════════════════════════════════════════════
 // Hero Section
 // ═══════════════════════════════════════════════════════════════
-function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
+function HeroSection({
+  onOpenSignup,
+  members,
+  countries,
+}: {
+  onOpenSignup: (role?: 'freelancer' | 'client') => void;
+  // Supplied by HomePage from its single live-metrics instance: the hero trust
+  // line shows the real member/country counts, never a hardcoded number.
+  members: number | null;
+  countries: number | null;
+}) {
   const [videoFailed, setVideoFailed] = useState(false);
   const { isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
-  // Live public metrics — the hero's social-proof line shows the real member
-  // and country counts (honest-metrics rule), never a hardcoded number.
-  const { raw } = useAboutPageMetrics();
-  const members = raw.members;
-  const countries = raw.countries;
 
   const handleStartHiring = () => {
     if (isAuthenticated && role === 'client') {
@@ -532,8 +537,15 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
 // ═══════════════════════════════════════════════════════════════
 // Client Section
 // ═══════════════════════════════════════════════════════════════
-function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
-  const { stats: metrics } = useAboutPageMetrics();
+function ClientSection({
+  onOpenSignup,
+  metrics,
+}: {
+  onOpenSignup: (role?: 'freelancer' | 'client') => void;
+  // Supplied by HomePage so the homepage runs ONE metrics instance, not two
+  // (each instance polls the RPC and holds a realtime subscription).
+  metrics: Array<{ value: string; label: string }>;
+}) {
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
@@ -1388,6 +1400,10 @@ function CTASection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'cl
 // ═══════════════════════════════════════════════════════════════
 export function HomePage() {
   const navigate = useNavigate();
+  // ONE live-metrics instance for the whole homepage: the hero trust line and
+  // the client stat cards both read it, so the RPC and realtime subscription
+  // are not duplicated per section.
+  const { stats: metrics, raw } = useAboutPageMetrics();
 
   const handleOpenSignup = (role?: 'freelancer' | 'client') => {
     navigate('/?modal=signup&role=' + (role || 'freelancer'));
@@ -1395,13 +1411,13 @@ export function HomePage() {
 
   return (
     <div id="top">
-      <HeroSection onOpenSignup={handleOpenSignup} />
+      <HeroSection onOpenSignup={handleOpenSignup} members={raw.members} countries={raw.countries} />
       {/* 🔴 Live Browse Services — right under the hero (homepage header area) */}
       <LiveServicesSection />
       <HowItWorksSection />
       <WhyDifferentSection />
       <FreelancerSection onOpenSignup={handleOpenSignup} />
-      <ClientSection onOpenSignup={handleOpenSignup} />
+      <ClientSection onOpenSignup={handleOpenSignup} metrics={metrics} />
       <CategoriesSection onOpenSignup={handleOpenSignup} />
       <TeamProjectsSection onOpenSignup={handleOpenSignup} />
       <FeaturesSection />

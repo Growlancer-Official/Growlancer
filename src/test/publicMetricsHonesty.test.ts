@@ -37,4 +37,11 @@ describe('homepage social proof is DB-backed', () => {
   it('hides the line until the real number arrives (no placeholder number)', () => {
     expect(home).toMatch(/\{members !== null && \(/);
   });
+
+  it('runs exactly ONE metrics instance (each one polls and subscribes)', () => {
+    // The hero and the client section both need these numbers; sharing one
+    // instance keeps a homepage visit to one RPC + one realtime subscription
+    // instead of two of each.
+    expect(home.match(/useAboutPageMetrics\(\)/g) ?? []).toHaveLength(1);
+  });
 });
