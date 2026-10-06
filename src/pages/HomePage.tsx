@@ -34,6 +34,11 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
   const [videoFailed, setVideoFailed] = useState(false);
   const { isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
+  // Live public metrics — the hero's social-proof line shows the real member
+  // and country counts (honest-metrics rule), never a hardcoded number.
+  const { raw } = useAboutPageMetrics();
+  const members = raw.members;
+  const countries = raw.countries;
 
   const handleStartHiring = () => {
     if (isAuthenticated && role === 'client') {
@@ -115,10 +120,18 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
               </span>
             </div>
 
-            {/* Trusted by */}
-            <div className="mt-7 text-xs sm:text-sm text-slate-400 opacity-0 translate-y-2 animate-fade-up animation-delay-300">
-              Trusted by <span className="font-semibold text-slate-600">1000+</span> members across India
-            </div>
+            {/* Trusted by — DB-backed count from get_public_platform_metrics()
+                (same source as the About page). Renders nothing until the real
+                number arrives, so no visitor ever sees an inflated claim. */}
+            {members !== null && (
+              <div className="mt-7 text-xs sm:text-sm text-slate-400 opacity-0 translate-y-2 animate-fade-up animation-delay-300">
+                Trusted by <span className="font-semibold text-slate-600">{members.toLocaleString('en-US')}</span>{' '}
+                member{members === 1 ? '' : 's'}
+                {countries !== null && countries > 0
+                  ? <> across {countries.toLocaleString('en-US')} {countries === 1 ? 'country' : 'countries'}</>
+                  : null}
+              </div>
+            )}
 
             {/* Stats Cards */}
             <div className="mt-6 grid grid-cols-3 gap-2 opacity-0 translate-y-2 animate-fade-up animation-delay-340">
