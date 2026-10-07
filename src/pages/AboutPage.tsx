@@ -177,8 +177,10 @@ export function AboutPage() {
               We built Growlancer to consolidate this flow. In our system, the contract dashboard <strong>is</strong> the collaborative workspace. When a service is purchased or a milestone funds, a gorgeous glassmorphic canvas instantly spins up with multi-second syncing, task controls, welcome templates, and structured escrow release locks.
             </p>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-emerald-600/10 rounded-[3rem] blur-3xl -rotate-6"></div>
+          <div className="relative overflow-hidden">
+            {/* decorative glow: clipped so its rotated bounding box can never push
+                past the viewport edge on mobile (element-audit group `public`) */}
+            <div className="pointer-events-none absolute inset-0 bg-emerald-600/10 rounded-[3rem] blur-3xl -rotate-6"></div>
             <div className="relative bg-white rounded-[3rem] p-4 border border-slate-200/50 shadow-lg space-y-4">
               <div className="flex gap-1.5">
                 <span className="w-3.5 h-3.5 rounded-full bg-red-400"></span>
