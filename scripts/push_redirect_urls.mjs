@@ -57,7 +57,34 @@ const REDIRECT_URLS = [
   'http://localhost:5173/auth/email-confirm',
 ];
 
-const SITE_URL = 'https://growlancer.vercel.app';
+/**
+ * Canonical origin for Supabase Auth. Drives `site_url` (where verification and
+ * password-reset emails send the user back to) and the OAuth probe target.
+ * Reads APP_URL so the custom-domain switch stays a single variable, matching
+ * supabase/functions/_shared/site.ts.
+ *
+ * NEVER guesses: a malformed value would be written straight to the live
+ * `site_url` and would break every auth email link, so this fails closed.
+ */
+function resolveSiteUrl() {
+  const raw = (getEnv('APP_URL') || '').trim();
+  if (!raw) return 'https://growlancer.com';
+  let parsed;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    console.error(`❌ APP_URL is not an absolute URL: ${JSON.stringify(raw)}`);
+    console.error('   Use a full origin, e.g. https://growlancer.com');
+    process.exit(1);
+  }
+  if (!/^https?:$/.test(parsed.protocol)) {
+    console.error(`❌ APP_URL must be http(s), got "${parsed.protocol}"`);
+    process.exit(1);
+  }
+  return parsed.origin;
+}
+
+const SITE_URL = resolveSiteUrl();
 
 async function main() {
   console.log('🔧 Pushing Supabase Auth redirect URLs to production...');

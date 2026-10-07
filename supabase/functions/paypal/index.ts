@@ -4,6 +4,7 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { SITE_URL } from '../_shared/site.ts'
 
 // PayPal API configuration
 const PAYPAL_CLIENT_ID = Deno.env.get('PAYPAL_CLIENT_ID') || '';
@@ -389,8 +390,8 @@ serve(async req => {
               brand_name: 'Growlancer',
               landing_page: 'LOGIN',
               user_action: 'PAY_NOW',
-              return_url: `${Deno.env.get('APP_URL') || 'https://growlancer.vercel.app'}/payment/success`,
-              cancel_url: `${Deno.env.get('APP_URL') || 'https://growlancer.vercel.app'}/payment/cancel`,
+              return_url: `${SITE_URL}/payment/success`,
+              cancel_url: `${SITE_URL}/payment/cancel`,
             },
           },
           accessToken

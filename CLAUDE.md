@@ -657,6 +657,42 @@ Suite: **232 tests / 19 files**.
 
 ✅ `authenticated` profiles grant bhi explicit allowlist par (Oct 6, 2026, `20270119000025`) — upar wala ⚠️ founder decision ke baad close hua: `authenticated` ka **table-level SELECT** hata diya aur saare **14 current columns** explicit grant kiye. Saare 14 isliye ki **6 authenticated call sites** `profiles!fk(*)` wildcard embeds use karte hain (WorkspacePage, ContractsPage, dataService, disputeService) aur PostgREST `*` ko saare columns me expand karta hai — ek column chhoota to contracts/workspace/proposals/disputes runtime par toot jaate. Behaviour aaj identical hai (live verify: `authenticated` ke liye `select * from profiles` pre- aur post-change dono me 1 row, `auth_cols = 14 = total_cols`), par naya column ab automatically visible nahi hoga. **Follow-up obligation (yaad rakho):** aage koi bhi migration `profiles` par column ADD kare to usi migration me `GRANT SELECT (new_col) ... TO authenticated` (aur anon ko sirf tab jab wo sach me public ho) dena hoga — warna wildcard embeds fail-closed tootenge, jo jaan-boojh ke chuna gaya behaviour hai. Naya server-only `authenticated_readable_profile_columns()` (anon detector jaisa hi do-branch: table-level grant, aur allowlist ke bahar koi readable column) hourly `check_security_drift()` me sweep hota hai, aur migration assert karti hai ki patch ke baad **anon sweep bhi bacha rahe**. Controls: table-level grant flagged, transactional **probe column** se branch 2 flagged (real DDL, phir drop), allowlisted column NOT flagged, baseline + drift 0. Guard `src/test/profilesAuthenticatedColumnGuard.test.ts` (6 tests) — grant list aur detector allowlist byte-for-byte match karni hi chahiye. Verify: typecheck + **290 tests / 24 files** + build clean.
 
+✅ Site-URL ek hi jagah + founder-runbook (Oct 7, 2026) — founder ne poocha "jaha tak ho sake founder ka
+kaam bhi tu kar de real-time me, phir step-by-step batao Razorpay/PayPal/.com ke liye". Code side par jo
+founder ke bina bhi ho sakta tha, wo kiya:
+**(a)** `supabase/functions/_shared/site.ts` — **akela `APP_URL` reader** (`SITE_URL`, `siteUrl(path)`,
+`FALLBACK_SITE_URL`, missing par `console.warn` — value kabhi log nahi hoti). **12 edge functions**
+codemod hue (`ai.ts` HTTP-Referer; `submit-report` / `newsletter-subscribe` / `email-notifications` /
+`internship-applications` / `proposal-notifications` ke templates + logo; `security-alert-notify`;
+`withdrawal`; `paypal` return/cancel URLs; `admin-data` (3 per-action re-declarations hate);
+`milestone-auto-release` + `subscription-billing-cron` ke hardcoded `https://growlancer.com` links) —
+yaani domain switch ab **ek secret** ka kaam hai, code change nahi. Sirf `_shared/cors.ts`
+(multi-domain allow-list **by design**) aur `site.ts` (documented fallback) me origin bacha — grep-verified.
+**(b)** `src/test/siteUrlGuard.test.ts` (10 tests) — koi edge function origin hardcode kare ya `APP_URL`
+seedha padhe to build RED; mailbox strings (`support@growlancer.com`) deliberately match nahi hote;
+**negative control proven**: `submit-report/index.ts` me origin wapas plant → RED, restore → GREEN
+(file byte-identical).
+**(c) asli latent bug pakda:** local `.env` me `APP_URL=growlancer.vercel.app` **scheme ke bina** tha,
+aur `scripts/push_redirect_urls.mjs` usi value se live Supabase auth `site_url` likhta hai → production
+me toota value chala jaata. Ab dono operator scripts (`push_redirect_urls.mjs`, `check_providers.mjs`)
+ek hi helper se origin resolve karte hain aur non-absolute value par **fail-closed** (`exit 1`);
+`.env.example` = `https://growlancer.com`.
+**(d)** `scripts/founder-preflight.mjs` (`npm run preflight`, read-only, `--strict` = exit 1) — secret
+inventory + digest-verify (`APP_URL` / `PAYPAL_SANDBOX`; na values na digests print hote hain), frontend
+env + local `APP_URL` absolute-url check, live anonymous state, `.com` readiness. Live run: **2 blockers**
+(`RAZORPAY_ACCOUNT_NUMBER` missing; local `APP_URL` scheme-less) + 7 warnings = exactly A1 + A6.
+**(e)** `docs/FOUNDER-RUNBOOK.md` (§0–§10) — ordered operator playbook: A1 RazorpayX, A2 ek real
+test-mode payment (+5 verification SQL), A5 PayPal **atomic** switch (pehle server secrets +
+`PAYPAL_SANDBOX=false`, phir `VITE_PAYPAL_ENABLED=true` + Vercel redeploy — Vite `VITE_*` ko build-time
+inline karta hai, warna sandbox paisa real escrow fund kar deta), A4 KYC (`document_hash` GENERATED —
+kahte hi 428C9), **§5 poora `.com` switch** (ordered table + "kya change NAHI karna" table + cosmetic +
+verification), A7 branch protection (exact `gh api -X PUT` JSON), A8 supply, recurring ops.
+`docs/LAUNCH-READINESS.md` bhi update (300 tests, A6 me resolver+preflight, runbook link, top par
+`npm run preflight`).
+Verify: 13/13 edge+script files `npx esbuild` se syntax-clean, typecheck + lint + **300 tests / 25
+files** + build clean; `--strict` ka exit 1 proven (Deno locally nahi hai, isliye edge functions
+`deno check` nahi hue — sirf esbuild).
+
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas
 aa jata hai, isliye pehle ke hardening ke baad bhi ye wapas aa gaye. Zyadatar NULL-safe hain

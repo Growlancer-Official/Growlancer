@@ -6,6 +6,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { SITE_URL } from '../_shared/site.ts'
 
 const RAZORPAY_KEY_ID = Deno.env.get('RAZORPAY_KEY_ID') || '';
 const RAZORPAY_KEY_SECRET = Deno.env.get('RAZORPAY_KEY_SECRET') || '';
@@ -21,7 +22,7 @@ const PAYPAL_API_URL = Deno.env.get('PAYPAL_SANDBOX') === 'true'
 // ─── Email Notification Helper (Brevo) ──────────────────────────────────────
 import { sendEmail } from '../_shared/brevo.ts';
 
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
+const APP_URL = SITE_URL;
 
 // Service-role client: transactions is a server-audited ledger (no user INSERT/
 // UPDATE RLS policies) — the withdrawal audit record must be written here.

@@ -3,6 +3,11 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendEmail } from '../_shared/brevo.ts'
+import { SITE_URL } from '../_shared/site.ts';
+
+// Public site origin for every email template in this function (single source
+// of truth: supabase/functions/_shared/site.ts).
+const APP_URL = SITE_URL;
 
 // ─── Configuration ──────────────────────────────────────────────────
 
@@ -161,7 +166,7 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
     
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="https://growlancer.vercel.app/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto; border-radius: 10px;" />
+      <img src="${APP_URL}/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto; border-radius: 10px;" />
     </div>
 
     <!-- Header -->
@@ -179,11 +184,11 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
       <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
         <tr>
           <td style="padding-bottom: 12px;">
-            <a href="https://growlancer.vercel.app" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
+            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="https://growlancer.vercel.app/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
+            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="https://growlancer.vercel.app/contact" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
+            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
           </td>
         </tr>
         <tr>
@@ -474,8 +479,6 @@ Deno.serve(async (req) => {
       }
 
       const recipient_name = _eh(rawRecipientName);
-
-      const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
       const rawName = rawRecipientName;
       const subject = `Welcome to Growlancer, ${rawName}! Your AI-powered journey begins now 🚀`;
@@ -789,7 +792,6 @@ Deno.serve(async (req) => {
       }
 
       const ADMIN_EMAIL = 'growlancer.own@gmail.com';
-      const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
 
       // Build details table HTML
       let detailsHtml = '';
@@ -856,7 +858,6 @@ Deno.serve(async (req) => {
         });
       }
 
-      const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app';
       const verifyUrl = `${APP_URL}/verify-certificate/${verification_code || ''}`;
       const isLOR = certificate_type === 'lor';
 

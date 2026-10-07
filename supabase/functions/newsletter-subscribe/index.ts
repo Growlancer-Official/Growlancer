@@ -7,9 +7,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendEmail } from '../_shared/brevo.ts'
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { SITE_URL } from '../_shared/site.ts'
 
 // Transactional email via Brevo (shared helper).
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
+const APP_URL = SITE_URL
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
 function escapeHtml(str: string): string {

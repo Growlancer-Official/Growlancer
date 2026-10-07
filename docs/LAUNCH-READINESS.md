@@ -4,7 +4,13 @@
 setting, a secret, a product decision — followed by the exact way to prove it is done. Anything that
 could be verified or fixed in code has already been verified and is listed in **§C**.
 
-Last verified: **2026-09-26**. Live state: 4 real members, 4 wallets all zero,
+**Start here:** run `npm run preflight` (read-only) — it prints the current blocker/warning list
+without ever echoing a secret value, and `npm run preflight -- --strict` exits non-zero while any
+blocker remains. The full ordered operator playbook (RazorpayX, one real test-mode payment, PayPal,
+KYC, the `.com` domain switch, branch protection) is
+[FOUNDER-RUNBOOK.md](FOUNDER-RUNBOOK.md).
+
+Last verified: **2026-10-07**. Live state: 5 real members, 4 wallets all zero,
 **0** contracts / escrow / withdrawals / orders / transactions / invoices / revenue / KYC rows,
 0 orphan profiles, **0 open security alerts**, the full browser layer (anonymous + authenticated
 sweeps + logout security) green in CI (runs `36237099675` and `36253003439`), and the last flagged
@@ -148,17 +154,27 @@ live `PAYPAL_CLIENT_ID` / `PAYPAL_CLIENT_SECRET`, `PAYPAL_SANDBOX=false`, and on
 
 ### A6. Confirm `APP_URL` is the domain you actually want
 
-**Why:** the deployed `APP_URL`'s digest matches `sha256("https://growlancer.vercel.app")`, and
-**9 edge functions** use it for email links, invitation links and payment redirects. If
-`growlancer.com` is your production domain, customers are currently being sent to the Vercel domain
-in every email.
+**Why:** the deployed `APP_URL`'s digest matches `sha256("https://growlancer.vercel.app")`, so
+customers are currently sent to the Vercel domain in every email. As of 2026-10-07 the **code side of
+this is done**: a single resolver `supabase/functions/_shared/site.ts` is the only place that reads
+`APP_URL`, all 12 edge functions that used to hardcode an origin now import `SITE_URL` from it, and
+`src/test/siteUrlGuard.test.ts` fails the build if anyone hardcodes an origin or reads `APP_URL`
+directly again. So switching the domain is now **one secret**, not a code change.
+
+**Also found while doing this:** the local `.env` had `APP_URL=growlancer.vercel.app` with **no
+scheme**, and `scripts/push_redirect_urls.mjs` used that value to write the live Supabase auth
+`site_url` — i.e. running it would have written a broken value into production. Both
+`push_redirect_urls.mjs` and `check_providers.mjs` now resolve the origin through one helper and
+**fail closed** (`exit 1`) on a non-absolute value. Fix the local line to
+`APP_URL=https://growlancer.com` (already done in `.env.example`).
 
 **Your action:** if growlancer.com is canonical, set it:
 `npx supabase secrets set APP_URL=https://growlancer.com --project-ref zttwsjehcgaicziqyxpq`
 
 **How to verify it is done:** the `APP_URL` digest changes away from
 `d7273ed7f18aa479214f09c76cebd8a72ca844349b08e861cf883676465870d1`; click a link in a real
-notification email → it opens on the production domain.
+notification email → it opens on the production domain. `npm run preflight` re-checks this digest
+for you (and the local `.env` value) without printing either.
 
 ---
 
@@ -239,7 +255,8 @@ runs green on every push.)
 | Cron payouts | service-role milestone release now credits for real (`credited=5000.00`, previously `false / 0.00`) | pentest script (service-role leg) |
 | Frontend health | live site loads with **0 console errors**; all assets and public RPCs return 200 | open the site, watch the console |
 | Browser layer (element + logout) | anonymous **336 loads / 0 flags** at 375/768/1280; authenticated dashboard **72/0** + client **72/0** + admin **51/0**; logout-security **5/5 × 3 roles**; seed→teardown leaves 0 accounts behind | CI run `36237099675`, or locally: `PORT=4174 node server.js` → `node scripts/e2e/login.mjs --all --require-all` → the audit/logout scripts |
-| Build health | typecheck + lint + **290 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
+| One place owns the site URL | `supabase/functions/_shared/site.ts` is the only `APP_URL` reader; no edge function hardcodes a growlancer origin; both operator scripts fail closed on a scheme-less value | `npm test -- siteUrlGuard` and `npm run preflight` |
+| Build health | typecheck + lint + **300 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards — currently **0 findings, 0 open alerts** | `select public.check_security_drift();` |
 
 ---

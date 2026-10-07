@@ -12,7 +12,21 @@ const getEnv = (key) => {
 
 const ANON_KEY = getEnv('VITE_SUPABASE_ANON_KEY') || getEnv('SUPABASE_ANON_KEY');
 const URL = getEnv('VITE_SUPABASE_URL') || getEnv('SUPABASE_URL') || 'https://zttwsjehcgaicziqyxpq.supabase.co';
-const REDIRECT = 'https://growlancer.vercel.app/auth/callback';
+// Same single knob as the rest of the backend (see _shared/site.ts). Fails closed
+// on a malformed APP_URL so a broken value can never masquerade as a probe result.
+const SITE_URL = (() => {
+  const raw = (getEnv('APP_URL') || '').trim();
+  if (!raw) return 'https://growlancer.com';
+  try {
+    const u = new URL(raw);
+    if (!/^https?:$/.test(u.protocol)) throw new Error('not http(s)');
+    return u.origin;
+  } catch {
+    console.error(`❌ APP_URL is not an absolute http(s) URL: ${JSON.stringify(raw)}`);
+    process.exit(1);
+  }
+})();
+const REDIRECT = `${SITE_URL}/auth/callback`;
 
 if (!ANON_KEY) {
   console.error('NO_ANON_KEY');

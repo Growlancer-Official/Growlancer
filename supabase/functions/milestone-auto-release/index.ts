@@ -17,7 +17,8 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
-import { sendEmail } from '../_shared/brevo.ts';
+import { sendEmail } from '../_shared/brevo.ts'
+import { SITE_URL } from '../_shared/site.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -231,7 +232,7 @@ serve(async (req: Request) => {
             <p>The freelancer delivered the full project on your contract.</p>
             <p>If you do not review and release the payment within the next <strong>~${hoursLeftRound} hours</strong>,
             the escrow will be released to the freelancer automatically.</p>
-            <p><a href="https://growlancer.com${actionUrl}" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
+            <p><a href="${SITE_URL}${actionUrl}" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
             <p style="color:#94a3b8;font-size:12px">You can adjust the auto-release window (24h–7 days) anytime in the contract workspace.</p>`,
         });
       }
@@ -286,7 +287,7 @@ serve(async (req: Request) => {
             <p>The freelancer delivered <strong>"${escapeHtml(r.title)}"</strong> on your contract.</p>
             <p>If you do not review and release the payment within the next <strong>~${hoursLeftRound} hours</strong>,
             the escrow will be released to the freelancer automatically.</p>
-            <p><a href="https://growlancer.com${actionUrl}" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
+            <p><a href="${SITE_URL}${actionUrl}" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Review in Workspace</a></p>
             <p style="color:#94a3b8;font-size:12px">You can adjust the auto-release window (24h–7 days) anytime in the contract workspace.</p>`,
         });
       }

@@ -7,10 +7,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendEmail } from '../_shared/brevo.ts'
 import { getCorsHeaders } from '../_shared/cors.ts'
+import { SITE_URL } from '../_shared/site.ts'
 
 // Transactional email via Brevo (shared helper).
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
-const APP_URL = Deno.env.get('APP_URL') ?? 'https://growlancer.vercel.app'
+const APP_URL = SITE_URL
 
 // ─── HTML Escape Helper ─────────────────────────────────────────────────
 function escapeHtml(str: string): string {
@@ -65,7 +66,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
   <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);">
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="https://growlancer.vercel.app/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto;" />
+      <img src="${APP_URL}/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto;" />
     </div>
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
