@@ -182,18 +182,23 @@ row lands as `provider = '<provider>'` with `status = 'approved'` and a real `do
 This is now **much smaller than it used to be.** Every backend site URL goes through one resolver
 (`supabase/functions/_shared/site.ts`), so switching domains is *one secret*, not a code hunt.
 
-### 5.0 First, fix one thing in your local `.env`
+### 5.0 First, fix one thing in your local `.env` (done for you on 2026-10-07)
 
-`.env` currently has `APP_URL=growlancer.vercel.app` — **without a scheme**. That is not a valid
-absolute URL, and it is the input to `scripts/push_redirect_urls.mjs`, which writes the live Supabase
-`site_url`. Fix it to:
+`.env` had `APP_URL=growlancer.vercel.app` — **without a scheme**. That is not a valid absolute URL,
+and it is the input to `scripts/push_redirect_urls.mjs`, which writes the live Supabase `site_url`.
+Both copies (the main checkout and this worktree) now read:
 
 ```
-APP_URL=https://growlancer.com
+APP_URL=https://growlancer.vercel.app
 ```
 
-The pre-flight flags this (`local APP_URL is not an absolute http(s) URL`) and the scripts now
-**refuse to run** on a malformed value rather than writing a broken `site_url`.
+That is the origin you actually serve **today**, so the scripts are valid right now. Switch the line
+to `https://growlancer.com` at **step 3 below**, in the same sitting as running
+`push_redirect_urls.mjs` — not before, because that script writes the live `site_url` and an early
+switch would point real auth emails at a domain that is not serving yet.
+
+The pre-flight flags a malformed value (`local APP_URL is not an absolute http(s) URL`) and both
+scripts now **refuse to run** on one rather than writing a broken `site_url`.
 
 ### 5.1 Do it in this order
 
@@ -201,7 +206,7 @@ The pre-flight flags this (`local APP_URL is not an absolute http(s) URL`) and t
 |---|-------|-----------|-------------------|
 | 1 | Vercel → Project → **Domains** | Add `growlancer.com` **and** `www.growlancer.com`; set the apex as **Primary**; make `www` redirect to the apex; keep `growlancer.vercel.app` as an alias | The old URL must keep working until the new one does |
 | 2 | Your DNS registrar | Point the domain at Vercel (Vercel shows the exact A/CNAME records). Wait for "Valid Configuration" | Nothing else can be verified before this resolves |
-| 3 | Supabase Auth config | `node scripts/push_redirect_urls.mjs` — sets `site_url` + the full redirect allow-list (apex, `www`, vercel.app, previews, localhost) for **every** auth email and OAuth return | Auth emails must land on the new domain *before* you announce it |
+| 3 | Supabase Auth config | Set `.env`'s `APP_URL=https://growlancer.com`, then `node scripts/push_redirect_urls.mjs` — sets `site_url` + the full redirect allow-list (apex, `www`, vercel.app, previews, localhost) for **every** auth email and OAuth return | Auth emails must land on the new domain *before* you announce it. The script reads `APP_URL`, so it writes the `.com` value only if the line is switched first — and it refuses to run at all on a scheme-less value |
 | 4 | Edge function secret | `npx supabase secrets set APP_URL=https://growlancer.com --project-ref zttwsjehcgaicziqyxpq` | Instant on next invocation — **no redeploy needed**. This single change moves every email logo, footer link, subscription/dashboard button, PayPal return URL and AI-attribution header |
 | 5 | Sentry (if enabled) | Add `growlancer.com` / `www.growlancer.com` to the project's allowed origins / domain settings | Otherwise browser events from the new origin are dropped |
 | 6 | Brevo | Verify the **sender domain** (`growlancer.com`) — SPF + DKIM records. Then set `EMAIL_FROM="Growlancer <no-reply@growlancer.com>"` and `EMAIL_REPLY_TO=support@growlancer.com` | Until the domain is verified, Brevo only delivers to your own inbox |
@@ -250,11 +255,28 @@ Then, in a fresh browser:
 `main` is currently unprotected, so a force-push or a bad merge can land straight in production
 (Vercel deploys `main`, and `backend-deploy.yml` runs `db push` on it).
 
+The four check names must match the **job names** in `.github/workflows/ci.yml` exactly — GitHub
+matches contexts by job name, not by workflow name, and a context that never reports blocks every
+merge forever. Read them from the API before you trust this list:
+
+```bash
+gh api repos/Growlancer-Official/Growlancer/commits/main/check-runs \
+  --jq '.check_runs[].name' | sort -u
+```
+
 ```bash
 gh api -X PUT repos/Growlancer-Official/Growlancer/branches/main/protection \
   --input - <<'JSON'
 {
-  "required_status_checks": { "strict": true, "contexts": ["CI"] },
+  "required_status_checks": {
+    "strict": true,
+    "contexts": [
+      "Typecheck (tsc)",
+      "Lint (eslint)",
+      "Unit tests + Production build (+ white-screen guard)",
+      "Element audit (375/768/1280)"
+    ]
+  },
   "enforce_admins": false,
   "required_pull_request_reviews": null,
   "restrictions": null,
@@ -265,7 +287,12 @@ JSON
 ```
 
 **How to verify:** GitHub → Settings → Branches → `main` shows "Protected"; `gh api
-repos/Growlancer-Official/Growlancer/branches/main/protection` returns JSON instead of `404`.
+repos/Growlancer-Official/Growlancer/branches/main/protection` returns JSON instead of `404`; and a
+deliberately failing push shows *"merging is blocked"*.
+
+> Requiring these four means **a red run really does stop a merge** — including the element audit,
+> which fails on purpose when its secrets are missing. If you would rather keep shipping while a
+> guardrail is red, require only the first three and treat the audit as a signal.
 
 ---
 
