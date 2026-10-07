@@ -693,6 +693,39 @@ Verify: 13/13 edge+script files `npx esbuild` se syntax-clean, typecheck + lint 
 files** + build clean; `--strict` ka exit 1 proven (Deno locally nahi hai, isliye edge functions
 `deno check` nahi hue — sirf esbuild).
 
+✅ Money-in chain ab **proven** (Oct 7, 2026) + webhook secret repo me commit tha (dono ek hi pass me) —
+**(a) CRITICAL, ab fix (rotation founder ka kaam)**: `RAZORPAY_TESTING_GUIDE.md` me payment webhook ka
+**signing secret plain text** me tha, aur ye **guess nahi** — us value se signed event deployed function
+ne accept kiya (`200 unknown_order`), yaani committed value = **live secret**. Isse koi bhi repo-reader
+`payment.captured` forge karke **unpaid** order ko captured bana sakta tha → escrow bina paise fund →
+release se wallet credit (payouts enable hote hi real money-out). Ab: literal tree se hata diya (16-digit
+RazorpayX source account number bhi placeholder), aur naya `src/test/noCommittedSecrets.test.ts` (9
+tests) build RED karta hai agar 64-hex literal ya `*_SECRET/TOKEN/PASSWORD/KEY` assignment me
+real-looking value kisi bhi tracked file me aaye (control: plant → RED with the exact line, restore →
+byte-identical; allowlist sirf `docs/LAUNCH-READINESS.md` ka documented public `APP_URL` digest, aur wo
+bhi sirf jab line me credential-word na ho). **Deletion rotation nahi hai** — value git history me hai,
+isliye Razorpay dashboard se regenerate + `supabase secrets set RAZORPAY_WEBHOOK_SECRET` karna hi bom hai
+(LAUNCH-READINESS **A0**, runbook §0.5).
+**(b) Chain verified**: naya `scripts/e2e/razorpay-webhook-rehearsal.mjs` (`npm run rehearse:webhook`)
+Razorpay ke asli tarike se sign kiya hua `payment.captured` deployed function ko bhejta hai: escrow
+funded → contract active → project in_progress → order captured → capture txn → event processed → dono
+parties notified → **replay ignored (no double-fund)** → release → **5% commission (₹250) + invoice
+₹5250 + 3 ledger rows + freelancer wallet ₹5000 + client escrow_balance 0**. Throwaway accounts, full
+cascade, aur start me liya gaya row-count baseline assert: **33 checks / 0 failures**. Teen anti-vacuity
+controls: forged signature → 401; valid signature + unknown order → funds nothing; replay → no second
+capture row. Live keys par chalne se mana karta hai, aur secret na ho to **fail-closed** (exit 1) — wrong
+secret se run karke bhi verify kiya (401 + honest message + clean teardown).
+**(c) Isi pass me apne 2 defects pakde**: (i) runbook/LAUNCH-READINESS ka A2 **galat** tha —
+`admin_fund_escrow` (funding) koi invoice/commission book **nahi** karta (live function bodies se
+verified); 5% row + invoice + teen ledger rows `_book_escrow_release` se **release ke waqt** aate hain,
+`escrow.amount` = contract amount, aur contract+5% `razorpay_orders.amount` me hota hai — ab dono docs
+corrected (galat instruction founder ko already-sahi path "fix" karne bhej deti). (ii) `ledger_entries`
+`delete_user_all_data` se cascade **nahi** hote (entity_type/entity_id text), isliye CI ka
+`pentest-privileges.mjs` har run **3 rows chhod deta hai** — live table 147 rows, sabb probes, jabki
+`platform_revenue` 0 → rehearsal apne rows clean + baseline assert karta hai; pentest/chain scripts ke
+liye ⚠️ backlog B9 me flag kiya (chup-chaap CI pentest badalna risky tha, verified script ko waise hi
+rakha).
+
 ⚠️ Flagged (follow-up pass, is money-path change me mass-revoke nahi kiya): **33** SECURITY DEFINER
 functions abhi bhi `anon` ko EXECUTE-granted hain — PUBLIC default ACL har `DROP`+`CREATE` par wapas
 aa jata hai, isliye pehle ke hardening ke baad bhi ye wapas aa gaye. Zyadatar NULL-safe hain

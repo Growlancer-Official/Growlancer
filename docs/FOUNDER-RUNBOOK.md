@@ -32,7 +32,30 @@ It is **read-only** — no writes, no migrations, no deploys. It prints:
 
 `--strict` exits non-zero if a blocker remains, so you can chain it in a shell check.
 
-Last run (2026-10-06): **1 blocker** (`RAZORPAY_ACCOUNT_NUMBER`) and 7 warnings.
+Last run (2026-10-07): **1 blocker** (`RAZORPAY_ACCOUNT_NUMBER`) and 7 warnings.
+
+---
+
+## §0.5 Rotate the leaked webhook secret 🔴 **do this first**
+
+`RAZORPAY_TESTING_GUIDE.md` shipped the **live** payment-webhook signing secret in plain text. That was
+not a guess: a test event signed with the committed value was accepted by the deployed function
+(`200 unknown_order`) on 2026-10-07. Anyone who can read this repository can therefore forge a
+`payment.captured` event, mark an unpaid order captured, fund its escrow without money arriving, and
+let the release path credit a wallet — a real money-out path once payouts work.
+
+The literal is removed from the working tree, but **git history keeps it, so deleting is not fixing**:
+
+1. Razorpay Dashboard → Settings → **Webhooks** → your endpoint → **regenerate the secret**.
+2. `npx supabase secrets set RAZORPAY_WEBHOOK_SECRET=<new> --project-ref zttwsjehcgaicziqyxpq`
+3. (optional) add the same value as the GitHub repo secret `RAZORPAY_WEBHOOK_SECRET`.
+4. Prove it: `RAZORPAY_WEBHOOK_SECRET=<new> node scripts/e2e/razorpay-webhook-rehearsal.mjs`
+   → **33 checks, 0 failures**. Then run it once with the *old* value: it must fail with 401.
+
+> `src/test/noCommittedSecrets.test.ts` now fails the build if a secret-shaped literal (64 hex chars,
+> or a `*_SECRET` / `*_TOKEN` / `*_PASSWORD` / `*_KEY` assignment with a real-looking value) appears
+> anywhere in the repository — the control was proven by planting a fake secret and watching it go
+> RED, then restoring the file byte-for-byte.
 
 ---
 
@@ -74,16 +97,23 @@ Withdrawals go back to queueing — funds still safe.
 
 ## §2. One real test-mode payment (A2) 🔴 blocker — prove money can come **in**
 
-**Why this is blocking:** `razorpay_orders = 0`, `invoices = 0`, `transactions = 0`,
-`platform_revenue = 0`. The **webhook → escrow funding → 5% commission → invoice → ledger** chain has
-**never run in production**. You do not want to discover it is broken on your first real customer.
+**Why this mattered:** `razorpay_orders = 0`, `invoices = 0`, `platform_revenue = 0` — the
+**webhook → escrow funding → 5% commission → invoice → ledger** chain had never run against a real
+one. As of **2026-10-07 it has** (`scripts/e2e/razorpay-webhook-rehearsal.mjs`, 33 checks / 0
+failures, everything torn down afterwards), so what remains is your own hand-made payment: proof that
+a real card, a real webhook delivery and your product UI line up — not proof that the code can move
+money.
 
 **What is already proven (test mode, real gateway):**
 - an order is created with a **server-derived** amount — ₹5250 for a ₹5000 contract (₹250 = flat 5%);
   the client sends no price at all,
 - a forged `verify_payment` signature is refused,
 - an unsigned webhook is refused with `401` and escrow stays `pending` (fail-closed),
-- the milestone-release leg credits the freelancer (₹5000.00 verified).
+- the milestone-release leg credits the freelancer (₹5000.00 verified),
+- **the signed webhook success branch itself** — escrow funded, contract active, project in_progress,
+  order captured, capture row, event logged, both parties notified, plus a replay that is ignored
+  without double-funding, and the release that books the 5% commission, the invoice (₹5250) and the
+  three ledger rows (verified 2026-10-07).
 
 **What cannot be automated:** the card authorisation happens inside Razorpay's hosted checkout. There
 is no API path to it by design — that is the correct posture, not a gap.
@@ -98,15 +128,47 @@ is no API path to it by design — that is the correct posture, not a gap.
    Razorpay dashboard → **Test mode → Test cards**.
 4. Wait for the webhook (a few seconds).
 
-**How to verify** — all five must be true immediately after the payment:
+**Fastest proof — the whole chain without a human card payment:**
+
+```bash
+RAZORPAY_WEBHOOK_SECRET=<dashboard value> node scripts/e2e/razorpay-webhook-rehearsal.mjs
+```
+
+It signs a real `payment.captured` event with that secret (exactly what Razorpay sends), posts it to
+the **deployed** function, and asserts everything the success branch must write, with three
+anti-vacuity controls: a forged signature is refused, a valid signature for an unknown order funds
+nothing, and a replay is ignored without double-funding. It seeds throwaway accounts, drives the
+release leg, then deletes everything and compares row counts against the baseline it took at start.
+Last run 2026-10-07: **33 checks, 0 failures**. The card authorisation inside Razorpay's hosted
+checkout is still the only thing you must do by hand — everything downstream of it is rehearsed now.
+
+**What to check by hand after your own payment.** Funding and release write *different* things, so
+check them at the right moment (this used to be wrong here, and sent you hunting for an invoice that
+cannot exist yet):
+
+Immediately after the payment — money is **held**:
 
 ```sql
-select status, amount from escrow order by created_at desc limit 1;               -- 'funded', amount = contract + exactly 5%
-select count(*) from transactions    where created_at > now() - interval '1 hour'; -- >= 1
-select count(*) from invoices        where created_at > now() - interval '1 hour'; -- >= 1
-select status from razorpay_orders order by created_at desc limit 1;              -- no longer 'pending'
-select * from platform_revenue order by created_at desc limit 1;                  -- the 5% row
+select status, amount from escrow order by created_at desc limit 1;      -- 'funded'; amount = the CONTRACT amount
+select amount, status from razorpay_orders order by created_at desc limit 1; -- 'captured'; amount = contract + 5%
+select status, escrow_funded from contracts order by created_at desc limit 1; -- 'active', true
+select count(*) from razorpay_transactions   where created_at > now() - interval '1 hour'; -- >= 1 (capture row)
+select count(*) from payment_webhook_events  where created_at > now() - interval '1 hour'; -- >= 1 (processed)
 ```
+
+After **you release** the milestone — this is when the commission is booked:
+
+```sql
+select platform_fee, gross_amount, status from platform_revenue order by created_at desc limit 1; -- 5% of the contract, 'released'
+select invoice_number, subtotal, platform_fee, total from invoices order by created_at desc limit 1; -- total = subtotal + fee
+select count(*) from ledger_entries where created_at > now() - interval '1 hour'; -- 3 (escrow debit, revenue credit, wallet credit)
+select balance from wallets where user_id = '<freelancer-id>';                     -- the full contract amount
+```
+
+> Verified against the live function bodies: `admin_fund_escrow` (funding) books **no** invoice and
+> **no** commission. The 5% row, the invoice and the three ledger entries come from
+> `_book_escrow_release` at release time. Demanding them right after funding is how you end up
+> "fixing" a payment path that was already correct.
 
 **If webhook → funding does NOT happen:** the escrow stays `pending` while the client has genuinely
 paid. Do **not** fix it by hand in the database — every one of those tables is
@@ -341,6 +403,9 @@ non-zero; the homepage trust line updates by itself.
   *by digest* — you can confirm the exact value without it ever being printed.
 - **Fail-closed config writers.** `scripts/push_redirect_urls.mjs` refuses to write a malformed
   origin to the live Supabase `site_url`.
+- **No committed secrets** — `src/test/noCommittedSecrets.test.ts` fails the build on a 64-hex literal
+  or a `*_SECRET` / `*_TOKEN` / `*_PASSWORD` / `*_KEY` assignment carrying a real-looking value
+  anywhere in the tracked tree (control: planted → RED, restored → byte-identical).
 - **Money paths.** Wallet/escrow/subscription changes only through security-definer RPCs; webhooks
   fail closed; every withdrawal leaves a ledger row; the escrow invariant
   `escrow_balance == sum(held escrows)` is asserted by the runtime pentest.

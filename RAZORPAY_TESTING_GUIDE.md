@@ -1,6 +1,26 @@
 # 💳 Razorpay Testing Guide — Test Mode, Escrow Funding & Full Payment Flow
 
 > **Purpose:** Step-by-step runbook for testing Growlancer's Razorpay integration end-to-end in **test mode** — from setting up test keys to funding escrow and verifying the money path in the database. No real money is involved while in test mode.
+>
+> ## §0. A real webhook secret was committed here — rotate it (2026-10-07)
+>
+> This file used to carry the actual signing secret for the payment webhook in plain text. It was
+> verified against the deployed function: a test event signed with the committed value was accepted
+> (`200 unknown_order`), i.e. **the committed value was the live secret**. Anyone who can read this
+> repository could therefore forge a valid `payment.captured` event and mark an unpaid order as
+> captured, which funds escrow without money arriving and lets the release path credit a wallet.
+>
+> The literal is removed from the working tree, but it still exists in git history — so it **must be
+> rotated**, not just deleted:
+> 1. Razorpay Dashboard → Settings → **Webhooks** → your endpoint → **regenerate the secret**.
+> 2. `npx supabase secrets set RAZORPAY_WEBHOOK_SECRET=<new> --project-ref zttwsjehcgaicziqyxpq`
+> 3. Add the same value as the GitHub repo secret `RAZORPAY_WEBHOOK_SECRET` if you want the CI rehearsal
+>    to run (optional). Never paste it into a tracked file.
+> 4. Prove the new secret works:
+>    `RAZORPAY_WEBHOOK_SECRET=<new> node scripts/e2e/razorpay-webhook-rehearsal.mjs` → 33 checks, 0 failures.
+>
+> `src/test/noCommittedSecrets.test.ts` now fails the build if a secret-shaped literal (64 hex chars, or
+> a `*_SECRET` / `*_KEY` / `*_TOKEN` assignment) reappears anywhere in the repo.
 
 ---
 
@@ -11,7 +31,7 @@
 | **Live app** | `https://growlancer.vercel.app` |
 | **Supabase project** | `zttwsjehcgaicziqyxpq` |
 | **Payment webhook URL** (paste in Razorpay Dashboard) | `https://zttwsjehcgaicziqyxpq.supabase.co/functions/v1/razorpay-webhook` |
-| **Webhook secret** (set in Razorpay webhook + Supabase secrets) | `295d03ef24665a93297466fb6757eafb28848ca21b637055007deb7a6dd7e5c6` ⚠️ **TEST ONLY — rotate before going live** |
+| **Webhook secret** (set in Razorpay webhook + Supabase secrets) | Generate it in the dashboard — **never** paste the value into this file. Store it only as the `RAZORPAY_WEBHOOK_SECRET` secret (Supabase + CI), see §0 |
 | **Webhook events to enable** | `order.paid`, `payment.captured`, `payment.authorized`, `payment.failed`, `refund.created`, `refund.processed`, `refund.failed` |
 | **Payout webhook URL** (RazorpayX, when enabled) | `https://zttwsjehcgaicziqyxpq.supabase.co/functions/v1/razorpay-payout-webhook` |
 
@@ -143,14 +163,14 @@ Razorpay keys are **server-side only**. Do **NOT** put them in the frontend `.en
 |---|---|
 | `RAZORPAY_KEY_ID` | `rzp_test_xxxxxxxx` |
 | `RAZORPAY_KEY_SECRET` | `rzp_test_xxxxxxxxxxxxxxxx` |
-| `RAZORPAY_ACCOUNT_NUMBER` *(for payouts)* | e.g. `2323230023232323` |
+| `RAZORPAY_ACCOUNT_NUMBER` *(for payouts)* | e.g. `<digits>` |
 | `RAZORPAY_WEBHOOK_SECRET` *(after Step 3)* | generated on webhook creation |
 
 ### Via Supabase CLI (project root)
 ```bash
 supabase secrets set RAZORPAY_KEY_ID=rzp_test_xxxxxxxx \
   RAZORPAY_KEY_SECRET=rzp_test_xxxxxxxxxxxxxxxx \
-  RAZORPAY_ACCOUNT_NUMBER=2323230023232323
+  RAZORPAY_ACCOUNT_NUMBER=<your-razorpayx-source-account-number>
 ```
 
 > ⚠️ **Fail-closed behavior:** The `razorpay` function **refuses all requests** (HTTP 500 `Payment service is not configured`) when the keys are missing. If you see this error, the secrets are not set. Secrets take effect on the next invocation — **no function redeploy needed** for secret changes.

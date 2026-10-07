@@ -23,6 +23,23 @@ engineering leak (`ai-matching` ownership, §B1) fixed and live (Backend Deploy 
 
 ## §A — Blocking. Do not take real money until these are done.
 
+### A0. Rotate the payment-webhook secret that was committed to the repo 🔴 **first**
+
+**Why:** `RAZORPAY_TESTING_GUIDE.md` carried the **live** signing secret of the payment webhook as
+plain text. That is measured, not suspected — an event signed with the committed value was accepted
+by the deployed function (`200 unknown_order`, 2026-10-07). With it, anyone who can read the repo can
+forge `payment.captured`, mark an unpaid order as captured, fund its escrow without money arriving,
+and let the release path credit a wallet (money-out the day payouts work). The literal is now removed
+from the tree and `src/test/noCommittedSecrets.test.ts` fails the build on any new secret-shaped
+literal — but git history still holds the old value, so **deletion is not rotation**.
+
+**Your action:** Razorpay Dashboard → Settings → Webhooks → your endpoint → regenerate the secret;
+then `npx supabase secrets set RAZORPAY_WEBHOOK_SECRET=<new> --project-ref zttwsjehcgaicziqyxpq`
+(and, optionally, the same value as the GitHub repo secret).
+
+**How to verify it is done:** `RAZORPAY_WEBHOOK_SECRET=<new> node scripts/e2e/razorpay-webhook-rehearsal.mjs`
+→ **33 checks, 0 failures**; and the same command run with the **old** value → refused with 401.
+
 ### A1. Enable RazorpayX Payouts, and set the account number
 
 **Why:** money cannot leave the platform. `POST /v1/payouts` answers
@@ -63,14 +80,32 @@ so this one requires you, by hand.
 **Your action:** log in as a client, create/fund a contract's escrow, and pay with a **test-mode card**
 from your Razorpay dashboard's test-card list (test mode is confirmed active on the deployed keys).
 
-**How to verify it is done** — all five must be true right after the payment:
+**UPDATE (2026-10-07) — the chain itself is now proven; only the real card is left.**
+`scripts/e2e/razorpay-webhook-rehearsal.mjs` signs a real `payment.captured` event with the webhook
+secret (the same thing Razorpay sends), posts it into the deployed function and asserts every row the
+success branch must write: escrow funded, contract active, project in_progress, order captured,
+capture row, event logged, both parties notified — then a replay that is ignored without
+double-funding, then the release that books the **5% commission**, the **invoice (₹5250)** and the
+three **ledger** rows, with the freelancer wallet credited. Throwaway accounts, full cascade
+teardown, row counts compared with the baseline: **33 checks, 0 failures**. Controls keep it honest:
+a forged signature is refused (401) and a valid signature for an unknown order funds nothing.
+So the remaining uncertainty is *your card + your UI + a real webhook delivery*, not the code path.
+
+**Two corrections to what this file used to ask you to check** (verified against the live function
+bodies — `admin_fund_escrow` books no invoice and no commission):
 
 ```sql
-select status, amount from escrow order by created_at desc limit 1;         -- 'funded', amount = contract + exactly 5%
-select count(*) from transactions where created_at > now() - interval '1 hour';  -- >= 1
-select count(*) from invoices    where created_at > now() - interval '1 hour';  -- >= 1 (if invoicing is expected here)
-select status from razorpay_orders order by created_at desc limit 1;        -- no longer 'pending'
-select * from platform_revenue order by created_at desc limit 1;            -- the 5% row, once revenue is booked
+-- right after the payment (money is HELD). escrow.amount is the CONTRACT amount;
+-- razorpay_orders.amount is the contract + 5% that the client actually paid.
+select status, amount from escrow order by created_at desc limit 1;                  -- 'funded'
+select amount, status from razorpay_orders order by created_at desc limit 1;         -- 'captured', contract + 5%
+select count(*) from razorpay_transactions  where created_at > now() - interval '1 hour'; -- >= 1
+select count(*) from payment_webhook_events where created_at > now() - interval '1 hour'; -- >= 1
+
+-- after YOU release the milestone: this is when the commission/invoice/ledger appear.
+select platform_fee, gross_amount, status from platform_revenue order by created_at desc limit 1; -- 5%, 'released'
+select invoice_number, subtotal, platform_fee, total from invoices order by created_at desc limit 1;
+select count(*) from ledger_entries where created_at > now() - interval '1 hour';    -- 3
 ```
 
 If webhook → funding does **not** happen, the escrow stays `pending` while the client has been
@@ -236,6 +271,7 @@ runs green on every push.)
 | B5 | **Heading hierarchy** — 89 `<h3>` under an `<h1>` on dashboard/client/admin pages | audit tracked a count, not selectors, so blind promotion could make the outline *worse* | per-page review (the tasks are cosmetic) | audit reports 0 unjustified H3-under-H1 |
 | B6 | **Currency-consistency prep** for multi-currency later | amounts are INR-first today; PayPal is the USD rail | confirm the target behaviour before building | a single currency-source-of-truth module + tests |
 | B7 | **Team-project freelancer notification / accept step** | freelancers are notified of a team role hire but there is no accept step | decide the desired flow | a hired freelancer can accept/decline, and the role state reflects it |
+| B9 | **Probe rows accumulate in `ledger_entries`** — `delete_user_all_data` cascades `contracts`/`invoices`/`platform_revenue` but **not** ledger entries (they are keyed by `entity_type`/`entity_id` text), so every `pentest-privileges.mjs` / `razorpay-chain.mjs` run leaves 3 rows behind: the table stands at **147 rows, all from probes** while `platform_revenue` is 0 | measured 2026-10-07; the new rehearsal cleans its own rows and asserts the count returns to baseline, the CI pentest does not | add the same cleanup (delete by the entity ids the run created) to `pentest-privileges.mjs` and `razorpay-chain.mjs`; decide separately whether real account deletion should keep ledger rows (accounting) or purge them (privacy) | after a CI run, `select count(*) from ledger_entries` is unchanged |
 | B8 | **Client-side AI fallback is invisible** | the frontend falls back to a deterministic engine when the edge AI call fails — users (and you) cannot tell a real AI match from a degraded one | decide whether to surface/telemetry it | a forced-fallback run emits a visible, countable signal |
 
 ---
@@ -255,8 +291,10 @@ runs green on every push.)
 | Cron payouts | service-role milestone release now credits for real (`credited=5000.00`, previously `false / 0.00`) | pentest script (service-role leg) |
 | Frontend health | live site loads with **0 console errors**; all assets and public RPCs return 200 | open the site, watch the console |
 | Browser layer (element + logout) | anonymous **336 loads / 0 flags** at 375/768/1280; authenticated dashboard **72/0** + client **72/0** + admin **51/0**; logout-security **5/5 × 3 roles**; seed→teardown leaves 0 accounts behind | CI run `36237099675`, or locally: `PORT=4174 node server.js` → `node scripts/e2e/login.mjs --all --require-all` → the audit/logout scripts |
+| Money-in chain rehearsed end to end | a signed `payment.captured` event through the deployed webhook: escrow funded, contract active, order captured, capture row, event logged, both parties notified, replay ignored (no double-funding), then release booking the 5% commission + invoice ₹5250 + 3 ledger rows + wallet credit — with throwaway accounts and a clean baseline restore | `RAZORPAY_WEBHOOK_SECRET=<value> node scripts/e2e/razorpay-webhook-rehearsal.mjs` (**33 checks / 0 failures**) |
 | One place owns the site URL | `supabase/functions/_shared/site.ts` is the only `APP_URL` reader; no edge function hardcodes a growlancer origin; both operator scripts fail closed on a scheme-less value | `npm test -- siteUrlGuard` and `npm run preflight` |
-| Build health | typecheck + lint + **300 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
+| No committed secrets | the webhook secret that used to live in `RAZORPAY_TESTING_GUIDE.md` is gone, and a 64-hex literal or a `*_SECRET` / `*_TOKEN` / `*_PASSWORD` / `*_KEY` assignment with a real-looking value now fails the build (control: planted → RED, restored → byte-identical) | `npm test -- noCommittedSecrets` |
+| Build health | typecheck + lint + **309 tests** + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards — currently **0 findings, 0 open alerts** | `select public.check_security_drift();` |
 
 ---
