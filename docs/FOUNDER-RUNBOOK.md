@@ -219,7 +219,7 @@ scripts now **refuse to run** on one rather than writing a broken `site_url`.
 | `supabase/functions/_shared/cors.ts` | Already allows `growlancer.com` **and** `www` alongside the Vercel origin. It is a *multi*-domain allow-list by design and must stay that way during the transition |
 | `public/sitemap.xml`, `public/robots.txt` | Already `https://growlancer.com` |
 | `vercel.json` | Contains only security headers and a CSP. **No site URL.** `connect-src`/`script-src` list Razorpay, PayPal, Supabase, fonts, Sentry — payment/API hosts, not your own domain |
-| Razorpay | No app-domain configuration at all. Checkout returns to the app via the SDK, and the webhook URL points at the Supabase function |
+| Razorpay | Nothing functional. Checkout returns to the app via the SDK, and the webhook URL points at the Supabase function, not your domain. Only cosmetic: Razorpay dashboard → Account & Settings → *Website and app settings* may carry an old website URL — update it whenever, it is not used by the integration |
 | PayPal | Same — the webhook URL points at the Supabase function, not the app domain |
 | GitHub / LinkedIn / Google OAuth apps | Their authorized callback is `https://zttwsjehcgaicziqyxpq.supabase.co/auth/v1/callback` — the Supabase endpoint. **It does not change when your app domain changes.** (An OAuth app's optional "homepage URL" is cosmetic.) |
 | Frontend code | No absolute site URL anywhere in `src/` (`grep` verified). The app derives everything from `window.location` / `VITE_SUPABASE_URL`, so there is no `VITE_SITE_URL` to set in Vercel |
@@ -230,7 +230,9 @@ scripts now **refuse to run** on one rather than writing a broken `site_url`.
 ### 5.3 Cosmetic / non-runtime (change whenever, never blocks launch)
 
 `README.md`, `CONTRIBUTING.md`, `RAZORPAY_TESTING_GUIDE.md`, `growlancer.postman_collection.json`
-(the `APP_URL` variable), `scripts/create_test_users.mjs` (a console message), `nginx.conf`
+(the `APP_URL` variable), `scripts/create_test_users.mjs` (a console message), the
+`admin@growlancer.com` placeholder inside `src/pages/admin/AdminLoginPage.tsx` (an email, not a URL),
+`nginx.conf`
 (Docker/self-host CSP — only relevant if you ever deploy the Docker image instead of Vercel),
 `pages/+Head.tsx` + `pages/+config.ts` (Vike SSR metadata — already `.com`; the app builds with Vite,
 so this path is unused), historical docs under `docs/`, and the dated entries in `CLAUDE.md`.
