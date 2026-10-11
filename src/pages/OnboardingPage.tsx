@@ -1133,6 +1133,7 @@ export function OnboardingPage() {
                           onChange={(country) => setClientForm({ ...clientForm, location: country })}
                           placeholder="Select your country..."
                         />
+                        <p className="text-xs text-slate-400 mt-1">India is currently available — other countries coming soon!</p>
                       </div>
                     </div>
 

@@ -1,4 +1,5 @@
 import React from 'react';
+import { AlertCircle } from 'lucide-react';
 import { captureError } from '../lib/telemetry';
 
 interface ErrorBoundaryProps {
@@ -60,11 +61,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
           <div className="w-full max-w-lg text-center bg-white rounded-xl shadow-lg p-4 sm:p-3 border border-slate-200">
             {/* Error icon */}
             <div className="mx-auto mb-2.5 w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center">
-              <svg className="w-7 h-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+              <AlertCircle className="w-7 h-7 text-red-500" />
             </div>
 
             <h1 className="font-display text-xl sm:text-lg font-bold text-slate-900 mb-2">Something went wrong</h1>

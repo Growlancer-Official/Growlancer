@@ -1,7 +1,7 @@
 import { PageSkeleton } from '../components/PageSkeleton';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Award, Bell, ClipboardCheck, Copy, MailCheck, ShieldCheck, Sparkles, Trophy, Zap,  } from 'lucide-react';
+import { Award, Bell, CheckCircle2, ClipboardCheck, Copy, MailCheck, ShieldCheck, Sparkles, Trophy, Zap,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReferralsData, shareReferralLink } from '../hooks/useReferralsData';
 
@@ -228,9 +228,7 @@ export function ClientReferralsPage() {
                 infrastructure for you to hire faster and better than your competition.
               </p>
               <div className="flex items-center gap-3 text-emerald-600">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+                <CheckCircle2 className="w-4 h-4" />
                 <span className="text-xs font-bold">Quality over Quantity</span>
               </div>
             </div>

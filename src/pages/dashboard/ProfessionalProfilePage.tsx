@@ -13,7 +13,7 @@ import { formatCurrency, currencySymbol } from '../../lib/currency';
 import { ReauthDialog } from '../../components/ReauthDialog';
 import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../../lib/reauth';
 import { EmailVerificationCard } from '../../components/EmailVerificationCard';
-import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
+import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Info, Mail, MapPin, Monitor, QrCode, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { CategoryPicker } from '../../components/CategoryPicker';
 import { ProBadge } from '../../components/ProBadge';
@@ -1183,7 +1183,7 @@ export function ProfessionalProfilePage() {
                         {/* Quick tip — fills remaining space naturally */}
                         <div className="pt-2 border-t border-slate-100">
                           <div className="flex items-start gap-3 text-xs text-slate-500">
-                            <svg className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <Info className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                             <span>Profiles with certifications get <strong className="text-slate-700">3x more</strong> client invitations. Add yours by clicking <strong className="text-emerald-600">Edit Profile</strong>.</span>
                           </div>
                         </div>

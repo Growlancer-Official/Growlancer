@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { ChevronDown, Search, X, MapPin } from 'lucide-react';
+import { ChevronDown, Search, X, MapPin, Globe } from 'lucide-react';
 import { useCountries } from '../hooks/useCountries';
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -29,11 +29,12 @@ interface CountrySelectProps {
  * Industry-level country selector used in onboarding and profile forms.
  *
  * Features:
- * - India 🇮🇳 pinned at the top with "Currently Available" badge
- * - All 197 countries searchable by typing (name or code)
+ * - India 🇮🇳 pinned at the top as the base, the ONLY available country
+ * - Every other country browsable A→Z under "Coming Soon", but display-only
+ *   (never selectable — availability is a server-side truth, not a free pick)
  * - Flag emojis for every country
  * - Keyboard navigation (↑↓ to move, Enter to select, Esc to close)
- * - "Remote / Online" quick option
+ * - "Remote / Online" quick option (a work mode, not a country)
  * - Fuzzy search: "united" matches "United States", "United Kingdom", etc.
  */
 export function CountrySelect({
@@ -150,10 +151,11 @@ export function CountrySelect({
       if (i === idx) { onChange(c.name); handleClose(); return; }
       i++;
     }
-    // Rest
-    for (const c of filtered.rest) {
-      if (i === idx) { onChange(c.name); handleClose(); return; }
-      i++;
+    // Rest — coming-soon countries are browse-only: highlight and read them,
+    // but Enter never selects one (India is the only available country).
+    const restStart = 1 + filtered.pinned.length;
+    if (idx >= restStart && idx < restStart + filtered.rest.length) {
+      return;
     }
   };
 
@@ -233,7 +235,7 @@ export function CountrySelect({
                 highlightIdx === 0 ? 'bg-emerald-50' : 'hover:bg-slate-50'
               }`}
             >
-              <span className="text-lg">🌐</span>
+              <Globe className="w-5 h-5 text-slate-400 shrink-0" />
               <div className="flex-1 min-w-0">
                 <span className="text-sm font-medium text-slate-900">Remote / Online</span>
                 <span className="text-xs text-slate-400 ml-2">Work from anywhere</span>
@@ -288,22 +290,26 @@ export function CountrySelect({
                 </div>
                 {filtered.rest.map((c, i) => {
                   const idx = 1 + filtered.pinned.length + i;
+                  const isCurrent = value === c.name;
                   return (
                     <button
                       key={c.id}
                       type="button"
                       data-idx={idx}
-                      onClick={() => { onChange(c.name); handleClose(); }}
+                      aria-disabled="true"
+                      onClick={(e) => { e.preventDefault(); }}
                       onMouseEnter={() => setHighlightIdx(idx)}
-                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors cursor-not-allowed ${
                         highlightIdx === idx ? 'bg-slate-50' : 'hover:bg-slate-50'
                       }`}
                     >
-                      <span className="text-lg">{getFlagEmoji(c.code)}</span>
-                      <span className="text-sm text-slate-700">{c.name}</span>
-                      <span className="text-xs text-slate-400 ml-auto">{c.code}</span>
-                      {value === c.name && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                      <span className="text-lg opacity-60">{getFlagEmoji(c.code)}</span>
+                      <span className="text-sm text-slate-500">{c.name}</span>
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded ml-auto uppercase tracking-wide shrink-0">
+                        Coming Soon
+                      </span>
+                      {isCurrent && (
+                        <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
                       )}
                     </button>
                   );

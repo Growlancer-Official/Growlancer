@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe, Heart, ShieldCheck, Sparkles, Target, TrendingUp, Users, Zap } from 'lucide-react';
+import { ArrowRight, Globe, Heart, Quote, ShieldCheck, Sparkles, Star, Target, TrendingUp, Users, Zap } from 'lucide-react';
 import { LiveCodeTerminal, type TerminalLine } from '@/components/LiveCodeTerminal';
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
 import { formatCurrency } from '@/lib/currency';
@@ -209,9 +209,7 @@ export function AboutPage() {
         {/* Section Label */}
         <div className="text-center space-y-3 mb-10 sm:mb-14">
           <span className="inline-flex items-center gap-3 px-4 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 font-bold rounded-full border border-emerald-500/20 text-xs uppercase tracking-wider">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
-            </svg>
+            <Star className="w-4 h-4" fill="currentColor" />
             Leadership &amp; Vision
           </span>
           <h2 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -281,9 +279,7 @@ export function AboutPage() {
 
                 {/* Founder Quote */}
                 <div className="relative pl-5 border-l-2 border-emerald-500/40 py-1 max-w-lg mx-auto lg:mx-0">
-                  <svg className="absolute -top-2 -left-1.5 w-4 h-4 text-emerald-500/30" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z" />
-                  </svg>
+                  <Quote className="absolute -top-2 -left-1.5 w-4 h-4 text-emerald-500/30" fill="currentColor" />
                   <p className="text-xs text-slate-400 italic leading-relaxed">
                     "We're not just building a marketplace — we're engineering the infrastructure for the future of work. 
                     Every feature at Growlancer is designed with one question in mind: does this make collaboration 
@@ -304,9 +300,7 @@ export function AboutPage() {
                   </div>
                   <div className="flex items-center sm:ml-auto">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg border border-white/10">
-                      <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                      <Zap className="w-3.5 h-3.5 text-emerald-400" />
                       <span className="text-xs font-semibold text-slate-300">Vision-Driven</span>
                     </div>
                   </div>

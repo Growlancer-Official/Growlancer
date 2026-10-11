@@ -180,7 +180,7 @@ function HeroSection({
                   <div className="w-full aspect-video flex flex-col items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-slate-800 to-emerald-900">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="h-14 w-14 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                        <svg className="w-7 h-7 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <Layers className="w-7 h-7 text-emerald-400" strokeWidth={1.5} />
                       </div>
                       <div className="text-left">
                         <div className="text-xl font-bold font-display text-white">Growlancer</div>
