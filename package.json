@@ -21,7 +21,8 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "deploy:backend": "bash scripts/deploy-backend.sh",
     "preflight": "node scripts/founder-preflight.mjs",
-    "rehearse:webhook": "node scripts/e2e/razorpay-webhook-rehearsal.mjs"
+    "rehearse:webhook": "node scripts/e2e/razorpay-webhook-rehearsal.mjs",
+    "e2e:oauth-signup": "node scripts/e2e/oauth-signup-chain.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.71.0",

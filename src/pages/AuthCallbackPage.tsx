@@ -50,12 +50,54 @@ export function AuthCallbackPage() {
         const detectedAction = typeParam || 'unknown';
         setAction(detectedAction);
 
+        // Session resolution state. Declared here (not at step 5) because the
+        // benign-error check below can already establish the session.
+        let authUser: import('@supabase/supabase-js').User | null = null;
+        let sessionFound = false;
+
+        /**
+         * Recover a session that REALLY exists (persisted storage, or the
+         * implicit-flow tokens in the URL hash). Used only to decide whether an
+         * `error` param describes the current state or just one stray request.
+         */
+        const recoverEstablishedSession = async () => {
+          const existing = await supabase.auth
+            .getSession()
+            .catch(() => ({ data: { session: null } }));
+          if (existing.data?.session?.user) return existing.data.session.user;
+
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          if (!accessToken || !refreshToken) return null;
+
+          const restored = await supabase.auth
+            .setSession({ access_token: accessToken, refresh_token: refreshToken })
+            .catch(() => ({ data: { session: null } }));
+          return restored.data?.session?.user ?? null;
+        };
+
         // ── 2. Check for OAuth error (search or hash) ──
         const error = searchParams.get('error') || hashParams.get('error');
         const errorDescription =
           searchParams.get('error_description') || hashParams.get('error_description');
 
-        if (error) {
+        // 🛡️ A session that genuinely exists OUTRANKS an error param. Live case
+        // (2026-10-10 16:26 UTC): GoTrue's /callback was hit twice — the first
+        // request ran past this client's 15s abort, the user refreshed, and the
+        // replay came back as
+        //   ?error=invalid_request&error_code=bad_oauth_state
+        // The signup had ALREADY succeeded (auth.users row + Login event fired),
+        // but this page rendered "Authentication failed" — and leaving the page
+        // killed the in-flight profile creation, leaving an account with no
+        // profile that could never finish onboarding. An error param describes
+        // one request; the session is the actual authentication state, so never
+        // trade a real session for an error screen.
+        if (error && await recoverEstablishedSession()) {
+          devLog('[AuthCallback] ignoring auth error param — a valid session exists', {
+            error,
+            error_code: searchParams.get('error_code') || hashParams.get('error_code'),
+          });
+        } else if (error) {
           setStatus('error');
           const rawDescription = errorDescription?.replace(/\+/g, ' ') || '';
           // 🆕 Friendly duplicate-email message: the GitHub/LinkedIn account's
@@ -115,9 +157,7 @@ export function AuthCallbackPage() {
         // 4b. Welcome email disabled — Brevo removed. Verification handled by Supabase Auth.
 
         // ── 5. Get the current session (with retry + fallbacks) ──
-        let authUser: import('@supabase/supabase-js').User | null = null;
-        let sessionFound = false;
-
+        // (authUser / sessionFound are declared at the top of this handler.)
         // Try getSession with retry first — supabase-js's detectSessionInUrl usually
         // auto-exchanges the PKCE `code` on load, so getSession is the common path.
         // Mobile browsers can restore the callback session after a slower

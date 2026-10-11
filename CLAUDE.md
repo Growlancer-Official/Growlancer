@@ -798,3 +798,42 @@ RPCs se change hone chahiye. UI in write-paths ko use karta nazar nahi aata, par
 decision hai — chup-chaap change nahi kiya (report §9.2).
 
 Jab in dono ka fix aaye, ye status-section update kar dena taaki future sessions ko pata rahe.
+
+✅ GitHub/LinkedIn signup ka real root cause band (Oct 11, 2026, `20270119000026`) — founder report:
+"user real time me linkedin and github se signup nahi kar pa raha". Deep dive ne do asli defects nikaale,
+dono ek hi symptom dete the ("signup ke baad Authentication failed / login hi nahi hota"):
+
+**(a) Signup ka profile leg poori tarah browser-driven tha.** Provider leg theek hai — live par GitHub
++ LinkedIn OIDC dono enabled hain aur `/authorize` sach me provider ko redirect karta hai. Par profile
+row sirf ek browser RPC call (`create_user_profile`) se banti thi, kyunki aakhri `auth.users` trigger
+`20270119000009` me drop ho gaya tha. Live proof: LinkedIn signup (Oct 10, 16:26:17Z) ne `auth.users`
+row banayi aur `profiles` / `profiles_private` / `wallets` — teeno MISSING, 13 ghante baad bhi; usi
+window me postgrest log `Warp server error: Thread killed by timeout manager` (16:27:13Z) aur client
+har request 15s par abort karta hai. Matlab us few-second window me koi bhi hiccup (slow backend, tab
+band, mobile network, refresh) account ko permanently todh deta tha aur server-side koi repair nahi thi.
+Fix: naya `AFTER INSERT ON auth.users` trigger → `ensure_signup_profile()` (SECURITY DEFINER,
+server-only) `profiles` + `profiles_private` likhta hai (profiles ke existing triggers se wallet +
+notification_preferences), fail-soft + `signup_profile_failures` me record (raaste se signup kabhi
+block nahi hota), plus **backfill** (live ke 3 ghosts repair) + naya hourly detector
+`signup_ghost_accounts()` `check_security_drift()` me wired — class ab self-detecting hai.
+
+**(b) Benign duplicate-callback error ko fatal mana ja raha tha.** `AuthCallbackPage` `error` param
+dekh kar turant "Authentication failed" dikhata tha — chahe session valid ho. Live me GoTrue ka
+`/callback` do baar hit hota hai (pehla 15s+ latakta hai, user refresh karta hai) → replay
+`?error=invalid_request&error_code=bad_oauth_state` laata hai, **jabki signup already succeed ho chuka
+hota hai** (`user_signedup` + `Login` logs me maujood) — aur page chhodne se in-flight profile creation
+bhi mar jaati thi. Ab `recoverEstablishedSession()` pehle chalta hai: valid session ho to error param
+ignore (log ke saath), warna error screen waisi hi. Aage badhne ke liye ek naya rule: **session > error
+param**, kyunki error param sirf ek request batata hai, session actual auth state hai.
+
+Verify: naya live harness `npm run e2e:oauth-signup` (throwaway account; Admin API se wahi auth.users
+insert jo GoTrue provider signup par karta hai — koi human card/provider login nahi; fail-closed config;
+full cascade teardown) — fix se PEHLE leg A red tha (auth insert ke baad koi profile nahi), fix ke baad
+**13/13 green**; browser me before/after (same probe, same URL, real session): pre-fix build →
+"Authentication failed — OAuth state parameter is invalid", fixed build → country gate/onboarding aur
+profile bani (wallet ke saath), console me koi auth error nahi; migration live par rolled-back
+transaction me dry-run (drift anchor exactly 1 baar mila aur patched body re-parsed OK, probe
+auth.users insert chala) aur dry-run ke baad 0 residue. typecheck + lint + **323 tests** (28 files;
+14 naye — `signupProfileTrigger.test.ts` + `authCallbackSessionBeatsError.test.ts`, dono negative
+controls ke saath) + build clean. Harness ka apna ek defect bhi pakda gaya (referral-code assertion
+RPC ke documented collision-suffix `-xxxx` ko failure maan raha tha) — assertion theek ki, dhaanch nahi.
