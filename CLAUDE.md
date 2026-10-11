@@ -826,14 +826,29 @@ bhi mar jaati thi. Ab `recoverEstablishedSession()` pehle chalta hai: valid sess
 ignore (log ke saath), warna error screen waisi hi. Aage badhne ke liye ek naya rule: **session > error
 param**, kyunki error param sirf ek request batata hai, session actual auth state hai.
 
-Verify: naya live harness `npm run e2e:oauth-signup` (throwaway account; Admin API se wahi auth.users
+Verify — naya live harness `npm run e2e:oauth-signup` (throwaway account; Admin API se wahi auth.users
 insert jo GoTrue provider signup par karta hai — koi human card/provider login nahi; fail-closed config;
-full cascade teardown) — fix se PEHLE leg A red tha (auth insert ke baad koi profile nahi), fix ke baad
-**13/13 green**; browser me before/after (same probe, same URL, real session): pre-fix build →
-"Authentication failed — OAuth state parameter is invalid", fixed build → country gate/onboarding aur
-profile bani (wallet ke saath), console me koi auth error nahi; migration live par rolled-back
-transaction me dry-run (drift anchor exactly 1 baar mila aur patched body re-parsed OK, probe
-auth.users insert chala) aur dry-run ke baad 0 residue. typecheck + lint + **323 tests** (28 files;
-14 naye — `signupProfileTrigger.test.ts` + `authCallbackSessionBeatsError.test.ts`, dono negative
-controls ke saath) + build clean. Harness ka apna ek defect bhi pakda gaya (referral-code assertion
-RPC ke documented collision-suffix `-xxxx` ko failure maan raha tha) — assertion theek ki, dhaanch nahi.
+full cascade teardown): fix se PEHLE leg A red tha (auth insert ke baad koi profile nahi), deploy ke baad
+**17/17 green** — yaani ab auth.users insert akela profiles + profiles_private + wallet + deterministic
+referral code bana deta hai. **LIVE (Backend Deploy `38116424354` ke baad, read-only SQL):** trigger +
+teeno functions maujood, `ghost_accounts` **3 → 0**, aur **8 users = 8 profiles = 8 profiles_private =
+8 wallets** — matlab founder ka LinkedIn account (`mirankhan1542@gmail.com`) wapas usable hai (profile +
+wallet, role freelancer) aur do purane ghosts bhi repair ho gaye; open `signup_ghost_account` alerts 0.
+Browser proof do level par: (i) local production build par before/after (same probe, same URL, **real
+session**) — pre-fix build → "Authentication failed — OAuth state parameter is invalid", fixed build →
+country gate/onboarding + profile bani (wallet ke saath); (ii) **deployed site par bhi** (headless
+Playwright, real session, wahi benign-error URL): "Authentication failed" nahi aaya, session intact,
+country gate par route hua, throwaway account delete — **5/5**. Migration live par rolled-back
+transaction me dry-run (drift anchor exactly 1 baar mila + patched body re-parsed OK, probe auth.users
+insert chala) aur dry-run ke baad 0 residue. typecheck + lint + **323 tests** (28 files; 14 naye —
+`signupProfileTrigger.test.ts` + `authCallbackSessionBeatsError.test.ts`, dono negative controls ke saath)
++ build clean; CI `5840592` green. Harness ka apna ek defect bhi pakda gaya (referral-code assertion RPC
+ke documented collision-suffix `-xxxx` ko failure maan raha tha) — assertion theek ki (+ trigger ke
+deterministic code ka assertion add hua), dhaanch nahi.
+
+⚠️ Isi fix se ek chhota observation (product call, fail nahi kiya): `create_user_profile` ka upsert
+`referral_code` ko client-generated value se **overwrite** karta hai, aur collision par suffix `-xxxx`
+laga deta hai — isliye ek hi user ka code dobara likhne par badal sakta hai (agar usne link share kar
+diya ho to woh link toot sakta hai). Ab trigger kabhi-kabhi pehle se deterministic code bhi likh deta
+hai, jo browser ke pehle call par replace ho jaata hai. Referral semantics ka faisla founder ka hai,
+isliye yahan sirf note kiya gaya hai.

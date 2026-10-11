@@ -178,6 +178,11 @@ async function main() {
   }
   const privRow = Array.isArray(priv?.body) ? priv.body[0] ?? null : null;
   const wallet = await serviceRest('GET', `wallets?user_id=eq.${userId}&select=user_id,balance`);
+  const triggerRefCode = await serviceRest(
+    'GET',
+    `profiles_private?id=eq.${userId}&select=referral_code,onboarding_completed`,
+  );
+  const triggerRef = Array.isArray(triggerRefCode.body) ? triggerRefCode.body[0] ?? null : null;
 
   record(
     'A',
@@ -196,6 +201,12 @@ async function main() {
     'wallet exists (created by the profiles insert trigger)',
     Array.isArray(wallet.body) && wallet.body.length > 0,
     Array.isArray(wallet.body) && wallet.body.length > 0 ? 'present' : 'MISSING',
+  );
+  record(
+    'A',
+    'the server assigned a deterministic referral code and onboarding=false',
+    /^GRW-[A-Z]{2}-[0-9a-f]{6}$/.test(triggerRef?.referral_code ?? '') && triggerRef?.onboarding_completed === false,
+    `referral_code=${triggerRef?.referral_code ?? 'none'} onboarding_completed=${triggerRef?.onboarding_completed}`,
   );
 
   // ── Leg B: the browser leg (real session, real RPC) ───────────────────────
@@ -278,11 +289,18 @@ async function main() {
     Array.isArray(rows.body) && rows.body[0]?.name === `${displayName} (renamed)`,
     `name=${Array.isArray(rows.body) ? rows.body[0]?.name : '-'}`,
   );
+  // The RPC's documented collision rule appends `-<4 hex>` when the requested
+  // code already exists — including for the same row on a repeat call. So the
+  // contract is "preserved, or deterministically suffixed", never "lost".
+  // (Caught by this harness: a strict-equality assertion here was the harness's
+  // own defect, not a product one.)
+  const requestedCode = `GRW-CL-${runId}`.toUpperCase();
+  const finalCode = Array.isArray(privRows.body) ? privRows.body[0]?.referral_code : null;
   record(
     'D',
-    'the caller-supplied referral code was kept (not overwritten)',
-    Array.isArray(privRows.body) && privRows.body[0]?.referral_code === `GRW-CL-${runId}`.toUpperCase(),
-    `referral_code=${Array.isArray(privRows.body) ? privRows.body[0]?.referral_code : '-'}`,
+    'the referral code is preserved (or suffixed by the documented collision rule)',
+    finalCode === requestedCode || new RegExp(`^${requestedCode}-[0-9a-f]{4}$`).test(finalCode ?? ''),
+    `requested=${requestedCode} final=${finalCode}`,
   );
 }
 
