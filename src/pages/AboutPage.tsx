@@ -196,7 +196,7 @@ export function AboutPage() {
               <div className="flex items-center gap-3 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span className="text-xs font-bold text-emerald-800">
-                  100% Escrow and Deliverable IP Protection Guaranteed.
+                  Escrow-protected payments — IP transfers to the client on final release.
                 </span>
               </div>
             </div>

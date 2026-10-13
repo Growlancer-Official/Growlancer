@@ -501,7 +501,7 @@ export function CreateServicePage() {
               )}
               {writerUsage?.isPro && (
                 <p className="text-xs text-amber-600 font-medium mt-1.5 flex items-center gap-1">
-                  <Zap className="w-3.5 h-3.5" /> Unlimited Pro AI writing
+                  <Zap className="w-3.5 h-3.5" /> Pro: {writerUsage.limit} AI writes/day
                 </p>
               )}
             </div>
@@ -532,9 +532,9 @@ export function CreateServicePage() {
                 <span className="text-xs text-slate-400">
                   {writerUsage
                     ? writerUsage.isPro
-                      ? 'Pro: unlimited AI writing'
+                      ? `Pro: ${writerUsage.limit} AI writes/day`
                       : `${Math.max(0, writerUsage.limit - writerUsage.used)}/${writerUsage.limit} free today`
-                    : 'Free: 5/day · Pro: unlimited'}
+                    : 'Free: 5/day · Pro: 100/day'}
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">Minimum 150 characters recommended for better SEO</p>

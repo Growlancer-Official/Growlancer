@@ -102,7 +102,7 @@ function HeroSection({
                 className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
               >
                 {isAuthenticated ? (role === 'freelancer' ? 'Browse Projects' : 'Post a Project') : 'Start Freelancing'}
-                <Sparkles className="ml-2 w-4 h-4 text-emerald-500" />
+                <ArrowRight className="ml-2 w-4 h-4 text-emerald-500" />
               </button>
             </div>
 
@@ -1259,7 +1259,7 @@ function WaitlistSection() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
               <div>
                 <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Clock3 className="w-3.5 h-3.5" />
                   EARLY ACCESS
                 </div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-display">

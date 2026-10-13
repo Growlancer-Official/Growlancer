@@ -3,9 +3,7 @@ import {
   Award,
   CheckCircle,
   Copy,
-  Cpu,
   Crown,
-  Eye,
   Flame,
   Leaf,
   Mail,
@@ -313,24 +311,24 @@ export function ReferralsPage() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-100">
                 <div className="h-10 w-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center mb-2">
-                  <Cpu className="w-5 h-5" />
+                  <Award className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold mb-2">AI Match Priority</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">Your profile is processed first by the Growlancer matching engine for all relevant projects.</p>
+                <h4 className="font-bold mb-2">Points &amp; Levels</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">Every completed referral adds 10 points and moves you up the Starter → Growth → Pro → Elite tiers.</p>
               </div>
               <div className="p-3 bg-orange-50/50 rounded-xl border border-orange-100">
                 <div className="h-10 w-10 rounded-xl bg-orange-500 text-white flex items-center justify-center mb-2">
-                  <Eye className="w-5 h-5" />
+                  <Trophy className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold mb-2">Project Visibility</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">Referrals boost your profile to the top of client search results and project shortlists.</p>
+                <h4 className="font-bold mb-2">Leaderboard Standing</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">Top referrers appear on the referrals leaderboard. Search ranking stays 100% merit-based for everyone.</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-2">
-                  <Award className="w-5 h-5" />
+                  <Crown className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold mb-2">Exclusive Badges</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">Elite status badge visible to all clients, signaling platform seniority and trust.</p>
+                <h4 className="font-bold mb-2">Referrer Status</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">Your referrer tier (Starter → Elite) is shown on this page as recognition for growing the community.</p>
               </div>
             </div>
           </section>

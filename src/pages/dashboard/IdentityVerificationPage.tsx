@@ -363,7 +363,7 @@ export function IdentityVerificationPage() {
             <p className="text-slate-500 text-sm mt-0.5">
               {isClient
                 ? 'Verify your identity to build trust with freelancers. Everything is optional for clients — only add what you want.'
-                : 'Unlock your Verified badge, higher limits and priority matching.'}
+                : 'Unlock your Verified badge and show clients you are a real, checked professional.'}
             </p>
           </div>
         </div>

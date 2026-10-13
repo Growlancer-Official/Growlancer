@@ -191,13 +191,13 @@ export function AIGenerateModal({
           ) : usage ? (
             usage.isPro ? (
               <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-                <Zap className="w-3.5 h-3.5" /> Unlimited Pro AI writing
+                <Zap className="w-3.5 h-3.5" /> Pro: {usage.limit} AI writes/day
               </span>
             ) : (
               `${Math.max(0, usage.limit - usage.used)} of ${usage.limit} free AI writes left today`
             )
           ) : (
-            'Free: 5/day · Pro: unlimited'
+            'Free: 5/day · Pro: 100/day'
           )}
         </p>
 
@@ -225,7 +225,7 @@ export function AIGenerateModal({
               {error}
               {!clientFree && usage && !usage.isPro && (
                 <span className="block mt-1 text-rose-500">
-                  Upgrade to Pro on the <span className="font-semibold">Pricing</span> page for unlimited AI writing.
+                  Upgrade to Pro on the <span className="font-semibold">Pricing</span> page for 100 AI writes per day.
                 </span>
               )}
             </div>

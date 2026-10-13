@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, BarChart3, Calendar, Code, ShieldCheck, Sparkles, Users, Wallet, Zap,  } from 'lucide-react';
+import { ArrowRight, BarChart3, Calendar, Code, ShieldCheck, Sparkles, Users, Wallet, Wrench, Zap,  } from 'lucide-react';
 
 export function FeaturesPage() {
   const mainFeatures = [
@@ -86,7 +86,7 @@ export function FeaturesPage() {
 
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+            <Wrench className="w-4 h-4" />
             Growlancer Toolkit
           </span>
           <h1 className="font-display text-4xl sm:text-7xl font-black tracking-tight leading-none">

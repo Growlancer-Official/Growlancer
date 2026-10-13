@@ -43,7 +43,7 @@ const faqs: FAQ[] = [
   {
     category: 'Payments & Escrow',
     question: 'What is Escrow Protection and how does it secure transactions?',
-    answer: 'Escrow protection guarantees secure collaboration. When a contract is created, the client funds the contract total into a secure, virtual escrow pool. The funds are held safely by Growlancer and cannot be retrieved by either party until the client approves the deliverables or both sides mutually cancel the agreement. This ensures freelancers are guaranteed payment upon successful completion, and clients are guaranteed deliverables before funds are released.',
+    answer: 'When a contract is created, the client funds the contract total into a secure escrow pool. The funds are held by Growlancer and are not released to either party until the client approves the deliverables, the review window passes, or both sides mutually cancel the agreement. Either party can also open a dispute, which freezes that escrow until a neutral admin review decides how the funds move.',
   },
   {
     category: 'Payments & Escrow',
@@ -58,12 +58,12 @@ const faqs: FAQ[] = [
   {
     category: 'For Freelancers',
     question: 'How do I submit proposals to open projects?',
-    answer: 'Browse your Project Feed for matching jobs. Click "Submit Proposal", propose your project price, enter a cover letter, outline milestones, and click submit. Pro subscribers receive high-priority visibility and unlimited proposal submissions.',
+    answer: 'Browse your Project Feed for matching jobs. Click "Submit Proposal", propose your project price, enter a cover letter, outline milestones, and click submit. Matching and visibility are merit-based and identical for everyone — Premium never changes how your proposals are ranked or who sees them.',
   },
   {
     category: 'For Freelancers',
     question: 'How do I withdraw my earnings from the Growlancer Wallet?',
-    answer: 'Go to your Wallet dashboard, click "Withdraw Funds", select your withdrawal method (UPI or Bank Account), add your credentials (e.g. UPI ID or bank account details with IFSC), and confirm. Withdrawals are processed via RazorpayX in INR, usually within 24 hours, with a transparent 2% processing fee. PayPal withdrawals are coming soon.',
+    answer: 'Go to your Wallet dashboard, click "Withdraw Funds", select your withdrawal method (UPI or Bank Account), add your credentials (e.g. UPI ID or bank account details with IFSC), and confirm. Withdrawals are processed via RazorpayX in INR, usually within 24 hours, with a transparent 2% processing fee. The current processing timeline is always shown to you before you confirm. PayPal withdrawals are coming soon.',
   },
   {
     category: 'For Freelancers',

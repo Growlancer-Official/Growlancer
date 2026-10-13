@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
   ArrowRight,
-  BarChart3,
   CheckCircle,
   ChevronDown,
   CreditCard,
@@ -32,7 +31,7 @@ import {
 const FAQ_ITEMS = [
   {
     q: 'What do I get in Premium?',
-    a: 'Premium unlocks unlimited AI writing (titles, descriptions, cover letters), a personalized AI assistant with priority responses, and advanced analytics. It is purely extra AI + productivity tools — your packages, proposals, visibility and matching score stay exactly the same.',
+    a: 'Premium removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day), and adds a Premium badge to your profile. It is purely extra AI + productivity tools — your packages, proposals, visibility and matching score stay exactly the same.',
   },
   {
     q: 'Does Premium boost my ranking or visibility?',
@@ -52,26 +51,28 @@ const FAQ_ITEMS = [
   },
 ];
 
+// Every card here must describe something the product actually does. Anything that
+// is free for everyone (analytics, matching, packages) must NOT appear as an unlock.
 const UNLOCKS = [
   {
-    icon: Sparkles,
-    title: 'Unlimited AI Writing',
-    text: 'Unlimited AI-generated titles, descriptions and cover letters. Free users get 5 generations per day.',
-  },
-  {
     icon: MessageSquare,
-    title: 'AI Assistant — Priority',
-    text: 'Unlimited AI assistant messages with priority responses, plus 24/7 priority human support.',
+    title: 'Unlimited AI Assistant',
+    text: 'No monthly cap on AI assistant messages. Standard fair-use rate limits still protect the service for everyone.',
   },
   {
-    icon: BarChart3,
-    title: 'Advanced Analytics',
-    text: 'Deeper insights into your profile, service and proposal performance — views, conversions and trends.',
+    icon: Sparkles,
+    title: 'AI Writing — 100 generations/day',
+    text: 'AI-generated titles, descriptions and cover letters, raised to 100 generations per day. Free users get 5 per day.',
   },
   {
     icon: CheckCircle,
     title: 'Premium Badge',
-    text: 'A visible Premium badge on your profile. A signal of commitment — never a ranking boost.',
+    text: 'A visible Premium badge on your profile. A signal of support — never a ranking boost.',
+  },
+  {
+    icon: RefreshCw,
+    title: 'One free trial',
+    text: 'Every new freelancer gets one free trial of Premium — no payment needed to start.',
   },
 ];
 
@@ -207,13 +208,17 @@ export function ProSubscriptionPage() {
 
   // Build comparison rows from plan features.
   // RANKING/MATCHING/VISIBILITY ARE NEVER TIERED — merit-based for everyone.
+  // Writing has its own cap (ai-writer PRO_DAILY_LIMIT = 100/day vs FREE 5/day) —
+  // it must never be inferred from ai_messages_limit, and the assistant cap is a
+  // message quota, not a writing quota. Analytics is NOT tiered: the dashboard is
+  // free for every freelancer, so it can never appear as a Premium unlock.
   const allFeatures = [
-    { key: 'ai_writing', label: 'AI Writing', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : '5/day') },
+    { key: 'ai_writing', label: 'AI Writing', getValue: (p: AIPlan) => (p.price > 0 ? '100/day' : '5/day') },
     { key: 'ai_messages', label: 'AI Assistant', getValue: (p: AIPlan) => (p.ai_messages_limit >= 1000 ? 'Unlimited' : `${p.ai_messages_limit}/mo`) },
     { key: 'packages', label: '3-Tier Service Packages', getValue: () => 'Included — free for everyone' },
     { key: 'matching', label: 'AI Matching & Ranking', getValue: () => 'Merit-based — same for all' },
-    { key: 'analytics', label: 'Analytics', getValue: (p: AIPlan) => (p.price > 0 ? 'Advanced' : 'Basic') },
-    { key: 'support', label: 'Support', getValue: (p: AIPlan) => (p.price > 0 ? '24/7 Priority' : 'Email') },
+    { key: 'analytics', label: 'Analytics Dashboard', getValue: () => 'Included — free for everyone' },
+    { key: 'support', label: 'Support', getValue: () => 'Email, support tickets & AI assistant' },
   ];
 
   if (loading) {
@@ -230,7 +235,7 @@ export function ProSubscriptionPage() {
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
             Premium
-            <InfoTip title="Growlancer Premium" text="Premium unlocks AI writing tools, AI assistant, profile optimization and advanced analytics. It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone." />
+            <InfoTip title="Growlancer Premium" text="Premium removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Premium badge. It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone." />
           </h1>
           <p className="text-slate-500 mt-0.5 text-sm">AI-powered productivity tools, on top of the free marketplace</p>
         </div>

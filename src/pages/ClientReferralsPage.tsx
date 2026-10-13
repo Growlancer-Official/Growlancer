@@ -136,7 +136,7 @@ export function ClientReferralsPage() {
               {tier.next ? (
                 <>Get <span className="font-bold text-white">{tier.remaining} more</span> to unlock {tier.next} tier perks.</>
               ) : (
-                <>You've reached Elite — VIP talent pools & badge unlocked.</>
+                <>You've reached the Elite referrer tier.</>
               )}
             </p>
           </div>
@@ -155,30 +155,30 @@ export function ClientReferralsPage() {
             <div className="h-12 w-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-2.5 group-hover:scale-110 transition-transform">
               <Zap className="w-4 h-4" />
             </div>
-            <h4 className="font-bold mb-2">Faster AI Matching</h4>
+            <h4 className="font-bold mb-2">Referral Points &amp; Tiers</h4>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Referral tiers boost your project processing speed. High-tier clients get matched in{' '}
-              <span className="font-bold text-emerald-600">under 15 seconds</span>.
+              Every completed referral adds points and moves you through the{' '}
+              <span className="font-bold text-emerald-600">Pro → Elite</span> tiers shown on this page.
             </p>
           </div>
           <div className="bg-white p-6 rounded-xl border border-slate-100 hover:border-emerald-100 transition-all group">
             <div className="h-12 w-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 mb-2.5 group-hover:scale-110 transition-transform">
               <Sparkles className="w-4 h-4" />
             </div>
-            <h4 className="font-bold mb-2">Better Recommendations</h4>
+            <h4 className="font-bold mb-2">Merit-Based Matching</h4>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Unlock deeper talent analytics. See only the{' '}
-              <span className="font-bold text-orange-600">Top 1%</span> of freelancers who match your exact stack and culture.
+              AI matching is identical for every client — freelancers are ranked purely on{' '}
+              <span className="font-bold text-orange-600">skills, ratings and fit</span>. Referrals never change who you see.
             </p>
           </div>
           <div className="bg-white p-6 rounded-xl border border-slate-100 hover:border-emerald-100 transition-all group">
             <div className="h-12 w-12 rounded-xl bg-slate-900 flex items-center justify-center text-white mb-2.5 group-hover:scale-110 transition-transform">
               <ShieldCheck className="w-4 h-4" />
             </div>
-            <h4 className="font-bold mb-2">Trusted Client Badge</h4>
+            <h4 className="font-bold mb-2">Referral Leaderboard</h4>
             <p className="text-sm text-slate-500 leading-relaxed">
-              Higher tiers get the "Elite Client" badge, increasing freelancer acceptance rates by up to{' '}
-              <span className="font-bold text-slate-900">35%</span>.
+              Active referrers appear on the referrals leaderboard, recognised for{' '}
+              <span className="font-bold text-slate-900">helping the community grow</span>.
             </p>
           </div>
         </div>

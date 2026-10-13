@@ -10,22 +10,28 @@ import { RouteFallback } from '../components/LoadingSkeleton';
 import { CookieConsent } from '../components/CookieConsent';
 
 // ═══════════════════════════════════════════════════════════════
-// EAGER IMPORTS — SSR-critical, SEO-important pages only
+// EAGER IMPORTS — only what the entry itself renders
 // ═══════════════════════════════════════════════════════════════
-// Kept eager so Vike SSR renders real HTML for crawlers.
-// Everything else is lazy-loaded to keep the main bundle small.
-//
-// Layout (public/static)
+// Left eager: the public layout shell and the landing page, so the
+// highest-traffic route never waits on a second chunk request.
 import { MainLayout } from '@layouts/MainLayout';
-
-// SEO-critical public pages (highest traffic, indexed by Google)
 import { HomePage } from '@pages/HomePage';
-import { FreelancersSearchPage } from '@pages/FreelancersSearchPage';
-import { ServicesCatalogPage } from '@pages/ServicesCatalogPage';
-import { HowItWorksPage } from '@pages/HowItWorksPage';
-import { FeaturesPage } from '@pages/FeaturesPage';
-import { CategoriesPage } from '@pages/CategoriesPage';
-import { PricingPage } from '@pages/PricingPage';
+
+// Code-split public pages.
+//
+// These used to be eager "for SSR", but that reasoning is obsolete here:
+// pages/+config.ts runs Vike's Suspense-capable streaming renderer
+// (`stream: { require: true, enable: false }`) exactly so lazy routes still
+// produce real prerendered HTML — which is how the ~85 already-lazy routes
+// (about, help-center, terms, privacy, contests, …) are crawled today. Being
+// eager only meant every visitor downloaded these module graphs too, including
+// the protected admin console below.
+const FreelancersSearchPage = lazy(() => import('@pages/FreelancersSearchPage').then(m => ({ default: m.FreelancersSearchPage })));
+const ServicesCatalogPage = lazy(() => import('@pages/ServicesCatalogPage').then(m => ({ default: m.ServicesCatalogPage })));
+const HowItWorksPage = lazy(() => import('@pages/HowItWorksPage').then(m => ({ default: m.HowItWorksPage })));
+const FeaturesPage = lazy(() => import('@pages/FeaturesPage').then(m => ({ default: m.FeaturesPage })));
+const CategoriesPage = lazy(() => import('@pages/CategoriesPage').then(m => ({ default: m.CategoriesPage })));
+const PricingPage = lazy(() => import('@pages/PricingPage').then(m => ({ default: m.PricingPage })));
 
 // Lazy-loaded public pages (lower traffic, code-split for smaller main bundle)
 const AboutPage = lazy(() => import('@pages/AboutPage').then(m => ({ default: m.AboutPage })));
@@ -57,9 +63,8 @@ const ContestsPage = lazy(() => import('@pages/ContestsPage').then(m => ({ defau
 const ContestDetailPage = lazy(() => import('@pages/ContestDetailPage').then(m => ({ default: m.ContestDetailPage })));
 const CertificateVerifyPage = lazy(() => import('@pages/CertificateVerifyPage').then(m => ({ default: m.CertificateVerifyPage })));
 
-// Public pages with SSR need
-import { NotFoundPage } from '@pages/NotFoundPage';
-import { WaitlistPage } from '@pages/WaitlistPage';
+const NotFoundPage = lazy(() => import('@pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const WaitlistPage = lazy(() => import('@pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY IMPORTS — auth-protected routes (no SSR needed)
@@ -70,8 +75,10 @@ const DashboardLayout = lazy(() =>
 const ClientDashboardLayout = lazy(() =>
   import('@layouts/ClientDashboardLayout').then(m => ({ default: m.ClientDashboardLayout }))
 );
-import { AdminAuthGuard } from '@components/AdminAuthGuard';
-import { AdminDashboardLayout } from '@layouts/AdminDashboardLayout';
+// The admin console is behind AdminAuthGuard and is never crawled, so its
+// layout + guard must never sit in the public critical path.
+const AdminAuthGuard = lazy(() => import('@components/AdminAuthGuard').then(m => ({ default: m.AdminAuthGuard })));
+const AdminDashboardLayout = lazy(() => import('@layouts/AdminDashboardLayout').then(m => ({ default: m.AdminDashboardLayout })));
 
 // Dashboard Pages - Freelancer
 const OverviewPage = lazy(() => import('@pages/dashboard/OverviewPage').then(m => ({ default: m.OverviewPage })));

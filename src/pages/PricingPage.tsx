@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Check, Crown, ShieldCheck, Sparkles, Zap } from 'lucide-react';
+import { ArrowRight, Check, Crown, ShieldCheck, Users, Zap } from 'lucide-react';
 import { TipNote } from '../components/TipNote';
 import { subscriptionService, type AIPlan } from '../lib/subscriptionHelpers';
 import { formatCurrency } from '../lib/currency';
@@ -28,7 +28,7 @@ export function PricingPage() {
     '5% flat platform fee on every successful payment — no hidden charges',
     'Your money sits in Growlancer Escrow until you approve the work',
     'AI-powered freelancer matching, tailored to your project',
-    'AI writing for project titles & descriptions (5 free per day)',
+    'AI writing for project titles & descriptions — free, with a fair-use daily cap',
     'Milestone-based payments — pay as the work progresses',
     'Free cancellation & full refund before work is delivered',
     'Fair dispute resolution with a neutral admin review',
@@ -78,7 +78,7 @@ export function PricingPage() {
               <p className="text-sm text-slate-300">
                 <strong className="text-white">{formatCurrency(0)} to start</strong> — no commission, no fees on
                 your earnings. 3-tier service packages are free for everyone. Optional Premium
-                ({formatCurrency(299)}/month) adds AI writing, AI assistant & analytics — never ranking or visibility.
+                ({formatCurrency(299)}/month) adds extra AI capacity and a Pro badge — never ranking or visibility.
               </p>
             </div>
           </div>
@@ -147,7 +147,7 @@ export function PricingPage() {
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="text-center mb-2">
             <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase tracking-wider mb-2">
-              <Sparkles className="w-4 h-4" />
+              <Users className="w-4 h-4" />
               FOR FREELANCERS
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
@@ -156,8 +156,8 @@ export function PricingPage() {
             <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
               Join free, earn 100% of every payment, and build services with <strong>3 package
               tiers (Basic / Standard / Premium)</strong> — completely free for every freelancer.
-              Upgrade to <strong>Premium ({formatCurrency(299)}/month, optional)</strong> for unlimited AI writing,
-              AI assistant & advanced analytics. Packages, visibility and matching stay
+              Upgrade to <strong>Premium ({formatCurrency(299)}/month, optional)</strong> for higher AI writing
+              limits, unlimited AI assistant messages and a Pro badge. Packages, visibility and matching stay
               <strong> merit-based and identical</strong> — never a commission on your earnings.
             </p>
           </div>
@@ -200,7 +200,7 @@ export function PricingPage() {
                   MOST POPULAR
                 </div>
                 <h3 className="font-display text-2xl font-bold mb-2">Premium</h3>
-                <p className="text-sm text-slate-400 mb-3">AI writing, AI assistant, profile optimization & analytics</p>
+                <p className="text-sm text-slate-400 mb-3">AI writing, unlimited AI assistant messages & a Pro badge</p>
                 <div className="mb-3">
                   <div className="flex items-baseline gap-1">
                     <span className="font-display text-4xl font-bold">{formatCurrency(299)}</span>
@@ -208,12 +208,11 @@ export function PricingPage() {
                   </div>
                 </div>
                 <ul className="space-y-2 mb-3 flex-1">
-                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Unlimited AI messages</span></li>
-                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Unlimited AI writing</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Unlimited AI assistant messages</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">AI writing — 100 generations per day</span></li>
                   <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">AI-powered project matching</span></li>
-                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Priority AI responses</span></li>
-                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Advanced analytics</span></li>
-                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Priority support 24/7</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Pro badge on your public profile</span></li>
+                  <li className="flex items-start gap-2"><Check className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" /><span className="text-sm text-slate-300">Cancel anytime — no lock-in</span></li>
                 </ul>
                 <Link to="/dashboard/pro" className="block w-full py-3 rounded-xl font-bold text-center bg-emerald-500 text-slate-900 hover:bg-emerald-400 transition-colors">Try Premium Free</Link>
               </div>
@@ -282,8 +281,8 @@ export function PricingPage() {
                       <li className="flex items-start gap-3">
                         <Check className={`w-5 h-5 flex-shrink-0 ${isPopular ? 'text-emerald-400' : 'text-emerald-500'}`} />
                         <span className={`text-sm ${isPopular ? 'text-slate-300' : 'text-slate-600'}`}>
-                          {plan.ai_messages_limit >= 1000
-                            ? 'Unlimited AI writing (titles, descriptions, cover letters)'
+                          {plan.price > 0
+                            ? 'AI writing — 100 generations per day'
                             : 'AI writing — 5 generations per day'}
                         </span>
                       </li>
@@ -303,15 +302,11 @@ export function PricingPage() {
                         <>
                           <li className="flex items-start gap-3">
                             <Check className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-                            <span className="text-sm text-slate-300">Priority AI responses</span>
+                            <span className="text-sm text-slate-300">Pro badge on your public profile</span>
                           </li>
                           <li className="flex items-start gap-3">
                             <Check className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-                            <span className="text-sm text-slate-300">Advanced earnings analytics</span>
-                          </li>
-                          <li className="flex items-start gap-3">
-                            <Check className="w-5 h-5 flex-shrink-0 text-emerald-400" />
-                            <span className="text-sm text-slate-300">Priority support 24/7</span>
+                            <span className="text-sm text-slate-300">Cancel anytime — no lock-in</span>
                           </li>
                         </>
                       ) : (
@@ -372,8 +367,9 @@ export function PricingPage() {
                 No. Creating a profile, building 3-tier packages, applying to projects, and
                 receiving payments are completely free — including <strong>5 free AI-written
                 titles, descriptions and cover messages every day</strong>. The optional{' '}
-                <strong>Premium plan ({formatCurrency(299)}/month, flat)</strong> unlocks <strong>unlimited AI
-                writing</strong>, the AI assistant and advanced analytics. It is{' '}
+                <strong>Premium plan ({formatCurrency(299)}/month, flat)</strong> raises AI writing to{' '}
+                <strong>100 generations per day</strong> and removes the monthly cap on AI assistant
+                messages. It is{' '}
                 <strong>not</strong> a commission, never touches your earnings, and never affects
                 your ranking, visibility or matching.
               </p>
@@ -400,8 +396,8 @@ export function PricingPage() {
             <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Is the Premium plan worth it for me?</h3>
               <p className="text-sm text-slate-600">
-                Premium is optional and purely about speed and AI help: unlimited AI writing, AI
-                assistant with priority responses, profile optimization and advanced analytics.
+                Premium is optional and purely about extra AI capacity: AI writing up to 100
+                generations per day, no monthly cap on AI assistant messages, and a Pro badge.
                 It does <strong>not</strong> boost your ranking or visibility — matches are
                 merit-based for everyone. Cancel anytime, no lock-in.
               </p>
@@ -452,7 +448,7 @@ export function PricingPage() {
                 <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
                 <p className="text-sm text-slate-600">
                   <strong className="text-slate-900">Optional Premium {formatCurrency(299)}/month</strong> —
-                  freelancers who want extra AI tools and analytics. Purely optional, no lock-in.
+                  freelancers who want extra AI capacity. Purely optional, no lock-in.
                 </p>
               </li>
               <li className="flex items-start gap-3">
@@ -475,15 +471,15 @@ export function PricingPage() {
             <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-200">
               <ShieldCheck className="w-8 h-8 text-emerald-500" />
               <div>
-                <p className="font-bold text-slate-900">100% Secure</p>
-                <p className="text-sm text-slate-600">Escrow protected</p>
+                <p className="font-bold text-slate-900">Escrow Protected</p>
+                <p className="text-sm text-slate-600">Funds held until you approve</p>
               </div>
             </div>
             <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-200">
               <Zap className="w-8 h-8 text-orange-500" />
               <div>
-                <p className="font-bold text-slate-900">Instant Match</p>
-                <p className="text-sm text-slate-600">AI-powered in seconds</p>
+                <p className="font-bold text-slate-900">AI Matching</p>
+                <p className="text-sm text-slate-600">Merit-based for everyone</p>
               </div>
             </div>
             <div className="flex items-center gap-3 bg-white rounded-xl p-3 border border-slate-200">

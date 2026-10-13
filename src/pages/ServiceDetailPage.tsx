@@ -621,7 +621,7 @@ export function ServiceDetailPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  Satisfaction guaranteed
+                  You approve the work before funds release
                 </div>
               </div>
             </div>

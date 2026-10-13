@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, MapPin, ShieldCheck } from 'lucide-react';
 
 type SiteFooterProps = {
   onOpenSignup?: (role?: 'freelancer' | 'client') => void;
@@ -35,7 +35,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                 <span className="text-xs font-medium text-emerald-700">Udyam Registered</span>
               </div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg ring-1 ring-slate-200">
-                <Sparkles className="w-4 h-4 text-slate-500" />
+                <MapPin className="w-4 h-4 text-slate-500" />
                 <span className="text-xs font-medium text-slate-600">India-First</span>
               </div>
             </div>

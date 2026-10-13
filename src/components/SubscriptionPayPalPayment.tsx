@@ -290,46 +290,25 @@ export function SubscriptionPayPalPayment({
 
         <div className="space-y-4">
           <h3 className="font-semibold text-slate-900">Pro Features:</h3>
+          {/* One truthful list only. There is no client AI upsell: client AI is free
+              for life by policy, so a "client Pro" benefit list must never be shown. */}
           <ul className="space-y-4 text-sm text-slate-600">
-            {role === 'freelancer' ? (
-              <>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>10x more proposals per month</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Priority matching algorithm</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Access to high-budget projects</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Advanced earnings analytics</span>
-                </li>
-              </>
-            ) : (
-              <>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Unlimited AI-powered matching</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Priority access to top freelancers</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Dedicated account manager</span>
-                </li>
-                <li className="flex items-center gap-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
-                  <span>Advanced project analytics</span>
-                </li>
-              </>
-            )}
+            <li className="flex items-center gap-3">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>No monthly cap on AI assistant messages</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>AI writing — 100 generations per day (Free: 5 per day)</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>Premium badge on your public profile</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <CheckCircle className="w-4 h-4 text-emerald-600" />
+              <span>Cancel anytime — no lock-in</span>
+            </li>
           </ul>
         </div>
       </div>

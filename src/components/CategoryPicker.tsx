@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Check, Layers, Loader2, Plus, Search, Sparkles, X } from 'lucide-react';
+import { Check, Layers, Loader2, Plus, Search, X } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { resolveCategoryMeta } from '../lib/categories';
 
@@ -247,7 +247,7 @@ export function CategoryPicker({
       {showSkills && (
         <div className="border-t border-slate-100 pt-5">
           <div className="flex items-center gap-1.5 mb-3">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <Plus className="w-4 h-4 text-emerald-600" />
             <p className="text-sm font-medium text-slate-700">Add your own skills</p>
           </div>
           <p className="text-xs text-slate-500 mb-3">

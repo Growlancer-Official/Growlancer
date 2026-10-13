@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, LayoutDashboard, AlertTriangle, Briefcase, CircleDollarSign, HelpCircle, Info, LayoutGrid, LogIn, Mail, Package, Sparkles, Trophy, UserPlus, Users, Zap } from 'lucide-react';
+import { Menu, X, LayoutDashboard, AlertTriangle, Briefcase, CircleDollarSign, HelpCircle, Info, LayoutGrid, LogIn, Mail, Package, Trophy, UserPlus, Users, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ROUTES } from '../routes';
 import { useAuth } from '../context/AuthContext';
@@ -194,7 +194,7 @@ export function MainLayout() {
               Contests
             </Link>
             <Link to={ROUTES.FEATURES} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
-              <Sparkles className="w-4 h-4 text-slate-400" />
+              <LayoutGrid className="w-4 h-4 text-slate-400" />
               Features
             </Link>
             <Link to={ROUTES.PRICING} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">

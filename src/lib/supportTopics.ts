@@ -147,7 +147,7 @@ export const FREELANCER_SUPPORT_TOPICS: SupportTopic[] = [
     description: `${formatCurrency(299)}/month plan, AI tools, cancel anytime`,
     steps: [
       {
-        text: `Freelancer Premium is **${formatCurrency(299)}/month, flat** — optional, cancel anytime. It unlocks unlimited AI writing, the AI assistant, profile optimization and advanced analytics. It never affects your packages, ranking or visibility — everything stays merit-based.`,
+        text: `Freelancer Premium is **${formatCurrency(299)}/month, flat** — optional, cancel anytime. It removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day (free users get 5 per day) and adds a Premium badge. It never affects your packages, ranking or visibility — everything stays merit-based.`,
         options: [
           { label: 'How do I subscribe?', next: 1 },
           { label: 'How do I cancel?', next: 2 },

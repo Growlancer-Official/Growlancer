@@ -237,7 +237,7 @@ Deno.serve(async (req: Request) => {
           ? 'You have used a lot of AI today. Please try again in a little while.'
           : isPro
             ? 'Daily AI writing limit reached. Please try again tomorrow.'
-            : `You have used all ${FREE_DAILY_LIMIT} free AI generations today. Upgrade to Pro for unlimited AI writing.`,
+            : `You have used all ${FREE_DAILY_LIMIT} free AI generations today. Upgrade to Pro for ${PRO_DAILY_LIMIT} AI writes per day.`,
         isPro,
         used,
         limit,
