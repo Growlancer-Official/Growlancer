@@ -223,8 +223,17 @@ export function SignupModal({ isOpen, onClose, onSwitchToLogin, initialRole }: S
           onSelect={async (provider) => {
             setError(null);
             if (!role) {
-              setError('Please choose Freelance or Hire Talent to continue.');
-              return { success: false };
+              // ⚠️ The reason MUST travel in the RETURN value, not only through
+              // setError: OAuthButtons reports failures with
+              //   onError?.(result.error || 'Sign-in could not start…')
+              // so a bare `{ success: false }` is immediately overwritten by
+              // that generic fallback (measured 2026-10-13: clicking a provider
+              // with no role selected told the user to "try again" — advice that
+              // fails identically — instead of asking for the missing choice).
+              return {
+                success: false,
+                error: 'Please choose Freelance or Hire Talent to continue.',
+              };
             }
             return signInWithOAuth(provider, role);
           }}

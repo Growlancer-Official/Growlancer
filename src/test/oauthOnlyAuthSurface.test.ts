@@ -87,6 +87,19 @@ describe('the only way in is GitHub or LinkedIn', () => {
     expect(SIGNUP).toMatch(/if \(!role\)/);
   });
 
+  it('the missing-role refusal carries its reason (the generic fallback must not mask it)', () => {
+    // OAuthButtons reports a failure as `result.error || 'Sign-in could not
+    // start…'`. SignupModal used to `return { success: false }` with only a
+    // setError() call, so that generic fallback replaced the real reason:
+    // clicking a provider before choosing a role told the user to "try again",
+    // advice that fails identically. The reason must be returned.
+    const code = stripComments(SIGNUP);
+    expect(code).not.toMatch(/return\s*\{\s*success:\s*false\s*\}/);
+    expect(code).toMatch(
+      /success:\s*false,\s*error:\s*'Please choose Freelance or Hire Talent to continue\.'/,
+    );
+  });
+
   it("login must not override an existing user's saved role", () => {
     // A returning user's role lives in their profile; a stale localStorage
     // role from an unfinished signup must be cleared before the redirect.

@@ -34,6 +34,7 @@ import { execSync } from 'node:child_process';
 import {
   existsSync,
   unlinkSync,
+  rmSync,
   mkdirSync,
   readdirSync,
   copyFileSync,
@@ -101,6 +102,25 @@ if (process.env.SKIP_VITE_BUILD === '1') {
 console.log(`\n${YELLOW}[2/5]${RESET} Copying dist/client/ → dist/ (deterministic)...`);
 if (existsSync(DIST_CLIENT)) {
   try {
+    // ── Prune the mirrored tree before merging into it ──
+    // The copy below MERGES into dist/, so a directory a PREVIOUS build
+    // prerendered but this one no longer produces survives and keeps being
+    // served. Measured 2026-10-13: after four dead auth prerender entries were
+    // removed from pages/prerenderUrls.ts, `npm run build` still wrote
+    // dist/auth/forgot-password/index.html containing a 404 page — a leftover,
+    // not a regeneration — so the fix looked ineffective both locally and on
+    // the repo's own server (`npm start` serves dist/). Mirror the fresh client
+    // tree exactly: drop every top-level directory under dist/ and let the copy
+    // recreate it in full. `client` is the copy SOURCE and must be skipped.
+    const staleDirs = readdirSync(DIST, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && e.name !== 'client')
+      .map((e) => e.name);
+    for (const name of staleDirs) {
+      rmSync(join(DIST, name), { recursive: true, force: true });
+    }
+    if (staleDirs.length > 0) {
+      ok(`pruned ${staleDirs.length} mirrored dir(s) so a removed page cannot linger`);
+    }
     copyRecursiveSyncManual(DIST_CLIENT, DIST);
     ok('dist/client/ copied to dist/');
   } catch (copyErr) {

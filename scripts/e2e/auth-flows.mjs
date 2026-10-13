@@ -61,7 +61,14 @@ async function withPage(vp, fn) {
   const pageErrors = [];
   const auth400 = [];
   page.on('console', (m) => {
-    if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 300));
+    // Append the resource URL: a failed-resource console message does not name
+    // the file, and the noise filter must distinguish Vercel's edge-only scripts
+    // from a real missing chunk. A genuine 404 keeps failing here — its URL is
+    // not filtered.
+    if (m.type() === 'error') {
+      const where = m.location?.()?.url || '';
+      consoleErrors.push(`${m.text().slice(0, 300)}${where ? ` [${where}]` : ''}`);
+    }
   });
   page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 300)));
   page.on('response', (r) => {
@@ -79,6 +86,18 @@ async function withPage(vp, fn) {
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Console noise that is NOT a product defect:
+//   • GoTrueClient / _useSession / getSession() — supabase-js prints expected
+//     auth-session notices during init.
+//   • _vercel/insights + _vercel/speed-insights — Vercel injects these scripts at
+//     its own edge only. Served from the repo's server (`npm start`, vite
+//     preview) they 404 and trip strict MIME checking, which made this harness
+//     permanently red on an artifact of WHERE it runs, not of the app. The
+//     scripts are absent from the built HTML (Vercel adds them), so there is no
+//     product behaviour to assert here.
+const NOISE_RE =
+  /GoTrueClient|_useSession|__loadSession|getSession\(\)|_vercel\/(insights|speed-insights)|MIME type \('application\/json'\)/;
 
 /** Dismiss the cookie-consent banner if present (it's fixed-bottom z-50 and
  *  intercepts clicks on page controls until accepted/rejected). Also a real
@@ -135,7 +154,7 @@ for (const vp of VIEWPORTS) {
         record(`login modal shown for ${route}`, vp.name, modalNowVisible);
       }
     });
-    const realErrors = consoleErrors.filter((e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e));
+    const realErrors = consoleErrors.filter((e) => !NOISE_RE.test(e));
     record(`no hard errors on ${route}`, vp.name, realErrors.length === 0 && pageErrors.length === 0,
       realErrors.concat(pageErrors).slice(0, 2).join(' | '));
   }
@@ -173,7 +192,7 @@ for (const vp of VIEWPORTS) {
       record(`${name} is enabled`, vp.name, await btn.isEnabled().catch(() => false));
     }
   });
-  const realErrors = consoleErrors.filter((e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e));
+  const realErrors = consoleErrors.filter((e) => !NOISE_RE.test(e));
   record('no hard errors in login flow', vp.name, realErrors.length === 0 && pageErrors.length === 0,
     realErrors.concat(pageErrors).slice(0, 2).join(' | '));
 }
@@ -214,7 +233,7 @@ for (const vp of VIEWPORTS) {
     const roleError = await modalScope.locator('text=/choose Freelance or Hire Talent/i').first().isVisible({ timeout: 2500 }).catch(() => false);
     record('provider click without a role is blocked', vp.name, roleError && page.url().startsWith(BASE), `url: ${page.url()}`);
   });
-  const realErrors = consoleErrors.filter((e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e));
+  const realErrors = consoleErrors.filter((e) => !NOISE_RE.test(e));
   record('no hard errors in signup flow', vp.name, realErrors.length === 0 && pageErrors.length === 0,
     realErrors.concat(pageErrors).slice(0, 2).join(' | '));
 }
@@ -238,7 +257,7 @@ for (const vp of VIEWPORTS) {
       const appAlive = await page.evaluate(() => !!document.querySelector('#root'));
       record(`page renders app shell: ${route}`, vp.name, appAlive);
     });
-    const realErrors = consoleErrors.filter((e) => !/GoTrueClient|_useSession|__loadSession|getSession\(\)/.test(e));
+    const realErrors = consoleErrors.filter((e) => !NOISE_RE.test(e));
     record(`auth page clean: ${route}`, vp.name, realErrors.length === 0 && pageErrors.length === 0,
       realErrors.concat(pageErrors).slice(0, 2).join(' | '));
   }

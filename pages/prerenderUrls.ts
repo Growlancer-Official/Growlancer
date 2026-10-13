@@ -53,10 +53,16 @@ export const PUBLIC_PRERENDER_URLS = [
   '/waitlist',
 
   // ── Auth pages (reached from email links) ───────────────
-  '/auth/forgot-password',
-  '/auth/reset-password',
-  '/auth/magic-link',
-  '/auth/otp',
+  // ⚠️ ONLY pages that actually exist may be listed here. The email/password
+  // auth pages (`/auth/forgot-password`, `/auth/reset-password`,
+  // `/auth/magic-link`, `/auth/otp`) were removed when sign-in became
+  // GitHub/LinkedIn-only — listing them made the build PRERENDER a 404 page for
+  // each one, so an old bookmark or a stale verification email landed on a
+  // bare `<h1>404</h1>` instead of the app's styled not-found screen. Absent
+  // from this list, those URLs fall through to the SPA shell and React Router
+  // renders the real NotFound route (same as any other unknown path).
+  // `src/test/oauthOnlyAuthSurface.test.ts` keeps them un-routed;
+  // `src/test/authRouteSurface.test.ts` keeps them out of this list.
   '/auth/email-confirm',
   '/auth/verify-email',
 
