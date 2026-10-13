@@ -852,3 +852,51 @@ laga deta hai — isliye ek hi user ka code dobara likhne par badal sakta hai (a
 diya ho to woh link toot sakta hai). Ab trigger kabhi-kabhi pehle se deterministic code bhi likh deta
 hai, jo browser ke pehle call par replace ho jaata hai. Referral semantics ka faisla founder ka hai,
 isliye yahan sirf note kiya gaya hai.
+✅ Icons ek hi pack par + onboarding country India-first (Oct 13, 2026, `9ae6492`) — founder report: "bahot
+jagah icons proper/professional nahi", "onboarding me country India rakho, baqi sab hata do, A→Z 'Coming
+Soon' ke saath professional dropdown". Haath se banaye gaye inline SVG icons `lucide-react` par consolidate
+(8 files: MainLayout, ErrorBoundary, ProtectedRoute, AdminSupportTicketsPage, AdminDashboardLayout,
+ProfessionalProfilePage, HomePage, AboutPage) — page-justifying swaps ke saath (Contests → Trophy, Dashboard
+→ LayoutDashboard). Jaan-boojh ke chhode gaye: 12 official brand marks (GitHub/LinkedIn/PayPal/Razorpay/
+Mastercard/X/WhatsApp/Google) + certificate ka animated seal — brand identity ko generic glyph se badalna
+galat hota. Live production build par per-page count: `/` **95 lucide / 3 raw**, `/freelancers` **158/3**,
+`/about` **18/3** — har raw SVG sirf footer ka payment brand mark. `CountrySelect` ab India ko "Currently
+Available" me pin karta hai (AVAILABLE badge) aur baqi **196** countries A→Z "Coming Soon" me dikhata hai par
+**display-only** (`aria-disabled`) — click aur keyboard Enter dono se select nahi hota; India aur
+"Remote / Online" select hote hain. Guards: `src/test/iconPackConsolidation.test.ts` (brand-mark allowlist
+ke saath) + `src/test/countrySelectContract.test.tsx` (9 tests). Real-browser proof — naya throwaway probe,
+asli credential exchange, post-auth `/onboarding` par: **16/16** (196 countries A→Z, coming-soon click +
+Enter dono refuse, India selectable, storage label badalta hai, **0 product console errors**), teardown
+clean (live **8 profiles** wapas). CI `9ae6492` green (Regression Guard + Element Audit, 22m26s).
+
+✅ Design typography band — fonts production me kabhi apply hi nahi ho rahe the (Oct 13, 2026) — founder
+report: "fonts unprofessional lag rahe hain, corporate nahi". Live measure karne par poora kaaran-chain
+nikla, **teen alag defects** ek saath:
+**(a) Asli kaaran:** `pages/+Head.tsx` (jo **React** render karta hai) font stylesheets ko `media="print"
+onLoad="this.media='all'"` trick se load kar raha tha — par **React SSR event handlers serialise nahi
+karta**, isliye prerendered HTML me `onload` hi nahi tha (`dist/index.html` me **0** occurrences) → CSS
+hamesha print-mode me atki rahi aur **koi design font apply nahi hua**. Browser me `document.fonts` **khaali**,
+`cdn.fontshare.com` **kabhi contact nahi hua** — yaani production ke saare prerendered pages system-ui me
+render ho rahe the, bina kisi error ke. Ab plain stylesheet links (fonts `display=swap` use karte hain,
+isliye cost visible nahi).
+**(b)** Font declarations **teen** jagah thi (`pages/+Head.tsx`, `index.html`, `scripts/build.mjs`) aur unke
+weight sets alag the — matlab konsa route kaunsa font dikhayega ye serving path decide kar raha tha.
+**(c)** Fontshare **HTTP 200** deta hai par jo weight us family me nahi hai use **chup-chaap drop** kar deta
+hai (Satoshi sirf **400/500/700/900** publish karta hai — 600/800 nahi), aur ek combined
+`f[]=cabinet-grotesk@…&f[]=satoshi@…` URL **200 par sirf EK family** serve karta hai (live verified, dono
+orders me) — isliye `font-display font-black` (54 headings) ka asli heavy face kabhi load hi nahi hua aur sab
+700 par render ho rahe the. Fix: **per family ek request** — Cabinet Grotesk `@400,500,700,800,900` +
+Satoshi `@400,500,700,900` (= exactly jo families publish karti hain), teeno declarations byte-identical,
+unused **Inter** (kahin bhi `font-family: 'Inter'` nahi) hataya, aur `cdn.fontshare.com` (asli woff2 host) ka
+preconnect add hua — CSP dono ko already allow karta hai. Guard: `src/test/typographyFonts.test.ts`
+(**18 tests**) — teeno declarations ka drift, print-mode/`onload` park, tailwind ↔ loaded family match, aur
+"har `font-*` weight ka asli face maujood ho" (heaviest display weight exact publish hona chahiye). Sab pure
+functions + negative controls; **asli historical declaration wapas daal ke RED prove hua** (2 tests fail),
+restore par GREEN. Live verify (local production build, 2 prerendered routes): `document.fonts` me **9 faces
+parsed / 9 loaded**, Cabinet Grotesk 500/700/800/900 ke advance widths ab **alag-alag** (pehle 700=800=900
+identical the), `font-display font-black` element weight **900** render karta hai, **0 Google-Fonts request**,
+no horizontal overflow, koi font/CSP error nahi. **Lesson (is session ki teesri baar, ek level aur gehra):**
+typecheck + lint + 365 tests + build sab green the jabki production me fonts kabhi load hi nahi hue —
+`document.fonts` / per-weight advance widths **browser me actually measure** karne se hi pata chala; aur
+`scripts/build.mjs` ka template-literal syntax break sirf `npm run build` ne pakda (source-level guard usko
+text ki tarah padhta hai).

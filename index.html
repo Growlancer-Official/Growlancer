@@ -3,13 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Fonts: Satoshi (sans) + Cabinet Grotesk (display) via Fontshare — the
-         families declared in tailwind.config.js / globals.css. They were never
-         actually loaded, so the whole app silently fell back to system-ui.
-         CSP (server.js + vercel.json) already allows api.fontshare.com. -->
+    <!-- Design fonts: Cabinet Grotesk (display) + Satoshi (sans) via Fontshare —
+         the families declared in tailwind.config.js (`font-display` / `font-sans`)
+         and src/styles/globals.css. CSP (server.js + vercel.json) already allows
+         api.fontshare.com and cdn.fontshare.com.
+
+         ONE REQUEST PER FAMILY on purpose: a combined
+         `...css?f[]=cabinet-grotesk@…&f[]=satoshi@…` URL answers HTTP 200 but
+         silently serves only ONE of the two families, which would leave either
+         every heading or all body text on system-ui with no error reported.
+         Weights are the ones each family really publishes — Fontshare drops an
+         unknown weight silently, so a wrong number renders at the wrong weight
+         instead of failing. Keep this identical to pages/+Head.tsx and
+         scripts/build.mjs; src/test/typographyFonts.test.ts fails on any drift. -->
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
     <link
-      href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&f[]=cabinet-grotesk@500,700,800,900&display=swap"
+      href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
       rel="stylesheet"
     />
     <!-- Security headers -->

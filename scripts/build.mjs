@@ -258,14 +258,26 @@ function generateFallbackIndexHtml() {
     <meta property="og:title" content="Growlancer — AI-Powered Freelancing Marketplace">
     <meta property="og:description" content="Hire top freelancers or get hired for high-quality work with Growlancer.">
     <meta name="twitter:card" content="summary_large_image">
-    <!-- Design fonts (Satoshi + Cabinet Grotesk) — must match pages/+Head.tsx so
-         fallback-shell routes (served when Vike prerender is skipped) load the
-         same fonts as prerendered pages. CSP allows api.fontshare.com. -->
+    <!-- Design fonts (Cabinet Grotesk + Satoshi) — must stay identical to
+         pages/+Head.tsx and index.html, or fallback-shell routes (served when the
+         Vike prerender is skipped) would load different fonts than prerendered
+         pages. src/test/typographyFonts.test.ts fails on any drift.
+         Two requests, one per family: a combined fontshare URL returns HTTP 200
+         but silently serves only one of the two families. CSP (server.js +
+         vercel.json) allows api.fontshare.com and cdn.fontshare.com. -->
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
-    <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap">
-    <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+    <!-- Plain stylesheet links: pages/+Head.tsx renders through React, which does
+         not serialise event handlers, so a media=print + onload pair shipped as
+         print-only CSS and the fonts never applied on prerendered pages. Keep
+         these identical in kind (no media trick) so both serving paths behave. -->
+    <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap">
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap">
+    <link rel="preload" as="style" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap">
+    <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap">
     <noscript>
-      <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+      <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap" rel="stylesheet">
+      <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
     </noscript>
 ${cssTags}
   </head>
