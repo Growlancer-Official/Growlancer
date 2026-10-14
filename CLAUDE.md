@@ -900,3 +900,54 @@ typecheck + lint + 365 tests + build sab green the jabki production me fonts kab
 `document.fonts` / per-weight advance widths **browser me actually measure** karne se hi pata chala; aur
 `scripts/build.mjs` ka template-literal syntax break sirf `npm run build` ne pakda (source-level guard usko
 text ki tarah padhta hai).
+
+✅ Dashboard section-label truth + client/freelancer header crowding + Team-Project AI + unanswered-OAuth honesty
+(Oct 14, 2026) — founder report (mobile screenshots): "linkedin se signup nahi hora error", "ek section ke icons ka
+kuch text buttons ka [issue]", "dusra section alag hai lekin workspace name aa raha", "freelancer dashboard me bhi
+ish type ke issues honge", aur "multi project wale section me AI title + description add karo, universal limit 100
+rahegi par show mat karna".
+
+**1. LinkedIn/GitHub signup — live evidence, aur jo humara tha wo fix hua.** GoTrue logs (2026-10-14 09:06:30/36/54Z)
+me teen `302 → linkedin.com` hain aur uske baad **koi `/callback` nahi** (usi din 07:15:43 par GitHub ka callback
+aaya + Login hua). `auth.users` me 4 hi users hain, 3 LinkedIn attempts se koi row nahi bani; aur founder ke account
+ki `linkedin_oidc` identity **2026-10-13** ki hai — matlab flow ek din pehle chala tha. Machine-checkable sab legs
+pass hain (`node scripts/check_providers.mjs`: provider ENABLED, LinkedIn consent page serve karta hai, aur ek
+banaya hua `redirect_uri` **reject** hota hai = hamara Supabase callback URL registered hai). Matlab stop **human
+consent leg** par tha (prompt band / redirect blocked / network) — provider ke apne page par, hamare code me nahi.
+Jo humara tha wo theek hua: pehle ye failure **chup-chaap** hota tha. Ab `signInWithOAuth` provider par jaane se pehle
+ek breadcrumb likhta hai (`src/lib/oauthDiagnostics.ts`) aur wapas aane par session na ho to `OAuthReturnNotice`
+imandaari se batata hai — provider ka naam, **"kuch create/change nahi hua"**, retry + doosra provider; callback ke
+`error` codes ab asli wajah me map hote hain (cancel kiya / email share nahi hui / handshake replay / config) instead
+of generic "Authentication failed". Negative control bhi test me hai: naya (in-flight) attempt par notice **nahi**
+aata. `scripts/check_providers.mjs` ka purana bug bhi mila: module-level `const URL` global `URL` constructor ko
+shadow kar raha tha, isliye script har run par fail-closed "APP_URL is not an absolute URL" print karke chup ho jata
+tha (isi liye pata nahi chala).
+
+**2. Mobile header galat section name** — dono shells sidebar groups ko search karke hardcoded `'Workspace'` par gir
+jaate the, isliye har wo route jo sidebar me nahi hai ("Post a Project", "Verification", "Post a Team Project",
+"Create Service", "Skill Test", "Support Tickets" …) apne aap ko **"Workspace"** keh raha tha. Ab ek hi honest
+resolver (`src/lib/dashboardSection.ts`) route se naam nikalta hai: exact → deepest prefix → `:param` route →
+nav-link → **URL se derived** naam (kyunki guess karna hi defect tha). Root `/client`/`/dashboard` sirf exact match
+karte hain, warna unknown child "Overview" ban jaata (wahi jhooth, naya roop).
+
+**3. Header crowding** — jinke header row non-responsive the (`flex items-center justify-between`) unko stack kiya:
+client Invites + Proposals (founder ke screenshots), dashboard Portfolio / Professional Profile / Identity
+Verification, aur 5 admin pages; saath me CTA/badge par `shrink-0 whitespace-nowrap`.
+
+**4. Team Projects (multi-role = multi-contract) me AI** — `ClientPostProjectPage` jaisa hi `AIGenerateModal`
+(`clientFree`) title + description par, context me roles/skills/budget. Saath me `CLIENT_FAIR_USE_DAILY_LIMIT`
+**60 → 100** (universal), aur woh client surface par **kabhi counter ki tarah render nahi hota** (copy "free for
+you — no limits", over-cap message neutral) — founder ka exact instruction.
+
+**Verify (production build + real sessions, local `PORT=4174 node server.js`):** typecheck + lint + **423 tests / 36 files**
+(26 naye: `dashboardSection.test.ts` 12 + `oauthDiagnostics.test.ts` 14, dono me negative controls) + build clean;
+`.e2e/verify-ui-fixes.mjs` **24/24** (client + freelancer, 375px, fail-closed auth check — role brand + landing
+path, warna logged-out page par jhoothi green aati); element-audit **72 client + 72 dashboard loads, 0 overflow
+offenders**, baaki sab 0; OAuth chain harness **17/17** (signup backend leg intact).
+
+**Flagged (naya, §B10/§B11 in `docs/LAUNCH-READINESS.md`):** LinkedIn stop provider-side hai — recurs ho to LinkedIn
+page par kya dikha (error text ya kuch nahi) note karo aur ek baar desktop Chrome incognito (mobile network ke bahar)
+try karo. Aur ek **pre-existing intermittent React #418 + `insertBefore` crash**: audit ke 2 runs me har baar 1–2 of
+72 loads (har baar **different route**, jinme wo routes bhi the jo humne chhue hi nahi) par logout chrome gayab ho
+gaya, jabki **saare 72 loads ki GoTrue session check SUCCESS** thi aur 0 rejected — yaani session theek, render race.
+3 direct loads par reproduce nahi hua. Aaj ke change se nahi aaya (random route per run), par apne aap me real hai.

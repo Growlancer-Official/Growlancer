@@ -536,8 +536,8 @@ export function AdminCertificatesPage() {
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-white">Certificate System</h1>
           <p className="text-slate-400 text-sm mt-1">Generate verification codes & send certificates/LORs to interns</p>
         </div>

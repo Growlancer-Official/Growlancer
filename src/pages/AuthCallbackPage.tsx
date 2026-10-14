@@ -3,6 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { fetchUserProfile, createUserProfile as createProfile } from '../lib/services/authService';
 import { redirectAfterAuth } from '../lib/authAction';
+import {
+  clearOAuthAttempt,
+  describeOAuthFailure,
+  readOAuthAttempt,
+} from '../lib/oauthDiagnostics';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
 
 const isDev = import.meta.env.DEV;
@@ -30,6 +35,9 @@ export function AuthCallbackPage() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<CallbackStatus>('processing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // True heading for the failure — "Authentication failed" is wrong for a
+  // sign-in the user cancelled or one the provider never finished.
+  const [errorTitle, setErrorTitle] = useState<string | null>(null);
   const [action, setAction] = useState<AuthAction>('unknown');
 
   useEffect(() => {
@@ -108,7 +116,27 @@ export function AuthCallbackPage() {
               'This email is already used professionally on Growlancer. Continue with the provider the account was created with — or contact support if you previously signed up with email.'
             );
           } else {
-            setErrorMessage(rawDescription || 'Authentication failed. Please try again.');
+            // Provider / GoTrue codes → the next action the user should take.
+            // The provider is taken from the URL first, then the breadcrumb
+            // written before the redirect — never guessed.
+            const providerId =
+              searchParams.get('provider') ||
+              hashParams.get('provider') ||
+              readOAuthAttempt()?.provider ||
+              localStorage.getItem('growlancer_oauth_provider');
+            const failure = describeOAuthFailure({
+              provider: providerId,
+              error,
+              errorCode: searchParams.get('error_code') || hashParams.get('error_code'),
+              description: rawDescription,
+            });
+            devLog('[AuthCallback] mapped OAuth failure', {
+              provider: providerId,
+              error,
+              title: failure.title,
+            });
+            setErrorTitle(failure.title);
+            setErrorMessage(failure.message);
           }
           return;
         }
@@ -399,11 +427,15 @@ export function AuthCallbackPage() {
           });
           const isOAuthProvider = isProviderOAuth;
           setStatus('error');
-          setErrorMessage(
-            isOAuthProvider
-              ? 'LinkedIn/GitHub sign-in session could not be established. This usually means the redirect URL is not configured in the Supabase Dashboard. Please try again — if it keeps failing, contact support.'
-              : 'No session found. Please try logging in again.'
-          );
+          if (isOAuthProvider) {
+            // The provider never handed us a code/session — say exactly that
+            // instead of blaming the redirect configuration for every case.
+            const failure = describeOAuthFailure({ provider: authProvider });
+            setErrorTitle(failure.title);
+            setErrorMessage(failure.message);
+          } else {
+            setErrorMessage('No session found. Please try logging in again.');
+          }
           return;
         }
 
@@ -490,6 +522,9 @@ export function AuthCallbackPage() {
           localStorage.removeItem('growlancer_oauth_role');
         }
         localStorage.removeItem('growlancer_oauth_provider');
+        // The provider round-trip completed — drop the unanswered-sign-in
+        // breadcrumb so no return notice can fire after a success.
+        clearOAuthAttempt();
 
         // 🛡️ Only OAuth flows (detectedAction === 'unknown' OR a real OAuth provider)
         // get role correction from localStorage. Email signup users chose their role in
@@ -831,7 +866,7 @@ export function AuthCallbackPage() {
                 </div>
               </div>
               <h2 className="font-display text-xl font-bold text-slate-900 mb-2">
-                Authentication failed
+                {errorTitle || `Authentication failed`}
               </h2>
               <p className="text-sm text-slate-500 mb-6">
                 {errorMessage || 'Something went wrong. Please try again.'}

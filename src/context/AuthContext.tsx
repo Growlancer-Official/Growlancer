@@ -8,6 +8,7 @@ import {
   createReferralCode,
 } from '../lib/services/authService';
 import { shouldRedirectToAuthCallback } from '../lib/authAction';
+import { beginOAuthAttempt, clearOAuthAttempt } from '../lib/oauthDiagnostics';
 import { captureError, captureInfo } from '../lib/telemetry';
 import { recordBrowserAccount, clearBrowserAccount } from '../lib/browserIdentity';
 
@@ -991,6 +992,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // the callback can render before Supabase has restored app_metadata.
       localStorage.setItem('growlancer_oauth_provider', provider);
 
+      // 🛡️ Breadcrumb for the UNANSWERED case. If the browser comes back from
+      // the provider without a session (the provider never redirected us —
+      // live case 2026-10-14: three 302s to LinkedIn, no /callback), this is
+      // what lets OAuthReturnNotice tell the user what actually happened
+      // instead of dead-ending silently.
+      beginOAuthAttempt(provider, role);
+
       const redirectTo = `${window.location.origin}/auth/callback`;
       devLog('[Auth] OAuth signInWithOAuth — provider:', provider, 'redirectTo:', redirectTo);
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -1036,6 +1044,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // returns early without clearing localStorage — without this the stale token
     // survives and re-logs the user in on the next page load.
     await supabase.auth.signOut().catch(() => {});
+
+    // Any pending provider round-trip is void once the user signs out.
+    clearOAuthAttempt();
 
     // 🔥 Guaranteed cleanup — removes every sb-*-auth-token key.
     clearSupabaseAuthStorage();

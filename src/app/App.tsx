@@ -8,6 +8,7 @@ import { I18nProvider } from '../lib/i18n';
 import { ToastProvider } from '../components/Toast';
 import { RouteFallback } from '../components/LoadingSkeleton';
 import { CookieConsent } from '../components/CookieConsent';
+import { OAuthReturnNotice } from '../components/OAuthReturnNotice';
 
 // ═══════════════════════════════════════════════════════════════
 // EAGER IMPORTS — only what the entry itself renders
@@ -381,6 +382,9 @@ function App() {
             </Routes>
           </Suspense>
           <CookieConsent />
+          {/* Honest feedback when a provider round-trip never completes
+              (rendered globally so it is reachable from every entry page). */}
+          <OAuthReturnNotice />
           </ToastProvider>
           </I18nProvider>
         </AuthProvider>

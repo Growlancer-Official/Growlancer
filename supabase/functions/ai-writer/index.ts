@@ -18,7 +18,11 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FREE_DAILY_LIMIT = 5; // freelancer fields (service_*, cover_letter)
 const PRO_DAILY_LIMIT = 100; // freelancer fields, Pro
-const CLIENT_FAIR_USE_DAILY_LIMIT = 60; // client fields — abuse guard only
+const CLIENT_FAIR_USE_DAILY_LIMIT = 100; // client fields — abuse guard only
+// One universal number for every AI writer surface (client fair-use guard and
+// the Pro allowance), and it is NEVER rendered as a counter on a client
+// surface: the client AI promise is "free for life", so the cap exists purely
+// to stop abuse and its message stays neutral (see the 429 branch below).
 const ROUTE = 'ai-writer';
 const MAX_INPUT_LEN = 2000;
 
