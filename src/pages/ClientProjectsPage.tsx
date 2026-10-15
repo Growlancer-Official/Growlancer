@@ -41,7 +41,7 @@ function ProjectMenu({
     <div className="relative" ref={ref}>
       <button
         onClick={(e) => { e.stopPropagation(); setOpen(!open); }}
-        className="p-2 hover:bg-slate-100 rounded-lg transition-colors relative z-10"
+        className="inline-flex h-10 w-10 items-center justify-center hover:bg-slate-100 rounded-lg transition-colors relative z-10"
       >
         <MoreVertical className="w-4 h-4 text-slate-400" />
       </button>

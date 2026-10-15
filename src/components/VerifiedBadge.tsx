@@ -9,6 +9,12 @@ interface VerifiedBadgeProps {
    * 'blue' for client verification badge.
    */
   tone?: 'green' | 'blue';
+  /**
+   * Tooltip side. 'top' (default) for in-content badges.
+   * Use 'bottom' when the badge sits in a sticky header/top bar, where an
+   * upward tooltip would be clipped by the viewport's top edge.
+   */
+  placement?: 'top' | 'bottom';
 }
 
 /**
@@ -20,7 +26,7 @@ interface VerifiedBadgeProps {
  * Lifetime, synced everywhere (search, contracts, workspace, public profile).
  * Hovering shows a polished tooltip: "KYC Verified" / "Verified Client".
  */
-export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', tone = 'green' }: VerifiedBadgeProps) {
+export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', tone = 'green', placement = 'top' }: VerifiedBadgeProps) {
   const sizes = {
     xs: { icon: 'w-3.5 h-3.5', pill: 'text-[10px] px-1.5 py-0.5 gap-0.5', label: 'text-[10px]', tooltip: 'text-xs px-2 py-1' },
     sm: { icon: 'w-4 h-4', pill: 'text-xs px-2 py-0.5 gap-1', label: 'text-xs', tooltip: 'text-xs px-2.5 py-1' },
@@ -33,6 +39,8 @@ export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', 
 
   const label = tone === 'blue' ? 'Verified Client' : 'KYC Verified';
 
+  const below = placement === 'bottom';
+
   const base = `relative group inline-flex items-center justify-center rounded-full bg-gradient-to-br ${gradient} text-white font-extrabold uppercase tracking-wider shadow-sm ${sizes.pill} ${className}`;
 
   return (
@@ -44,14 +52,20 @@ export function VerifiedBadge({ size = 'sm', showLabel = false, className = '', 
       <BadgeCheck className={`${sizes.icon} fill-white/20`} strokeWidth={2.5} />
       {showLabel && <span className={sizes.label}>{tone === 'blue' ? 'CLIENT' : 'VERIFIED'}</span>}
 
-      {/* Polished hover tooltip — precise: platform-level verification, not a government-issued ID */}
+      {/* Polished hover tooltip — precise: platform-level verification, not a government-issued ID.
+          'bottom' placement (sticky dashboard header, near the viewport's RIGHT edge):
+          right-anchor the tooltip so it can never overflow right and create a horizontal
+          scrollbar (left overflow doesn't scroll in LTR).
+          Default 'top' placement (in-content badges near the LEFT edge): keep it centered
+          above the badge — right-anchoring here would push ~250px of tooltip off-screen
+          to the left and clip it inside overflow containers (e.g. sidebar drawer). */}
       <span
         role="tooltip"
-        className={`pointer-events-none absolute left-1/2 -top-1 -translate-x-1/2 -translate-y-full z-50 whitespace-nowrap rounded-lg bg-slate-900 text-white font-semibold normal-case tracking-normal shadow-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${sizes.tooltip}`}
+        className={`pointer-events-none absolute z-50 whitespace-nowrap rounded-lg bg-slate-900 text-white font-semibold normal-case tracking-normal shadow-xl opacity-0 transition-opacity duration-200 group-hover:opacity-100 ${below ? 'right-0 top-full mt-1.5 text-right' : 'left-1/2 -translate-x-1/2 -top-1 -translate-y-full text-center'} ${sizes.tooltip}`}
       >
         {tone === 'blue' ? 'Verified Client' : 'Verified on Growlancer'}
         <span className="block text-[10px] font-medium opacity-80 normal-case tracking-normal">platform verification · not a government-issued ID</span>
-        <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-slate-900" />
+        <span className={`absolute border-4 border-transparent ${below ? 'right-2 bottom-full border-b-slate-900' : 'left-1/2 -translate-x-1/2 top-full border-t-slate-900'}`} />
       </span>
     </span>
   );

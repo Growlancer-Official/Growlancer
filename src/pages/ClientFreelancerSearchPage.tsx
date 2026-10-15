@@ -458,7 +458,7 @@ export function ClientFreelancerSearchPage() {
             ) : clientProjects.length === 0 ? (
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-800 mb-2">
                 You need a posted project to invite a freelancer.{' '}
-                <button onClick={() => navigate('/client/post-project')} className="font-semibold underline">Post a project</button> first.
+                <button onClick={() => navigate('/client/post')} className="font-semibold underline">Post a project</button> first.
               </div>
             ) : (
               <>

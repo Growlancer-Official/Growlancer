@@ -277,7 +277,8 @@ export function NotificationsCenterPage() {
                     setCopiedRef(notification.id);
                     setTimeout(() => setCopiedRef(prev => prev === notification.id ? null : prev), 1500);
                   }}
-                  className="text-slate-400 hover:text-emerald-600 transition-colors"
+                  className="-my-2 inline-flex h-10 w-10 items-center justify-center text-slate-400 hover:text-emerald-600 transition-colors"
+                  aria-label="Copy reference ID"
                   title="Copy reference ID — use this when contacting support"
                 >
                   {copiedRef === notification.id ? (
