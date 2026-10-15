@@ -156,6 +156,10 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
+# ⚠️ LOCAL DEV ONLY. This file is NOT the live source of truth for Auth URLs.
+#    Never run `supabase config push` while site_url is localhost — it would overwrite
+#    the live site_url and break every verification / password-reset email link.
+#    The live value is written by scripts/push_redirect_urls.mjs (which reads APP_URL).
 site_url = "http://localhost:5173"
 # The public URL that Auth serves on. Defaults to the API external URL with `/auth/v1` appended.
 # external_url = ""

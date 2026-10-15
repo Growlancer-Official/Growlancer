@@ -329,12 +329,12 @@ export function AdminDisputesPage() {
 
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-white">Dispute Resolution</h1>
           <p className="text-slate-400 text-sm mt-1">Review evidence, chat with parties, and decide outcomes</p>
         </div>
-        {pendingCount > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full">{pendingCount} Open</span>}
+        {pendingCount > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shrink-0 whitespace-nowrap self-start sm:self-auto">{pendingCount} Open</span>}
       </div>
 
       <div className="grid grid-cols-4 gap-4">
@@ -359,7 +359,7 @@ export function AdminDisputesPage() {
             <span className="ml-1 opacity-60">({disputes.filter(d => status === 'all' || d.status === status).length})</span>
           </button>
         ))}
-        <button onClick={() => void fetchDisputes()} className="ml-auto p-1.5 hover:bg-white/5 rounded-lg text-slate-400 transition-colors">
+        <button onClick={() => void fetchDisputes()} aria-label="Refresh disputes" className="ml-auto p-1.5 hover:bg-white/5 rounded-lg text-slate-400 transition-colors">
           <RefreshCw className={'w-4 h-4 ' + (loading ? 'animate-spin' : '')} />
         </button>
       </div>

@@ -9,4 +9,4 @@ BEGIN
   ) THEN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.payout_methods;
   END IF;
-END $$;;
+END $$;

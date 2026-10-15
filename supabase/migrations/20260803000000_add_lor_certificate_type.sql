@@ -4,11 +4,9 @@
 -- 1. Alter the CHECK constraint to include 'lor' type
 ALTER TABLE public.skill_certifications 
   DROP CONSTRAINT IF EXISTS skill_certifications_certificate_type_check;
-
 ALTER TABLE public.skill_certifications 
   ADD CONSTRAINT skill_certifications_certificate_type_check 
   CHECK (certificate_type IN ('skill_test', 'platform', 'internship', 'achievement', 'lor'));
-
 -- 2. Add new fields for LOR and enhanced internship certificates
 ALTER TABLE public.skill_certifications 
   ADD COLUMN IF NOT EXISTS internship_period TEXT,
@@ -19,7 +17,6 @@ ALTER TABLE public.skill_certifications
   ADD COLUMN IF NOT EXISTS duration_end TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS issuer_title TEXT DEFAULT 'Founder & CEO',
   ADD COLUMN IF NOT EXISTS issuer_signature_url TEXT;
-
 -- 3. Create a dedicated view for internship certificates & LORs
 CREATE OR REPLACE VIEW public.internship_certificates_view AS
 SELECT 
@@ -44,9 +41,7 @@ SELECT
   created_at
 FROM public.skill_certifications
 WHERE certificate_type IN ('internship', 'lor');
-
 -- Grant access
 GRANT SELECT ON public.internship_certificates_view TO service_role, anon;
-
 -- Notify realtime
 SELECT pg_notify('pgrst', 'reload schema');

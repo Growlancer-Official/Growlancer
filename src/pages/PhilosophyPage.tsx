@@ -43,7 +43,7 @@ export function PhilosophyPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             <Compass className="w-4 h-4" />
             Explore Home
@@ -76,7 +76,7 @@ export function PhilosophyPage() {
           {pillars.map((item, idx) => (
             <div key={idx} className="p-4 space-y-4 hover:bg-slate-50/50 transition-colors">
               <div className="font-display font-black text-4xl text-slate-900 tracking-tight">{item.value}</div>
-              <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{item.label}</h4>
+              <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider">{item.label}</h2>
               <p className="text-xs text-slate-500 leading-normal">{item.desc}</p>
             </div>
           ))}

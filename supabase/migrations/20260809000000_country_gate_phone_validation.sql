@@ -5,15 +5,11 @@
 -- ── 1. Add country column to profiles (for OAuth country gate) ──
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS country text DEFAULT NULL;
-
 COMMENT ON COLUMN public.profiles.country IS 'User country (e.g. "IN" for India). Used for OAuth country gating.';
-
 -- ── 2. Add phone column to profiles if not exists ──
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS phone text DEFAULT NULL;
-
 COMMENT ON COLUMN public.profiles.phone IS 'User phone number including country code (e.g. +919876543210). Server-side validated to start with +91 for India launch.';
-
 -- ── 3. Server-side +91 phone validation trigger ──
 -- This enforces that any phone number stored must start with +91 (India).
 CREATE OR REPLACE FUNCTION public.validate_india_phone()
@@ -34,14 +30,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_validate_india_phone ON public.profiles;
 CREATE TRIGGER trg_validate_india_phone
   BEFORE INSERT OR UPDATE OF phone
   ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.validate_india_phone();
-
 -- ── 4. RPC: Insert into waitlist ──
 CREATE OR REPLACE FUNCTION public.join_waitlist(
   p_email text,
@@ -94,7 +88,6 @@ BEGIN
   RETURN COALESCE(v_result, jsonb_build_object('success', false, 'error', 'Insert failed'));
 END;
 $$;
-
 -- ── 5. RPC: Update user country ──
 CREATE OR REPLACE FUNCTION public.update_user_country(
   p_user_id uuid,
@@ -114,10 +107,8 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$;
-
 -- ── 6. RLS on waitlist table (re-apply in case it was missed) ──
 ALTER TABLE public.waitlist ENABLE ROW LEVEL SECURITY;
-
 -- Only admins can view waitlist entries
 DROP POLICY IF EXISTS "Admins can view waitlist" ON public.waitlist;
 CREATE POLICY "Admins can view waitlist"
@@ -132,7 +123,6 @@ CREATE POLICY "Admins can view waitlist"
         AND role = 'admin'
     )
   );
-
 -- Anyone can insert into waitlist (anon RPC calls via SECURITY DEFINER)
 DROP POLICY IF EXISTS "Allow insert for join_waitlist RPC" ON public.waitlist;
 CREATE POLICY "Allow insert for join_waitlist RPC"
@@ -140,7 +130,6 @@ CREATE POLICY "Allow insert for join_waitlist RPC"
   FOR INSERT
   TO authenticated, anon
   WITH CHECK (true);
-
 -- ── 7. RLS on profiles country/phone columns ──
 -- Users can update their own country and phone
 DROP POLICY IF EXISTS "Users can update own country and phone" ON public.profiles;

@@ -22,9 +22,7 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.sync_private_email(TEXT) TO authenticated;
-
 -- Sync referral_code in profiles_private (used by createUserProfile fallback)
 CREATE OR REPLACE FUNCTION public.sync_private_referral(p_referral_code TEXT)
 RETURNS JSONB
@@ -44,5 +42,4 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.sync_private_referral(TEXT) TO authenticated;

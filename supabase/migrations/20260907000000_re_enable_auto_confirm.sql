@@ -15,14 +15,12 @@
 -- ═══════════════════════════════════════════════════════════════════
 
 SET search_path = '';
-
 -- 1. Confirm all existing unverified users
 UPDATE auth.users
 SET
   email_confirmed_at = COALESCE(email_confirmed_at, NOW()),
   updated_at = NOW()
 WHERE email_confirmed_at IS NULL;
-
 -- 2. Re-create the auto-confirm function (safe: OR REPLACE)
 CREATE OR REPLACE FUNCTION public.auto_confirm_email()
 RETURNS TRIGGER
@@ -42,14 +40,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- 3. Re-create the trigger (safe: DROP IF EXISTS first)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.auto_confirm_email();
-
 -- 4. Refresh schema cache
 NOTIFY pgrst, 'reload schema';

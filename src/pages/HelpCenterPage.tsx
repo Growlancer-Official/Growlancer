@@ -43,7 +43,7 @@ const faqs: FAQ[] = [
   {
     category: 'Payments & Escrow',
     question: 'What is Escrow Protection and how does it secure transactions?',
-    answer: 'Escrow protection guarantees secure collaboration. When a contract is created, the client funds the contract total into a secure, virtual escrow pool. The funds are held safely by Growlancer and cannot be retrieved by either party until the client approves the deliverables or both sides mutually cancel the agreement. This ensures freelancers are guaranteed payment upon successful completion, and clients are guaranteed deliverables before funds are released.',
+    answer: 'When a contract is created, the client funds the contract total into a secure escrow pool. The funds are held by Growlancer and are not released to either party until the client approves the deliverables, the review window passes, or both sides mutually cancel the agreement. Either party can also open a dispute, which freezes that escrow until a neutral admin review decides how the funds move.',
   },
   {
     category: 'Payments & Escrow',
@@ -58,12 +58,12 @@ const faqs: FAQ[] = [
   {
     category: 'For Freelancers',
     question: 'How do I submit proposals to open projects?',
-    answer: 'Browse your Project Feed for matching jobs. Click "Submit Proposal", propose your project price, enter a cover letter, outline milestones, and click submit. Pro subscribers receive high-priority visibility and unlimited proposal submissions.',
+    answer: 'Browse your Project Feed for matching jobs. Click "Submit Proposal", propose your project price, enter a cover letter, outline milestones, and click submit. Matching and visibility are merit-based and identical for everyone — Premium never changes how your proposals are ranked or who sees them.',
   },
   {
     category: 'For Freelancers',
     question: 'How do I withdraw my earnings from the Growlancer Wallet?',
-    answer: 'Go to your Wallet dashboard, click "Withdraw Funds", select your withdrawal method (UPI or Bank Account), add your credentials (e.g. UPI ID or bank account details with IFSC), and confirm. Withdrawals are processed via RazorpayX in INR, usually within 24 hours, with a transparent 2% processing fee. PayPal withdrawals are coming soon.',
+    answer: 'Go to your Wallet dashboard, click "Withdraw Funds", select your withdrawal method (UPI or Bank Account), add your credentials (e.g. UPI ID or bank account details with IFSC), and confirm. Withdrawals are processed via RazorpayX in INR, usually within 24 hours, with a transparent 2% processing fee. The current processing timeline is always shown to you before you confirm. PayPal withdrawals are coming soon.',
   },
   {
     category: 'For Freelancers',
@@ -129,7 +129,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
               </Link>
               <Link
                 to="/"
-                className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+                className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Home
@@ -162,6 +162,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
         <input
           type="text"
+          aria-label="Search help questions"
           placeholder="Search questions..."
           value={searchTerm}
           onChange={(e) => {
@@ -176,7 +177,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         {/* Sidebar Filters */}
         <div className="lg:col-span-1 space-y-4">
-          <h3 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Topic Categories</h3>
+          <h2 className="text-xs font-black uppercase text-slate-400 tracking-wider px-3 mb-3">Topic Categories</h2>
           <div className="space-y-1">
             {categories.map((cat) => (
               <button
@@ -253,7 +254,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
           {/* AI Support Banner */}
           <div className="mt-8 bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-[2rem] p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xl shadow-emerald-600/10">
             <div>
-              <h4 className="font-bold text-lg leading-tight">Need more help?</h4>
+              <h3 className="font-bold text-lg leading-tight">Need more help?</h3>
               <p className="text-emerald-100 text-xs mt-1">Our AI support assistant is available 24/7 to answer your questions instantly.</p>
             </div>
             <Link

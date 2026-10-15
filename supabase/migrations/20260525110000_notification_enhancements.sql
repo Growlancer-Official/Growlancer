@@ -8,7 +8,6 @@
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS archived BOOLEAN DEFAULT false;
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS metadata JSONB;
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
-
 -- ============================================================
 -- 2. Create push_tokens table for push notification support
 -- ============================================================
@@ -23,7 +22,6 @@ CREATE TABLE IF NOT EXISTS push_tokens (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(token)
 );
-
 -- ============================================================
 -- 3. Indexes for performance
 -- ============================================================
@@ -32,33 +30,27 @@ CREATE INDEX IF NOT EXISTS idx_notifications_type ON notifications(type);
 CREATE INDEX IF NOT EXISTS idx_notifications_created_at ON notifications(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_push_tokens_user_id ON push_tokens(user_id);
 CREATE INDEX IF NOT EXISTS idx_push_tokens_active ON push_tokens(active) WHERE active = true;
-
 -- ============================================================
 -- 4. Enable Row Level Security on push_tokens
 -- ============================================================
 ALTER TABLE push_tokens ENABLE ROW LEVEL SECURITY;
-
 -- Users can view their own push tokens
 CREATE POLICY "Users can view own push tokens"
   ON push_tokens FOR SELECT
   USING (auth.uid() = user_id);
-
 -- Users can insert their own push tokens
 CREATE POLICY "Users can insert own push tokens"
   ON push_tokens FOR INSERT
   WITH CHECK (auth.uid() = user_id);
-
 -- Users can update their own push tokens
 CREATE POLICY "Users can update own push tokens"
   ON push_tokens FOR UPDATE
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
-
 -- Users can delete their own push tokens
 CREATE POLICY "Users can delete own push tokens"
   ON push_tokens FOR DELETE
   USING (auth.uid() = user_id);
-
 -- ============================================================
 -- 5. RPC Functions
 -- ============================================================
@@ -89,7 +81,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 -- 5b. Restore a notification from archive
 CREATE OR REPLACE FUNCTION restore_notification(
   p_notification_id UUID,
@@ -116,7 +107,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 -- 5c. Archive all read notifications for a user
 CREATE OR REPLACE FUNCTION archive_all_read_notifications(
   p_user_id UUID
@@ -140,7 +130,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 -- 5d. Get notifications by category (type) with filters
 CREATE OR REPLACE FUNCTION get_notifications_by_category(
   p_user_id UUID,
@@ -196,7 +185,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 -- 5e. Register a push token
 CREATE OR REPLACE FUNCTION register_push_token(
   p_user_id UUID,
@@ -221,7 +209,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 -- 5f. Unregister a push token
 CREATE OR REPLACE FUNCTION unregister_push_token(
   p_user_id UUID,
@@ -248,7 +235,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 -- 5g. Get user's active push tokens
 CREATE OR REPLACE FUNCTION get_user_push_tokens(
   p_user_id UUID

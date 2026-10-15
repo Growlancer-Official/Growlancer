@@ -27,6 +27,7 @@ import {
   Award,
   Trophy,
   HelpCircle,
+  LifeBuoy,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +38,8 @@ import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
+import { ThemeToggle } from '../components/ThemeToggle';
+import { resolveDashboardSection } from '../lib/dashboardSection';
 import { useProStatus } from '../hooks/useProStatus';
 import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
 
@@ -99,6 +102,7 @@ const accountLinks: SidebarLink[] = [
 
 const supportLinks: SidebarLink[] = [
   { id: 'disputes', path: '/dashboard/disputes', icon: Scale, label: 'Disputes' },
+  { id: 'support-tickets', path: '/dashboard/support-tickets', icon: LifeBuoy, label: 'Support Tickets' },
   { id: 'help-center', path: '/dashboard/help-center', icon: HelpCircle, label: 'Help Center' },
 ];
 export function DashboardLayout() {
@@ -106,6 +110,15 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const { logout, user } = useAuth();
   const currentPath = location.pathname;
+  // Header section name — resolved from the real route, never a hardcoded guess.
+  // Searching only the sidebar groups (the old behaviour) labelled every
+  // non-sidebar route "Workspace": Create Service, Skill Test, Verification,
+  // Time Tracking, Support Tickets …
+  const sectionLabel = resolveDashboardSection(currentPath, [
+    ...sidebarGroups.flatMap((group) => group.links),
+    ...accountLinks,
+    ...supportLinks,
+  ]);
   const [headerSearch, setHeaderSearch] = useState('');
   const [badgeCounts, setBadgeCounts] = useState({
     invites: 0,
@@ -506,7 +519,11 @@ export function DashboardLayout() {
       </aside>
 
       {/* Desktop Sidebar */}
-      <aside className="w-64 sticky top-0 h-screen hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
+      {
+        /* h-screen minus the cookie banner's published height (0px when it is not
+           showing), so a first visit never buries Homepage / Logout under it. */
+      }
+      <aside className="w-64 sticky top-0 h-[calc(100vh-var(--consent-banner-h,0px))] hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 mb-5 px-2">
           <img 
@@ -659,7 +676,7 @@ export function DashboardLayout() {
             </button>
             <div className="lg:hidden min-w-0 flex-1 px-1">
               <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400 leading-none">Freelancer Dashboard</p>
-              <p className="mt-1 text-sm font-bold text-slate-800 truncate">{currentPath === '/dashboard' ? 'Overview' : (sidebarGroups.flatMap((group) => group.links).find((link) => isActive(link.path))?.label || 'Workspace')}</p>
+              <p className="mt-1 text-sm font-bold text-slate-800 truncate">{sectionLabel}</p>
             </div>
             <div className="hidden sm:flex items-center gap-4 flex-1 min-w-0">
               <div className="relative w-full max-w-xs md:max-w-sm group">
@@ -701,6 +718,8 @@ export function DashboardLayout() {
 
             {/* Verify Now — hidden on mobile, disappears in real time once verified */}
             <VerifyNowHeaderButton />
+
+            <ThemeToggle variant="pill" />
 
             {/* Notifications */}
             <NotificationsPanel />

@@ -14,26 +14,21 @@ CREATE TABLE IF NOT EXISTS public.industries (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 COMMENT ON TABLE public.industries IS
   'Industry sectors shown to clients (onboarding, settings, post-project). Category-first platform: industries describe the client business, categories describe the work.';
-
 -- ─── Enable RLS ────────────────────────────────────────────────────────────────
 ALTER TABLE public.industries ENABLE ROW LEVEL SECURITY;
-
 -- Anyone (anon + authenticated) can read active industries — drives the real-time
 -- dropdown everywhere. Matches the categories policy exactly.
 DROP POLICY IF EXISTS "Anyone can read industries" ON public.industries;
 CREATE POLICY "Anyone can read industries"
   ON public.industries FOR SELECT USING (true);
-
 -- Only admins can manage the industry list.
 DROP POLICY IF EXISTS "Admins can manage industries" ON public.industries;
 CREATE POLICY "Admins can manage industries"
   ON public.industries FOR ALL USING (
     (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
   );
-
 -- ─── Seed: all industries ───────────────────────────────────────────────────────
 INSERT INTO public.industries (name, slug, icon, display_order) VALUES
   ('Accounting', 'accounting', 'Calculator', 1),
@@ -87,12 +82,10 @@ INSERT INTO public.industries (name, slug, icon, display_order) VALUES
   ('Web Development', 'web-development', 'Globe', 49),
   ('Other', 'other', 'Building2', 50)
 ON CONFLICT (name) DO NOTHING;
-
 -- Backfill missing slugs for any existing rows (defensive).
 UPDATE public.industries SET
   slug = lower(regexp_replace(name, '[^a-zA-Z0-9]+', '-', 'g'))
 WHERE slug IS NULL OR slug = '';
-
 -- ─── projects.industry column ───────────────────────────────────────────────────
 -- Lets clients tag a project with their industry; used for matching/insights.
 DO $$
@@ -104,6 +97,5 @@ BEGIN
     ALTER TABLE public.projects ADD COLUMN industry text;
   END IF;
 END $$;
-
 -- Fast index for future industry-based project filtering.
 CREATE INDEX IF NOT EXISTS idx_projects_industry ON public.projects(industry);

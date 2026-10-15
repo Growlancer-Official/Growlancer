@@ -5,6 +5,7 @@ import { formatCurrency, currencySymbol } from '../lib/currency';
 import { teamProjectsService, type TeamRoleSuggestion } from '../lib/teamProjects';
 import { ArrowRight, Loader2, Plus, Sparkles, Trash2, Users, CheckCircle2, AlertCircle } from 'lucide-react';
 import { InfoTip } from '../components/InfoTip';
+import AIGenerateModal from '../components/AIGenerateModal';
 import { useToast } from '../components/Toast';
 
 interface RoleDraft {
@@ -176,13 +177,35 @@ export function ClientPostTeamProjectPage() {
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Project Title *</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Build our company website + branding"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-              />
+              <div className="flex items-start gap-2">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Build our company website + branding"
+                  className="flex-1 min-w-0 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+                <AIGenerateModal
+                  field="project_title"
+                  triggerLabel="AI"
+                  className="shrink-0 mt-1"
+                  clientFree
+                  context={{
+                    budget: totalBudgetEstimate || undefined,
+                    team_roles: roles
+                      .filter((r) => r.role_title.trim())
+                      .map((r) => r.role_title.trim()),
+                    skills: roles
+                      .flatMap((r) => r.required_skills.split(',').map((s) => s.trim()))
+                      .filter(Boolean),
+                  }}
+                  onApply={(text) => setTitle(text)}
+                />
+              </div>
+              <p className="text-xs text-slate-400 mt-1.5">
+                Stuck on a title? Click <span className="font-semibold text-violet-600">AI</span> — describe what the
+                team should build and get a professional title in seconds.
+              </p>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Description</label>
@@ -193,6 +216,25 @@ export function ClientPostTeamProjectPage() {
                 placeholder="What are you building? Share the goal, timeline and anything the team should know."
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
+              <div className="mt-2 flex items-center gap-3 flex-wrap">
+                <AIGenerateModal
+                  field="project_description"
+                  triggerLabel="Write description with AI"
+                  clientFree
+                  context={{
+                    title: title.trim() || undefined,
+                    budget: totalBudgetEstimate || undefined,
+                    team_roles: roles
+                      .filter((r) => r.role_title.trim())
+                      .map((r) => r.role_title.trim()),
+                    skills: roles
+                      .flatMap((r) => r.required_skills.split(',').map((s) => s.trim()))
+                      .filter(Boolean),
+                  }}
+                  onApply={(text) => setDescription(text)}
+                />
+                <span className="text-xs text-slate-400">AI is free for clients — no limits</span>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Total Budget Estimate ({currencySymbol()})</label>
@@ -224,7 +266,7 @@ export function ClientPostTeamProjectPage() {
             <div key={role.key} className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400">Role {idx + 1}</span>
-                <button type="button" onClick={() => removeRole(role.key)} disabled={roles.length <= 1} className="text-slate-400 hover:text-red-500 disabled:opacity-30">
+                <button type="button" onClick={() => removeRole(role.key)} disabled={roles.length <= 1} aria-label={`Remove role ${idx + 1}`} className="text-slate-400 hover:text-red-500 disabled:opacity-30">
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>

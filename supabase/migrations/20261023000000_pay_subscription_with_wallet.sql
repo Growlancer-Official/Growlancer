@@ -112,7 +112,6 @@ BEGIN
   );
 END;
 $$;
-
 -- Only the authenticated user can execute (the function re-validates ownership)
 REVOKE EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) TO authenticated;

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import { formatBudgetRange } from '../utils/date';
+import { isValidUuid } from '../utils/validation';
 import { useAuth } from '../context/AuthContext';
 import {
   AlertTriangle,
@@ -70,13 +71,25 @@ export function ProjectDetailsPage() {
     setLoading(true);
     setError(null);
 
+    // 🛡️ Reject malformed ids before querying — `projects.id` is a uuid column,
+    // so a non-UUID id made Postgres answer HTTP 400 (red console error) for
+    // what is really just a not-found visit.
+    if (!isValidUuid(projectId)) {
+      setError('Unable to load this project. It may have been removed.');
+      setProject(null);
+      setLoading(false);
+      return;
+    }
+
+    // `.maybeSingle()` (not `.single()`): a missing project used to raise
+    // PGRST116 → HTTP 406 in the console on every deleted/unknown project URL.
     const { data, error } = await supabase
       .from('projects')
       .select('*, profiles!projects_client_id_fkey(id, name, avatar)')
       .eq('id', projectId)
-      .single();
+      .maybeSingle();
 
-    if (error) {
+    if (error || !data) {
       setError('Unable to load this project. It may have been removed.');
       setProject(null);
     } else {

@@ -5,7 +5,6 @@
 
 -- 0. Drop dependent policies BEFORE dropping functions they reference
 DROP POLICY IF EXISTS "user_reports_admin_all" ON public.user_reports;
-
 -- 1. Drop previous partial attempt objects (safe IF EXISTS everywhere)
 DROP TRIGGER IF EXISTS on_profile_created ON public.profiles;
 DROP TRIGGER IF EXISTS on_profile_updated ON public.profiles;
@@ -15,11 +14,9 @@ DROP FUNCTION IF EXISTS public.get_my_private_profile();
 DROP FUNCTION IF EXISTS public.get_user_email(UUID);
 DROP FUNCTION IF EXISTS public.is_user_admin();
 DROP TABLE IF EXISTS public.profiles_private CASCADE;
-
 -- Also drop view/triggers that may exist from prior runs
 DROP VIEW IF EXISTS public.active_users;
 DROP TRIGGER IF EXISTS trg_validate_india_phone ON public.profiles;
-
 -- 2. Create profiles_private table (IF NOT EXISTS for idempotency)
 CREATE TABLE IF NOT EXISTS public.profiles_private (
   id          UUID PRIMARY KEY REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -35,9 +32,7 @@ CREATE TABLE IF NOT EXISTS public.profiles_private (
   created_at  TIMESTAMPTZ DEFAULT NOW(),
   updated_at  TIMESTAMPTZ DEFAULT NOW()
 );
-
 ALTER TABLE public.profiles_private ENABLE ROW LEVEL SECURITY;
-
 -- 3. Migrate existing data (only if columns still exist on profiles)
 DO $$
 BEGIN
@@ -58,7 +53,6 @@ BEGIN
   END IF;
 END
 $$;
-
 -- 4. RLS policies for profiles_private (CREATE OR REPLACE not available for policies, use IF NOT EXISTS pattern)
 DO $$
 BEGIN
@@ -91,7 +85,6 @@ BEGIN
   END IF;
 END
 $$;
-
 -- 5. Recreate validate_india_phone for profiles_private
 CREATE OR REPLACE FUNCTION public.validate_india_phone()
 RETURNS TRIGGER AS $$
@@ -109,11 +102,9 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE TRIGGER trg_validate_india_phone
   BEFORE INSERT OR UPDATE ON public.profiles_private
   FOR EACH ROW EXECUTE FUNCTION public.validate_india_phone();
-
 -- 6. Helper functions (SECURITY DEFINER, search_path locked)
 CREATE OR REPLACE FUNCTION public.is_user_admin()
 RETURNS BOOLEAN
@@ -125,7 +116,6 @@ AS $$
     false
   );
 $$;
-
 CREATE OR REPLACE FUNCTION public.get_my_private_profile()
 RETURNS SETOF public.profiles_private
 LANGUAGE sql STABLE SECURITY DEFINER
@@ -133,7 +123,6 @@ SET search_path = public
 AS $$
   SELECT * FROM public.profiles_private WHERE id = auth.uid();
 $$;
-
 CREATE OR REPLACE FUNCTION public.get_user_email(target_user_id UUID)
 RETURNS TEXT
 LANGUAGE sql STABLE SECURITY DEFINER
@@ -141,14 +130,12 @@ SET search_path = public
 AS $$
   SELECT email FROM public.profiles_private WHERE id = target_user_id;
 $$;
-
 -- 7. Recreate user_reports_admin_all policy using is_user_admin()
 DROP POLICY IF EXISTS "user_reports_admin_all" ON public.user_reports;
 CREATE POLICY "user_reports_admin_all"
   ON public.user_reports FOR ALL
   USING (public.is_user_admin())
   WITH CHECK (public.is_user_admin());
-
 -- 8. Sync triggers for profiles -> profiles_private
 CREATE OR REPLACE FUNCTION public.handle_new_profile_private()
 RETURNS TRIGGER AS $$
@@ -165,7 +152,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 -- Only create trigger if profiles still has the synced columns
 DO $$
 BEGIN
@@ -198,7 +184,6 @@ BEGIN
   END IF;
 END
 $$;
-
 -- 9. Drop sensitive columns from public profiles (IF EXISTS for idempotency)
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS email;
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS phone;
@@ -209,13 +194,11 @@ ALTER TABLE public.profiles DROP COLUMN IF EXISTS suspended_by;
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS banned_at;
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS onboarding_completed;
 ALTER TABLE public.profiles DROP COLUMN IF EXISTS referral_code;
-
 -- 10. Refresh the public profiles SELECT policy
 DROP POLICY IF EXISTS "Authenticated users can view profiles" ON public.profiles;
 DROP POLICY IF EXISTS "Authenticated users can view public profiles" ON public.profiles;
 CREATE POLICY "Authenticated users can view public profiles"
   ON public.profiles FOR SELECT USING (true);
-
 -- 11. Grants
 GRANT SELECT, INSERT, UPDATE ON public.profiles_private TO authenticated;
 GRANT EXECUTE ON FUNCTION public.get_my_private_profile() TO authenticated;

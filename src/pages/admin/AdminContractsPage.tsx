@@ -3,6 +3,7 @@ import { Loader2, RefreshCw, Search,
   CheckCircle, XCircle, Lock, Unlock, Trash2
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
+import { fetchProfileDirectory } from '../../lib/adminProfileDirectory';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -59,9 +60,9 @@ export function AdminContractsPage() {
       const data = (await adminQuery(opts)).data;
 
       const cons = (data || []) as AdminContract[];
-      const userIds = [...new Set(cons.flatMap(c => [c.freelancer_id, c.client_id]))];
-      const { data: profiles } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: userIds } });
-      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
+      // `email` moved to profiles_private (migration 20261221000000) — querying
+      // it from profiles rejected the whole request and blanked the table.
+      const profileMap = await fetchProfileDirectory(cons.flatMap(c => [c.freelancer_id, c.client_id]));
 
       setContracts(cons.map(c => ({
         ...c,

@@ -30,7 +30,17 @@ const CARD_CLASS = 'rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm';
 // ═══════════════════════════════════════════════════════════════
 // Hero Section
 // ═══════════════════════════════════════════════════════════════
-function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
+function HeroSection({
+  onOpenSignup,
+  members,
+  countries,
+}: {
+  onOpenSignup: (role?: 'freelancer' | 'client') => void;
+  // Supplied by HomePage from its single live-metrics instance: the hero trust
+  // line shows the real member/country counts, never a hardcoded number.
+  members: number | null;
+  countries: number | null;
+}) {
   const [videoFailed, setVideoFailed] = useState(false);
   const { isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
@@ -70,12 +80,13 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
             </div>
 
             <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 opacity-0 translate-y-2 animate-fade-up animation-delay-80 font-display leading-[1.1]">
-              Freelancing,<br />
-              <span className="text-emerald-600">Reinvented with AI</span>
+              Hire the right talent,
+              <br />
+              <span className="text-emerald-600">instantly. With AI.</span>
             </h1>
 
             <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed max-w-lg opacity-0 translate-y-2 animate-fade-up animation-delay-140">
-              <strong className="text-slate-800">Growlancer is an AI-powered freelancing marketplace</strong> that connects talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly — with intelligent matching, protected escrow payments, and a shared workspace.
+              <strong className="text-slate-800">Growlancer</strong> is India's AI-powered freelancing marketplace. AI ranks the best-fit profiles in seconds — not a flood of generic proposals. Protected escrow, a shared workspace, and real-time updates from brief to paid.
             </p>
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-200">
@@ -91,33 +102,50 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                 className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
               >
                 {isAuthenticated ? (role === 'freelancer' ? 'Browse Projects' : 'Post a Project') : 'Start Freelancing'}
-                <Sparkles className="ml-2 w-4 h-4 text-emerald-500" />
+                <ArrowRight className="ml-2 w-4 h-4 text-emerald-500" />
               </button>
             </div>
 
-            <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-500 opacity-0 translate-y-2 animate-fade-up animation-delay-260">
+            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600 opacity-0 translate-y-2 animate-fade-up animation-delay-260">
               <span className="inline-flex items-center gap-1.5">
                 <ShieldCheck className="text-emerald-600 w-4 h-4" />
-                <span>No spam proposals</span>
+                <span>Protected escrow</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <Clock3 className="text-emerald-600 w-4 h-4" />
-                <span>No endless searching</span>
+                <span>Instant AI matches</span>
               </span>
               <span className="inline-flex items-center gap-1.5">
                 <BadgeCheck className="text-emerald-600 w-4 h-4" />
-                <span>Smarter matches</span>
+                <span>No spam proposals</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <Users className="text-emerald-600 w-4 h-4" />
+                <span>Shared workspace</span>
               </span>
             </div>
 
+            {/* Trusted by — DB-backed count from get_public_platform_metrics()
+                (same source as the About page). Renders nothing until the real
+                number arrives, so no visitor ever sees an inflated claim. */}
+            {members !== null && (
+              <div className="mt-7 text-xs sm:text-sm text-slate-400 opacity-0 translate-y-2 animate-fade-up animation-delay-300">
+                Trusted by <span className="font-semibold text-slate-600">{members.toLocaleString('en-US')}</span>{' '}
+                member{members === 1 ? '' : 's'}
+                {countries !== null && countries > 0
+                  ? <> across {countries.toLocaleString('en-US')} {countries === 1 ? 'country' : 'countries'}</>
+                  : null}
+              </div>
+            )}
+
             {/* Stats Cards */}
-            <div className="mt-8 grid grid-cols-3 gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-320">
+            <div className="mt-6 grid grid-cols-3 gap-2 opacity-0 translate-y-2 animate-fade-up animation-delay-340">
               {[
                 { label: 'For clients', title: 'Shortlist in seconds', desc: 'AI ranks best-fit profiles' },
                 { label: 'For freelancers', title: 'Get discovered', desc: 'Matched to relevant work' },
                 { label: 'For teams', title: 'One workspace', desc: 'Escrow, files, feedback' },
               ].map((item) => (
-                <div key={item.label} className="rounded-xl bg-white ring-1 ring-slate-200/70 p-3.5 shadow-sm hover:shadow-md hover:ring-emerald-200/50 transition-all duration-200">
+                <div key={item.label} className="rounded-xl bg-white ring-1 ring-slate-200/70 p-3 shadow-sm hover:shadow-md hover:ring-emerald-200/50 transition-all duration-200">
                   <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{item.label}</div>
                   <div className="mt-1 text-sm font-semibold tracking-tight text-slate-900">{item.title}</div>
                   <div className="mt-0.5 text-xs text-slate-500">{item.desc}</div>
@@ -152,7 +180,7 @@ function HeroSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'c
                   <div className="w-full aspect-video flex flex-col items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-slate-800 to-emerald-900">
                     <div className="flex items-center gap-3 mb-5">
                       <div className="h-14 w-14 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                        <svg className="w-7 h-7 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <Layers className="w-7 h-7 text-emerald-400" strokeWidth={1.5} />
                       </div>
                       <div className="text-left">
                         <div className="text-xl font-bold font-display text-white">Growlancer</div>
@@ -509,8 +537,15 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
 // ═══════════════════════════════════════════════════════════════
 // Client Section
 // ═══════════════════════════════════════════════════════════════
-function ClientSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
-  const { stats: metrics } = useAboutPageMetrics();
+function ClientSection({
+  onOpenSignup,
+  metrics,
+}: {
+  onOpenSignup: (role?: 'freelancer' | 'client') => void;
+  // Supplied by HomePage so the homepage runs ONE metrics instance, not two
+  // (each instance polls the RPC and holds a realtime subscription).
+  metrics: Array<{ value: string; label: string }>;
+}) {
   return (
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
@@ -753,7 +788,10 @@ function LiveServicesSection() {
         const { data } = await supabase
           .from('services')
           .select('id, title, category, image_url, price, packages, created_at, freelancer:profiles!services_freelancer_id_fkey(name, avatar)')
-          .eq('active', true)
+          // `status` is the source of truth (matches ServiceDetailPage) — the
+          // old `active`-only filter listed services the freelancer had
+          // deactivated, because the dashboard toggle writes only `status`.
+          .eq('status', 'active')
           .order('created_at', { ascending: false })
           .limit(8);
         if (mounted && data) setServices(data as unknown as LiveService[]);
@@ -771,7 +809,14 @@ function LiveServicesSection() {
       .channel('homepage-live-services')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'services', filter: 'active=eq.true' },
+        { event: 'INSERT', schema: 'public', table: 'services', filter: 'status=eq.active' },
+        () => void load()
+      )
+      .on(
+        'postgres_changes',
+        // UPDATE matters: a freelancer DEACTIVATING a service must drop it off
+        // the homepage in real time, not just new publications appearing.
+        { event: 'UPDATE', schema: 'public', table: 'services' },
         () => void load()
       )
       .on(
@@ -1214,7 +1259,7 @@ function WaitlistSection() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
               <div>
                 <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Clock3 className="w-3.5 h-3.5" />
                   EARLY ACCESS
                 </div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-display">
@@ -1234,6 +1279,7 @@ function WaitlistSection() {
                       onChange={e => setName(e.target.value)}
                       id="waitlist-name"
                       name="name"
+                      aria-label="Your name"
                       placeholder="Your name"
                       required
                       autoComplete="name"
@@ -1245,6 +1291,7 @@ function WaitlistSection() {
                       onChange={e => setEmail(e.target.value)}
                       id="waitlist-email"
                       name="email"
+                      aria-label="Email address"
                       placeholder="you@company.com"
                       required
                       autoComplete="email"
@@ -1257,8 +1304,15 @@ function WaitlistSection() {
                       onChange={e => setCountry(e.target.value)}
                       id="waitlist-country"
                       name="country"
+                      aria-label="Country"
                       required
-                      className="flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all [&>option]:text-slate-900"
+                      /* ⚠️ `w-full sm:flex-1` (not `flex-1`): the parent is
+                         `flex flex-col sm:flex-row`, and `flex-1` sets
+                         `flex-basis: 0%` — in a COLUMN flex container that is the
+                         main axis, so it collapsed this select to its content
+                         height (23px) and silently overrode `h-12`, leaving a
+                         tiny, misaligned country picker next to 48px inputs. */
+                      className="w-full sm:flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all [&>option]:text-slate-900"
                     >
                       <option value="">{countriesLoading ? 'Loading countries...' : 'Select your country'}</option>
                       {countries.map((c) => (
@@ -1346,6 +1400,10 @@ function CTASection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'cl
 // ═══════════════════════════════════════════════════════════════
 export function HomePage() {
   const navigate = useNavigate();
+  // ONE live-metrics instance for the whole homepage: the hero trust line and
+  // the client stat cards both read it, so the RPC and realtime subscription
+  // are not duplicated per section.
+  const { stats: metrics, raw } = useAboutPageMetrics();
 
   const handleOpenSignup = (role?: 'freelancer' | 'client') => {
     navigate('/?modal=signup&role=' + (role || 'freelancer'));
@@ -1353,13 +1411,13 @@ export function HomePage() {
 
   return (
     <div id="top">
-      <HeroSection onOpenSignup={handleOpenSignup} />
+      <HeroSection onOpenSignup={handleOpenSignup} members={raw.members} countries={raw.countries} />
       {/* 🔴 Live Browse Services — right under the hero (homepage header area) */}
       <LiveServicesSection />
       <HowItWorksSection />
       <WhyDifferentSection />
       <FreelancerSection onOpenSignup={handleOpenSignup} />
-      <ClientSection onOpenSignup={handleOpenSignup} />
+      <ClientSection onOpenSignup={handleOpenSignup} metrics={metrics} />
       <CategoriesSection onOpenSignup={handleOpenSignup} />
       <TeamProjectsSection onOpenSignup={handleOpenSignup} />
       <FeaturesSection />

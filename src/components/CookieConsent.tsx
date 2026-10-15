@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Cookie,
@@ -107,6 +107,7 @@ export function CookieConsent() {
   const [showCustomize, setShowCustomize] = useState(false);
   const [customPrefs, setCustomPrefs] = useState(getDefaultPreferences());
   const [animateIn, setAnimateIn] = useState(false);
+  const bannerRef = useRef<HTMLDivElement | null>(null);
 
   // Load existing consent on mount
   useEffect(() => {
@@ -123,6 +124,33 @@ export function CookieConsent() {
       return () => clearTimeout(timer);
     }
   }, []);
+
+  // The banner is fixed to the bottom of the viewport, so on dashboard/client
+  // routes it sat on top of the full-height sidebars — their last two actions
+  // (Homepage / Logout) were unreachable until consent was given. Publish the
+  // banner's real measured height (it reflows: the action buttons wrap on narrow
+  // screens) so those layouts can reserve exactly that much space, and clear it
+  // the moment the banner goes away. Unset = 0px, i.e. full-height as before.
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!showBanner || consent || !el) {
+      document.documentElement.style.removeProperty('--consent-banner-h');
+      return;
+    }
+
+    const apply = () => {
+      document.documentElement.style.setProperty('--consent-banner-h', `${el.offsetHeight}px`);
+    };
+    apply();
+
+    const observer = new ResizeObserver(apply);
+    observer.observe(el);
+
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty('--consent-banner-h');
+    };
+  }, [showBanner, consent]);
 
   const handleAcceptAll = useCallback(() => {
     const prefs = saveConsent({
@@ -184,6 +212,7 @@ export function CookieConsent() {
 
       {/* Main Banner */}
       <div
+        ref={bannerRef}
         className={`fixed bottom-0 left-0 right-0 z-50 transition-all duration-500 ease-out ${
           animateIn ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
         }`}
@@ -208,10 +237,10 @@ export function CookieConsent() {
                     <Cookie className="w-6 h-6 text-emerald-400" />
                   </div>
                   <div className="min-w-0">
-                    <h3 className="text-base sm:text-lg font-bold text-white mb-1.5 flex items-center gap-3">
+                    <h2 className="text-base sm:text-lg font-bold text-white mb-1.5 flex items-center gap-3">
                       <Cookie className="w-5 h-5 text-emerald-400 sm:hidden" />
                       Your Privacy Matters
-                    </h3>
+                    </h2>
                     <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-2xl">
                       We use cookies and similar technologies to enhance your experience, analyze traffic, 
                       and personalize content. You can choose which categories to allow. 
@@ -231,21 +260,21 @@ export function CookieConsent() {
                 <div className="flex flex-row items-center flex-wrap justify-end gap-3 sm:gap-3 shrink-0">
                   <button
                     onClick={handleOpenCustomize}
-                    className="flex items-center justify-center gap-3 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    className="inline-flex items-center justify-center gap-3 px-3 sm:px-4 min-h-[44px] rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
                   >
                     <Settings className="w-4 h-4" />
                     Customize
                   </button>
                   <button
                     onClick={handleRejectAll}
-                    className="flex items-center justify-center gap-3 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
+                    className="inline-flex items-center justify-center gap-3 px-3 sm:px-4 min-h-[44px] rounded-xl text-xs font-semibold text-slate-300 bg-white/5 border border-white/10 hover:bg-white/10 hover:text-white transition-all"
                   >
                     <X className="w-4 h-4" />
                     Reject All
                   </button>
                   <button
                     onClick={handleAcceptAll}
-                    className="flex items-center justify-center gap-3 px-4 sm:px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
+                    className="inline-flex items-center justify-center gap-3 px-4 sm:px-5 min-h-[44px] rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20"
                   >
                     <Check className="w-4 h-4" />
                     Accept All

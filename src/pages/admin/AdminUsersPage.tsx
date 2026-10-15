@@ -243,15 +243,19 @@ export function AdminUsersPage() {
     if (reason === null) return; // User cancelled prompt
     setActionLoading(`suspend-${userId}`);
     try {
-      await adminUpdate('profiles', userId, {
+      // Suspension state lives in profiles_private since migration 20261221000000
+      // (profiles PII-leak fix dropped suspended_at/suspend_reason from profiles).
+      // Writing to profiles here would 500 in admin-data (unknown column).
+      await adminUpdate('profiles_private', userId, {
         suspended_at: new Date().toISOString(),
         suspend_reason: reason?.trim() || null,
       });
       await fetchUsers();
       
-      // Send suspension email (fire-and-forget)
+      // Send suspension email (fire-and-forget). `email` lives in
+      // profiles_private since migration 20261221000000.
       const { data: profile } = await adminQuery({
-        table: 'profiles',
+        table: 'profiles_private',
         select: 'email',
         filters: { id: userId },
         limit: 1,
@@ -286,7 +290,8 @@ export function AdminUsersPage() {
       onConfirm: async () => {
         setActionLoading(`reactivate-${userId}`);
         try {
-          await adminUpdate('profiles', userId, { suspended_at: null, suspend_reason: null });
+          // Same as suspend: suspension state lives in profiles_private.
+          await adminUpdate('profiles_private', userId, { suspended_at: null, suspend_reason: null });
           await fetchUsers();
           toast.success(`"${userName}" reactivated successfully`);
           setConfirmDialog(null);

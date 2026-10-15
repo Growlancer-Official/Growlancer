@@ -36,14 +36,12 @@ BEGIN
     EXECUTE format('DROP POLICY %I ON public.subscriptions', pol.policyname);
   END LOOP;
 END $$;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. Align table shape: drop the legacy columns (absent on the authoritative
 --    live schema; no application or migration code references them).
 -- ───────────────────────────────────────────────────────────────────────────
 ALTER TABLE public.subscriptions DROP COLUMN IF EXISTS end_date;
 ALTER TABLE public.subscriptions DROP COLUMN IF EXISTS auto_renew;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 3. Rewrite the client update guard without the removed columns. Browser
 --    sessions may toggle cancel_at_period_end only; status/plan/dates/payment
@@ -91,7 +89,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_subscription_client_update_guard ON public.subscriptions;
 CREATE TRIGGER trg_subscription_client_update_guard
   BEFORE UPDATE ON public.subscriptions

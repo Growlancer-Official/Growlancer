@@ -28,10 +28,11 @@ export const PLATFORM_CONFIG = {
   
   // Subscription Plans (prices in INR — India-first, affordable)
   // FINAL MODEL: ONE flat plan — Freelancer Premium ₹299/month, purely optional.
-  // It unlocks ONLY AI + productivity tools (AI writing, AI assistant, profile
-  // optimization, advanced analytics). It NEVER gates packaging, visibility,
-  // ranking or matching — those are 100% merit-based and free for everyone.
-  // Clients are free forever (fair-use rate limit only).
+  // It unlocks ONLY AI capacity: a higher AI writing cap and no monthly cap on AI
+  // assistant messages, plus a Premium badge. It NEVER gates packaging, visibility,
+  // ranking or matching (merit-based, free for everyone) and analytics is NOT a
+  // Premium feature — the dashboard is free for every freelancer.
+  // Clients are free forever (fair-use rate limit only, no client AI upsell).
   subscriptions: {
     free: {
       proposals_per_month: 5,
@@ -44,11 +45,9 @@ export const PLATFORM_CONFIG = {
       ai_matches_per_month: 100,
       portfolio_items: 20,
       features: [
-        'unlimited_ai_writing',
-        'ai_assistant',
-        'ai_profile_optimization',
-        'advanced_analytics',
-        'priority_support',
+        'ai_writer_100_per_day',
+        'unlimited_ai_assistant',
+        'premium_badge',
       ],
     },
   },

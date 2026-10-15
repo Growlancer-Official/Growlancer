@@ -1,6 +1,8 @@
 import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
+import { CurrencyProvider } from '../context/CurrencyContext';
+import { ThemeProvider } from '../context/ThemeContext';
 import { ScrollToTop } from '../components/ScrollToTop';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -8,24 +10,31 @@ import { I18nProvider } from '../lib/i18n';
 import { ToastProvider } from '../components/Toast';
 import { RouteFallback } from '../components/LoadingSkeleton';
 import { CookieConsent } from '../components/CookieConsent';
+import { OAuthReturnNotice } from '../components/OAuthReturnNotice';
 
 // ═══════════════════════════════════════════════════════════════
-// EAGER IMPORTS — SSR-critical, SEO-important pages only
+// EAGER IMPORTS — only what the entry itself renders
 // ═══════════════════════════════════════════════════════════════
-// Kept eager so Vike SSR renders real HTML for crawlers.
-// Everything else is lazy-loaded to keep the main bundle small.
-//
-// Layout (public/static)
+// Left eager: the public layout shell and the landing page, so the
+// highest-traffic route never waits on a second chunk request.
 import { MainLayout } from '@layouts/MainLayout';
-
-// SEO-critical public pages (highest traffic, indexed by Google)
 import { HomePage } from '@pages/HomePage';
-import { FreelancersSearchPage } from '@pages/FreelancersSearchPage';
-import { ServicesCatalogPage } from '@pages/ServicesCatalogPage';
-import { HowItWorksPage } from '@pages/HowItWorksPage';
-import { FeaturesPage } from '@pages/FeaturesPage';
-import { CategoriesPage } from '@pages/CategoriesPage';
-import { PricingPage } from '@pages/PricingPage';
+
+// Code-split public pages.
+//
+// These used to be eager "for SSR", but that reasoning is obsolete here:
+// pages/+config.ts runs Vike's Suspense-capable streaming renderer
+// (`stream: { require: true, enable: false }`) exactly so lazy routes still
+// produce real prerendered HTML — which is how the ~85 already-lazy routes
+// (about, help-center, terms, privacy, contests, …) are crawled today. Being
+// eager only meant every visitor downloaded these module graphs too, including
+// the protected admin console below.
+const FreelancersSearchPage = lazy(() => import('@pages/FreelancersSearchPage').then(m => ({ default: m.FreelancersSearchPage })));
+const ServicesCatalogPage = lazy(() => import('@pages/ServicesCatalogPage').then(m => ({ default: m.ServicesCatalogPage })));
+const HowItWorksPage = lazy(() => import('@pages/HowItWorksPage').then(m => ({ default: m.HowItWorksPage })));
+const FeaturesPage = lazy(() => import('@pages/FeaturesPage').then(m => ({ default: m.FeaturesPage })));
+const CategoriesPage = lazy(() => import('@pages/CategoriesPage').then(m => ({ default: m.CategoriesPage })));
+const PricingPage = lazy(() => import('@pages/PricingPage').then(m => ({ default: m.PricingPage })));
 
 // Lazy-loaded public pages (lower traffic, code-split for smaller main bundle)
 const AboutPage = lazy(() => import('@pages/AboutPage').then(m => ({ default: m.AboutPage })));
@@ -45,10 +54,6 @@ const CookiesPage = lazy(() => import('@pages/CookiesPage').then(m => ({ default
 
 // Auth-adjacent (stay lazy — only visited via email/auth links, not crawlable)
 const AuthCallbackPage = lazy(() => import('@pages/AuthCallbackPage').then(m => ({ default: m.AuthCallbackPage })));
-const ForgotPasswordPage = lazy(() => import('@pages/auth/ForgotPasswordPage').then(m => ({ default: m.ForgotPasswordPage })));
-const ResetPasswordPage = lazy(() => import('@pages/auth/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
-const MagicLinkPage = lazy(() => import('@pages/auth/MagicLinkPage').then(m => ({ default: m.MagicLinkPage })));
-const OtpLoginPage = lazy(() => import('@pages/auth/OtpLoginPage').then(m => ({ default: m.OtpLoginPage })));
 const EmailConfirmPage = lazy(() => import('@pages/auth/EmailConfirmPage').then(m => ({ default: m.EmailConfirmPage })));
 const VerifyEmailPage = lazy(() => import('@pages/auth/VerifyEmailPage').then(m => ({ default: m.VerifyEmailPage })));
 
@@ -61,9 +66,8 @@ const ContestsPage = lazy(() => import('@pages/ContestsPage').then(m => ({ defau
 const ContestDetailPage = lazy(() => import('@pages/ContestDetailPage').then(m => ({ default: m.ContestDetailPage })));
 const CertificateVerifyPage = lazy(() => import('@pages/CertificateVerifyPage').then(m => ({ default: m.CertificateVerifyPage })));
 
-// Public pages with SSR need
-import { NotFoundPage } from '@pages/NotFoundPage';
-import { WaitlistPage } from '@pages/WaitlistPage';
+const NotFoundPage = lazy(() => import('@pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
+const WaitlistPage = lazy(() => import('@pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
 
 // ═══════════════════════════════════════════════════════════════
 // LAZY IMPORTS — auth-protected routes (no SSR needed)
@@ -74,8 +78,10 @@ const DashboardLayout = lazy(() =>
 const ClientDashboardLayout = lazy(() =>
   import('@layouts/ClientDashboardLayout').then(m => ({ default: m.ClientDashboardLayout }))
 );
-import { AdminAuthGuard } from '@components/AdminAuthGuard';
-import { AdminDashboardLayout } from '@layouts/AdminDashboardLayout';
+// The admin console is behind AdminAuthGuard and is never crawled, so its
+// layout + guard must never sit in the public critical path.
+const AdminAuthGuard = lazy(() => import('@components/AdminAuthGuard').then(m => ({ default: m.AdminAuthGuard })));
+const AdminDashboardLayout = lazy(() => import('@layouts/AdminDashboardLayout').then(m => ({ default: m.AdminDashboardLayout })));
 
 // Dashboard Pages - Freelancer
 const OverviewPage = lazy(() => import('@pages/dashboard/OverviewPage').then(m => ({ default: m.OverviewPage })));
@@ -94,6 +100,7 @@ const AIAssistantPage = lazy(() => import('@pages/dashboard/AIAssistantPage').th
 const PortfolioPage = lazy(() => import('@pages/dashboard/PortfolioPage').then(m => ({ default: m.PortfolioPage })));
 const AnalyticsPage = lazy(() => import('@pages/dashboard/AnalyticsPage').then(m => ({ default: m.AnalyticsPage })));
 const NotificationsCenterPage = lazy(() => import('@pages/dashboard/NotificationsCenterPage').then(m => ({ default: m.NotificationsCenterPage })));
+const SupportTicketsPage = lazy(() => import('@pages/dashboard/SupportTicketsPage'));
 const DisputeResolutionPage = lazy(() => import('@pages/dashboard/DisputeResolutionPage').then(m => ({ default: m.DisputeResolutionPage })));
 const IdentityVerificationPage = lazy(() => import('@pages/dashboard/IdentityVerificationPage').then(m => ({ default: m.IdentityVerificationPage })));
 const SkillCertificationsPage = lazy(() => import('@pages/dashboard/SkillCertificationsPage').then(m => ({ default: m.SkillCertificationsPage })));
@@ -174,7 +181,9 @@ function App() {
   return (
     <>
       <ErrorBoundary>
+        <ThemeProvider>
         <AuthProvider>
+          <CurrencyProvider>
           <I18nProvider>
           <ToastProvider>
           <ScrollToTop />
@@ -222,10 +231,6 @@ function App() {
 
               {/* Auth Email Action Routes */}
               <Route path="auth/callback" element={<AuthCallbackPage />} />
-              <Route path="auth/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="auth/reset-password" element={<ResetPasswordPage />} />
-              <Route path="auth/magic-link" element={<MagicLinkPage />} />
-              <Route path="auth/otp" element={<OtpLoginPage />} />
               <Route path="auth/email-confirm" element={<EmailConfirmPage />} />
               <Route path="auth/verify-email" element={<VerifyEmailPage />} />
 
@@ -296,6 +301,7 @@ function App() {
                 <Route path="inbox" element={<Navigate to="notifications" replace />} />
                 <Route path="disputes" element={<DisputeResolutionPage />} />
                 <Route path="dispute-resolution" element={<Navigate to="/dashboard/disputes" replace />} />
+                <Route path="support-tickets" element={<SupportTicketsPage />} />
                 <Route path="identity-verification" element={<IdentityVerificationPage />} />
                 <Route path="certifications" element={<SkillCertificationsPage />} />
                 <Route path="certifications/:testId" element={<SkillTestPage />} />
@@ -329,6 +335,7 @@ function App() {
                 <Route path="payments" element={<ClientPaymentsPage />} />
                 <Route path="settings" element={<ClientSettingsPage />} />
                 <Route path="verification" element={<IdentityVerificationPage />} />
+                <Route path="support-tickets" element={<SupportTicketsPage />} />
                 <Route path="referrals" element={<ClientReferralsPage />} />
                 <Route path="team-projects" element={<ClientTeamProjectsPage />} />
                 <Route path="team-projects/create" element={<ClientPostTeamProjectPage />} />
@@ -379,9 +386,14 @@ function App() {
             </Routes>
           </Suspense>
           <CookieConsent />
+          {/* Honest feedback when a provider round-trip never completes
+              (rendered globally so it is reachable from every entry page). */}
+          <OAuthReturnNotice />
           </ToastProvider>
           </I18nProvider>
+          </CurrencyProvider>
         </AuthProvider>
+        </ThemeProvider>
       </ErrorBoundary>
     </>
   );

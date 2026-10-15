@@ -80,14 +80,12 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- 2. Defensive trigger (re)creation — guarantees trg_kyc_auto_verify exists on
 --    fresh environments too (not just relying on the older migration).
 DROP TRIGGER IF EXISTS trg_kyc_auto_verify ON public.identity_verifications;
 CREATE TRIGGER trg_kyc_auto_verify
   AFTER INSERT OR UPDATE OF status ON public.identity_verifications
   FOR EACH ROW EXECUTE FUNCTION public.kyc_auto_verify_trigger_fn();
-
 -- 3. Verify a single pending row (status update only — the trigger notifies).
 CREATE OR REPLACE FUNCTION public.kyc_verify_row(p_id UUID)
 RETURNS void
@@ -128,7 +126,6 @@ BEGIN
   END IF;
 END;
 $$;
-
 -- 4. Bulk sweep — only verifies fresh submissions that are AT LEAST 10 MINUTES
 --    old and not already flagged for manual admin review.
 CREATE OR REPLACE FUNCTION public.auto_verify_kyc()
@@ -154,7 +151,6 @@ BEGIN
   RETURN v_count;
 END;
 $$;
-
 -- 5. Reschedule the sweep every 10 minutes (runs at :00 :10 :20 ... so a
 --    submission is verified at its 10-minute mark at the latest).
 DO $$

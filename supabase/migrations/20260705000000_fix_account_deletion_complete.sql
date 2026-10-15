@@ -8,7 +8,6 @@
 -- PART 1: Drop old version and create improved function
 -- ============================================================
 DROP FUNCTION IF EXISTS public.process_account_deletion(UUID);
-
 CREATE OR REPLACE FUNCTION public.process_account_deletion(p_request_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -127,7 +126,6 @@ EXCEPTION WHEN OTHERS THEN
   );
 END;
 $$;
-
 -- ============================================================
 -- PART 2: Update process-deletion edge function to also 
 -- delete the auth user via admin API (SQL comment — the actual 
@@ -172,7 +170,6 @@ BEGIN
   RETURN v_cleaned;
 END;
 $$;
-
 -- ============================================================
 -- PART 4: Add missing FK CASCADE on key tables
 -- ============================================================
@@ -189,7 +186,6 @@ DO $$ BEGIN
     NULL;
   END IF;
 END $$;
-
 -- ============================================================
 -- PART 5: Add critical indexes for performance at scale
 -- ============================================================

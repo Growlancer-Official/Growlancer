@@ -9,7 +9,6 @@
 -- ─── 1. SUBSCRIPTION PLANS → INR ──────────────────────────────────────────────
 ALTER TABLE public.subscription_plans
   ADD COLUMN IF NOT EXISTS currency text NOT NULL DEFAULT 'INR';
-
 -- Affordable INR pricing (India-first). Free stays ₹0. Trial days unchanged
 -- (freelancer 14 / client 7 — already set in 20260616).
 UPDATE public.subscription_plans SET price = 299.00,  currency = 'INR' WHERE id = 'pro_starter_monthly';
@@ -19,16 +18,13 @@ UPDATE public.subscription_plans SET price = 4999.00, currency = 'INR' WHERE id 
 UPDATE public.subscription_plans SET price = 499.00,  currency = 'INR' WHERE id = 'client_pro_monthly';
 UPDATE public.subscription_plans SET price = 4999.00, currency = 'INR' WHERE id = 'client_pro_yearly';
 UPDATE public.subscription_plans SET price = 0,       currency = 'INR' WHERE id IN ('free', 'client_free');
-
 -- ─── 2. PAYOUT METHODS → allow UPI (RazorpayX INR) ─────────────────────────────
 -- Old constraint allowed ('paypal','bank','crypto'). Add 'upi'. Stripe never
 -- existed in production; frontend option removed completely.
 ALTER TABLE public.payout_methods DROP CONSTRAINT IF EXISTS payout_methods_type_check;
-
 ALTER TABLE public.payout_methods
   ADD CONSTRAINT payout_methods_type_check
   CHECK (type IN ('paypal', 'bank', 'crypto', 'upi'));
-
 -- ─── 3. COUNTRIES TABLE (all countries for waitlist + future country features) ─
 CREATE TABLE IF NOT EXISTS public.countries (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -39,22 +35,17 @@ CREATE TABLE IF NOT EXISTS public.countries (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
-
 COMMENT ON TABLE public.countries IS
   'All countries — powers the waitlist country dropdown and future country features. Public read, admin manage.';
-
 ALTER TABLE public.countries ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Anyone can read countries" ON public.countries;
 CREATE POLICY "Anyone can read countries"
   ON public.countries FOR SELECT USING (true);
-
 DROP POLICY IF EXISTS "Admins can manage countries" ON public.countries;
 CREATE POLICY "Admins can manage countries"
   ON public.countries FOR ALL USING (
     (SELECT role FROM public.profiles WHERE id = auth.uid()) = 'admin'
   );
-
 -- Seed all countries (ISO 3166-1)
 INSERT INTO public.countries (name, code) VALUES
   ('Afghanistan','AF'),('Albania','AL'),('Algeria','DZ'),('Andorra','AD'),('Angola','AO'),
@@ -98,7 +89,6 @@ INSERT INTO public.countries (name, code) VALUES
   ('United States','US'),('Uruguay','UY'),('Uzbekistan','UZ'),('Vanuatu','VU'),('Vatican City','VA'),
   ('Venezuela','VE'),('Vietnam','VN'),('Yemen','YE'),('Zambia','ZM'),('Zimbabwe','ZW')
 ON CONFLICT (code) DO NOTHING;
-
 -- ─── 4. JOIN_WAITLIST RPC → accept name ───────────────────────────────────────
 DROP FUNCTION IF EXISTS public.join_waitlist(text, text, text, uuid);
 CREATE OR REPLACE FUNCTION public.join_waitlist(
@@ -151,7 +141,6 @@ BEGIN
   RETURN COALESCE(v_result, jsonb_build_object('success', false, 'error', 'Insert failed'));
 END;
 $$;
-
 -- ─── 5. REALTIME for countries + waitlist (admin page live updates) ───────────
 DO $$
 BEGIN

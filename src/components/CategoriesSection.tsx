@@ -205,7 +205,7 @@ export function CategoriesSection({
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex items-center gap-3 mb-1">
-                  <h3 className="font-semibold text-slate-900 text-sm leading-tight">{cat.name}</h3>
+                  <h2 className="font-semibold text-slate-900 text-sm leading-tight">{cat.name}</h2>
                   {catCount > 0 && (
                     <span className="px-1.5 py-0.5 text-xs font-bold bg-emerald-100 text-emerald-700 rounded-full flex-shrink-0">
                       {catCount}

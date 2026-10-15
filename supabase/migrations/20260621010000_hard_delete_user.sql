@@ -5,7 +5,6 @@
 
 -- Drop old soft-delete function if needed (no-op if not exists)
 DROP FUNCTION IF EXISTS request_account_deletion(UUID, TEXT);
-
 -- ============================================================
 -- FUNCTION: delete_user_all_data
 -- Called by Service Role only (Edge Function)
@@ -145,13 +144,11 @@ EXCEPTION
     RETURN jsonb_build_object('success', false, 'error', SQLERRM);
 END;
 $$;
-
 -- Grant execute to service role only (called from Edge Function)
 REVOKE ALL ON FUNCTION delete_user_all_data(UUID) FROM PUBLIC;
 REVOKE ALL ON FUNCTION delete_user_all_data(UUID) FROM anon;
 REVOKE ALL ON FUNCTION delete_user_all_data(UUID) FROM authenticated;
 GRANT EXECUTE ON FUNCTION delete_user_all_data(UUID) TO service_role;
-
 -- ============================================================
 -- Keep cancel_account_deletion for backward compatibility
 -- ============================================================

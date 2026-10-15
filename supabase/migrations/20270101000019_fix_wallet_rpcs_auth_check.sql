@@ -39,9 +39,7 @@ BEGIN
     'balance', v_wallet.balance, 'pending_balance', v_wallet.pending_balance);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.update_wallet_balance(UUID, NUMERIC) TO authenticated, service_role;
-
 CREATE OR REPLACE FUNCTION public.hold_wallet_funds(p_user_id UUID, p_amount NUMERIC)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER
@@ -74,9 +72,7 @@ BEGIN
     'balance', v_wallet.balance, 'pending_balance', v_wallet.pending_balance);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.hold_wallet_funds(UUID, NUMERIC) TO authenticated, service_role;
-
 CREATE OR REPLACE FUNCTION public.release_wallet_funds(p_user_id UUID, p_amount NUMERIC)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER
@@ -109,9 +105,7 @@ BEGIN
     'balance', v_wallet.balance, 'pending_balance', v_wallet.pending_balance);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.release_wallet_funds(UUID, NUMERIC) TO authenticated, service_role;
-
 CREATE OR REPLACE FUNCTION public.get_wallet_balance(p_user_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql SECURITY DEFINER
@@ -126,5 +120,4 @@ BEGIN
     'balance', v_wallet.balance, 'pending_balance', v_wallet.pending_balance, 'currency', v_wallet.currency);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_wallet_balance(UUID) TO authenticated, service_role;

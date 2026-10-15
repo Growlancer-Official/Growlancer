@@ -162,7 +162,6 @@ BEGIN
   );
 END;
 $function$;
-
 -- Grants
 REVOKE ALL ON FUNCTION public.fund_escrow_from_wallet(uuid, integer[]) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.fund_escrow_from_wallet(uuid, integer[]) TO authenticated;

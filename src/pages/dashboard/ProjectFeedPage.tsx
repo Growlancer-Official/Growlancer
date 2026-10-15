@@ -374,11 +374,14 @@ export function ProjectFeedPage() {
     const fetchData = async () => {
       try {
         // Fetch freelancer skills and rate
+        // maybeSingle: the row is OPTIONAL (only onboarding creates it) —
+        // .single() on zero rows makes PostgREST answer 406, which showed up
+        // as a reproducible non-2xx on every feed load for profile-less users.
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
           .select('skills, hourly_rate')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           setHasProfile(false);
@@ -824,6 +827,7 @@ export function ProjectFeedPage() {
             <input
               type="text"
               placeholder="Search projects..."
+              aria-label="Search projects"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 w-48"

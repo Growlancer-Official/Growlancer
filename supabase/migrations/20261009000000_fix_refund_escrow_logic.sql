@@ -43,9 +43,7 @@ BEGIN
 
   RETURN GREATEST(v_escrow_amount - v_released, 0);
 END $$;
-
 GRANT EXECUTE ON FUNCTION public._refundable_amount(UUID) TO authenticated;
-
 CREATE OR REPLACE FUNCTION public.request_contract_refund(
   p_contract_id UUID,
   p_reason TEXT,
@@ -173,5 +171,4 @@ BEGIN
     'status', (SELECT status FROM public.refund_requests WHERE id = v_request_id)
   );
 END $$;
-
 GRANT EXECUTE ON FUNCTION public.request_contract_refund(UUID, TEXT, TEXT, INT) TO authenticated;

@@ -18,10 +18,10 @@ begin
     return 0;
   end if;
 
-  insert into public.usage_logs (user_id, feature, feature_type, usage_count, metadata)
-  values (p_user_id, 'profile_view', 'profile_view', 1, jsonb_build_object('viewed_at', now()));
+  insert into public.usage_logs (user_id, feature, count, metadata)
+  values (p_user_id, 'profile_view', 1, jsonb_build_object('viewed_at', now()));
 
-  select count(*)::bigint
+  select coalesce(sum(count), 0)::bigint
     into v_total
     from public.usage_logs
    where user_id = p_user_id
@@ -30,21 +30,4 @@ begin
   return v_total;
 end;
 $$;
-
 grant execute on function public.record_profile_view(uuid) to anon, authenticated;
-
--- Read-only counter (no side effects) so repeat visitors can see the real
--- running total without recording an extra view.
-create or replace function public.get_profile_views(p_user_id uuid)
-returns bigint
-language sql
-security definer
-set search_path = public
-as $$
-  select count(*)::bigint
-    from public.usage_logs
-   where user_id = p_user_id
-     and feature = 'profile_view';
-$$;
-
-grant execute on function public.get_profile_views(uuid) to anon, authenticated;

@@ -77,11 +77,11 @@ export async function checkVerificationRateLimit(
   identifier: string
 ): Promise<{ allowed: boolean; remaining: number }> {
   try {
-    // Clean expired entries first
-    try {
-      await (supabase.rpc as any)('cleanup_verification_rate_limits');
-    } catch { /* non-critical */ }
-
+    // Expired entries are no longer deleted here: cleanup_verification_rate_limits
+    // is server-only since 20270119000012 (and its 15-minute DELETE window is
+    // exactly this endpoint's live rate-limit window, so an anonymous caller
+    // could have wiped it). The `cleanup-verification-rate-limits` pg_cron job
+    // owns that cleanup now.
     const windowStart = new Date(Date.now() - VERIFY_RATE_WINDOW_MS).toISOString();
 
     const { count } = await supabase

@@ -11,17 +11,13 @@ CREATE TABLE IF NOT EXISTS notification_preferences (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_notification_prefs_user_id ON notification_preferences(user_id);
-
 -- Enable RLS
 ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
-
 -- RLS Policies
 CREATE POLICY "Users manage own notification preferences" ON notification_preferences
   FOR ALL USING (auth.uid() = user_id);
-
 -- Function to get notification preferences
 -- Returns default preferences if none exist
 CREATE OR REPLACE FUNCTION get_notification_preferences(
@@ -60,7 +56,6 @@ BEGIN
   RETURN v_default_prefs || v_prefs;
 END;
 $$;
-
 -- Function to set notification preferences
 -- Merges the provided preferences with existing ones
 CREATE OR REPLACE FUNCTION set_notification_preferences(
@@ -90,7 +85,6 @@ BEGIN
   RETURN v_merged;
 END;
 $$;
-
 -- Trigger to auto-create notification preferences when a user profile is created
 CREATE OR REPLACE FUNCTION auto_create_notification_preferences()
 RETURNS TRIGGER
@@ -116,7 +110,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- Attach trigger to profiles table
 DROP TRIGGER IF EXISTS trg_auto_create_notification_preferences ON profiles;
 CREATE TRIGGER trg_auto_create_notification_preferences

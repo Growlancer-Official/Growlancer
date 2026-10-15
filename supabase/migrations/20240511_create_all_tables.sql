@@ -3,7 +3,6 @@
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- 1. PROFILES (main user table)
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS profiles (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 2. FREELANCER_PROFILES
 CREATE TABLE IF NOT EXISTS freelancer_profiles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -34,7 +32,6 @@ CREATE TABLE IF NOT EXISTS freelancer_profiles (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 3. CLIENT_PROFILES
 CREATE TABLE IF NOT EXISTS client_profiles (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -48,7 +45,6 @@ CREATE TABLE IF NOT EXISTS client_profiles (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 4. PROJECTS
 CREATE TABLE IF NOT EXISTS projects (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -66,7 +62,6 @@ CREATE TABLE IF NOT EXISTS projects (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 5. PROPOSALS
 CREATE TABLE IF NOT EXISTS proposals (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -80,7 +75,6 @@ CREATE TABLE IF NOT EXISTS proposals (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(project_id, freelancer_id)
 );
-
 -- 6. CONTRACTS
 CREATE TABLE IF NOT EXISTS contracts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -99,7 +93,6 @@ CREATE TABLE IF NOT EXISTS contracts (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 7. ESCROW
 CREATE TABLE IF NOT EXISTS escrow (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -110,7 +103,6 @@ CREATE TABLE IF NOT EXISTS escrow (
   released_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 8. TRANSACTIONS
 CREATE TABLE IF NOT EXISTS transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -122,7 +114,6 @@ CREATE TABLE IF NOT EXISTS transactions (
   description TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 9. WITHDRAWALS
 CREATE TABLE IF NOT EXISTS withdrawals (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -134,7 +125,6 @@ CREATE TABLE IF NOT EXISTS withdrawals (
   processed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 10. PROJECT_MATCHES
 CREATE TABLE IF NOT EXISTS project_matches (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -145,7 +135,6 @@ CREATE TABLE IF NOT EXISTS project_matches (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(project_id, freelancer_id)
 );
-
 -- 11. INVITES
 CREATE TABLE IF NOT EXISTS invites (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -158,7 +147,6 @@ CREATE TABLE IF NOT EXISTS invites (
   expires_at TIMESTAMPTZ,
   UNIQUE(project_id, freelancer_id)
 );
-
 -- 12. REFERRALS
 CREATE TABLE IF NOT EXISTS referrals (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -169,7 +157,6 @@ CREATE TABLE IF NOT EXISTS referrals (
   reward_claimed BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 13. REFERRAL_STATS
 CREATE TABLE IF NOT EXISTS referral_stats (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -179,7 +166,6 @@ CREATE TABLE IF NOT EXISTS referral_stats (
   total_earnings DECIMAL(10,2) DEFAULT 0,
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 14. SUBSCRIPTIONS
 CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -191,7 +177,6 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   auto_renew BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 15. SUBSCRIPTION_PLANS
 CREATE TABLE IF NOT EXISTS subscription_plans (
   id TEXT PRIMARY KEY,
@@ -202,7 +187,6 @@ CREATE TABLE IF NOT EXISTS subscription_plans (
   features JSONB,
   active BOOLEAN DEFAULT true
 );
-
 -- 16. SERVICES (for freelancers offering services)
 CREATE TABLE IF NOT EXISTS services (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -218,7 +202,6 @@ CREATE TABLE IF NOT EXISTS services (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 17. MESSAGES
 CREATE TABLE IF NOT EXISTS messages (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -229,7 +212,6 @@ CREATE TABLE IF NOT EXISTS messages (
   read BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 18. NOTIFICATIONS
 CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -241,7 +223,6 @@ CREATE TABLE IF NOT EXISTS notifications (
   read BOOLEAN DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 19. REVIEWS
 CREATE TABLE IF NOT EXISTS reviews (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -252,7 +233,6 @@ CREATE TABLE IF NOT EXISTS reviews (
   comment TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 20. CONTRACT_FILES
 CREATE TABLE IF NOT EXISTS contract_files (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -264,7 +244,6 @@ CREATE TABLE IF NOT EXISTS contract_files (
   file_size INTEGER,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 21. PAYPAL_ORDERS
 CREATE TABLE IF NOT EXISTS paypal_orders (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -284,7 +263,6 @@ CREATE TABLE IF NOT EXISTS paypal_orders (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 22. PAYPAL_TRANSACTIONS
 CREATE TABLE IF NOT EXISTS paypal_transactions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -299,7 +277,6 @@ CREATE TABLE IF NOT EXISTS paypal_transactions (
   processor_response JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 23. USAGE_LOGS
 CREATE TABLE IF NOT EXISTS usage_logs (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -309,7 +286,6 @@ CREATE TABLE IF NOT EXISTS usage_logs (
   metadata JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- 24. SKILLS_REFERENCE
 CREATE TABLE IF NOT EXISTS skills_reference (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -317,7 +293,6 @@ CREATE TABLE IF NOT EXISTS skills_reference (
   category TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- INDEXES FOR PERFORMANCE
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
@@ -348,7 +323,6 @@ CREATE INDEX IF NOT EXISTS idx_paypal_orders_user_id ON paypal_orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_paypal_orders_status ON paypal_orders(status);
 CREATE INDEX IF NOT EXISTS idx_usage_logs_user_id ON usage_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_usage_logs_created_at ON usage_logs(created_at);
-
 -- ENABLE ROW LEVEL SECURITY
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE freelancer_profiles ENABLE ROW LEVEL SECURITY;
@@ -374,37 +348,30 @@ ALTER TABLE paypal_orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE paypal_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usage_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE skills_reference ENABLE ROW LEVEL SECURITY;
-
 -- RLS POLICIES (basic - owner access)
 -- Profiles: users can read all, update their own
 CREATE POLICY "Users can read all profiles" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
-
 -- Freelancer profiles: owner only
 CREATE POLICY "Freelancers can read all" ON freelancer_profiles FOR SELECT USING (true);
 CREATE POLICY "Freelancers can update own" ON freelancer_profiles FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Freelancers can insert own" ON freelancer_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
-
 -- Client profiles: owner only
 CREATE POLICY "Clients can read all" ON client_profiles FOR SELECT USING (true);
 CREATE POLICY "Clients can update own" ON client_profiles FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY "Clients can insert own" ON client_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
-
 -- Projects: clients can CRUD own, freelancers can read open
 CREATE POLICY "Clients can manage own projects" ON projects FOR ALL USING (auth.uid() = client_id);
 CREATE POLICY "Freelancers can read open projects" ON projects FOR SELECT USING (status = 'open');
-
 -- Proposals: freelancers manage own, clients can read project proposals
 CREATE POLICY "Freelancers manage own proposals" ON proposals FOR ALL USING (auth.uid() = freelancer_id);
 CREATE POLICY "Clients read proposals for own projects" ON proposals FOR SELECT USING (
   EXISTS (SELECT 1 FROM projects WHERE id = proposal.project_id AND client_id = auth.uid())
 );
-
 -- Contracts: participants can view
 CREATE POLICY "Contract participants can view" ON contracts FOR SELECT USING (
   auth.uid() = freelancer_id OR auth.uid() = client_id
 );
-
 -- Messages: sender/receiver can view
 CREATE POLICY "Message participants can view" ON messages FOR SELECT USING (
   auth.uid() = sender_id OR auth.uid() = receiver_id
@@ -412,16 +379,13 @@ CREATE POLICY "Message participants can view" ON messages FOR SELECT USING (
 CREATE POLICY "Users can insert messages" ON messages FOR INSERT WITH CHECK (
   auth.uid() = sender_id OR auth.uid() = receiver_id
 );
-
 -- Notifications: owner only
 CREATE POLICY "Users view own notifications" ON notifications FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users update own notifications" ON notifications FOR UPDATE USING (auth.uid() = user_id);
-
 -- Reviews: contract participants
 CREATE POLICY "Contract participants view reviews" ON reviews FOR SELECT USING (
   EXISTS (SELECT 1 FROM contracts WHERE id = contract_id AND (freelancer_id = auth.uid() OR client_id = auth.uid()))
 );
-
 -- Default policies for other tables (restrictive)
 CREATE POLICY "Authenticated users can read" ON escrow FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "Authenticated users can read transactions" ON transactions FOR SELECT USING (auth.uid() = user_id);
@@ -439,7 +403,6 @@ CREATE POLICY "Users read own paypal transactions" ON paypal_transactions FOR SE
 );
 CREATE POLICY "Users read own usage logs" ON usage_logs FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Authenticated users can read skills" ON skills_reference FOR SELECT USING (true);
-
 -- Insert default subscription plans
 INSERT INTO subscription_plans (id, name, description, price, interval, features, active) VALUES
 ('free', 'Free', 'Basic features for new users', 0, 'month', '{"proposals": 5, "ai_matches": 10, "portfolio_items": 3}', true),
@@ -448,7 +411,6 @@ INSERT INTO subscription_plans (id, name, description, price, interval, features
 ('ai_monthly', 'AI Plus Monthly', 'AI assistant powered by GPT-4', 14.99, 'month', '{"unlimited_ai_chat": true, "ai_proposal_review": true, "ai_profile_optimization": true}', true),
 ('ai_yearly', 'AI Plus Yearly', 'AI assistant powered by GPT-4', 149.99, 'year', '{"unlimited_ai_chat": true, "ai_proposal_review": true, "ai_profile_optimization": true}', true)
 ON CONFLICT (id) DO NOTHING;
-
 -- Insert common skills
 INSERT INTO skills_reference (name, category) VALUES
 ('JavaScript', 'Programming'), ('TypeScript', 'Programming'), ('Python', 'Programming'), ('Java', 'Programming'),

@@ -33,13 +33,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trg_assign_certificate_code ON public.skill_certifications;
 CREATE TRIGGER trg_assign_certificate_code
   BEFORE INSERT ON public.skill_certifications
   FOR EACH ROW
   EXECUTE FUNCTION public.assign_certificate_verification_code();
-
 -- Backfill rows inserted after the previous one-time backfill
 UPDATE public.skill_certifications
 SET verification_code = 'GRW-CERT-' || upper(substr(md5(id::text || random()::text::text), 1, 5))

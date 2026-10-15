@@ -112,7 +112,9 @@ export const contestService = {
       .limit(limit);
 
     if (error) {
-      console.error('Error fetching contests:', error);
+      // Expected when the backend is unreachable (offline dev, CI placeholder
+      // envs) — pages render their empty-state fallback. Not an app defect.
+      console.warn('Could not load contests (backend unreachable or empty):', error.message);
       return [];
     }
     return (data ?? []) as unknown as Contest[];
@@ -120,17 +122,24 @@ export const contestService = {
 
   // Get contest by ID
   async getContestById(contestId: string): Promise<Contest | null> {
+    // `.single()` raises PGRST116 (HTTP 406) whenever the contest does not
+    // exist, which is a normal "this contest was deleted / never existed"
+    // visit — not a failure. It filled the console with a red 406 + an error
+    // object on every such page view. `maybeSingle()` returns null instead so
+    // the page can show its friendly not-found state quietly.
     const { data, error } = await supabase
       .from('contests')
       .select('*')
       .eq('id', contestId)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      console.error('Error fetching contest:', error);
+      // Expected when the backend is unreachable (offline dev, CI placeholder
+      // envs) — detail page shows its not-found state.
+      console.warn('Could not load contest (backend unreachable):', error.message);
       return null;
     }
-    return data as unknown as Contest;
+    return (data as unknown as Contest) ?? null;
   },
 
   // Get client's contests
@@ -209,7 +218,9 @@ export const contestService = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching submissions:', error);
+      // Expected when the backend is unreachable (offline dev, CI placeholder
+      // envs) — detail page shows its "No submissions yet" empty state.
+      console.warn('Could not load contest submissions (backend unreachable or empty):', error.message);
       return [];
     }
 
@@ -409,7 +420,7 @@ export const contestService = {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error fetching comments:', error);
+      console.warn('Could not load contest comments (backend unreachable or empty):', error.message);
       return [];
     }
     return (data || []) as unknown as ContestComment[];

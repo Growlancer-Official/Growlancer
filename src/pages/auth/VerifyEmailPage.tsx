@@ -388,7 +388,7 @@ export function VerifyEmailPage() {
             <button
               onClick={handleResendEmail}
               disabled={resending}
-              className="inline-flex items-center gap-2 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-2 py-1 text-sm font-medium text-emerald-600 hover:text-emerald-700 transition-colors disabled:opacity-50"
             >
               {resending ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -418,7 +418,7 @@ export function VerifyEmailPage() {
               Already have an account?{' '}
               <button
                 onClick={() => navigate('/?modal=login')}
-                className="inline-flex items-center gap-1 text-emerald-600 font-semibold hover:text-emerald-700 transition-all"
+                className="inline-flex items-center gap-1 py-1 text-emerald-600 font-semibold hover:text-emerald-700 transition-all"
               >
                 Log in here
                 <ArrowRight className="w-3.5 h-3.5" />

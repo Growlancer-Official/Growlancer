@@ -206,7 +206,7 @@ export function AdminFinancePage() {
                 <h3 className="text-sm font-bold text-white">Revenue — Last 12 Months</h3>
                 <span className="text-[10px] text-slate-500 uppercase tracking-widest">Commission vs Client Volume</span>
               </div>
-              <div className="flex items-end gap-2 h-44">
+              <div role="img" className="flex items-end gap-2 h-44 overflow-x-auto" aria-label="Monthly revenue and client volume chart — last 12 months">
                 {stats.monthly.map((m, i) => {
                   const volumePct = (Number(m.volume) / maxMonthlyVolume) * 100;
                   const revenuePct = maxMonthlyVolume > 0 ? (Number(m.revenue) / maxMonthlyVolume) * 100 : 0;

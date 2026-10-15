@@ -71,11 +71,9 @@ BEGIN
    WHERE id = v_user_id;
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.sync_profile_pro_flag(UUID) FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.sync_profile_pro_flag(UUID) FROM anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.sync_profile_pro_flag(UUID) TO service_role;
-
 -- Same grant hygiene for the trigger wrapper (called by the DB only).
 CREATE OR REPLACE FUNCTION public.sync_profile_pro_flag_trigger_fn()
 RETURNS trigger
@@ -91,11 +89,9 @@ BEGIN
   RETURN COALESCE(NEW, OLD);
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.sync_profile_pro_flag_trigger_fn() FROM PUBLIC;
 REVOKE ALL ON FUNCTION public.sync_profile_pro_flag_trigger_fn() FROM anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.sync_profile_pro_flag_trigger_fn() TO service_role;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. pay_subscription_with_wallet — restore the bypass flag dropped in the
 --    20270102000000 rewrite (the 20270101000006 version had it). Body is
@@ -216,10 +212,8 @@ BEGIN
   );
 END;
 $$;
-
 REVOKE EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.pay_subscription_with_wallet(UUID) TO authenticated;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 3. create_user_subscription — add the same bypass flag for consistency and
 --    forward-safety (its trial/active transitions flip is_pro via the sync
@@ -324,6 +318,5 @@ BEGIN
   RETURN jsonb_build_object('success', true, 'subscription_id', v_sub_id, 'trial', v_is_trial);
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.create_user_subscription(TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.create_user_subscription(TEXT) TO authenticated;

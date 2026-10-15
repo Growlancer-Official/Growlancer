@@ -30,5 +30,4 @@ BEGIN
     'currency', v_wallet.currency);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_wallet_balance(UUID) TO authenticated, service_role;

@@ -76,6 +76,7 @@ export function ContestsPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search contests by title, category, or skills"
                 placeholder="Search contests by title, category, or skills..."
                 className="w-full pl-12 pr-4 py-4 rounded-xl bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-emerald-300/50 shadow-xl"
               />
@@ -174,7 +175,7 @@ export function ContestsPage() {
         ) : filteredContests.length === 0 ? (
           <div className="text-center py-10">
             <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-2" />
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No contests found</h3>
+            <h2 className="text-xl font-bold text-slate-900 mb-2">No contests found</h2>
             <p className="text-slate-500">Try adjusting your filters or check back later for new contests.</p>
           </div>
         ) : (

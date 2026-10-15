@@ -10,7 +10,7 @@ import { InfoTip } from '../components/InfoTip';
 import { PageSkeleton } from '../components/PageSkeleton';
 import { ReauthDialog } from '../components/ReauthDialog';
 import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../lib/reauth';
-import { EmailVerificationBanner } from '../components/EmailVerificationBanner';
+import { EmailVerificationCard } from '../components/EmailVerificationCard';
 import { IndustrySelect } from '../components/IndustrySelect';
 import { getNameChangeLock } from '../lib/nameChangeLock';
 import { validateOptionalGstin, normalizeGstin } from '../lib/gst';
@@ -182,62 +182,6 @@ export function ClientSettingsPage() {
   const [showRecoveryCodes, setShowRecoveryCodes] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // ── Email verification state ──
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [checkingEmailVerification, setCheckingEmailVerification] = useState(true);
-  const [sendingVerification, setSendingVerification] = useState(false);
-  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function checkEmailVerified() {
-      try {
-        const { data } = await supabase.auth.getUser();
-        setEmailVerified(!!data?.user?.email_confirmed_at);
-      } catch {
-        setEmailVerified(false);
-      } finally {
-        setCheckingEmailVerification(false);
-      }
-    }
-    checkEmailVerified();
-  }, []);
-
-  // Send a fresh verification email (OAuth users with unconfirmed email can
-  // verify later from here — the app never blocks them from the dashboard).
-  const handleSendVerificationEmail = async () => {
-    setSendingVerification(true);
-    setVerificationMessage(null);
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: accountData.email,
-        options: {
-          // 🎯 Confirm link lands on EmailConfirmPage ("close this window")
-          // NO ?type= query — see VerifyEmailPage resend (query suffix breaks
-          // the GoTrue allowlist glob → homepage flash; type arrives in fragment).
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
-        },
-      });
-      if (error) {
-        // Supabase User (not the app's AuthUser) carries app_metadata — fetch
-        // it fresh so OAuth users get a recovery hint instead of a raw error.
-        const { data: meta } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
-        const provider = meta?.user?.app_metadata?.provider as string | undefined;
-        const oauthHint =
-          provider === 'github' || provider === 'linkedin_oidc'
-            ? ` If you signed up with ${provider === 'github' ? 'GitHub' : 'LinkedIn'}, make sure your email is public/verified on the provider, or use Sign up with email instead.`
-            : '';
-        setVerificationMessage(`Could not send verification email: ${error.message}${oauthHint}`);
-      } else {
-        setVerificationMessage('Verification email sent! Check your inbox (and spam folder).');
-      }
-    } catch {
-      setVerificationMessage('Failed to send verification email. Please try again.');
-    } finally {
-      setSendingVerification(false);
-    }
-  };
-
   // ── Billing / Payment Methods state ──
   const [savedCards, setSavedCards] = useState<SavedPaymentCard[]>([]);
   const [billingOrders, setBillingOrders] = useState<BillingOrder[]>([]);
@@ -346,7 +290,10 @@ export function ClientSettingsPage() {
 
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching profile:', error);
+      // Expected when the backend is unreachable (offline dev, CI placeholder
+      // envs) — the form renders with defaults. Action errors below still log
+      // loudly via console.error.
+      console.warn('Could not load client profile (backend unreachable):', error instanceof Error ? error.message : error);
       setLoading(false);
     }
   }, [user?.id]);
@@ -1113,9 +1060,8 @@ export function ClientSettingsPage() {
         </div>
       </div>
 
-      {/* Email verification recommendation — industry-standard: nudge unverified
-          users to confirm their email; hidden automatically once confirmed */}
-      <EmailVerificationBanner />
+      {/* Email verification — real-time status, send/resend any time */}
+      <EmailVerificationCard />
 
       {/* Messages */}
       {successMessage && (
@@ -1247,6 +1193,7 @@ export function ClientSettingsPage() {
                         {companyData.account_type === 'business' ? 'Company Name *' : 'Company / Brand Name (optional)'}
                       </label>
                       <input type="text" value={companyData.company_name} onChange={(e) => setCompanyData({ ...companyData, company_name: e.target.value })}
+                        aria-label="Company name"
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="Your company name" />
                     </div>
                     {companyData.account_type === 'business' && (
@@ -1318,6 +1265,7 @@ export function ClientSettingsPage() {
                       <div className="relative">
                         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input type="text" value={companyData.location} onChange={(e) => setCompanyData({ ...companyData, location: e.target.value })}
+                          aria-label="Company location"
                           className="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all" placeholder="City, Country" />
                       </div>
                     </div>
@@ -1344,7 +1292,7 @@ export function ClientSettingsPage() {
                       <Building2 className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Complete Profile</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Complete Profile</p>
                       <p className="text-xs text-slate-500 leading-relaxed">A complete company profile attracts more qualified freelancers. Add your logo and description to stand out.</p>
                     </div>
                   </div>
@@ -1353,7 +1301,7 @@ export function ClientSettingsPage() {
                       <Globe className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Website Link</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Website Link</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Add your company website to build credibility. Freelancers often research companies before applying.</p>
                     </div>
                   </div>
@@ -1362,7 +1310,7 @@ export function ClientSettingsPage() {
                       <MapPin className="w-4 h-4 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Location Matters</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Location Matters</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Listing your location helps match with local freelancers and sets clear timezone expectations.</p>
                     </div>
                   </div>
@@ -1388,39 +1336,7 @@ export function ClientSettingsPage() {
                         <p className="font-medium text-slate-900">{accountData.email}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      {checkingEmailVerification ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                      ) : emailVerified ? (
-                        <span className="flex items-center gap-1 px-2.5 py-1 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
-                          <Check className="w-4 h-4" /> Verified
-                        </span>
-                      ) : (
-                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
-                          <span className="flex items-center gap-1 px-2.5 py-1 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
-                            <AlertCircle className="w-4 h-4" /> Not Verified
-                          </span>
-                          <button
-                            onClick={handleSendVerificationEmail}
-                            disabled={sendingVerification}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
-                          >
-                            {sendingVerification ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <RefreshCw className="w-4 h-4" />
-                            )}
-                            {sendingVerification ? 'Sending...' : 'Verify Email'}
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
-                  {verificationMessage && (
-                    <p className={`text-xs mt-2 ${verificationMessage.includes('Could not') || verificationMessage.includes('Failed') ? 'text-red-500' : 'text-emerald-600'}`}>
-                      {verificationMessage}
-                    </p>
-                  )}
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl">
                     <div className="flex items-center gap-3">
                       <User className="w-5 h-5 text-slate-400" />
@@ -1637,7 +1553,7 @@ export function ClientSettingsPage() {
                       <User className="w-4 h-4 text-indigo-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Profile Trust</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Profile Trust</p>
                       <p className="text-xs text-slate-500 leading-relaxed">A complete profile with your name builds trust with freelancers. Make sure your information is up to date.</p>
                     </div>
                   </div>
@@ -1646,7 +1562,7 @@ export function ClientSettingsPage() {
                       <Mail className="w-4 h-4 text-indigo-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Email Notifications</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Email Notifications</p>
                       <p className="text-xs text-slate-500 leading-relaxed">All project updates and messages are sent to your email. Check the Notifications tab to customize alerts.</p>
                     </div>
                   </div>
@@ -1655,7 +1571,7 @@ export function ClientSettingsPage() {
                       <Shield className="w-4 h-4 text-indigo-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Account Security</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Account Security</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Keep your account secure by using a strong password and enabling two-factor authentication.</p>
                     </div>
                   </div>
@@ -1678,6 +1594,7 @@ export function ClientSettingsPage() {
                       <input type={securityData.showNewPassword ? 'text' : 'password'} value={securityData.newPassword} onChange={(e) => setSecurityData({ ...securityData, newPassword: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all pr-10" />
                       <button type="button" onClick={() => setSecurityData({ ...securityData, showNewPassword: !securityData.showNewPassword })}
+                        aria-label={securityData.showNewPassword ? 'Hide new password' : 'Show new password'}
                         className="absolute right-4 top-1/2 -translate-y-1/2">
                         {securityData.showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -1803,7 +1720,7 @@ export function ClientSettingsPage() {
                       <Lock className="w-4 h-4 text-amber-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Strong Passwords</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Strong Passwords</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Use at least 8 characters with a mix of letters, numbers, and special characters for maximum security.</p>
                     </div>
                   </div>
@@ -1812,7 +1729,7 @@ export function ClientSettingsPage() {
                       <Shield className="w-4 h-4 text-amber-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Enable 2FA</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Enable 2FA</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Two-factor authentication adds an extra layer of security to prevent unauthorized access to your account.</p>
                     </div>
                   </div>
@@ -1821,7 +1738,7 @@ export function ClientSettingsPage() {
                       <Eye className="w-4 h-4 text-amber-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Regular Updates</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Regular Updates</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Change your password regularly and never reuse passwords from other websites or services.</p>
                     </div>
                   </div>
@@ -1870,7 +1787,7 @@ export function ClientSettingsPage() {
                       <Bell className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Stay Informed</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Stay Informed</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Enable notifications to stay updated on proposals, messages, and project milestones in real time.</p>
                     </div>
                   </div>
@@ -1879,7 +1796,7 @@ export function ClientSettingsPage() {
                       <Mail className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Email Alerts</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Email Alerts</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Never miss important updates. Email notifications ensure you're always in the loop even when offline.</p>
                     </div>
                   </div>
@@ -1888,7 +1805,7 @@ export function ClientSettingsPage() {
                       <Star className="w-4 h-4 text-purple-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Customize Alerts</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Customize Alerts</p>
                       <p className="text-xs text-slate-500 leading-relaxed">You have full control over which notifications you receive. Disable what's not relevant to your workflow.</p>
                     </div>
                   </div>
@@ -1946,7 +1863,7 @@ export function ClientSettingsPage() {
                       <Globe className="w-4 h-4 text-sky-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Public vs Private</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Public vs Private</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Public profiles attract more freelancer applications. Switch to private if you prefer limited visibility.</p>
                     </div>
                   </div>
@@ -1955,7 +1872,7 @@ export function ClientSettingsPage() {
                       <Eye className="w-4 h-4 text-sky-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Online Status</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Online Status</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Showing your online status helps freelancers know when you're available for quick responses and interviews.</p>
                     </div>
                   </div>
@@ -1964,7 +1881,7 @@ export function ClientSettingsPage() {
                       <Shield className="w-4 h-4 text-sky-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Data Privacy</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Data Privacy</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Your data is encrypted and secure. We never share your personal information without your explicit consent.</p>
                     </div>
                   </div>
@@ -2142,7 +2059,7 @@ export function ClientSettingsPage() {
                       <CreditCard className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Payment Methods</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Payment Methods</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Add multiple payment methods for flexibility. Set a default for automatic payments and transactions.</p>
                     </div>
                   </div>
@@ -2151,7 +2068,7 @@ export function ClientSettingsPage() {
                       <Star className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Default Method</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Default Method</p>
                       <p className="text-xs text-slate-500 leading-relaxed">Your default payment method will be used for all automatic payments and subscription renewals.</p>
                     </div>
                   </div>
@@ -2160,7 +2077,7 @@ export function ClientSettingsPage() {
                       <Lock className="w-4 h-4 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-slate-900 text-xs mb-1">Secure Billing</h4>
+                      <p className="font-semibold text-slate-900 text-xs mb-1">Secure Billing</p>
                       <p className="text-xs text-slate-500 leading-relaxed">All payment information is encrypted and securely stored. We never share your financial details with third parties.</p>
                     </div>
                   </div>

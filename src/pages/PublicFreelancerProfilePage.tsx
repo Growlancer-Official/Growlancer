@@ -31,6 +31,7 @@ import { InfoTip } from '../components/InfoTip';
 import { invitesService } from '../lib/dataService';
 import { useAuth } from '../context/AuthContext';
 import { formatCurrency } from '../utils/date';
+import { isValidUuid } from '../utils/validation';
 import { serviceFromPrice } from '../lib/servicePricing';
 import {
   isProSubscription,
@@ -169,6 +170,16 @@ export function PublicFreelancerProfilePage() {
   useEffect(() => {
     if (!freelancerId) return;
 
+    // 🛡️ Reject malformed ids before any query: both `user_id` and `id` are
+    // uuid columns, so Postgres answers a non-UUID with HTTP 400 ("invalid
+    // input syntax for type uuid") and the browser logs a red
+    // "Failed to load resource: 400" on a visit that is really just a 404.
+    if (!isValidUuid(freelancerId)) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
+
     const fetchProfile = async () => {
       setLoading(true);
       try {
@@ -218,7 +229,10 @@ export function PublicFreelancerProfilePage() {
             .from('services')
             .select('id, title, description, category, image_url, price, packages, delivery_days, revisions, extra_revision_price, tags, active')
             .eq('freelancer_id', userKey)
-            .eq('active', true)
+            // `status` is the source of truth (matches the detail page) — the
+            // old `active`-only filter showed services the freelancer had
+            // deactivated (the dashboard toggle writes only `status`).
+            .eq('status', 'active')
             .order('created_at', { ascending: false }),
         ]);
 
@@ -433,7 +447,7 @@ export function PublicFreelancerProfilePage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-slate-900 mb-2">Profile Not Found</h2>
           <p className="text-slate-500 mb-3">This freelancer profile doesn't exist or has been removed.</p>
-          <Link to="/" className="text-emerald-600 hover:underline font-medium">Go Home</Link>
+          <Link to="/" className="inline-flex items-center min-h-[44px] px-2 text-emerald-600 hover:underline font-medium">Go Home</Link>
         </div>
       </div>
     );

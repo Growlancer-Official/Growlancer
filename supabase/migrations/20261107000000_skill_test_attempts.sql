@@ -16,30 +16,22 @@ create table if not exists public.skill_test_attempts (
   violations integer not null default 0,
   blocked_until timestamptz,
   permanently_blocked boolean not null default false,
-  cheating_count integer not null default 0,   -- cumulative cheating bans (2+ = permanent)
   started_at timestamptz not null default now(),
   finished_at timestamptz,
   updated_at timestamptz not null default now(),
   unique (user_id, test_id)
 );
-
 create index if not exists idx_skill_test_attempts_user on public.skill_test_attempts (user_id);
-
 -- ── Row Level Security ───────────────────────────────────────────────────────
 alter table public.skill_test_attempts enable row level security;
-
 create policy "users view own test attempts" on public.skill_test_attempts
   for select to authenticated using (auth.uid() = user_id);
-
 create policy "users create own test attempts" on public.skill_test_attempts
   for insert to authenticated with check (auth.uid() = user_id);
-
 create policy "users update own test attempts" on public.skill_test_attempts
   for update to authenticated using (auth.uid() = user_id);
-
 grant all on public.skill_test_attempts to authenticated;
 grant all on public.skill_test_attempts to service_role;
-
 -- ── Realtime ─────────────────────────────────────────────────────────────────
 DO $$
 BEGIN

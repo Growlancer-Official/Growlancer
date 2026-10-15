@@ -32,10 +32,8 @@ BEGIN
   RETURN OLD;
 END;
 $$;
-
 -- Trigger functions are called as the table owner; lock down direct calls.
 REVOKE ALL ON FUNCTION public.handle_user_deleted() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS on_auth_user_deleted ON auth.users;
 CREATE TRIGGER on_auth_user_deleted
   AFTER DELETE ON auth.users

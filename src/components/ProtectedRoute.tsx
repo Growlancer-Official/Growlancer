@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { ExternalLink, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase, clearSupabaseAuthStorage, isStaleSessionError } from '../lib/supabase';
@@ -45,9 +46,7 @@ function EmailNotVerifiedPage() {
 
           <div className="flex justify-center mb-2">
             <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-              <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
+              <Mail className="w-8 h-8 text-emerald-600" />
             </div>
           </div>
 
@@ -67,9 +66,7 @@ function EmailNotVerifiedPage() {
             rel="noopener noreferrer"
             className="flex items-center justify-center gap-3 w-full h-12 bg-emerald-600 text-white font-semibold rounded-xl shadow-lg shadow-emerald-600/25 hover:bg-emerald-700 hover:shadow-xl transition-all mb-2"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
+            <ExternalLink className="w-4 h-4" />
             Open {providerName}
           </a>
 

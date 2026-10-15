@@ -12,6 +12,10 @@ import {
 import { adminQuery } from '../../lib/adminDataProxy';
 import { realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
+import { fetchAdminWaitlistInsights, type WaitlistInsights } from '../../lib/countryWaitlist';
+
+/** The entries table is served by admin-data, which caps a single read. */
+const ENTRY_READ_LIMIT = 500;
 
 interface WaitlistEntry {
   id: string;
@@ -25,6 +29,10 @@ interface WaitlistEntry {
 export function AdminWaitlistPage() {
   const toast = useToast();
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
+  // Server-side exact aggregates. The table read above is capped, so a per-country
+  // count derived from it would silently under-report once the waitlist grows past
+  // the cap — admin_country_waitlist_insights() counts the whole table.
+  const [insights, setInsights] = useState<WaitlistInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [countryFilter, setCountryFilter] = useState('all');
@@ -32,13 +40,17 @@ export function AdminWaitlistPage() {
   const fetchWaitlist = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await adminQuery<WaitlistEntry>({
-        table: 'waitlist',
-        order: 'created_at',
-        orderDir: 'desc',
-        limit: 500,
-      });
+      const [{ data }, insightData] = await Promise.all([
+        adminQuery<WaitlistEntry>({
+          table: 'waitlist',
+          order: 'created_at',
+          orderDir: 'desc',
+          limit: ENTRY_READ_LIMIT,
+        }),
+        fetchAdminWaitlistInsights(),
+      ]);
       setEntries(data || []);
+      setInsights(insightData);
     } catch (err) {
       toast.error('Load Failed', err instanceof Error ? err.message : 'Failed to load waitlist');
     } finally {
@@ -50,29 +62,35 @@ export function AdminWaitlistPage() {
     void fetchWaitlist();
   }, [fetchWaitlist]);
 
-  // Realtime — live updates when someone joins the waitlist
+  // Realtime — live updates when someone joins or changes their waitlist country.
+  // '*' (not just INSERT) because a repeat join updates the existing row rather
+  // than inserting one, and that is a real interest signal too.
   useEffect(() => {
     const channel = realtimeChannels
       .waitlist(`admin-waitlist-${Date.now()}`)
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'waitlist' },
+        { event: '*', schema: 'public', table: 'waitlist' },
         () => void fetchWaitlist()
       )
       .subscribe();
     return () => { void channel.unsubscribe(); };
   }, [fetchWaitlist]);
 
-  // Country breakdown
-  const countryCounts = entries.reduce<Record<string, number>>((acc, e) => {
+  // Country breakdown — the exact server aggregate when available, otherwise a
+  // best-effort count over the loaded page of entries.
+  const derivedCounts = entries.reduce<Record<string, number>>((acc, e) => {
     const c = e.country || 'Unknown';
     acc[c] = (acc[c] || 0) + 1;
     return acc;
   }, {});
-  const countriesSorted = Object.entries(countryCounts).sort((a, b) => b[1] - a[1]);
-  const totalCountries = countriesSorted.length;
-  const totalEntries = entries.length;
+  const countriesSorted: Array<[string, number]> = insights && insights.byCountry.length > 0
+    ? insights.byCountry.map((r) => [r.country, r.interested] as [string, number])
+    : Object.entries(derivedCounts).sort((a, b) => b[1] - a[1]);
+  const totalCountries = insights?.countryCount ?? countriesSorted.length;
+  const totalEntries = insights?.total ?? entries.length;
   const topCountry = countriesSorted[0]?.[0] || '—';
+  const filteredCount = countriesSorted.find(([c]) => c === countryFilter)?.[1] ?? 0;
 
   // Search + filter
   const filtered = entries.filter((e) => {
@@ -91,8 +109,8 @@ export function AdminWaitlistPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-white">Waitlist</h1>
           <p className="text-sm text-slate-400">
             Who's interested in Growlancer, from which country — live.
@@ -135,7 +153,7 @@ export function AdminWaitlistPage() {
           <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-3">
             <Mail className="w-5 h-5" />
           </div>
-          <p className="text-2xl font-bold text-white">{countryFilter === 'all' ? totalEntries : countryCounts[countryFilter] || 0}</p>
+          <p className="text-2xl font-bold text-white">{countryFilter === 'all' ? totalEntries : filteredCount}</p>
           <p className="text-xs text-slate-400 font-medium uppercase tracking-wider">Current View</p>
         </div>
       </div>
@@ -145,6 +163,11 @@ export function AdminWaitlistPage() {
         <h2 className="font-bold text-white mb-4 flex items-center gap-2">
           <Globe className="w-4 h-4 text-emerald-400" />
           Interest by Country
+          {insights && (
+            <span className="ml-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-400">
+              Exact
+            </span>
+          )}
         </h2>
         {countriesSorted.length === 0 ? (
           <p className="text-sm text-slate-400 py-6 text-center">No waitlist entries yet</p>
@@ -164,7 +187,7 @@ export function AdminWaitlistPage() {
                     <MapPin className="w-3.5 h-3.5 text-slate-400" />
                     {country}
                     {countryFilter === country && (
-                      <span className="text-[10px] bg-emerald-100 text-emerald-400 px-1.5 py-0.5 rounded-full font-bold">Filtered</span>
+                      <span className="text-[10px] bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 rounded-full font-bold">Filtered</span>
                     )}
                   </span>
                   <span className="text-sm font-bold text-white">{count}</span>
@@ -210,6 +233,13 @@ export function AdminWaitlistPage() {
             ))}
           </select>
         </div>
+
+        {insights && insights.total > entries.length && (
+          <p className="px-5 py-2 text-xs text-slate-400 border-b border-white/10">
+            Showing the {entries.length} most recent of {insights.total} signups — the country
+            breakdown above counts all of them.
+          </p>
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">

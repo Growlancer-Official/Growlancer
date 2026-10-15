@@ -103,10 +103,8 @@ BEGIN
   RETURN v_contract_id;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.create_contract_with_escrow(uuid, uuid, uuid, numeric, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.create_contract_with_escrow(uuid, uuid, uuid, numeric, uuid) TO service_role;
-
 -- ----------------------------------------------------------------------------
 -- 2) RLS: allow clients to update proposals on their own projects
 --    (status flips: hired / rejected / withdrawn)

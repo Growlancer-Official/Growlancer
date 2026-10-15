@@ -5,7 +5,6 @@
 -- Performance index for rate limit cleanup queries
 CREATE INDEX IF NOT EXISTS idx_rate_limits_window_cleanup
   ON rate_limits (window_start);
-
 -- Verify no orphaned data in profiles_private that could cause issues
 -- (defense in depth — make sure every profile has a matching private row)
 DO $$

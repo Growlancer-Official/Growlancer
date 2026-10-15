@@ -1,25 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import { AI_API_KEY, AI_MODEL, AI_BASE_URL } from '../_shared/ai.ts';
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
-    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-  };
-}
 
 interface Project {
   id: string;
@@ -275,6 +260,25 @@ Deno.serve(async (req: Request) => {
       });
     }
 
+    // 🔒 Project ownership — the project is fetched OWNER-SCOPED so a signed-in
+    // non-owner can never trigger AI spend (or overwrite ai_matches) against
+    // someone else's project. The caller's id comes from the verified JWT,
+    // never from the request body. No row → 404 (existence of other users'
+    // projects is not disclosed).
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('id, client_id, title, category, skills_required, budget_min, budget_max, experience_level, description')
+      .eq('id', project_id)
+      .eq('client_id', authData.user.id)
+      .single();
+
+    if (projectError || !project) {
+      return new Response(JSON.stringify({ error: 'Project not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Rate limit check
     const clientIP = req.headers.get('x-forwarded-for') || 'unknown';
     const identifier = project_id || clientIP;
@@ -306,28 +310,16 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    // Fetch project details
-    const { data: project, error: projectError } = await supabase
-      .from('projects')
-      .select('id, title, category, skills_required, budget_min, budget_max, experience_level, description')
-      .eq('id', project_id)
-      .single();
-
-    if (projectError || !project) {
-      return new Response(JSON.stringify({ error: 'Project not found' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    // Fetch all freelancers (exclude soft-deleted)
+    // Fetch all freelancers (exclude soft-deleted). `bio` lives on
+    // freelancer_profiles — it was dropped from profiles, and selecting it
+    // there rejected the whole query, which failed every match request.
     const { data: freelancers, error: freelancersError } = await supabase
       .from('profiles')
       .select(`
         id,
         name,
-        bio,
         freelancer_profiles (
+          bio,
           skills,
           hourly_rate,
           availability,
@@ -405,7 +397,7 @@ Deno.serve(async (req: Request) => {
       const freelancerData: FreelancerCandidate = {
         id: freelancer.id,
         name: freelancer.name || 'Freelancer',
-        bio: freelancer.bio || '',
+        bio: fProfile.bio || '',
         skills,
         categories: Array.from(freelancerCategories),
         hourly_rate: Number(fProfile.hourly_rate) || 0,

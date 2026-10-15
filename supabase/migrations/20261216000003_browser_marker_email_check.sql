@@ -29,6 +29,5 @@ BEGIN
   );
 END;
 $$;
-
 REVOKE ALL ON FUNCTION public.email_account_exists(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.email_account_exists(text) TO authenticated, anon, service_role;

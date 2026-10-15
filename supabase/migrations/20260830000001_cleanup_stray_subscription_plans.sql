@@ -10,7 +10,6 @@
 UPDATE public.subscription_plans
 SET is_active = false
 WHERE id <> 'premium_monthly' AND price > 0;
-
 -- Also clean up any plan with forbidden features
 UPDATE public.subscription_plans
 SET features = features - 'Priority in search results' - '100 connects/month'

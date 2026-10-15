@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import { AI_API_KEY, callAI } from '../_shared/ai.ts';
+import { getCorsHeaders } from '../_shared/cors.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -17,26 +18,14 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const FREE_DAILY_LIMIT = 5; // freelancer fields (service_*, cover_letter)
 const PRO_DAILY_LIMIT = 100; // freelancer fields, Pro
-const CLIENT_FAIR_USE_DAILY_LIMIT = 60; // client fields — abuse guard only
+const CLIENT_FAIR_USE_DAILY_LIMIT = 100; // client fields — abuse guard only
+// One universal number for every AI writer surface (client fair-use guard and
+// the Pro allowance), and it is NEVER rendered as a counter on a client
+// surface: the client AI promise is "free for life", so the cap exists purely
+// to stop abuse and its message stays neutral (see the 429 branch below).
 const ROUTE = 'ai-writer';
 const MAX_INPUT_LEN = 2000;
 
-const ALLOWED_ORIGINS = [
-  'https://growlancer-mrkhan154212s-projects.vercel.app',
-  'https://growlancer.vercel.app',
-  'https://growlancer.com',
-  'https://www.growlancer.com',
-  'http://localhost:5173',
-];
-
-function getCorsHeaders(origin: string | null) {
-  const allowedOrigin = origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
-  return {
-    'Access-Control-Allow-Origin': allowedOrigin,
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-app-version, x-app-name',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-}
 
 const FIELDS = [
   'project_title',
@@ -226,20 +215,25 @@ Deno.serve(async (req: Request) => {
         : FREE_DAILY_LIMIT;
 
     // ─── DAILY USAGE (rate_limits, window = UTC day) ───
+    // Read the accumulated `count` column — NOT the row count. rate_limits has
+    // UNIQUE (identifier, route, window_start), so there is exactly ONE row
+    // per user/route/day; counting rows always yields ≤ 1, which is how the
+    // old check could never fire (the cap was decorative).
     const windowStart = todayStart();
     try {
       await supabase.rpc('cleanup_expired_rate_limits');
     } catch {
       // Non-critical
     }
-    const { count, error: countError } = await supabase
+    const { data: usageRow, error: countError } = await supabase
       .from('rate_limits')
-      .select('*', { count: 'exact', head: true })
+      .select('count')
       .eq('identifier', user_id)
       .eq('route', ROUTE)
-      .gte('window_start', windowStart);
+      .gte('window_start', windowStart)
+      .maybeSingle();
 
-    const used = count ?? 0;
+    const used = Number(usageRow?.count ?? 0);
     if (!countError && used >= limit) {
       return json(429, {
         error: clientFree ? 'fair_use_limit_reached' : 'daily_limit_reached',
@@ -247,7 +241,7 @@ Deno.serve(async (req: Request) => {
           ? 'You have used a lot of AI today. Please try again in a little while.'
           : isPro
             ? 'Daily AI writing limit reached. Please try again tomorrow.'
-            : `You have used all ${FREE_DAILY_LIMIT} free AI generations today. Upgrade to Pro for unlimited AI writing.`,
+            : `You have used all ${FREE_DAILY_LIMIT} free AI generations today. Upgrade to Pro for ${PRO_DAILY_LIMIT} AI writes per day.`,
         isPro,
         used,
         limit,
@@ -255,15 +249,24 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const insertRes = await supabase
-      .from('rate_limits')
-      .upsert(
-        { identifier: user_id, route: ROUTE, count: 1, window_start: windowStart },
-        { onConflict: 'identifier,route,window_start' }
-      );
-    if (insertRes.error) {
-      console.error('[ai-writer] usage insert failed:', insertRes.error.message);
+    // Atomic increment via the server-only SECURITY DEFINER RPC. The old
+    // `{ count: 1 }` upsert RESET the counter to 1 on every generation
+    // (unique key above), so nothing ever accumulated and `used >= limit`
+    // could never be true. increment_rate_limit does count = count + 1 and
+    // returns the new value; if it ever fails, log LOUDLY and degrade to the
+    // pre-increment estimate rather than silently skipping accounting.
+    const { data: incrementedCount, error: incrementError } = await supabase
+      .rpc('increment_rate_limit', {
+        p_identifier: user_id,
+        p_route: ROUTE,
+        p_window_start: windowStart,
+      });
+    if (incrementError) {
+      console.error('[ai-writer] usage increment failed:', incrementError.message);
     }
+    const usedAfter = typeof incrementedCount === 'number'
+      ? incrementedCount
+      : used + 1;
 
     // ─── GENERATE ───
     const { system, user } = buildPrompt(field, input, context);
@@ -286,7 +289,7 @@ Deno.serve(async (req: Request) => {
       return json(502, { error: 'AI returned an empty response. Please try again.' });
     }
 
-    return json(200, { success: true, text, isPro, used: used + 1, limit, remaining: Math.max(0, limit - (used + 1)), freeForClients: clientFree });
+    return json(200, { success: true, text, isPro, used: usedAfter, limit, remaining: Math.max(0, limit - usedAfter), freeForClients: clientFree });
   } catch (err) {
     console.error('[ai-writer] unexpected error:', err?.message || err);
     return json(500, { error: 'Something went wrong. Please try again.' });

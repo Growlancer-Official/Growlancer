@@ -14,7 +14,6 @@ CREATE TABLE IF NOT EXISTS categories (
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
-
 -- 2. SUBCATEGORIES
 CREATE TABLE IF NOT EXISTS subcategories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -27,7 +26,6 @@ CREATE TABLE IF NOT EXISTS subcategories (
   updated_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(category_id, slug)
 );
-
 -- 3. SKILLS (each skill belongs to a subcategory)
 CREATE TABLE IF NOT EXISTS skills (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -37,7 +35,6 @@ CREATE TABLE IF NOT EXISTS skills (
   created_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(subcategory_id, slug)
 );
-
 -- 4. FREELANCER_SKILLS (links freelancers to skills with experience/rate)
 CREATE TABLE IF NOT EXISTS freelancer_skills (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -49,7 +46,6 @@ CREATE TABLE IF NOT EXISTS freelancer_skills (
   created_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(freelancer_id, skill_id)
 );
-
 -- 5. PROJECT_CATEGORIES (links projects to categories)
 CREATE TABLE IF NOT EXISTS project_categories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -58,7 +54,6 @@ CREATE TABLE IF NOT EXISTS project_categories (
   created_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(project_id, category_id)
 );
-
 -- 6. PROJECT_SKILLS (links projects to required skills)
 CREATE TABLE IF NOT EXISTS project_skills (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -67,7 +62,6 @@ CREATE TABLE IF NOT EXISTS project_skills (
   created_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(project_id, skill_id)
 );
-
 -- 7. SERVICE_CATEGORIES (links services to categories)
 CREATE TABLE IF NOT EXISTS service_categories (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -76,7 +70,6 @@ CREATE TABLE IF NOT EXISTS service_categories (
   created_at TIMESTAMPTZ DEFAULT now(),
   UNIQUE(service_id, category_id)
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_categories_slug ON categories(slug);
 CREATE INDEX IF NOT EXISTS idx_categories_display_order ON categories(display_order, name);
@@ -94,7 +87,6 @@ CREATE INDEX IF NOT EXISTS idx_project_skills_project_id ON project_skills(proje
 CREATE INDEX IF NOT EXISTS idx_project_skills_skill_id ON project_skills(skill_id);
 CREATE INDEX IF NOT EXISTS idx_service_categories_service_id ON service_categories(service_id);
 CREATE INDEX IF NOT EXISTS idx_service_categories_category_id ON service_categories(category_id);
-
 -- Enable RLS
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subcategories ENABLE ROW LEVEL SECURITY;
@@ -103,13 +95,11 @@ ALTER TABLE freelancer_skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE project_skills ENABLE ROW LEVEL SECURITY;
 ALTER TABLE service_categories ENABLE ROW LEVEL SECURITY;
-
 -- RLS policies
 -- Categories/subcategories/skills are public read-only
 CREATE POLICY "Anyone can read categories" ON categories FOR SELECT USING (true);
 CREATE POLICY "Anyone can read subcategories" ON subcategories FOR SELECT USING (true);
 CREATE POLICY "Anyone can read skills" ON skills FOR SELECT USING (true);
-
 -- Only admins can manage categories
 CREATE POLICY "Admins can manage categories" ON categories FOR ALL USING (
   (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
@@ -120,30 +110,25 @@ CREATE POLICY "Admins can manage subcategories" ON subcategories FOR ALL USING (
 CREATE POLICY "Admins can manage skills" ON skills FOR ALL USING (
   (SELECT role FROM profiles WHERE id = auth.uid()) = 'admin'
 );
-
 -- Freelancer skills: freelancers manage their own
 CREATE POLICY "Freelancers manage own skills" ON freelancer_skills FOR ALL USING (
   auth.uid() = freelancer_id
 );
 CREATE POLICY "Anyone can read freelancer skills" ON freelancer_skills FOR SELECT USING (true);
-
 -- Project categories/skills: project participants can manage
 CREATE POLICY "Clients manage project categories" ON project_categories FOR ALL USING (
   EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
 );
 CREATE POLICY "Anyone can read project categories" ON project_categories FOR SELECT USING (true);
-
 CREATE POLICY "Clients manage project skills" ON project_skills FOR ALL USING (
   EXISTS (SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid())
 );
 CREATE POLICY "Anyone can read project skills" ON project_skills FOR SELECT USING (true);
-
 -- Service categories: freelancers manage own
 CREATE POLICY "Freelancers manage service categories" ON service_categories FOR ALL USING (
   EXISTS (SELECT 1 FROM services WHERE id = service_id AND freelancer_id = auth.uid())
 );
 CREATE POLICY "Anyone can read service categories" ON service_categories FOR SELECT USING (true);
-
 -- ============================================================
 -- SEED DATA — Master Category List
 -- ============================================================
@@ -152,57 +137,46 @@ CREATE POLICY "Anyone can read service categories" ON service_categories FOR SEL
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Development & IT', 'development-it', 'Code', 'Web, mobile, backend, frontend, and full-stack development', 1)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Design & Creative
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Design & Creative', 'design-creative', 'Palette', 'UI/UX, graphic design, branding, illustration, and motion', 2)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Writing & Translation
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Writing & Translation', 'writing-translation', 'PenTool', 'Content writing, copywriting, translation, and editing', 3)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Digital Marketing
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Digital Marketing', 'digital-marketing', 'Megaphone', 'SEO, social media, email marketing, PPC, and content marketing', 4)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Sales & Customer Support
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Sales & Customer Support', 'sales-support', 'Headphones', 'Lead generation, telecalling, support, and CRM management', 5)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Finance & Accounting
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Finance & Accounting', 'finance-accounting', 'Calculator', 'Bookkeeping, financial analysis, tax consulting, and payroll', 6)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Engineering & Architecture
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Engineering & Architecture', 'engineering-architecture', 'Layout', 'AutoCAD, civil engineering, mechanical design, and interior design', 7)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Legal Services
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Legal Services', 'legal-services', 'ShieldCheck', 'Contract drafting, legal research, compliance, and trademark', 8)
 ON CONFLICT (slug) DO NOTHING;
-
 -- HR & Recruitment
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('HR & Recruitment', 'hr-recruitment', 'Users', 'Talent acquisition, resume screening, and HR consulting', 9)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Admin & Operations
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Admin & Operations', 'admin-operations', 'FolderKanban', 'Data entry, project management, operations, and research', 10)
 ON CONFLICT (slug) DO NOTHING;
-
 -- Education & Training
 INSERT INTO categories (name, slug, icon, description, display_order) VALUES
 ('Education & Training', 'education-training', 'BrainCircuit', 'Online tutoring, course creation, career coaching, and language training', 11)
 ON CONFLICT (slug) DO NOTHING;
-
 -- ============================================================
 -- SEED SUBCATEGORIES & SKILLS
 -- ============================================================
@@ -364,7 +338,6 @@ BEGIN
     (subcat_id, 'Salesforce', 'salesforce'), (subcat_id, 'SAP', 'sap'),
     (subcat_id, 'Odoo', 'odoo'), (subcat_id, 'HubSpot', 'hubspot');
 END $$;
-
 -- ============ Design & Creative ============
 DO $$
 DECLARE
@@ -425,7 +398,6 @@ BEGIN
 
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Packaging Design', 'packaging-design', 'Product packaging and label design');
 END $$;
-
 -- ============ Writing & Translation ============
 DO $$
 DECLARE
@@ -444,7 +416,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Proofreading', 'proofreading', 'Grammar checking and editing');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Editing', 'editing', 'Comprehensive content editing');
 END $$;
-
 -- ============ Digital Marketing ============
 DO $$
 DECLARE
@@ -481,7 +452,6 @@ BEGIN
 
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Marketing Automation', 'marketing-automation', 'Automated marketing workflows');
 END $$;
-
 -- ============ Sales & Customer Support ============
 DO $$
 DECLARE
@@ -497,7 +467,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'CRM Management', 'crm-management', 'CRM system administration');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Appointment Setting', 'appointment-setting', 'Calendar and meeting scheduling');
 END $$;
-
 -- ============ Finance & Accounting ============
 DO $$
 DECLARE
@@ -511,7 +480,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Payroll Management', 'payroll-management', 'Payroll processing and compliance');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Investment Analysis', 'investment-analysis', 'Investment research and analysis');
 END $$;
-
 -- ============ Engineering & Architecture ============
 DO $$
 DECLARE
@@ -525,7 +493,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Interior Design', 'interior-design', 'Interior space planning and design');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Architecture', 'architecture', 'Architectural design and planning');
 END $$;
-
 -- ============ Legal Services ============
 DO $$
 DECLARE
@@ -538,7 +505,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Compliance', 'compliance', 'Regulatory compliance advisory');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Trademark Registration', 'trademark-registration', 'Trademark filing and management');
 END $$;
-
 -- ============ HR & Recruitment ============
 DO $$
 DECLARE
@@ -551,7 +517,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Interview Coordination', 'interview-coordination', 'Interview scheduling and logistics');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'HR Consulting', 'hr-consulting', 'HR strategy and advisory');
 END $$;
-
 -- ============ Admin & Operations ============
 DO $$
 DECLARE
@@ -564,7 +529,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Operations Management', 'operations-management', 'Business operations and process');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Research Assistance', 'research-assistance', 'Market and academic research');
 END $$;
-
 -- ============ Education & Training ============
 DO $$
 DECLARE
@@ -577,7 +541,6 @@ BEGIN
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Career Coaching', 'career-coaching', 'Career guidance and mentorship');
   INSERT INTO subcategories (category_id, name, slug, description) VALUES (cat_id, 'Language Training', 'language-training', 'Language instruction and tutoring');
 END $$;
-
 -- ============================================================
 -- RPC: get_category_hierarchy — returns categories with subcategories and skills
 -- ============================================================
@@ -629,7 +592,6 @@ BEGIN
   RETURN result;
 END;
 $$;
-
 -- ============================================================
 -- RPC: get_category_counts_v2 — uses new categories table
 -- ============================================================
@@ -660,7 +622,6 @@ BEGIN
   RETURN result;
 END;
 $$;
-
 -- ============================================================
 -- RPC: get_active_freelancers_by_category
 -- ============================================================
@@ -691,7 +652,6 @@ BEGIN
   RETURN result;
 END;
 $$;
-
 -- ============================================================
 -- RPC: search_freelancers_by_category
 -- ============================================================
@@ -770,7 +730,6 @@ BEGIN
   RETURN result;
 END;
 $$;
-
 -- ============================================================
 -- RPC: get_projects_by_category
 -- ============================================================

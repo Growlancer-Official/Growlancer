@@ -1154,6 +1154,7 @@ export function ClientWorkspacePage() {
                           <button
                             onClick={() => void handleSendMessage()}
                             disabled={!newMessage.trim() || sendingMessage}
+                            aria-label="Send message"
                             className="p-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {sendingMessage ? (

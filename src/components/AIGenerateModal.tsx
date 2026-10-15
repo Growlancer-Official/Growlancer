@@ -116,10 +116,26 @@ export function AIGenerateModal({
         body: { field, input: prompt, context: context ?? {} },
       });
       if (invokeError) {
-        const msg = (data as any)?.error || 'AI generation failed. Please try again.';
+        // functions.invoke returns data=null for every non-2xx response in this
+        // supabase-js version (it throws FunctionsHttpError BEFORE parsing the
+        // body) — the real payload (limit messages, used/limit) lives on
+        // error.context, the raw Response. Reading it is what makes 429 quota
+        // errors show their real message + meter update instead of the generic
+        // "AI generation failed" that looked like a broken generator.
+        let payload: Record<string, unknown> | null = null;
+        const ctx = (invokeError as unknown as { context?: Response }).context;
+        if (ctx && typeof ctx.json === 'function') {
+          payload = await ctx.json().catch(() => null);
+        }
+        console.error('AI generation failed:', invokeError.message, payload ?? '');
+        const msg = (payload?.error as string) || 'AI generation failed. Please try again.';
         if (msg === 'daily_limit_reached' || msg === 'fair_use_limit_reached') {
-          setError((data as any)?.message || 'Daily AI writing limit reached.');
-          reportUsage({ isPro: !!(data as any)?.isPro, used: (data as any)?.used ?? (data as any)?.limit ?? 5, limit: (data as any)?.limit ?? 5 });
+          setError((payload?.message as string) || 'Daily AI writing limit reached.');
+          reportUsage({
+            isPro: !!(payload?.isPro),
+            used: (payload?.used as number) ?? (payload?.limit as number) ?? 5,
+            limit: (payload?.limit as number) ?? 5,
+          });
         } else {
           setError(msg);
         }
@@ -175,13 +191,13 @@ export function AIGenerateModal({
           ) : usage ? (
             usage.isPro ? (
               <span className="inline-flex items-center gap-1 text-amber-600 font-medium">
-                <Zap className="w-3.5 h-3.5" /> Unlimited Pro AI writing
+                <Zap className="w-3.5 h-3.5" /> Pro: {usage.limit} AI writes/day
               </span>
             ) : (
               `${Math.max(0, usage.limit - usage.used)} of ${usage.limit} free AI writes left today`
             )
           ) : (
-            'Free: 5/day · Pro: unlimited'
+            'Free: 5/day · Pro: 100/day'
           )}
         </p>
 
@@ -209,7 +225,7 @@ export function AIGenerateModal({
               {error}
               {!clientFree && usage && !usage.isPro && (
                 <span className="block mt-1 text-rose-500">
-                  Upgrade to Pro on the <span className="font-semibold">Pricing</span> page for unlimited AI writing.
+                  Upgrade to Pro on the <span className="font-semibold">Pricing</span> page for 100 AI writes per day.
                 </span>
               )}
             </div>

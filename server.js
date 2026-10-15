@@ -1,7 +1,8 @@
 /* eslint-env node */
 import express from 'express';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import path, { dirname, join } from 'path';
+import fs from 'fs';
 import compression from 'compression';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -30,18 +31,23 @@ app.use((req, res, next) => {
   );
   // Baseline CSP: Vite dev server injects inline scripts/styles, so keep
   // 'unsafe-inline' for style and allow self + Razorpay/PayPal scripts.
-  // Google Fonts (fonts.googleapis.com / fonts.gstatic.com) and Fontshare
-  // (api.fontshare.com) are loaded via <link> in pages/+Head.tsx — they must
-  // be allowed in style-src/font-src or the typography silently breaks.
+  // Typography: Fontshare only (api.fontshare.com serves the CSS,
+  // cdn.fontshare.com serves the actual woff2). Both are loaded via <link> in
+  // pages/+Head.tsx, so they must be allowed in style-src/font-src or the
+  // typography silently breaks. The former Google Fonts entries were removed
+  // after the Inter load was dropped: nothing in the build requests
+  // fonts.googleapis.com / fonts.gstatic.com any more, and an allow-list entry
+  // with no requester is pure attack surface. Must stay in sync with
+  // vercel.json, which carries the production header.
   // Supabase realtime uses wss:// so connect-src includes wss://*.supabase.co.
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
       "script-src 'self' 'unsafe-inline' https://checkout.razorpay.com https://*.paypal.com https://*.paypalobjects.com; " +
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.fontshare.com; " +
+      "style-src 'self' 'unsafe-inline' https://api.fontshare.com; " +
       "img-src 'self' data: blob: https:; " +
-      "font-src 'self' data: https://fonts.gstatic.com https://api.fontshare.com; " +
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.paypal.com https://api.razorpay.com https://checkout.razorpay.com https://fonts.googleapis.com https://fonts.gstatic.com https://api.fontshare.com https://o4511722119495680.ingest.us.sentry.io; " +
+      "font-src 'self' data: https://api.fontshare.com https://cdn.fontshare.com; " +
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.paypal.com https://api.razorpay.com https://checkout.razorpay.com https://api.fontshare.com https://cdn.fontshare.com https://o4511722119495680.ingest.us.sentry.io; " +
       "frame-src 'self' https://checkout.razorpay.com https://*.paypal.com; " +
       "media-src 'self' blob:; " +
       "object-src 'none'; base-uri 'self'; form-action 'self'"
@@ -67,7 +73,31 @@ app.use((req, res) => {
     return res.status(404).json({ error: 'Not found' });
   }
 
-  // Serve index.html for all other routes (SPA routing)
+  // SPA routing — same semantics as Vercel's static-first fallback:
+  // serve the PRERENDERED page for its URL (correct title/canonical/SSR
+  // content), then fall back to index.html only for truly client-only
+  // routes (dashboard, onboarding, dynamic public pages…).
+  // NOTE: Vike prerenders to dist/client/<route>/index.html; dist/ mirrors
+  // dist/client/ (see vercelOutputWorkaroundPlugin in vite.config.ts), so a
+  // plain sendFile would path-traverse — always resolve via dist/client/.
+  const safePath = path.posix.normalize(req.path).replace(/^([.][.][/\\])+/, '');
+  const prerendered = join(DIST_DIR, 'client', safePath, 'index.html');
+  if (
+    !safePath.includes('..') &&
+    safePath !== '/' &&
+    fs.existsSync(prerendered) &&
+    fs.statSync(prerendered).isFile()
+  ) {
+    return res.sendFile(prerendered, (err) => {
+      if (err && !res.headersSent) {
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  }
+
+  // Client-only route: serve the app shell (boot splash covers the
+  // homepage-HTML flash; #root is cleared pre-hydration so React does a
+  // clean client render — see BOOT_SPLASH_HTML in vite.config.ts).
   res.sendFile(join(DIST_DIR, 'index.html'), (err) => {
     if (err) {
       res.status(500).json({ error: 'Internal server error' });

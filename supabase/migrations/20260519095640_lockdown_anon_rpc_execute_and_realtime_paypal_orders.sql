@@ -5,15 +5,12 @@
 REVOKE ALL ON FUNCTION public.generate_project_matches(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.generate_project_matches(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.generate_project_matches(uuid) TO service_role;
-
 REVOKE ALL ON FUNCTION public.raise_contract_dispute(uuid, text, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.raise_contract_dispute(uuid, text, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.raise_contract_dispute(uuid, text, text) TO service_role;
-
 REVOKE ALL ON FUNCTION public.resolve_contract_dispute(uuid, text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.resolve_contract_dispute(uuid, text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.resolve_contract_dispute(uuid, text) TO service_role;
-
 DO $$
 BEGIN
   ALTER PUBLICATION supabase_realtime ADD TABLE public.paypal_orders;

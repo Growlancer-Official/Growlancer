@@ -5,8 +5,38 @@
 @tailwind utilities;
 
 @layer base {
+  /* Default border colour is a variable so the dark palette can flip every
+     element that never set an explicit border colour (the previous hardcoded
+     `border-slate-200` left bright hairline borders in dark mode). Utilities
+     still win: this rule has zero specificity. */
+  :root {
+    --default-border: #e2e8f0;
+    /* Chart tokens — SVG can't use Tailwind's utility classes for its fills
+       and strokes, so the earnings chart reads these variables instead. */
+    --chart-grid: rgba(100, 116, 139, 0.16);
+    --chart-axis: #64748b;
+    --chart-axis-strong: #475569;
+    --chart-track: rgba(16, 185, 129, 0.07);
+    --chart-tooltip-bg: rgba(15, 23, 42, 0.94);
+    --chart-tooltip-text: #f8fafc;
+    --chart-shadow: rgba(15, 23, 42, 0.12);
+    --chart-point-fill: #ffffff;
+  }
+
+  .dark {
+    --default-border: #1e2b42;
+    --chart-grid: rgba(148, 163, 184, 0.14);
+    --chart-axis: #94a3b8;
+    --chart-axis-strong: #cbd5e1;
+    --chart-track: rgba(16, 185, 129, 0.1);
+    --chart-tooltip-bg: rgba(2, 6, 23, 0.96);
+    --chart-tooltip-text: #f1f5f9;
+    --chart-shadow: rgba(0, 0, 0, 0.45);
+    --chart-point-fill: #0f172a;
+  }
+
   * {
-    @apply border-slate-200;
+    border-color: var(--default-border, #e2e8f0);
   }
 
   html {
@@ -22,6 +52,31 @@
        strip on the right. clip stops the widening without creating a scroll
        container, so sticky headers keep working. */
     overflow-x: clip;
+  }
+
+  /* ── Dark mode shell ──────────────────────────────────────────────────────
+     `color-scheme` makes native form controls, scrollbars and the caret render
+     dark instead of a white select/scrollbar against a dark page. */
+  .dark {
+    color-scheme: dark;
+  }
+
+  .dark body {
+    background-color: #070b14;
+    color: #e2e8f0;
+  }
+
+  /* Smooth, professional theme switch — only colours animate, and motion is
+     honoured for users who ask for less of it. */
+  @media (prefers-reduced-motion: no-preference) {
+    body,
+    .card,
+    .btn,
+    .input,
+    header,
+    aside {
+      transition: background-color 240ms ease, border-color 240ms ease, color 240ms ease;
+    }
   }
 }
 
@@ -421,5 +476,436 @@
     border-radius: 14px;
     background: inherit;
     z-index: -1;
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════════════
+   DARK PALETTE
+
+   The app is built on Tailwind's default light palette (bg-white, bg-slate-50,
+   text-slate-900, border-slate-200, the -50/-100 tints …) across ~670 files.
+   Retrofitting a `dark:` variant onto every one of them is neither safe nor
+   reviewable, so dark mode remaps *the palette itself* for those exact tokens.
+
+   Why this lives in the utilities layer:
+   - Rules here are emitted after Tailwind's own utilities, so an unmodified
+     `.bg-white` is overridden on equal specificity (source order).
+   - State variants (`hover:bg-slate-50` → `.hover\:bg-slate-50:hover`) and
+     `!important` utilities keep a HIGHER specificity, so they still win —
+     hovers and responsive/`dark:` overrides added later keep working.
+   - `:where()` keeps our specificity at (0,1,0) so the same guarantee holds.
+
+   Deliberately NOT remapped:
+   - the admin console (`bg-slate-800`, `hover:bg-white/5`, `text-slate-300`,
+     `bg-[#0F172A]`, `border-white/5`) — it is dark by design in BOTH themes;
+   - `text-slate-400/300/200/100` — already light enough to read on dark;
+   - `bg-white/5…/40`, `bg-black/*`, `bg-slate-500+`, vivid `hover:bg-emerald-500`
+     — translucent overlays and dark hero sections that must not move.
+
+   Known limit: a *responsive* colour override of a remapped token on the same
+   element (e.g. `text-slate-500 md:text-white`) would lose to these rules.
+   There are currently zero such usages in the codebase; if one is added, give
+   it `!` (e.g. `md:!text-white`) or override here.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* ── Surfaces ──────────────────────────────────────────────────────────── */
+  .dark :where(.bg-cream) {
+    background-color: #070b14;
+  }
+  .dark :where(.bg-white) {
+    background-color: #0f172a;
+  }
+  .dark :where(.bg-white\/50) {
+    background-color: rgba(9, 14, 26, 0.5);
+  }
+  .dark :where(.bg-white\/60) {
+    background-color: rgba(9, 14, 26, 0.6);
+  }
+  .dark :where(.bg-white\/70) {
+    background-color: rgba(9, 14, 26, 0.7);
+  }
+  .dark :where(.bg-white\/80) {
+    background-color: rgba(9, 14, 26, 0.8);
+  }
+  .dark :where(.bg-white\/90) {
+    background-color: rgba(9, 14, 26, 0.9);
+  }
+  .dark :where(.bg-slate-50) {
+    background-color: #131f33;
+  }
+  .dark :where(.bg-slate-100) {
+    background-color: #1b2940;
+  }
+  .dark :where(.bg-slate-200) {
+    background-color: #243349;
+  }
+  .dark :where(.bg-slate-300) {
+    background-color: #334155;
+  }
+
+  /* ── Borders + dividers ────────────────────────────────────────────────── */
+  .dark :where(.border-slate-50) {
+    border-color: #16233a;
+  }
+  .dark :where(.border-slate-100) {
+    border-color: #1e2b42;
+  }
+  .dark :where(.border-slate-200) {
+    border-color: #243349;
+  }
+  .dark :where(.border-slate-300) {
+    border-color: #334155;
+  }
+  .dark :where(.divide-slate-50) {
+    border-color: #16233a;
+  }
+  .dark :where(.divide-slate-100) {
+    border-color: #1e2b42;
+  }
+  .dark :where(.divide-slate-200) {
+    border-color: #243349;
+  }
+
+  /* ── Text ──────────────────────────────────────────────────────────────── */
+  .dark :where(.text-slate-950) {
+    color: #f8fafc;
+  }
+  .dark :where(.text-slate-900) {
+    color: #f1f5f9;
+  }
+  .dark :where(.text-slate-800) {
+    color: #e2e8f0;
+  }
+  .dark :where(.text-slate-700) {
+    color: #cbd5e1;
+  }
+  .dark :where(.text-slate-600) {
+    color: #b7c2d2;
+  }
+  .dark :where(.text-slate-500) {
+    color: #a3b1c4;
+  }
+
+  /* ── Accent text: 600/700/800 are dark-on-light by design and unreadable on
+     a dark surface — lift them to their 400 weight (same hue, same meaning). */
+  .dark :where(.text-emerald-600, .text-emerald-700, .text-emerald-800, .text-emerald-900) {
+    color: #34d399;
+  }
+  .dark :where(.text-teal-600, .text-teal-700, .text-teal-800) {
+    color: #2dd4bf;
+  }
+  .dark :where(.text-green-600, .text-green-700, .text-green-800) {
+    color: #4ade80;
+  }
+  .dark :where(.text-lime-600, .text-lime-700) {
+    color: #a3e635;
+  }
+  .dark :where(.text-blue-600, .text-blue-700, .text-blue-800) {
+    color: #60a5fa;
+  }
+  .dark :where(.text-sky-600, .text-sky-700) {
+    color: #38bdf8;
+  }
+  .dark :where(.text-cyan-600, .text-cyan-700) {
+    color: #22d3ee;
+  }
+  .dark :where(.text-indigo-600, .text-indigo-700, .text-indigo-800) {
+    color: #818cf8;
+  }
+  .dark :where(.text-violet-600, .text-violet-700, .text-violet-800) {
+    color: #a78bfa;
+  }
+  .dark :where(.text-purple-600, .text-purple-700, .text-purple-800) {
+    color: #c084fc;
+  }
+  .dark :where(.text-fuchsia-600, .text-fuchsia-700) {
+    color: #e879f9;
+  }
+  .dark :where(.text-pink-600, .text-pink-700) {
+    color: #f472b6;
+  }
+  .dark :where(.text-rose-600, .text-rose-700, .text-rose-800) {
+    color: #fb7185;
+  }
+  .dark :where(.text-red-600, .text-red-700, .text-red-800) {
+    color: #f87171;
+  }
+  .dark :where(.text-orange-600, .text-orange-700, .text-orange-800) {
+    color: #fb923c;
+  }
+  .dark :where(.text-amber-600, .text-amber-700, .text-amber-800) {
+    color: #fbbf24;
+  }
+  .dark :where(.text-yellow-600, .text-yellow-700) {
+    color: #facc15;
+  }
+
+  /* ── Tinted surfaces, grouped by meaning (success / info / warning /
+     danger / accent) so the status cue survives the theme switch. */
+  .dark :where(.bg-emerald-50, .bg-teal-50, .bg-green-50, .bg-lime-50) {
+    background-color: #0c2a24;
+  }
+  .dark :where(.bg-emerald-100, .bg-teal-100, .bg-green-100, .bg-lime-100) {
+    background-color: #123b31;
+  }
+  .dark :where(.bg-blue-50, .bg-indigo-50, .bg-sky-50, .bg-cyan-50) {
+    background-color: #0d2136;
+  }
+  .dark :where(.bg-blue-100, .bg-indigo-100, .bg-sky-100, .bg-cyan-100) {
+    background-color: #143050;
+  }
+  .dark :where(.bg-amber-50, .bg-orange-50, .bg-yellow-50) {
+    background-color: #2c200a;
+  }
+  .dark :where(.bg-amber-100, .bg-orange-100, .bg-yellow-100) {
+    background-color: #3c2c10;
+  }
+  .dark :where(.bg-red-50, .bg-rose-50) {
+    background-color: #2e1414;
+  }
+  .dark :where(.bg-red-100, .bg-rose-100) {
+    background-color: #3d1b1b;
+  }
+  .dark :where(.bg-violet-50, .bg-purple-50, .bg-fuchsia-50, .bg-pink-50) {
+    background-color: #1d1738;
+  }
+  .dark :where(.bg-violet-100, .bg-purple-100, .bg-fuchsia-100, .bg-pink-100) {
+    background-color: #282052;
+  }
+
+  /* Translucent tints (`bg-emerald-50/50`) — the exact alpha is not worth
+     preserving; one calm overlay per meaning reads correctly in dark. */
+  .dark :where(
+    .bg-emerald-50\/10, .bg-emerald-50\/20, .bg-emerald-50\/40, .bg-emerald-50\/50,
+    .bg-emerald-50\/60, .bg-emerald-50\/70, .bg-emerald-50\/80,
+    .bg-emerald-100\/50, .bg-emerald-100\/80
+  ) {
+    background-color: rgba(16, 185, 129, 0.12);
+  }
+  .dark :where(.bg-blue-50\/20, .bg-blue-50\/40, .bg-blue-50\/60, .bg-blue-50\/90) {
+    background-color: rgba(59, 130, 246, 0.14);
+  }
+  .dark :where(
+    .bg-amber-50\/50, .bg-amber-50\/60, .bg-amber-50\/80, .bg-amber-50\/90,
+    .bg-orange-50\/50, .bg-orange-100\/50
+  ) {
+    background-color: rgba(245, 158, 11, 0.13);
+  }
+  .dark :where(.bg-red-50\/90) {
+    background-color: rgba(239, 68, 68, 0.13);
+  }
+  .dark :where(.bg-violet-50\/40, .bg-violet-50\/50, .bg-violet-50\/60, .bg-violet-50\/70) {
+    background-color: rgba(139, 92, 246, 0.14);
+  }
+
+  /* ── Tinted borders (grouped the same way) ─────────────────────────────── */
+  .dark :where(.border-emerald-100, .border-emerald-200, .border-teal-100, .border-teal-200, .border-green-100, .border-green-200) {
+    border-color: #1f5a48;
+  }
+  .dark :where(.border-blue-100, .border-blue-200, .border-sky-100, .border-sky-200, .border-indigo-100, .border-cyan-200) {
+    border-color: #1e4668;
+  }
+  .dark :where(.border-amber-100, .border-amber-200, .border-orange-100, .border-orange-200, .border-yellow-200) {
+    border-color: #5c4516;
+  }
+  .dark :where(.border-red-100, .border-red-200, .border-rose-100, .border-rose-200) {
+    border-color: #5c2b2b;
+  }
+  .dark :where(.border-violet-100, .border-violet-200, .border-purple-100, .border-purple-200, .border-pink-200, .border-fuchsia-200) {
+    border-color: #3e3378;
+  }
+  .dark :where(.border-emerald-100\/50, .border-emerald-200\/60, .border-blue-100\/50, .border-amber-200\/50) {
+    border-color: rgba(148, 163, 184, 0.24);
+  }
+
+  /* ── Gradient stops.
+     Tailwind's `from-*`/`to-*` set custom properties, not background-color,
+     so they need their own remap or light gradients stay bright. */
+  .dark :where(.from-emerald-50, .from-teal-50, .from-green-50) {
+    --tw-gradient-from: #0c2a24 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(12, 42, 36, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.to-emerald-50, .to-teal-50, .to-green-50) {
+    --tw-gradient-to: #0c2a24 var(--tw-gradient-to-position);
+  }
+  .dark :where(.to-emerald-100, .to-teal-100) {
+    --tw-gradient-to: #123b31 var(--tw-gradient-to-position);
+  }
+  .dark :where(.from-slate-50) {
+    --tw-gradient-from: #131f33 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(19, 31, 51, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.to-slate-50) {
+    --tw-gradient-to: #131f33 var(--tw-gradient-to-position);
+  }
+  .dark :where(.from-slate-100) {
+    --tw-gradient-from: #1b2940 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(27, 41, 64, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.from-orange-50, .from-amber-50) {
+    --tw-gradient-from: #2c200a var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(44, 32, 10, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.to-orange-50, .to-amber-50) {
+    --tw-gradient-to: #2c200a var(--tw-gradient-to-position);
+  }
+  .dark :where(.to-orange-100, .to-amber-100) {
+    --tw-gradient-to: #3c2c10 var(--tw-gradient-to-position);
+  }
+  .dark :where(.from-sky-50) {
+    --tw-gradient-from: #0d2136 var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(13, 33, 54, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+
+  /* ── Rings ─────────────────────────────────────────────────────────────── */
+  .dark :where(.ring-slate-200) {
+    --tw-ring-color: #243349;
+  }
+  .dark :where(.ring-slate-300) {
+    --tw-ring-color: #334155;
+  }
+
+  /* ── Hover states (the base tokens they sit on are remapped above) ─────── */
+  .dark :where(.hover\:bg-white:hover) {
+    background-color: #16233a;
+  }
+  .dark :where(.hover\:bg-slate-50:hover) {
+    background-color: #131f33;
+  }
+  .dark :where(.hover\:bg-slate-100:hover) {
+    background-color: #1b2940;
+  }
+  .dark :where(.hover\:bg-slate-200:hover) {
+    background-color: #243349;
+  }
+  .dark :where(.hover\:bg-slate-300:hover) {
+    background-color: #334155;
+  }
+  .dark :where(.hover\:border-slate-200:hover) {
+    border-color: #243349;
+  }
+  .dark :where(.hover\:border-slate-300:hover) {
+    border-color: #334155;
+  }
+  .dark :where(.hover\:text-slate-900:hover) {
+    color: #f1f5f9;
+  }
+  .dark :where(.hover\:text-slate-800:hover) {
+    color: #e2e8f0;
+  }
+  .dark :where(.hover\:text-slate-700:hover) {
+    color: #cbd5e1;
+  }
+  .dark :where(.hover\:text-slate-600:hover) {
+    color: #b7c2d2;
+  }
+  .dark :where(.hover\:text-slate-500:hover) {
+    color: #a3b1c4;
+  }
+  .dark :where(.hover\:bg-emerald-50:hover, .hover\:bg-emerald-50\/20:hover, .hover\:bg-emerald-50\/30:hover, .hover\:bg-emerald-50\/40:hover, .hover\:bg-emerald-50\/50:hover) {
+    background-color: rgba(16, 185, 129, 0.16);
+  }
+  .dark :where(.hover\:bg-emerald-100:hover) {
+    background-color: #123b31;
+  }
+  .dark :where(.hover\:bg-red-50:hover) {
+    background-color: #2e1414;
+  }
+  .dark :where(.hover\:bg-red-100:hover) {
+    background-color: #3d1b1b;
+  }
+  .dark :where(.hover\:bg-amber-100:hover, .hover\:bg-orange-50\/30:hover, .hover\:bg-orange-50\/50:hover) {
+    background-color: #3c2c10;
+  }
+  .dark :where(.hover\:text-emerald-600:hover, .hover\:text-emerald-700:hover) {
+    color: #34d399;
+  }
+  .dark :where(.hover\:text-red-600:hover, .hover\:text-red-700:hover) {
+    color: #f87171;
+  }
+
+  /* ── Design-system components (their colours are @apply'd, so the class
+     names above never appear in the DOM) ────────────────────────────────── */
+  .dark :where(.card) {
+    background-color: #0f172a;
+    border-color: #1e2b42;
+  }
+  .dark :where(.btn-secondary, .btn-outline) {
+    background-color: #131f33;
+    border-color: #243349;
+    color: #cbd5e1;
+  }
+  .dark :where(.btn-secondary:hover, .btn-outline:hover) {
+    background-color: #1b2940;
+    border-color: #334155;
+  }
+  .dark :where(.input) {
+    background-color: #0f172a;
+    border-color: #243349;
+    color: #e2e8f0;
+  }
+  .dark :where(.custom-scrollbar) {
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+  }
+
+  /* ── Earnings chart animations ─────────────────────────────────────────── */
+  .chart-bar {
+    transform-box: fill-box;
+    transform-origin: bottom;
+    animation: chartBarGrow 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .chart-area {
+    animation: chartAreaFade 900ms ease-out both;
+  }
+  .chart-line {
+    animation: chartLineDraw 1100ms ease-out both;
+  }
+  .chart-point {
+    animation: chartAreaFade 900ms ease-out both;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chart-bar,
+    .chart-area,
+    .chart-line,
+    .chart-point {
+      animation: none;
+    }
+  }
+}
+
+@keyframes chartBarGrow {
+  from {
+    transform: scaleY(0.02);
+    opacity: 0.4;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes chartAreaFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* pathLength=1 on the trend line normalises the path, so the draw animation
+   is expressed in 0…1 and stays correct at any chart width. */
+@keyframes chartLineDraw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
   }
 }

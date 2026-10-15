@@ -24,7 +24,6 @@
 --    migration file works against both schema shapes.
 -- ───────────────────────────────────────────────────────────────────────────
 ALTER TABLE public.proposals ADD COLUMN IF NOT EXISTS proposed_rate NUMERIC(10,2);
-
 DO $$
 DECLARE
   v_has_bid_amount BOOLEAN;
@@ -42,7 +41,6 @@ BEGIN
     WHERE proposed_rate IS NULL AND bid_amount IS NOT NULL;
   END IF;
 END $$;
-
 -- ───────────────────────────────────────────────────────────────────────────
 -- 2. create_contract_with_escrow — server-authoritative amount
 --    Based on the 20261220000000 full-payout version (idempotency + hire
@@ -151,6 +149,5 @@ BEGIN
   RETURN v_contract_id;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.create_contract_with_escrow(uuid, uuid, uuid, numeric, uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.create_contract_with_escrow(uuid, uuid, uuid, numeric, uuid) TO service_role;

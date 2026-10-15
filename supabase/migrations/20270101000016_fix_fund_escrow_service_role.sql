@@ -19,5 +19,4 @@ BEGIN
   RETURN public.admin_fund_escrow(p_contract_id);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.fund_escrow(UUID, UUID) TO authenticated, service_role;

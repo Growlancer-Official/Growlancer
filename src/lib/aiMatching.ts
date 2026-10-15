@@ -117,7 +117,9 @@ async function runSkillBasedMatching(projectId: string): Promise<{ success: bool
     const { data: activeServices } = await supabase
       .from('services')
       .select('freelancer_id, category, skills')
-      .eq('active', true);
+      // `status` is the source of truth — deactivated services must not feed
+      // matching signals (the dashboard toggle writes only `status`).
+      .eq('status', 'active');
     const serviceCatMap = new Map<string, Set<string>>();
     const serviceSkillMap = new Map<string, Set<string>>();
     for (const svc of (activeServices || []) as Array<{ freelancer_id: string; category?: string | null; skills?: string[] | null }>) {

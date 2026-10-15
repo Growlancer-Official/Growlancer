@@ -6,7 +6,6 @@
 
 ALTER TABLE public.razorpay_orders
   DROP CONSTRAINT IF EXISTS razorpay_orders_order_type_check;
-
 ALTER TABLE public.razorpay_orders
   ADD CONSTRAINT razorpay_orders_order_type_check
   CHECK (order_type = ANY (ARRAY[

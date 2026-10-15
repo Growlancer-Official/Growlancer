@@ -3,6 +3,7 @@ import {
   Zap, Crown, Loader2, RefreshCw, Search, Ban, Mail, RotateCcw, Clock, Trash2
 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminDelete } from '../../lib/adminDataProxy';
+import { fetchProfileDirectory } from '../../lib/adminProfileDirectory';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -15,7 +16,14 @@ interface SubscriptionPlan {
 
 interface UserSubscription {
   id: string; user_id: string; plan_id: string; status: string;
-  start_date: string | null; end_date: string | null; created_at: string;
+  // The live table carries BOTH generations of columns: legacy `start_date` /
+  // `expiry_date` and the canonical `subscription_start_date` /
+  // `subscription_end_date` (what the billing cron and the user-facing
+  // subscription page use). Selecting `end_date` rejected the whole request —
+  // that column does not exist, which is why this page showed nothing.
+  start_date: string | null; expiry_date: string | null;
+  subscription_start_date: string | null; subscription_end_date: string | null;
+  created_at: string;
   payment_provider: string | null;
   payment_subscription_id: string | null;
   profile?: { name: string; email: string } | null;
@@ -58,7 +66,7 @@ export function AdminSubscriptionsPage() {
         adminQuery({ table: 'subscription_plans', select: '*', order: 'price', orderDir: 'asc' }),
         adminQuery({
           table: 'subscriptions',
-          select: 'id, user_id, plan_id, status, start_date, end_date, created_at, payment_provider, payment_subscription_id',
+          select: 'id, user_id, plan_id, status, start_date, expiry_date, subscription_start_date, subscription_end_date, created_at, payment_provider, payment_subscription_id',
           order: 'created_at',
           orderDir: 'desc',
           limit: 100,
@@ -68,9 +76,9 @@ export function AdminSubscriptionsPage() {
       const plansData = (plansRes.data || []) as SubscriptionPlan[];
       const subsData = (subsRes.data || []) as UserSubscription[];
 
-      const userIds = [...new Set(subsData.map(s => s.user_id))];
-      const { data: profiles } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: userIds } });
-      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
+      // `email` moved to profiles_private (migration 20261221000000) — querying
+      // it from profiles rejected the whole request and blanked the table.
+      const profileMap = await fetchProfileDirectory(subsData.map(s => s.user_id));
       const planMap = new Map(plansData.map(p => [p.id, { name: p.name, price: p.price }]));
 
       setPlans(plansData);
@@ -117,11 +125,15 @@ export function AdminSubscriptionsPage() {
             }
           }
 
+          // Write the canonical end column (plus the legacy mirror) — `end_date`
+          // does not exist on the live table, so this update used to fail.
+          const cancelledAt = new Date().toISOString();
           await adminUpdate('subscriptions', subId, {
             status: 'cancelled',
-            end_date: new Date().toISOString(),
+            subscription_end_date: cancelledAt,
+            expiry_date: cancelledAt,
             cancel_at_period_end: true,
-            updated_at: new Date().toISOString(),
+            updated_at: cancelledAt,
           });
           await fetchData();
           toast.success(`Subscription cancelled for "${userName}"`);
@@ -203,8 +215,8 @@ export function AdminSubscriptionsPage() {
 
   return (
     <div className="space-y-6 pb-20 lg:pb-0">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-white">Subscriptions</h1>
           <p className="text-slate-400 text-sm mt-1">Manage plans and user subscriptions with full control</p>
         </div>
@@ -287,8 +299,11 @@ export function AdminSubscriptionsPage() {
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-[10px] text-slate-500">
-                        {sub.start_date ? new Date(sub.start_date).toLocaleDateString() : '—'}
-                        {sub.end_date ? ` → ${new Date(sub.end_date).toLocaleDateString()}` : ''}
+                        {(() => {
+                          const start = sub.subscription_start_date || sub.start_date;
+                          const end = sub.subscription_end_date || sub.expiry_date;
+                          return `${start ? new Date(start).toLocaleDateString() : '—'}${end ? ` → ${new Date(end).toLocaleDateString()}` : ''}`;
+                        })()}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-right">

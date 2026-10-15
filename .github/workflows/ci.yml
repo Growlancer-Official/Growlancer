@@ -1,9 +1,15 @@
-name: CI — Regression Guard
+name: CI — Regression Guard + Element Audit
 
 # Runs on every push to main and every pull request.
-# Purpose: catch regressions (TypeScript errors, lint errors, build failures,
-# white-screen guard trips) BEFORE they reach production. If this workflow is
-# red, the deployment must NOT happen. Errors that were once fixed stay fixed.
+# Purpose: catch regressions (TypeScript, lint, build, white-screen guard,
+# element-level UI defects) BEFORE they reach production. If this workflow is
+# red, the deployment must NOT happen.
+#
+# Merge history: this file merges the original regression guard (typecheck,
+# lint, build with placeholder VITE_* envs — see commit before 8e75814) with
+# the element-audit job introduced in 8e75814. npm install is used instead of
+# npm ci deliberately: npm ci fails on the Actions runner for this React 19
+# lockfile while npm install (Vercel's install path) succeeds.
 on:
   push:
     branches: [main]
@@ -21,19 +27,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
+        # Node 24 matches the local dev toolchain.
         with:
-          # Node 24 matches the local dev toolchain.
           node-version: 24
           cache: npm
-      # Use npm install (NOT npm ci) — exactly what Vercel runs, so CI guards
-      # the same install path as production. npm ci fails on the Actions runner
-      # for this React 19 lockfile while npm install (Vercel's path) succeeds.
       - run: npm install --no-audit --no-fund
-      # Note: a strict lockfile-diff guard would false-positive here — npm install
-      # legitimately rewrites platform-specific optionalDependencies entries when
-      # the lockfile was generated on a different OS (Windows) than the runner
-      # (Linux). npm install mirroring Vercel is the regression guard; the diff
-      # check proved too strict and was removed.
       - name: TypeScript typecheck
         run: npm run typecheck
 
@@ -52,9 +50,9 @@ jobs:
         run: npm run lint
 
   build:
-    name: Production build (+ white-screen guard)
+    name: Unit tests + Production build (+ white-screen guard)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
         with:
@@ -64,12 +62,179 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm install --no-audit --no-fund
-      - name: Production build
-        # VITE_* env vars are only required to satisfy the non-empty check in
-        # src/lib/supabase.ts during prerender — real values are injected by
-        # Vercel at deploy time.
-        run: npm run build
+      - name: Unit tests
+        # VITE_* values are the PUBLIC Supabase anon key + project URL (shipped in
+        # every browser bundle; protected by RLS). Used here so the authenticated
+        # element-audit job can log the E2E test accounts into the real backend.
+        # Unit tests themselves never make live Supabase calls.
         env:
-          VITE_SUPABASE_URL: https://placeholder.supabase.co
-          VITE_SUPABASE_ANON_KEY: placeholder_anon_key
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder_anon_key' }}
           VITE_APP_VERSION: 0.0.1
+        run: npm test
+      - name: Production build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder_anon_key' }}
+          VITE_APP_VERSION: 0.0.1
+        run: npm run build
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  element-audit:
+    name: Element audit (375/768/1280)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    needs: [typecheck, lint, build]
+    # E2E_* secrets enable the authenticated pass below. The accounts are seeded
+    # at the start of this job and deleted at the end (always), so they never
+    # linger in production between runs — live member counts and admin tables
+    # only ever show real accounts.
+    #
+    # FAIL-CLOSED (see the guard step): the authenticated audit + logout-security
+    # pass used to be gated on `can_seed_e2e`, so a missing secret made them skip
+    # and the job reported SUCCESS — a green check standing on top of a guardrail
+    # that never ran. Now the job fails and names the missing secrets instead.
+    # SUPABASE_URL falls back to the public VITE_SUPABASE_URL (same value, already
+    # a repo secret) so there is exactly one secret to add: the service-role key.
+    env:
+      E2E_FREELANCER_EMAIL: ${{ secrets.E2E_FREELANCER_EMAIL }}
+      E2E_FREELANCER_PASSWORD: ${{ secrets.E2E_FREELANCER_PASSWORD }}
+      E2E_CLIENT_EMAIL: ${{ secrets.E2E_CLIENT_EMAIL }}
+      E2E_CLIENT_PASSWORD: ${{ secrets.E2E_CLIENT_PASSWORD }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Runs FIRST, before the Chrome download and the build: if the authenticated
+      # audit cannot run, there is no point spending two minutes getting to a step
+      # that would have to be skipped anyway.
+      - name: Guard — authenticated-audit secrets present (fail-closed)
+        id: e2e_guard
+        run: |
+          REQUIRED="SUPABASE_URL VITE_SUPABASE_ANON_KEY SUPABASE_SERVICE_ROLE_KEY E2E_FREELANCER_EMAIL E2E_FREELANCER_PASSWORD E2E_CLIENT_EMAIL E2E_CLIENT_PASSWORD E2E_ADMIN_EMAIL E2E_ADMIN_PASSWORD"
+
+          # A fork PR structurally cannot read repository secrets. That is the one
+          # case where the pass is skipped instead of failing — and it is said out
+          # loud, so it can never be mistaken for a passing guardrail.
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.fork }}" = "true" ]; then
+            echo "::warning::Authenticated audit + logout security NOT RUN — this is a fork PR and repository secrets are not exposed to fork-triggered workflows. The anonymous strict pass above still ran. Treat this run's green as covering anonymous pages only."
+            echo "run_authenticated=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          missing=""
+          for name in $REQUIRED; do
+            if [ -z "${!name}" ]; then missing="$missing $name"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Authenticated audit + logout security DID NOT RUN — missing repository secret(s):$missing. Failing here deliberately: a guardrail that silently skips is indistinguishable from one that passes, so a green build must never hide it."
+            echo "::error::One-time setup — add SUPABASE_SERVICE_ROLE_KEY (Supabase Dashboard → Project Settings → API → service_role key) under Settings → Secrets and variables → Actions. The E2E_*_EMAIL/_PASSWORD secrets already exist; regenerate the accounts with: node scripts/e2e/create-test-accounts.mjs --rotate --push-secrets"
+            exit 1
+          fi
+          echo "All authenticated-audit secrets present — the dashboard/client/admin sweeps and the logout-security pass will run."
+          echo "run_authenticated=true" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm install --no-audit --no-fund
+
+      # element-audit.mjs uses playwright-core + a real Chrome binary.
+      - name: Install Chrome for Testing
+        run: npx --yes @puppeteer/browsers install chrome@stable --path "$HOME/.cache/chrome-for-testing"
+
+      # Build here (not via artifact download) so server.js has dist/ on disk.
+      # Real (public) Supabase values so the authenticated audit below can log in.
+      - name: Build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'placeholder_anon_key' }}
+          VITE_APP_VERSION: 0.0.1
+        run: npm run build
+
+      - name: Serve production build
+        run: |
+          PORT=4174 node server.js > server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:4174/ >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:4174/ >/dev/null || (echo "server did not start" && cat server.log && exit 1)
+
+      # Strict mode: any Section-1 finding fails CI. Uses the build artifact
+      # from the build job so the audited bundle is exactly what passed tests.
+      - name: Run element audit (all groups, strict)
+        env:
+          E2E_CHROME_PATH: ${{ runner.home }}/.cache/chrome-for-testing/chrome-linux64/chrome
+        run: |
+          set -o pipefail
+          for group in public auth dashboard client admin; do
+            # concurrency=2: 4 parallel Chrome contexts exhaust the 2-4 vCPU
+            # runner and cause navigation-timeout flakes; 2 is stable there.
+            node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=$group --strict --concurrency=2
+          done
+
+      # Seed the disposable accounts right before use. Recreated with the same
+      # passwords CI logs in with, so this also repairs a rotated/stale secret.
+      - name: Seed E2E test accounts (live only for this run)
+        if: ${{ steps.e2e_guard.outputs.run_authenticated == 'true' }}
+        run: node scripts/e2e/create-test-accounts.mjs
+
+      # Authenticated element audit + logout/back-button security. This needs
+      # accounts that can LOG IN, and the only durable way to guarantee that is to
+      # create them here (the seed step above) with the same passwords CI logs in
+      # with.
+      #
+      # --require-all + the on-disk check make this step fail-closed on its own:
+      # previously each audit was wrapped in `if [ -f .e2e/<role>.json ]`, so a
+      # role that failed to log in was silently dropped and the remaining audits
+      # ran — a green result from a partial sweep. Now all three storage states
+      # must exist before any audit runs.
+      # login.mjs writes storage states to .e2e/ (gitignored); each audit group
+      # uses the matching role's storage so protected pages render logged-in.
+      - name: Authenticated audit + logout security (freelancer/client/admin)
+        if: ${{ steps.e2e_guard.outputs.run_authenticated == 'true' }}
+        env:
+          E2E_CHROME_PATH: ${{ runner.home }}/.cache/chrome-for-testing/chrome-linux64/chrome
+        run: |
+          set -o pipefail
+          node scripts/e2e/login.mjs --base=http://127.0.0.1:4174 --all --require-all
+
+          for role in freelancer client admin; do
+            if [ ! -f ".e2e/$role.json" ]; then
+              echo "::error::no storage state for $role — the $role audit would run logged out and report a false green, so refusing to continue."
+              exit 1
+            fi
+          done
+
+          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=dashboard --strict --concurrency=2 --storage=.e2e/freelancer.json
+          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=client --strict --concurrency=2 --storage=.e2e/client.json
+          node scripts/e2e/element-audit.mjs --base=http://127.0.0.1:4174 --group=admin --strict --concurrency=2 --storage=.e2e/admin.json
+          for role in freelancer client admin; do
+            node scripts/e2e/logout-flow.mjs --base=http://127.0.0.1:4174 --role=$role
+          done
+
+      # Teardown runs even when the audit failed: leaving test accounts live is the
+      # outcome this job must never produce, so cleanup is unconditional.
+      - name: Remove E2E test accounts from production
+        if: ${{ always() && steps.e2e_guard.outputs.run_authenticated == 'true' }}
+        run: node scripts/e2e/remove-test-accounts.mjs
+
+      - name: Upload audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: element-audit-results
+          path: tests/e2e-artifacts/
+          retention-days: 14

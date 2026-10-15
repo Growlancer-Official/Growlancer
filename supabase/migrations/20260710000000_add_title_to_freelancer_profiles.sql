@@ -3,7 +3,6 @@
 
 ALTER TABLE public.freelancer_profiles
   ADD COLUMN IF NOT EXISTS title TEXT;
-
 -- Backfill title for existing rows from profiles.name
 UPDATE public.freelancer_profiles fp
   SET title = p.name

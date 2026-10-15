@@ -12,7 +12,6 @@
 -- Add is_admin column to profiles
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT false;
-
 -- ============================================================
 -- grant_admin_role: Called ONLY by the admin-signup edge function
 -- (using service_role key). No secret code check here — that
@@ -61,14 +60,11 @@ BEGIN
   );
 END;
 $$;
-
 -- Only service_role (edge function) should call grant_admin_role
 GRANT EXECUTE ON FUNCTION public.grant_admin_role TO service_role;
 REVOKE EXECUTE ON FUNCTION public.grant_admin_role FROM authenticated, anon;
-
 -- Drop the old admin_signup RPC (had hardcoded secret code — vulnerable)
 DROP FUNCTION IF EXISTS public.admin_signup(UUID, TEXT);
-
 -- Create admin_users audit table
 CREATE TABLE IF NOT EXISTS public.admin_users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -78,20 +74,16 @@ CREATE TABLE IF NOT EXISTS public.admin_users (
   revoked_at TIMESTAMPTZ,
   UNIQUE(user_id)
 );
-
 -- Enable RLS
 ALTER TABLE public.admin_users ENABLE ROW LEVEL SECURITY;
-
 -- Only service_role can manage admin_users
 CREATE POLICY "Service role can manage admin_users"
   ON public.admin_users
   USING (true)
   WITH CHECK (true);
-
 -- Grant access
 GRANT ALL ON public.admin_users TO service_role;
 GRANT ALL ON public.admin_users TO authenticated;
-
 -- Remove old admin_credentials table approach
 -- (keeping table but marking it deprecated — can be dropped later)
 COMMENT ON TABLE public.admin_credentials IS 'DEPRECATED: Use Supabase Auth + is_admin flag instead';

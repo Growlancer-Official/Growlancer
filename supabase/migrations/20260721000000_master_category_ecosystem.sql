@@ -7,10 +7,8 @@
 TRUNCATE TABLE skills CASCADE;
 TRUNCATE TABLE subcategories CASCADE;
 TRUNCATE TABLE categories CASCADE;
-
 -- Ensure updated_at column exists on skills
 ALTER TABLE skills ADD COLUMN IF NOT EXISTS updated_at timestamptz DEFAULT now();
-
 -- ============================================================
 -- CATEGORY INSERT
 -- All 117 categories from the master list

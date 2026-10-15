@@ -39,7 +39,6 @@ CREATE POLICY "Contract participants can view messages"
         AND (c.client_id = auth.uid() OR c.freelancer_id = auth.uid())
     )
   );
-
 DROP POLICY IF EXISTS "Contract participants can insert messages" ON public.messages;
 CREATE POLICY "Contract participants can insert messages"
   ON public.messages
@@ -54,7 +53,6 @@ CREATE POLICY "Contract participants can insert messages"
         AND (c.client_id = auth.uid() OR c.freelancer_id = auth.uid())
     )
   );
-
 -- ────────────────────────────────────────────────────────────────────────────
 -- 2. PROJECTS — participants (contract / proposal / ai_match) can view
 -- ────────────────────────────────────────────────────────────────────────────
@@ -80,7 +78,6 @@ CREATE POLICY "Contract parties and applicants can view project"
         AND m.freelancer_id = auth.uid()
     )
   );
-
 -- ────────────────────────────────────────────────────────────────────────────
 -- 3. DISPUTES — participants can view their own disputes
 -- ────────────────────────────────────────────────────────────────────────────

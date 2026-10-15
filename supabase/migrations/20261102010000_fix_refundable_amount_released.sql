@@ -60,6 +60,5 @@ BEGIN
 
   RETURN GREATEST(v_escrow_amount - v_released, 0);
 END $$;
-
 GRANT EXECUTE ON FUNCTION public._refundable_amount(UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION public._refundable_amount(UUID) TO service_role;

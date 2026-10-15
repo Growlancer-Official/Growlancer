@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../lib/supabase';
 import { adminUpdate, adminInsert } from '../../lib/adminDataProxy';
 import {
-  Search, Loader2, MessageSquare, User, Clock,
+  ArrowLeft, Search, Loader2, MessageSquare, User, Clock,
   Headphones, Send, X,
 } from 'lucide-react';
 import { useToast } from '../../components/Toast';
@@ -195,9 +195,7 @@ export function AdminSupportTicketsPage() {
             onClick={() => { setSelectedTicket(null); setTicketMessages([]); }}
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 transition-all"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
+            <ArrowLeft className="w-4 h-4" />
             Back to Tickets
           </button>
         </div>
@@ -213,6 +211,7 @@ export function AdminSupportTicketsPage() {
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                aria-label="Search support tickets"
                 placeholder="Search tickets..."
                 className="w-full pl-9 pr-4 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
               />

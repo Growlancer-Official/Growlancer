@@ -30,7 +30,6 @@ INSERT INTO categories (name, slug, description, display_order, icon) VALUES
   ('Sustainability & Green Tech', 'sustainability-green-tech', 'Environmental consulting, green energy, sustainability reporting, and eco-design', 30, 'Leaf'),
   ('Customer Experience & UX Research', 'customer-experience-ux-research', 'User research, usability testing, customer journey mapping, and service design', 31, 'Search')
 ON CONFLICT (slug) DO NOTHING;
-
 -- ============================================================================
 -- SUBCATEGORIES FOR EXISTING + NEW CATEGORIES
 -- ============================================================================
@@ -55,7 +54,6 @@ BEGIN
     (cat_id, 'Website Maintenance', 'website-maintenance', 'WordPress, CMS updates, security patches, and performance optimization')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 2. Design & Creative
 DO $$
 DECLARE
@@ -76,7 +74,6 @@ BEGIN
     (cat_id, 'Fashion Design', 'fashion-design', 'Apparel design, fashion illustration, textile design, and pattern making')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 3. Writing & Translation
 DO $$
 DECLARE
@@ -97,7 +94,6 @@ BEGIN
     (cat_id, 'Script Writing', 'script-writing', 'Video scripts, podcast scripts, YouTube content, and dialogue writing')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 4. Digital Marketing
 DO $$
 DECLARE
@@ -118,7 +114,6 @@ BEGIN
     (cat_id, 'Market Research', 'market-research', 'Competitor analysis, customer surveys, market sizing, and trend analysis')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 5. Sales & Customer Support
 DO $$
 DECLARE
@@ -139,7 +134,6 @@ BEGIN
     (cat_id, 'Live Chat Support', 'live-chat-support', 'Real-time customer engagement, chatbot management, and conversion support')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 6. Finance & Accounting
 DO $$
 DECLARE
@@ -160,7 +154,6 @@ BEGIN
     (cat_id, 'Insurance Services', 'insurance-services', 'Policy review, claims processing, insurance consulting, and risk management')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 7. Engineering & Architecture
 DO $$
 DECLARE
@@ -181,7 +174,6 @@ BEGIN
     (cat_id, 'Urban Planning', 'urban-planning', 'City planning, zoning analysis, transportation planning, and environmental impact')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 8. Legal Services
 DO $$
 DECLARE
@@ -202,7 +194,6 @@ BEGIN
     (cat_id, 'Legal Research & Writing', 'legal-research-writing', 'Case law research, brief writing, memos, and legal document preparation')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 9. HR & Recruitment
 DO $$
 DECLARE
@@ -223,7 +214,6 @@ BEGIN
     (cat_id, 'Onboarding & Offboarding', 'onboarding-offboarding', 'New hire integration, exit interviews, and offboarding processes')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 10. Admin & Operations
 DO $$
 DECLARE
@@ -244,7 +234,6 @@ BEGIN
     (cat_id, 'Quality Assurance', 'quality-assurance', 'Process quality, ISO standards, audits, and continuous improvement')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 11. Education & Training
 DO $$
 DECLARE
@@ -265,7 +254,6 @@ BEGIN
     (cat_id, 'Corporate Training', 'corporate-training', 'Workplace training programs, soft skills training, and professional development')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 12. Data Science & AI
 DO $$
 DECLARE
@@ -286,7 +274,6 @@ BEGIN
     (cat_id, 'Database Management', 'database-management', 'SQL optimization, data modeling, schema design, and database migration')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 13. IT & Network Security
 DO $$
 DECLARE
@@ -307,7 +294,6 @@ BEGIN
     (cat_id, 'Blockchain Security', 'blockchain-security', 'Smart contract auditing, DeFi security, and web3 security assessment')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 14. Blockchain & Web3
 DO $$
 DECLARE
@@ -328,7 +314,6 @@ BEGIN
     (cat_id, 'Metaverse Development', 'metaverse-development', 'Virtual worlds, 3D environments, and metaverse platform integration')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 15. Video & Animation
 DO $$
 DECLARE
@@ -349,7 +334,6 @@ BEGIN
     (cat_id, 'Visual Effects (VFX)', 'visual-effects-vfx', 'CGI, compositing, green screen, and visual effects for film/video')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 16. Music & Audio
 DO $$
 DECLARE
@@ -370,7 +354,6 @@ BEGIN
     (cat_id, 'Mixing & Mastering', 'mixing-mastering', 'Professional audio mixing, mastering, and stem processing')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 17. Photography
 DO $$
 DECLARE
@@ -391,7 +374,6 @@ BEGIN
     (cat_id, 'Travel Photography', 'travel-photography', 'Destination coverage, travel content, and location scouting')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 18. Health & Wellness
 DO $$
 DECLARE
@@ -412,7 +394,6 @@ BEGIN
     (cat_id, 'Telemedicine Support', 'telemedicine-support', 'Virtual healthcare support, patient coordination, and health tech')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 19. Real Estate
 DO $$
 DECLARE
@@ -433,7 +414,6 @@ BEGIN
     (cat_id, 'Property Inspection', 'property-inspection', 'Home inspections, building inspections, and report preparation')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 20. Supply Chain & Logistics
 DO $$
 DECLARE
@@ -454,7 +434,6 @@ BEGIN
     (cat_id, 'Sustainability in Supply Chain', 'sustainability-supply-chain', 'Green logistics, carbon footprint tracking, and sustainable sourcing')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 21. Gaming & eSports
 DO $$
 DECLARE
@@ -475,7 +454,6 @@ BEGIN
     (cat_id, 'VR/AR Game Development', 'vr-ar-game-development', 'Virtual reality, augmented reality, and mixed reality game development')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 22. Consulting & Strategy
 DO $$
 DECLARE
@@ -496,7 +474,6 @@ BEGIN
     (cat_id, 'Mergers & Acquisitions', 'mergers-acquisitions', 'M&A advisory, due diligence, valuation, and integration planning')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 23. Science & Research
 DO $$
 DECLARE
@@ -517,7 +494,6 @@ BEGIN
     (cat_id, 'Peer Review Services', 'peer-review-services', 'Manuscript review, editing, and academic peer review support')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 24. Trades & Services
 DO $$
 DECLARE
@@ -538,7 +514,6 @@ BEGIN
     (cat_id, 'Handyman Services', 'handyman-services', 'General repairs, home maintenance, assembling furniture, and odd jobs')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 25. Event Planning
 DO $$
 DECLARE
@@ -559,7 +534,6 @@ BEGIN
     (cat_id, 'Nonprofit Fundraising Events', 'nonprofit-fundraising-events', 'Gala planning, auction management, donor engagement, and benefit events')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 26. Travel & Hospitality
 DO $$
 DECLARE
@@ -580,7 +554,6 @@ BEGIN
     (cat_id, 'Wellness Tourism', 'wellness-tourism', 'Wellness retreats, spa services, and health-focused travel experiences')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 27. E-commerce Management
 DO $$
 DECLARE
@@ -601,7 +574,6 @@ BEGIN
     (cat_id, 'Multi-channel Selling', 'multi-channel-selling', 'Omnichannel strategy, marketplace integration, and channel management')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 28. Social Media Management
 DO $$
 DECLARE
@@ -622,7 +594,6 @@ BEGIN
     (cat_id, 'Brand Reputation Management', 'brand-reputation-management', 'Online reputation monitoring, crisis management, and brand sentiment')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 29. Sustainability & Green Tech
 DO $$
 DECLARE
@@ -643,7 +614,6 @@ BEGIN
     (cat_id, 'Climate Tech Consulting', 'climate-tech-consulting', 'Climate technology assessment, cleantech innovation, and green startups')
   ON CONFLICT (slug) DO NOTHING;
 END $$;
-
 -- 30. Customer Experience & UX Research
 DO $$
 DECLARE

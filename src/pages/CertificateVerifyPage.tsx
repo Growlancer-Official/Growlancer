@@ -51,6 +51,11 @@ const typeTitle: Record<string, string> = {
 // ─── Theme Context ──────────────────────────────────────────────────
 function useTheme() {
   const [dark, setDark] = useState(() => {
+    // 🛡️ SSR guard: this page is server-rendered (Vike) — `localStorage` does
+    // not exist on the server, and an unguarded read crashed SSR with
+    // "localStorage is not defined", which forced React to throw the whole
+    // page away and re-render it on the client only.
+    if (typeof window === 'undefined') return false;
     const saved = localStorage.getItem('gl-verify-theme');
     if (saved) return saved === 'dark';
     return detectSystemDark();
@@ -679,6 +684,7 @@ export function CertificateVerifyPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 dark:text-slate-500" />
                 <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value.toUpperCase())}
                   onKeyDown={handleKeyDown}
+                  aria-label="Verification ID"
                   placeholder="Enter Verification ID (e.g., GRW-CERT-XXXXX)"
                   className={`w-full pl-12 pr-4 py-3.5 rounded-xl border text-sm font-mono tracking-wider uppercase transition-all focus:outline-none ${
                     dark
@@ -723,7 +729,7 @@ export function CertificateVerifyPage() {
               <div className={`mx-auto w-12 h-12 rounded-xl ${card.bg} flex items-center justify-center mb-2`}>
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2">{card.title}</h3>
+              <h2 className="text-sm font-bold text-slate-900 dark:text-white mb-2">{card.title}</h2>
               <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{card.desc}</p>
             </div>
           ))}
@@ -731,7 +737,7 @@ export function CertificateVerifyPage() {
 
         {/* How It Works */}
         <div className={`max-w-3xl mx-auto mb-10 p-3 md:p-4 rounded-xl border ${dark ? 'bg-slate-900/40 border-slate-700/30' : 'bg-white/40 border-slate-200'} animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300`}>
-          <h3 className="text-sm font-bold text-slate-900 dark:text-white text-center mb-3">How Verification Works</h3>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white text-center mb-3">How Verification Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
               { step: '01', title: 'Get Your Code', desc: 'Your employer will send you a unique verification code via email.', color: 'text-emerald-600 dark:text-emerald-400' },
@@ -742,16 +748,17 @@ export function CertificateVerifyPage() {
                 <div className="mx-auto w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-500/10 flex items-center justify-center mb-3">
                   <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400">{item.step}</span>
                 </div>
-                <h4 className="text-xs font-bold text-slate-900 dark:text-white mb-1">{item.title}</h4>
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-1">{item.title}</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Trust Badge */}
+        {/* Trust Badge — wraps on narrow phones (a nowrap row of 3 labels was
+            503px wide and got clipped off-screen at 320–390px viewports). */}
         <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-          <div className={`inline-flex items-center gap-3 px-8 py-4 rounded-xl border shadow-sm ${dark ? 'bg-slate-900/50 border-slate-700/30' : 'bg-white/50 border-slate-200'}`}>
+          <div className={`inline-flex flex-wrap justify-center items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-8 sm:py-4 rounded-xl border shadow-sm ${dark ? 'bg-slate-900/50 border-slate-700/30' : 'bg-white/50 border-slate-200'}`}>
             {[
               { icon: Shield, label: 'Digitally Verified' },
               { icon: Clock, label: 'Real-Time' },
@@ -759,7 +766,7 @@ export function CertificateVerifyPage() {
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
                 <item.icon className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider whitespace-nowrap">{item.label}</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider sm:whitespace-nowrap">{item.label}</span>
                 {i < 2 && <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 ml-2" />}
               </div>
             ))}
@@ -795,7 +802,7 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
     <header className={`sticky top-0 z-40 border-b backdrop-blur-xl ${dark ? 'bg-slate-950/80 border-slate-800/50' : 'bg-white/80 border-slate-200'}`}>
       <div className="max-w-[100rem] mx-auto px-4 py-3 flex items-center justify-between">
         <button onClick={onHome || (() => navigate('/verify-certificate', { replace: true }))}
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+          className="flex items-center gap-3 py-1 hover:opacity-80 transition-opacity group">
           <div className="relative">
             <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-9 w-9 rounded-xl" />
             <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />
@@ -807,7 +814,7 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
         </button>
         <div className="flex items-center gap-3">
           <button onClick={onToggleTheme}
-            className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all border ${
+            className={`inline-flex items-center justify-center gap-3 px-3 min-h-[44px] rounded-xl text-xs font-medium transition-all border ${
               dark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
             }`}>
             {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -837,7 +844,7 @@ function FooterBar({ dark }: { dark: boolean }) {
         <div className="flex items-center justify-center gap-3 mt-2">
           {['Terms', 'Privacy', 'Contact'].map(item => (
             <button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}
-              className="text-xs text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{item}</button>
+              className="text-xs px-1.5 py-2 text-slate-400 dark:text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{item}</button>
           ))}
         </div>
       </div>

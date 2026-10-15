@@ -40,17 +40,7 @@ ON CONFLICT (id) DO UPDATE SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
   allowed_mime_types = EXCLUDED.allowed_mime_types;
-
 -- ---------- 2. storage.objects policies ----------
--- Remove legacy wide-open policies (any authenticated user could insert/delete
--- arbitrary objects in the bucket). The contract-scoped policies below fully
--- replace them, so we drop the wide ones for defense in depth.
-DROP POLICY IF EXISTS "Users can upload contract files" ON storage.objects;
-DROP POLICY IF EXISTS "Users can delete contract files" ON storage.objects;
--- No flow ever updates storage objects in this bucket (the edge function only
--- uploads, reads and removes), so drop the wide-open UPDATE policy too.
-DROP POLICY IF EXISTS "Users can update contract files" ON storage.objects;
-
 -- INSERT: only the client or freelancer of the contract can upload
 -- (file path always starts with the contract id: <contract_id>/...)
 DROP POLICY IF EXISTS "Contract participants can upload files" ON storage.objects;
@@ -66,7 +56,6 @@ WITH CHECK (
       AND (c.client_id = auth.uid() OR c.freelancer_id = auth.uid())
   )
 );
-
 -- DELETE: same contract-participant scoping (the edge function additionally
 -- restricts deletion to the original uploader as defense in depth)
 DROP POLICY IF EXISTS "Contract participants can delete contract files" ON storage.objects;
@@ -82,7 +71,6 @@ USING (
       AND (c.client_id = auth.uid() OR c.freelancer_id = auth.uid())
   )
 );
-
 -- ---------- 3. Realtime (idempotent) ----------
 DO $$
 BEGIN

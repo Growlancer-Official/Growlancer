@@ -20,7 +20,7 @@ export function CategoriesPage() {
             />
             <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
           </Link>
-          <Link to="/" className="text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
+          <Link to="/" className="inline-block py-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
             Back to Home
           </Link>
         </div>

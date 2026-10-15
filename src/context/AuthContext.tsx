@@ -8,14 +8,9 @@ import {
   createReferralCode,
 } from '../lib/services/authService';
 import { shouldRedirectToAuthCallback } from '../lib/authAction';
+import { beginOAuthAttempt, clearOAuthAttempt } from '../lib/oauthDiagnostics';
 import { captureError, captureInfo } from '../lib/telemetry';
 import { recordBrowserAccount, clearBrowserAccount } from '../lib/browserIdentity';
-import {
-  recordLoginAttempt,
-  resetLoginAttempts,
-  getLoginDelay,
-  getRemainingAttempts,
-} from '../lib/rateLimiter';
 
 // ═══════════════════════════════════════════════════════════════════
 // BroadcastChannel — Cross-tab auth sync
@@ -65,16 +60,6 @@ interface AuthContextType {
   isLoading: boolean;
   session: Session | null;
   signInWithOAuth: (provider: 'github' | 'linkedin_oidc', role?: UserRole) => Promise<{ success: boolean; error?: string; url?: string }>;
-  login: (
-    email: string,
-    password: string
-  ) => Promise<{ success: boolean; error?: string; role?: UserRole; onboardingNeeded?: boolean }>;
-  signup: (
-    email: string,
-    password: string,
-    name: string,
-    role: UserRole,
-    referrerCode?: string    ) => Promise<{ success: boolean; error?: string; message?: string; needsVerification?: boolean }>;
   logout: () => Promise<void>;
   getDashboardRoute: (userRole?: UserRole) => string;
   updateUser: (updates: Partial<AuthUser>) => void;
@@ -1007,6 +992,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // the callback can render before Supabase has restored app_metadata.
       localStorage.setItem('growlancer_oauth_provider', provider);
 
+      // 🛡️ Breadcrumb for the UNANSWERED case. If the browser comes back from
+      // the provider without a session (the provider never redirected us —
+      // live case 2026-10-14: three 302s to LinkedIn, no /callback), this is
+      // what lets OAuthReturnNotice tell the user what actually happened
+      // instead of dead-ending silently.
+      beginOAuthAttempt(provider, role);
+
       const redirectTo = `${window.location.origin}/auth/callback`;
       devLog('[Auth] OAuth signInWithOAuth — provider:', provider, 'redirectTo:', redirectTo);
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -1046,364 +1038,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const login = async (
-    email: string,
-    password: string
-  ): Promise<{ success: boolean; error?: string; role?: UserRole; onboardingNeeded?: boolean }> => {
-    try {
-      setIsLoading(true);
-      devLog('[Auth] Login attempt started');
-
-      // ── Rate limiting check ──
-      const normalizedEmail = email.trim().toLowerCase();
-      const delay = getLoginDelay(normalizedEmail);
-      if (delay > 0) {
-        devLog(`[Auth] Rate limit delay: ${delay}ms`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-
-      const remaining = getRemainingAttempts(normalizedEmail);
-      if (remaining <= 0) {
-        setIsLoading(false);
-        return {
-          success: false,
-          error: 'Too many login attempts. Please try again in 15 minutes.',
-        };
-      }
-
-      const { data, error } = await supabase.auth.signInWithPassword({ email: normalizedEmail, password });
-
-      if (error) {
-        recordLoginAttempt(normalizedEmail);
-        devWarn('[Auth] Login error:', error.message);
-        setIsLoading(false);
-        return { success: false, error: error.message };
-      }
-
-      // Rate limit: reset on success
-      resetLoginAttempts(normalizedEmail);
-
-      if (data.user) {
-        setSession(data.session);
-        setSupabaseUser(data.user);
-
-        // Fetch existing profile first
-        let profile = await ensureUserProfile(data.user, undefined, false);
-
-        // If profile not found, retry once after short delay
-        if (!profile) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-          profile = await ensureUserProfile(data.user, undefined, false);
-        }
-
-        // If still no profile, auto-create from the authenticated user's metadata.
-        // This covers edge cases where the profile row was never created or was
-        // deleted/duplicated during a failed signup or prior auth recovery.
-        if (!profile) {
-          const meta = data.user?.user_metadata || {};
-          const roleHint = (meta.role === 'freelancer' || meta.role === 'client'
-            ? meta.role as UserRole
-            : undefined);
-
-          if (roleHint) {
-            devLog('[Auth] No profile found during login — auto-creating from user metadata');
-            profile = await ensureUserProfile(data.user, roleHint, true);
-          } else {
-            devLog('[Auth] No profile found during login — trying a direct recovery with fallback role');
-            profile = await ensureUserProfile(data.user, 'freelancer', true);
-          }
-        }
-
-        if (profile) {
-          setUser(profile);
-          setIsLoading(false);
-          devLog('[Auth] Login successful:', profile.email, 'role:', profile.role);
-          // 📡 Broadcast cross-tab auth sync
-          broadcastAuthMessage({ type: 'AUTH_SIGNED_IN', userId: data.user.id });
-          return {
-            success: true,
-            role: profile.role,
-            onboardingNeeded: profile.onboardingCompleted === false,
-          };
-        }
-
-        devWarn('[Auth] Profile still missing after recovery attempt; trying createUserProfile as last resort');
-        // 🌟 Final fallback: use the createUserProfile RPC (idempotent upsert via
-        // SECURITY DEFINER — works even if RLS would block a direct insert).
-        try {
-          const meta = data.user?.user_metadata || {};
-          const savedRole = (meta.role === 'freelancer' || meta.role === 'client') ? meta.role as UserRole : 'freelancer';
-          const savedName = (typeof meta.name === 'string' && meta.name.trim()) || data.user.email?.split('@')[0] || 'User';
-          
-          profile = await createUserProfile(data.user.id, normalizedEmail, savedName, savedRole);
-          if (profile) {
-            devLog('[Auth] Profile recovered via createUserProfile for:', normalizedEmail);
-          }
-        } catch (directErr) {
-          devWarn('[Auth] createUserProfile recovery failed:', directErr);
-        }
-
-        if (profile) {
-          setUser(profile);
-          setIsLoading(false);
-          devLog('[Auth] Login recovered after final retry:', profile.email, 'role:', profile.role);
-          // 📡 Broadcast cross-tab auth sync
-          broadcastAuthMessage({ type: 'AUTH_SIGNED_IN', userId: data.user.id });
-          return {
-            success: true,
-            role: profile.role,
-            onboardingNeeded: profile.onboardingCompleted === false,
-          };
-        }
-
-        devWarn('[Auth] Profile not found after all recovery attempts; keeping session intact for manual support');
-        setUser(null);
-        setSession(null);
-        setSupabaseUser(null);
-        setIsLoading(false);
-        return { success: false, error: 'We could not restore your profile. Please try again in a moment or contact support.' };
-      }
-
-      setIsLoading(false);
-      return { success: false, error: 'Login failed. Please try again.' };
-    } catch (error) {
-      devError('[Auth] Login exception:', error);
-      setIsLoading(false);
-      return { success: false, error: error instanceof Error ? error.message : 'Login failed' };
-    }
-  };
-
-  const signup = async (
-    email: string,
-    password: string,
-    name: string,
-    role: UserRole,
-    referrerCode?: string
-  ): Promise<{ success: boolean; error?: string; message?: string; needsVerification?: boolean }> => {
-    try {
-      setIsLoading(true);
-      devLog('[Auth] Signup attempt started for role:', role);
-
-      if (!role) {
-        return { success: false, error: 'Please select a role' };
-      }
-
-      const referralCode = createReferralCode(role.substring(0, 2).toUpperCase());
-
-      // 🆕 Pre-flight duplicate-email check. GoTrue runs with anti-enumeration:
-      // signing up an already-registered email returns a FAKE success-shaped
-      // user object and sends nothing — the real user is stuck waiting for a
-      // confirmation email that never arrives. Catch it here instead and give
-      // the honest, friendly message.
-      try {
-        const { data: emailTaken } = await supabase.rpc('is_email_taken' as any, { p_email: email });
-        if (emailTaken === true) {
-          setIsLoading(false);
-          return {
-            success: false,
-            error: 'This email is already used professionally on Growlancer. Please log in instead — or continue with GitHub / LinkedIn if you originally signed up that way.',
-          };
-        }
-      } catch {
-        // RPC unavailable (deploy lag) → fall through to the normal signup
-        // path. Post-signup handling below still covers the error case.
-      }
-
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { name, role, referral_code: referralCode, referred_by: referrerCode || null },
-          // 🎯 Email confirmation links land DIRECTLY on the EmailConfirmPage —
-          // a plain "Email verified ✓ — you can now close this window" screen.
-          // NEVER /auth/callback (which auto-redirects to onboarding before the
-          // user has returned to the original tab and clicked "I've verified").
-          // ⚠️ NO ?type=signup query here: GoTrue's redirect allowlist uses glob
-          // matching against the FULL URL including the query string, so adding
-          // ?type=signup made the link fail validation → GoTrue fell back to the
-          // Site URL (homepage) → ugly homepage flash before the verify page.
-          // GoTrue appends type=signup itself in the final redirect, so the
-          // plain URL both matches the allowlist AND still carries the type.
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
-        },
-      });
-
-      if (error) {
-        devWarn('[Auth] Signup error:', error.message);
-        
-        // 🆕 Friendly message when the built-in email sender is rate-limited (429)
-        if (error.message.includes('rate limit') || error.message.includes('429')) {
-          setIsLoading(false);
-          return {
-            success: false,
-            error: 'Too many verification emails were sent recently. Please wait a while and try again.',
-          };
-        }
-        
-        // 🆕 If email sending fails (SMTP not configured), try auto-login anyway
-        // Supabase still creates the user in auth.users even when email fails.
-        if (error.message.includes('confirmation email') || error.message.includes('Error sending')) {
-          devLog('[Auth] Email sending failed but user may be created — attempting auto-login');
-          
-          // Try to auto-login immediately
-          const { data: loginData } = await supabase.auth.signInWithPassword({ email, password });
-          
-          if (loginData?.user) {
-            devLog('[Auth] Auto-login succeeded after email failure');
-            setSession(loginData.session);
-            setSupabaseUser(loginData.user);
-            
-            // Create profile (use the already-generated referralCode)
-            let created = await createUserProfile(loginData.user.id, email, name, role, referralCode);
-            if (!created) {
-              await new Promise(resolve => setTimeout(resolve, 1500));
-              created = await createUserProfile(loginData.user.id, email, name, role, referralCode);
-            }
-            
-            if (created) {
-              setUser(created);
-              // 📧 Welcome email disabled — Brevo removed (Supabase Auth built-in sender handles verification)
-              setIsLoading(false);
-              return { 
-                success: true, 
-                message: 'Account created successfully! Welcome to Growlancer.' 
-              };
-            }
-          }
-          
-          // If auto-login also failed, guide the user to verify via email
-          setIsLoading(false);
-          return { 
-            success: false, 
-            error: 'Account created! Please check your inbox (and spam folder) for the verification email and click the link to activate your account, then log in with your email and password.'
-          };
-        }
-        
-        setIsLoading(false);
-        // 🆕 Friendly, consistent duplicate-email message — signup with an
-        // already-used email (including one owned by an OAuth account).
-        const rawErr = error.message || '';
-        if (/already registered|already exists|User already|email address.*exists/i.test(rawErr)) {
-          return {
-            success: false,
-            error: 'This email is already used professionally on Growlancer. Please log in instead — or continue with GitHub / LinkedIn if you originally signed up that way.',
-          };
-        }
-        return { success: false, error: rawErr };
-      }
-
-      if (data.user) {
-        // 🆕 Anti-enumeration signal: a duplicate-email signup returns a user
-        // object with `identities: []` (GoTrue "fake success" — no email is
-        // ever sent). Surface the honest duplicate message instead of letting
-        // the user wait forever for an email that never arrives.
-        if (Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-          setIsLoading(false);
-          return {
-            success: false,
-            error: 'This email is already used professionally on Growlancer. Please log in instead — or continue with GitHub / LinkedIn if you originally signed up that way.',
-          };
-        }
-
-        // Try to create profile immediately
-        let created = await createUserProfile(data.user.id, email, name, role, referralCode);
-
-        // Retry once if profile creation failed
-        if (!created) {
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          created = await createUserProfile(data.user.id, email, name, role, referralCode);
-        }
-
-        if (created) {
-          devLog('[Auth] Profile created immediately for:', email);
-        } else {
-          devWarn('[Auth] Profile creation deferred');
-        }
-
-        // ✅ Auto-login: only attempt when email is already confirmed (auto-confirm
-        // is enabled or the user verified via a different path). With real email
-        // verification enabled and unconfirmed email, signInWithPassword always
-        // fails — skip it to avoid wasting ~1s of latency and a confusing error.
-        let loginData: { user: import('@supabase/supabase-js').User; session: import('@supabase/supabase-js').Session } | null = null;
-        const emailConfirmed = !!data.user?.email_confirmed_at;
-        if (emailConfirmed) {
-          devLog('[Auth] Email already confirmed — attempting auto-login after signup for:', email);
-          const { data: autoLogin, error: loginError } = await supabase.auth.signInWithPassword({ email, password });
-          if (autoLogin?.user && !loginError) {
-            loginData = autoLogin;
-            setSession(autoLogin.session);
-            setSupabaseUser(autoLogin.user);
-            if (created) setUser(created);
-            devLog('[Auth] Auto-login succeeded after signup');
-          } else {
-            devLog('[Auth] Auto-login failed (email confirmed but login rejected):', loginError?.message);
-          }
-        } else {
-          devLog('[Auth] Email not confirmed yet — skipping auto-login, user must verify email first');
-        }
-
-        // Process referral if this signup came from a referral link.
-        // process_referral now requires an authenticated session (auth.uid() ==
-        // p_new_user_id). With email verification ON there is no session at signup
-        // time, so the referral is deferred and recorded on first login instead.
-        if (referrerCode) {
-          if (loginData?.user) {
-            try {
-              const { data: refData, error: refError } = await supabase.rpc('process_referral', {
-                p_referral_code: referrerCode,
-                p_new_user_id: data.user.id,
-                p_new_user_email: email,
-              });
-              if (refError || (refData as any)?.success !== true) {
-                devWarn('[Auth] Referral not recorded:', refError?.message || (refData as any)?.error);
-              } else {
-                devLog('[Auth] Referral processed successfully for code:', referrerCode);
-                // Mark done so the deferred syncAuthUser path doesn't re-query
-                localStorage.setItem(`growlancer_ref_done_${data.user.id}`, '1');
-              }
-            } catch (refErr) {
-              devWarn('[Auth] Referral processing exception:', refErr);
-            }
-          } else {
-            // Email verification required — process the referral on first login
-            // (syncAuthUser picks up the pending flag + user_metadata.referred_by).
-            try {
-              localStorage.setItem('growlancer_pending_ref', JSON.stringify({ code: referrerCode }));
-              devLog('[Auth] Referral deferred until first login');
-            } catch {
-              // localStorage unavailable — referral is best-effort only
-            }
-          }
-        }
-
-        // 📧 Welcome email disabled — Brevo completely removed.
-        // Verification emails are handled by Supabase Auth built-in sender.
-
-        setIsLoading(false);
-        return {
-          success: true,
-          message: loginData?.user
-            ? 'Account created successfully! Welcome to Growlancer.'
-            : 'Account created! Check your inbox for a verification link, then log in with your email and password.',
-          needsVerification: !loginData?.user,
-        };
-      }
-
-      setIsLoading(false);
-      return { success: false, error: 'Signup failed. Please try again.' };
-    } catch (error) {
-      devError('[Auth] Signup exception:', error);
-      setIsLoading(false);
-      return { success: false, error: error instanceof Error ? error.message : 'Signup failed' };
-    }
-  };
-
   const logout = async (): Promise<void> => {
     // 🔥 Bulletproof logout: first try the normal server-side signOut, but ALWAYS
     // force-clear the persisted session afterwards. For deleted users signOut()
     // returns early without clearing localStorage — without this the stale token
     // survives and re-logs the user in on the next page load.
     await supabase.auth.signOut().catch(() => {});
+
+    // Any pending provider round-trip is void once the user signs out.
+    clearOAuthAttempt();
 
     // 🔥 Guaranteed cleanup — removes every sb-*-auth-token key.
     clearSupabaseAuthStorage();
@@ -1448,8 +1091,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         session,
         signInWithOAuth,
-        login,
-        signup,
         logout,
         getDashboardRoute,
         updateUser,

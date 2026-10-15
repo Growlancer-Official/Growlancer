@@ -43,46 +43,64 @@ export default function Head() {
       <link rel="manifest" href="/manifest.json" />
 
       {/* ── Resource hints ── */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://api.fontshare.com" />
+      {/* The woff2 files are served from cdn.fontshare.com, NOT api.fontshare.com
+          (the api host only returns the CSS) — preconnecting to the api host alone
+          leaves the real font download on a cold connection. */}
+      <link rel="preconnect" href="https://cdn.fontshare.com" crossOrigin="anonymous" />
       <link rel="preconnect" href="https://o4511722119495680.ingest.us.sentry.io" />
       <link rel="preconnect" href="https://zttwsjehcgaicziqyxpq.supabase.co" />
       <link rel="dns-prefetch" href="https://zttwsjehcgaicziqyxpq.supabase.co" />
-      <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
 
-      {/* ── Google Fonts: Inter ── */}
+      {/* ── Design fonts: Cabinet Grotesk (display) + Satoshi (sans) ──
+           These are exactly the families declared in tailwind.config.js
+           (`font-display` / `font-sans`) and src/styles/globals.css, so what the
+           CSS asks for is what actually gets loaded.
+
+           ONE REQUEST PER FAMILY, deliberately. A combined request
+           (`...css?f[]=cabinet-grotesk@…&f[]=satoshi@…`) answers HTTP 200 but
+           SILENTLY serves only one of the two families — verified live: with
+           Satoshi listed first the response contains no Cabinet Grotesk at all,
+           so every display heading quietly falls back to system-ui with no error
+           anywhere. Two requests make each family's load independently checkable.
+
+           The weights are the ones each family really publishes. Fontshare drops
+           a weight it does not have without an error (Satoshi has no 600/800), so
+           asking for one leaves a hole that renders at the wrong weight — that is
+           how the heavy display headings were lost. Every `font-*` utility used in
+           src/ must be covered here; src/test/typographyFonts.test.ts enforces
+           both that rule and that these three declarations never drift apart.
+
+           A PLAIN stylesheet link, deliberately — not the
+           `media="print" onLoad="this.media='all'"` non-blocking trick. React
+           renders this head, and React does NOT serialise event handlers, so the
+           prerendered HTML shipped `media="print"` with no `onload` at all: the
+           CSS stayed in print mode forever and neither family ever applied. That
+           is why prerendered pages rendered in system-ui. The stylesheet is a few
+           KB from a preconnected origin and the fonts themselves use
+           `display=swap`, so loading it normally costs nothing visible. ── */}
       <link
         rel="preload"
         as="style"
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+        href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap"
       />
       <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
         rel="stylesheet"
-        media="print"
-        onLoad="this.media='all'"
+        href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap"
       />
-
-      {/* ── Fontshare: Satoshi + Cabinet Grotesk ── */}
       <link
         rel="preload"
         as="style"
-        href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap"
+        href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
       />
-      <link
-        href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap"
-        rel="stylesheet"
-        media="print"
-        onLoad="this.media='all'"
-      />
+      <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" />
       <noscript>
         <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@400,500,700,800,900&display=swap"
           rel="stylesheet"
         />
         <link
-          href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,600,700&f[]=satoshi@400,500,700&display=swap"
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap"
           rel="stylesheet"
         />
       </noscript>
@@ -92,8 +110,6 @@ export default function Head() {
         html { font-family: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         body { margin: 0; background: #FFF8EE; color: #0F172A; overflow-x: hidden; }
         #root { min-height: 100vh; }
-        .wf-satoshi-active { font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif; }
-        .wf-cabinet-grotesk-active { font-family: 'Cabinet Grotesk', ui-sans-serif, system-ui, sans-serif; }
         .mx-auto { margin-left: auto; margin-right: auto; }
         .max-w-7xl { max-width: 80rem; }
         .px-4 { padding-left: 1rem; padding-right: 1rem; }

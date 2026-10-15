@@ -23,8 +23,12 @@ export function ReauthDialog({
   title = 'Confirm your identity',
   description = 'For your security, please verify your identity to continue.',
 }: ReauthDialogProps) {
-  const { user } = useAuth();
-  const [mode, setMode] = useState<Mode>('password');
+  const { user, supabaseUser } = useAuth();
+  // OAuth users have no password to re-enter — GitHub/LinkedIn IS their
+  // credential, so identity confirmation goes through an email code instead.
+  const authProvider = supabaseUser?.app_metadata?.provider as string | undefined;
+  const isOAuthUser = authProvider === 'github' || authProvider === 'linkedin_oidc';
+  const [mode, setMode] = useState<Mode>(isOAuthUser ? 'otp' : 'password');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
@@ -39,7 +43,7 @@ export function ReauthDialog({
   // Reset state each time the dialog opens
   useEffect(() => {
     if (open) {
-      setMode('password');
+      setMode(isOAuthUser ? 'otp' : 'password');
       setPassword('');
       setOtp('');
       setOtpSent(false);
@@ -48,7 +52,7 @@ export function ReauthDialog({
       setAttempts(0);
       setCooldown(0);
     }
-  }, [open]);
+  }, [open, isOAuthUser]);
 
   // OTP resend cooldown countdown
   useEffect(() => {
@@ -184,7 +188,16 @@ export function ReauthDialog({
           </div>
         )}
 
-        {/* Mode switcher */}
+        {/* OAuth users: email-code confirmation only (no password exists) */}
+        {isOAuthUser && (
+          <p className="text-xs text-slate-500 mb-2.5 text-center leading-relaxed">
+            You signed in with {authProvider === 'github' ? 'GitHub' : 'LinkedIn'}. We'll email a
+            one-time code to {user?.email} to confirm it's you.
+          </p>
+        )}
+
+        {/* Mode switcher — password mode exists only for legacy email accounts */}
+        {!isOAuthUser && (
         <div className="grid grid-cols-2 gap-3 mb-2.5">
           <button
             type="button"
@@ -209,6 +222,7 @@ export function ReauthDialog({
             <KeyRound className="w-4 h-4" /> OTP
           </button>
         </div>
+        )}
 
         {phase === 'success' ? (
           <div className="text-center py-6">

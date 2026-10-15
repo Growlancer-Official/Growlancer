@@ -12,8 +12,8 @@ import { ConfirmModal } from '../../components/ConfirmModal';
 import { formatCurrency, currencySymbol } from '../../lib/currency';
 import { ReauthDialog } from '../../components/ReauthDialog';
 import { isReauthValid, verifyReauthBeforeAction, markReauthVerified } from '../../lib/reauth';
-import { EmailVerificationBanner } from '../../components/EmailVerificationBanner';
-import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Mail, MapPin, Monitor, QrCode, RefreshCw, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
+import { EmailVerificationCard } from '../../components/EmailVerificationCard';
+import {AlertCircle, AlertTriangle, Bell, Briefcase, Camera, Check, CheckCircle2, Globe, Clock, Copy, CreditCard, IndianRupee, Edit2, Eye, EyeOff, Languages, Loader2, Lock, Info, Mail, MapPin, Monitor, QrCode, Save, Settings, Shield, Star, Trash2, User, X, XCircle, } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { CategoryPicker } from '../../components/CategoryPicker';
 import { ProBadge } from '../../components/ProBadge';
@@ -84,62 +84,6 @@ export function ProfessionalProfilePage() {
   // number still lives in formData for validation/save/display.
   const [hourlyRateInput, setHourlyRateInput] = useState('');
   const [experienceInput, setExperienceInput] = useState('');
-
-  // ── Email verification state ──
-  const [emailVerified, setEmailVerified] = useState(false);
-  const [checkingEmailVerification, setCheckingEmailVerification] = useState(true);
-  const [sendingVerification, setSendingVerification] = useState(false);
-  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function checkEmailVerified() {
-      try {
-        const { data } = await supabase.auth.getUser();
-        setEmailVerified(!!data?.user?.email_confirmed_at);
-      } catch {
-        setEmailVerified(false);
-      } finally {
-        setCheckingEmailVerification(false);
-      }
-    }
-    checkEmailVerified();
-  }, []);
-
-  // Send a fresh verification email (OAuth users with unconfirmed email can
-  // verify later from here — the app never blocks them from the dashboard).
-  const handleSendVerificationEmail = async () => {
-    setSendingVerification(true);
-    setVerificationMessage(null);
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: accountData.email,
-        options: {
-          // 🎯 Confirm link lands on EmailConfirmPage ("close this window")
-          // NO ?type= query — see VerifyEmailPage resend (query suffix breaks
-          // the GoTrue allowlist glob → homepage flash; type arrives in fragment).
-          emailRedirectTo: `${window.location.origin}/auth/email-confirm`,
-        },
-      });
-      if (error) {
-        // Supabase User (not the app's AuthUser) carries app_metadata — fetch
-        // it fresh so OAuth users get a recovery hint instead of a raw error.
-        const { data: meta } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }));
-        const provider = meta?.user?.app_metadata?.provider as string | undefined;
-        const oauthHint =
-          provider === 'github' || provider === 'linkedin_oidc'
-            ? ` If you signed up with ${provider === 'github' ? 'GitHub' : 'LinkedIn'}, make sure your email is public/verified on the provider, or use Sign up with email instead.`
-            : '';
-        setVerificationMessage(`Could not send verification email: ${error.message}${oauthHint}`);
-      } else {
-        setVerificationMessage('Verification email sent! Check your inbox (and spam folder).');
-      }
-    } catch {
-      setVerificationMessage('Failed to send verification email. Please try again.');
-    } finally {
-      setSendingVerification(false);
-    }
-  };
 
   // ── Account form state ──
   const [accountData, setAccountData] = useState({
@@ -891,9 +835,9 @@ export function ProfessionalProfilePage() {
   return (
     <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-start sm:items-center gap-1.5 min-w-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shrink-0">
             <User className="w-4 h-4 text-white" />
           </div>
           <div>
@@ -902,9 +846,9 @@ export function ProfessionalProfilePage() {
           </div>
         </div>
         {activeTab === 'profile' && (
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 shrink-0 self-start sm:self-auto">
             {!isEditing ? (
-              <button onClick={() => setIsEditing(true)} className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-3">
+              <button onClick={() => setIsEditing(true)} className="px-4 py-2.5 bg-emerald-600 text-white text-sm font-medium rounded-xl hover:bg-emerald-700 transition-colors inline-flex items-center gap-2 whitespace-nowrap">
                 <Edit2 className="w-4 h-4" /> Edit Profile
               </button>
             ) : (
@@ -920,8 +864,8 @@ export function ProfessionalProfilePage() {
         )}
       </div>
 
-      {/* Email verification recommendation — hidden automatically once confirmed */}
-      <EmailVerificationBanner />
+      {/* Email verification — real-time status, send/resend any time */}
+      <EmailVerificationCard />
 
       {/* Messages */}
       {successMessage && (
@@ -952,13 +896,13 @@ export function ProfessionalProfilePage() {
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={handleAvatarUpload} className="hidden" />
-              <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}
+              <button onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} aria-label="Upload profile photo"
                 className="absolute bottom-0 right-0 w-10 h-10 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 shadow-lg">
                 {uploadingAvatar ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
               </button>
 
               {profile?.avatar && (
-                <button onClick={() => setConfirmAvatarDelete(true)} className="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow">
+                <button onClick={() => setConfirmAvatarDelete(true)} aria-label="Remove profile photo" className="absolute top-0 right-0 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors shadow">
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
@@ -1239,7 +1183,7 @@ export function ProfessionalProfilePage() {
                         {/* Quick tip — fills remaining space naturally */}
                         <div className="pt-2 border-t border-slate-100">
                           <div className="flex items-start gap-3 text-xs text-slate-500">
-                            <svg className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <Info className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
                             <span>Profiles with certifications get <strong className="text-slate-700">3x more</strong> client invitations. Add yours by clicking <strong className="text-emerald-600">Edit Profile</strong>.</span>
                           </div>
                         </div>
@@ -1336,44 +1280,9 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
-                      <div className="relative">
-                        <input type="email" value={accountData.email} disabled className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed pr-28" />
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                          {checkingEmailVerification ? (
-                            <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-                          ) : emailVerified ? (
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-medium">
-                              <Check className="w-3.5 h-3.5" /> Verified
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-medium">
-                              <AlertCircle className="w-3.5 h-3.5" /> Not Verified
-                            </span>
-                          )}
-                        </div>
-                      </div>
+                      <input type="email" value={accountData.email} disabled className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 cursor-not-allowed" />
                       <p className="text-xs text-slate-400 mt-1">Email cannot be changed here. Contact support.</p>
-                      {!emailVerified && !checkingEmailVerification && (
-                        <>
-                          <button
-                            onClick={handleSendVerificationEmail}
-                            disabled={sendingVerification}
-                            className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-semibold hover:bg-emerald-700 transition-colors disabled:opacity-50"
-                          >
-                            {sendingVerification ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <RefreshCw className="w-4 h-4" />
-                            )}
-                            {sendingVerification ? 'Sending...' : 'Verify Email'}
-                          </button>
-                          {verificationMessage && (
-                            <p className={`text-xs mt-2 ${verificationMessage.includes('Could not') || verificationMessage.includes('Failed') ? 'text-red-500' : 'text-emerald-600'}`}>
-                              {verificationMessage}
-                            </p>
-                          )}
-                        </>
-                      )}
+                      <EmailVerificationCard showEmail={false} className="mt-2" />
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1465,6 +1374,7 @@ export function ProfessionalProfilePage() {
                         <input type={securityData.showNewPassword ? 'text' : 'password'} value={securityData.newPassword} onChange={(e) => setSecurityData({ ...securityData, newPassword: e.target.value })}
                           className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all pr-10" />
                         <button type="button" onClick={() => setSecurityData({ ...securityData, showNewPassword: !securityData.showNewPassword })}
+                          aria-label={securityData.showNewPassword ? 'Hide new password' : 'Show new password'}
                           className="absolute right-4 top-1/2 -translate-y-1/2">
                           {securityData.showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </button>

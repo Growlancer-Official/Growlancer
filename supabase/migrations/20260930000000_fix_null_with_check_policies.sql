@@ -16,7 +16,6 @@ CREATE POLICY "Freelancers manage own skills"
   TO authenticated
   USING (auth.uid() = freelancer_id)
   WITH CHECK (auth.uid() = freelancer_id);
-
 -- ─── project_skills: clients manage skills for their own projects ─────────────
 DROP POLICY IF EXISTS "Clients manage project skills" ON public.project_skills;
 CREATE POLICY "Clients manage project skills"
@@ -29,7 +28,6 @@ CREATE POLICY "Clients manage project skills"
   WITH CHECK (
     EXISTS (SELECT 1 FROM public.projects WHERE projects.id = project_skills.project_id AND projects.client_id = auth.uid())
   );
-
 -- ─── service_categories: freelancers manage categories for their own services ──
 DROP POLICY IF EXISTS "Freelancers manage service categories" ON public.service_categories;
 CREATE POLICY "Freelancers manage service categories"
@@ -42,7 +40,6 @@ CREATE POLICY "Freelancers manage service categories"
   WITH CHECK (
     EXISTS (SELECT 1 FROM public.services WHERE services.id = service_categories.service_id AND services.freelancer_id = auth.uid())
   );
-
 -- ─── recovery_codes: users manage their own 2FA recovery codes ────────────────
 DROP POLICY IF EXISTS "Users manage own recovery codes" ON public.recovery_codes;
 CREATE POLICY "Users manage own recovery codes"
@@ -51,7 +48,6 @@ CREATE POLICY "Users manage own recovery codes"
   TO authenticated
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
-
 -- ─── user_mfa_settings: users manage their own MFA settings ───────────────────
 DROP POLICY IF EXISTS "Users manage own MFA settings" ON public.user_mfa_settings;
 CREATE POLICY "Users manage own MFA settings"
@@ -60,7 +56,6 @@ CREATE POLICY "Users manage own MFA settings"
   TO authenticated
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
-
 -- ─── dispute_internal_notes: admin-only (admin flag derived from profiles) ─────
 DROP POLICY IF EXISTS "Dispute notes admin only" ON public.dispute_internal_notes;
 CREATE POLICY "Dispute notes admin only"
@@ -73,7 +68,6 @@ CREATE POLICY "Dispute notes admin only"
   WITH CHECK (
     EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
   );
-
 -- ─── paypal_disputes: admins view/manage disputes ─────────────────────────────
 DROP POLICY IF EXISTS "Admins can view disputes" ON public.paypal_disputes;
 CREATE POLICY "Admins can view disputes"
@@ -86,7 +80,6 @@ CREATE POLICY "Admins can view disputes"
   WITH CHECK (
     EXISTS (SELECT 1 FROM public.profiles WHERE profiles.id = auth.uid() AND profiles.role = 'admin')
   );
-
 -- ─── Admin-managed dictionary tables: admins insert/update/delete ─────────────
 -- categories
 DROP POLICY IF EXISTS "Admins can manage categories" ON public.categories;
@@ -96,7 +89,6 @@ CREATE POLICY "Admins can manage categories"
   TO authenticated
   USING ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin')
   WITH CHECK ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin');
-
 -- countries
 DROP POLICY IF EXISTS "Admins can manage countries" ON public.countries;
 CREATE POLICY "Admins can manage countries"
@@ -105,7 +97,6 @@ CREATE POLICY "Admins can manage countries"
   TO authenticated
   USING ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin')
   WITH CHECK ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin');
-
 -- industries
 DROP POLICY IF EXISTS "Admins can manage industries" ON public.industries;
 CREATE POLICY "Admins can manage industries"
@@ -114,7 +105,6 @@ CREATE POLICY "Admins can manage industries"
   TO authenticated
   USING ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin')
   WITH CHECK ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin');
-
 -- skills
 DROP POLICY IF EXISTS "Admins can manage skills" ON public.skills;
 CREATE POLICY "Admins can manage skills"
@@ -123,7 +113,6 @@ CREATE POLICY "Admins can manage skills"
   TO authenticated
   USING ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin')
   WITH CHECK ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin');
-
 -- subcategories
 DROP POLICY IF EXISTS "Admins can manage subcategories" ON public.subcategories;
 CREATE POLICY "Admins can manage subcategories"
@@ -132,7 +121,6 @@ CREATE POLICY "Admins can manage subcategories"
   TO authenticated
   USING ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin')
   WITH CHECK ((SELECT role FROM public.profiles WHERE profiles.id = auth.uid()) = 'admin');
-
 -- ─── projects: the catch-all ALL policy needs a WITH CHECK too ────────────────
 -- ("Clients can manage own projects" ALL had only USING; the dedicated INSERT
 -- policy covers inserts, but a WITH CHECK keeps the policy self-consistent.)

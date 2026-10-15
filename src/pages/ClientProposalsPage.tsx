@@ -274,9 +274,9 @@ export function ClientProposalsPage() {
   return (
     <div className="space-y-1.5">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
             <FileText className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -284,9 +284,11 @@ export function ClientProposalsPage() {
           <p className="text-slate-500 mt-1">Review and manage proposals from freelancers</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 px-4 py-2 bg-orange-50 text-orange-700 rounded-xl">
-          <FileText className="w-4 h-4" />
-          <span className="font-bold">{proposals.length} Proposals</span>
+        <div className="flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 rounded-xl shrink-0 whitespace-nowrap self-start sm:self-auto">
+          <FileText className="w-4 h-4 shrink-0" />
+          <span className="font-bold">
+            {proposals.length} {proposals.length === 1 ? 'Proposal' : 'Proposals'}
+          </span>
         </div>
       </div>
 

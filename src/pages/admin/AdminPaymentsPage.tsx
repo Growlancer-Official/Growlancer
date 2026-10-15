@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Loader2, RefreshCw, Search, CheckCircle, XCircle, RotateCcw, Trash2 } from 'lucide-react';
 import { adminQuery, adminUpdate, adminInsert, adminDelete } from '../../lib/adminDataProxy';
+import { fetchProfileDirectory } from '../../lib/adminProfileDirectory';
 import { supabase, realtimeChannels } from '../../lib/supabase';
 import { useToast } from '../../components/Toast';
 import { ConfirmModal } from '../../components/ConfirmModal';
@@ -71,9 +72,9 @@ export function AdminPaymentsPage() {
       const data = (await adminQuery(opts)).data;
 
       const txs = (data || []) as Transaction[];
-      const userIds = [...new Set(txs.map(t => t.user_id))];
-      const { data: profiles } = await adminQuery({ table: 'profiles', select: 'id, name, email', in: { id: userIds } });
-      const profileMap = new Map((profiles || []).map(p => [p.id, { name: p.name, email: p.email }]));
+      // `email` moved to profiles_private (migration 20261221000000) — querying
+      // it from profiles rejected the whole request and blanked the table.
+      const profileMap = await fetchProfileDirectory(txs.map(t => t.user_id));
       setTransactions(txs.map(t => ({ ...t, user: profileMap.get(t.user_id) || null })));
     } catch (err) { 
       console.error(err); 
@@ -173,6 +174,7 @@ export function AdminPaymentsPage() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input type="text" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+              aria-label="Search payments"
               placeholder="Search..." className="w-full pl-9 pr-3 py-2 bg-slate-800/50 border border-white/5 rounded-lg text-sm text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
           </div>
           <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)}

@@ -12,11 +12,9 @@ UPDATE auth.users
 SET email_confirmed_at = COALESCE(email_confirmed_at, NOW()),
     updated_at = NOW()
 WHERE email_confirmed_at IS NULL;
-
 -- 2. Drop the auto-confirm trigger (so Brevo SMTP handles verification)
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS auto_confirm_email;
-
 -- 3. Ensure SITE_URL is set for proper email redirect links
 -- NOTE: Also add these URLs in Supabase Dashboard → Authentication → Settings:
 --   - Redirect URLs: https://growlancer.vercel.app/auth/callback, https://growlancer.vercel.app/login

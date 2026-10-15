@@ -8,7 +8,6 @@
 -- pg_cron is available in Supabase's managed Postgres infrastructure.
 -- It creates its own cron schema with schedule/unschedule functions.
 CREATE EXTENSION IF NOT EXISTS pg_cron;
-
 -- ============================================================
 -- PART 2: Schedule cleanup_orphaned_data() to run weekly
 -- ============================================================
@@ -24,7 +23,6 @@ EXCEPTION
     RAISE NOTICE 'Could not delete existing cron job (managed Supabase): %', SQLERRM;
 END;
 $$;
-
 -- Schedule: Every Sunday at 3:00 AM UTC
 -- Cron expression: '0 3 * * 0' = minute 0, hour 3, any day, any month, Sunday
 -- Runs public.cleanup_orphaned_data() which:

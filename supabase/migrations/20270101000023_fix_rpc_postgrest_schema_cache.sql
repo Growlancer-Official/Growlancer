@@ -37,8 +37,6 @@ BEGIN
     'currency', v_currency);
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_wallet_balance(UUID) TO authenticated, service_role;
-
 -- Force PostgREST to reload its schema cache
 NOTIFY pgrst, 'reload schema';

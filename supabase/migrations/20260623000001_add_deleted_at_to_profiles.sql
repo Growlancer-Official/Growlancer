@@ -3,16 +3,12 @@
 
 ALTER TABLE public.profiles 
 ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL;
-
 -- Create an index on deleted_at for efficient filtering
 CREATE INDEX IF NOT EXISTS idx_profiles_deleted_at ON public.profiles (deleted_at);
-
 -- Create an index on role + deleted_at for common queries
 CREATE INDEX IF NOT EXISTS idx_profiles_role_deleted_at ON public.profiles (role, deleted_at);
-
 -- Drop existing function first (parameter name conflict), then recreate with soft-delete
 DROP FUNCTION IF EXISTS public.process_account_deletion(UUID);
-
 CREATE OR REPLACE FUNCTION public.process_account_deletion(p_request_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, MapPin, ShieldCheck } from 'lucide-react';
 
 type SiteFooterProps = {
   onOpenSignup?: (role?: 'freelancer' | 'client') => void;
@@ -35,7 +35,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                 <span className="text-xs font-medium text-emerald-700">Udyam Registered</span>
               </div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg ring-1 ring-slate-200">
-                <Sparkles className="w-4 h-4 text-slate-500" />
+                <MapPin className="w-4 h-4 text-slate-500" />
                 <span className="text-xs font-medium text-slate-600">India-First</span>
               </div>
             </div>
@@ -146,14 +146,14 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <div className="flex items-center gap-3">
                 <button 
                   onClick={() => onOpenSignup?.('client')} 
-                  className="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-200 shadow-sm hover:shadow-md"
+                  className="inline-flex items-center justify-center h-11 px-4 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-700 active:bg-emerald-800 transition-all duration-200 shadow-sm hover:shadow-md"
                 >
                   Get Started
                   <ArrowRight className="ml-1.5 w-4 h-4" />
                 </button>
                 <button 
                   onClick={() => onOpenSignup?.('freelancer')} 
-                  className="inline-flex items-center justify-center h-9 px-4 rounded-lg bg-white text-slate-700 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300 active:bg-slate-100 transition-all duration-200"
+                  className="inline-flex items-center justify-center h-11 px-4 rounded-lg bg-white text-slate-700 text-sm font-semibold ring-1 ring-slate-200 hover:bg-slate-50 hover:ring-slate-300 active:bg-slate-100 transition-all duration-200"
                 >
                   Join as Freelancer
                 </button>

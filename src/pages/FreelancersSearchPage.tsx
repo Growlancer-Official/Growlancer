@@ -98,10 +98,24 @@ export function FreelancersSearchPage() {
       if (error) throw error;
 
       const userIds = (data || []).map((item) => (item as { user_id: string }).user_id).filter(Boolean);
-      const { data: profileStatuses } = userIds.length > 0
-        ? await supabase.from('profiles').select('id, is_pro, verification_status').in('id', userIds)
-        : { data: [] as { id: string; is_pro: boolean | null; verification_status: string | null }[] };
-      const statusByUserId = new Map((profileStatuses || []).map((item) => [item.id, item]));
+
+      // 🔒 The `profiles` table is only readable with a SESSION. The anon role
+      // holds a column-level grant limited to id/name/avatar/is_pro/role —
+      // `verification_status` is deliberately NOT granted to anon, so this
+      // enrichment query returned "401 permission denied for table profiles"
+      // on every anonymous visit to this PUBLIC page (a red console error for
+      // every visitor, plus a wasted round-trip). Only run it when signed in;
+      // anonymous visitors already get name/avatar/is_pro from the embedded
+      // join above and verification_status from freelancer_profiles.
+      const { data: sessionData } = await supabase.auth.getSession();
+      let statusByUserId = new Map<string, { is_pro: boolean | null; verification_status: string | null }>();
+      if (sessionData?.session && userIds.length > 0) {
+        const { data: profileStatuses } = await supabase
+          .from('profiles')
+          .select('id, is_pro, verification_status')
+          .in('id', userIds);
+        statusByUserId = new Map((profileStatuses || []).map((item) => [item.id, item]));
+      }
 
       let results = (data || []).map((item) => {
         const freelancer = item as unknown as FreelancerResult;
@@ -201,6 +215,7 @@ export function FreelancersSearchPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                aria-label="Search freelancers by name, skill, or title"
                 placeholder="Search by name, skill, or title..."
                 className="w-full pl-12 pr-4 py-3.5 rounded-xl text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-400"
               />
@@ -258,6 +273,7 @@ export function FreelancersSearchPage() {
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
+                  aria-label="Filter by category"
                   className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="All">All Categories</option>
@@ -297,6 +313,7 @@ export function FreelancersSearchPage() {
                 <select
                   value={minRating}
                   onChange={(e) => setMinRating(e.target.value)}
+                  aria-label="Filter by minimum rating"
                   className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="0">Any Rating</option>
@@ -339,6 +356,7 @@ export function FreelancersSearchPage() {
                   value={skillInput}
                   onChange={(e) => setSkillInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSkillFilter())}
+                  aria-label="Filter by skill"
                   placeholder="Type a skill and press Enter"
                   className="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
@@ -360,6 +378,7 @@ export function FreelancersSearchPage() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              aria-label="Sort freelancers"
               className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="rating">Sort by Rating</option>
@@ -376,7 +395,7 @@ export function FreelancersSearchPage() {
           ) : freelancers.length === 0 ? (
             <div className="text-center py-10 bg-white rounded-xl border border-slate-100">
               <Search className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-              <h3 className="text-lg font-bold text-slate-900 mb-2">No freelancers found</h3>
+              <h2 className="text-lg font-bold text-slate-900 mb-2">No freelancers found</h2>
               <p className="text-slate-500 mb-3">Try adjusting your filters or search terms.</p>
               <button onClick={() => { setSearchQuery(''); setSelectedCategory('All'); setMinRate(''); setMaxRate(''); setMinRating('0'); setAvailabilityOnly(false); setSelectedSkills([]); }} className="px-6 py-2.5 bg-emerald-600 text-white font-medium rounded-xl hover:bg-emerald-700 transition-colors">Clear All Filters</button>
             </div>
@@ -401,9 +420,9 @@ export function FreelancersSearchPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-bold text-slate-900 truncate group-hover:text-emerald-600 transition-colors">
+                        <h2 className="font-bold text-slate-900 truncate group-hover:text-emerald-600 transition-colors">
                           {freelancer.profile?.name || 'Freelancer'}
-                        </h3>
+                        </h2>
                         {freelancer.verification_status === 'verified' && <VerifiedBadge size="xs" />}
                         {freelancer.profile?.is_pro && <ProBadge size="xs" />}
                         {freelancer.availability && (

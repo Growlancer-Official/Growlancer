@@ -30,7 +30,6 @@ AS $$
       AND lower(u.email) = lower(nullif(trim(p_email), ''))
   );
 $$;
-
 -- Function is boolean-only; restrict default PUBLIC grant to exactly the
 -- roles that need it (signup form runs as anon).
 REVOKE ALL ON FUNCTION public.is_email_taken(text) FROM PUBLIC;

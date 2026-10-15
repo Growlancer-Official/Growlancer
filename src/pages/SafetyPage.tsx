@@ -58,7 +58,7 @@ export function SafetyPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             Back to Home
           </Link>
@@ -100,7 +100,7 @@ export function SafetyPage() {
                   {feature.badge}
                 </span>
               </div>
-              <h3 className="font-display text-xl font-bold text-slate-900 mb-3">{feature.title}</h3>
+              <h2 className="font-display text-xl font-bold text-slate-900 mb-3">{feature.title}</h2>
               <p className="text-slate-600 text-sm leading-relaxed font-medium">{feature.description}</p>
             </div>
           ))}

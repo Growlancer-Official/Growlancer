@@ -41,13 +41,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_new_proposal ON public.proposals;
 CREATE TRIGGER trigger_new_proposal
 AFTER INSERT ON public.proposals
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_proposal();
-
 -- ── 2. Proposal accepted/rejected → notify the FREELANCER ──────────────────
 CREATE OR REPLACE FUNCTION public.notify_proposal_status()
 RETURNS TRIGGER
@@ -78,13 +76,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_proposal_status ON public.proposals;
 CREATE TRIGGER trigger_proposal_status
 AFTER UPDATE ON public.proposals
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_proposal_status();
-
 -- ── 3. New contract → notify BOTH freelancer AND client ────────────────────
 CREATE OR REPLACE FUNCTION public.notify_new_contract()
 RETURNS TRIGGER
@@ -114,13 +110,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_new_contract ON public.contracts;
 CREATE TRIGGER trigger_new_contract
 AFTER INSERT ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_contract();
-
 -- ── 4. Contract completed → notify BOTH users ──────────────────────────────
 CREATE OR REPLACE FUNCTION public.notify_contract_completion()
 RETURNS TRIGGER
@@ -152,13 +146,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_contract_completion ON public.contracts;
 CREATE TRIGGER trigger_contract_completion
 AFTER UPDATE ON public.contracts
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_contract_completion();
-
 -- ── 5. New invite → notify the FREELANCER ──────────────────────────────────
 CREATE OR REPLACE FUNCTION public.notify_new_invite()
 RETURNS TRIGGER
@@ -185,13 +177,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_new_invite ON public.invites;
 CREATE TRIGGER trigger_new_invite
 AFTER INSERT ON public.invites
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_invite();
-
 -- ── 6. Escrow funded → notify the FREELANCER (funds secured) ───────────────
 CREATE OR REPLACE FUNCTION public.notify_escrow_funded()
 RETURNS TRIGGER
@@ -214,13 +204,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_escrow_funded ON public.escrow;
 CREATE TRIGGER trigger_escrow_funded
 AFTER UPDATE ON public.escrow
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_escrow_funded();
-
 -- ── 7. Milestone released → notify the FREELANCER ──────────────────────────
 CREATE OR REPLACE FUNCTION public.notify_milestone_released()
 RETURNS TRIGGER
@@ -245,13 +233,11 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 DROP TRIGGER IF EXISTS trigger_milestone_released ON public.escrow;
 CREATE TRIGGER trigger_milestone_released
 AFTER UPDATE ON public.escrow
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_milestone_released();
-
 -- ── 8. Grant RLS-safe access (triggers run as SECURITY DEFINER, but the
 --      functions must be executable by the role that fires them) ────────────
 GRANT EXECUTE ON FUNCTION public.notify_new_proposal() TO authenticated, service_role;
@@ -261,7 +247,6 @@ GRANT EXECUTE ON FUNCTION public.notify_contract_completion() TO authenticated, 
 GRANT EXECUTE ON FUNCTION public.notify_new_invite() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.notify_escrow_funded() TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.notify_milestone_released() TO authenticated, service_role;
-
 -- ── 9. Ensure notifications table is in the realtime publication ───────────
 DO $$
 BEGIN

@@ -25,13 +25,11 @@ CREATE TABLE IF NOT EXISTS transactions (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_contract_id ON transactions(contract_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_transactions_type ON transactions(type);
-
 -- Auto-update updated_at
 CREATE OR REPLACE FUNCTION update_transactions_updated_at()
 RETURNS TRIGGER AS $$
@@ -40,24 +38,19 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 DROP TRIGGER IF EXISTS trigger_transactions_updated_at ON transactions;
 CREATE TRIGGER trigger_transactions_updated_at
 BEFORE UPDATE ON transactions
 FOR EACH ROW
 EXECUTE FUNCTION update_transactions_updated_at();
-
 -- RLS
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Users can view own transactions" ON transactions;
 CREATE POLICY "Users can view own transactions" ON transactions
   FOR SELECT USING (auth.uid() = user_id);
-
 DROP POLICY IF EXISTS "Users can insert own transactions" ON transactions;
 CREATE POLICY "Users can insert own transactions" ON transactions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
-
 -- ====================================================================
 -- 2. FIX release_escrow - Direct wallet update instead of calling
 --    update_wallet_balance (which fails auth check)
@@ -157,12 +150,10 @@ BEGIN
   RETURN TRUE;
 END;
 $$;
-
 -- Re-grant permissions
 GRANT EXECUTE ON FUNCTION release_escrow(UUID, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION create_contract_with_escrow(UUID, UUID, UUID, NUMERIC, UUID) TO authenticated;
 GRANT EXECUTE ON FUNCTION fund_escrow(UUID, UUID) TO authenticated;
-
 -- ====================================================================
 -- 3. FIX process_withdrawal_complete - Same auth issue
 --    When admin/system processes a withdrawal, auth.uid() is the admin
@@ -235,6 +226,5 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$;
-
 -- Re-grant permissions
 GRANT EXECUTE ON FUNCTION process_withdrawal_complete(UUID) TO authenticated;

@@ -14,7 +14,6 @@
 
 -- ─── 1. project_categories: allow clients to manage links for their own projects ─
 DROP POLICY IF EXISTS "Clients manage project categories" ON public.project_categories;
-
 CREATE POLICY "Clients manage project categories"
   ON public.project_categories
   FOR ALL
@@ -33,7 +32,6 @@ CREATE POLICY "Clients manage project categories"
         AND p.client_id = auth.uid()
     )
   );
-
 -- Keep public read for freelancer discovery.
 DROP POLICY IF EXISTS "Anyone can read project categories" ON public.project_categories;
 CREATE POLICY "Anyone can read project categories"
@@ -41,10 +39,8 @@ CREATE POLICY "Anyone can read project categories"
   FOR SELECT
   TO public
   USING (true);
-
 -- ─── 2. ai_matches: project owner (client) may delete matches when re-posting ──
 DROP POLICY IF EXISTS "Clients delete their project matches" ON public.ai_matches;
-
 CREATE POLICY "Clients delete their project matches"
   ON public.ai_matches
   FOR DELETE

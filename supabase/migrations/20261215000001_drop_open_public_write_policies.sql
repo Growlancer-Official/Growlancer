@@ -19,10 +19,9 @@
 
 DROP POLICY IF EXISTS "Edge function can insert razorpay transactions" ON public.razorpay_transactions;
 DROP POLICY IF EXISTS "Anyone can subscribe to newsletter" ON public.newsletter_subscribers;
-
 -- Verify:
 --   SELECT policyname, cmd, roles, with_check FROM pg_policies
 --   WHERE schemaname='public'
 --     AND (tablename='razorpay_transactions' OR tablename='newsletter_subscribers')
 --     AND cmd IN ('ALL','INSERT','UPDATE','DELETE');
---   → sirf "Admins can manage all subscribers" (ALL, admin-checked) bachegi
+--   → sirf "Admins can manage all subscribers" (ALL, admin-checked) bachegi;

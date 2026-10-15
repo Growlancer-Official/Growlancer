@@ -30,7 +30,6 @@
 
 DROP POLICY IF EXISTS "Authenticated users can read" ON escrow;
 DROP POLICY IF EXISTS "Escrow participants can view" ON escrow;
-
 CREATE POLICY "Escrow participants can view" ON escrow
   FOR SELECT
   TO authenticated
@@ -38,9 +37,7 @@ CREATE POLICY "Escrow participants can view" ON escrow
     auth.uid() = client_id
     OR auth.uid() = freelancer_id
   );
-
 RAISE NOTICE 'FIX 1: Escrow RLS restricted to participants ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 2: RESTRICT INVITES RLS TO INVOLVED PARTIES
 -- ═══════════════════════════════════════════════════════════════════
@@ -48,7 +45,6 @@ RAISE NOTICE 'FIX 1: Escrow RLS restricted to participants ✓';
 -- After:  Only the freelancer, client, or project owner can view.
 
 DROP POLICY IF EXISTS "Authenticated users can read invites" ON invites;
-
 CREATE POLICY "Invite participants can view" ON invites
   FOR SELECT
   TO authenticated
@@ -59,9 +55,7 @@ CREATE POLICY "Invite participants can view" ON invites
       SELECT 1 FROM projects WHERE id = project_id AND client_id = auth.uid()
     )
   );
-
 RAISE NOTICE 'FIX 2: Invites RLS restricted to participants ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 3: RESTRICT REFERRALS RLS TO REFERRER / REFEREE
 -- ═══════════════════════════════════════════════════════════════════
@@ -69,7 +63,6 @@ RAISE NOTICE 'FIX 2: Invites RLS restricted to participants ✓';
 -- After:  Only the referrer or referred user can view their referrals.
 
 DROP POLICY IF EXISTS "Authenticated users can read referrals" ON referrals;
-
 CREATE POLICY "Referral participants can view" ON referrals
   FOR SELECT
   TO authenticated
@@ -77,9 +70,7 @@ CREATE POLICY "Referral participants can view" ON referrals
     auth.uid() = referrer_id
     OR auth.uid() = referred_user_id
   );
-
 RAISE NOTICE 'FIX 3: Referrals RLS restricted to participants ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 4: ADD missing updated_at COLUMN TO subscription_plans
 -- ═══════════════════════════════════════════════════════════════════
@@ -90,14 +81,11 @@ RAISE NOTICE 'FIX 3: Referrals RLS restricted to participants ✓';
 
 ALTER TABLE subscription_plans
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
-
 -- The broken UPDATE is now safe to run
 UPDATE subscription_plans
   SET updated_at = NOW()
   WHERE updated_at IS NULL;
-
 RAISE NOTICE 'FIX 4: subscription_plans.updated_at column added ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 5: ADD REPLICA IDENTITY FULL FOR REALTIME TABLES
 -- ═══════════════════════════════════════════════════════════════════
@@ -171,9 +159,7 @@ BEGIN
     END;
   END LOOP;
 END $$;
-
 RAISE NOTICE 'FIX 5: REPLICA IDENTITY FULL set on all tables ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 6: ADD MISSING TABLES TO SUPABASE_REALTIME PUBLICATION
 -- ═══════════════════════════════════════════════════════════════════
@@ -220,9 +206,7 @@ BEGIN
     END;
   END LOOP;
 END $$;
-
 RAISE NOTICE 'FIX 6: Missing tables added to supabase_realtime ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 7: CLEAN UP DUPLICATE AUTO-CONFIRM TRIGGERS
 -- ═══════════════════════════════════════════════════════════════════
@@ -233,7 +217,6 @@ RAISE NOTICE 'FIX 6: Missing tables added to supabase_realtime ✓';
 -- Drop ALL versions of the function (might exist in different schemas)
 DROP FUNCTION IF EXISTS public.auto_confirm_email();
 DROP FUNCTION IF EXISTS auto_confirm_email();
-
 -- Re-create the definitive version in public schema
 CREATE OR REPLACE FUNCTION public.auto_confirm_email()
 RETURNS TRIGGER
@@ -252,18 +235,14 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- Drop trigger if it exists from any schema
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
-
 -- Re-create the trigger
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.auto_confirm_email();
-
 RAISE NOTICE 'FIX 7: Auto-confirm trigger cleaned up ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 8: FIX cleanup_user_data() — wallet_transactions/balances DROPPED
 -- ═══════════════════════════════════════════════════════════════════
@@ -363,9 +342,7 @@ BEGIN
   DELETE FROM profiles WHERE id = p_user_id;
 END;
 $$;
-
 RAISE NOTICE 'FIX 8: cleanup_user_data() updated ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 9: ENABLE RLS + ADD POLICIES FOR skill_certifications
 -- ═══════════════════════════════════════════════════════════════════
@@ -373,13 +350,11 @@ RAISE NOTICE 'FIX 8: cleanup_user_data() updated ✓';
 -- was never enabled, leaving all data publicly readable via API.
 
 ALTER TABLE IF EXISTS public.skill_certifications ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Users view own certifications" ON public.skill_certifications;
 CREATE POLICY "Users view own certifications" ON public.skill_certifications
   FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
-
 DROP POLICY IF EXISTS "Admins view all certifications" ON public.skill_certifications;
 CREATE POLICY "Admins view all certifications" ON public.skill_certifications
   FOR SELECT
@@ -387,13 +362,11 @@ CREATE POLICY "Admins view all certifications" ON public.skill_certifications
   USING (EXISTS (
     SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
   ));
-
 DROP POLICY IF EXISTS "Users insert own certifications" ON public.skill_certifications;
 CREATE POLICY "Users insert own certifications" ON public.skill_certifications
   FOR INSERT
   TO authenticated
   WITH CHECK (auth.uid() = user_id);
-
 DROP POLICY IF EXISTS "Admins manage certifications" ON public.skill_certifications;
 CREATE POLICY "Admins manage certifications" ON public.skill_certifications
   FOR ALL
@@ -404,9 +377,7 @@ CREATE POLICY "Admins manage certifications" ON public.skill_certifications
   WITH CHECK (EXISTS (
     SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'
   ));
-
 RAISE NOTICE 'FIX 9: RLS enabled on skill_certifications ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FIX 10: FIX notify_new_match() — REMOVE CIRCULAR SUB-SELECT
 -- ═══════════════════════════════════════════════════════════════════
@@ -428,9 +399,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
 RAISE NOTICE 'FIX 10: notify_new_match() trigger fixed ✓';
-
 -- ═══════════════════════════════════════════════════════════════════
 -- FINAL: REFRESH PostgREST SCHEMA CACHE
 -- ═══════════════════════════════════════════════════════════════════
@@ -438,5 +407,4 @@ RAISE NOTICE 'FIX 10: notify_new_match() trigger fixed ✓';
 -- columns, policies, and functions are immediately available.
 
 NOTIFY pgrst, 'reload schema';
-
 RAISE NOTICE 'All 10 fixes applied. PostgREST schema cache refreshed ✓';

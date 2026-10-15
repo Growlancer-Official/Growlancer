@@ -50,6 +50,5 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$;
-
 -- Allow authenticated users to call this
 GRANT EXECUTE ON FUNCTION public.complete_onboarding() TO authenticated;

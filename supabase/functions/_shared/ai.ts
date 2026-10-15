@@ -8,6 +8,8 @@
  * (`/api/v1/chat/completions`), so the payload shape stays OpenAI-standard
  * and works with any provider that exposes the same contract.
  */
+import { SITE_URL } from './site.ts';
+
 export const AI_BASE_URL = (
   Deno.env.get('AI_BASE_URL') ||
   'https://openrouter.ai/api/v1'
@@ -46,7 +48,7 @@ export async function callAI(
   };
   // OpenRouter best-practice attribution headers (harmless for other gateways)
   if (AI_BASE_URL.includes('openrouter.ai')) {
-    headers['HTTP-Referer'] = 'https://growlancer.vercel.app';
+    headers['HTTP-Referer'] = SITE_URL;
     headers['X-Title'] = 'Growlancer AI';
   }
 

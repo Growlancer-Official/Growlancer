@@ -19,7 +19,11 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives",
     "lint:fix": "eslint . --ext ts,tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
-    "deploy:backend": "bash scripts/deploy-backend.sh"
+    "deploy:backend": "bash scripts/deploy-backend.sh",
+    "preflight": "node scripts/founder-preflight.mjs",
+    "rehearse:webhook": "node scripts/e2e/razorpay-webhook-rehearsal.mjs",
+    "e2e:oauth-signup": "node scripts/e2e/oauth-signup-chain.mjs",
+    "e2e:auth-lifecycle": "node scripts/e2e/auth-lifecycle.mjs"
   },
   "dependencies": {
     "@sentry/react": "^10.71.0",
@@ -54,6 +58,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "eslint-plugin-unused-imports": "^4.4.1",
     "jsdom": "^30.0.1",
+    "playwright-core": "^1.56.0",
     "postcss": "^8.4.35",
     "prettier": "^3.2.5",
     "tailwindcss": "^3.4.1",

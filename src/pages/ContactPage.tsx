@@ -19,7 +19,7 @@ export function ContactPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Home
@@ -54,7 +54,7 @@ export function ContactPage() {
             {/* Role Context Selector */}
             {!user && (
               <div className="bg-white rounded-xl border border-slate-200 p-3 shadow-sm">
-                <h3 className="text-sm font-bold text-slate-900 mb-3">I need help as a...</h3>
+                <h2 className="text-sm font-bold text-slate-900 mb-3">I need help as a...</h2>
                 <div className="flex gap-3">
                   <button
                     onClick={() => setChatContext('freelancer')}
@@ -88,7 +88,7 @@ export function ContactPage() {
                     <Zap className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Instant Responses</h4>
+                    <h3 className="font-bold text-slate-900 text-sm">Instant Responses</h3>
                     <p className="text-xs text-slate-500">Get help in seconds, not hours</p>
                   </div>
                 </div>
@@ -100,7 +100,7 @@ export function ContactPage() {
                     <Clock className="w-5 h-5 text-indigo-600" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">24/7 Availability</h4>
+                    <h3 className="font-bold text-slate-900 text-sm">24/7 Availability</h3>
                     <p className="text-xs text-slate-500">Always here, day or night</p>
                   </div>
                 </div>
@@ -112,7 +112,7 @@ export function ContactPage() {
                     <Shield className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Personalized Help</h4>
+                    <h3 className="font-bold text-slate-900 text-sm">Personalized Help</h3>
                     <p className="text-xs text-slate-500">Tailored to your role and needs</p>
                   </div>
                 </div>
@@ -123,15 +123,15 @@ export function ContactPage() {
             <div className="bg-gradient-to-br from-slate-50 to-emerald-50/50 border border-slate-200 rounded-xl p-3 space-y-3 shadow-sm">
               <div className="flex items-center gap-3">
                 <Headphones className="w-4 h-4 text-emerald-600" />
-                <h4 className="font-bold text-slate-900 text-sm">Quick Resources</h4>
+                <h2 className="font-bold text-slate-900 text-sm">Quick Resources</h2>
               </div>
-              <Link to="/help-center" className="block text-xs text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
+              <Link to="/help-center" className="block text-xs py-1.5 text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
                 → Browse Help Center
               </Link>
-              <Link to="/guidelines" className="block text-xs text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
+              <Link to="/guidelines" className="block text-xs py-1.5 text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
                 → Platform Guidelines
               </Link>
-              <Link to="/status" className="block text-xs text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
+              <Link to="/status" className="block text-xs py-1.5 text-emerald-600 hover:text-emerald-700 font-medium hover:underline">
                 → System Status
               </Link>
             </div>

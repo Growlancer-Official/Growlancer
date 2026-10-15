@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe, Heart, ShieldCheck, Sparkles, Target, TrendingUp, Users, Zap } from 'lucide-react';
+import { ArrowRight, Globe, Heart, Quote, ShieldCheck, Sparkles, Star, Target, TrendingUp, Users, Zap } from 'lucide-react';
 import { LiveCodeTerminal, type TerminalLine } from '@/components/LiveCodeTerminal';
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
 import { formatCurrency } from '@/lib/currency';
@@ -11,19 +11,32 @@ function formatInrFull(inr: number): string {
 }
 
 export function AboutPage() {
-  const { stats, ready, raw } = useAboutPageMetrics();
+  const { stats, ready, raw, refresh } = useAboutPageMetrics();
 
-  // Real content — inject live platform numbers into the terminal script.
+  // Real content — inject live platform numbers into the terminal script. Every
+  // value here comes from the database (RPC + live counts) and re-renders on the
+  // realtime subscriptions, so each typing cycle prints fresh numbers.
   const terminalLines = useMemo<TerminalLine[]>(() => {
     const members = raw.members != null ? raw.members.toLocaleString('en-US') : '—';
     const escrow = raw.escrowInr != null ? formatInrFull(raw.escrowInr) : formatCurrency(0);
-    const sat = raw.satisfactionPercent != null ? `${Math.round(raw.satisfactionPercent)}%` : '—';
     const countries = raw.countries != null ? raw.countries.toLocaleString('en-US') : '—';
+    const reviews = raw.totalReviews ?? 0;
+    // Satisfaction is only meaningful from 5 reviews up; before that say so
+    // honestly instead of printing a dash that looks broken.
+    const satisfaction =
+      reviews >= 5 && raw.satisfactionPercent != null
+        ? `${Math.round(raw.satisfactionPercent)}% satisfaction`
+        : 'no ratings yet';
+    const syncedAt = raw.syncedAt
+      ? raw.syncedAt.toLocaleTimeString('en-IN', {
+          hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+        })
+      : '—';
     return [
-      [{ text: '// Real-Time Canvas Synced Init', className: 'text-emerald-600' }],
+      [{ text: `// Real-Time Canvas Synced Init · live DB @ ${syncedAt}`, className: 'text-emerald-600' }],
       [
         { text: 'const workspace = await Growlancer.createWorkspace(contractId);' },
-        { text: `  // ${members} members online`, className: 'text-slate-400' },
+        { text: `  // ${members} registered members · ${countries} countries`, className: 'text-slate-400' },
       ],
       [
         { text: 'await workspace.mountKanbanBoard();' },
@@ -32,11 +45,11 @@ export function AboutPage() {
       [{ text: 'await workspace.mountScratchpad({ focusLock: true });' }],
       [
         { text: 'await workspace.escrow.verifyFunding();', className: 'text-amber-500' },
-        { text: `  // ${escrow} secured`, className: 'text-slate-400' },
+        { text: `  // ${escrow} protected in escrow`, className: 'text-slate-400' },
       ],
       [
         {
-          text: `// ${sat} satisfaction · ${countries} countries — ready to co-work seamlessly!`,
+          text: `// ${satisfaction} · ${countries} countries — ready to co-work seamlessly!`,
           className: 'text-slate-400',
         },
       ],
@@ -85,7 +98,7 @@ export function AboutPage() {
           </Link>
           <Link
             to="/"
-            className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
+            className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors"
           >
             <ArrowRight className="w-4 h-4 rotate-180" />
             Back to Home
@@ -164,8 +177,10 @@ export function AboutPage() {
               We built Growlancer to consolidate this flow. In our system, the contract dashboard <strong>is</strong> the collaborative workspace. When a service is purchased or a milestone funds, a gorgeous glassmorphic canvas instantly spins up with multi-second syncing, task controls, welcome templates, and structured escrow release locks.
             </p>
           </div>
-          <div className="relative">
-            <div className="absolute inset-0 bg-emerald-600/10 rounded-[3rem] blur-3xl -rotate-6"></div>
+          <div className="relative overflow-hidden">
+            {/* decorative glow: clipped so its rotated bounding box can never push
+                past the viewport edge on mobile (element-audit group `public`) */}
+            <div className="pointer-events-none absolute inset-0 bg-emerald-600/10 rounded-[3rem] blur-3xl -rotate-6"></div>
             <div className="relative bg-white rounded-[3rem] p-4 border border-slate-200/50 shadow-lg space-y-4">
               <div className="flex gap-1.5">
                 <span className="w-3.5 h-3.5 rounded-full bg-red-400"></span>
@@ -173,12 +188,15 @@ export function AboutPage() {
                 <span className="w-3.5 h-3.5 rounded-full bg-green-400"></span>
               </div>
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200/30 text-xs font-mono text-slate-600">
-                <LiveCodeTerminal lines={terminalLines} className="space-y-4" />
+                {/* Each pass re-reads the live numbers, so the canvas never replays
+                    a stale snapshot — a new signup or escrow release shows up on the
+                    next cycle. */}
+                <LiveCodeTerminal lines={terminalLines} className="space-y-4" onCycle={refresh} />
               </div>
               <div className="flex items-center gap-3 bg-emerald-50 rounded-xl p-4 border border-emerald-100">
                 <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
                 <span className="text-xs font-bold text-emerald-800">
-                  100% Escrow and Deliverable IP Protection Guaranteed.
+                  Escrow-protected payments — IP transfers to the client on final release.
                 </span>
               </div>
             </div>
@@ -191,9 +209,7 @@ export function AboutPage() {
         {/* Section Label */}
         <div className="text-center space-y-3 mb-10 sm:mb-14">
           <span className="inline-flex items-center gap-3 px-4 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-600 font-bold rounded-full border border-emerald-500/20 text-xs uppercase tracking-wider">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2z" />
-            </svg>
+            <Star className="w-4 h-4" fill="currentColor" />
             Leadership &amp; Vision
           </span>
           <h2 className="font-display text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
@@ -263,9 +279,7 @@ export function AboutPage() {
 
                 {/* Founder Quote */}
                 <div className="relative pl-5 border-l-2 border-emerald-500/40 py-1 max-w-lg mx-auto lg:mx-0">
-                  <svg className="absolute -top-2 -left-1.5 w-4 h-4 text-emerald-500/30" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zM0 21v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151C7.563 6.068 6 8.789 6 11h4v10H0z" />
-                  </svg>
+                  <Quote className="absolute -top-2 -left-1.5 w-4 h-4 text-emerald-500/30" fill="currentColor" />
                   <p className="text-xs text-slate-400 italic leading-relaxed">
                     "We're not just building a marketplace — we're engineering the infrastructure for the future of work. 
                     Every feature at Growlancer is designed with one question in mind: does this make collaboration 
@@ -286,9 +300,7 @@ export function AboutPage() {
                   </div>
                   <div className="flex items-center sm:ml-auto">
                     <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 rounded-lg border border-white/10">
-                      <svg className="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
+                      <Zap className="w-3.5 h-3.5 text-emerald-400" />
                       <span className="text-xs font-semibold text-slate-300">Vision-Driven</span>
                     </div>
                   </div>
@@ -347,7 +359,7 @@ export function AboutPage() {
               Ready to experience modern co-working?
             </h2>
             <p className="text-emerald-100 text-sm leading-relaxed max-w-md mx-auto">
-              Join thousands of clients and freelancers who have already bridged dashboard gaps and secured their contracts through active escrow.
+              Join the clients and freelancers bridging dashboard gaps and securing their contracts through active escrow.
             </p>
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link

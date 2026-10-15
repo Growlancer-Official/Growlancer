@@ -49,6 +49,5 @@ BEGIN
   RETURN true;
 END;
 $$;
-
 -- Only authenticated users can call this (they verify their OWN reauth status)
 GRANT EXECUTE ON FUNCTION public.verify_reauth_status(uuid, timestamptz) TO authenticated;

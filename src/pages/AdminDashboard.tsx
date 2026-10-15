@@ -138,15 +138,15 @@ function PlatformStats() {
         thisMonthUsers, lastMonthUsers,
         lastMonthContracts, flaggedProjects,
       ] = await Promise.all([
-        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true } }).then(r => r.total ?? 0),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'freelancer' }, isNull: { deleted_at: true, suspended_at: true } }).then(r => r.total ?? 0),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'client' }, isNull: { deleted_at: true, suspended_at: true } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'freelancer' }, isNull: { deleted_at: true } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { role: 'client' }, isNull: { deleted_at: true } }).then(r => r.total ?? 0),
         adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'open' } }).then(r => r.total ?? 0),
         adminQuery({ table: 'contracts', count: 'exact', head: true, in: { status: ['active', 'in_progress'] } }).then(r => r.total ?? 0),
         adminQuery({ table: 'disputes', count: 'exact', head: true, in: { status: ['pending', 'under_review'] } }).then(r => r.total ?? 0),
         adminQuery({ table: 'contracts', select: 'amount, platform_fee, created_at, status' }).then(r => ({ data: r.data })),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: monthAgo } }).then(r => r.total ?? 0),
-        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true, suspended_at: true }, gte: { created_at: twoMonthsAgo } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true }, gte: { created_at: monthAgo } }).then(r => r.total ?? 0),
+        adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true }, gte: { created_at: twoMonthsAgo } }).then(r => r.total ?? 0),
         adminQuery({ table: 'contracts', select: 'amount, platform_fee', gte: { created_at: twoMonthsAgo } }).then(r => ({ data: r.data })),
         adminQuery({ table: 'projects', count: 'exact', head: true, filters: { status: 'flagged' } }).then(r => r.total ?? 0),
       ]);
@@ -246,10 +246,30 @@ function UserManagementTable() {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const opts: any = { table: 'profiles', select: 'id, name, email, avatar, role, created_at, is_pro, onboarding_completed, rating', order: 'created_at', orderDir: 'desc', limit: 10, isNull: { deleted_at: true, suspended_at: true } };
+      // `email`, `onboarding_completed` and `suspended_at` live in
+      // profiles_private since migration 20261221000000 (profiles PII-leak
+      // fix), so the public and private halves are fetched separately —
+      // selecting a moved column from profiles rejects the whole request and
+      // blanked this table.
+      const opts: any = { table: 'profiles', select: 'id, name, avatar, role, created_at, is_pro, rating', order: 'created_at', orderDir: 'desc', limit: 10, isNull: { deleted_at: true } };
       if (roleFilter !== 'all') opts.filters = { role: roleFilter };
       const { data } = await adminQuery(opts);
-      setUsers((data || []) as AdminUser[]);
+      const rows = (data || []) as AdminUser[];
+      const ids = rows.map(r => r.id);
+      const privateRows = ids.length
+        ? (await adminQuery<{ id: string; email: string | null; onboarding_completed: boolean | null }>({
+            table: 'profiles_private',
+            select: 'id, email, onboarding_completed',
+            in: { id: ids },
+            limit: ids.length,
+          })).data
+        : [];
+      const privateMap = new Map((privateRows || []).map(p => [p.id, p]));
+      setUsers(rows.map(r => ({
+        ...r,
+        email: privateMap.get(r.id)?.email ?? '',
+        onboarding_completed: privateMap.get(r.id)?.onboarding_completed ?? null,
+      })));
     } catch (err) { console.error(err); toast.error('Users Error', 'Could not load users.'); }
     finally { setLoading(false); }
   }, [roleFilter, toast]);
@@ -461,7 +481,7 @@ function DisputeResolution() {
             </span>
           )}
         </div>
-        <button onClick={fetchDisputes} className="p-1 hover:bg-white/5 rounded-lg text-slate-400 transition-colors">
+        <button onClick={fetchDisputes} aria-label="Refresh disputes" className="p-1 hover:bg-white/5 rounded-lg text-slate-400 transition-colors">
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
         </button>
       </div>
@@ -573,8 +593,19 @@ function AIRiskAnalysis() {
       }
 
       // 4. Unverified / inactive users
-      const inactiveRes = await adminQuery({ table: 'profiles', count: 'exact', head: true, filters: { onboarding_completed: 'false' }, isNull: { deleted_at: true }, lte: { created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() } }).then(r => r.total ?? 0);
-      const inactiveCount = inactiveRes;
+      // onboarding_completed lives in profiles_private: take the pending ids
+      // there, then count how many still have a live (non-deleted) profile.
+      const pendingRows = (await adminQuery<{ id: string }>({
+        table: 'profiles_private',
+        select: 'id',
+        filters: { onboarding_completed: 'false' },
+        lte: { created_at: new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString() },
+        limit: 200,
+      })).data || [];
+      const pendingIds = pendingRows.map(r => r.id);
+      const inactiveCount = pendingIds.length === 0
+        ? 0
+        : await adminQuery({ table: 'profiles', count: 'exact', head: true, isNull: { deleted_at: true }, in: { id: pendingIds } }).then(r => r.total ?? 0);
       if (inactiveCount && inactiveCount > 10) {
         detected.push({ id: 'inactive-users', icon: Ban, iconBg: 'bg-blue-500/20', iconColor: 'text-blue-500',
           title: 'Inactive Accounts Need Follow-up', description: `${inactiveCount} users haven't completed onboarding in 14+ days. Consider re-engagement email.`,
@@ -588,7 +619,7 @@ function AIRiskAnalysis() {
       const bigRiskyProjects = riskyProjects.filter((p: any) => (p.budget_max || 0) > 5000);
       if (bigRiskyProjects && bigRiskyProjects.length > 0) {
         const clientIds = [...new Set(bigRiskyProjects.map((p: any) => p.client_id))];
-        const clientRes = await adminQuery({ table: 'profiles', select: 'id, onboarding_completed', in: { id: clientIds } });
+        const clientRes = await adminQuery({ table: 'profiles_private', select: 'id, onboarding_completed', in: { id: clientIds } });
         const clientProfiles = clientRes.data as any[];
         const unverifiedClients = (clientProfiles || []).filter((p: any) => !p.onboarding_completed).length;
         if (unverifiedClients > 1) {
@@ -725,7 +756,7 @@ function LiveActivityFeed() {
   const fetchActivities = useCallback(async () => {
     try {
       const results = await Promise.allSettled([
-        adminQuery({ table: 'profiles', select: 'id, name, created_at, role', isNull: { deleted_at: true, suspended_at: true }, order: 'created_at', orderDir: 'desc', limit: 3 }),
+        adminQuery({ table: 'profiles', select: 'id, name, created_at, role', isNull: { deleted_at: true }, order: 'created_at', orderDir: 'desc', limit: 3 }),
         adminQuery({ table: 'contracts', select: 'id, amount, created_at, status', order: 'created_at', orderDir: 'desc', limit: 3 }),
         adminQuery({ table: 'disputes', select: 'id, reason, created_at, status', order: 'created_at', orderDir: 'desc', limit: 3 }),
         adminQuery({ table: 'projects', select: 'id, title, created_at, status', order: 'created_at', orderDir: 'desc', limit: 3 }),

@@ -30,7 +30,6 @@
 ALTER TABLE public.contracts
   ADD COLUMN IF NOT EXISTS delivered_at TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS auto_release_hours INT;
-
 -- ────────────────────────────────────────────────────────────────────────────
 -- 2) mark_contract_delivered — freelancer delivers the full contract
 -- ────────────────────────────────────────────────────────────────────────────
@@ -93,10 +92,8 @@ BEGIN
     'auto_release_hours', COALESCE(v_contract.auto_release_hours, 72)
   );
 END $$;
-
 REVOKE ALL ON FUNCTION public.mark_contract_delivered(UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.mark_contract_delivered(UUID) TO authenticated;
-
 -- ────────────────────────────────────────────────────────────────────────────
 -- 3) set_auto_release_hours — support milestone-less contracts
 -- ────────────────────────────────────────────────────────────────────────────
@@ -149,10 +146,8 @@ BEGIN
 
   RETURN jsonb_build_object('success', true, 'auto_release_hours', p_hours);
 END $$;
-
 REVOKE ALL ON FUNCTION public.set_auto_release_hours(UUID, INT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.set_auto_release_hours(UUID, INT) TO authenticated;
-
 -- ────────────────────────────────────────────────────────────────────────────
 -- 4) auto_release_contract — SERVICE-ROLE ONLY (hourly cron)
 -- ────────────────────────────────────────────────────────────────────────────
@@ -201,6 +196,5 @@ BEGIN
 
   RETURN jsonb_build_object('success', true, 'message', 'Contract auto-released after delivery review window');
 END $$;
-
 REVOKE ALL ON FUNCTION public.auto_release_contract(UUID) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.auto_release_contract(UUID) TO service_role;

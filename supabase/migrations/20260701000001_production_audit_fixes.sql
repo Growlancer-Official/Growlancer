@@ -9,7 +9,6 @@ ALTER TABLE profiles
   ADD COLUMN IF NOT EXISTS suspend_reason TEXT DEFAULT NULL,
   ADD COLUMN IF NOT EXISTS suspended_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS banned_at TIMESTAMPTZ DEFAULT NULL;
-
 -- 2. RAZORPAY ORDERS TABLE (skip if already exists from earlier migration)
 CREATE TABLE IF NOT EXISTS razorpay_orders (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -27,21 +26,16 @@ CREATE TABLE IF NOT EXISTS razorpay_orders (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 CREATE INDEX IF NOT EXISTS idx_razorpay_orders_user_id ON razorpay_orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_razorpay_orders_status ON razorpay_orders(status);
-
 ALTER TABLE razorpay_orders ENABLE ROW LEVEL SECURITY;
-
 -- Drop existing policies first, then recreate (safer than IF NOT EXISTS with EXECUTE)
 DROP POLICY IF EXISTS "Users read own razorpay orders" ON razorpay_orders;
 CREATE POLICY "Users read own razorpay orders" ON razorpay_orders 
   FOR SELECT USING (auth.uid()::text = user_id::text);
-
 DROP POLICY IF EXISTS "Users insert own razorpay orders" ON razorpay_orders;
 CREATE POLICY "Users insert own razorpay orders" ON razorpay_orders 
   FOR INSERT WITH CHECK (auth.uid()::text = user_id::text);
-
 -- 3. RAZORPAY TRANSACTIONS TABLE (skip if already exists)
 CREATE TABLE IF NOT EXISTS razorpay_transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -57,10 +51,8 @@ CREATE TABLE IF NOT EXISTS razorpay_transactions (
   processor_response JSONB,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 CREATE INDEX IF NOT EXISTS idx_razorpay_transactions_order_id ON razorpay_transactions(razorpay_order_id);
 ALTER TABLE razorpay_transactions ENABLE ROW LEVEL SECURITY;
-
 DROP POLICY IF EXISTS "Users read own razorpay transactions" ON razorpay_transactions;
 CREATE POLICY "Users read own razorpay transactions" ON razorpay_transactions 
   FOR SELECT USING (
@@ -70,14 +62,12 @@ CREATE POLICY "Users read own razorpay transactions" ON razorpay_transactions
       AND user_id::text = auth.uid()::text
     )
   );
-
 -- 4. USER COUNT FIX — Create a view that excludes deleted/suspended users
 CREATE OR REPLACE VIEW active_users AS
 SELECT * FROM profiles 
 WHERE deleted_at IS NULL 
   AND suspended_at IS NULL 
   AND banned_at IS NULL;
-
 -- 5. CASCADING DELETE FUNCTION — Clean up user data safely
 CREATE OR REPLACE FUNCTION cleanup_user_data(p_user_id UUID)
 RETURNS void
@@ -144,7 +134,6 @@ BEGIN
   DELETE FROM profiles WHERE id = p_user_id;
 END;
 $$;
-
 -- 6. SUSPENSION CHECK FUNCTION — For RLS and middleware
 CREATE OR REPLACE FUNCTION is_user_suspended(p_user_id UUID)
 RETURNS boolean
@@ -159,7 +148,6 @@ BEGIN
   );
 END;
 $$;
-
 -- 7. INDEXES FOR PRODUCTION PERFORMANCE
 CREATE INDEX IF NOT EXISTS idx_profiles_suspended_at ON profiles(suspended_at) WHERE suspended_at IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_profiles_deleted_at ON profiles(deleted_at) WHERE deleted_at IS NOT NULL;
@@ -168,18 +156,15 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id_read ON notifications(user_
 CREATE INDEX IF NOT EXISTS idx_messages_contract_id ON messages(contract_id);
 CREATE INDEX IF NOT EXISTS idx_contracts_freelancer_id_status ON contracts(freelancer_id, status);
 CREATE INDEX IF NOT EXISTS idx_contracts_client_id_status ON contracts(client_id, status);
-
 -- 8. RLS POLICIES FOR ADMIN ACCESS
 DROP POLICY IF EXISTS "Admins can read all profiles" ON profiles;
 CREATE POLICY "Admins can read all profiles" ON profiles FOR SELECT USING (
   EXISTS (SELECT 1 FROM profiles WHERE id::text = auth.uid()::text AND role = 'admin')
 );
-
 DROP POLICY IF EXISTS "Admins can update all profiles" ON profiles;
 CREATE POLICY "Admins can update all profiles" ON profiles FOR UPDATE USING (
   EXISTS (SELECT 1 FROM profiles WHERE id::text = auth.uid()::text AND role = 'admin')
 );
-
 -- 9. FIX SUBSCRIPTION PLANS ID (ensure text IDs are valid)
 -- Avoid type error: id is UUID, can't cast to text directly
 -- Instead, just do a no-op update to trigger any side effects

@@ -17,6 +17,5 @@
 -- Drop triggers from both tables
 DROP TRIGGER IF EXISTS trg_validate_india_phone ON public.profiles;
 DROP TRIGGER IF EXISTS trg_validate_india_phone ON public.profiles_private;
-
 -- Drop the validation function
 DROP FUNCTION IF EXISTS public.validate_india_phone();

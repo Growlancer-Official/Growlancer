@@ -13,10 +13,8 @@
 ALTER TABLE public.usage_logs
   ADD COLUMN IF NOT EXISTS feature_type TEXT,
   ADD COLUMN IF NOT EXISTS usage_count INTEGER DEFAULT 1;
-
 CREATE INDEX IF NOT EXISTS idx_usage_logs_user_feature_type
   ON public.usage_logs(user_id, feature_type);
-
 -- NOTE: no backfill from `feature`/`count` — the live DB was patched directly to
 -- feature_type/usage_count (those old columns may not exist). Fresh environments
--- get the columns via this migration; legacy rows are out of scope.
+-- get the columns via this migration; legacy rows are out of scope.;

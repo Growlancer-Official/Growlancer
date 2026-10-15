@@ -722,9 +722,11 @@ export function AdminInternshipsPage() {
         <div className="flex flex-wrap items-center gap-3">
           <Calendar className="w-3.5 h-3.5 text-slate-500" />
           <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)}
+            aria-label="Filter applications from date"
             className="bg-slate-800/50 border border-white/5 text-xs text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
           <span className="text-xs text-slate-500">to</span>
           <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)}
+            aria-label="Filter applications to date"
             className="bg-slate-800/50 border border-white/5 text-xs text-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-emerald-500/20" />
           {(dateFrom || dateTo || searchQuery || roleFilter !== 'all' || statusFilter !== 'all') && (
             <button onClick={clearFilters}
@@ -810,6 +812,9 @@ export function AdminInternshipsPage() {
                   onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}>
                   <button
                     onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
+                    aria-label={selectedIds.has(app.id)
+                      ? `Deselect ${app.full_name} from bulk actions`
+                      : `Select ${app.full_name} for bulk actions`}
                     className="mt-0.5 shrink-0 hover:text-emerald-400 transition-colors"
                   >
                     {selectedIds.has(app.id) ? (

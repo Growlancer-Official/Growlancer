@@ -343,9 +343,9 @@ export function IdentityVerificationPage() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="flex items-start sm:items-center gap-3 min-w-0">
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0">
             <ShieldCheck className="w-5 h-5 text-white" />
           </div>
           <div>
@@ -363,7 +363,7 @@ export function IdentityVerificationPage() {
             <p className="text-slate-500 text-sm mt-0.5">
               {isClient
                 ? 'Verify your identity to build trust with freelancers. Everything is optional for clients — only add what you want.'
-                : 'Unlock your Verified badge, higher limits and priority matching.'}
+                : 'Unlock your Verified badge and show clients you are a real, checked professional.'}
             </p>
           </div>
         </div>
@@ -634,6 +634,7 @@ export function IdentityVerificationPage() {
                             maxLength={10}
                             value={pan}
                             onChange={(e) => setPan(e.target.value.toUpperCase())}
+                            aria-label="Personal PAN number"
                             placeholder="ABCDE1234F"
                             className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
                           />
@@ -734,6 +735,7 @@ export function IdentityVerificationPage() {
                                 setBizError(check.valid ? null : check.error || null);
                                 setBizSavedMsg(null);
                               }}
+                              aria-label="GSTIN (optional)"
                               placeholder="22AAAAA0000A1Z5"
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
                             />
@@ -750,6 +752,7 @@ export function IdentityVerificationPage() {
                                 setBizError(check.valid ? null : check.error || null);
                                 setBizSavedMsg(null);
                               }}
+                              aria-label="Udyam registration number (optional)"
                               placeholder="UDYAM-XX-00-0000000"
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                             />
@@ -766,6 +769,7 @@ export function IdentityVerificationPage() {
                                 setBizError(check.valid ? null : check.error || null);
                                 setBizSavedMsg(null);
                               }}
+                              aria-label="Business PAN (optional)"
                               placeholder="ABCDE1234F"
                               className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all uppercase"
                             />

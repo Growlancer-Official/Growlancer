@@ -76,7 +76,6 @@ BEGIN
   RETURN result;
 END;
 $$;
-
 -- Also fix the ensure_wallet_for_user trigger to use fully qualified table name
 -- so it works regardless of the calling function's search_path
 CREATE OR REPLACE FUNCTION public.ensure_wallet_for_user()
@@ -92,6 +91,5 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- Refresh schema cache
 NOTIFY pgrst, 'reload schema';

@@ -46,19 +46,15 @@ AS $$
       )
   );
 $$;
-
 REVOKE ALL ON FUNCTION public.can_view_project(uuid) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.can_view_project(uuid) TO authenticated, anon;
-
 -- Replace the two recursive SELECT policies with a single function-based one.
 DROP POLICY IF EXISTS "Contract parties and applicants can view project" ON public.projects;
 DROP POLICY IF EXISTS "Projects select" ON public.projects;
-
 CREATE POLICY "Projects visible via can_view_project"
   ON public.projects
   FOR SELECT
   USING (public.can_view_project(id));
-
 -- ============================================================================
 -- FIX 2: Missing subscriptions -> subscription_plans FK
 -- ----------------------------------------------------------------------------

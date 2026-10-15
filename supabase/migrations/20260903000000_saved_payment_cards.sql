@@ -19,30 +19,23 @@ CREATE TABLE IF NOT EXISTS public.saved_payment_cards (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(user_id, card_id)
 );
-
 -- Indexes
 CREATE INDEX IF NOT EXISTS idx_saved_cards_user ON public.saved_payment_cards(user_id);
 CREATE INDEX IF NOT EXISTS idx_saved_cards_default ON public.saved_payment_cards(user_id, is_default) WHERE is_default = true;
-
 -- RLS
 ALTER TABLE public.saved_payment_cards ENABLE ROW LEVEL SECURITY;
-
 CREATE POLICY "Users can view own saved cards"
   ON public.saved_payment_cards FOR SELECT
   USING (auth.uid() = user_id);
-
 CREATE POLICY "Users can insert own saved cards"
   ON public.saved_payment_cards FOR INSERT
   WITH CHECK (auth.uid() = user_id);
-
 CREATE POLICY "Users can update own saved cards"
   ON public.saved_payment_cards FOR UPDATE
   USING (auth.uid() = user_id);
-
 CREATE POLICY "Users can delete own saved cards"
   ON public.saved_payment_cards FOR DELETE
   USING (auth.uid() = user_id);
-
 -- Grant access
 GRANT ALL ON public.saved_payment_cards TO authenticated;
 GRANT ALL ON public.saved_payment_cards TO service_role;

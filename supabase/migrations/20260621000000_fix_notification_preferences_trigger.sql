@@ -6,7 +6,6 @@
 
 -- 1. Drop the broken trigger first
 DROP TRIGGER IF EXISTS trg_auto_create_notification_preferences ON profiles;
-
 -- 2. Replace get_notification_preferences to use flat columns
 CREATE OR REPLACE FUNCTION get_notification_preferences(
   p_user_id UUID
@@ -83,7 +82,6 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 -- 3. Replace set_notification_preferences to use flat columns
 CREATE OR REPLACE FUNCTION set_notification_preferences(
   p_user_id UUID,
@@ -175,7 +173,6 @@ BEGIN
   RETURN get_notification_preferences(p_user_id);
 END;
 $$;
-
 -- 4. Replace auto_create_notification_preferences function to use flat columns
 CREATE OR REPLACE FUNCTION auto_create_notification_preferences()
 RETURNS TRIGGER
@@ -190,7 +187,6 @@ BEGIN
   RETURN NEW;
 END;
 $$;
-
 -- 5. Recreate the trigger
 CREATE TRIGGER trg_auto_create_notification_preferences
   AFTER INSERT ON profiles

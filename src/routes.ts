@@ -122,10 +122,9 @@ export const ROUTES = {
   },
   
   // Auth Email Action Routes
-  FORGOT_PASSWORD: '/auth/forgot-password',
-  RESET_PASSWORD: '/auth/reset-password',
-  MAGIC_LINK: '/auth/magic-link',
-  OTP_LOGIN: '/auth/otp',
+  // (The password-era routes — forgot/reset password, magic link, OTP login —
+  // were removed with the email/password flow; sign-in is GitHub/LinkedIn only.
+  // Only the two that are actually routed stay here.)
   EMAIL_CONFIRM: '/auth/email-confirm',
   AUTH_CALLBACK: '/auth/callback',
 

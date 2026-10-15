@@ -3,7 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { fetchUserProfile, createUserProfile as createProfile } from '../lib/services/authService';
 import { redirectAfterAuth } from '../lib/authAction';
+import {
+  clearOAuthAttempt,
+  describeOAuthFailure,
+  readOAuthAttempt,
+} from '../lib/oauthDiagnostics';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
+import { CountrySelect } from '../components/CountrySelect';
 
 const isDev = import.meta.env.DEV;
 function devLog(...args: unknown[]) {
@@ -30,6 +36,9 @@ export function AuthCallbackPage() {
   const [searchParams] = useSearchParams();
   const [status, setStatus] = useState<CallbackStatus>('processing');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // True heading for the failure — "Authentication failed" is wrong for a
+  // sign-in the user cancelled or one the provider never finished.
+  const [errorTitle, setErrorTitle] = useState<string | null>(null);
   const [action, setAction] = useState<AuthAction>('unknown');
 
   useEffect(() => {
@@ -50,12 +59,54 @@ export function AuthCallbackPage() {
         const detectedAction = typeParam || 'unknown';
         setAction(detectedAction);
 
+        // Session resolution state. Declared here (not at step 5) because the
+        // benign-error check below can already establish the session.
+        let authUser: import('@supabase/supabase-js').User | null = null;
+        let sessionFound = false;
+
+        /**
+         * Recover a session that REALLY exists (persisted storage, or the
+         * implicit-flow tokens in the URL hash). Used only to decide whether an
+         * `error` param describes the current state or just one stray request.
+         */
+        const recoverEstablishedSession = async () => {
+          const existing = await supabase.auth
+            .getSession()
+            .catch(() => ({ data: { session: null } }));
+          if (existing.data?.session?.user) return existing.data.session.user;
+
+          const accessToken = hashParams.get('access_token');
+          const refreshToken = hashParams.get('refresh_token');
+          if (!accessToken || !refreshToken) return null;
+
+          const restored = await supabase.auth
+            .setSession({ access_token: accessToken, refresh_token: refreshToken })
+            .catch(() => ({ data: { session: null } }));
+          return restored.data?.session?.user ?? null;
+        };
+
         // ── 2. Check for OAuth error (search or hash) ──
         const error = searchParams.get('error') || hashParams.get('error');
         const errorDescription =
           searchParams.get('error_description') || hashParams.get('error_description');
 
-        if (error) {
+        // 🛡️ A session that genuinely exists OUTRANKS an error param. Live case
+        // (2026-10-10 16:26 UTC): GoTrue's /callback was hit twice — the first
+        // request ran past this client's 15s abort, the user refreshed, and the
+        // replay came back as
+        //   ?error=invalid_request&error_code=bad_oauth_state
+        // The signup had ALREADY succeeded (auth.users row + Login event fired),
+        // but this page rendered "Authentication failed" — and leaving the page
+        // killed the in-flight profile creation, leaving an account with no
+        // profile that could never finish onboarding. An error param describes
+        // one request; the session is the actual authentication state, so never
+        // trade a real session for an error screen.
+        if (error && await recoverEstablishedSession()) {
+          devLog('[AuthCallback] ignoring auth error param — a valid session exists', {
+            error,
+            error_code: searchParams.get('error_code') || hashParams.get('error_code'),
+          });
+        } else if (error) {
           setStatus('error');
           const rawDescription = errorDescription?.replace(/\+/g, ' ') || '';
           // 🆕 Friendly duplicate-email message: the GitHub/LinkedIn account's
@@ -63,10 +114,30 @@ export function AuthCallbackPage() {
           // method instead of creating a second account.
           if (/already registered|already exists|already.*in use|duplicate/i.test(rawDescription)) {
             setErrorMessage(
-              'This email is already used professionally on Growlancer. Please log in with your email and password instead.'
+              'This email is already used professionally on Growlancer. Continue with the provider the account was created with — or contact support if you previously signed up with email.'
             );
           } else {
-            setErrorMessage(rawDescription || 'Authentication failed. Please try again.');
+            // Provider / GoTrue codes → the next action the user should take.
+            // The provider is taken from the URL first, then the breadcrumb
+            // written before the redirect — never guessed.
+            const providerId =
+              searchParams.get('provider') ||
+              hashParams.get('provider') ||
+              readOAuthAttempt()?.provider ||
+              localStorage.getItem('growlancer_oauth_provider');
+            const failure = describeOAuthFailure({
+              provider: providerId,
+              error,
+              errorCode: searchParams.get('error_code') || hashParams.get('error_code'),
+              description: rawDescription,
+            });
+            devLog('[AuthCallback] mapped OAuth failure', {
+              provider: providerId,
+              error,
+              title: failure.title,
+            });
+            setErrorTitle(failure.title);
+            setErrorMessage(failure.message);
           }
           return;
         }
@@ -115,9 +186,7 @@ export function AuthCallbackPage() {
         // 4b. Welcome email disabled — Brevo removed. Verification handled by Supabase Auth.
 
         // ── 5. Get the current session (with retry + fallbacks) ──
-        let authUser: import('@supabase/supabase-js').User | null = null;
-        let sessionFound = false;
-
+        // (authUser / sessionFound are declared at the top of this handler.)
         // Try getSession with retry first — supabase-js's detectSessionInUrl usually
         // auto-exchanges the PKCE `code` on load, so getSession is the common path.
         // Mobile browsers can restore the callback session after a slower
@@ -320,7 +389,7 @@ export function AuthCallbackPage() {
               devLog('[AuthCallback] PKCE code present but no session — link likely expired/invalid');
               setStatus('error');
               setErrorMessage(
-                'This verification link is invalid or has expired. Please sign up again to receive a fresh link, or request a resend from the verify-email page.'
+                'This verification link is invalid or has expired. Once signed in, you can request a fresh verification email from Settings → Account.'
               );
               return;
             }
@@ -359,11 +428,15 @@ export function AuthCallbackPage() {
           });
           const isOAuthProvider = isProviderOAuth;
           setStatus('error');
-          setErrorMessage(
-            isOAuthProvider
-              ? 'LinkedIn/GitHub sign-in session could not be established. This usually means the redirect URL is not configured in the Supabase Dashboard. Please try again, or use email sign-in instead.'
-              : 'No session found. Please try logging in again.'
-          );
+          if (isOAuthProvider) {
+            // The provider never handed us a code/session — say exactly that
+            // instead of blaming the redirect configuration for every case.
+            const failure = describeOAuthFailure({ provider: authProvider });
+            setErrorTitle(failure.title);
+            setErrorMessage(failure.message);
+          } else {
+            setErrorMessage('No session found. Please try logging in again.');
+          }
           return;
         }
 
@@ -371,11 +444,12 @@ export function AuthCallbackPage() {
 
         // ── 6. Handle specific actions ──
         if (detectedAction === 'recovery') {
-          // Password reset — stay on page, show success, redirect to reset page
-          setStatus('success');
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          if (cancelled) return;
-          safeNavigate(() => navigate('/auth/reset-password', { replace: true }));
+          // Password recovery no longer exists (GitHub/LinkedIn sign-in only).
+          // An old reset link must not dead-end on a removed route.
+          setStatus('error');
+          setErrorMessage(
+            'Password reset is no longer available on Growlancer. Please sign in with GitHub or LinkedIn instead.'
+          );
           return;
         }          if (detectedAction === 'email_change') {
           // Sync the new email into profiles_private via SECURITY DEFINER RPC
@@ -449,6 +523,9 @@ export function AuthCallbackPage() {
           localStorage.removeItem('growlancer_oauth_role');
         }
         localStorage.removeItem('growlancer_oauth_provider');
+        // The provider round-trip completed — drop the unanswered-sign-in
+        // breadcrumb so no return notice can fire after a success.
+        clearOAuthAttempt();
 
         // 🛡️ Only OAuth flows (detectedAction === 'unknown' OR a real OAuth provider)
         // get role correction from localStorage. Email signup users chose their role in
@@ -584,10 +661,16 @@ export function AuthCallbackPage() {
   }, [navigate, searchParams]);
 
   // ── Country Gate State ──
+  // selectedCountry is the canonical country NAME ("India", "Brazil") exactly
+  // as onboarding stores it — not an ISO code. Two spellings of the same
+  // country are two rows in the admin waitlist and two groups in its chart.
   const [countryGateLoading, setCountryGateLoading] = useState(false);
   const [countryGateError, setCountryGateError] = useState<string | null>(null);
 
   const handleCountrySelect = async (selectedCountry: string) => {
+    // Double-tap guard: the dropdown rows stay clickable while a submit is in
+    // flight (only the trigger is disabled), and two writes would race.
+    if (countryGateLoading) return;
     setCountryGateLoading(true);
     setCountryGateError(null);
 
@@ -601,11 +684,11 @@ export function AuthCallbackPage() {
         return;
       }
 
-      if (selectedCountry === 'IN') {
+      if (selectedCountry === 'India') {
         // Save country as India — proceed normally
         const { error: countryErr } = await supabase.rpc('update_user_country', {
           p_user_id: userId,
-          p_country: 'IN',
+          p_country: 'India',
         });
         if (countryErr) {
           // Non-blocking: still continue to onboarding, but log so we can fix silently
@@ -728,7 +811,7 @@ export function AuthCallbackPage() {
               <div className="space-y-3 mb-6">
                 {/* India — Enabled */}
                 <button
-                  onClick={() => handleCountrySelect('IN')}
+                  onClick={() => handleCountrySelect('India')}
                   disabled={countryGateLoading}
                   className="w-full flex items-center gap-4 p-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl hover:bg-emerald-100 transition-colors text-left group disabled:opacity-50"
                 >
@@ -744,29 +827,27 @@ export function AuthCallbackPage() {
                   )}
                 </button>
 
-                {/* Other Countries — Click to join waitlist (Coming Soon) */}
-                {[
-                  { code: 'US', flag: '🇺🇸', name: 'United States' },
-                  { code: 'GB', flag: '🇬🇧', name: 'United Kingdom' },
-                  { code: 'CA', flag: '🇨🇦', name: 'Canada' },
-                  { code: 'AU', flag: '🇦🇺', name: 'Australia' },
-                  { code: 'AE', flag: '🇦🇪', name: 'United Arab Emirates' },
-                  { code: 'SG', flag: '🇸🇬', name: 'Singapore' },
-                  { code: 'OTHER', flag: '🌍', name: 'Other Country' },
-                ].map((country) => (
-                  <button
-                    key={country.code}
-                    onClick={() => handleCountrySelect(country.code)}
+                <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                  <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Or pick your country — all countries, A→Z
+                  </p>
+                  {/* Same component onboarding uses: the list can never drift
+                      from the sign-up flow, and every country here joins the
+                      waitlist with its canonical name. */}
+                  <CountrySelect
+                    value=""
+                    placeholder="Search your country..."
                     disabled={countryGateLoading}
-                    className="w-full flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:border-amber-300 transition-colors text-left group"
-                  >
-                    <span className="text-3xl">{country.flag}</span>
-                    <div className="flex-1">
-                      <p className="font-medium text-slate-700 group-hover:text-slate-900">{country.name}</p>
-                      <p className="text-xs text-amber-600 font-medium">Coming soon — join waitlist →</p>
-                    </div>
-                  </button>
-                ))}
+                    // onPick owns every tap here; onChange is the same destination
+                    // so the gate stays correct even if the picker falls back.
+                    onChange={(name) => void handleCountrySelect(name)}
+                    onPick={(country) => void handleCountrySelect(country.name)}
+                  />
+                  <p className="px-1 pt-2 text-[11px] text-slate-400">
+                    Not India yet? Pick your country and we'll email you the moment Growlancer
+                    launches there.
+                  </p>
+                </div>
               </div>
 
               {countryGateError && (
@@ -790,7 +871,7 @@ export function AuthCallbackPage() {
                 </div>
               </div>
               <h2 className="font-display text-xl font-bold text-slate-900 mb-2">
-                Authentication failed
+                {errorTitle || `Authentication failed`}
               </h2>
               <p className="text-sm text-slate-500 mb-6">
                 {errorMessage || 'Something went wrong. Please try again.'}

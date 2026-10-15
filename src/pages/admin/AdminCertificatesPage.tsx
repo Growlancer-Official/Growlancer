@@ -536,15 +536,15 @@ export function AdminCertificatesPage() {
   return (
     <div className="space-y-8 pb-20 lg:pb-0">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold text-white">Certificate System</h1>
           <p className="text-slate-400 text-sm mt-1">Generate verification codes & send certificates/LORs to interns</p>
         </div>
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex gap-1 p-1 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
+      <div className="flex gap-1 p-1 rounded-2xl flex-wrap" style={{ background: '#1E293B', border: '1px solid rgba(255,255,255,0.05)' }}>
         <button
           onClick={() => setActiveTab('interns')}
           className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -674,6 +674,9 @@ export function AdminCertificatesPage() {
                       <div className="flex items-start gap-4 flex-1 min-w-0">
                         <button
                           onClick={(e) => { e.stopPropagation(); toggleSelect(app.id); }}
+                          aria-label={bulkSelectedIds.has(app.id)
+                            ? `Deselect ${app.full_name} from bulk actions`
+                            : `Select ${app.full_name} for bulk actions`}
                           className="mt-2 shrink-0 hover:text-emerald-400 transition-colors"
                         >
                           {bulkSelectedIds.has(app.id) ? (
@@ -714,6 +717,7 @@ export function AdminCertificatesPage() {
                                       {isLOR ? 'LOR' : 'Certificate'} URL
                                     </span>
                                     <button onClick={() => { navigator.clipboard.writeText(url); setCopiedId(`hdr-${app.id}`); setTimeout(() => setCopiedId(null), 2000); }}
+                                      aria-label={`Copy ${isLOR ? 'letter of recommendation' : 'certificate'} URL for ${app.full_name}`}
                                       className="flex items-center gap-0.5 text-[9px] text-slate-500 hover:text-emerald-400 transition-colors">
                                       {copiedId === `hdr-${app.id}` ? <CheckCheck className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                                     </button>

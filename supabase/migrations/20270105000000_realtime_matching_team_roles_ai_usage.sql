@@ -29,7 +29,6 @@
 -- ─── 0. services.skills — per-service skill tags ───────────────────────────
 ALTER TABLE public.services
   ADD COLUMN IF NOT EXISTS skills text[] NOT NULL DEFAULT '{}';
-
 -- ─── 1. Realtime publication — team-project tables (idempotent) ────────────
 DO $$
 BEGIN
@@ -46,7 +45,6 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.team_projects;
   END IF;
 END $$;
-
 -- ─── 2. Drift-tolerant array normalizer (ensure exists everywhere) ─────────
 CREATE OR REPLACE FUNCTION public.matching_text_array(col anyelement)
 RETURNS text[]
@@ -66,7 +64,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.matching_text_array(anyelement) FROM PUBLIC;
-
 -- ─── 3. AI-writer usage RPC (real-time meter for the frontend) ─────────────
 -- SECURITY DEFINER + auth.uid() — never accepts a user id from the request.
 CREATE OR REPLACE FUNCTION public.get_ai_writer_usage()
@@ -111,7 +108,6 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.get_ai_writer_usage() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_ai_writer_usage() TO authenticated;
-
 -- ═══════════════════════════════════════════════════════════════════════════
 -- NORMAL PROJECT MATCHING — ONE SHARED SCORING SOURCE
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -252,7 +248,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.project_match_components(uuid, uuid) FROM PUBLIC;
-
 -- ─── 5. Project-scoped rebuild (project posted / reopened / backfill) ───────
 CREATE OR REPLACE FUNCTION public.generate_project_matches(p_project_id uuid)
 RETURNS integer
@@ -311,7 +306,6 @@ REVOKE ALL ON FUNCTION public.generate_project_matches(uuid) FROM authenticated;
 -- Matching is fully trigger-driven now; the client fallback inserts rows
 -- through owner-scoped RLS policies instead.
 GRANT EXECUTE ON FUNCTION public.generate_project_matches(uuid) TO service_role;
-
 -- ─── 6. Non-destructive project refresh (any existing caller) ───────────────
 -- Upserts fresh scores for qualifying freelancers; never deletes existing rows.
 CREATE OR REPLACE FUNCTION public.upsert_project_matches(p_project_id uuid)
@@ -373,7 +367,6 @@ $$;
 REVOKE ALL ON FUNCTION public.upsert_project_matches(uuid) FROM PUBLIC;
 -- service_role only — SECURITY DEFINER; never callable by end-users
 GRANT EXECUTE ON FUNCTION public.upsert_project_matches(uuid) TO service_role;
-
 -- ─── 7. Freelancer-scoped refresh — runs when a freelancer edits ANY of
 --        categories/skills so matches react in REAL TIME. Stale rows for
 --        projects that stopped qualifying are removed; live rows re-scored.
@@ -471,7 +464,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.refresh_freelancer_project_matches(uuid) FROM PUBLIC;
-
 -- ═══════════════════════════════════════════════════════════════════════════
 -- TEAM-PROJECT ROLE SUGGESTIONS — full server-side matching
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -481,7 +473,6 @@ REVOKE ALL ON FUNCTION public.refresh_freelancer_project_matches(uuid) FROM PUBL
 
 CREATE INDEX IF NOT EXISTS idx_team_project_roles_status_updated
   ON public.team_project_roles(status, updated_at DESC);
-
 -- ─── 8. Role × freelancer scoring (shared row source) ──────────────────────
 CREATE OR REPLACE FUNCTION public.role_match_rows(p_role_id uuid)
 RETURNS TABLE (
@@ -590,7 +581,6 @@ AS $$
   LIMIT 20;
 $$;
 REVOKE ALL ON FUNCTION public.role_match_rows(uuid) FROM PUBLIC;
-
 -- ─── 9. Write suggestions JSON for ONE open role ───────────────────────────
 CREATE OR REPLACE FUNCTION public.refresh_role_suggestions(p_role_id uuid)
 RETURNS integer
@@ -629,7 +619,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.refresh_role_suggestions(uuid) FROM PUBLIC;
-
 -- ─── 10. Refresh every open role whose skills overlap a freelancer ─────────
 -- Called from the freelancer_profiles trigger so the client's team-project
 -- page updates in real time when a freelancer adds/changes skills.
@@ -676,7 +665,6 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.refresh_open_role_suggestions_for_freelancer(uuid) FROM PUBLIC;
-
 -- ═══════════════════════════════════════════════════════════════════════════
 -- TRIGGERS
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -694,14 +682,12 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.trg_auto_match_projects_fn() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS trg_auto_match_projects ON public.projects;
 CREATE TRIGGER trg_auto_match_projects
 AFTER INSERT OR UPDATE OF status ON public.projects
 FOR EACH ROW
 WHEN (NEW.status = 'open' AND NEW.category IS NOT NULL AND NEW.category <> '')
 EXECUTE FUNCTION public.trg_auto_match_projects_fn();
-
 -- Freelancer profile → re-match projects AND team roles on category/skill
 -- changes (categories OR skills — previously skills-only edits never fired).
 CREATE OR REPLACE FUNCTION public.trg_auto_match_freelancer_fn()
@@ -717,13 +703,11 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.trg_auto_match_freelancer_fn() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS trg_auto_match_freelancer ON public.freelancer_profiles;
 CREATE TRIGGER trg_auto_match_freelancer
 AFTER INSERT OR UPDATE OF categories, skills ON public.freelancer_profiles
 FOR EACH ROW
 EXECUTE FUNCTION public.trg_auto_match_freelancer_fn();
-
 -- Team role → refresh suggestions when created / skills / budget / status change
 CREATE OR REPLACE FUNCTION public.trg_team_role_suggestions_fn()
 RETURNS trigger
@@ -740,14 +724,12 @@ BEGIN
 END;
 $$;
 REVOKE ALL ON FUNCTION public.trg_team_role_suggestions_fn() FROM PUBLIC;
-
 DROP TRIGGER IF EXISTS trg_team_role_suggestions ON public.team_project_roles;
 CREATE TRIGGER trg_team_role_suggestions
 AFTER INSERT OR UPDATE OF required_skills, budget_range_min, budget_range_max, status
 ON public.team_project_roles
 FOR EACH ROW
 EXECUTE FUNCTION public.trg_team_role_suggestions_fn();
-
 -- New ai_match → notify the freelancer (deduped per freelancer+project).
 -- Recreated here so INSERTs can never abort on a drifted/broken copy.
 CREATE OR REPLACE FUNCTION public.notify_new_match()
@@ -778,13 +760,11 @@ END;
 $$;
 REVOKE ALL ON FUNCTION public.notify_new_match() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.notify_new_match() TO authenticated, service_role;
-
 DROP TRIGGER IF EXISTS trigger_new_match ON public.ai_matches;
 CREATE TRIGGER trigger_new_match
 AFTER INSERT ON public.ai_matches
 FOR EACH ROW
 EXECUTE FUNCTION public.notify_new_match();
-
 -- ═══════════════════════════════════════════════════════════════════════════
 -- RLS — ai_matches: participants + project owner only (drift healing)
 -- ═══════════════════════════════════════════════════════════════════════════
@@ -795,7 +775,6 @@ CREATE POLICY "Freelancers view own matches"
 ON public.ai_matches FOR SELECT
 TO authenticated
 USING (auth.uid() = freelancer_id);
-
 -- Client sees matches for their own projects
 DROP POLICY IF EXISTS "Clients view their project matches" ON public.ai_matches;
 CREATE POLICY "Clients view their project matches"
@@ -807,7 +786,6 @@ USING (
     WHERE p.id = ai_matches.project_id AND p.client_id = auth.uid()
   )
 );
-
 -- Client-side fallback engine writes matches for their own projects
 DROP POLICY IF EXISTS "Clients insert their project matches" ON public.ai_matches;
 CREATE POLICY "Clients insert their project matches"
@@ -819,7 +797,6 @@ WITH CHECK (
     WHERE p.id = ai_matches.project_id AND p.client_id = auth.uid()
   )
 );
-
 DROP POLICY IF EXISTS "Clients update their project matches" ON public.ai_matches;
 CREATE POLICY "Clients update their project matches"
 ON public.ai_matches FOR UPDATE
@@ -830,7 +807,6 @@ USING (
     WHERE p.id = ai_matches.project_id AND p.client_id = auth.uid()
   )
 );
-
 DROP POLICY IF EXISTS "Clients delete their project matches" ON public.ai_matches;
 CREATE POLICY "Clients delete their project matches"
 ON public.ai_matches FOR DELETE
@@ -841,13 +817,11 @@ USING (
     WHERE p.id = ai_matches.project_id AND p.client_id = auth.uid()
   )
 );
-
 -- ─── Backfill: suggestions for every currently open role ───────────────────
 SELECT count(*) AS roles_refreshed FROM (
   SELECT public.refresh_role_suggestions(id)
   FROM public.team_project_roles
   WHERE status IN ('open', 'matched')
 ) AS backfill;
-
 -- Refresh PostgREST schema cache so new/changed RPCs are exposed
 NOTIFY pgrst, 'reload schema';

@@ -15,7 +15,6 @@ BEGIN
     ALTER TABLE public.payout_methods ADD COLUMN razorpay_fund_account_id TEXT;
   END IF;
 END $$;
-
 -- ─── get_payout_methods: also return the RazorpayX fund account id ───────────
 CREATE OR REPLACE FUNCTION public.get_payout_methods(p_user_id uuid)
 RETURNS jsonb
@@ -65,5 +64,4 @@ BEGIN
   RETURN v_result;
 END;
 $$;
-
 GRANT EXECUTE ON FUNCTION public.get_payout_methods(uuid) TO authenticated;

@@ -2,6 +2,21 @@
 import { isDisposableEmailDomain } from '../lib/disposableEmails';
 
 /**
+ * RFC-4122 UUID (any version), case-insensitive.
+ *
+ * Used to reject malformed ids from the URL BEFORE they reach Postgres — a
+ * non-UUID value in `.eq('id', …)` makes Postgres answer
+ * HTTP 400 "invalid input syntax for type uuid", which shows up in the browser
+ * as a red "Failed to load resource: 400" error on what is really just a
+ * not-found visit (e.g. /services/does-not-exist).
+ */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export function isValidUuid(value: string | null | undefined): boolean {
+  return typeof value === 'string' && UUID_REGEX.test(value.trim());
+}
+
+/**
  * Validate email format
  * @param email - Email to validate
  * @returns Boolean indicating if email format is valid

@@ -9,19 +9,16 @@
 UPDATE subscription_plans
 SET trial_days = 7
 WHERE id = 'premium_monthly';
-
 -- Deactivate the stray pro-monthly plan with pay-to-win features
 UPDATE subscription_plans
 SET is_active = false
 WHERE id = 'pro-monthly';
-
 -- Safety net: deactivate ALL paid plans except premium_monthly
 UPDATE subscription_plans
 SET is_active = false
 WHERE price > 0
   AND id <> 'premium_monthly'
   AND is_active = true;
-
 -- Verify: only premium_monthly + free plans should be active
 DO $$
 DECLARE

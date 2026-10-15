@@ -16,10 +16,8 @@ CREATE TABLE IF NOT EXISTS workspace_tasks (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
-
 CREATE INDEX IF NOT EXISTS idx_workspace_tasks_contract_id ON workspace_tasks(contract_id);
 CREATE INDEX IF NOT EXISTS idx_workspace_tasks_status ON workspace_tasks(status);
-
 -- ============================================================
 -- 2. WORKSPACE NOTES
 -- Shared collaborative notes within a contract workspace
@@ -32,15 +30,12 @@ CREATE TABLE IF NOT EXISTS workspace_notes (
   updated_at TIMESTAMPTZ DEFAULT NOW(),
   UNIQUE(contract_id)
 );
-
 CREATE INDEX IF NOT EXISTS idx_workspace_notes_contract_id ON workspace_notes(contract_id);
-
 -- ============================================================
 -- ENABLE ROW LEVEL SECURITY
 -- ============================================================
 ALTER TABLE workspace_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE workspace_notes ENABLE ROW LEVEL SECURITY;
-
 -- ============================================================
 -- RLS POLICIES — workspace_tasks
 -- Contract participants (freelancer + client) can CRUD tasks
@@ -53,7 +48,6 @@ CREATE POLICY "Contract participants can read workspace tasks" ON workspace_task
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 CREATE POLICY "Contract participants can insert workspace tasks" ON workspace_tasks
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -62,7 +56,6 @@ CREATE POLICY "Contract participants can insert workspace tasks" ON workspace_ta
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 CREATE POLICY "Contract participants can update workspace tasks" ON workspace_tasks
   FOR UPDATE USING (
     EXISTS (
@@ -71,7 +64,6 @@ CREATE POLICY "Contract participants can update workspace tasks" ON workspace_ta
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 CREATE POLICY "Contract participants can delete workspace tasks" ON workspace_tasks
   FOR DELETE USING (
     EXISTS (
@@ -80,7 +72,6 @@ CREATE POLICY "Contract participants can delete workspace tasks" ON workspace_ta
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 -- ============================================================
 -- RLS POLICIES — workspace_notes
 -- Contract participants can CRUD notes
@@ -93,7 +84,6 @@ CREATE POLICY "Contract participants can read workspace notes" ON workspace_note
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 CREATE POLICY "Contract participants can insert workspace notes" ON workspace_notes
   FOR INSERT WITH CHECK (
     EXISTS (
@@ -102,7 +92,6 @@ CREATE POLICY "Contract participants can insert workspace notes" ON workspace_no
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 CREATE POLICY "Contract participants can update workspace notes" ON workspace_notes
   FOR UPDATE USING (
     EXISTS (
@@ -111,7 +100,6 @@ CREATE POLICY "Contract participants can update workspace notes" ON workspace_no
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 CREATE POLICY "Contract participants can delete workspace notes" ON workspace_notes
   FOR DELETE USING (
     EXISTS (
@@ -120,7 +108,6 @@ CREATE POLICY "Contract participants can delete workspace notes" ON workspace_no
         AND (contracts.freelancer_id = auth.uid() OR contracts.client_id = auth.uid())
     )
   );
-
 -- ============================================================
 -- ENABLE REAL-TIME REPLICATION
 -- ============================================================
@@ -134,7 +121,6 @@ BEGIN
   END IF;
 END
 $$;
-
 -- ============================================================
 -- TRIGGER: auto-update updated_at timestamp
 -- ============================================================
@@ -145,7 +131,6 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 CREATE OR REPLACE FUNCTION update_workspace_notes_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -153,12 +138,10 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-
 DROP TRIGGER IF EXISTS update_workspace_tasks_updated_at ON workspace_tasks;
 CREATE TRIGGER update_workspace_tasks_updated_at
   BEFORE UPDATE ON workspace_tasks
   FOR EACH ROW EXECUTE FUNCTION update_workspace_tasks_updated_at();
-
 DROP TRIGGER IF EXISTS update_workspace_notes_updated_at ON workspace_notes;
 CREATE TRIGGER update_workspace_notes_updated_at
   BEFORE UPDATE ON workspace_notes
