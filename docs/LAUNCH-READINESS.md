@@ -244,7 +244,6 @@ fresh visitor can browse a real listing, open a freelancer profile, and start a 
 
 ---
 
-<<<<<<< HEAD
 ### A9. Brevo rejects every API send — the account's "Authorised IPs" security setting is ON 🔴
 
 **Why:** the founder activated Brevo (2026-10-14) and `BREVO_API_KEY` + `EMAIL_FROM` secrets are
@@ -275,16 +274,11 @@ logged no-op with `email_sent:false` — the platform is fully silent by email.
 
 ---
 
-=======
->>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
 ### Recommended order
 
 ```
 A2 (prove money in by hand once)  → A1 (prove money out once)
-<<<<<<< HEAD
  → A9 (Brevo IP restriction — 2 minutes, unblocks ALL email)
-=======
->>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
  → A4, A5, A6 (one-time config decisions)
  → A7 (lock the gates)
  → A8 (supply)                    → §B backlog
@@ -344,11 +338,8 @@ runs green on every push.)
 | Design typography | both families really load on prerendered pages: **9 @font-face parsed / 9 loaded**, per-weight faces are distinct (Cabinet Grotesk 500→900 advance widths differ), `font-display font-black` renders at weight **900**, and **no Google-Fonts request** is made (the unused Inter load is gone). Previously the font CSS shipped as `media="print"` with no `onload` (React SSR strips event handlers), so **no design font applied at all** and every prerendered page rendered in system-ui | open any page, then `await document.fonts.ready; document.fonts.forEach(f => console.log(f.family, f.weight, f.status))` — expect 9 faces, all `loaded` |
 | Build health | typecheck + lint + **423 tests** (36 files) + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
 | Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards — currently **0 findings, 0 open alerts** | `select public.check_security_drift();` |
-<<<<<<< HEAD
 | **Both dashboards, LIVE, on the deployed site** (2026-10-14) | real seeded sessions against `https://growlancer.vercel.app`: client **72 loads / 0 flags**, freelancer **72 loads / 0 flags** (every load proved signed-in by logout TEXT + a successful GoTrue check, 0 rejections), logout-security **5/5 × both roles** — and a full cross-role real-data flow: client posted a project through the real form → row confirmed in DB → freelancer saw it in the feed, applied through the real modal → proposal row in DB → client saw it on `/client/proposals` → **12/12 checks, cleanup verified 0 leftovers** | `node .e2e/run-with-env.mjs scripts/e2e/login.mjs --base=https://growlancer.vercel.app --all --require-all` then the element-audit/logout scripts with `--base=https://growlancer.vercel.app`, and `node .e2e/run-with-env.mjs .e2e/cross-role-flow.mjs` |
 | Header labels verified on the LIVE deployment | `932659b`'s route→label fix confirmed live on Vercel at 375px: `/client/post`→"Post a Project", `/client/verification`→"Verification", `/client/team-projects/create`→"Post a Team Project", `/dashboard/services/create`→"Create Service", `/dashboard/profile`→"Profile", 0 non-2xx on all five loads | `node .e2e/run-with-env.mjs .e2e/live-verify.mjs` |
-=======
->>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
 
 ---
 

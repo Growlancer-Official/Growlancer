@@ -134,10 +134,7 @@ export function MainLayout() {
 
             {/* Right actions */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-<<<<<<< HEAD
               <ThemeToggle />
-=======
->>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
               {!isAuthenticated && (
                 <>
                   <button onClick={handleOpenLogin} className="hidden sm:inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-medium text-slate-700 ring-1 ring-slate-200 bg-white hover:text-slate-900 hover:bg-slate-50 hover:ring-slate-300 transition-colors">Login</button>
