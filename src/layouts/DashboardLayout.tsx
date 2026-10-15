@@ -38,6 +38,7 @@ import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 import { useProStatus } from '../hooks/useProStatus';
 import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
@@ -717,6 +718,8 @@ export function DashboardLayout() {
 
             {/* Verify Now — hidden on mobile, disappears in real time once verified */}
             <VerifyNowHeaderButton />
+
+            <ThemeToggle variant="pill" />
 
             {/* Notifications */}
             <NotificationsPanel />

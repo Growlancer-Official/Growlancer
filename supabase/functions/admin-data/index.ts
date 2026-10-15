@@ -34,6 +34,8 @@ const ALLOWED_TABLES = [
   'workspaces', 'workspace_members', 'team_invitations',
   'milestones', 'workspace_activity_logs', 'fraud_events',
   'deletion_failures',
+  // Display FX rates (admin sets them, public reads via RPC — table itself RLS-protected).
+  'fx_rates',
 ];
 
 // Ledger-bearing tables. These stay READABLE here (the admin console lists them)
@@ -1063,18 +1065,10 @@ Deno.serve(async (req) => {
     // ─── POST: counts ──────────────────────────────────────────────
     if (req.method === 'POST' && action === 'counts') {
       const tables: string[] = body.tables || []
-      // Validate all requested tables are in allowed list
-      for (const t of tables) {
-        const tableName = t.includes(':') ? t.split(':')[0] : t;
-        if (!ALLOWED_TABLES.includes(tableName)) {
-          return new Response(JSON.stringify({ error: `Table '${tableName}' is not allowed for admin queries` }), {
-            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      }
       const results: Record<string, number> = {}
 
-      for (const tableEntry of tables) {
+      for (const t of tables) {
+        const tableEntry = t as string
         let tableName = tableEntry
         let filterCol: string | undefined
         let filterVal: string | undefined
@@ -1084,6 +1078,12 @@ Deno.serve(async (req) => {
           tableName = parts[0]
           filterCol = parts[1]
           filterVal = parts[2]
+        }
+
+        if (!ALLOWED_TABLES.includes(tableName)) {
+          return new Response(JSON.stringify({ error: `Table '${tableName}' is not allowed for admin queries` }), {
+            status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
         }
 
         try {
@@ -1099,7 +1099,7 @@ Deno.serve(async (req) => {
 
       return new Response(JSON.stringify({ counts: results }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      });
     }
 
     // ─── POST: query ───────────────────────────────────────────────

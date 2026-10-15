@@ -201,7 +201,10 @@ export const reviewService = {
         .from('freelancer_profiles')
         .select('reputation_score, weighted_rating, total_reviews, on_time_delivery_rate, response_rate, hire_rate, repeat_hire_rate')
         .eq('user_id', freelancerId)
-        .single();
+        // Optional row: only onboarding creates it. .single() would make
+        // PostgREST answer 406 (not-found-as-error) on every profile-less
+        // freelancer instead of returning null.
+        .maybeSingle();
 
       if (error) throw error;
 

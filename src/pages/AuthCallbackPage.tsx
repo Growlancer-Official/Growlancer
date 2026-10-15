@@ -9,6 +9,7 @@ import {
   readOAuthAttempt,
 } from '../lib/oauthDiagnostics';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
+import { CountrySelect } from '../components/CountrySelect';
 
 const isDev = import.meta.env.DEV;
 function devLog(...args: unknown[]) {
@@ -660,10 +661,16 @@ export function AuthCallbackPage() {
   }, [navigate, searchParams]);
 
   // ── Country Gate State ──
+  // selectedCountry is the canonical country NAME ("India", "Brazil") exactly
+  // as onboarding stores it — not an ISO code. Two spellings of the same
+  // country are two rows in the admin waitlist and two groups in its chart.
   const [countryGateLoading, setCountryGateLoading] = useState(false);
   const [countryGateError, setCountryGateError] = useState<string | null>(null);
 
   const handleCountrySelect = async (selectedCountry: string) => {
+    // Double-tap guard: the dropdown rows stay clickable while a submit is in
+    // flight (only the trigger is disabled), and two writes would race.
+    if (countryGateLoading) return;
     setCountryGateLoading(true);
     setCountryGateError(null);
 
@@ -677,11 +684,11 @@ export function AuthCallbackPage() {
         return;
       }
 
-      if (selectedCountry === 'IN') {
+      if (selectedCountry === 'India') {
         // Save country as India — proceed normally
         const { error: countryErr } = await supabase.rpc('update_user_country', {
           p_user_id: userId,
-          p_country: 'IN',
+          p_country: 'India',
         });
         if (countryErr) {
           // Non-blocking: still continue to onboarding, but log so we can fix silently
@@ -804,7 +811,7 @@ export function AuthCallbackPage() {
               <div className="space-y-3 mb-6">
                 {/* India — Enabled */}
                 <button
-                  onClick={() => handleCountrySelect('IN')}
+                  onClick={() => handleCountrySelect('India')}
                   disabled={countryGateLoading}
                   className="w-full flex items-center gap-4 p-4 bg-emerald-50 border-2 border-emerald-500 rounded-xl hover:bg-emerald-100 transition-colors text-left group disabled:opacity-50"
                 >
@@ -820,29 +827,27 @@ export function AuthCallbackPage() {
                   )}
                 </button>
 
-                {/* Other Countries — Click to join waitlist (Coming Soon) */}
-                {[
-                  { code: 'US', flag: '🇺🇸', name: 'United States' },
-                  { code: 'GB', flag: '🇬🇧', name: 'United Kingdom' },
-                  { code: 'CA', flag: '🇨🇦', name: 'Canada' },
-                  { code: 'AU', flag: '🇦🇺', name: 'Australia' },
-                  { code: 'AE', flag: '🇦🇪', name: 'United Arab Emirates' },
-                  { code: 'SG', flag: '🇸🇬', name: 'Singapore' },
-                  { code: 'OTHER', flag: '🌍', name: 'Other Country' },
-                ].map((country) => (
-                  <button
-                    key={country.code}
-                    onClick={() => handleCountrySelect(country.code)}
+                <div className="rounded-2xl border border-slate-200 bg-white p-3">
+                  <p className="px-1 pb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                    Or pick your country — all countries, A→Z
+                  </p>
+                  {/* Same component onboarding uses: the list can never drift
+                      from the sign-up flow, and every country here joins the
+                      waitlist with its canonical name. */}
+                  <CountrySelect
+                    value=""
+                    placeholder="Search your country..."
                     disabled={countryGateLoading}
-                    className="w-full flex items-center gap-4 p-4 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 hover:border-amber-300 transition-colors text-left group"
-                  >
-                    <span className="text-3xl">{country.flag}</span>
-                    <div className="flex-1">
-                      <p className="font-medium text-slate-700 group-hover:text-slate-900">{country.name}</p>
-                      <p className="text-xs text-amber-600 font-medium">Coming soon — join waitlist →</p>
-                    </div>
-                  </button>
-                ))}
+                    // onPick owns every tap here; onChange is the same destination
+                    // so the gate stays correct even if the picker falls back.
+                    onChange={(name) => void handleCountrySelect(name)}
+                    onPick={(country) => void handleCountrySelect(country.name)}
+                  />
+                  <p className="px-1 pt-2 text-[11px] text-slate-400">
+                    Not India yet? Pick your country and we'll email you the moment Growlancer
+                    launches there.
+                  </p>
+                </div>
               </div>
 
               {countryGateError && (

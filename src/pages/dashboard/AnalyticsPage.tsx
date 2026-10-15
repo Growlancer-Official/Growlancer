@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, IndianRupee, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users } from 'lucide-react';
+import { Activity, ArrowDown, ArrowUp, BarChart3, Briefcase, CheckCircle, Clock, Eye, FileText, RefreshCw, ShoppingBag, Star, TrendingUp, Users, Wallet } from 'lucide-react';
 import { InfoTip } from '../../components/InfoTip';
 import { useToast } from '../../components/Toast';
 import { PageSkeleton } from '../../components/PageSkeleton';
+import { EarningsChart } from '../../components/EarningsChart';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { analyticsService, type AnalyticsData } from '../../lib/analyticsService';
 import { supabase } from '../../lib/supabase';
-import { safeFormatDate } from '../../utils/date';
 
 export function AnalyticsPage() {
   const { user } = useAuth();
+  const { format, currency, source: currencySource } = useCurrency();
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<'7d' | '30d' | '90d' | '1y'>('30d');
@@ -22,6 +24,7 @@ export function AnalyticsPage() {
       const result = await analyticsService.getFreelancerAnalytics(user.id, timeframe);
       setData(result);
     } catch (err) {
+      console.error('Failed to load analytics:', err);
       toast.error('Error', 'Failed to load analytics.');
     } finally {
       setLoading(false);
@@ -47,9 +50,6 @@ export function AnalyticsPage() {
   if (loading && !data) {
     return <PageSkeleton />;
   }
-
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
 
   const formatPercent = (value: number) => `${Math.round(value * 10) / 10}%`;
 
@@ -105,20 +105,21 @@ export function AnalyticsPage() {
             <BarChart3 className="w-4 h-4 text-white" />
           </div>
           <div>
-          <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
-            Analytics
-            <InfoTip
-              title="About these numbers"
-              text="All metrics update in real time as contracts, proposals, reviews and payments happen. Success Rate = completed contracts ÷ total contracts. Proposal conversion = accepted proposals ÷ proposals sent. Use the 7d/30d/90d/1y buttons to change the view."
-            />
-          </h1>
-          <p className="text-slate-500 mt-1">Track your performance and growth</p>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
+              Analytics
+              <InfoTip
+                title="About these numbers"
+                text="All metrics update in real time as contracts, proposals, reviews and payments happen. Success Rate = completed contracts ÷ total contracts. Proposal conversion = accepted proposals ÷ proposals sent. Use the 7d/30d/90d/1y buttons to change the view. Amounts are shown in your country's currency."
+              />
+            </h1>
+            <p className="text-slate-500 mt-1">Track your performance and growth</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <button
             onClick={fetchAnalytics}
             className="p-2.5 text-slate-500 hover:text-slate-700 hover:bg-slate-50 rounded-xl transition-colors"
+            aria-label="Refresh analytics"
             title="Refresh"
           >
             <RefreshCw className="w-4 h-4" />
@@ -146,16 +147,16 @@ export function AnalyticsPage() {
           {/* Earnings & Contracts Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             <MetricCard
-              icon={IndianRupee}
+              icon={Wallet}
               label="Total Earnings"
-              value={formatCurrency(data.totalEarnings)}
-              sublabel={`${formatCurrency(data.monthlyEarnings)} this month`}
+              value={format(data.totalEarnings)}
+              sublabel={`${format(data.monthlyEarnings)} this month`}
               color="text-emerald-600"
             />
             <MetricCard
               icon={TrendingUp}
               label="Pending Payouts"
-              value={formatCurrency(data.pendingPayouts)}
+              value={format(data.pendingPayouts)}
               color="text-amber-600"
             />
             <MetricCard
@@ -175,44 +176,31 @@ export function AnalyticsPage() {
           </div>
 
           {/* Earnings Chart */}
-          <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white rounded-xl border border-slate-100 p-5 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 mb-5">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-1.5">Earnings Overview <InfoTip text="Revenue trends and monthly earnings breakdown." /></h2>
+                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-1.5">
+                  Earnings Overview
+                  <InfoTip text="Revenue trend and the monthly breakdown for the last 6 months. Every figure follows your country's currency." />
+                </h2>
                 <p className="text-sm text-slate-500">Monthly earnings for the past 6 months</p>
               </div>
-              <BarChart3 className="w-5 h-5 text-slate-400" />
+              <span
+                className="inline-flex items-center gap-1.5 self-start rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700"
+                title={
+                  currencySource === 'profile'
+                    ? 'Set from the country on your profile'
+                    : currencySource === 'detected'
+                      ? 'Detected from your browser region — set your country in onboarding to change it'
+                      : 'Default platform currency'
+                }
+              >
+                <Wallet className="h-3.5 w-3.5" aria-hidden="true" />
+                {currency}
+              </span>
             </div>
-            <div className="h-64 flex items-end gap-3">
-              {data.earningsByMonth.length > 0 ? (
-                data.earningsByMonth.map((month, idx) => {
-                  const maxAmount = Math.max(...data.earningsByMonth.map((m) => m.amount), 1);
-                  const heightPercent = (month.amount / maxAmount) * 100;
-                  const monthLabel = safeFormatDate(month.month ? month.month + '-01' : null, { month: 'short' }) || '—';
-                  return (
-                    <div key={idx} className="flex-1 flex flex-col items-center gap-1 group relative">
-                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {formatCurrency(month.amount)}
-                      </div>
-                      <div
-                        className="w-full bg-emerald-500/20 rounded-t-lg hover:bg-emerald-500/30 transition-colors cursor-pointer relative"
-                        style={{ height: `${Math.max(heightPercent, 2)}%` }}
-                      >
-                        <div
-                          className="absolute bottom-0 left-0 right-0 bg-emerald-500 rounded-t-lg transition-all"
-                          style={{ height: `${heightPercent}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-slate-400 font-medium">{monthLabel}</span>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="w-full flex items-center justify-center text-slate-400 text-sm py-12">
-                  No earnings data yet
-                </div>
-              )}
-            </div>
+
+            <EarningsChart data={data.earningsByMonth ?? []} />
           </div>
 
           {/* Proposals & Reviews Row */}
@@ -242,8 +230,8 @@ export function AnalyticsPage() {
                 data.profileViewsChange > 0
                   ? `+${data.profileViewsChange}% vs last month`
                   : data.profileViewsChange < 0
-                  ? `${data.profileViewsChange}% vs last month`
-                  : undefined
+                    ? `${data.profileViewsChange}% vs last month`
+                    : undefined
               }
               color="text-cyan-600"
             />
@@ -282,7 +270,10 @@ export function AnalyticsPage() {
           <div className="bg-white rounded-xl border border-slate-100 p-4 shadow-sm">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-1.5">AI Project Matches <InfoTip text="How well your profile matches available projects." /></h2>
+                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-1.5">
+                  AI Project Matches
+                  <InfoTip text="How well your profile matches available projects." />
+                </h2>
                 <p className="text-sm text-slate-500">Projects matched to your skills</p>
               </div>
             </div>

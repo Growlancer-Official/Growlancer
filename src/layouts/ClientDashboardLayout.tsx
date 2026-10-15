@@ -35,6 +35,7 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
@@ -627,6 +628,8 @@ export function ClientDashboardLayout() {
 
             {/* Verify Now — hidden on mobile, disappears in real time once verified */}
             <VerifyNowHeaderButton />
+
+            <ThemeToggle variant="pill" />
 
             {/* Notifications */}
             <NotificationsPanel />

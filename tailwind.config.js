@@ -3,6 +3,10 @@ import animatePlugin from 'tailwindcss-animate';
 
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  // Class strategy: ThemeProvider puts `.dark` on <html>. The palette remap
+  // in src/styles/globals.css does the bulk of the work; `dark:` variants stay
+  // available for one-off overrides.
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {

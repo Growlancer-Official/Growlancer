@@ -1,6 +1,8 @@
 import { Suspense, lazy, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../context/AuthContext';
+import { CurrencyProvider } from '../context/CurrencyContext';
+import { ThemeProvider } from '../context/ThemeContext';
 import { ScrollToTop } from '../components/ScrollToTop';
 import { ProtectedRoute } from '../components/ProtectedRoute';
 import { ErrorBoundary } from '../components/ErrorBoundary';
@@ -179,7 +181,9 @@ function App() {
   return (
     <>
       <ErrorBoundary>
+        <ThemeProvider>
         <AuthProvider>
+          <CurrencyProvider>
           <I18nProvider>
           <ToastProvider>
           <ScrollToTop />
@@ -387,7 +391,9 @@ function App() {
           <OAuthReturnNotice />
           </ToastProvider>
           </I18nProvider>
+          </CurrencyProvider>
         </AuthProvider>
+        </ThemeProvider>
       </ErrorBoundary>
     </>
   );
