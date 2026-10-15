@@ -1136,10 +1136,14 @@ export function OnboardingPage() {
                           onChange={(country) => setClientForm({ ...clientForm, location: country })}
                           placeholder="Select your country..."
                         />
+<<<<<<< HEAD
                         <p className="text-xs text-slate-400 mt-1">
                           India is live today. Pick any other country to join its waitlist — we will email
                           you the moment Growlancer launches there, and your profile keeps working normally.
                         </p>
+=======
+                        <p className="text-xs text-slate-400 mt-1">India is currently available — other countries coming soon!</p>
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
                       </div>
                     </div>
 

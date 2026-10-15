@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { ChevronDown, Search, X, MapPin, Globe, BellRing, Check, Loader2 } from 'lucide-react';
+=======
+import { useState, useRef, useEffect, useMemo } from 'react';
+import { ChevronDown, Search, X, MapPin, Globe } from 'lucide-react';
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
 import { useCountries } from '../hooks/useCountries';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from './Toast';
@@ -61,6 +66,21 @@ interface CountrySelectProps {
   disabled?: boolean;
 }
 
+<<<<<<< HEAD
+=======
+/**
+ * Industry-level country selector used in onboarding and profile forms.
+ *
+ * Features:
+ * - India 🇮🇳 pinned at the top as the base, the ONLY available country
+ * - Every other country browsable A→Z under "Coming Soon", but display-only
+ *   (never selectable — availability is a server-side truth, not a free pick)
+ * - Flag emojis for every country
+ * - Keyboard navigation (↑↓ to move, Enter to select, Esc to close)
+ * - "Remote / Online" quick option (a work mode, not a country)
+ * - Fuzzy search: "united" matches "United States", "United Kingdom", etc.
+ */
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
 export function CountrySelect({
   value,
   onChange,
@@ -273,6 +293,33 @@ export function CountrySelect({
     }
   };
 
+<<<<<<< HEAD
+=======
+  // ── Select by flat index ──
+  const selectByIndex = (idx: number) => {
+    let i = 0;
+    // "Remote" is always index 0
+    if (idx === 0) {
+      onChange('Remote');
+      handleClose();
+      return;
+    }
+    i = 1;
+    // Pinned countries
+    for (const c of filtered.pinned) {
+      if (i === idx) { onChange(c.name); handleClose(); return; }
+      i++;
+    }
+    // Rest — coming-soon countries are browse-only: highlight and read them,
+    // but Enter never selects one (India is the only available country).
+    const restStart = 1 + filtered.pinned.length;
+    if (idx >= restStart && idx < restStart + filtered.rest.length) {
+      return;
+    }
+  };
+
+  // ── Scroll highlighted item into view ──
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
   useEffect(() => {
     if (!open) return;
     const el = listRef.current?.querySelector(`[data-idx="${highlightIdx}"]`);
@@ -416,6 +463,7 @@ export function CountrySelect({
             </div>
           </div>
 
+<<<<<<< HEAD
           {/* List */}
           <div ref={listRef} className="max-h-72 overflow-y-auto overscroll-contain custom-scrollbar">
             {/* Remote / Online — a work mode, not a country (onboarding only) */}
@@ -440,6 +488,29 @@ export function CountrySelect({
                 )}
               </button>
             )}
+=======
+          {/* Country list */}
+          <div ref={listRef} className="max-h-64 overflow-y-auto overscroll-contain">
+            {/* "Remote / Online" option — always first */}
+            <button
+              type="button"
+              data-idx={0}
+              onClick={() => { onChange('Remote'); handleClose(); }}
+              onMouseEnter={() => setHighlightIdx(0)}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                highlightIdx === 0 ? 'bg-emerald-50' : 'hover:bg-slate-50'
+              }`}
+            >
+              <Globe className="w-5 h-5 text-slate-400 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <span className="text-sm font-medium text-slate-900">Remote / Online</span>
+                <span className="text-xs text-slate-400 ml-2">Work from anywhere</span>
+              </div>
+              {value === 'Remote' && (
+                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+              )}
+            </button>
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
 
             {/* Available now */}
             {groups.available.length > 0 && (
@@ -490,7 +561,36 @@ export function CountrySelect({
                     Coming soon
                   </span>
                 </div>
+<<<<<<< HEAD
                 {groups.comingSoon.map(renderComingSoonRow)}
+=======
+                {filtered.rest.map((c, i) => {
+                  const idx = 1 + filtered.pinned.length + i;
+                  const isCurrent = value === c.name;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      data-idx={idx}
+                      aria-disabled="true"
+                      onClick={(e) => { e.preventDefault(); }}
+                      onMouseEnter={() => setHighlightIdx(idx)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors cursor-not-allowed ${
+                        highlightIdx === idx ? 'bg-slate-50' : 'hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="text-lg opacity-60">{getFlagEmoji(c.code)}</span>
+                      <span className="text-sm text-slate-500">{c.name}</span>
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded ml-auto uppercase tracking-wide shrink-0">
+                        Coming Soon
+                      </span>
+                      {isCurrent && (
+                        <span className="w-2 h-2 rounded-full bg-slate-300 shrink-0" />
+                      )}
+                    </button>
+                  );
+                })}
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
               </>
             )}
 

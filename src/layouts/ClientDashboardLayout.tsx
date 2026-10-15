@@ -35,7 +35,10 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
+<<<<<<< HEAD
 import { ThemeToggle } from '../components/ThemeToggle';
+=======
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
 import { resolveDashboardSection } from '../lib/dashboardSection';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────

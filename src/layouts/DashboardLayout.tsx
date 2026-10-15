@@ -38,7 +38,10 @@ import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { ProBadge } from '../components/ProBadge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
+<<<<<<< HEAD
 import { ThemeToggle } from '../components/ThemeToggle';
+=======
+>>>>>>> 932659bfb95478161315d2c0570f03d716ff5803
 import { resolveDashboardSection } from '../lib/dashboardSection';
 import { useProStatus } from '../hooks/useProStatus';
 import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
