@@ -376,8 +376,8 @@ describe('backend-deploy.yml — a deploy is never green with an unrun pentest',
   });
 
   /**
-   * Measured 2026-10-15, run 38719764730 — the exact shape of a green-looking
-   * guard over a deploy that never happened:
+   * Measured 2026-10-15, run 38719764730 — the shape of a red deploy over a
+   * correct drift gate:
    *
    *   mode: pre | files: 292 | remote-applied: 276 | pending: 15
    *   Pre-flight OK — 15 migration(s) pending; db push will apply them.
@@ -386,28 +386,83 @@ describe('backend-deploy.yml — a deploy is never green with an unrun pentest',
    *   remote database. Rerun the command with --include-all flag …
    *   ##[error]Process completed with exit code 1.
    *
-   * The drift gate passed, the push was correct — and the CLI still exited 1,
-   * because commit a3a5511 recovered 48 migration files from the live DB and the
-   * recovered versions sort BEFORE migrations applied later. So every deploy was
-   * red at this step and the live DB stayed 15 migrations behind origin/main.
-   * Removing `--include-all` re-breaks it in exactly the same silent way.
+   * The cause was NOT an out-of-order migration: TWO repo files shared version
+   * 20270119000000. `db push` matches a repo file to a live row by version, so
+   * only the first of the two could ever match; the second sorted as unapplied
+   * forever, and pushing it tried to insert a version the remote already owned.
+   * `--include-all` does not fix that — it forces the unmatched file in anyway,
+   * deleting the one line that reported the duplicate. So the gate stays strict,
+   * and the duplicate is caught earlier instead (CI drift helper + repo scan).
    */
-  it('passes --include-all, the flag the CLI requires for an out-of-order migration', () => {
+  it('keeps db push strict — no flag that would apply a version the remote already owns', () => {
     const push = stepBlock(DEPLOY, 'Apply pending migrations (db push — no-op when in sync)');
-    expect(push).toMatch(/supabase db push --include-all/);
-    expect(push).toMatch(/--db-url "\$SUPABASE_DB_URL"/);
+    expect(push).toMatch(/supabase db push --db-url "\$SUPABASE_DB_URL"/);
+    expect(push).not.toContain('--include-all');
     // Fail-closed ordering is untouched: the drift check still runs first.
     expect(DEPLOY.indexOf('- name: Migration drift check')).toBeLessThan(
       DEPLOY.indexOf('- name: Apply pending migrations')
     );
   });
 
-  it('keeps the reason next to the flag, so it cannot be "cleaned up" as redundant', () => {
+  it('names the duplicate-version cause next to the push, so the flag is not "restored" as a fix', () => {
     const leadingComment = leadingCommentBlock(DEPLOY, 'Apply pending migrations (db push — no-op when in sync)');
     expect(leadingComment).toContain('--include-all');
-    // The failure it prevents must be named, not just the flag spelled out.
-    expect(leadingComment).toMatch(/out-of-order|sorts BEFORE|before the newest version/i);
-    // And why it is safe: only repo migrations are ever applied.
-    expect(leadingComment).toMatch(/repo|source of truth/i);
+    expect(leadingComment).toMatch(/duplicate version|TWO repo files shared version/i);
+    // The renumbered file must be named, so "which file was it?" is answerable
+    // from the workflow itself, not from this conversation.
+    expect(leadingComment).toContain('20270127000000_fix_admin_credentials_rls_and_realtime.sql');
+  });
+
+  it('makes the CI drift helper fail closed on a duplicated migration version', () => {
+    // A duplicate version is invisible to every other check (both files are
+    // valid SQL, and the version IS applied), so this must be a real gate in the
+    // helper and must fire in BOTH modes — before the push, so nothing is
+    // applied against an ambiguous repo, and after it.
+    const helper = DEPLOY.slice(DEPLOY.indexOf('cat > /tmp/driftcheck.mjs'));
+    expect(helper).toMatch(/duplicate migration version/);
+    expect(helper).toMatch(/const failed = drift \|\| duplicates\.length/);
+    expect(helper).toMatch(/const duplicates = /);
+  });
+
+  /**
+   * The defect itself, asserted against the repo rather than a description of it.
+   * Measured 2026-10-15: `20270119000000_fix_admin_credentials_rls_and_realtime.sql`
+   * and `20270119000000_harden_internship_auth_policy_and_monitor.sql` both
+   * claimed version 20270119000000, and only the latter's name is what the live
+   * DB has recorded — i.e. the credential-RLS fix could never have applied.
+   */
+  it('has exactly one file per migration version', () => {
+    const dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../supabase/migrations');
+    const byVersion = versionsOf(fs.readdirSync(dir).filter((f) => f.endsWith('.sql')));
+    const duplicates = [...byVersion.entries()].filter(([, group]) => group.length > 1);
+
+    expect(
+      duplicates,
+      'One version must name exactly one migration — db push matches by version, so a second ' +
+        'file under the same version can never be applied. Renumber it to an unused version:\n' +
+        duplicates.map(([v, group]) => `  ${v}: ${group.join(', ')}`).join('\n')
+    ).toEqual([]);
+
+    // Guard the guard: a glob that finds nothing, or a predicate that never
+    // fires, would make the assertion above pass on any repo at all.
+    expect(byVersion.size).toBeGreaterThan(250);
+    expect(versionsOf(['20270119000000_a.sql', '20270119000000_b.sql']).size).toBe(1);
+    expect(
+      [...versionsOf(['20270119000000_a.sql', '20270119000001_b.sql']).values()].every(
+        (group) => group.length === 1
+      )
+    ).toBe(true);
+    expect(versionsOf(['not-a-migration.sql']).size).toBe(0);
   });
 });
+
+/** Filename → version prefix → the files claiming it. Hoisted, so the test above can use it. */
+function versionsOf(files: string[]): Map<string, string[]> {
+  const byVersion = new Map<string, string[]>();
+  for (const file of files) {
+    const version = file.match(/^(\d{6,})/)?.[1];
+    if (!version) continue;
+    byVersion.set(version, [...(byVersion.get(version) || []), file]);
+  }
+  return byVersion;
+}

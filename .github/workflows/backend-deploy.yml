@@ -116,13 +116,37 @@ jobs:
           const fileVersions = new Set(files.map(f => f.match(/^(\d{6,})/)?.[1]).filter(Boolean));
           const remoteOnly = [...remote].filter(v => !fileVersions.has(v));
           const localOnly = [...fileVersions].filter(v => !remote.has(v));
-          console.log('mode:', mode, '| files:', files.length, '| remote-applied:', remote.size, '| pending:', localOnly.length);
+          // Two repo files under one version is a silent deploy-killer, measured
+          // 2026-10-15: `supabase db push` matches a repo file to a live row BY
+          // VERSION, so when 20270119000000 named two different files only the
+          // first could ever match. The second looked permanently unapplied, and
+          // the attempt to apply it failed with a duplicate-key error on
+          // schema_migrations -- reporting the misleading "a migration in the
+          // local directory does not exist on the remote database". Nothing else
+          // catches it: the file is valid SQL, and the version is not drift in
+          // either direction (both files' version IS applied). Fail here, naming
+          // both files, so the fix is a renumber rather than a push flag.
+          const versionFiles = new Map();
+          for (const f of files) {
+            const v = f.match(/^(\d{6,})/)?.[1];
+            if (!v) continue;
+            versionFiles.set(v, [...(versionFiles.get(v) || []), f]);
+          }
+          const duplicates = [...versionFiles.entries()].filter(([, group]) => group.length > 1);
+          console.log('mode:', mode, '| files:', files.length, '| remote-applied:', remote.size, '| pending:', localOnly.length, '| duplicate versions:', duplicates.length);
+          for (const [v, group] of duplicates) {
+            console.error('::error::duplicate migration version ' + v + ' in repo (one version must name exactly one migration): ' + group.join(', '));
+          }
           for (const v of remoteOnly) console.error('::error::remote-only migration (in DB, missing from repo): ' + v);
           if (mode === 'post') {
             for (const v of localOnly) console.error('::error::local-only migration (still not applied after db push): ' + v);
           }
-          const failed = mode === 'post' ? (remoteOnly.length || localOnly.length) : remoteOnly.length;
+          const drift = mode === 'post' ? (remoteOnly.length || localOnly.length) : remoteOnly.length;
+          const failed = drift || duplicates.length;
           if (failed) {
+            if (duplicates.length) {
+              console.error('::error::resolve the duplicate version(s) above by renumbering one file to a version no migration uses — NOT by adding `db push` flags, which would hide which file is really live');
+            }
             console.error('::error::migration drift detected — resolve with `supabase migration fetch` (adopt what is live) or a new migration file BEFORE deploying');
             process.exit(1);
           }
@@ -141,23 +165,29 @@ jobs:
           SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
         run: node /tmp/driftcheck.mjs pre
 
-      # `--include-all` is REQUIRED, not a shortcut: `supabase db push` refuses
-      # (exit 1) as soon as a repo migration sorts BEFORE the newest version
-      # already applied on the remote — "Rerun the command with --include-all
-      # flag to apply these migrations". That is exactly the state of this repo:
-      # commit a3a5511 recovered 48 migration files from the live DB, and the
-      # recovered versions (…19000000_harden_internship_auth_policy_and_monitor
-      # and friends) sort before migrations that were applied later. Without the
-      # flag every deploy since that commit dies here, which is how the live DB
-      # fell 15 migrations behind origin/main.
-      # The drift check above still runs first and is still fail-closed, so this
-      # only ever applies migrations that exist in the repo (source of truth).
+      # Deliberately NOT `--include-all`. Measured 2026-10-15, run 38719764730:
+      # the CLI exited 1 with "Found local migration files to be inserted before
+      # the last migration on remote database. Rerun the command with
+      # --include-all flag". The tempting read was "an out-of-order migration,
+      # use the flag" -- but the real defect was that TWO repo files shared
+      # version 20270119000000, and only the lexicographically-first of them
+      # (20270119000000_harden_internship_auth_policy_and_monitor.sql) can match
+      # the live row. The other one therefore sorted as an unapplied migration
+      # forever, and pushing it tried to insert that version a second time
+      # (duplicate key on schema_migrations). `--include-all` does not fix a
+      # duplicate version: it forces the rogue file in anyway, so the deploy
+      # would have applied an unverified file while the CI line that caught the
+      # problem disappeared. Fixed at the source instead -- that file is now
+      # 20270127000000_fix_admin_credentials_rls_and_realtime.sql, which sorts
+      # after the newest applied version (20270119000027) and so applies with a
+      # plain push. The drift check above additionally fails closed on any
+      # duplicate version, so this class cannot come back silently.
       - name: Apply pending migrations (db push — no-op when in sync)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
         run: |
-          npx supabase db push --include-all --db-url "$SUPABASE_DB_URL"
+          npx supabase db push --db-url "$SUPABASE_DB_URL"
 
       - name: Verify migrations applied (repo == live DB)
         env:
