@@ -809,7 +809,7 @@
      mode (the same wash defect, one class over). Same dark tints, the author's
      alpha preserved so the fade keeps its intended weight:
        from-emerald-50/40  (HomePage hero),
-       to-emerald-50/30 | /50 | /60  (Onboarding, NotificationsPanel,                                     Contact, NotificationsCenter),
+       to-emerald-50/30 | /50 | /60  (Onboarding, NotificationsPanel, Contact, NotificationsCenter),
        via-teal-50/60  (HomePage hero). */
   .dark :where(.from-emerald-50\/40) {
     --tw-gradient-from: rgba(12, 42, 36, 0.4) var(--tw-gradient-from-position);
