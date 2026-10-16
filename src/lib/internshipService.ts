@@ -326,16 +326,6 @@ export const internshipService = {
   },
 
   /**
-   * Get a public URL for a resume file.
-   */
-  getResumeUrl(filePath: string): string {
-    const { data } = supabase.storage
-      .from('internship_resumes')
-      .getPublicUrl(filePath);
-    return data.publicUrl;
-  },
-
-  /**
    * Submit an internship application via the edge function.
    * Edge function handles: DB insert + Brevo emails (admin + applicant).
    */

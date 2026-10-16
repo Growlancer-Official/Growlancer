@@ -1255,8 +1255,9 @@ export function WorkspacePage() {
                     <button
                       type="button"
                       onClick={() => setShowUploadModal(true)}
-                      className="w-7 h-7 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors"
+                      className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-200 transition-colors shrink-0"
                       title="Upload deliverable files"
+                      aria-label="Upload deliverable files"
                     >
                       <Paperclip className="w-4 h-4" />
                     </button>
@@ -1270,7 +1271,8 @@ export function WorkspacePage() {
                     <button
                       type="submit"
                       disabled={!newMessage.trim() || sendingMessage}
-                      className="w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-10 h-10 shrink-0 bg-emerald-600 text-white rounded-full flex items-center justify-center hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      aria-label="Send message"
                     >
                       {sendingMessage ? (
                         <Loader2 className="w-4 h-4 animate-spin" />

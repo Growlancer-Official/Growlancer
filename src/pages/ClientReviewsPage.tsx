@@ -113,13 +113,13 @@ export function ClientReviewsPage() {
 
 
       {/* Stats */}
-      <div className="bg-white rounded-xl border border-slate-100 p-6 flex items-center gap-1.5">
-        <div className="text-center">
+      <div className="bg-white rounded-xl border border-slate-100 p-6 flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-1.5">
+        <div className="text-center sm:flex-shrink-0">
           <p className="text-4xl font-bold text-slate-900">{averageRating > 0 ? averageRating.toFixed(1) : '—'}</p>
           <RatingStars rating={averageRating} />
           <p className="text-sm text-slate-500 mt-1">{totalReviews} review{totalReviews !== 1 ? 's' : ''}</p>
         </div>
-        <div className="flex-1 grid grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 flex-1">
           {[
             { label: 'Quality', key: 'quality_rating' },
             { label: 'Communication', key: 'communication_rating' },

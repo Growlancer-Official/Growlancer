@@ -8,6 +8,12 @@ export default function Head() {
       <link rel="apple-touch-icon" sizes="180x180" href="/UpdatedLogo.png?v=2" />
       <link rel="shortcut icon" href="/UpdatedLogo.png?v=2" />
 
+      {/* ── Mobile viewport — CRITICAL: without this, phones fall back to the
+          980px desktop layout viewport and the whole site renders zoomed-out
+          tiny (0.4× on iPhone). This is what makes auth/badges/layout look
+          broken on mobile. ── */}
+      <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
       {/* ── Theme ── */}
       <meta name="theme-color" content="#10b981" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
