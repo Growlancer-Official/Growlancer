@@ -803,6 +803,32 @@
   .dark :where(.to-orange-100, .to-amber-100) {
     --tw-gradient-to: #3c2c10 var(--tw-gradient-to-position);
   }
+  /* Gradient stops WITH an opacity modifier (`from-emerald-50/40`). Tailwind
+     compiles every alpha into its OWN class, so the bare `.from-emerald-50`
+     rules above never matched these — they kept their near-white color in dark
+     mode (the same wash defect, one class over). Same dark tints, the author's
+     alpha preserved so the fade keeps its intended weight:
+       from-emerald-50/40  (HomePage hero),
+       to-emerald-50/30 | /50 | /60  (Onboarding, NotificationsPanel,                                     Contact, NotificationsCenter),
+       via-teal-50/60  (HomePage hero). */
+  .dark :where(.from-emerald-50\/40) {
+    --tw-gradient-from: rgba(12, 42, 36, 0.4) var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(12, 42, 36, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.to-emerald-50\/30) {
+    --tw-gradient-to: rgba(12, 42, 36, 0.3) var(--tw-gradient-to-position);
+  }
+  .dark :where(.to-emerald-50\/50) {
+    --tw-gradient-to: rgba(12, 42, 36, 0.5) var(--tw-gradient-to-position);
+  }
+  .dark :where(.to-emerald-50\/60) {
+    --tw-gradient-to: rgba(12, 42, 36, 0.6) var(--tw-gradient-to-position);
+  }
+  .dark :where(.via-teal-50\/60) {
+    --tw-gradient-to: rgba(12, 42, 36, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), rgba(12, 42, 36, 0.6) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
   .dark :where(.from-sky-50) {
     --tw-gradient-from: #0d2136 var(--tw-gradient-from-position);
     --tw-gradient-to: rgba(13, 33, 54, 0) var(--tw-gradient-to-position);

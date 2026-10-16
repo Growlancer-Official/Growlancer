@@ -109,7 +109,10 @@ const RENDERS_LIGHT = [
   // paint a white wash over the whole dark hero section.
   /^(from|via|to)-(white|cream)$/,
   new RegExp(`^(from|via|to)-(${NEUTRALS}|${ACCENTS})-${LIGHT_TINT}$`),
-  new RegExp(`^(from|via|to)-(${ACCENTS})-50\/\d+$`),
+  // `\d` must be double-escaped: inside a template literal `\d` collapses to
+  // a bare `d`, so this pattern used to match literal "50/d" and silently
+  // classified NO gradient stop as light (eslint no-useless-escape caught it).
+  new RegExp(`^(from|via|to)-(${ACCENTS})-50/\\d+$`),
 ];
 
 const rendersLight = (token: string) => RENDERS_LIGHT.some((re) => re.test(token));
