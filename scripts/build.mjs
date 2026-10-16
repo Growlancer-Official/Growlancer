@@ -175,6 +175,33 @@ if (!existsSync(DIST_HTML)) {
 }
 
 /**
+ * Theme FOUC guard, byte-identical to THEME_FOUC_GUARD in vite.config.ts
+ * (src/test/darkThemeCoverage.test.ts fails if the two ever differ).
+ *
+ * The Vite plugin injects it into every HTML Vike prerenders; this generator
+ * writes its own shell from scratch, so it needs its own copy of the same
+ * markup — otherwise the shell served by the SPA fallback (i.e. every
+ * dashboard/client/admin route, when a Vercel build skips prerender) would
+ * paint the light theme before React applies the user's preference.
+ */
+const THEME_FOUC_GUARD = `<!-- __theme_guard_marker__ -->
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('growlancer-theme');
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = stored === 'dark' || ((stored === 'system' || !stored) && systemDark);
+      var root = document.documentElement;
+      if (dark) root.classList.add('dark');
+      root.style.colorScheme = dark ? 'dark' : 'light';
+    } catch (e) {
+      // localStorage blocked (private mode) — fall back to the light theme
+      // rather than failing to boot.
+    }
+  })();
+</script>`;
+
+/**
  * Reads the Vite manifest to locate client entry JS + CSS files.
  * Tries dist/.vite/manifest.json first, then dist/client/.vite/manifest.json.
  */
@@ -300,6 +327,7 @@ function generateFallbackIndexHtml() {
       <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
     </noscript>
 ${cssTags}
+${THEME_FOUC_GUARD}
   </head>
   <body>
     <div id="root"></div>

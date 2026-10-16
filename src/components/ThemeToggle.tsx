@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Sun, Moon, MonitorSmartphone } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 
@@ -12,6 +13,12 @@ interface ThemeToggleProps {
   className?: string;
   /** 'pill' matches the dashboard headers, 'icon' the public nav. */
   variant?: 'icon' | 'pill';
+  /**
+   * Extra sentence announced in the tooltip. Used where switching the theme
+   * cannot visibly change the current screen — the admin console is dark in
+   * both themes — so the control never looks broken.
+   */
+  hint?: string;
 }
 
 const LABELS = {
@@ -26,10 +33,21 @@ const NEXT_LABEL = {
   system: 'Switch to light theme',
 } as const;
 
-export function ThemeToggle({ className = '', variant = 'icon' }: ThemeToggleProps) {
+export function ThemeToggle({ className = '', variant = 'icon', hint }: ThemeToggleProps) {
   const { preference, resolved, cyclePreference } = useTheme();
+  const hintSuffix = hint ? ` ${hint}` : '';
 
-  const Icon = preference === 'system' ? MonitorSmartphone : resolved === 'dark' ? Moon : Sun;
+  // Hydration safety, and it is not optional: the server cannot know the
+  // visitor's saved preference, so a marker that renders `<Moon>` for a
+  // dark-mode visitor hydrated a DIFFERENT tree than the server produced and
+  // React threw error #418 on every dark-mode page load (measured on the built
+  // site). Until mounted, render exactly what the server rendered — the
+  // system/neutral state — then swap to the real one a frame later.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const shown = mounted ? preference : 'system';
+
+  const Icon = shown === 'system' ? MonitorSmartphone : resolved === 'dark' ? Moon : Sun;
 
   const base =
     'inline-flex items-center justify-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/40';
@@ -43,12 +61,12 @@ export function ThemeToggle({ className = '', variant = 'icon' }: ThemeTogglePro
       type="button"
       onClick={cyclePreference}
       className={`${base} ${shape} ${className}`}
-      aria-label={`${LABELS[preference]} active. ${NEXT_LABEL[preference]}`}
-      title={`${LABELS[preference]} — ${NEXT_LABEL[preference]}`}
+      aria-label={`${LABELS[shown]} active. ${NEXT_LABEL[shown]}.${hintSuffix}`}
+      title={`${LABELS[shown]} — ${NEXT_LABEL[shown]}.${hintSuffix}`}
     >
       <Icon className="w-4 h-4 shrink-0" aria-hidden="true" />
       {variant === 'pill' && (
-        <span className="text-xs font-semibold capitalize hidden sm:inline">{preference}</span>
+        <span className="text-xs font-semibold capitalize hidden sm:inline">{shown}</span>
       )}
     </button>
   );

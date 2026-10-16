@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { adminLogout, getAdminSession } from '../components/AdminAuthGuard';
 
 interface SidebarItem {
@@ -348,6 +349,15 @@ export function AdminDashboardLayout() {
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
               <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Live Monitoring</span>
             </div>
+
+            {/* App-wide theme. The console in front of you is dark in BOTH
+                themes by design (see the remap notes in globals.css), so this
+                would look broken without saying so — hence the `hint`, which
+                is announced in the tooltip and the accessible name. */}
+            <ThemeToggle
+              variant="pill"
+              hint="The admin console itself stays dark in both themes."
+            />
 
             {/* Notifications Panel - Real-time with Supabase */}
             <NotificationsPanel />

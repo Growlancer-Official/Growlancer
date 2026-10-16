@@ -23,6 +23,14 @@
 //   node scripts/e2e/element-audit.mjs --base=http://localhost:4174 --group=public
 //   groups: public | auth | dashboard | client | admin | all
 //
+// THEMED RUNS: add --theme=dark (or light). The run then emulates the OS
+// preference AND seeds the saved preference, so it sweeps the exact state a real
+// visitor is in — and it fails closed on two things a "looks fine to me" check
+// cannot see: a page that ended up in the WRONG theme, and a dark visitor whose
+// `.dark` class only appeared after React booted (i.e. a light flash, which is
+// what happens when the pre-paint guard does not ship). Run the same group twice
+// (--theme=light, --theme=dark) to cover both.
+//
 // AUTHENTICATED RUNS FAIL CLOSED: when --storage=<role>.json is passed, every
 // route under that role's protected surface must render authenticated chrome
 // (a logout control, still on the role's surface, no logged-out gate). A dead
@@ -71,6 +79,12 @@ const ROLE = STORAGE ? path.basename(STORAGE).replace(/\.json$/, '') : null;
 const AUTH_PREFIXES = STORAGE
   ? { freelancer: ['/dashboard'], client: ['/client'], admin: ['/admin'] }[ROLE] || ['/dashboard', '/client', '/admin']
   : [];
+// Optional theme sweep — see the THEMED RUNS note in the header.
+const THEME = args.theme || null;
+if (THEME && !['light', 'dark'].includes(THEME)) {
+  console.error(`::error::--theme must be light or dark (got "${THEME}")`);
+  process.exit(1);
+}
 
 const VIEWPORTS = [
   { name: 'mobile-375', width: 375, height: 667, dpr: 2, mobile: true },
@@ -466,11 +480,29 @@ async function auditOne(browser, route, device, storageState) {
     isMobile: device.mobile,
     hasTouch: device.mobile,
     ...(storageState ? { storageState } : {}),
+    ...(THEME ? { colorScheme: THEME } : {}),
     userAgent: device.mobile
       ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
       : undefined,
   });
   const page = await context.newPage();
+  if (THEME) {
+    // Two jobs. (1) Give the visitor a SAVED preference — the app's real state,
+    // and the state the pre-paint guard has to honour. (2) Capture whether
+    // `.dark` was already on <html> when the document finished parsing, i.e.
+    // whether that guard ran before React booted. Rendering the right theme
+    // only after hydration still means a light flash on a dark screen.
+    await context.addInitScript((theme) => {
+      try {
+        window.localStorage.setItem('growlancer-theme', theme);
+        document.addEventListener('DOMContentLoaded', () => {
+          window.__themeAtDomReady = document.documentElement.classList.contains('dark');
+        });
+      } catch (err) {
+        console.warn('[element-audit] theme init script failed:', err && err.message);
+      }
+    }, THEME);
+  }
   const consoleErrors = [];
   const pageErrors = [];
   const failedRequests = [];
@@ -535,6 +567,39 @@ async function auditOne(browser, route, device, storageState) {
     audit = await page.evaluate(inPageAudit, { mobile: device.mobile });
   } catch (err) {
     pageErrors.push(`audit-eval: ${String(err.message || err).slice(0, 200)}`);
+  }
+
+  // Theme evidence (themed runs only): the state now, and at DOMContentLoaded.
+  // `themeAtDomReady` is EVIDENCE, not a failure trigger. Measured 2026-10-16:
+  // with the guard shipped 24/24 loads were dark at DOMContentLoaded; with it
+  // stripped 0/3 were. So it discriminates today — but only because in this
+  // build hydration happens to land after DOMContentLoaded, which is a build
+  // detail, not a guarantee. Gating a run on it would make the gate depend on
+  // the bundler's timing, so the failure trigger is the artifact check instead:
+  // `themeGuardShipped`, whether the guard is in the HTML the server sends.
+  let themeProbe = null;
+  let themeAtDomReady = null;
+  let themeGuardShipped = null;
+  if (THEME) {
+    try {
+      themeProbe = await page.evaluate(() => ({
+        dark: document.documentElement.classList.contains('dark'),
+        colorScheme: document.documentElement.style.colorScheme,
+        stored: (() => {
+          try {
+            return window.localStorage.getItem('growlancer-theme');
+          } catch (err) {
+            return `unreadable: ${err && err.message}`;
+          }
+        })(),
+      }));
+      themeAtDomReady = (await page.evaluate(() => window.__themeAtDomReady ?? null)) ?? null;
+      // Raw server HTML for this route (no JS) — the artifact the browser got.
+      const served = await page.request.get(`${BASE}${route}`);
+      themeGuardShipped = (await served.text()).includes('__theme_guard_marker__');
+    } catch (err) {
+      pageErrors.push(`theme-eval: ${String(err.message || err).slice(0, 200)}`);
+    }
   }
 
   // Auth-chrome re-check (authenticated runs only). On a slow mobile load the
@@ -612,6 +677,24 @@ async function auditOne(browser, route, device, storageState) {
     }
   }
 
+  // ── Theme integrity: a themed run may not pass on the wrong theme ─────────
+  const themeViolations = [];
+  if (THEME) {
+    const wantDark = THEME === 'dark';
+    if (!themeProbe) themeViolations.push('theme state could not be read (page did not evaluate)');
+    else {
+      if (themeProbe.dark !== wantDark) {
+        themeViolations.push(`requested ${THEME} but <html> is ${themeProbe.dark ? 'dark' : 'not dark'}`);
+      }
+      if (themeGuardShipped !== true) {
+        themeViolations.push(
+          'the pre-paint theme guard is MISSING from the served HTML — a saved-' +
+            `${THEME} visitor gets the other theme for the first frame (injected by vite.config.ts; rebuild / check dist/)`,
+        );
+      }
+    }
+  }
+
   await context.close();
 
   return {
@@ -619,6 +702,10 @@ async function auditOne(browser, route, device, storageState) {
     device: device.name,
     httpStatus,
     authViolations,
+    themeViolations,
+    themeProbe,
+    themeAtDomReady,
+    themeGuardShipped,
     authSession,
     consoleErrors: consoleErrors.slice(0, 5),
     pageErrors: pageErrors.slice(0, 5),
@@ -644,6 +731,7 @@ async function runPool(items, worker, concurrency) {
 function issueCount(r) {
   return (
     (r.authViolations?.length || 0) +
+    (r.themeViolations?.length || 0) +
     (r.pageErrors?.length || 0) +
     (r.consoleErrors?.length || 0) +
     (r.badText?.length || 0) +
@@ -684,6 +772,19 @@ function summarize(results) {
     authViolations: results
       .filter((r) => r.authViolations?.length)
       .map((r) => ({ route: r.route, device: r.device, errors: r.authViolations })),
+    themeViolations: results
+      .filter((r) => r.themeViolations?.length)
+      .map((r) => ({ route: r.route, device: r.device, errors: r.themeViolations })),
+    // Evidence, like authChrome: how many loads proved the guard ran BEFORE the
+    // app booted. A themed run with 0 here is a themed run that measured nothing.
+    themeEvidence: THEME
+      ? {
+          requested: THEME,
+          guardShipped: results.filter((r) => r.themeGuardShipped === true).length,
+          darkAtDomReady: results.filter((r) => r.themeAtDomReady === true).length,
+          wrongTheme: results.filter((r) => r.themeProbe && r.themeProbe.dark !== (THEME === 'dark')).length,
+        }
+      : null,
     // Evidence, not decoration: an authenticated run must be able to show WHICH
     // chrome proved each load was signed in (text vs attribute), so a green run
     // cannot silently degrade into "matched nothing" on every route.
@@ -846,6 +947,9 @@ async function main() {
     '',
     `## HTTP failures: ${summary.httpFailures.length}`,
     ...summary.httpFailures.map((f) => `- ${f.route} [${f.device}] ${f.status}`),
+    '',
+    `## Theme sweep${THEME ? ` (--theme=${THEME})` : ''}: ${summary.themeViolations.length} load(s) wrong`,
+    ...summary.themeViolations.map((t) => `- ${t.route} [${t.device}] ${t.errors.join('; ')}`),
   ];
   fs.writeFileSync(mdPath, lines.join('\n') + '\n');
 
@@ -862,6 +966,29 @@ async function main() {
     );
   }
   console.log(`Artifacts:\n  ${mdPath}\n  ${jsonPath}`);
+
+  // A THEMED run in the wrong theme fails unconditionally, for the same reason
+  // an unauthenticated "authenticated" run does: a green result would report
+  // coverage it never had. Running with --theme=dark and letting a light page
+  // pass is exactly the failure a human eyeball misses.
+  if (THEME) {
+    console.log(
+      `Theme sweep (--theme=${THEME}): ${summary.themeViolations.length} load(s) wrong — ` +
+        `${summary.themeEvidence.guardShipped}/${summary.loads} load(s) shipped the pre-paint guard, ` +
+        `${summary.themeEvidence.darkAtDomReady}/${summary.loads} had .dark at DOMContentLoaded, ` +
+        `${summary.themeEvidence.wrongTheme} ended on the other theme.`,
+    );
+    if (summary.themeViolations.length) {
+      const uniqRoutes = [...new Set(summary.themeViolations.map((t) => t.route))];
+      console.error(
+        `::error::theme integrity: ${summary.themeViolations.length} load(s) of a --theme=${THEME} run were wrong on ` +
+          `${uniqRoutes.length} route(s) (${uniqRoutes.slice(0, 6).join(', ')}${uniqRoutes.length > 6 ? ', …' : ''}). ` +
+          `Reasons: ${[...new Set(summary.themeViolations.flatMap((t) => t.errors))].slice(0, 4).join(' | ')}. ` +
+          `A themed sweep that measured nothing is not a pass.`,
+      );
+      process.exit(1);
+    }
+  }
 
   // An authenticated run that was NOT authenticated fails unconditionally:
   // its "green" would otherwise cover logged-out pages (see the header note).

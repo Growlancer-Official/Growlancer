@@ -141,12 +141,23 @@ jobs:
           SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
         run: node /tmp/driftcheck.mjs pre
 
+      # `--include-all` is REQUIRED, not a shortcut: `supabase db push` refuses
+      # (exit 1) as soon as a repo migration sorts BEFORE the newest version
+      # already applied on the remote — "Rerun the command with --include-all
+      # flag to apply these migrations". That is exactly the state of this repo:
+      # commit a3a5511 recovered 48 migration files from the live DB, and the
+      # recovered versions (…19000000_harden_internship_auth_policy_and_monitor
+      # and friends) sort before migrations that were applied later. Without the
+      # flag every deploy since that commit dies here, which is how the live DB
+      # fell 15 migrations behind origin/main.
+      # The drift check above still runs first and is still fail-closed, so this
+      # only ever applies migrations that exist in the repo (source of truth).
       - name: Apply pending migrations (db push — no-op when in sync)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
         run: |
-          npx supabase db push --db-url "$SUPABASE_DB_URL"
+          npx supabase db push --include-all --db-url "$SUPABASE_DB_URL"
 
       - name: Verify migrations applied (repo == live DB)
         env:

@@ -104,6 +104,17 @@
   .card {
     @apply bg-white rounded-2xl shadow-sm border border-slate-100;
   }
+
+  /* For a NATIVE control (date/time picker popup, dropdown) that sits on a
+     surface which is dark in BOTH themes — the admin console is deliberately
+     dark regardless of the theme. `color-scheme` is the only thing that makes
+     the browser paint its own picker chrome dark; without it the popup is a
+     white calendar on a dark panel. Named class instead of an arbitrary
+     `[color-scheme:dark]` on one input, so the reason is discoverable and
+     there is one place to change. */
+  .on-dark-surface {
+    color-scheme: dark;
+  }
 }
 
 @layer utilities {
@@ -536,6 +547,14 @@
   .dark :where(.bg-slate-100) {
     background-color: #1b2940;
   }
+  /* stone/neutral are greys too — they are the category chips' neutral palettes
+     (lib/categories.ts), and a chip left at stone-100 is a bright tile on a
+     dark page. They follow slate exactly. Found by
+     src/test/darkThemeCoverage.test.ts, which now fails if a new palette
+     sneaks in unremapped. */
+  .dark :where(.bg-stone-100, .bg-neutral-100) {
+    background-color: #1b2940;
+  }
   .dark :where(.bg-slate-200) {
     background-color: #243349;
   }
@@ -579,7 +598,7 @@
   .dark :where(.text-slate-700) {
     color: #cbd5e1;
   }
-  .dark :where(.text-slate-600) {
+  .dark :where(.text-slate-600, .text-stone-600, .text-neutral-600) {
     color: #b7c2d2;
   }
   .dark :where(.text-slate-500) {
@@ -737,6 +756,34 @@
     --tw-gradient-to: rgba(19, 31, 51, 0) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
   }
+  /* WHITE stops. A tinted panel that fades to white (`from-emerald-50 to-white`
+     — used across Client settings, the professional profile and the wallet) and
+     the homepage hero's `via-white to-white` wash overlay both paint WHITE in
+     dark mode. The hero one is what made the whole hero look grey-washed; the
+     panels were bright tiles. They fade to the dark surface instead.
+     `from`, `via` and `to` each set different custom properties, so they need
+     separate rules — Tailwind's own compiled output for each is mirrored here. */
+  .dark :where(.from-white) {
+    --tw-gradient-from: #0f172a var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(15, 23, 42, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.via-white) {
+    --tw-gradient-to: rgba(15, 23, 42, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), #0f172a var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
+  .dark :where(.to-white) {
+    --tw-gradient-to: #0f172a var(--tw-gradient-to-position);
+  }
+  /* The image-upload drop zone: from-slate-100 via-slate-50 to-slate-200. Its
+     `from` was already handled; the `via`/`to` were the light half of it. */
+  .dark :where(.via-slate-50) {
+    --tw-gradient-to: rgba(19, 31, 51, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), #131f33 var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
+  .dark :where(.to-slate-200) {
+    --tw-gradient-to: #243349 var(--tw-gradient-to-position);
+  }
   .dark :where(.to-slate-50) {
     --tw-gradient-to: #131f33 var(--tw-gradient-to-position);
   }
@@ -763,7 +810,7 @@
   }
 
   /* ── Rings ─────────────────────────────────────────────────────────────── */
-  .dark :where(.ring-slate-200) {
+  .dark :where(.ring-slate-200, .ring-stone-200, .ring-neutral-200) {
     --tw-ring-color: #243349;
   }
   .dark :where(.ring-slate-300) {

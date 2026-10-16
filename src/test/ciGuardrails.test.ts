@@ -65,6 +65,24 @@ function stepBlock(source: string, name: string): string {
   return [lines[start], ...block].join('\n');
 }
 
+/**
+ * The contiguous YAML comment block written directly above a step.
+ *
+ * Whole block, not just the nearest line: a comment explaining a flag is
+ * normally spread over several lines, so reading only `lastIndexOf` would
+ * assert against the tail of the sentence.
+ */
+function leadingCommentBlock(source: string, stepName: string): string {
+  const lines = source.split('\n');
+  const at = lines.findIndex((l) => l.includes(`- name: ${stepName}`));
+  if (at === -1) throw new Error(`workflow step not found: "${stepName}"`);
+  const collected: string[] = [];
+  for (let i = at - 1; i >= 0 && /^\s*#/.test(lines[i]); i--) {
+    collected.unshift(lines[i]);
+  }
+  return collected.join('\n');
+}
+
 /** Keys of a job's top-level `env:` block (a job's step env is nested deeper). */
 function jobEnvKeys(source: string, jobName: string): string[] {
   const lines = source.split('\n');
@@ -355,5 +373,41 @@ describe('backend-deploy.yml — a deploy is never green with an unrun pentest',
       expect(DEPLOY.indexOf(`- name: ${step}`)).toBeGreaterThan(guardAt);
     }
     expect(guard).toMatch(/exit 1/);
+  });
+
+  /**
+   * Measured 2026-10-15, run 38719764730 — the exact shape of a green-looking
+   * guard over a deploy that never happened:
+   *
+   *   mode: pre | files: 292 | remote-applied: 276 | pending: 15
+   *   Pre-flight OK — 15 migration(s) pending; db push will apply them.
+   *   npx supabase db push --db-url "$SUPABASE_DB_URL"
+   *   Found local migration files to be inserted before the last migration on
+   *   remote database. Rerun the command with --include-all flag …
+   *   ##[error]Process completed with exit code 1.
+   *
+   * The drift gate passed, the push was correct — and the CLI still exited 1,
+   * because commit a3a5511 recovered 48 migration files from the live DB and the
+   * recovered versions sort BEFORE migrations applied later. So every deploy was
+   * red at this step and the live DB stayed 15 migrations behind origin/main.
+   * Removing `--include-all` re-breaks it in exactly the same silent way.
+   */
+  it('passes --include-all, the flag the CLI requires for an out-of-order migration', () => {
+    const push = stepBlock(DEPLOY, 'Apply pending migrations (db push — no-op when in sync)');
+    expect(push).toMatch(/supabase db push --include-all/);
+    expect(push).toMatch(/--db-url "\$SUPABASE_DB_URL"/);
+    // Fail-closed ordering is untouched: the drift check still runs first.
+    expect(DEPLOY.indexOf('- name: Migration drift check')).toBeLessThan(
+      DEPLOY.indexOf('- name: Apply pending migrations')
+    );
+  });
+
+  it('keeps the reason next to the flag, so it cannot be "cleaned up" as redundant', () => {
+    const leadingComment = leadingCommentBlock(DEPLOY, 'Apply pending migrations (db push — no-op when in sync)');
+    expect(leadingComment).toContain('--include-all');
+    // The failure it prevents must be named, not just the flag spelled out.
+    expect(leadingComment).toMatch(/out-of-order|sorts BEFORE|before the newest version/i);
+    // And why it is safe: only repo migrations are ever applied.
+    expect(leadingComment).toMatch(/repo|source of truth/i);
   });
 });
