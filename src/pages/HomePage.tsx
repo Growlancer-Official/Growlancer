@@ -76,7 +76,7 @@ function HeroSection({
           <div className="lg:col-span-6 lg:pr-4">
             <div className="inline-flex items-center gap-3 rounded-full bg-white ring-1 ring-slate-200 px-3 py-1.5 shadow-sm opacity-0 translate-y-2 animate-fade-up">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="text-xs font-medium text-slate-600">Growlancer · AI-Powered Freelancing Marketplace</span>
+              <span className="text-xs font-sans font-sans font-sans font-sans font-sans font-medium text-slate-600">Growlancer · AI-Powered Freelancing Marketplace</span>
             </div>
 
             <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 opacity-0 translate-y-2 animate-fade-up animation-delay-80 font-display leading-[1.1]">
@@ -92,14 +92,14 @@ function HeroSection({
             <div className="mt-7 flex flex-col sm:flex-row gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-200">
               <button 
                 onClick={handleStartHiring}
-                className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
+                className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-600 text-white font-sans font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
               >
                 {isAuthenticated ? (role === 'client' ? 'Post a Project' : 'Browse Projects') : 'Start Hiring'}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </button>
               <button 
                 onClick={handleStartFreelancing}
-                className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
+                className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-700 font-sans font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
               >
                 {isAuthenticated ? (role === 'freelancer' ? 'Browse Projects' : 'Post a Project') : 'Start Freelancing'}
                 <ArrowRight className="ml-2 w-4 h-4 text-emerald-500" />
@@ -130,7 +130,7 @@ function HeroSection({
                 number arrives, so no visitor ever sees an inflated claim. */}
             {members !== null && (
               <div className="mt-7 text-xs sm:text-sm text-slate-400 opacity-0 translate-y-2 animate-fade-up animation-delay-300">
-                Trusted by <span className="font-semibold text-slate-600">{members.toLocaleString('en-US')}</span>{' '}
+                Trusted by <span className="font-sans font-sans font-sans font-sans font-semibold text-slate-600">{members.toLocaleString('en-US')}</span>{' '}
                 member{members === 1 ? '' : 's'}
                 {countries !== null && countries > 0
                   ? <> across {countries.toLocaleString('en-US')} {countries === 1 ? 'country' : 'countries'}</>
@@ -146,9 +146,9 @@ function HeroSection({
                 { label: 'For teams', title: 'One workspace', desc: 'Escrow, files, feedback' },
               ].map((item) => (
                 <div key={item.label} className="rounded-xl bg-white ring-1 ring-slate-200/70 p-3 shadow-sm hover:shadow-md hover:ring-emerald-200/50 transition-all duration-200">
-                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{item.label}</div>
-                  <div className="mt-1 text-sm font-semibold tracking-tight text-slate-900">{item.title}</div>
-                  <div className="mt-0.5 text-xs text-slate-500">{item.desc}</div>
+                  <div className="text-xs font-sans font-sans font-sans font-sans font-semibold text-slate-400 uppercase tracking-wider">{item.label}</div>
+                  <div className="mt-1 text-sm font-sans font-sans font-semibold tracking-tight text-slate-900">{item.title}</div>
+                  <div className="mt-0.5 text-xs font-sans text-slate-500">{item.desc}</div>
                 </div>
               ))}
             </div>
@@ -184,7 +184,7 @@ function HeroSection({
                       </div>
                       <div className="text-left">
                         <div className="text-xl font-bold font-display text-white">Growlancer</div>
-                        <div className="text-emerald-400 text-xs font-medium">AI-Powered Matching Engine</div>
+                        <div className="text-emerald-400 text-xs font-sans font-medium">AI-Powered Matching Engine</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3 w-full max-w-sm">
@@ -203,7 +203,7 @@ function HeroSection({
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
                       <button
                         onClick={() => isAuthenticated ? navigate(role === 'client' ? '/client/matches' : '/dashboard/feed') : onOpenSignup('client')}
-                        className="text-emerald-400 text-xs font-medium hover:text-emerald-300 transition-colors cursor-pointer"
+                        className="text-emerald-400 text-xs font-sans font-medium hover:text-emerald-300 transition-colors cursor-pointer"
                       >
                         Live AI Matching Engine — Try Now →
                       </button>
@@ -232,8 +232,8 @@ function HeroSection({
                     <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br ring-1 mb-2 group-hover:scale-105 group-hover:shadow-lg transition-all duration-200 ${colorMap[color]}`}>
                       <Icon className="w-5 h-5" />
                     </div>
-                    <div className="text-xs font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors">{label}</div>
-                    <div className="text-xs text-slate-500 mt-0.5 leading-tight">{desc}</div>
+                    <div className="text-xs font-sans font-sans font-sans font-sans font-sans font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors">{label}</div>
+                    <div className="text-xs font-sans text-slate-500 mt-0.5 leading-tight">{desc}</div>
                   </div>
                 );
               })}
@@ -278,7 +278,7 @@ function HowItWorksSection() {
       <div className={CONTAINER}>
         <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-10 lg:mb-12">
           <div className="max-w-2xl">
-            <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">How it works</div>
+            <div className="text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">How it works</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
               A simple 3-step system
             </h2>
@@ -300,7 +300,7 @@ function HowItWorksSection() {
                 </div>
                 <span className="text-2xl font-bold text-slate-200 font-display">{step.number}</span>
               </div>
-              <h3 className="text-base font-semibold tracking-tight text-slate-900">{step.title}</h3>
+              <h3 className="text-base font-sans font-semibold tracking-tight text-slate-900">{step.title}</h3>
               <p className="mt-1.5 text-sm text-slate-500 leading-relaxed">{step.desc}</p>
             </div>
           ))}
@@ -377,8 +377,8 @@ function WhyDifferentSection() {
       <div className={CONTAINER}>
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-14">
-          <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Why Growlancer</div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-900 font-display mb-2">
+          <div className="text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Why Growlancer</div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-sans font-sans font-bold text-slate-900 font-display mb-2">
             Built Different — How We Stand Out
           </h2>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
@@ -397,8 +397,8 @@ function WhyDifferentSection() {
                     <item.icon className="text-emerald-600 w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Growlancer</div>
-                    <div className="text-sm font-medium text-slate-800">{item.growlancer}</div>
+                    <div className="text-xs font-sans font-sans font-sans font-sans font-bold text-emerald-600 uppercase tracking-widest">Growlancer</div>
+                    <div className="text-sm font-sans font-medium text-slate-800">{item.growlancer}</div>
                   </div>
                 </div>
               </div>
@@ -432,7 +432,7 @@ function WhyDifferentSection() {
                     <Icon className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 mb-1.5">{pillar.title}</h3>
+                    <h3 className="text-base font-sans font-sans font-bold text-slate-900 mb-1.5">{pillar.title}</h3>
                     <p className="text-sm text-slate-500 leading-relaxed">{pillar.desc}</p>
                   </div>
                 </div>
@@ -456,7 +456,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
           {/* Left Content */}
           <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4 lg:p-10">
             <div>
-              <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-1">For freelancers</div>
+              <div className="text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-1">For freelancers</div>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
                 Stop chasing projects
               </h2>
@@ -476,7 +476,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
                 <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:bg-emerald-50/50 hover:ring-emerald-200/50 transition-all duration-200">
                   <div className="flex items-center gap-3 mb-1.5">
                     <Icon className="text-slate-600 w-4 h-4" />
-                    <div className="text-sm font-semibold text-slate-900">{title}</div>
+                    <div className="text-sm font-sans font-sans font-sans font-semibold text-slate-900">{title}</div>
                   </div>
                   <div className="text-xs sm:text-sm text-slate-500">{desc}</div>
                 </div>
@@ -486,14 +486,14 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={() => onOpenSignup('freelancer')} 
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
+                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-sans font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
               >
                 Create Freelancer Profile
                 <ArrowRight className="ml-2 w-4 h-4" />
               </button>
               <Link 
                 to={ROUTES.FEATURES} 
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
+                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
               >
                 Explore features
               </Link>
@@ -505,7 +505,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
             <div className="absolute -top-16 -right-20 h-56 w-56 rounded-full bg-emerald-600/20" />
             <div className="absolute -bottom-16 -left-20 h-56 w-56 rounded-full bg-orange-500/15" />
             <div className="relative">
-              <div className="text-xs font-semibold text-white/50 uppercase tracking-widest">Freelancer-first detail</div>
+              <div className="text-xs font-sans font-sans font-semibold text-white/50 uppercase tracking-widest">Freelancer-first detail</div>
               <div className="mt-2 text-xl sm:text-2xl font-bold tracking-tight font-display">Signal-based matching</div>
               <p className="mt-3 text-sm text-white/70 leading-relaxed">
                 Your availability, focus areas, and recent work matter. Growlancer prioritizes fit over volume.
@@ -519,7 +519,7 @@ function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
                 ].map(({ icon: Icon, title, desc }) => (
                   <div key={title} className="rounded-xl bg-white/10 ring-1 ring-white/10 p-3.5 hover:bg-white/15 transition-colors">
                     <div className="flex items-center justify-between gap-3 mb-1">
-                      <div className="text-sm font-medium text-white">{title}</div>
+                      <div className="text-sm font-sans font-medium text-white">{title}</div>
                       <Icon className="text-white/60 w-4 h-4" />
                     </div>
                     <div className="text-xs text-white/60">{desc}</div>
@@ -557,7 +557,7 @@ function ClientSection({
                 <Timer className="text-orange-600 w-5 h-5" />
               </div>
               <div>
-                <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">For clients</div>
+                <div className="text-xs font-sans font-sans font-semibold text-slate-400 uppercase tracking-widest">For clients</div>
                 <div className="text-lg font-bold tracking-tight text-slate-900">Stop wasting time hiring</div>
               </div>
             </div>
@@ -571,7 +571,7 @@ function ClientSection({
               ].map(({ bold, text }) => (
                 <li key={bold} className="flex gap-3.5">
                   <CheckCircle2 className="text-emerald-600 w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <div><span className="font-semibold text-slate-800">{bold}</span>{text}</div>
+                  <div><span className="font-sans font-sans font-sans font-semibold text-slate-800">{bold}</span>{text}</div>
                 </li>
               ))}
             </ul>
@@ -585,7 +585,7 @@ function ClientSection({
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="rounded-lg bg-slate-50 ring-1 ring-slate-200/70 px-2 py-2.5 flex items-center justify-center gap-1.5">
                   <Icon className="text-emerald-600 w-4 h-4 flex-shrink-0" />
-                  <span className="text-xs font-semibold text-slate-600 leading-tight">{label}</span>
+                  <span className="text-xs font-sans font-sans font-sans font-semibold text-slate-600 leading-tight">{label}</span>
                 </div>
               ))}
             </div>
@@ -597,7 +597,7 @@ function ClientSection({
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
-                <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Live platform metrics</span>
+                <span className="text-xs font-sans font-sans font-sans font-sans font-semibold text-emerald-700 uppercase tracking-wider">Live platform metrics</span>
               </div>
               <div className="grid grid-cols-3 gap-3">
                 {[
@@ -606,7 +606,7 @@ function ClientSection({
                   { value: metrics[2]?.value ?? '…', label: 'Satisfaction' },
                 ].map(({ value, label }) => (
                   <div key={label} className="rounded-lg bg-white/90 ring-1 ring-emerald-100/70 py-2.5 px-1 text-center">
-                    <div className="text-base sm:text-lg font-bold text-slate-900 leading-none">{value}</div>
+                    <div className="text-base sm:text-lg font-sans font-sans font-bold text-slate-900 leading-none">{value}</div>
                     <div className="text-xs text-slate-500 mt-1.5 leading-tight">{label}</div>
                   </div>
                 ))}
@@ -616,14 +616,14 @@ function ClientSection({
             <div className="mt-5 flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={() => onOpenSignup('client')} 
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
+                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-sans font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
               >
                 Get Started
                 <ArrowRight className="ml-2 w-4 h-4" />
               </button>
               <Link 
                 to={ROUTES.CATEGORIES} 
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
+                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
               >
                 Browse categories
               </Link>
@@ -633,7 +633,7 @@ function ClientSection({
           {/* Right Content */}
           <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4">
             <div>
-              <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Client workflow preview</div>
+              <div className="text-xs font-sans font-sans font-semibold text-slate-400 uppercase tracking-widest">Client workflow preview</div>
               <h3 className="mt-2 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-display">
                 From brief to escrow, without tool chaos
               </h3>
@@ -652,7 +652,7 @@ function ClientSection({
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:bg-orange-50/50 hover:ring-orange-200/50 transition-all duration-200">
                   <div className="flex items-center justify-between mb-1">
-                    <div className="text-sm font-semibold text-slate-900">{title}</div>
+                    <div className="text-sm font-sans font-sans font-sans font-semibold text-slate-900">{title}</div>
                     <Icon className="text-slate-400 w-4 h-4" />
                   </div>
                   <div className="text-xs sm:text-sm text-slate-500">{desc}</div>
@@ -664,7 +664,7 @@ function ClientSection({
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3">
                   <Zap className="text-emerald-600 w-4 h-4" />
-                  <span className="text-sm font-semibold text-slate-800">Real-time ready by design</span>
+                  <span className="text-sm font-sans font-sans font-sans font-semibold text-slate-800">Real-time ready by design</span>
                 </div>
                 <span className="text-xs sm:text-sm text-slate-500">
                   Messages, milestones, and escrow updates sync live.
@@ -692,7 +692,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
           <div className="mb-3 flex items-center gap-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs">
             <AlertCircle className="w-4 h-4 flex-shrink-0" />
             <span>Could not load live category data.</span>
-            <button onClick={refresh} className="ml-auto text-xs font-medium text-amber-700 underline hover:text-amber-800 whitespace-nowrap">
+            <button onClick={refresh} className="ml-auto text-xs font-sans font-medium text-amber-700 underline hover:text-amber-800 whitespace-nowrap">
               Retry
             </button>
           </div>
@@ -700,7 +700,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
 
         <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-2 lg:mb-10">
           <div className="max-w-2xl">
-            <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Categories</div>
+            <div className="text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Categories</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
               Browse All Categories
             </h2>
@@ -714,15 +714,14 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
           <div className="flex items-center gap-3">
             <Link
               to={ROUTES.CATEGORIES}
-              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-white text-slate-700 font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
+              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
             >
               View All
               <ArrowRight className="ml-2 w-4 h-4" />
-            </Link>
-            <button 
-              onClick={() => onOpenSignup('client')} 
-              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
-            >
+            </Link><button 
+                onClick={() => onOpenSignup('client')} 
+                className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-sans font-sans font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
+              >
               Hire talent
               <ArrowRight className="ml-2 w-4 h-4" />
             </button>
@@ -736,7 +735,7 @@ function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer
         <div className="mt-6 text-center">
           <Link
             to={ROUTES.CATEGORIES}
-            className="inline-flex items-center gap-3 px-5 py-2.5 bg-white text-emerald-600 font-semibold rounded-xl border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all text-sm shadow-sm"
+            className="inline-flex items-center gap-3 px-5 py-2.5 bg-white text-emerald-600 font-sans font-semibold rounded-xl border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all text-sm shadow-sm"
           >
             <Layers className="w-4 h-4" />
             Explore All {categories.length} Categories
@@ -837,7 +836,7 @@ function LiveServicesSection() {
       <div className={CONTAINER}>
         <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-2 lg:mb-10">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-3 text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">
+            <div className="inline-flex items-center gap-3 text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
@@ -853,7 +852,7 @@ function LiveServicesSection() {
           </div>
           <Link
             to={ROUTES.SERVICES}
-            className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
+            className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-sans font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
           >
             Browse All Services
             <ArrowRight className="ml-2 w-4 h-4" />
@@ -904,11 +903,11 @@ function LiveServicesSection() {
                 )}
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 group-hover:text-emerald-700 transition-colors">
+                    <h3 className="font-sans font-sans font-sans font-sans font-semibold text-slate-900 text-sm leading-snug line-clamp-2 group-hover:text-emerald-700 transition-colors">
                       {service.title}
                     </h3>
                     <span className="text-right shrink-0">
-                      <span className="block text-[9px] uppercase tracking-wide text-slate-400 font-semibold leading-none mb-0.5">From</span>
+                      <span className="block text-[9px] uppercase tracking-wide text-slate-400 font-sans font-semibold leading-none mb-0.5">From</span>
                       <span className="flex items-center gap-0.5 font-bold text-emerald-700 text-sm">
                         <IndianRupee className="w-4 h-4" />
                         {serviceFromPrice(service).toLocaleString('en-IN')}
@@ -924,7 +923,7 @@ function LiveServicesSection() {
                           {(service.freelancer?.name || 'F')[0]}
                         </span>
                       )}
-                      <span className="text-xs text-slate-500 font-medium truncate">
+                      <span className="text-xs text-slate-500 font-sans font-medium truncate">
                         {service.freelancer?.name || 'Freelancer'}
                       </span>
                     </span>
@@ -964,7 +963,7 @@ function FeaturesSection() {
     <section className={SECTION_PADDING_SM}>
       <div className={CONTAINER}>
         <div className="max-w-2xl mb-2 lg:mb-10">
-          <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Features</div>
+          <div className="text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Features</div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">Product features</h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
             Minimal surface area, high leverage. Every feature supports speed, trust, and collaboration.
@@ -979,7 +978,7 @@ function FeaturesSection() {
                 <div className={`h-10 w-10 rounded-xl ring-1 flex items-center justify-center ${styles.bg} group-hover:scale-110 transition-transform`}>
                   <feat.icon className="w-5 h-5" />
                 </div>
-                <div className="mt-3.5 text-base font-semibold tracking-tight text-slate-900">{feat.title}</div>
+                <div className="mt-3.5 text-base font-sans font-semibold tracking-tight text-slate-900">{feat.title}</div>
                 <p className="mt-1 text-sm text-slate-500 leading-relaxed">{feat.desc}</p>
               </div>
             );
@@ -1001,7 +1000,7 @@ function PricingSection() {
           <div className="p-3 sm:p-4 lg:p-10">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
               <div className="max-w-2xl">
-                <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Pricing</div>
+                <div className="text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Pricing</div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
                   Pricing that stays transparent
                 </h2>
@@ -1015,7 +1014,7 @@ function PricingSection() {
                     <Receipt className="text-emerald-600 w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-slate-800">Fee clarity, upfront</div>
+                    <div className="text-sm font-sans font-sans font-sans font-semibold text-slate-800">Fee clarity, upfront</div>
                     <div className="mt-0.5 text-xs text-slate-500">Clients post without friction. Freelancers focus on fit, not bidding.</div>
                   </div>
                 </div>
@@ -1032,7 +1031,7 @@ function PricingSection() {
                   <div className="flex items-start gap-3">
                     <Icon className="text-emerald-600 w-4 h-4 mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="text-sm font-semibold text-slate-800">{title}</div>
+                      <div className="text-sm font-sans font-sans font-sans font-semibold text-slate-800">{title}</div>
                       <div className="mt-0.5 text-xs text-slate-500">{desc}</div>
                     </div>
                   </div>
@@ -1057,7 +1056,7 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
           <div className="p-3 sm:p-4 lg:p-10">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
               <div className="max-w-2xl">
-                <div className="text-xs font-semibold text-violet-600 uppercase tracking-widest mb-2">Team Projects</div>
+                <div className="text-xs font-sans font-semibold text-violet-600 uppercase tracking-widest mb-2">Team Projects</div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
                   Hire a whole team for big projects
                 </h2>
@@ -1068,7 +1067,7 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
                 </p>
                 <button
                   onClick={() => onOpenSignup('client')}
-                  className="mt-5 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
+                  className="mt-5 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
                 >
                   Post a Team Project
                   <ArrowRight className="ml-2 w-4 h-4" />
@@ -1080,7 +1079,7 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
                     <Users className="text-violet-600 w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-slate-800">How team hiring works</div>
+                    <div className="text-sm font-sans font-sans font-sans font-semibold text-slate-800">How team hiring works</div>
                     <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">
                       Add a role → AI matches in real time → each role gets its own independent escrow contract.
                       Commission (5%) per contract — no separate team fee.
@@ -1105,7 +1104,7 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
                   <div className="flex items-start gap-3">
                     <Icon className="text-violet-600 w-4 h-4 mt-0.5 flex-shrink-0" />
                     <div>
-                      <div className="text-sm font-semibold text-slate-800">{title}</div>
+                      <div className="text-sm font-sans font-sans font-sans font-semibold text-slate-800">{title}</div>
                       <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">{desc}</div>
                     </div>
                   </div>
@@ -1128,7 +1127,7 @@ function TrustSection() {
       <div className={CONTAINER}>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-3">
           <div className="lg:col-span-5">
-            <div className="text-xs font-semibold text-emerald-600 uppercase tracking-widest mb-2">Trust</div>
+            <div className="text-xs font-sans font-sans font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Trust</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
               Built for trust from day one
             </h2>
@@ -1140,8 +1139,8 @@ function TrustSection() {
               <div className="flex items-start gap-3">
                 <Eye className="text-emerald-600 w-5 h-5 mt-0.5 flex-shrink-0" />
                 <div>
-                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Platform philosophy</div>
-                  <div className="mt-1 text-sm font-semibold text-slate-800">Clarity beats hype.</div>
+                  <div className="text-xs font-sans font-sans font-semibold text-slate-400 uppercase tracking-widest">Platform philosophy</div>
+                  <div className="mt-1 text-sm font-sans font-sans font-sans font-semibold text-slate-800">Clarity beats hype.</div>
                   <div className="mt-1 text-xs text-slate-500">
                     We avoid vanity metrics and focus on workflow transparency and safer collaboration.
                   </div>
@@ -1160,7 +1159,7 @@ function TrustSection() {
                 <div className={`h-10 w-10 rounded-xl ring-1 flex items-center justify-center ${bg} group-hover:scale-110 transition-transform`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <div className="mt-3.5 text-base font-semibold tracking-tight text-slate-900">{title}</div>
+                <div className="mt-3.5 text-base font-sans font-semibold tracking-tight text-slate-900">{title}</div>
                 <p className="mt-1 text-sm text-slate-500 leading-relaxed">{desc}</p>
               </div>
             ))}
@@ -1322,7 +1321,7 @@ function WaitlistSection() {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="inline-flex items-center justify-center h-12 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-semibold text-slate-900 disabled:opacity-50 gap-3 whitespace-nowrap text-sm"
+                      className="inline-flex items-center justify-center h-12 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-sans font-sans font-sans font-semibold text-slate-900 disabled:opacity-50 gap-3 whitespace-nowrap text-sm"
                     >
                       {isLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -1373,14 +1372,14 @@ function CTASection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'cl
               <div className="lg:col-span-5 flex flex-col sm:flex-row lg:flex-col gap-3 lg:items-stretch">
                 <button 
                   onClick={() => onOpenSignup('client')} 
-                  className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-colors font-semibold text-slate-900 w-full text-sm"
+                  className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-colors font-sans font-sans font-sans font-semibold text-slate-900 w-full text-sm"
                 >
                   Get Started
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </button>
                 <button 
                   onClick={() => onOpenSignup('freelancer')} 
-                  className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-800 hover:bg-slate-100 transition-colors font-semibold w-full text-sm"
+                  className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-800 hover:bg-slate-100 transition-colors font-sans font-semibold w-full text-sm"
                 >
                   Start Freelancing
                   <ArrowRight className="ml-2 w-4 h-4" />

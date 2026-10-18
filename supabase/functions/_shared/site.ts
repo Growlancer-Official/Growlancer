@@ -27,18 +27,28 @@ const RAW_APP_URL = (Deno.env.get('APP_URL') ?? '').trim();
  */
 export const FALLBACK_SITE_URL = 'https://growlancer.vercel.app';
 
-/** Absolute site origin, no trailing slash. */
+// 🔍 Absolute site origin, no trailing slash.
+// Uses APP_URL secret when configured (production domain),// falls back to live Vercel URL when secret is missing.
 export const SITE_URL: string = (RAW_APP_URL || FALLBACK_SITE_URL).replace(/\/+$/, '');
 
 if (!RAW_APP_URL) {
   console.warn(
-    `[site] APP_URL is not configured — falling back to ${FALLBACK_SITE_URL}. ` +
-      'Email links and payment redirects will use that origin. ' +
-      'Set the canonical domain with: supabase secrets set APP_URL=https://<domain>',
+    `[site] APP_URL is not configured — falling back to ${FALLBACK_SITE_URL}. `,
+    'Email links and payment redirects will use that origin. ',
+    'Set the canonical domain with: supabase secrets set APP_URL=https://<domain>'
   );
 }
 
 /** Build an absolute URL for a site-relative path (`''` -> the origin). */
+
+// 🔍 Enhanced: Log when email verification links would use fallback domain
+// This helps track if APP_URL needs to be set for production email deliverability
+if (!RAW_APP_URL && typeof window !== 'undefined') {
+  // Only log on browser runtime — not during SSG/ISR builds
+  devLog('[site] APP_URL not configured — email verification links using Vercel fallback domain');
+}
+
+// 🔍 Build an absolute URL for a site-relative path (`''` -> the origin).// Uses SITE_URL which respects APP_URL secret or falls back to Vercel URL.
 export function siteUrl(path = ''): string {
   const suffix = String(path ?? '');
   if (!suffix) return SITE_URL;
