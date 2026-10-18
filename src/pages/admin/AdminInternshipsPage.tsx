@@ -1016,7 +1016,7 @@ export function AdminInternshipsPage() {
                               type="date"
                               value={interviewDateInput[app.id] ?? (app.interview_time ? app.interview_time.slice(0, 10) : '')}
                               onChange={(e) => setInterviewDateInput(prev => ({ ...prev, [app.id]: e.target.value }))}
-                              className="w-full pl-8 pr-2 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 [color-scheme:dark] transition-all"
+                              className="w-full pl-8 pr-2 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 on-dark-surface transition-all"
                             />
                           </div>
                         </div>
@@ -1034,7 +1034,7 @@ export function AdminInternshipsPage() {
                               step="900"
                               value={interviewTimeInput[app.id] ?? (app.interview_time ? app.interview_time.slice(11, 16) : '')}
                               onChange={(e) => setInterviewTimeInput(prev => ({ ...prev, [app.id]: e.target.value }))}
-                              className="w-full pl-8 pr-2 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 [color-scheme:dark] transition-all"
+                              className="w-full pl-8 pr-2 py-2.5 bg-slate-800/50 border border-white/5 rounded-xl text-xs text-slate-300 focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500/50 on-dark-surface transition-all"
                             />
                           </div>
                         </div>

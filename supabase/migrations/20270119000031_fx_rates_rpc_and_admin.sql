@@ -95,6 +95,10 @@ AS $$
 DECLARE
   v_caller uuid := auth.uid();
   v_is_admin boolean;
+  -- Target of the RETURNING clause below. It was referenced without being
+  -- declared, which makes CREATE FUNCTION fail outright (42601 "is not a known
+  -- variable") — i.e. this migration had never once applied.
+  v_rate_value_for jsonb;
 BEGIN
   -- Admin authz: from profiles.role (same source-of-truth the admin guard
   -- consistently uses). If the caller is a service role context (cron / edge
@@ -128,9 +132,15 @@ BEGIN
     'base_currency', base_currency,
     'target_currency', target_currency,
     'rate', rate
-  ) INTO v_rate_value_for RETURN;
+  ) INTO v_rate_value_for;
 
-  RETURN jsonb_build_object('success', false, 'error', 'Could not set rate');
+  -- A bare `RETURN;` is illegal in a function that RETURNS jsonb (42601), so
+  -- return the row we just upserted, and keep the fallback for a no-row RETURNING.
+  IF v_rate_value_for IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Could not set rate');
+  END IF;
+
+  RETURN v_rate_value_for;
 END;
 $$;
 
@@ -241,12 +251,17 @@ BEGIN
      AND rate = 0.012
      AND created_at >= now() - interval '5 minutes';
 
-  -- Confirm the positive control row is gone again.
-  PERFORM 1
-    FROM public.fx_rates
-   WHERE base_currency = 'INR'
-     AND target_currency = 'USD'
-     AND rate = 0.012
-     AND created_at >= now() - interval '5 minutes';
-  RAISE EXCEPTION 'POSITIVE CONTROL FAILED: positive control row still present after cleanup';
+  -- Confirm the positive control row is gone again. This used to be an
+  -- UNCONDITIONAL `PERFORM …; RAISE EXCEPTION …` — i.e. the block threw even
+  -- when cleanup worked, so this migration could never succeed. The guard must
+  -- depend on what the query found.
+  IF EXISTS (
+    SELECT 1
+      FROM public.fx_rates
+     WHERE base_currency = 'INR' AND target_currency = 'USD'
+       AND rate = 0.012
+       AND created_at >= now() - interval '5 minutes'
+  ) THEN
+    RAISE EXCEPTION 'POSITIVE CONTROL FAILED: positive control row still present after cleanup';
+  END IF;
 END $control$;

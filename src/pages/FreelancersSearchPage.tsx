@@ -195,7 +195,7 @@ export function FreelancersSearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-slate-50">
       {/* Hero */}
       <section className="bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-600 text-white py-6">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">

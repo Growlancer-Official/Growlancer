@@ -309,7 +309,7 @@ export function VerifyEmailPage() {
   //    green banner appears in real time, then "I've verified, continue"
   //    takes them to the next steps) ──
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4">
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 p-8 md:p-10">
           {/* Logo */}

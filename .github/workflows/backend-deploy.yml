@@ -17,12 +17,6 @@ on:
       - 'supabase/config.toml'
       - '.github/workflows/backend-deploy.yml'
   workflow_dispatch:
-    inputs:
-      migrations_applied:
-        description: 'Have you manually pushed all pending migrations? (true/false)'
-        required: true
-        default: 'false'
-        type: boolean
 
 concurrency:
   group: backend-deploy-${{ github.ref }}
@@ -56,9 +50,9 @@ jobs:
       # secret + the fixed regional pooler host. The value is never echoed; it is
       # exported for the migration steps only. Fails closed if neither source exists.
       - name: Resolve DB connection (from SUPABASE_DB_PASSWORD â€” value never printed)
-        if: github.event_name == 'workflow_dispatch' && env.MIGRATIONS_APPLIED == 'true'
-        SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
-        SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: |
           if [ -n "$SUPABASE_DB_URL" ]; then
             echo "SUPABASE_DB_URL_RESOLVED=$SUPABASE_DB_URL" >> "$GITHUB_ENV"
@@ -104,45 +98,102 @@ jobs:
       #        (Treating it as drift made every new migration undeployable.)
       # `post` (after db push): both directions must be empty, which proves the
       #        push actually landed every pending migration.
-      # NOTE: `migration list --output json` is NOT supported by the CLI — it
-# prints a human table. Compare REMOTE-applied versions (column 2) against
-# repo migration files. --db-url avoids the interactive password prompt.
-#
-# `pre`  (before db push): only remote-only entries are drift. A migration
-#       that exists in the repo but is not applied yet is PENDING — that is
-#       precisely what the next step pushes, so it must not fail the gate.
-#       (Treating it as drift made every new migration undeployable.)
-# `post` (after db push): both directions must be empty, which proves the
-#       push actually landed every pending migration.
-#
-# CURRENT STATE: The pre-push drift-check gate is DEFECTIVE (treats blank remote
-# entries as local-only drift). Disabling it until fixed; db push below is manual.
-      - name: Skip migration drift-check (defective — manual review required)
-        if: github.event_name == 'workflow_dispatch' && env.MIGRATIONS_APPLIED == 'true'
+      - name: Write migration drift-check helper
         run: |
-          echo "::notice::migration drift-check DISABLED — the pre-push gate is broken (treats blank DB entries as local-only drift). Manual review required before deploy.";
-          echo "Pre-push drift gate: SKIPPED (defective, tracked)";
+          cat > /tmp/driftcheck.mjs << 'EOF'
+          import fs from 'fs';
+          import { execSync } from 'child_process';
+          const mode = process.argv[2] || 'pre';
+          const dbUrl = process.env.SUPABASE_DB_URL;
+          const out = execSync('npx supabase migration list --db-url ' + JSON.stringify(dbUrl), {encoding:'utf8', stdio:['ignore','pipe','ignore'], shell:true});
+          const remote = new Set();
+          for (const line of out.split(/\r?\n/)) {
+            if (!line.includes('|')) continue;
+            const c = line.split('|').map(s => s.trim().replace(/`/g, ''));
+            if (c.length >= 2 && /^\d{6,}$/.test(c[1])) remote.add(c[1]);
+          }
+          const files = fs.readdirSync('supabase/migrations').filter(f => f.endsWith('.sql') && f !== 'README.md');
+          const fileVersions = new Set(files.map(f => f.match(/^(\d{6,})/)?.[1]).filter(Boolean));
+          const remoteOnly = [...remote].filter(v => !fileVersions.has(v));
+          const localOnly = [...fileVersions].filter(v => !remote.has(v));
+          // Two repo files under one version is a silent deploy-killer, measured
+          // 2026-10-15: `supabase db push` matches a repo file to a live row BY
+          // VERSION, so when 20270119000000 named two different files only the
+          // first could ever match. The second looked permanently unapplied, and
+          // the attempt to apply it failed with a duplicate-key error on
+          // schema_migrations -- reporting the misleading "a migration in the
+          // local directory does not exist on the remote database". Nothing else
+          // catches it: the file is valid SQL, and the version is not drift in
+          // either direction (both files' version IS applied). Fail here, naming
+          // both files, so the fix is a renumber rather than a push flag.
+          const versionFiles = new Map();
+          for (const f of files) {
+            const v = f.match(/^(\d{6,})/)?.[1];
+            if (!v) continue;
+            versionFiles.set(v, [...(versionFiles.get(v) || []), f]);
+          }
+          const duplicates = [...versionFiles.entries()].filter(([, group]) => group.length > 1);
+          console.log('mode:', mode, '| files:', files.length, '| remote-applied:', remote.size, '| pending:', localOnly.length, '| duplicate versions:', duplicates.length);
+          for (const [v, group] of duplicates) {
+            console.error('::error::duplicate migration version ' + v + ' in repo (one version must name exactly one migration): ' + group.join(', '));
+          }
+          for (const v of remoteOnly) console.error('::error::remote-only migration (in DB, missing from repo): ' + v);
+          if (mode === 'post') {
+            for (const v of localOnly) console.error('::error::local-only migration (still not applied after db push): ' + v);
+          }
+          const drift = mode === 'post' ? (remoteOnly.length || localOnly.length) : remoteOnly.length;
+          const failed = drift || duplicates.length;
+          if (failed) {
+            if (duplicates.length) {
+              console.error('::error::resolve the duplicate version(s) above by renumbering one file to a version no migration uses â€” NOT by adding `db push` flags, which would hide which file is really live');
+            }
+            console.error('::error::migration drift detected â€” resolve with `supabase migration fetch` (adopt what is live) or a new migration file BEFORE deploying');
+            process.exit(1);
+          }
+          if (mode === 'post') {
+            console.log('Post-push OK â€” every repo migration is applied and nothing is live-only.');
+          } else if (localOnly.length) {
+            console.log('Pre-flight OK â€” ' + localOnly.length + ' migration(s) pending; db push will apply them.');
+          } else {
+            console.log('Pre-flight OK â€” repo and live DB already in sync.');
+          }
+          EOF
 
-      - name: Apply pending migrations (db push — interactive, requires review)
-        if: github.event_name == 'workflow_dispatch' && env.MIGRATIONS_APPLIED == 'true'
+      - name: Migration drift check (repo vs live DB â€” fail-closed)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
+        run: node /tmp/driftcheck.mjs pre
+
+      # Deliberately NOT `--include-all`. Measured 2026-10-15, run 38719764730:
+      # the CLI exited 1 with "Found local migration files to be inserted before
+      # the last migration on remote database. Rerun the command with
+      # --include-all flag". The tempting read was "an out-of-order migration,
+      # use the flag" -- but the real defect was that TWO repo files shared
+      # version 20270119000000, and only the lexicographically-first of them
+      # (20270119000000_harden_internship_auth_policy_and_monitor.sql) can match
+      # the live row. The other one therefore sorted as an unapplied migration
+      # forever, and pushing it tried to insert that version a second time
+      # (duplicate key on schema_migrations). `--include-all` does not fix a
+      # duplicate version: it forces the rogue file in anyway, so the deploy
+      # would have applied an unverified file while the CI line that caught the
+      # problem disappeared. Fixed at the source instead -- that file is now
+      # 20270127000000_fix_admin_credentials_rls_and_realtime.sql, which sorts
+      # after the newest applied version (20270119000027) and so applies with a
+      # plain push. The drift check above additionally fails closed on any
+      # duplicate version, so this class cannot come back silently.
+      - name: Apply pending migrations (db push â€” no-op when in sync)
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
         run: |
-          echo "::warning::db push requires manual confirmation due to migration table state. Review migrations before pushing.";
-          echo "To push pending migrations manually, run:";
-          echo "  npx supabase db push --include-all";
-          echo "::notice::db push step SKIPPED in CI — run manually after reviewing migrations";
+          npx supabase db push --db-url "$SUPABASE_DB_URL"
 
       - name: Verify migrations applied (repo == live DB)
-        if: github.event_name == 'workflow_dispatch' && env.MIGRATIONS_APPLIED == 'true'
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           SUPABASE_DB_URL: ${{ env.SUPABASE_DB_URL_RESOLVED }}
-        run: |
-          echo "::notice::post-push drift verification DISABLED (drift-check is defective).";
-          echo "After manual db push, verify with: npx supabase migration list --linked --project-ref $SUPABASE_PROJECT_REF"
-
+        run: node /tmp/driftcheck.mjs post
 
       - name: Deploy all edge functions from repo source
         env:
@@ -175,7 +226,6 @@ jobs:
       # derived from the project ref â€” it must be the REST/edge endpoint, NOT the
       # Postgres pooler URL the migration steps use.
       - name: Privilege + money-path pentest (against deployed DB)
-        if: github.event_name == 'workflow_dispatch' && env.MIGRATIONS_APPLIED == 'true'
         env:
           SUPABASE_URL: https://${{ env.SUPABASE_PROJECT_REF }}.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
@@ -202,7 +252,6 @@ jobs:
       # It exits 1 on any finding and prints `vacuous` notes where a probe had no
       # data to hide, so an empty table is never counted as a pass.
       - name: Whole-surface audit (anon x cross-user x invariants)
-        if: github.event_name == 'workflow_dispatch' && env.MIGRATIONS_APPLIED == 'true'
         env:
           SUPABASE_URL: https://${{ env.SUPABASE_PROJECT_REF }}.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

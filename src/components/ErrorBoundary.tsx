@@ -57,7 +57,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       const { error, componentStack, eventId } = this.state;
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC] p-4 sm:p-3">
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 sm:p-3">
           <div className="w-full max-w-lg text-center bg-white rounded-xl shadow-lg p-4 sm:p-3 border border-slate-200">
             {/* Error icon */}
             <div className="mx-auto mb-2.5 w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center">

@@ -139,7 +139,7 @@ export function EmailConfirmPage() {
   }, [navigate, searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6 sm:p-8 text-center">
           <div className="flex justify-center mb-6">

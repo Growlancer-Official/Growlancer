@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import { type Certificate, type InternProfile } from '../lib/certificateService';
 import { verifyCredentialByCode, verifyCredentialByQR } from '../lib/credentialVerification';
+import { useTheme } from '../context/ThemeContext';
 
 // ─── Types ──────────────────────────────────────────────────────────
 type VerifyMode = 'idle' | 'verifying' | 'verified' | 'revoked' | 'replaced' | 'invalid' | 'rate_limited';
@@ -35,11 +36,6 @@ function formatMediumDate(dateStr: string): string {
   });
 }
 
-function detectSystemDark(): boolean {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-color-scheme: dark)').matches;
-}
-
 const typeTitle: Record<string, string> = {
   internship: 'Internship Certificate',
   lor: 'Letter of Recommendation',
@@ -47,27 +43,6 @@ const typeTitle: Record<string, string> = {
   skill_test: 'Skill Certification',
   achievement: 'Achievement Badge',
 };
-
-// ─── Theme Context ──────────────────────────────────────────────────
-function useTheme() {
-  const [dark, setDark] = useState(() => {
-    // 🛡️ SSR guard: this page is server-rendered (Vike) — `localStorage` does
-    // not exist on the server, and an unguarded read crashed SSR with
-    // "localStorage is not defined", which forced React to throw the whole
-    // page away and re-render it on the client only.
-    if (typeof window === 'undefined') return false;
-    const saved = localStorage.getItem('gl-verify-theme');
-    if (saved) return saved === 'dark';
-    return detectSystemDark();
-  });
-
-  useEffect(() => {
-    localStorage.setItem('gl-verify-theme', dark ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark', dark);
-  }, [dark]);
-
-  return { dark, toggle: () => setDark(d => !d) };
-}
 
 // ─── Animated Checkmark ─────────────────────────────────────────────
 function AnimatedCheckmark({ className = '' }: { className?: string }) {
@@ -537,7 +512,17 @@ export function CertificateVerifyPage() {
   const [verifying, setVerifying] = useState(false);
   const [activeTab, setActiveTab] = useState<'code' | 'qr'>(urlCode ? 'code' : urlQrToken ? 'qr' : 'code');
   const [qrInput, setQrInput] = useState(urlQrToken || '');
-  const { dark, toggle: toggleTheme } = useTheme();
+  // The theme is the app-wide one (`ThemeContext` -> `.dark` on <html>). This
+  // page used to own a private "gl-verify-theme" preference and toggle the same
+  // `dark` class itself, so two independent sources wrote the same element and
+  // a visitor who switched theme here and on any other page could leave the two
+  // out of step until a reload.
+  const { resolved, setPreference } = useTheme();
+  const dark = resolved === 'dark';
+  const toggleTheme = useCallback(
+    () => setPreference(dark ? 'light' : 'dark'),
+    [dark, setPreference]
+  );
 
   const handleVerifyByCode = useCallback(async (code?: string) => {
     const codeToVerify = (code || searchInput).trim();
@@ -601,20 +586,20 @@ export function CertificateVerifyPage() {
   // ═══ RENDER — RESULTS STATE ════════════════════════════════════
   if (verifying) {
     return (
-      <div className={`min-h-screen transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
-        <HeaderBar dark={dark} onToggleTheme={toggleTheme} onHome={handleReset} />
+      <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-slate-950">
+        <HeaderBar onToggleTheme={toggleTheme} onHome={handleReset} />
         <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
           <VerificationSkeleton />
         </main>
-        <FooterBar dark={dark} />
+        <FooterBar />
       </div>
     );
   }
 
   if (result) {
     return (
-      <div className={`min-h-screen transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
-        <HeaderBar dark={dark} onToggleTheme={toggleTheme} onHome={handleReset} showNewSearch />
+      <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-slate-950">
+        <HeaderBar onToggleTheme={toggleTheme} onHome={handleReset} showNewSearch />
         <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
           {result.mode === 'verified' && result.certificate && <VerifiedCard cert={result.certificate} internProfile={result.internProfile} dark={dark} />}
           {result.mode === 'revoked' && result.certificate && <RevokedCard cert={result.certificate} dark={dark} />}
@@ -622,15 +607,15 @@ export function CertificateVerifyPage() {
           {result.mode === 'invalid' && <InvalidCard error={result.error || 'Credential not found'} onRetry={handleReset} />}
           {result.mode === 'rate_limited' && <RateLimitedCard />}
         </main>
-        <FooterBar dark={dark} />
+        <FooterBar />
       </div>
     );
   }
 
   // ═══ RENDER — LANDING/HUB PAGE ═════════════════════════════════
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${dark ? 'bg-slate-950' : 'bg-slate-50'}`}>
-      <HeaderBar dark={dark} onToggleTheme={toggleTheme} />
+    <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-slate-950">
+      <HeaderBar onToggleTheme={toggleTheme} />
 
       <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
         {/* Hero Section */}
@@ -725,7 +710,7 @@ export function CertificateVerifyPage() {
             { icon: FileText, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-500/10', title: 'Certificates & LOR', desc: 'Verify internship certificates and letters of recommendation issued by Growlancer.' },
             { icon: Lock, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-500/10', title: 'Tamper-Proof', desc: 'Each credential is cryptographically signed and cannot be altered.' },
           ].map((card, i) => (
-            <div key={i} className={`p-3 rounded-xl border text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${dark ? 'bg-slate-900/60 border-slate-700/50 hover:border-slate-600' : 'bg-white/60 border-slate-200 hover:border-slate-300'}`}>
+            <div key={i} className={`p-3 rounded-xl border text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 bg-white/60 border-slate-200 hover:border-slate-300 dark:bg-slate-900/60 dark:border-slate-700/50 dark:hover:border-slate-600`}>
               <div className={`mx-auto w-12 h-12 rounded-xl ${card.bg} flex items-center justify-center mb-2`}>
                 <card.icon className={`w-5 h-5 ${card.color}`} />
               </div>
@@ -736,7 +721,7 @@ export function CertificateVerifyPage() {
         </div>
 
         {/* How It Works */}
-        <div className={`max-w-3xl mx-auto mb-10 p-3 md:p-4 rounded-xl border ${dark ? 'bg-slate-900/40 border-slate-700/30' : 'bg-white/40 border-slate-200'} animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300`}>
+        <div className={`max-w-3xl mx-auto mb-10 p-3 md:p-4 rounded-xl border bg-white/40 border-slate-200 dark:bg-slate-900/40 dark:border-slate-700/30 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300`}>
           <h2 className="text-sm font-bold text-slate-900 dark:text-white text-center mb-3">How Verification Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {[
@@ -758,7 +743,7 @@ export function CertificateVerifyPage() {
         {/* Trust Badge — wraps on narrow phones (a nowrap row of 3 labels was
             503px wide and got clipped off-screen at 320–390px viewports). */}
         <div className="text-center animate-in fade-in slide-in-from-bottom-4 duration-700 delay-500">
-          <div className={`inline-flex flex-wrap justify-center items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-8 sm:py-4 rounded-xl border shadow-sm ${dark ? 'bg-slate-900/50 border-slate-700/30' : 'bg-white/50 border-slate-200'}`}>
+          <div className={`inline-flex flex-wrap justify-center items-center gap-x-3 gap-y-2 px-4 py-3 sm:px-8 sm:py-4 rounded-xl border shadow-sm bg-white/50 border-slate-200 dark:bg-slate-900/50 dark:border-slate-700/30`}>
             {[
               { icon: Shield, label: 'Digitally Verified' },
               { icon: Clock, label: 'Real-Time' },
@@ -775,7 +760,7 @@ export function CertificateVerifyPage() {
 
         {/* Disclaimer */}
         <div className="mt-8 max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700 delay-700">
-          <div className={`p-4 rounded-xl border ${dark ? 'bg-amber-500/5 border-amber-500/10' : 'bg-amber-50/80 border-amber-200'}`}>
+          <div className={`p-4 rounded-xl border bg-amber-50/80 border-amber-200 dark:bg-amber-500/5 dark:border-amber-500/10`}>
             <div className="flex items-start gap-3">
               <Info className="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" />
               <div>
@@ -788,18 +773,23 @@ export function CertificateVerifyPage() {
           </div>
         </div>
       </main>
-      <FooterBar dark={dark} />
+      <FooterBar />
     </div>
   );
 }
 
 // ─── Header Bar ─────────────────────────────────────────────────────
-function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
-  dark: boolean; onToggleTheme: () => void; onHome?: () => void; showNewSearch?: boolean;
+// These chrome components deliberately take NO `dark` prop: every colour is a
+// `dark:` utility and every icon is chosen by CSS. Branching on JS theme state
+// here rendered different markup than the server had produced (the server
+// cannot know the visitor's saved preference), which is a React #418 hydration
+// mismatch on a prerendered page. CSS cannot mismatch.
+function HeaderBar({ onToggleTheme, onHome, showNewSearch }: {
+  onToggleTheme: () => void; onHome?: () => void; showNewSearch?: boolean;
 }) {
   const navigate = useNavigate();
   return (
-    <header className={`sticky top-0 z-40 border-b backdrop-blur-xl ${dark ? 'bg-slate-950/80 border-slate-800/50' : 'bg-white/80 border-slate-200'}`}>
+    <header className="sticky top-0 z-40 border-b backdrop-blur-xl bg-white/80 border-slate-200 dark:bg-slate-950/80 dark:border-slate-800/50">
       <div className="max-w-[100rem] mx-auto px-4 py-3 flex items-center justify-between">
         <button onClick={onHome || (() => navigate('/verify-certificate', { replace: true }))}
           className="flex items-center gap-3 py-1 hover:opacity-80 transition-opacity group">
@@ -814,11 +804,11 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
         </button>
         <div className="flex items-center gap-3">
           <button onClick={onToggleTheme}
-            className={`inline-flex items-center justify-center gap-3 px-3 min-h-[44px] rounded-xl text-xs font-medium transition-all border ${
-              dark ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-100'
-            }`}>
-            {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            <span className="hidden sm:inline">{dark ? 'Light' : 'Dark'}</span>
+            className="inline-flex items-center justify-center gap-3 px-3 min-h-[44px] rounded-xl text-xs font-medium transition-all border bg-white border-slate-200 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700">
+            <Moon className="w-4 h-4 dark:hidden" />
+            <Sun className="w-4 h-4 hidden dark:block" />
+            <span className="hidden sm:inline dark:hidden">Dark</span>
+            <span className="hidden sm:dark:inline">Light</span>
           </button>
           <a href={showNewSearch ? undefined : '/'} onClick={showNewSearch ? (e) => { e.preventDefault(); onHome?.(); } : undefined}
             className="text-xs font-medium px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
@@ -831,10 +821,10 @@ function HeaderBar({ dark, onToggleTheme, onHome, showNewSearch }: {
 }
 
 // ─── Footer Bar ─────────────────────────────────────────────────────
-function FooterBar({ dark }: { dark: boolean }) {
+function FooterBar() {
   const navigate = useNavigate();
   return (
-    <footer className={`border-t py-4 px-4 ${dark ? 'border-slate-800/50 bg-slate-950' : 'border-slate-200 bg-slate-50'}`}>
+    <footer className="border-t py-4 px-4 border-slate-200 bg-slate-50 dark:border-slate-800/50 dark:bg-slate-950">
       <div className="max-w-4xl mx-auto text-center">
         <div className="flex items-center justify-center gap-3 mb-3">
           <img src="/UpdatedLogo.webp" alt="" className="h-6 w-6 rounded-lg opacity-40" />

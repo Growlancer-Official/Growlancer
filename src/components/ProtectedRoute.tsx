@@ -37,7 +37,7 @@ function EmailNotVerifiedPage() {
   const providerName = getEmailProviderName(email);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-4 text-center">
           <div className="flex justify-center mb-3">

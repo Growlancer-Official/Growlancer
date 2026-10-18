@@ -108,6 +108,16 @@ const BOOT_SPLASH_HTML = `<!-- __boot_splash_marker__ -->
     border-radius: 50%;
     animation: boot-spin 0.8s linear infinite;
   }
+  /* Dark theme: the splash must match the app background, or the boot frame is
+     a cream sheet on an otherwise dark page. The html.dark class comes from
+     THEME_FOUC_GUARD, injected into <head> below. */
+  html.dark #boot-overlay {
+    background: #070b14;
+  }
+  html.dark #boot-overlay .boot-spinner {
+    border-color: #123b31;
+    border-top-color: #10b981;
+  }
   @keyframes boot-spin { to { transform: rotate(360deg); } }
 </style>
 <script>
@@ -150,11 +160,45 @@ const BOOT_SPLASH_HTML = `<!-- __boot_splash_marker__ -->
 </script>`;
 
 /**
- * Vite plugin: inject the boot-splash markup into every built HTML file.
+ * Theme FOUC guard — must run before the first paint on EVERY served route.
+ *
+ * Measured 2026-10-16 on the built output: neither `dist/index.html` nor any
+ * prerendered page contained this logic. The copy that used to live in the
+ * repo-root `index.html` never shipped, because Vike generates its own
+ * document for both dev and prerender — `index.html` is not the template (the
+ * built HTML carries none of its markers: no theme script, no security metas).
+ * Result: a dark-mode visitor got the cream `body` background from the
+ * stylesheet, then a cream boot splash, then a flip to dark — the exact "looks
+ * broken" first impression. Injecting it here, into <head>, is the one place
+ * every prerendered page and the SPA-fallback shell pass through.
+ *
+ * The storage key MUST equal STORAGE_KEY in src/context/ThemeContext.tsx;
+ * src/test/darkThemeCoverage.test.ts fails if the two drift apart.
+ */
+const THEME_FOUC_GUARD = `<!-- __theme_guard_marker__ -->
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('growlancer-theme');
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = stored === 'dark' || ((stored === 'system' || !stored) && systemDark);
+      var root = document.documentElement;
+      if (dark) root.classList.add('dark');
+      root.style.colorScheme = dark ? 'dark' : 'light';
+    } catch (e) {
+      // localStorage blocked (private mode) — fall back to the light theme
+      // rather than failing to boot.
+    }
+  })();
+</script>`;
+
+/**
+ * Vite plugin: inject the theme guard (into <head>) and the boot-splash markup
+ * (into <body>) of every built HTML file.
  *
  * Runs in `closeBundle` AFTER the vercel-output copy, so it injects into
  * `dist/client/**\/*.html` (the source of truth that scripts/build.mjs then
- * copies to `dist/`). Idempotent via the marker comment.
+ * copies to `dist/`). Idempotent via the marker comments.
  */
 function bootSplashInjectPlugin(): Plugin {
   return {
@@ -174,14 +218,23 @@ function bootSplashInjectPlugin(): Plugin {
         }
       };
       walk(clientDir);
+      let guarded = 0;
       for (const file of files) {
         let html = fs.readFileSync(file, 'utf8');
-        if (html.includes('__boot_splash_marker__')) continue;
-        if (!html.includes('</body>')) continue;
-        html = html.replace('</body>', bootSplashHtml + '\n</body>');
-        fs.writeFileSync(file, html);
+        const original = html;
+        // <head> first: the class has to be on <html> before anything paints.
+        if (!html.includes('__theme_guard_marker__') && html.includes('</head>')) {
+          html = html.replace('</head>', THEME_FOUC_GUARD + '\n</head>');
+          guarded++;
+        }
+        if (!html.includes('__boot_splash_marker__') && html.includes('</body>')) {
+          html = html.replace('</body>', bootSplashHtml + '\n</body>');
+        }
+        if (html !== original) fs.writeFileSync(file, html);
       }
-      console.log(`[boot-splash] Injected boot splash into ${files.length} HTML file(s)`);
+      console.log(
+        `[boot-splash] Injected the theme guard into ${guarded} HTML file(s); injected the boot splash into ${files.length}`
+      );
     },
   };
 }

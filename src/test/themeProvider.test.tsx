@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, fireEvent, cleanup, waitFor } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
@@ -10,9 +12,14 @@ import { ThemeProvider, useTheme } from '../context/ThemeContext';
  *
  * The requirement is that a visitor whose system prefers dark gets a properly
  * themed site. Two halves have to agree for that to be true:
- *   1. index.html paints the right theme before React boots (no light flash)
+ *   1. the pre-paint guard paints the right theme before React boots (no light
+ *      flash) — injected into every built page's <head> by vite.config.ts,
+ *      NOT by the repo-root index.html, which Vike never serves (measured: the
+ *      built HTML carries none of its markers). This file used to assert the
+ *      guard lived in index.html, i.e. it locked in a guard that never ran.
  *   2. ThemeProvider owns the live state afterwards
- * so this file tests both, plus the shared storage key they must not drift on.
+ * so this file tests both, plus the shared storage key they must not drift on,
+ * plus the hydration contract (the first render cannot depend on the theme).
  */
 
 const STORAGE_KEY = 'growlancer-theme';
@@ -122,13 +129,37 @@ describe('ThemeProvider', () => {
     await waitFor(() => expect(document.documentElement.style.colorScheme).toBe('dark'));
   });
 
-  it('agrees with the index.html FOUC guard on the storage key', () => {
+  it('agrees with the pre-paint guard that actually ships on the storage key', () => {
     const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-    const html = readFileSync(path.join(root, 'index.html'), 'utf8');
-    // The inline script runs before React; a different key here would mean the
-    // first paint and the live state disagree (dark flash for saved-light users).
-    expect(html).toContain(STORAGE_KEY);
-    expect(html).toContain('prefers-color-scheme: dark');
-    expect(html).toContain("classList.add('dark')");
+    const viteConfig = readFileSync(path.join(root, 'vite.config.ts'), 'utf8');
+    // The guard runs before React; a different key here would mean the first
+    // paint and the live state disagree (dark flash for saved-light users).
+    // It is injected by the boot-splash plugin — index.html is not the served
+    // document, so a copy there would never reach a browser.
+    expect(viteConfig).toContain('THEME_FOUC_GUARD');
+    expect(viteConfig).toContain(STORAGE_KEY);
+    expect(viteConfig).toContain('prefers-color-scheme: dark');
+    expect(viteConfig).toContain("classList.add('dark')");
+  });
+
+  it('renders the SAME markup for a dark and a light preference on first render', () => {
+    // Measured on the built site: a saved-dark visitor hydrated a different tree
+    // than the server had rendered (server cannot read localStorage), and React
+    // threw error #418 on every load. The first render must therefore be
+    // preference-independent — and this asserts it without a browser: whatever
+    // the stored value is, renderToString must produce identical HTML.
+    const firstRenderWith = (stored: string) => {
+      window.localStorage.setItem(STORAGE_KEY, stored);
+      return renderToString(
+        <ThemeProvider>
+          <ThemeToggle />
+        </ThemeProvider>,
+      );
+    };
+    const dark = firstRenderWith('dark');
+    const light = firstRenderWith('light');
+    expect(dark).toBe(light);
+    // ...and that shared markup is the neutral/system state, not a guess.
+    expect(dark).toContain('System theme');
   });
 });

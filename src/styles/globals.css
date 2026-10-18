@@ -104,6 +104,17 @@
   .card {
     @apply bg-white rounded-2xl shadow-sm border border-slate-100;
   }
+
+  /* For a NATIVE control (date/time picker popup, dropdown) that sits on a
+     surface which is dark in BOTH themes — the admin console is deliberately
+     dark regardless of the theme. `color-scheme` is the only thing that makes
+     the browser paint its own picker chrome dark; without it the popup is a
+     white calendar on a dark panel. Named class instead of an arbitrary
+     `[color-scheme:dark]` on one input, so the reason is discoverable and
+     there is one place to change. */
+  .on-dark-surface {
+    color-scheme: dark;
+  }
 }
 
 @layer utilities {
@@ -536,11 +547,57 @@
   .dark :where(.bg-slate-100) {
     background-color: #1b2940;
   }
+  /* stone/neutral are greys too — they are the category chips' neutral palettes
+     (lib/categories.ts), and a chip left at stone-100 is a bright tile on a
+     dark page. They follow slate exactly. Found by
+     src/test/darkThemeCoverage.test.ts, which now fails if a new palette
+     sneaks in unremapped. */
+  .dark :where(.bg-stone-100, .bg-neutral-100) {
+    background-color: #1b2940;
+  }
   .dark :where(.bg-slate-200) {
     background-color: #243349;
   }
   .dark :where(.bg-slate-300) {
     background-color: #334155;
+  }
+  /* Alpha spellings of the surfaces above (`bg-slate-50/50` chips, the About
+     stat tile's `bg-cream/45`). Tailwind bakes the alpha into the class name,
+     so a bare `bg-slate-50` rule never matched these and they stayed near-white
+     patches on dark cards. The coverage test now classifies any >=50% tint as a
+     light surface, so a new alpha cannot slip in unremapped. */
+  .dark :where(.bg-slate-50\/40) {
+    background-color: rgba(19, 31, 51, 0.5);
+  }
+  .dark :where(.bg-slate-50\/50) {
+    background-color: rgba(19, 31, 51, 0.6);
+  }
+  .dark :where(.bg-slate-50\/60) {
+    background-color: rgba(19, 31, 51, 0.7);
+  }
+  .dark :where(.bg-slate-50\/80) {
+    background-color: rgba(19, 31, 51, 0.85);
+  }
+  .dark :where(.bg-slate-50\/95) {
+    background-color: rgba(19, 31, 51, 0.95);
+  }
+  .dark :where(.bg-slate-100\/50) {
+    background-color: rgba(27, 41, 64, 0.6);
+  }
+  .dark :where(.bg-slate-100\/80) {
+    background-color: rgba(27, 41, 64, 0.85);
+  }
+  .dark :where(.bg-cream\/45) {
+    background-color: rgba(30, 41, 59, 0.45);
+  }
+  .dark :where(.bg-emerald-50\/30) {
+    background-color: rgba(16, 185, 129, 0.14);
+  }
+  .dark :where(.bg-orange-50\/30) {
+    background-color: rgba(245, 158, 11, 0.14);
+  }
+  .dark :where(.bg-emerald-200) {
+    background-color: #1a5545;
   }
 
   /* ── Borders + dividers ────────────────────────────────────────────────── */
@@ -555,6 +612,26 @@
   }
   .dark :where(.border-slate-300) {
     border-color: #334155;
+  }
+  /* Alpha hairline borders (`border-slate-200/50` on modals and cards). Same
+     reason as the alpha surfaces above — the class name carries the alpha. */
+  .dark :where(.border-slate-200\/30) {
+    border-color: rgba(36, 51, 73, 0.6);
+  }
+  .dark :where(.border-slate-200\/40) {
+    border-color: rgba(36, 51, 73, 0.7);
+  }
+  .dark :where(.border-slate-200\/50) {
+    border-color: rgba(36, 51, 73, 0.8);
+  }
+  .dark :where(.border-slate-200\/60) {
+    border-color: rgba(36, 51, 73, 0.9);
+  }
+  .dark :where(.border-slate-200\/80) {
+    border-color: #243349;
+  }
+  .dark :where(.border-slate-100\/50) {
+    border-color: rgba(30, 43, 66, 0.8);
   }
   .dark :where(.divide-slate-50) {
     border-color: #16233a;
@@ -579,7 +656,7 @@
   .dark :where(.text-slate-700) {
     color: #cbd5e1;
   }
-  .dark :where(.text-slate-600) {
+  .dark :where(.text-slate-600, .text-stone-600, .text-neutral-600) {
     color: #b7c2d2;
   }
   .dark :where(.text-slate-500) {
@@ -638,6 +715,47 @@
   }
   .dark :where(.text-yellow-600, .text-yellow-700) {
     color: #facc15;
+  }
+  /* 900/950 shades are the "text on a pale chip" weights. The chip is dark now,
+     so dark-brown-on-dark-brown becomes unreadable — lift them to their 300
+     weight, same hue. The `\/alpha` spellings are separate classes in Tailwind's
+     output, so they need their own rules (found by the coverage test's alpha
+     pass). */
+  .dark :where(.text-amber-900, .text-amber-950) {
+    color: #fcd34d;
+  }
+  .dark :where(.text-amber-900\/80, .text-amber-800\/90) {
+    color: rgba(252, 211, 77, 0.85);
+  }
+  .dark :where(.text-blue-900) {
+    color: #93c5fd;
+  }
+  .dark :where(.text-emerald-950) {
+    color: #6ee7b7;
+  }
+  .dark :where(.text-emerald-600\/70, .text-emerald-700\/80) {
+    color: rgba(52, 211, 153, 0.85);
+  }
+  .dark :where(.text-green-900) {
+    color: #86efac;
+  }
+  .dark :where(.text-purple-900) {
+    color: #d8b4fe;
+  }
+  .dark :where(.text-red-900) {
+    color: #fca5a5;
+  }
+  .dark :where(.text-rose-900) {
+    color: #fda4af;
+  }
+  .dark :where(.text-violet-900, .text-violet-950) {
+    color: #c4b5fd;
+  }
+  .dark :where(.text-violet-900\/80, .text-violet-600\/70) {
+    color: rgba(196, 181, 253, 0.85);
+  }
+  .dark :where(.text-blue-600\/70) {
+    color: rgba(96, 165, 250, 0.85);
   }
 
   /* ── Tinted surfaces, grouped by meaning (success / info / warning /
@@ -737,6 +855,34 @@
     --tw-gradient-to: rgba(19, 31, 51, 0) var(--tw-gradient-to-position);
     --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
   }
+  /* WHITE stops. A tinted panel that fades to white (`from-emerald-50 to-white`
+     — used across Client settings, the professional profile and the wallet) and
+     the homepage hero's `via-white to-white` wash overlay both paint WHITE in
+     dark mode. The hero one is what made the whole hero look grey-washed; the
+     panels were bright tiles. They fade to the dark surface instead.
+     `from`, `via` and `to` each set different custom properties, so they need
+     separate rules — Tailwind's own compiled output for each is mirrored here. */
+  .dark :where(.from-white) {
+    --tw-gradient-from: #0f172a var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(15, 23, 42, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.via-white) {
+    --tw-gradient-to: rgba(15, 23, 42, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), #0f172a var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
+  .dark :where(.to-white) {
+    --tw-gradient-to: #0f172a var(--tw-gradient-to-position);
+  }
+  /* The image-upload drop zone: from-slate-100 via-slate-50 to-slate-200. Its
+     `from` was already handled; the `via`/`to` were the light half of it. */
+  .dark :where(.via-slate-50) {
+    --tw-gradient-to: rgba(19, 31, 51, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), #131f33 var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
+  .dark :where(.to-slate-200) {
+    --tw-gradient-to: #243349 var(--tw-gradient-to-position);
+  }
   .dark :where(.to-slate-50) {
     --tw-gradient-to: #131f33 var(--tw-gradient-to-position);
   }
@@ -756,6 +902,32 @@
   .dark :where(.to-orange-100, .to-amber-100) {
     --tw-gradient-to: #3c2c10 var(--tw-gradient-to-position);
   }
+  /* Gradient stops WITH an opacity modifier (`from-emerald-50/40`). Tailwind
+     compiles every alpha into its OWN class, so the bare `.from-emerald-50`
+     rules above never matched these — they kept their near-white color in dark
+     mode (the same wash defect, one class over). Same dark tints, the author's
+     alpha preserved so the fade keeps its intended weight:
+       from-emerald-50/40  (HomePage hero),
+       to-emerald-50/30 | /50 | /60  (Onboarding, NotificationsPanel, Contact, NotificationsCenter),
+       via-teal-50/60  (HomePage hero). */
+  .dark :where(.from-emerald-50\/40) {
+    --tw-gradient-from: rgba(12, 42, 36, 0.4) var(--tw-gradient-from-position);
+    --tw-gradient-to: rgba(12, 42, 36, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+  }
+  .dark :where(.to-emerald-50\/30) {
+    --tw-gradient-to: rgba(12, 42, 36, 0.3) var(--tw-gradient-to-position);
+  }
+  .dark :where(.to-emerald-50\/50) {
+    --tw-gradient-to: rgba(12, 42, 36, 0.5) var(--tw-gradient-to-position);
+  }
+  .dark :where(.to-emerald-50\/60) {
+    --tw-gradient-to: rgba(12, 42, 36, 0.6) var(--tw-gradient-to-position);
+  }
+  .dark :where(.via-teal-50\/60) {
+    --tw-gradient-to: rgba(12, 42, 36, 0) var(--tw-gradient-to-position);
+    --tw-gradient-stops: var(--tw-gradient-from), rgba(12, 42, 36, 0.6) var(--tw-gradient-via-position), var(--tw-gradient-to);
+  }
   .dark :where(.from-sky-50) {
     --tw-gradient-from: #0d2136 var(--tw-gradient-from-position);
     --tw-gradient-to: rgba(13, 33, 54, 0) var(--tw-gradient-to-position);
@@ -763,70 +935,77 @@
   }
 
   /* ── Rings ─────────────────────────────────────────────────────────────── */
-  .dark :where(.ring-slate-200) {
+  .dark :where(.ring-slate-200, .ring-stone-200, .ring-neutral-200) {
     --tw-ring-color: #243349;
   }
   .dark :where(.ring-slate-300) {
     --tw-ring-color: #334155;
   }
-
-  /* ── Hover states (the base tokens they sit on are remapped above) ─────── */
-  .dark :where(.hover\:bg-white:hover) {
-    background-color: #16233a;
+  .dark :where(.ring-slate-200\/70) {
+    --tw-ring-color: rgba(36, 51, 73, 0.7);
   }
-  .dark :where(.hover\:bg-slate-50:hover) {
-    background-color: #131f33;
+  /* Accent rings: 100–200 are near-white tiles' outlines (the category chips in
+     lib/categories.ts use `ringColor`), and they read as a bright halo on dark.
+     Same hue at 400 with a soft alpha keeps the colour cue, drops the glow. */
+  .dark :where(.ring-emerald-100, .ring-emerald-200) {
+    --tw-ring-color: rgba(52, 211, 153, 0.35);
   }
-  .dark :where(.hover\:bg-slate-100:hover) {
-    background-color: #1b2940;
+  .dark :where(.ring-emerald-100\/70) {
+    --tw-ring-color: rgba(52, 211, 153, 0.28);
   }
-  .dark :where(.hover\:bg-slate-200:hover) {
-    background-color: #243349;
+  .dark :where(.ring-emerald-200\/50) {
+    --tw-ring-color: rgba(52, 211, 153, 0.28);
   }
-  .dark :where(.hover\:bg-slate-300:hover) {
-    background-color: #334155;
+  .dark :where(.ring-amber-200) {
+    --tw-ring-color: rgba(251, 191, 36, 0.35);
   }
-  .dark :where(.hover\:border-slate-200:hover) {
-    border-color: #243349;
+  .dark :where(.ring-blue-200) {
+    --tw-ring-color: rgba(96, 165, 250, 0.35);
   }
-  .dark :where(.hover\:border-slate-300:hover) {
-    border-color: #334155;
+  .dark :where(.ring-cyan-200) {
+    --tw-ring-color: rgba(34, 211, 238, 0.35);
   }
-  .dark :where(.hover\:text-slate-900:hover) {
-    color: #f1f5f9;
+  .dark :where(.ring-fuchsia-200) {
+    --tw-ring-color: rgba(232, 121, 249, 0.35);
   }
-  .dark :where(.hover\:text-slate-800:hover) {
-    color: #e2e8f0;
+  .dark :where(.ring-green-200) {
+    --tw-ring-color: rgba(74, 222, 128, 0.35);
   }
-  .dark :where(.hover\:text-slate-700:hover) {
-    color: #cbd5e1;
+  .dark :where(.ring-indigo-200) {
+    --tw-ring-color: rgba(129, 140, 248, 0.35);
   }
-  .dark :where(.hover\:text-slate-600:hover) {
-    color: #b7c2d2;
+  .dark :where(.ring-lime-200) {
+    --tw-ring-color: rgba(163, 230, 53, 0.35);
   }
-  .dark :where(.hover\:text-slate-500:hover) {
-    color: #a3b1c4;
+  .dark :where(.ring-orange-100, .ring-orange-200) {
+    --tw-ring-color: rgba(251, 146, 60, 0.35);
   }
-  .dark :where(.hover\:bg-emerald-50:hover, .hover\:bg-emerald-50\/20:hover, .hover\:bg-emerald-50\/30:hover, .hover\:bg-emerald-50\/40:hover, .hover\:bg-emerald-50\/50:hover) {
-    background-color: rgba(16, 185, 129, 0.16);
+  .dark :where(.ring-orange-200\/50) {
+    --tw-ring-color: rgba(251, 146, 60, 0.28);
   }
-  .dark :where(.hover\:bg-emerald-100:hover) {
-    background-color: #123b31;
+  .dark :where(.ring-pink-200) {
+    --tw-ring-color: rgba(244, 114, 182, 0.35);
   }
-  .dark :where(.hover\:bg-red-50:hover) {
-    background-color: #2e1414;
+  .dark :where(.ring-purple-200) {
+    --tw-ring-color: rgba(192, 132, 252, 0.35);
   }
-  .dark :where(.hover\:bg-red-100:hover) {
-    background-color: #3d1b1b;
+  .dark :where(.ring-red-200) {
+    --tw-ring-color: rgba(248, 113, 113, 0.35);
   }
-  .dark :where(.hover\:bg-amber-100:hover, .hover\:bg-orange-50\/30:hover, .hover\:bg-orange-50\/50:hover) {
-    background-color: #3c2c10;
+  .dark :where(.ring-rose-200) {
+    --tw-ring-color: rgba(251, 113, 133, 0.35);
   }
-  .dark :where(.hover\:text-emerald-600:hover, .hover\:text-emerald-700:hover) {
-    color: #34d399;
+  .dark :where(.ring-sky-200) {
+    --tw-ring-color: rgba(56, 189, 248, 0.35);
   }
-  .dark :where(.hover\:text-red-600:hover, .hover\:text-red-700:hover) {
-    color: #f87171;
+  .dark :where(.ring-teal-200) {
+    --tw-ring-color: rgba(45, 212, 191, 0.35);
+  }
+  .dark :where(.ring-violet-100, .ring-violet-200) {
+    --tw-ring-color: rgba(167, 139, 250, 0.35);
+  }
+  .dark :where(.ring-yellow-200) {
+    --tw-ring-color: rgba(250, 204, 21, 0.35);
   }
 
   /* ── Design-system components (their colours are @apply'd, so the class
@@ -878,6 +1057,265 @@
     }
   }
 }
+
+/*
+   ═══════════════════════════════════════════════════════════════════════════
+   DARK-MODE STATE VARIANTS (hover / focus / active / disabled / group-hover)
+
+   These rules live OUTSIDE `@layer utilities` on purpose — measured, not a
+   style choice:
+
+   • Inside the layer, Tailwind emits its generated variant utilities AFTER this
+     file's custom utilities, so an equal-specificity remap
+     (`.dark :where(.hover\:bg-slate-50):hover` vs Tailwind's
+     `.hover\:bg-slate-50:hover`, both (0,2,0)) LOST on source order and every
+     button, row and nav item still flashed #f8fafc on hover in dark mode.
+   • Tailwind also rewrites selectors inside the layer, folding the state pseudo
+     back into `:where()` (`:where(.hover\:bg-slate-50:hover)`), which drops
+     the rule to (0,1,0) and re-creates the same defect even with the order
+     fixed.
+   • Outside any layer the rules survive verbatim and keep their position at the
+     END of the emitted stylesheet, so the tie is ours.
+
+   src/test/darkThemeCoverage.test.ts asserts both properties: the state pseudo
+   stays outside `:where()`, and this block is not inside `@layer utilities`.
+   ═══════════════════════════════════════════════════════════════════════════
+ */
+  /* ── State variants (hover / focus / active / disabled / group-hover).
+     ⚠ SHAPE MATTERS: the state pseudo-class must stay OUTSIDE `:where()`.
+     Tailwind compiles `hover:bg-slate-50` to `.hover\:bg-slate-50:hover` —
+     specificity (0,2,0). Wrapping the WHOLE selector in `:where()`, as this
+     block used to, zeroes the pseudo-class too and leaves (0,1,0), so Tailwind's
+     own pale rule always won and every button/row/nav item flashed near-white
+     (#f8fafc) on hover in dark mode. With the state pseudo outside we tie at
+     (0,2,0) and win on source order, because this block is emitted after
+     Tailwind's utilities inside the same layer.
+     src/test/darkThemeCoverage.test.ts fails if the shape regresses. */
+  html.dark :where(.hover\:bg-white):hover {
+    background-color: #16233a;
+  }
+  html.dark :where(.focus\:bg-white):focus {
+    background-color: #16233a;
+  }
+  html.dark :where(.hover\:bg-slate-50):hover,
+  html.dark :where(.disabled\:bg-slate-50):disabled {
+    background-color: #131f33;
+  }
+  html.dark :where(.hover\:bg-slate-50\/50):hover {
+    background-color: rgba(19, 31, 51, 0.6);
+  }
+  html.dark :where(.hover\:bg-slate-50\/60):hover {
+    background-color: rgba(19, 31, 51, 0.7);
+  }
+  html.dark :where(.hover\:bg-slate-50\/80):hover {
+    background-color: rgba(19, 31, 51, 0.85);
+  }
+  html.dark :where(.hover\:bg-slate-100):hover,
+  html.dark :where(.active\:bg-slate-100):active {
+    background-color: #1b2940;
+  }
+  html.dark :where(.hover\:bg-slate-100\/50):hover {
+    background-color: rgba(27, 41, 64, 0.6);
+  }
+  html.dark :where(.hover\:bg-slate-200):hover {
+    background-color: #243349;
+  }
+  html.dark :where(.hover\:bg-slate-300):hover,
+  html.dark :where(.disabled\:bg-slate-300):disabled {
+    background-color: #334155;
+  }
+  /* Disabled CTAs (`disabled:bg-emerald-300` on checkout/contract buttons) and
+     the file-picker chip: a 300/50 tint is a pale button in light mode and a
+     glowing tile on dark, so the disabled state keeps its hue at a dark value.
+     The `file:` variant styles a native file-picker button; its text must be
+     light on the dark chip even though it paints itself, so the color needs the
+     same lift the plain `text-emerald-700` gets. */
+  html.dark :where(.disabled\:bg-emerald-300):disabled,
+  html.dark :where(.bg-emerald-300) {
+    background-color: #17503f;
+  }
+  html.dark :where(.disabled\:bg-amber-300):disabled {
+    background-color: #4a3612;
+  }
+  html.dark :where(.disabled\:bg-blue-300):disabled {
+    background-color: #1b3a5c;
+  }
+  html.dark :where(.disabled\:bg-red-300):disabled {
+    background-color: #4a2020;
+  }
+  html.dark :where(.file\:bg-emerald-50)::-webkit-file-upload-button {
+    background-color: #0c2a24;
+  }
+  html.dark :where(.file\:bg-emerald-50)::file-selector-button {
+    background-color: #0c2a24;
+  }
+  html.dark :where(.file\:text-emerald-700)::-webkit-file-upload-button {
+    color: #34d399;
+  }
+  html.dark :where(.file\:text-emerald-700)::file-selector-button {
+    color: #34d399;
+  }
+  html.dark :where(.hover\:border-slate-200):hover,
+  html.dark :where(.disabled\:hover\:border-slate-200):disabled:hover {
+    border-color: #243349;
+  }
+  html.dark :where(.hover\:border-slate-300):hover {
+    border-color: #334155;
+  }
+  html.dark :where(.hover\:ring-slate-300):hover {
+    --tw-ring-color: #334155;
+  }
+  html.dark :where(.hover\:text-slate-900):hover {
+    color: #f1f5f9;
+  }
+  html.dark :where(.hover\:text-slate-800):hover {
+    color: #e2e8f0;
+  }
+  html.dark :where(.hover\:text-slate-700):hover {
+    color: #cbd5e1;
+  }
+  html.dark :where(.hover\:text-slate-600):hover {
+    color: #b7c2d2;
+  }
+  html.dark :where(.hover\:text-slate-500):hover {
+    color: #a3b1c4;
+  }
+
+  /* Tinted hover/active surfaces and the accent borders/rings they pair with.
+     Grouped by hue so the status cue survives the theme switch — a green
+     "accept" row stays green, it just stops being pale. */
+  html.dark :where(.hover\:bg-emerald-50):hover,
+  html.dark :where(.hover\:bg-emerald-50\/20):hover,
+  html.dark :where(.hover\:bg-emerald-50\/30):hover,
+  html.dark :where(.hover\:bg-emerald-50\/40):hover,
+  html.dark :where(.hover\:bg-emerald-50\/50):hover {
+    background-color: rgba(16, 185, 129, 0.18);
+  }
+  html.dark :where(.hover\:bg-emerald-100):hover {
+    background-color: #123b31;
+  }
+  html.dark :where(.hover\:bg-emerald-200):hover {
+    background-color: #1a5545;
+  }
+  html.dark :where(.hover\:bg-red-50):hover {
+    background-color: #2e1414;
+  }
+  html.dark :where(.hover\:bg-red-100):hover {
+    background-color: #3d1b1b;
+  }
+  html.dark :where(.hover\:bg-amber-50):hover,
+  html.dark :where(.hover\:bg-orange-50\/30):hover,
+  html.dark :where(.hover\:bg-orange-50\/50):hover {
+    background-color: rgba(245, 158, 11, 0.16);
+  }
+  html.dark :where(.hover\:bg-amber-100):hover,
+  html.dark :where(.hover\:bg-orange-100):hover {
+    background-color: #3c2c10;
+  }
+  html.dark :where(.hover\:bg-blue-50):hover,
+  html.dark :where(.hover\:bg-indigo-50):hover {
+    background-color: rgba(59, 130, 246, 0.18);
+  }
+  html.dark :where(.hover\:bg-blue-100):hover {
+    background-color: #143050;
+  }
+  html.dark :where(.hover\:bg-indigo-100):hover {
+    background-color: #1c2452;
+  }
+  html.dark :where(.hover\:bg-green-100):hover {
+    background-color: #123b31;
+  }
+  html.dark :where(.hover\:bg-purple-100):hover {
+    background-color: #282052;
+  }
+  html.dark :where(.hover\:file\:bg-emerald-100):hover::-webkit-file-upload-button {
+    background-color: #123b31;
+  }
+  html.dark :where(.hover\:file\:bg-emerald-100):hover::file-selector-button {
+    background-color: #123b31;
+  }
+  html.dark :where(.hover\:border-emerald-100):hover,
+  html.dark :where(.hover\:border-emerald-200):hover {
+    border-color: #1f5a48;
+  }
+  html.dark :where(.hover\:border-emerald-300):hover {
+    border-color: #2c7f63;
+  }
+  html.dark :where(.hover\:border-amber-200):hover,
+  html.dark :where(.hover\:border-orange-200):hover {
+    border-color: #5c4516;
+  }
+  html.dark :where(.hover\:border-orange-300):hover {
+    border-color: #7d5c1e;
+  }
+  html.dark :where(.hover\:border-blue-200):hover {
+    border-color: #1e4668;
+  }
+  html.dark :where(.hover\:border-teal-200):hover {
+    border-color: #1d5f57;
+  }
+  html.dark :where(.hover\:border-violet-200):hover {
+    border-color: #3e3378;
+  }
+  html.dark :where(.hover\:border-violet-300):hover,
+  html.dark :where(.hover\:border-fuchsia-300):hover {
+    border-color: #50419b;
+  }
+  html.dark :where(.focus\:ring-emerald-200):focus,
+  html.dark :where(.hover\:ring-emerald-200):hover {
+    --tw-ring-color: rgba(52, 211, 153, 0.35);
+  }
+  html.dark :where(.focus\:ring-emerald-300\/50):focus,
+  html.dark :where(.hover\:ring-emerald-200\/50):hover {
+    --tw-ring-color: rgba(52, 211, 153, 0.28);
+  }
+  html.dark :where(.focus\:ring-red-200):focus {
+    --tw-ring-color: rgba(248, 113, 113, 0.35);
+  }
+  html.dark :where(.focus\:ring-violet-200):focus {
+    --tw-ring-color: rgba(167, 139, 250, 0.35);
+  }
+  html.dark :where(.hover\:ring-orange-200):hover {
+    --tw-ring-color: rgba(251, 146, 60, 0.35);
+  }
+  html.dark :where(.hover\:ring-orange-200\/50):hover {
+    --tw-ring-color: rgba(251, 146, 60, 0.28);
+  }
+  html.dark :where(.hover\:text-emerald-600):hover,
+  html.dark :where(.hover\:text-emerald-700):hover,
+  html.dark :where(.hover\:text-emerald-800):hover,
+  html.dark :where(.hover\:text-emerald-900):hover {
+    color: #34d399;
+  }
+  html.dark :where(.hover\:text-amber-700):hover,
+  html.dark :where(.hover\:text-amber-800):hover {
+    color: #fbbf24;
+  }
+  html.dark :where(.hover\:text-blue-900):hover {
+    color: #60a5fa;
+  }
+  html.dark :where(.hover\:text-purple-900):hover,
+  html.dark :where(.hover\:text-violet-800):hover,
+  html.dark :where(.hover\:text-violet-900):hover {
+    color: #a78bfa;
+  }
+  html.dark :where(.hover\:text-red-600):hover,
+  html.dark :where(.hover\:text-red-700):hover,
+  html.dark :where(.hover\:text-red-800):hover {
+    color: #f87171;
+  }
+  /* `group-hover:` needs the ancestor in the selector — Tailwind's compiled
+     form is `.group:hover .group-hover\:…`, specificity (0,3,0). Mirroring the
+     `.group:hover` ancestor keeps the tie and wins by source order. */
+  html.dark .group:hover :where(.group-hover\:bg-emerald-100) {
+    background-color: #123b31;
+  }
+  html.dark .group:hover :where(.group-hover\:text-emerald-700) {
+    color: #34d399;
+  }
+  html.dark .group:hover :where(.group-hover\:text-violet-700) {
+    color: #a78bfa;
+  }
 
 @keyframes chartBarGrow {
   from {

@@ -32,26 +32,13 @@
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=(self)" />
     <title>Growlancer</title>
-    <script>
-      // ── Theme FOUC guard ──────────────────────────────────────────────────
-      // Runs before first paint so a dark-mode user never sees a light flash.
-      // ThemeProvider (src/context/ThemeContext.tsx) takes over afterwards and
-      // keeps this in sync; both read the same 'growlancer-theme' key and the
-      // same media query. Keep the two in step.
-      (function () {
-        try {
-          var stored = localStorage.getItem('growlancer-theme');
-          var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          var dark = stored === 'dark' || ((stored === 'system' || !stored) && systemDark);
-          var root = document.documentElement;
-          if (dark) root.classList.add('dark');
-          root.style.colorScheme = dark ? 'dark' : 'light';
-        } catch (e) {
-          // localStorage blocked (private mode) — fall back to the light theme
-          // rather than failing to boot.
-        }
-      })();
-    </script>
+    <!-- Theme FOUC guard: NOT here. This file is not the served document —
+         Vike generates its own (verified: the built HTML carries none of the
+         markers below, so an inline script here never reached a browser). The
+         guard is injected into every built page's <head> by the
+         boot-splash-inject plugin in vite.config.ts (THEME_FOUC_GUARD), which
+         is the single source of truth. ThemeProvider
+         (src/context/ThemeContext.tsx) takes over after hydration. -->
     <style>
       /* Boot splash — prevents the prerendered homepage shell from flashing on
          non-prerendered routes (dashboard, client, admin, onboarding, dynamic

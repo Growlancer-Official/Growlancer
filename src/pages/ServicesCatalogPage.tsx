@@ -116,7 +116,7 @@ export function ServicesCatalogPage() {
   }, [fetchServices]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-slate-50">
       {/* Hero */}
       <section className="bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 text-white py-6">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">

@@ -84,6 +84,7 @@ function strongPassword() {
 
 const results = [];
 let failures = 0;
+let gTeardownLeftovers = [];
 
 function record(group, label, passed, detail) {
   results.push({ group, label, passed, detail });
@@ -1165,12 +1166,14 @@ try {
       : '  no probe leftovers in projects/workspaces/activity logs/notifications',
   );
   if (leftovers.length) failures++;
+  gTeardownLeftovers = leftovers;
 }
 
 // ── Summary ────────────────────────────────────────────────────────────────
 const groups = [...new Set(results.map((r) => r.group))];
 console.log('\n══════════════════════════════════════════════════════════════');
 console.log('SURFACE AUDIT SUMMARY');
+console.log('  (failures from probe results: see ✗ lines below; teardown leftovers reported separately)');
 for (const g of groups) {
   const all = results.filter((r) => r.group === g);
   const bad = all.filter((r) => !r.passed).length;
@@ -1185,6 +1188,9 @@ if (failures) {
   console.log('\nFAILURES:');
   for (const f of results.filter((r) => !r.passed)) {
     console.log(`  ✗ [${f.group}] ${f.label}\n      ${f.detail}`);
+  }
+  if (gTeardownLeftovers && gTeardownLeftovers.length) {
+    console.log(`  ✗ [teardown] LEFTOVER OBJECTS AFTER CASCADE: ${gTeardownLeftovers.join(', ')}`);
   }
 }
 console.log('══════════════════════════════════════════════════════════════');

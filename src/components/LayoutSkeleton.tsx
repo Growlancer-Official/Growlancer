@@ -6,7 +6,7 @@
 
 export function LayoutSkeleton({ variant: _variant = 'freelancer' }: { variant?: 'freelancer' | 'client' }) {
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
+    <div className="flex min-h-screen bg-slate-50">
       {/* Sidebar skeleton — matches w-64 desktop sidebar */}
       <aside className="w-64 sticky top-0 h-screen hidden lg:flex flex-col p-4 bg-white border-r border-slate-200">
         {/* Logo */}
