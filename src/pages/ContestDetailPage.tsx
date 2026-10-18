@@ -284,7 +284,7 @@ export function ContestDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="animate-spin h-12 w-12 text-emerald-600" />
       </div>
     );
@@ -292,7 +292,7 @@ export function ContestDetailPage() {
 
   if (!contest) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
           <Trophy className="w-16 h-16 text-slate-300 mx-auto mb-2" />
           <h2 className="text-xl font-bold text-slate-900 mb-2">Contest not found</h2>
@@ -309,7 +309,7 @@ export function ContestDetailPage() {
   const isOwner = contest.client_id === user?.id;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <div className="bg-white border-b border-slate-200">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 py-3">

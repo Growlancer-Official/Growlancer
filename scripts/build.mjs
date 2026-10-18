@@ -340,6 +340,18 @@ function generateFallbackIndexHtml() {
     </noscript>
 ${cssTags}
 ${THEME_FOUC_GUARD}
+    <style>
+      /* Dark theme boot splash — mirrors vite.config.ts's #boot-overlay so the
+         SPA fallback shell (served when Vike prerender is skipped) does not flash
+         the light cream theme before React applies the user's preference. */
+      html.dark #boot-overlay {
+        background: #070b14;
+      }
+      html.dark #boot-overlay .boot-spinner {
+        border-color: #123b31;
+        border-top-color: #10b981;
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

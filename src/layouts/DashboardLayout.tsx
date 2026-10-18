@@ -371,7 +371,7 @@ export function DashboardLayout() {
   }, [user]);
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC]">
+    <div className="flex min-h-screen bg-slate-50">
       {/* Mobile Drawer Overlay */}
       <div
         className={`fixed inset-0 bg-slate-900/40 z-40 transition-opacity duration-200 lg:hidden ${mobileNavOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
