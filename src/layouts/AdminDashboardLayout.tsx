@@ -309,7 +309,7 @@ export function AdminDashboardLayout() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="h-20 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 px-8 flex items-center justify-between">
+        <header className="h-20 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5 px-4 md:px-8 flex items-center justify-between">
           {/* Search */}
           <div className="flex items-center gap-4 w-1/2">
             <div ref={searchRef} className="relative w-full max-w-lg">
@@ -342,8 +342,11 @@ export function AdminDashboardLayout() {
             </div>
           </div>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-6">
+          {/* Right Actions — gap-4 on mobile: the Linux CI runner ships wider
+              DejaVu fonts, and at 375px with gap-6 + px-8 this row measured
+              287px wide starting at x=94, i.e. 6px past the viewport (the
+              strict element audit flagged it on all 17 admin routes). */}
+          <div className="flex items-center gap-3 md:gap-6">
             {/* Live Monitoring Badge */}
             <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 rounded-full border border-emerald-500/10">
               <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -362,7 +365,7 @@ export function AdminDashboardLayout() {
             {/* Notifications Panel - Real-time with Supabase */}
             <NotificationsPanel />
 
-            <div className="h-8 w-px bg-white/5"></div>
+            <div className="hidden md:block h-8 w-px bg-white/5"></div>
 
             {/* User Menu */}
             <button className="flex items-center gap-3 pl-1 pr-3 py-1 hover:bg-white/5 rounded-full transition-all group">
