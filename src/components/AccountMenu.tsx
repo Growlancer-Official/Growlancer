@@ -100,7 +100,7 @@ export function AccountMenu({ dashboardBase, subtitle, nameBadge, avatar, name }
         <div
           role="menu"
           aria-label="Account"
-          className="absolute right-0 top-full mt-2 w-60 bg-white rounded-xl shadow-2xl border border-slate-100 py-1.5 z-[70] animate-in slide-in-from-top-2 fade-in duration-150"
+          className="menu-surface absolute right-0 top-full mt-2 w-60 bg-white rounded-xl shadow-2xl border border-slate-100 py-1.5 z-[70] animate-in slide-in-from-top-2 fade-in duration-150"
         >
           {/* Header strip — identity context */}
           <div className="px-3.5 py-2 border-b border-slate-100 mb-1">

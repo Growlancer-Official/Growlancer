@@ -381,7 +381,7 @@ export function CountrySelect({
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute z-50 top-full mt-1 left-0 right-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="menu-surface absolute z-50 top-full mt-1 left-0 right-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl animate-in fade-in slide-in-from-top-2 duration-150">
           {/* Search */}
           <div className="p-2 border-b border-slate-100">
             <div className="relative">

@@ -65,6 +65,38 @@
     background-color: #070b14;
     color: #e2e8f0;
   }
+  /* ── Native form controls ────────────────────────────────────────────────
+     Measured, not cosmetic: a control with no bg-* utility (124 of them across
+     24 files) painted the BROWSER'S own dark field colour — #121212 in Chrome
+     — a neutral grey that belongs to no palette we ship. The `:where()` list
+     keeps this at zero specificity and the base layer keeps it under every
+     utility, so `bg-white`, `bg-slate-50` and all their hover/focus variants
+     still win exactly as before. */
+  .dark
+    :where(
+      input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']):not([type='color']):not([type='image']):not([type='submit']):not([type='button']),
+      select,
+      textarea
+    ) {
+    background-color: #0d1626;
+    color: #e2e8f0;
+  }
+
+  /* The native dropdown LIST a <select> opens is painted by the browser, so it
+     needs its own rule. With `color-scheme: dark` an unstyled popup is grey;
+     and an option inside a white-translucent select inherits white text, which
+     is unreadable in LIGHT mode. Both themes are pinned here so a dropdown
+     opened from either palette lands on a readable pair. */
+  option,
+  optgroup {
+    background-color: #ffffff;
+    color: #0f172a;
+  }
+  .dark :where(option, optgroup) {
+    background-color: #0f172a;
+    color: #e2e8f0;
+  }
+
 
   /* Smooth, professional theme switch — only colours animate, and motion is
      honoured for users who ask for less of it. */
@@ -254,6 +286,22 @@
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(148, 163, 184, 0.4);
+  }
+
+  /* `scrollbar-hide` was used on the category chip rail without ever being
+     defined, so the rail showed the platform's own scrollbar — a light-grey
+     strip with arrows across the middle of a dark card (and a grey one in light
+     mode). The class name states the intent; this makes it true in both themes.
+     The admin nav already pairs it with inline styles, which stay harmless. */
+  .scrollbar-hide {
+    scrollbar-width: none; /* Firefox + Chromium 121+ */
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
   }
 
   /* Industry-level workflow animations */
@@ -1346,4 +1394,35 @@
   to {
     stroke-dashoffset: 0;
   }
+}
+
+
+/*
+   ═══════════════════════════════════════════════════════════════════════════
+   DARK-MODE DROPDOWN SURFACES (`menu-surface`)
+
+   Every floating menu — the account menu, the country/industry pickers, the
+   per-row "…" menus and the notification panel — remapped to `bg-white`
+   (#0f172a), which is the SAME colour as the card it opens from. Floating over
+   near-black with only a border, it read as a flat grey block rather than a
+   layer above the page.
+
+   `menu-surface` is inert in LIGHT mode (those panels keep their bg-white /
+   border / shadow utilities) and only lifts the dark theme: one tone above the
+   card, a visible hairline, and a shadow that survives on a dark page. It is
+   unlayered for the same measured reason as the state variants above — a
+   layered rule loses the tie to Tailwind's own output.
+   ═══════════════════════════════════════════════════════════════════════════
+ */
+html.dark .menu-surface {
+  background-color: #16233b;
+  border-color: rgba(148, 163, 184, 0.24);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.65);
+}
+/* Item hover INSIDE a panel: the generic `hover:bg-slate-50` remap (#131f33) is
+   DARKER than the elevated panel, so the hover would sink instead of lift.
+   Danger rows (`hover:bg-red-50`) keep their own colour and are not matched. */
+html.dark .menu-surface :where(button, a).hover\:bg-slate-50:hover,
+html.dark .menu-surface :where(button, a).hover\:bg-slate-100:hover {
+  background-color: rgba(148, 163, 184, 0.16);
 }

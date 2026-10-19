@@ -436,7 +436,7 @@ export function NotificationsCenterPage() {
                 <ChevronDown className="w-4 h-4" />
               </button>
               {showFilterDropdown && (
-                <div className="absolute right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl border border-slate-100 z-10 min-w-[180px] py-1.5 animate-in fade-in slide-in-from-top-1 duration-150 max-h-72 overflow-y-auto">
+                <div className="menu-surface absolute right-0 top-full mt-1.5 bg-white rounded-xl shadow-xl border border-slate-100 z-10 min-w-[180px] py-1.5 animate-in fade-in slide-in-from-top-1 duration-150 max-h-72 overflow-y-auto">
                   {filterOptions.map(opt => (
                     <button
                       key={opt.label}

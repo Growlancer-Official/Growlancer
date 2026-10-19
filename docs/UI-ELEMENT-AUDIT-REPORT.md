@@ -1828,3 +1828,64 @@ Every defect here has the same shape: **a fixture that cannot prove the state th
 email→id lookup could not prove which account it found; the admin grant could not prove it granted; the
 seed could not prove the account was onboarded. Each is now a read-back that fails the step, and the
 sequence is what surfaced them — a false green in the seed becomes a red audit one layer up.
+
+---
+
+## §23 — Dark-mode dropdowns: the grey chrome, measured and fixed (Oct 19, 2026)
+
+Founder report: *"jo dropdown section hai overall website me to wo dark theme me grey dikhra"* — the
+dropdowns render grey in dark mode. Measured instead of guessed, and the grey turned out to be three
+different things, only one of which the palette remap could ever have seen (it matches utility
+**classes**, and the worst offenders carried none).
+
+### 23.1 What was actually grey
+
+| # | Surface | Measured | Why the remap missed it |
+|---|---|---|---|
+| 1 | A native control with no `bg-*` class | `rgb(18,18,18)` in Chrome, `rgb(59,59,59)` in headless Chromium — the browser's own dark field colour. **124 controls across 24 files** (most `<select>`s, every search bar, the whole report form) | no class to match: `.dark :where(.bg-white)` needs the utility to exist |
+| 2 | The popup a `<select>` opens | painted by the browser, and an option inside a translucent-white select inherits white text | `option` has no utility class either |
+| 3 | Every floating menu panel | `bg-white` → `#0f172a`, the **same colour as the card it opens from**, so the panel read as a flat block | remapped correctly — the remap value itself was the problem |
+| 4 | The category chip rail on `/services` | the platform's own light-grey scrollbar with arrows, across the middle of a dark card | `scrollbar-hide` was used in the JSX but **never defined in the CSS** |
+
+The detector that separated 1/2/4 from a real dark surface: every palette token is blue-tinted
+(`b − r ≥ 10`), so any background with `max − min ≤ 8` is by definition not ours. A full-page scan for
+achromatic surfaces across 18 public routes found exactly **5** offenders (the `/services`,
+`/freelancers`, `/report` ×3 and `/contact` fields) and **0** after the fix — with the same scan
+re-run to prove it was not vacuous.
+
+### 23.2 The fix — three rules, no per-page edits
+
+1. `@layer base` — `.dark :where(input:not(…8 non-text types…), select, textarea)` paints `#0d1626`.
+   Base layer + `:where()` keeps it at zero specificity, so every existing `bg-white`, `bg-slate-50`
+   and `hover:bg-*` still wins, and the translucent hero search bars keep their `bg-white/10`.
+2. `option, optgroup` pinned in **both** themes (`#fff`/`#0f172a` light, `#0f172a`/`#e2e8f0` dark) —
+   an option is browser-painted, so it needs its own pair. The one `[&>option]:text-slate-900`
+   override (which would have beaten the pair in dark) is gone.
+3. `menu-surface`, a hook now carried by **all 8 floating panels** (account menu, country + industry
+   pickers, notification panel and its filter menu, the per-row "…" menus on projects / proposals /
+   invites, the notifications-centre filter). Inert in light mode; in dark it lifts the panel to
+   `#16233b` with a hairline and a shadow, and item hovers inside a panel flip to a translucent slate
+   so the hover lifts instead of sinking. Unlayered + `html.dark`, for the same reason the state
+   variants are (§ the remap comments) — a layered rule loses the tie to Tailwind's output.
+
+### 23.3 Verification
+
+- **Public surface, dark:** 18 routes, all `dark=true`, contact sheet reviewed page by page.
+- **Authenticated surface, dark:** two throwaway accounts (created and cascade-deleted in `finally`),
+  15 real console pages (freelancer 8 / client 7) — all dark, 0 grey.
+- **Panels open:** notification panel, its filter menu, country picker and industry picker measured
+  live at `rgb(22,35,59)` + `rgba(148,163,184,.24)` border + `0 18px 40px rgba(2,6,23,.65)`.
+- **Light mode, the same panels:** `rgb(255,255,255)` with slate borders — unchanged.
+- **The built artifact** (`node server.js` on the production build): `/` and `/services` ship `.dark`
+  at DOMContentLoaded with body `#070b14` (no flash), and the shipped stylesheet contains the field
+  rule, the option pair, `menu-surface` ×4 and `scrollbar-hide`.
+- `npm run typecheck` + **523 tests / 45 files** + `npm run build` all clean.
+- New guard `src/test/darkFormControls.test.ts` (9 tests). Negative control: reverting the CSS and
+  dropping the hook from one panel turns **5 of 9 RED**; restoring turns them green again, byte-identical.
+
+### 23.4 One harness correction worth recording
+
+The first sweep reported `/` as **LIGHT** and a 404 on `/philosophy`; both were the harness, not the
+product: `domcontentloaded` fires long before hydration finishes on the 122 KB SSR homepage (React
+applies the stored theme on mount in dev; the *built* HTML carries the pre-paint guard), and
+`/philosophy` was a typo for the real route. Re-run with `waitUntil: 'load'` + 3 s: 18/18 dark.

@@ -378,7 +378,7 @@ export function NotificationsPanel() {
           />
 
           {/* Panel */}
-          <div className="fixed md:absolute top-16 md:top-12 left-1/2 md:left-auto -translate-x-1/2 md:-translate-x-0 md:right-0 w-[calc(100vw-2rem)] sm:w-[90vw] md:w-96 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 max-h-[85vh] flex flex-col animate-in slide-in-from-top-2 fade-in duration-200">
+          <div className="menu-surface fixed md:absolute top-16 md:top-12 left-1/2 md:left-auto -translate-x-1/2 md:-translate-x-0 md:right-0 w-[calc(100vw-2rem)] sm:w-[90vw] md:w-96 bg-white rounded-xl shadow-2xl border border-slate-100 z-50 max-h-[85vh] flex flex-col animate-in slide-in-from-top-2 fade-in duration-200">
             {/* Header */}
             <div className="p-4 border-b border-slate-100">
               <div className="flex items-center justify-between mb-3">
@@ -428,7 +428,7 @@ export function NotificationsPanel() {
                       <ChevronDown className="w-3.5 h-3.5" />
                     </button>
                     {showFilterDropdown && (
-                      <div className="absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-100 z-10 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      <div className="menu-surface absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-slate-100 z-10 min-w-[160px] py-1 animate-in fade-in slide-in-from-top-1 duration-150">
                         {filterOptions.map(opt => (
                           <button
                             key={opt.label}
