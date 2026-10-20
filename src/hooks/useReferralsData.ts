@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase, realtimeChannels } from '../lib/supabase';
 import type { Tables } from '../types/supabase';
 import { useToast } from '../components/Toast';
+import { buildReferralLink, formatReferralCode } from '../lib/referralCode';
 
 export type ReferralLeader = {
   rank: number;
@@ -11,42 +12,26 @@ export type ReferralLeader = {
   isYou: boolean;
 };
 
-export function shareReferralLink(link: string, platform: 'linkedin' | 'twitter' | 'email' | 'whatsapp') {
-  const referralUrl = link.startsWith('http') ? link : `${window.location.origin}/signup?ref=${encodeURIComponent(link)}`;
-  const url = encodeURIComponent(referralUrl);
-  
-  const subject = encodeURIComponent('Join me on Growlancer – AI-Powered Freelancing Marketplace');
-  
-  const body = encodeURIComponent(
-    `Hey! 👋\n\nI've been using Growlancer to find and manage freelance projects with AI-powered matching and secure escrow payments. It's been a game-changer for my workflow.\n\nUse my referral link below to join and we both earn rewards:\n${referralUrl}\n\nWhat you get:\n✅ AI-powered project matching\n✅ Secure escrow payments\n✅ Real-time collaboration tools\n✅ Professional freelancer/client community\n\nSee you there! 🚀`
-  );
-  
-  const shortText = encodeURIComponent(
-    `🚀 Join me on Growlancer – the AI-powered freelancing marketplace! Get secure escrow payments, smart project matching, and more. Use my referral link: ${referralUrl}`
-  );
-
-  if (platform === 'linkedin') {
-    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'noopener');
-  } else if (platform === 'twitter') {
-    window.open(`https://twitter.com/intent/tweet?text=${shortText}`, '_blank', 'noopener');
-  } else if (platform === 'whatsapp') {
-    window.open(`https://api.whatsapp.com/send?text=${shortText}`, '_blank', 'noopener');
-  } else {
-    window.location.href = `mailto:?subject=${subject}&body=${body}`;
-  }
-}
-
+/**
+ * Referral data for BOTH dashboards (freelancer and client).
+ *
+ * Three live sources feed one view:
+ *   • referral_stats / referrals — the owner's counters and history.
+ *   • profiles_private.referral_code — the code itself, so a code issued or
+ *     regenerated after the page loaded appears without a refresh.
+ *   • get_grow_coin_leaderboard — platform-wide, display-safe ranking.
+ *
+ * The code is resolved here (not read straight off the auth user) so a stale
+ * AuthContext snapshot can never show an empty or old code on either page.
+ */
 export function useReferralsData(userId?: string, referralCode?: string, userRole?: string) {
   const toast = useToast();
   const [referralStats, setReferralStats] = useState<Tables<'referral_stats'> | null>(null);
   const [referrals, setReferrals] = useState<Tables<'referrals'>[]>([]);
   const [leaders, setLeaders] = useState<ReferralLeader[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const referralLink =
-    referralCode && referralCode !== '…' && referralCode !== 'Loading...'
-      ? `${typeof window !== 'undefined' ? window.location.origin : ''}/signup?ref=${encodeURIComponent(referralCode)}`
-      : '';
+  const [liveCode, setLiveCode] = useState(() => formatReferralCode(referralCode));
+  const [live, setLive] = useState(false);
 
   const refresh = useCallback(async () => {
     // The leaderboard is platform-wide now; role is kept for call-site
@@ -102,6 +87,53 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
     }
   }, [userId, userRole, toast]);
 
+  // Keep the code in step with the auth snapshot when it arrives/changes.
+  useEffect(() => {
+    const fromAuth = formatReferralCode(referralCode);
+    if (fromAuth && fromAuth !== '…') {
+      setLiveCode((current) => current || fromAuth);
+    }
+  }, [referralCode]);
+
+  // Resolve the code from the source of truth and keep it live.
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+
+    const apply = (value?: string | null) => {
+      const formatted = formatReferralCode(value);
+      if (!cancelled && formatted) setLiveCode(formatted);
+    };
+
+    const resolve = async () => {
+      const { data, error } = await supabase
+        .from('profiles_private')
+        .select('referral_code')
+        .eq('id', userId)
+        .maybeSingle();
+      if (error) return; // fall back to the auth snapshot already on screen
+      apply(data?.referral_code);
+    };
+
+    void resolve();
+
+    const codeChannel = realtimeChannels
+      .profilesPrivate(`referral-code-${userId}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles_private', filter: `id=eq.${userId}` },
+        (payload) => apply((payload.new as { referral_code?: string } | null)?.referral_code)
+      )
+      .subscribe((status) => {
+        if (!cancelled) setLive(status === 'SUBSCRIBED');
+      });
+
+    return () => {
+      cancelled = true;
+      void codeChannel.unsubscribe();
+    };
+  }, [userId]);
+
   useEffect(() => {
     void refresh();
     if (!userId) return;
@@ -130,5 +162,7 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
     };
   }, [userId, refresh]);
 
-  return { referralStats, referrals, leaders, loading, referralLink, refresh };
+  const referralLink = liveCode ? buildReferralLink(liveCode) : '';
+
+  return { referralStats, referrals, leaders, loading, referralCode: liveCode, referralLink, live, refresh };
 }

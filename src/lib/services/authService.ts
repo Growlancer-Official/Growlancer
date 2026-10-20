@@ -11,6 +11,7 @@
 import { supabase } from '../supabase';
 import type { AuthUser, UserRole } from '../../types/auth';
 import { captureError } from '../telemetry';
+import { generateReferralCode } from '../referralCode';
 
 // ---------------------------------------------------------------------------
 // Typed RPC helper — Supabase auto-generated types don't cover custom RPCs.
@@ -52,10 +53,14 @@ export function normalizeRole(rawRole: unknown): UserRole | null {
 }
 
 /**
- * Generates a unique referral code string.
+ * Generates a referral code in the canonical `GRW-XXXX-XXXX` format.
+ *
+ * The optional argument is kept so existing callers keep compiling; it is
+ * deliberately ignored — a code must never reveal the owner's role, and the
+ * random part is 8 symbols instead of 4. See src/lib/referralCode.ts.
  */
-export function createReferralCode(prefix: string): string {
-  return `GRW-${prefix}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+export function createReferralCode(_rolePrefix?: string): string {
+  return generateReferralCode();
 }
 
 // ---------------------------------------------------------------------------
@@ -139,7 +144,7 @@ export async function createUserProfile(
   referralCode?: string,
 ): Promise<AuthUser | null> {
   const safeRole = ALLOWED_SIGNUP_ROLES.includes(role) ? role : 'freelancer';
-  const code = referralCode ?? createReferralCode(safeRole.substring(0, 2).toUpperCase());
+  const code = referralCode ?? createReferralCode();
 
   // Try RPC first (SECURITY DEFINER bypasses RLS for unverified users)
   const { data: rpcData, error: rpcError } = await authRpc('create_user_profile', {

@@ -55,39 +55,40 @@ describe('normalizeRole', () => {
 // ─── createReferralCode ──────────────────────────────────────────────────────
 
 describe('createReferralCode', () => {
-  it('starts with GRW-', () => {
-    expect(createReferralCode('FR')).toMatch(/^GRW-/);
-  });
+  const pattern = /^GRW-[23456789ABCDEFGHJKMNPQRSTVWXYZ]{4}-[23456789ABCDEFGHJKMNPQRSTVWXYZ]{4}$/;
 
-  it('contains the given prefix', () => {
-    expect(createReferralCode('CL')).toContain('CL');
-  });
-
-  it('matches expected format GRW-{PREFIX}-{4chars}', () => {
-    const code = createReferralCode('FR');
-    expect(code).toMatch(/^GRW-[A-Z]+-[A-Z0-9]{4}$/);
+  it('uses the canonical GRW-XXXX-XXXX format', () => {
+    expect(createReferralCode()).toMatch(pattern);
   });
 
   it('generates different codes each call', () => {
-    const codes = new Set(Array.from({ length: 50 }, () => createReferralCode('FR')));
-    // With 50 calls and 36^4 = 1.68M possibilities, collision probability is negligible
+    const codes = new Set(Array.from({ length: 50 }, () => createReferralCode()));
     expect(codes.size).toBeGreaterThan(45);
   });
 
-  it('suffix is always 4 uppercase alphanumeric chars', () => {
-    for (let i = 0; i < 10; i++) {
-      const code = createReferralCode('TEST');
-      const parts = code.split('-');
-      const suffix = parts[parts.length - 1];
-      expect(suffix).toMatch(/^[A-Z0-9]{4}$/);
+  it('never encodes the role, even when a role prefix is passed', () => {
+    // The old format was GRW-<ROLE>-<4 chars>, which leaked the owner's role.
+    const parts = createReferralCode('FR').split('-');
+    expect(parts).toHaveLength(3);
+    expect(parts[1]).toHaveLength(4);
+  });
+
+  it('avoids characters that are easy to mistype', () => {
+    for (let i = 0; i < 20; i += 1) {
+      const body = createReferralCode().slice(4).replace('-', '');
+      expect(body).not.toMatch(/[0O1ILU]/);
     }
   });
 
-  it('works with long prefix', () => {
-    const code = createReferralCode('FREELANCER');
-    expect(code).toMatch(/^GRW-FREELANCER-[A-Z0-9]{4}$/);
+  it('keeps a stable length so the format cannot drift', () => {
+    for (let i = 0; i < 20; i += 1) {
+      const code = createReferralCode();
+      expect(code).toHaveLength(13);
+      expect(code.slice(0, 4)).toBe('GRW-');
+    }
   });
 });
+
 
 // ─── fetchUserProfile with mock ──────────────────────────────────────────────
 

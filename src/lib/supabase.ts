@@ -265,6 +265,8 @@ export const realtimeChannels = {
   waitlist: (scope?: string) => supabase.channel(nextChannelName('waitlist', scope)),
   referrals: (scope?: string) => supabase.channel(nextChannelName('referrals', scope)),
   referralStats: (scope?: string) => supabase.channel(nextChannelName('referral_stats', scope)),
+  // The referral code itself lives on profiles_private (owner-only RLS).
+  profilesPrivate: (scope?: string) => supabase.channel(nextChannelName('profiles_private', scope)),
   portfolio: (scope?: string) => supabase.channel(nextChannelName('portfolio_items', scope)),
   identity: (scope?: string) =>
     supabase.channel(nextChannelName('identity_verifications', scope)),

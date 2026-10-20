@@ -6,7 +6,6 @@ import {
   Crown,
   Flame,
   Leaf,
-  Mail,
   ShieldAlert,
   Sparkles,
   Sprout,
@@ -15,6 +14,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
+import { ReferralInviteCard } from '../components/ReferralInviteCard';
 import { Pagination } from '../components/Pagination';
 import { GrowCoinIcon } from '../components/GrowCoinIcon';
 import { ConfirmModal } from '../components/ConfirmModal';
@@ -26,7 +26,6 @@ import {
   GROW_COIN,
   formatCoinAmount,
   getReferralBonusDescription,
-  getFirstProjectBonusDescription,
   getKycBonusDescription,
   newCoinRequestKey,
   redeemGrowCoinsForCash,
@@ -36,13 +35,13 @@ import {
 export function ReferralsPage() {
   const { user } = useAuth();
   const toast = useToast();
-  const [copied, setCopied] = useState(false);
   const [page, setPage] = useState(1);
   const [redeemTarget, setRedeemTarget] = useState<'cash' | 'premium' | null>(null);
   const [redeeming, setRedeeming] = useState(false);
   const pageSize = 5;
-  const referralCode = user?.referralCode || '…';
-  const { referralStats, referrals, leaders, loading } = useReferralsData(
+  // The code and stats come from the live hook for BOTH roles, so a code issued
+  // or regenerated after load lands without a refresh.
+  const { referralStats, referrals, leaders, loading, referralCode, referralLink, live } = useReferralsData(
     user?.id,
     user?.referralCode,
     user?.role
@@ -83,38 +82,6 @@ export function ReferralsPage() {
     } finally {
       setRedeeming(false);
     }
-  };
-
-  const handleCopy = () => {
-    // 📋 Copy ONLY the referral code — never the full link
-    const text = referralCode;
-    if (!text || text === '…') return;
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // 🔗 Share actions — the referral code + site URL (Section-1B/C: every
-  // icon button gets a real, label-matching action + an accessible name).
-  const referralMessage = `Join me on Growlancer — use my referral code ${referralCode} when you sign up! `;
-  const shareTwitter = () => {
-    window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(referralMessage)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
-  };
-  const shareWhatsapp = () => {
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(referralMessage)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
-  };
-  const shareEmail = () => {
-    window.location.href = `mailto:?subject=${encodeURIComponent(
-      'Join me on Growlancer'
-    )}&body=${encodeURIComponent(referralMessage)}`;
   };
 
   const validRefs = referralStats?.valid_referrals || 0;
@@ -218,55 +185,14 @@ export function ReferralsPage() {
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="lg:col-span-2 bg-white p-4 rounded-[2.5rem] border border-slate-100 shadow-[0_10px_40px_-10px_rgba(16,185,129,0.15)] relative overflow-hidden">
           <div className="relative z-10">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-              <div className="space-y-1">
-                <h3 className="text-slate-500 text-xs font-bold uppercase tracking-widest">Your Referral Link</h3>
-                <div className="flex items-center gap-3 mt-2">
-                  <div className="bg-slate-50 px-5 py-3 rounded-xl border border-slate-200 font-mono text-lg font-bold text-slate-700">
-                    {referralCode}
-                  </div>
-                  <button
-                    onClick={handleCopy}
-                    aria-label="Copy referral code"
-                    className="h-[52px] w-[52px] flex items-center justify-center bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-600/20"
-                  >
-                    {copied ? (
-                      <span className="text-xs font-bold">Done!</span>
-                    ) : (
-                      <Copy className="w-5 h-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={shareTwitter}
-                  aria-label="Share on Twitter"
-                  className="h-12 w-12 flex items-center justify-center rounded-xl bg-[#1DA1F2]/10 text-[#1DA1F2] hover:bg-[#1DA1F2] hover:text-white transition-all"
-                >
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={shareWhatsapp}
-                  aria-label="Share on WhatsApp"
-                  className="h-12 w-12 flex items-center justify-center rounded-xl bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366] hover:text-white transition-all"
-                >
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={shareEmail}
-                  aria-label="Share via Email"
-                  className="h-12 w-12 flex items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all"
-                >
-                  <Mail className="w-6 h-6" aria-hidden="true" />
-                </button>
-              </div>
-            </div>
+            <ReferralInviteCard
+              code={referralCode}
+              link={referralLink}
+              name={user?.name}
+              role={user?.role}
+              live={live}
+              className="mb-4"
+            />
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div>
