@@ -138,19 +138,23 @@ export function getReferralBonusDescription(role: 'freelancer' | 'client' | 'adm
 
 /**
  * Returns the first-project bonus description for the given role.
- * Both freelancer and client earn 20 coins on their first completed project.
- * Admin sees the same description.
+ * Both freelancer and client earn 20 coins on their first completed project;
+ * the wording names the side of the marketplace the reader works on.
  */
 export function getFirstProjectBonusDescription(role: 'freelancer' | 'client' | 'admin'): string {
-  return '20 Grow Coins when your first project completes (once per user).';
+  return role === 'client'
+    ? '20 Grow Coins when your first project completes as a client (paid once per account).'
+    : '20 Grow Coins when your first project completes as a freelancer (paid once per account).';
 }
 
 /**
- * Returns the KYC bonus description (same for all roles).
- * Admin sees the same description.
+ * Returns the KYC bonus description. The amount is identical for every role;
+ * only the wording changes for a client, whose verification is business KYC.
  */
 export function getKycBonusDescription(role: 'freelancer' | 'client' | 'admin'): string {
-  return '10 Grow Coins when your identity verification is verified by a real provider.';
+  return role === 'client'
+    ? '10 Grow Coins when your business identity verification is approved by a real provider.'
+    : '10 Grow Coins when your identity verification is approved by a real provider.';
 }
 
 /** Stable per-action key so a double click cannot debit twice. */
