@@ -772,7 +772,7 @@
   .dark :where(.text-amber-900, .text-amber-950) {
     color: #fcd34d;
   }
-  .dark :where(.text-amber-900\/80, .text-amber-800\/90) {
+  .dark :where(.text-amber-900\/80, .text-amber-800\/90, .text-amber-700\/80, .text-amber-800\/60, .text-amber-800\/70, .text-amber-900\/70, .text-amber-950\/85) {
     color: rgba(252, 211, 77, 0.85);
   }
   .dark :where(.text-blue-900) {
@@ -852,7 +852,7 @@
     background-color: rgba(59, 130, 246, 0.14);
   }
   .dark :where(
-    .bg-amber-50\/50, .bg-amber-50\/60, .bg-amber-50\/80, .bg-amber-50\/90,
+    .bg-amber-50\/50, .bg-amber-50\/60, .bg-amber-50\/70, .bg-amber-50\/80, .bg-amber-50\/90,
     .bg-orange-50\/50, .bg-orange-100\/50
   ) {
     background-color: rgba(245, 158, 11, 0.13);
@@ -1004,7 +1004,7 @@
   .dark :where(.ring-emerald-200\/50) {
     --tw-ring-color: rgba(52, 211, 153, 0.28);
   }
-  .dark :where(.ring-amber-200) {
+  .dark :where(.ring-amber-200, .ring-amber-200\/80) {
     --tw-ring-color: rgba(251, 191, 36, 0.35);
   }
   .dark :where(.ring-blue-200) {

@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 import { Award, Bell, CheckCircle2, ClipboardCheck, Copy, MailCheck, ShieldCheck, Sparkles, Trophy, Zap,  } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useReferralsData, shareReferralLink } from '../hooks/useReferralsData';
+import { useGrowCoinBalance } from '../hooks/useGrowCoinBalance';
+import { GrowCoinIcon } from '../components/GrowCoinIcon';
+import { GROW_COIN, formatCoinAmount } from '../lib/growCoins';
 
 function tierFromCount(count: number) {
   if (count >= 25) return { label: 'Elite', next: null, progress: 100, target: 25 };
@@ -16,6 +19,7 @@ export function ClientReferralsPage() {
   const [copied, setCopied] = useState(false);
   const referralCode = user?.referralCode || '…';
   const { referralStats, referrals, leaders, loading, referralLink } = useReferralsData(user?.id, user?.referralCode, user?.role);
+  const { state: coins, loading: coinsLoading, error: coinsError } = useGrowCoinBalance(user?.id);
 
   const totalReferrals = referralStats?.total_referrals ?? referrals.length;
   const tier = tierFromCount(totalReferrals);
@@ -32,6 +36,41 @@ export function ClientReferralsPage() {
 
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
+      {/* Grow Coins for clients: earned the same way as freelancers, spent as a
+          discount at checkout. Golden surface so it is instantly recognisable. */}
+      <section className="relative overflow-hidden rounded-[2rem] border border-amber-200/70 bg-gradient-to-br from-amber-50 via-[#FFFBF0] to-white p-5 shadow-[0_18px_50px_-24px_rgba(180,130,20,0.4)]">
+        <div className="absolute -right-14 -top-14 h-44 w-44 rounded-full bg-amber-300/20 blur-3xl" aria-hidden="true" />
+        <div className="relative flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <GrowCoinIcon size={56} title="Grow Coin" />
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700/80">Your Grow Coins</p>
+              <p className="font-display text-3xl font-bold leading-tight text-amber-950 tabular-nums">
+                {coinsLoading ? '—' : formatCoinAmount(coins.balance)}
+                <span className="ml-2 align-middle text-xs font-semibold text-amber-800/60">1 coin = ₹1</span>
+              </p>
+              <p className="mt-1 text-xs text-amber-900/70">
+                {coinsError
+                  ? 'Could not load your coin balance — refresh to retry.'
+                  : `Min ${GROW_COIN.minRedemption} coins to use at checkout · ${formatCoinAmount(coins.available)} available`}
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/services"
+            className="inline-flex items-center gap-2 rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-bold text-amber-50 transition-colors hover:bg-amber-950"
+          >
+            Use coins at checkout
+          </Link>
+        </div>
+        <p className="relative mt-3 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">
+          You earn <span className="font-bold">10 Grow Coins</span> when a freelancer you referred completes their first
+          project (or passes identity verification) — never at signup. Your own milestones pay too: 10 coins when your
+          identity is verified and 20 coins when your first project completes (once each). At checkout you can apply
+          coins as a ₹1-per-coin discount on a contract or package payment, from {GROW_COIN.minRedemption} coins upward.
+        </p>
+      </section>
+
       {loading && (
         <div className="flex justify-center py-4">
           <PageSkeleton showStats={false} cards={false} />

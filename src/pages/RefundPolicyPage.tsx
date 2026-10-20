@@ -160,11 +160,11 @@ export function RefundPolicyPage() {
                 {
                   icon: Wrench,
                   title: 'Verified, certified freelancers',
-                  text: 'Freelancers earn verified skill badges through our assessments. Certified professionals deliver quality work — which is exactly why disputes and refunds are rare on Growlancer.',
+                  text: 'Freelancers can earn verified skill badges through our assessments and complete identity verification, so you know who you are hiring before work starts.',
                 },
                 {
                   icon: Lock,
-                  title: 'Fraud-proof delivery checks',
+                  title: 'Fraud checks on delivery',
                   text: 'If work evidence exists, a refund is never auto-approved. Accusations freeze the escrow instantly and our resolution team reviews every piece of evidence before any money moves.',
                 },
               ].map((item, i) => (

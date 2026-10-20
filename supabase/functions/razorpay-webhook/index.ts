@@ -100,6 +100,35 @@ async function notify(
   }
 }
 
+/**
+ * Convert a Grow Coin hold into a ledger debit once the payment is captured.
+ * Idempotent (the reservation row records 'redeemed'), so both the client
+ * verify path and this webhook can call it for the same order safely.
+ * A failure is loud and queued for a human — never silently dropped.
+ */
+async function redeemOrderGrowCoins(supabaseAdmin: any, dbOrder: any) {
+  const coins = Number(dbOrder?.metadata?.grow_coins_used) || 0;
+  if (coins <= 0) return;
+
+  const { data, error } = await supabaseAdmin.rpc('redeem_reserved_grow_coins', {
+    p_order_id: dbOrder.id,
+  });
+
+  if (error || !data?.success) {
+    const reason = error?.message || data?.error || 'unknown';
+    console.error('[razorpay-webhook] Grow Coin redemption failed:', reason);
+    try {
+      await supabaseAdmin.from('grow_coin_review_flags').insert({
+        user_id: dbOrder.user_id,
+        kind: 'redemption_shortfall',
+        details: { order_id: dbOrder.id, error: reason },
+      });
+    } catch (flagErr) {
+      console.error('[razorpay-webhook] could not record grow coin flag:', flagErr);
+    }
+  }
+}
+
 async function insertAuditLog(supabaseAdmin: any, fields: Record<string, unknown>) {
   try {
     await supabaseAdmin.rpc('insert_payment_audit_log', {
@@ -229,6 +258,10 @@ serve(async (req) => {
 
       // Idempotency — already captured via the client verify flow or an earlier webhook
       if (dbOrder.status === 'captured') {
+        // Self-healing: if the earlier capture died between marking the order
+        // and debiting the coins, this retry finishes it (idempotent).
+        await redeemOrderGrowCoins(supabaseAdmin, dbOrder);
+
         // Failure recovery: if the earlier attempt captured the payment but
         // escrow funding failed transiently, RETRY the funding here (the
         // admin_fund_escrow guard makes this a safe no-op if already funded).
@@ -292,6 +325,10 @@ serve(async (req) => {
           processor_response: paymentEntity,
         });
       }
+
+      // Grow Coins: the money is captured, so convert the hold into a debit
+      // before anything else can fail.
+      await redeemOrderGrowCoins(supabaseAdmin, dbOrder);
 
       // Fund escrow (idempotent, service-role-only RPC) — failure recovery for
       // clients whose browser died before verify_payment completed

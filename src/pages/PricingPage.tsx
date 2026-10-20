@@ -30,7 +30,7 @@ export function PricingPage() {
     'AI-powered freelancer matching, tailored to your project',
     'AI writing for project titles & descriptions — free, with a fair-use daily cap',
     'Milestone-based payments — pay as the work progresses',
-    'Free cancellation & full refund before work is delivered',
+    'Free cancellation & full refund before escrow-funded work begins',
     'Fair dispute resolution with a neutral admin review',
   ];
 

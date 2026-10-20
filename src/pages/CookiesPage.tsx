@@ -18,9 +18,9 @@ export function CookiesPage() {
     },
     {
       icon: Shield,
-      title: 'Analytics Cookies',
-      description: 'Help us understand how visitors interact with our website.',
-      examples: 'Page views, click tracking, error reporting',
+      title: 'Analytics (no cookies)',
+      description: 'We measure aggregate page views and catch client-side errors without setting a cookie or following you across sites.',
+      examples: 'Cookieless page-view counts (Vercel Analytics) and error reports (Sentry)',
     },
   ];
 
@@ -71,7 +71,7 @@ export function CookiesPage() {
             </div>
 
             <p className="text-slate-600 mb-8">
-              We do not currently use marketing or advertising cookies, and we do not deploy third-party behavioral tracking pixels. Essential cookies are required for the platform to function; functional and analytics cookies are non-essential and can be managed through your browser settings where applicable. If we ever introduce marketing cookies in the future, this policy will be updated accordingly.
+              We do not currently use marketing or advertising cookies, and we do not deploy third-party behavioral tracking pixels. Essential cookies are required for the platform to function; functional cookies are non-essential and can be managed through your browser settings where applicable. Our analytics is cookieless — it counts page views in aggregate and reports errors, and it cannot identify you. If we ever introduce marketing cookies in the future, this policy will be updated accordingly.
             </p>
 
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Managing Cookies</h2>

@@ -26,7 +26,11 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { InfoTip } from '../../components/InfoTip';
+import { GrowCoinIcon } from '../../components/GrowCoinIcon';
+import { useGrowCoinBalance } from '../../hooks/useGrowCoinBalance';
+import { formatCoinAmount, GROW_COIN } from '../../lib/growCoins';
 import { PageSkeleton } from '../../components/PageSkeleton';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
@@ -638,6 +642,7 @@ export function WalletPage() {
   // =============================================
 
   const availableBalance = balance;
+  const { state: growCoins } = useGrowCoinBalance(user?.id);
   const netAmount = parseFloat(withdrawAmount || '0') * (1 - WITHDRAWAL_FEE_RATE);
   const feeAmount = parseFloat(withdrawAmount || '0') * WITHDRAWAL_FEE_RATE;
 
@@ -817,6 +822,34 @@ export function WalletPage() {
               <p className="text-xl font-bold text-slate-900">{formatCurrency(totalWithdrawn)}</p>
               <p className="text-slate-500 text-sm mt-1">Total withdrawn to date</p>
             </div>
+          </div>
+
+          {/* Grow Coins — separate from wallet money, same page so the two
+              earnings streams are never confused. Redemption happens on the
+              referral page (server-validated, idempotent). */}
+          <div className="flex flex-col gap-3 rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <GrowCoinIcon size={40} />
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700/80">Grow Coins</p>
+                <p className="font-display text-xl font-bold text-amber-950 tabular-nums">
+                  {formatCoinAmount(growCoins.balance)}{' '}
+                  <span className="text-xs font-semibold text-amber-800/60">= ₹{formatCoinAmount(growCoins.balance)}</span>
+                </p>
+                <p className="text-xs text-amber-900/70">
+                  {growCoins.available >= GROW_COIN.minRedemption
+                    ? `${formatCoinAmount(growCoins.available)} available — redeem into this wallet from Referrals.`
+                    : `Earn 10 per successful referral · ${GROW_COIN.minRedemption} needed to redeem.`}
+                </p>
+              </div>
+            </div>
+            <Link
+              to="/dashboard/referrals"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-900 px-4 py-2.5 text-sm font-bold text-amber-50 transition-colors hover:bg-amber-950"
+            >
+              Open coin rewards
+              <ChevronRight className="h-4 w-4" />
+            </Link>
           </div>
 
           {/* Quick Actions */}

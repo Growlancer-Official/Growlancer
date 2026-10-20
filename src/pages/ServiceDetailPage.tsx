@@ -11,6 +11,9 @@ import { ProBadge } from '../components/ProBadge';
 import { razorpayService } from '../lib/razorpay';
 import { useAuth } from '../context/AuthContext';
 import { isValidUuid } from '../utils/validation';
+import { GrowCoinIcon } from '../components/GrowCoinIcon';
+import { useGrowCoinBalance } from '../hooks/useGrowCoinBalance';
+import { GROW_COIN, formatCoinAmount, previewCoinDiscount } from '../lib/growCoins';
 
 interface ServicePackage {
   tier: 'basic' | 'standard' | 'premium';
@@ -79,6 +82,11 @@ export function ServiceDetailPage() {
   // ── Package tier + add-ons (FINAL MODEL: 3 tiers, client picks, server prices) ──
   const [selectedTier, setSelectedTier] = useState<ServicePackage['tier'] | null>(null);
   const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
+  // Grow Coins: hook + state must live ABOVE the loading/not-found early
+  // returns so hook order never changes between renders.
+  const { state: coinState } = useGrowCoinBalance(user?.id);
+  const [useCoins, setUseCoins] = useState(false);
+  const [coinsRequested, setCoinsRequested] = useState(0);
 
   useEffect(() => {
     if (!serviceId) return;
@@ -230,6 +238,27 @@ export function ServiceDetailPage() {
   const platformFee = Math.round((displayPrice + addonTotal) * 0.05 * 100) / 100;
   const totalPayable = displayPrice + addonTotal + tipAmount + platformFee;
 
+  // ── Grow Coins at checkout ──────────────────────────────────────────────
+  // The client picks a COIN COUNT only. The edge function recomputes the
+  // discount from the authoritative balance and never accepts this number as
+  // a discount. The preview below uses the exact same rules as the server.
+  const maxCoinsForOrder = Math.max(Math.min(coinState.available, Math.floor(totalPayable) - 1), 0);
+  const coinPreview = previewCoinDiscount(
+    useCoins ? (coinsRequested || coinState.available) : 0,
+    coinState.available,
+    totalPayable
+  );
+  const amountAfterCoins = coinPreview.payableInr;
+
+  const toggleCoins = () => {
+    const next = !useCoins;
+    setUseCoins(next);
+    if (next) {
+      // Default to the largest usable amount; the input lets them use fewer.
+      setCoinsRequested(maxCoinsForOrder);
+    }
+  };
+
   const handleContinueToOrder = async () => {
     if (!user) {
       toast.info('Login required', 'Please log in to place an order.');
@@ -258,7 +287,7 @@ export function ServiceDetailPage() {
         order_type: 'service_purchase',
         amount: totalPayable,
         currency: 'INR',
-        description: `Service: ${service.title} — ${selectedPackage?.title || 'Package'}${addonTotal > 0 ? ' + add-ons' : ''}${tipAmount > 0 ? ' + tip' : ''}`,
+        description: `Service: ${service.title} — ${selectedPackage?.title || 'Package'}${addonTotal > 0 ? ' + add-ons' : ''}${tipAmount > 0 ? ' + tip' : ''}${coinPreview.coinsUsed > 0 ? ` (${coinPreview.coinsUsed} Grow Coins applied)` : ''}`,
         metadata: {
           service_id: service.id,
           service_title: service.title,
@@ -266,6 +295,8 @@ export function ServiceDetailPage() {
           addon_ids: selectedAddonIds,
           // Server-side validated: 0 <= tip <= service price
           tip_amount: tipAmount > 0 ? tipAmount : 0,
+          // Coin COUNT only — the server derives the ₹ discount itself.
+          ...(coinPreview.coinsUsed > 0 ? { coins_to_use: coinPreview.coinsUsed } : {}),
         },
       });
 
@@ -572,11 +603,60 @@ export function ServiceDetailPage() {
                   <span>Platform fee (5%)</span>
                   <span className="font-medium">{formatCurrency(platformFee)}</span>
                 </div>
+                {coinPreview.discountInr > 0 && (
+                  <div className="flex justify-between text-amber-700">
+                    <span className="inline-flex items-center gap-1.5">
+                      <GrowCoinIcon size={16} /> Grow Coins ({coinPreview.coinsUsed})
+                    </span>
+                    <span className="font-semibold">−{formatCurrency(coinPreview.discountInr)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-slate-900 pt-1.5 border-t border-slate-100">
                   <span>Total</span>
-                  <span>{formatCurrency(totalPayable)}</span>
+                  <span>{formatCurrency(amountAfterCoins)}</span>
                 </div>
               </div>
+
+              {/* Optional Grow Coin discount — client sends a coin count only */}
+              {coinState.available >= GROW_COIN.minRedemption && maxCoinsForOrder >= GROW_COIN.minRedemption && (
+                <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50/60 p-3">
+                  <label className="flex cursor-pointer items-center justify-between gap-3">
+                    <span className="flex items-center gap-2 text-sm font-semibold text-amber-950">
+                      <GrowCoinIcon size={20} /> Use Grow Coins
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={useCoins}
+                      onChange={toggleCoins}
+                      className="h-4 w-4 rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                    />
+                  </label>
+                  {useCoins && (
+                    <div className="mt-2.5 space-y-1.5">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={GROW_COIN.minRedemption}
+                          max={maxCoinsForOrder}
+                          step={10}
+                          value={coinsRequested}
+                          onChange={(e) => setCoinsRequested(Number(e.target.value) || 0)}
+                          aria-label="Grow Coins to use on this order"
+                          className="w-28 rounded-lg border border-amber-300 bg-white px-2 py-1.5 text-sm font-semibold tabular-nums text-amber-950 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                        />
+                        <span className="text-xs text-amber-900/70">
+                          of {formatCoinAmount(coinState.available)} available
+                        </span>
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-amber-900/70">
+                        {coinPreview.reason
+                          ? coinPreview.reason
+                          : `You pay ₹${coinPreview.payableInr.toLocaleString('en-IN')} after the discount. Coins are deducted only when the payment succeeds.`}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* 💜 Tip selector — only when the freelancer enables tips */}
               {(service as any).accepts_tips && (

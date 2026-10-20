@@ -10,9 +10,12 @@ blocker remains. The full ordered operator playbook (RazorpayX, one real test-mo
 KYC, the `.com` domain switch, branch protection) is
 [FOUNDER-RUNBOOK.md](FOUNDER-RUNBOOK.md).
 
-Last verified: **2026-10-07**. Live state: 5 real members, 4 wallets all zero,
+Last verified: **2026-10-20**. Live state: 7 real members, 0 active services,
 **0** contracts / escrow / withdrawals / orders / transactions / invoices / revenue / KYC rows,
-0 orphan profiles, **0 open security alerts**, the full browser layer (anonymous + authenticated
+0 orphan profiles, **4 open HIGH security alerts** (created 16 Oct by the drift monitor — three
+money RPCs lost their NULL-safe guards when `20270122000000` re-created them from pre-hardening
+bodies; fix written as `20270130000000_restore_null_safe_money_guards.sql` but **not yet deployed**,
+see [LAUNCH-REVIEW-2026-10-20.md](LAUNCH-REVIEW-2026-10-20.md) §2.0), the full browser layer (anonymous + authenticated
 sweeps + logout security) green in CI (runs `36237099675` and `36253003439`), and the last flagged
 engineering leak (`ai-matching` ownership, §B1) fixed and live (Backend Deploy `36253003395`).
 
@@ -274,14 +277,50 @@ logged no-op with `email_sent:false` — the platform is fully silent by email.
 
 ---
 
+### A10. Name the legal entity and a grievance contact on the policy pages 🔴
+
+**Why:** Terms §14 says disputes are governed by "the laws of the jurisdiction of the Platform's
+incorporation" but never names the entity, address or jurisdiction. Privacy §9 promises a
+"designated Data Protection Officer" with no name or contact. India's IT Rules 2021 and the DPDP
+Act expect a named grievance/redressal contact, and payment providers ask for the same details.
+A whole-site grep on 2026-10-20 found **no** company name, registered address, CIN, GSTIN or
+grievance officer anywhere.
+
+**Your action:** supply the legal name, registered address, jurisdiction and a monitored contact
+address (grievance/DPO). I can wire them into Terms §14 + Privacy §9 the same day — but the values
+must come from you, not be invented.
+
+**How to verify it is done:** all three legal pages name the entity and show a working contact;
+`grep -ri "grievance officer" src/pages` returns the real name/address.
+
+### A11. Grow Coin is built but not deployed — and its KYC trigger interacts with A4 ⚠️
+
+**Why:** `20270129000000_grow_coin_referral_rewards.sql` + the `razorpay` / `razorpay-webhook`
+changes are in the working tree only; production has none of it. Separately, the award RPC accepts
+any `identity_verifications.status = 'verified'` row as real engagement, and in **development
+mode** every submission verifies instantly — so one referrer could farm 10 coins per throwaway
+account (cap: 20 paid/month = up to ₹200 cashable) for no real work.
+
+**Your decision (before enabling coins):** either exclude `provider = 'dev_mode'` from eligibility
+(no KYC-sourced bonuses until A4), or hold cash redemption until A4, or accept the capped cost.
+
+**Your action:** deploy (commit + push → Backend Deploy), then add the coin programme to Terms
+(no cash value except redemption, no expiry, clawback on fraud, tax on recipient, public
+leaderboard name) and a line to Privacy about the leaderboard.
+
+**How to verify it is done:** `select proname from pg_proc where proname like '%grow_coin%';`
+returns the RPCs; `select * from get_grow_coin_leaderboard(10);` returns rows without email/phone;
+a coin redemption moves a real subscription row to `payment_provider = 'grow_coins'`.
+
 ### Recommended order
 
 ```
 A2 (prove money in by hand once)  → A1 (prove money out once)
  → A9 (Brevo IP restriction — 2 minutes, unblocks ALL email)
+ → A10 (legal entity + grievance contact — blocks the policy pages)
  → A4, A5, A6 (one-time config decisions)
  → A7 (lock the gates)
- → A8 (supply)                    → §B backlog
+ → A8 (supply)                    → A11 (deploy + coin terms) → §B backlog
 ```
 
 A2 and A1 together are the "can this platform actually move money" gate. Everything else in §A is a
@@ -337,7 +376,7 @@ runs green on every push.)
 | Provider-leg diagnostics | `scripts/check_providers.mjs` probes each leg (GoTrue redirect → provider page → redirect_uri) and reports where the chain stops, with a per-provider control (only where a real one exists). It was silently failing closed before: a module-level `const URL` shadowed the global `URL` constructor, so every run printed "APP_URL is not an absolute URL" and nothing else | `node scripts/check_providers.mjs` |
 | Design typography | both families really load on prerendered pages: **9 @font-face parsed / 9 loaded**, per-weight faces are distinct (Cabinet Grotesk 500→900 advance widths differ), `font-display font-black` renders at weight **900**, and **no Google-Fonts request** is made (the unused Inter load is gone). Previously the font CSS shipped as `media="print"` with no `onload` (React SSR strips event handlers), so **no design font applied at all** and every prerendered page rendered in system-ui | open any page, then `await document.fonts.ready; document.fonts.forEach(f => console.log(f.family, f.weight, f.status))` — expect 9 faces, all `loaded` |
 | Build health | typecheck + lint + **423 tests** (36 files) + production build all clean | `npm run typecheck && npm run lint && npm test && npm run build` |
-| Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards — currently **0 findings, 0 open alerts** | `select public.check_security_drift();` |
+| Self-detection | hourly `check_security_drift()` sweeps trust columns, anon-reachable money RPCs, client-writable money tables and stale JWT-claim guards. It works: it **caught a live regression on 16 Oct** (three money RPCs re-created from pre-hardening bodies by `20270122000000`, NULL-safe guards lost) — currently **3 findings / 4 open HIGH alerts** until `20270130000000` deploys, then expected 0/0 | `select public.check_security_drift();` |
 | **Both dashboards, LIVE, on the deployed site** (2026-10-14) | real seeded sessions against `https://growlancer.vercel.app`: client **72 loads / 0 flags**, freelancer **72 loads / 0 flags** (every load proved signed-in by logout TEXT + a successful GoTrue check, 0 rejections), logout-security **5/5 × both roles** — and a full cross-role real-data flow: client posted a project through the real form → row confirmed in DB → freelancer saw it in the feed, applied through the real modal → proposal row in DB → client saw it on `/client/proposals` → **12/12 checks, cleanup verified 0 leftovers** | `node .e2e/run-with-env.mjs scripts/e2e/login.mjs --base=https://growlancer.vercel.app --all --require-all` then the element-audit/logout scripts with `--base=https://growlancer.vercel.app`, and `node .e2e/run-with-env.mjs .e2e/cross-role-flow.mjs` |
 | Header labels verified on the LIVE deployment | `932659b`'s route→label fix confirmed live on Vercel at 375px: `/client/post`→"Post a Project", `/client/verification`→"Verification", `/client/team-projects/create`→"Post a Team Project", `/dashboard/services/create`→"Create Service", `/dashboard/profile`→"Profile", 0 non-2xx on all five loads | `node .e2e/run-with-env.mjs .e2e/live-verify.mjs` |
 

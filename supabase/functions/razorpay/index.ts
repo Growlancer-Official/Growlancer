@@ -436,7 +436,45 @@ serve(async req => {
           serverAmount = Number(revReq.total_amount) || 0;
         }
 
-        const validAmount = serverAmount;
+        // ─── GROW COIN DISCOUNT (server-side only) ───
+        // The client sends ONLY a coin count. The discount is 1 coin = ₹1,
+        // computed here against the authoritative DB balance, and the coins
+        // are held (reserved) until the payment is actually captured. The
+        // client can never name a discount, and the same coins cannot back
+        // two open orders.
+        let growCoinsUsed = 0;
+        let growCoinDiscount = 0;
+        const coinsRequested = Number(data?.coins_to_use ?? metadata?.coins_to_use ?? 0);
+
+        if (Number.isFinite(coinsRequested) && coinsRequested > 0) {
+          if (validOrderType !== 'contract_escrow' && validOrderType !== 'service_purchase') {
+            throw new Error('Grow Coins can only be used on contract or service payments');
+          }
+          if (!Number.isInteger(coinsRequested) || coinsRequested < 100) {
+            throw new Error('Minimum 100 Grow Coins can be used on an order');
+          }
+
+          const { data: coinState, error: coinErr } = await supabaseClient.rpc('get_grow_coin_balance', {
+            p_user_id: user.id,
+          });
+          if (coinErr) throw new Error(`Could not verify Grow Coin balance: ${coinErr.message}`);
+          if (!coinState?.success) throw new Error(coinState?.error || 'Could not verify Grow Coin balance');
+
+          const available = Math.floor(Number(coinState.available) || 0);
+          if (available < coinsRequested) {
+            throw new Error(`Only ${available} Grow Coins are available`);
+          }
+
+          // Razorpay needs a payable amount, so coins never cover the last ₹1.
+          const maxDiscount = Math.floor(serverAmount) - 1;
+          if (maxDiscount < 100) {
+            throw new Error('This order is too small to use Grow Coins');
+          }
+          growCoinsUsed = Math.min(coinsRequested, maxDiscount);
+          growCoinDiscount = growCoinsUsed; // 1 Grow Coin = ₹1
+        }
+
+        const validAmount = Math.round((serverAmount - growCoinDiscount) * 100) / 100;
         if (isNaN(validAmount) || validAmount <= 0 || validAmount > 100000) {
           throw new Error('Invalid amount');
         }
@@ -464,9 +502,31 @@ serve(async req => {
 
         // Store order in database (contest_id rides inside metadata for
         // contest_prize orders — there is no dedicated column on the table).
-        const storedMetadata = validOrderType === 'contest_prize'
-          ? { ...(metadata || {}), contest_id: data.contest_id || metadata?.contest_id }
-          : metadata;
+        // Never persist coin fields supplied by the client: `metadata` comes
+        // from the request body, so a forged `grow_coins_used` must be dropped
+        // and only our server-computed values written back.
+        const clientMetadata: Record<string, any> =
+          metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+            ? { ...metadata }
+            : {};
+        delete clientMetadata.grow_coins_used;
+        delete clientMetadata.grow_coin_discount_inr;
+        delete clientMetadata.amount_before_grow_coins;
+        delete clientMetadata.coins_to_use;
+
+        const storedMetadata = {
+          ...clientMetadata,
+          ...(validOrderType === 'contest_prize'
+            ? { contest_id: data.contest_id || metadata?.contest_id }
+            : {}),
+          ...(growCoinsUsed > 0
+            ? {
+                grow_coins_used: growCoinsUsed,
+                grow_coin_discount_inr: growCoinDiscount,
+                amount_before_grow_coins: serverAmount,
+              }
+            : {}),
+        };
 
         const { data: dbOrder, error: dbError } = await supabaseClient
           .from('razorpay_orders')
@@ -487,6 +547,21 @@ serve(async req => {
 
         if (dbError) throw new Error(`Failed to store order: ${dbError.message}`);
 
+        // Hold the coins now. The ledger is untouched until the payment is
+        // captured, but AVAILABLE balance drops immediately so the user cannot
+        // spend the same coins on a second checkout.
+        if (growCoinsUsed > 0) {
+          const { data: reserved, error: reserveErr } = await supabaseAdmin.rpc('reserve_grow_coins_for_order', {
+            p_order_id: dbOrder.id,
+            p_user_id: user.id,
+            p_coins: growCoinsUsed,
+          });
+          if (reserveErr || !reserved?.success) {
+            await supabaseAdmin.from('razorpay_orders').update({ status: 'failed' }).eq('id', dbOrder.id);
+            throw new Error(reserved?.error || reserveErr?.message || 'Could not reserve Grow Coins');
+          }
+        }
+
         // Financial audit trail
         await insertAuditLog(supabaseAdmin, {
           action: 'order_created',
@@ -495,7 +570,13 @@ serve(async req => {
           user_id: user.id,
           amount: validAmount,
           currency,
-          metadata: { order_type: validOrderType, contract_id: contract_id || null, subscription_id: subscription_id || null },
+          metadata: {
+            order_type: validOrderType,
+            contract_id: contract_id || null,
+            subscription_id: subscription_id || null,
+            grow_coins_used: growCoinsUsed,
+            grow_coin_discount_inr: growCoinDiscount,
+          },
           ip_address: req.headers.get('x-forwarded-for') || null,
         });
 
@@ -505,6 +586,8 @@ serve(async req => {
           razorpay_key_id: RAZORPAY_KEY_ID,
           amount: validAmount,
           currency,
+          grow_coins_used: growCoinsUsed,
+          grow_coin_discount: growCoinDiscount,
         };
         break;
       }
@@ -635,6 +718,22 @@ serve(async req => {
           .single();
 
         if (updateError) throw new Error(`Failed to update order: ${updateError.message}`);
+
+        // Grow Coins: convert the hold into a ledger debit exactly once, now
+        // that the money is really captured. Idempotent by reservation state.
+        if (Number(updatedOrder.metadata?.grow_coins_used) > 0) {
+          const { data: coinRedeem, error: coinRedeemErr } = await supabaseAdmin.rpc('redeem_reserved_grow_coins', {
+            p_order_id: updatedOrder.id,
+          });
+          if (coinRedeemErr || !coinRedeem?.success) {
+            console.error('[razorpay] Grow Coin redemption failed after capture:', coinRedeemErr?.message || coinRedeem?.error || 'unknown');
+            await supabaseAdmin.from('grow_coin_review_flags').insert({
+              user_id: user.id,
+              kind: 'redemption_shortfall',
+              details: { order_id: updatedOrder.id, error: coinRedeemErr?.message || coinRedeem?.error || 'unknown' },
+            });
+          }
+        }
 
         // Store transaction (service role — RLS public-insert policy dropped)
         await supabaseAdmin.from('razorpay_transactions').insert({
@@ -812,7 +911,12 @@ serve(async req => {
           user_id: user.id,
           amount: Number(updatedOrder.amount),
           currency: updatedOrder.currency,
-          metadata: { order_type: updatedOrder.order_type, contract_id: updatedOrder.contract_id, source: 'client_verify' },
+          metadata: {
+            order_type: updatedOrder.order_type,
+            contract_id: updatedOrder.contract_id,
+            source: 'client_verify',
+            grow_coins_used: Number(updatedOrder.metadata?.grow_coins_used) || 0,
+          },
           ip_address: req.headers.get('x-forwarded-for') || null,
         });
 

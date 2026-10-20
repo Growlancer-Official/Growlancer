@@ -304,13 +304,39 @@ const termsSections: Section[] = [
       ),
     },
     {
+      id: 'grow-coins',
+      title: '14. Grow Coins Programme',
+      icon: IndianRupee,
+      content: (
+        <>
+          <p className="text-slate-600 leading-relaxed mb-2">
+            Grow Coins are a rewards currency: <strong>1 Grow Coin = ₹1</strong>, whole coins only. You earn them through real platform activity — never by signing up. A successful referral pays 10 coins only after the referred user completes their first project or passes identity verification with a real verification provider. Milestones pay you directly: <strong>10 coins when your identity is verified</strong> and <strong>20 coins when your first project completes</strong> (as freelancer or as client). Each milestone pays once per account; referral bonuses are capped at 20 paid bonuses per month per user.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-2">
+            Freelancers can redeem coins at 1:1 into their wallet (minimum 100 coins, via the normal payout pipeline) or exchange them for one month of Premium. Clients can apply coins as a ₹1-per-coin discount at checkout. Automated development-mode or sandbox verification results never earn coins.
+          </p>
+          <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-2 text-sm">
+            <li><strong>No cash value except redemption</strong> — coins cannot be sold, transferred or gifted outside the published redemption routes.</li>
+            <li><strong>No expiry</strong> — coins do not lapse.</li>
+            <li><strong>Correction &amp; clawback</strong> — coins credited in error or obtained through fraud, abuse, or fake accounts may be removed, and an admin adjustment can never leave a negative balance.</li>
+            <li><strong>Tax</strong> — coins have a real rupee value; any tax on redemptions is the recipient's responsibility.</li>
+            <li><strong>Public leaderboard</strong> — top referrers are shown by display name and avatar only; email, phone and balances are never published.</li>
+            <li><strong>No ranking influence</strong> — coins never affect search visibility, matching or ranking. Those stay 100% merit-based.</li>
+          </ul>
+        </>
+      ),
+    },
+    {
       id: 'support',
-      title: '14. Legal Administration & Contact',
+      title: '15. Legal Administration & Contact',
       icon: HelpCircle,
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            These Terms of Service shall be governed by and construed in accordance with the laws of the jurisdiction of the Platform's incorporation, without regard to conflict of law principles.
+            These Terms of Service shall be governed by and construed in accordance with the laws of India, without regard to conflict of law principles.
+          </p>
+          <p className="text-slate-600 leading-relaxed mb-2">
+            Growlancer is operated by <strong>Muhammad (Founder &amp; CEO)</strong>, India. For legal notices, grievances, or complaints, contact our grievance officer at <a href="mailto:support@growlancer.com" className="text-emerald-600 font-medium hover:underline">support@growlancer.com</a>. We acknowledge grievances within 24 hours and aim to resolve them within 15 days, in line with the Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021.
           </p>
           <p className="text-slate-600 leading-relaxed mb-2">
             If any provision of these Terms is deemed invalid or unenforceable, that specific clause shall be severed, and the remaining provisions shall continue in full force and effect.

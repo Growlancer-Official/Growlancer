@@ -36,6 +36,7 @@ import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { GrowCoinBadge } from '../components/GrowCoinBadge';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
@@ -628,6 +629,8 @@ export function ClientDashboardLayout() {
 
             {/* Verify Now — hidden on mobile, disappears in real time once verified */}
             <VerifyNowHeaderButton />
+
+            <GrowCoinBadge userId={user?.id} role={user?.role} />
 
             <ThemeToggle variant="pill" />
 

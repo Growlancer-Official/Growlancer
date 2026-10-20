@@ -1232,7 +1232,7 @@ export function ProfessionalProfilePage() {
                     </div>
                     <div>
                       <h4 className="font-semibold text-slate-900 text-sm mb-1">Complete Your Profile</h4>
-                      <p className="text-xs text-slate-500 leading-relaxed">A 100% complete profile gets 5x more client invitations. Add skills, portfolio, and certifications.</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">A complete profile gives clients more reasons to invite you. Add skills, portfolio, and certifications.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-1.5">

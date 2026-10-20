@@ -49,6 +49,9 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
       : '';
 
   const refresh = useCallback(async () => {
+    // The leaderboard is platform-wide now; role is kept for call-site
+    // compatibility (both referral pages pass it).
+    void userRole;
     if (!userId) {
       setLoading(false);
       return;
@@ -58,47 +61,27 @@ export function useReferralsData(userId?: string, referralCode?: string, userRol
       const [{ data: statsData }, { data: referralsData }, { data: board }] = await Promise.all([
         supabase.from('referral_stats').select('*').eq('user_id', userId).maybeSingle(),
         supabase.from('referrals').select('*').eq('referrer_id', userId).order('created_at', { ascending: false }),
-        // Use referral_stats for leaderboard — backed by a DB trigger that updates in real-time
-        // Fake data was reset; now only real referral activity drives the counts
-        supabase
-          .from('referral_stats')
-          .select('total_referrals, user_id, profiles!referral_stats_user_id_fkey(name, avatar, deleted_at, role)')
-          .gt('total_referrals', 0)
-          .order('total_referrals', { ascending: false })
-          .limit(10),
+        // Public leaderboard RPC: counts PAID referral bonuses (i.e. referrals
+        // that reached real engagement), not signups, and returns only the
+        // display-safe fields. It can never leak email/phone/balances.
+        (supabase.rpc as any)('get_grow_coin_leaderboard', { p_limit: 10 }),
       ]);
 
       if (statsData) setReferralStats(statsData);
       setReferrals(referralsData || []);
 
-      // The user's OWN row is always kept — even when profile.role differs
-      // from the current sidebar role — so their name shows once (no duplicate
-      // "You" entry). Other rows must have a live profile with a name, and
-      // match the role filter when one is active.
-      const visibleRows = (board || []).filter((row) => {
-        const profile = row.profiles as { name?: string; avatar?: string | null; deleted_at?: string | null; role?: string } | null;
-        if (row.user_id === userId) return true; // always keep yourself
-        if (!profile) return false;
-        if (profile.deleted_at) return false;
-        if (!profile.name || profile.name.trim() === '') return false;
-        // If a role filter is provided, only show users with the same role
-        if (userRole && profile.role && profile.role !== userRole) return false;
-        return true;
-      });
+      const mapped: ReferralLeader[] = (board || []).map((row: any) => ({
+        rank: Number(row.rank) || 0,
+        name: String(row.display_name || 'Growlancer member'),
+        refs: Number(row.referrals) || 0,
+        avatar: (row.avatar as string | null) ?? null,
+        isYou: row.is_self === true,
+      }));
 
-      const mapped: ReferralLeader[] = visibleRows.map((row, index) => {
-        const profile = row.profiles as { name?: string; avatar?: string | null; role?: string } | null;
-        return {
-          rank: index + 1,
-          name: profile?.name || 'Member',
-          refs: row.total_referrals ?? 0,
-          avatar: profile?.avatar ?? null,
-          isYou: row.user_id === userId,
-        };
-      });
-
+      // If the signed-in user is outside the top 10, keep one honest row with
+      // their real successful-referral count so the page never hides them.
       if (!mapped.some((l) => l.isYou) && statsData) {
-        const yourRefs = statsData.total_referrals ?? referralsData?.length ?? 0;
+        const yourRefs = Number(statsData.valid_referrals) || 0;
         if (yourRefs > 0) {
           mapped.push({
             rank: mapped.length + 1,

@@ -72,6 +72,7 @@ const privacySections: Section[] = [
             <li><strong>AI-Driven Matchmaking:</strong> Our Postgres semantic algorithms parse freelancer skill tags and client project descriptions. The matches are updated dynamically without exposing private contact credentials, preventing preemptive system circumvention.</li>
             <li><strong>Escrow Transactions:</strong> Verified billing identifiers coordinate directly with secure escrow pools through our payment processor.</li>
             <li><strong>Service Notifications:</strong> Critical updates (funding of milestone, new task card creation, chat ping, or dispute raise) trigger instant client/freelancer notification loops.</li>
+            <li><strong>Grow Coins Leaderboard:</strong> Top referrers are displayed publicly by display name and avatar only. Email addresses, phone numbers and coin balances are never published. Contact support to have your display removed.</li>
           </ul>
         </>
       ),
@@ -214,7 +215,7 @@ const privacySections: Section[] = [
       content: (
         <>
           <p className="text-slate-600 leading-relaxed mb-2">
-            If you have questions, comments, or seek to file an appeal regarding the processing of data in a disputed contract workspace, please contact our designated Data Protection Officer (DPO).
+            If you have questions, comments, or seek to file an appeal regarding the processing of data in a disputed contract workspace, please contact our designated Data Protection Officer (DPO): <strong>Muhammad (Founder &amp; CEO)</strong> at <a href="mailto:support@growlancer.com" className="text-emerald-600 font-medium hover:underline">support@growlancer.com</a>. We acknowledge privacy requests within 24 hours and aim to resolve them within 15 days.
           </p>
           <div className="bg-slate-900 rounded-xl p-3 text-white flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
             <div>

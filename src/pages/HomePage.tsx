@@ -188,10 +188,13 @@ function HeroSection({
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-3 w-full max-w-sm">
+                      {/* Only measurable facts here — these used to be invented
+                          performance numbers ("0.3s / 95% fit / 5min") that the
+                          product never measured. */}
                       {[
-                        { value: '0.3s', label: 'Match Time' },
-                        { value: '95%', label: 'Fit Accuracy' },
-                        { value: '5min', label: 'To Hire' },
+                        { value: '5%', label: 'Flat Fee' },
+                        { value: '100%', label: 'To Freelancer' },
+                        { value: '₹0', label: 'To Start' },
                       ].map((stat) => (
                         <div key={stat.label} className="bg-white/10 rounded-xl p-2.5 text-center">
                           <div className="text-xl font-bold text-emerald-400">{stat.value}</div>
@@ -1094,11 +1097,11 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
                 { icon: Receipt, title: 'Only 5% commission', desc: 'Flat and transparent — charged from the client. No hidden fees.' },
                 { icon: LockKeyhole, title: 'Escrow protection', desc: 'Money releases only when you approve the delivered work.' },
                 { icon: Timer, title: 'Auto-release safety net', desc: 'Silent client? Verified work auto-releases after the review window.' },
-                { icon: BadgeCheck, title: 'Verified freelancers', desc: 'ID-verified and skill-certified badges on every profile.' },
+                { icon: BadgeCheck, title: 'Verification badges', desc: 'Freelancers can complete identity verification and skill tests — badges appear on their profile when verified.' },
                 { icon: Sparkles, title: 'AI matching, free for clients', desc: 'Instant help finding the right freelancer — free for life.' },
                 { icon: Users, title: 'Independent contracts', desc: 'One member dispute/cancellation never affects the rest of the team.' },
                 { icon: ShieldCheck, title: 'Fair dispute resolution', desc: 'Clear published process — admin-reviewed, split option when fair.' },
-                { icon: Wallet, title: 'Instant wallet payouts', desc: 'Released funds land in the wallet for quick withdrawal.' },
+                { icon: Wallet, title: 'Wallet payouts', desc: 'Released funds land in your wallet, then withdraw to your bank or UPI.' },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:shadow-sm transition-all">
                   <div className="flex items-start gap-3">

@@ -8,19 +8,35 @@ import {
   Leaf,
   Mail,
   ShieldAlert,
+  Sparkles,
   Sprout,
   Trophy,
   UserX,
+  Wallet,
 } from 'lucide-react';
 import { LoadingSkeleton } from '../components/LoadingSkeleton';
 import { Pagination } from '../components/Pagination';
+import { GrowCoinIcon } from '../components/GrowCoinIcon';
+import { ConfirmModal } from '../components/ConfirmModal';
+import { useToast } from '../components/Toast';
 import { useAuth } from '../context/AuthContext';
+import { useGrowCoinBalance } from '../hooks/useGrowCoinBalance';
 import { useReferralsData } from '../hooks/useReferralsData';
+import {
+  GROW_COIN,
+  formatCoinAmount,
+  newCoinRequestKey,
+  redeemGrowCoinsForCash,
+  redeemGrowCoinsForPremium,
+} from '../lib/growCoins';
 
 export function ReferralsPage() {
   const { user } = useAuth();
+  const toast = useToast();
   const [copied, setCopied] = useState(false);
   const [page, setPage] = useState(1);
+  const [redeemTarget, setRedeemTarget] = useState<'cash' | 'premium' | null>(null);
+  const [redeeming, setRedeeming] = useState(false);
   const pageSize = 5;
   const referralCode = user?.referralCode || '…';
   const { referralStats, referrals, leaders, loading } = useReferralsData(
@@ -28,6 +44,43 @@ export function ReferralsPage() {
     user?.referralCode,
     user?.role
   );
+  const { state: coins, loading: coinsLoading, error: coinsError, refresh: refreshCoins } = useGrowCoinBalance(user?.id);
+
+  const canRedeem = coins.available >= GROW_COIN.minRedemption;
+  const progressToFirstRedemption = Math.min(
+    Math.round((coins.available / GROW_COIN.minRedemption) * 100),
+    100
+  );
+
+  const confirmRedemption = async () => {
+    if (!redeemTarget) return;
+    setRedeeming(true);
+    try {
+      if (redeemTarget === 'cash') {
+        // Redeem the full 100-coin step (or the whole balance if it is larger)
+        // so the action always leaves a usable amount and never strands coins.
+        const amount = coins.available;
+        const result = await redeemGrowCoinsForCash(amount, newCoinRequestKey());
+        toast.success(
+          'Coins redeemed',
+          `${amount} Grow Coins were added to your wallet as ₹${Number(result?.credited_inr ?? amount).toLocaleString('en-IN')}. Withdraw it with your normal payout method.`
+        );
+      } else {
+        const result = await redeemGrowCoinsForPremium(newCoinRequestKey());
+        toast.success(
+          'Premium unlocked',
+          `${result?.coins ?? GROW_COIN.premiumCost} Grow Coins paid for one month of Premium.`
+        );
+      }
+      await refreshCoins();
+      setRedeemTarget(null);
+    } catch (err) {
+      console.error('[ReferralsPage] coin redemption failed:', err);
+      toast.error('Redemption failed', err instanceof Error ? err.message : 'Please try again.');
+    } finally {
+      setRedeeming(false);
+    }
+  };
 
   const handleCopy = () => {
     // 📋 Copy ONLY the referral code — never the full link
@@ -142,6 +195,21 @@ export function ReferralsPage() {
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
 
+      {/* Honest expectation setting — the #1 source of referral support tickets
+          is "where are my coins?". Say the trigger plainly, before the code. */}
+      <div className="flex items-start gap-3 rounded-2xl border border-amber-200/80 bg-amber-50/70 px-4 py-3">
+        <GrowCoinIcon size={22} className="mt-0.5 shrink-0" />
+        <p className="text-xs sm:text-sm leading-relaxed text-amber-950/85">
+          <span className="font-bold">When do you get paid?</span> A referral pays{' '}
+          <span className="font-bold">10 Grow Coins</span> only after your referred freelancer's{' '}
+          <span className="font-bold">first project is completed</span> (or their identity verification is approved) —
+          never at signup. Nothing is paid for empty or fake accounts, which is what keeps the programme honest.
+          You also earn <span className="font-bold">milestones yourself</span>:{' '}
+          <span className="font-bold">10 coins</span> when your own identity is verified and{' '}
+          <span className="font-bold">20 coins</span> when your first project completes — each paid once, whether you work
+          as a freelancer or hire as a client.
+        </p>
+      </div>
 
       {/* Hero: Referral Stats & Code */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -298,6 +366,74 @@ export function ReferralsPage() {
         </div>
       </section>
 
+      {/* Grow Coins — the actual reward currency. Golden surface, deliberately
+          different from the emerald referral chrome so it reads as "money". */}
+      <section className="relative overflow-hidden rounded-[2.5rem] border border-amber-200/70 bg-gradient-to-br from-amber-50 via-[#FFFBF0] to-white p-5 sm:p-7 shadow-[0_18px_50px_-24px_rgba(180,130,20,0.45)]">
+        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl" aria-hidden="true" />
+        <div className="relative grid gap-5 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className="shrink-0 rounded-2xl bg-white/70 p-2 ring-1 ring-amber-200/80 shadow-inner">
+              <GrowCoinIcon size={76} title="Grow Coin" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700/80">Your Grow Coins</p>
+              <div className="mt-1 flex flex-wrap items-end gap-x-3 gap-y-1">
+                <p className="font-display text-4xl sm:text-5xl font-bold text-amber-950 tabular-nums leading-none">
+                  {coinsLoading ? '—' : formatCoinAmount(coins.balance)}
+                </p>
+                <p className="text-sm font-semibold text-amber-800/70">1 coin = ₹1</p>
+              </div>
+              <p className="mt-2 text-sm text-amber-900/80">
+                {coinsError
+                  ? 'We could not load your coin balance right now. Refresh the page to try again.'
+                  : coins.reserved > 0
+                    ? `${formatCoinAmount(coins.available)} available · ${formatCoinAmount(coins.reserved)} held for an unpaid order`
+                    : `${formatCoinAmount(coins.available)} available to redeem`}
+              </p>
+
+              {!coinsLoading && !coinsError && (
+                <div className="mt-3 max-w-sm">
+                  <div className="flex items-center justify-between text-[11px] font-bold uppercase tracking-wide text-amber-800/70">
+                    <span>{canRedeem ? 'Redemption unlocked' : `First redemption at ${GROW_COIN.minRedemption}`}</span>
+                    <span>{Math.min(coins.available, GROW_COIN.minRedemption)}/{GROW_COIN.minRedemption}</span>
+                  </div>
+                  <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-amber-900/10">
+                    <div className="h-full rounded-full bg-gradient-to-r from-[#D4AF37] to-[#F4E285] transition-all duration-500" style={{ width: `${progressToFirstRedemption}%` }} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row lg:flex-col">
+            <button
+              type="button"
+              onClick={() => setRedeemTarget('cash')}
+              disabled={!canRedeem || redeeming}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-900 px-5 py-3 text-sm font-bold text-amber-50 shadow-sm transition-all hover:bg-amber-950 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Wallet className="h-4 w-4" />
+              Redeem to wallet
+            </button>
+            <button
+              type="button"
+              onClick={() => setRedeemTarget('premium')}
+              disabled={coins.available < GROW_COIN.premiumCost || redeeming}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-amber-300 bg-white/80 px-5 py-3 text-sm font-bold text-amber-900 transition-colors hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Sparkles className="h-4 w-4" />
+              Premium ({GROW_COIN.premiumCost} coins)
+              </button>
+          </div>
+        </div>
+
+        <p className="relative mt-4 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">
+          Redeeming to your wallet converts coins at ₹1 each and credits the same wallet used for escrow payouts —
+          withdraw it through your normal payout method. Coins can also pay for one month of Premium instead.
+          Minimum redemption is {GROW_COIN.minRedemption} coins.
+        </p>
+      </section>
+
       {/* Rewards & Validation */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
         <div className="xl:col-span-2 space-y-4">
@@ -305,7 +441,7 @@ export function ReferralsPage() {
           <section className="bg-white rounded-[2.5rem] p-4 border border-slate-100">
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-display text-xl font-bold">Opportunity Rewards</h3>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Cashless Program</span>
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Coin Rewards</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -316,19 +452,19 @@ export function ReferralsPage() {
                 <h4 className="font-bold mb-2">Points &amp; Levels</h4>
                 <p className="text-xs text-slate-500 leading-relaxed">Every completed referral adds 10 points and moves you up the Starter → Growth → Pro → Elite tiers.</p>
               </div>
-              <div className="p-3 bg-orange-50/50 rounded-xl border border-orange-100">
-                <div className="h-10 w-10 rounded-xl bg-orange-500 text-white flex items-center justify-center mb-2">
-                  <Trophy className="w-5 h-5" />
+              <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100">
+                <div className="h-10 w-10 rounded-xl bg-amber-600 text-white flex items-center justify-center mb-2">
+                  <GrowCoinIcon size={22} />
                 </div>
-                <h4 className="font-bold mb-2">Leaderboard Standing</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">Top referrers appear on the referrals leaderboard. Search ranking stays 100% merit-based for everyone.</p>
+                <h4 className="font-bold mb-2">Grow Coins (₹ value)</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">Each successful referral pays 10 Grow Coins — real ₹1-each value you can redeem to your wallet or use for Premium. Your own milestones pay too: 10 coins on verified KYC, 20 on your first completed project. Up to 20 referral bonuses per month.</p>
               </div>
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="h-10 w-10 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-2">
-                  <Crown className="w-5 h-5" />
+                  <Trophy className="w-5 h-5" />
                 </div>
-                <h4 className="font-bold mb-2">Referrer Status</h4>
-                <p className="text-xs text-slate-500 leading-relaxed">Your referrer tier (Starter → Elite) is shown on this page as recognition for growing the community.</p>
+                <h4 className="font-bold mb-2">Leaderboard (no ranking boost)</h4>
+                <p className="text-xs text-slate-500 leading-relaxed">Top referrers appear on this page's leaderboard. Coins never influence search, matching or visibility — those stay 100% merit-based.</p>
               </div>
             </div>
           </section>
@@ -342,21 +478,21 @@ export function ReferralsPage() {
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>
                     <p className="font-bold">Email Verified</p>
-                    <p className="text-xs text-slate-400">The referred user must confirm their email.</p>
+                    <p className="text-xs text-slate-400">The referred user must confirm their email and finish onboarding.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3 text-sm">
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>
-                    <p className="font-bold">Profile 100% Complete</p>
-                    <p className="text-xs text-slate-400">Bio, skills, and portfolio must be filled.</p>
+                    <p className="font-bold">First Project Completed</p>
+                    <p className="text-xs text-slate-400">Their first contract must be completed as a freelancer — a signup alone pays nothing.</p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3 text-sm">
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>
-                    <p className="font-bold">First Activity Done</p>
-                    <p className="text-xs text-slate-400">Referral counts after their first proposal.</p>
+                    <p className="font-bold">Or Identity Verified</p>
+                    <p className="text-xs text-slate-400">A KYC-approved referral pays the same bonus, whichever happens first.</p>
                   </div>
                 </li>
               </ul>
@@ -415,10 +551,11 @@ export function ReferralsPage() {
                     {leader.rank}
                   </span>
                   {leader.avatar ? (
-                    <div className="h-8 w-8 rounded-lg overflow-hidden">
+                    <div className="h-8 w-8 rounded-lg overflow-hidden bg-slate-100">
                       <img
-                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${leader.avatar}`}
-                        alt={leader.name}
+                        src={/^https?:\/\//.test(leader.avatar) ? leader.avatar : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(leader.avatar)}`}
+                        alt=""
+                        loading="lazy"
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -432,7 +569,7 @@ export function ReferralsPage() {
                     leader.rank === 1 ? 'text-emerald-600' : leader.rank <= 3 ? 'text-slate-500' : 'text-slate-400'
                   }`}
                 >
-                  {leader.refs} Ref
+                  {leader.refs} {leader.refs === 1 ? 'referral' : 'referrals'}
                 </span>
               </div>
             ))}
@@ -466,7 +603,7 @@ export function ReferralsPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div className={`w-3.5 h-3.5 rounded-full ${
-                      referral.status === 'active' ? 'bg-emerald-500' : 'bg-orange-400'
+                      referral.status === 'completed' ? 'bg-emerald-500' : referral.status === 'expired' ? 'bg-slate-300' : 'bg-orange-400'
                     }`} />
                     <div>
                       <p className="font-medium text-slate-900">{referral.referred_email}</p>
@@ -477,9 +614,11 @@ export function ReferralsPage() {
                   </div>
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${
-                      referral.status === 'active' 
-                        ? 'bg-emerald-100 text-emerald-700' 
-                        : 'bg-orange-100 text-orange-700'
+                      referral.status === 'completed'
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : referral.status === 'expired'
+                          ? 'bg-slate-100 text-slate-500'
+                          : 'bg-orange-100 text-orange-700'
                     }`}>
                       {referral.status}
                     </span>
@@ -509,6 +648,22 @@ export function ReferralsPage() {
           </div>
         )}
       </section>
+
+      <ConfirmModal
+        isOpen={redeemTarget !== null}
+        onClose={() => (redeeming ? undefined : setRedeemTarget(null))}
+        onConfirm={confirmRedemption}
+        loading={redeeming}
+        variant="warning"
+        title={redeemTarget === 'premium' ? 'Use coins for Premium?' : 'Redeem Grow Coins to your wallet?'}
+        message={
+          redeemTarget === 'premium'
+            ? `${coins.available} coins available. One month of Premium costs ${GROW_COIN.premiumCost} coins and is applied immediately — the same Premium a card payment would unlock.`
+            : `This converts ${coins.available} Grow Coins into ₹${coins.available.toLocaleString('en-IN')} in your wallet. The coins are debited once and cannot be reversed.`
+        }
+        confirmLabel={redeemTarget === 'premium' ? 'Unlock Premium' : 'Redeem coins'}
+        cancelLabel="Not now"
+      />
     </div>
   );
 }
