@@ -40,6 +40,13 @@ describe('hand-drawn UI icons are gone from the migrated files', () => {
     });
   }
 
+  it('the shared referral invite card keeps its UI icons in the icon pack', () => {
+    const src = readSource('src/components/ReferralInviteCard.tsx');
+    expect(src).toContain("from 'lucide-react'");
+    // Only the three official brand marks may be drawn by hand.
+    expect((src.match(/<svg/g) || []).length).toBe(3);
+  });
+
   it('the specific hand-drawn paths that were removed stay removed', () => {
     // Mail path reused by ProtectedRoute / ReferralsPage / MainLayout.
     for (const rel of [
@@ -77,8 +84,11 @@ describe('justified brand marks and artwork are preserved', () => {
     ['src/components/PayPalCheckout.tsx', 1], // PayPal logo
     ['src/components/SiteFooter.tsx', 3], // Razorpay + PayPal + Mastercard
     ['src/pages/CertificateVerifyPage.tsx', 1], // animated seal artwork
-    ['src/pages/ReferralsPage.tsx', 2], // X + WhatsApp share buttons
-    ['src/pages/ClientReferralsPage.tsx', 3], // LinkedIn + Google + WhatsApp
+    // The share buttons (and their brand marks) now live in ONE component that
+    // both referral pages render, so the counts moved with them.
+    ['src/components/ReferralInviteCard.tsx', 3], // WhatsApp + LinkedIn + X (Email is a lucide UI icon)
+    ['src/pages/ReferralsPage.tsx', 0],
+    ['src/pages/ClientReferralsPage.tsx', 0],
   ];
 
   for (const [rel, expected] of ALLOWLIST) {

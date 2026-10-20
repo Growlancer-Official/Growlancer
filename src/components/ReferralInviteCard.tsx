@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { Check, Copy, Download, Link2, Share2 } from 'lucide-react';
+import { Check, Copy, Download, Link2, Mail, Share2 } from 'lucide-react';
 import { useToast } from './Toast';
 import { formatReferralCode } from '../lib/referralCode';
 import {
@@ -63,11 +63,8 @@ const SHARE_TARGETS: {
     platform: 'email',
     label: 'Email',
     className: 'bg-emerald-600/10 text-emerald-700 hover:bg-emerald-600 hover:text-white',
-    icon: (
-      <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
+    // UI icon, so it comes from the icon pack — only brand marks below are drawn.
+    icon: <Mail className="h-4 w-4" />,
   },
 ];
 
