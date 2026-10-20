@@ -25,6 +25,9 @@ import { useReferralsData } from '../hooks/useReferralsData';
 import {
   GROW_COIN,
   formatCoinAmount,
+  getReferralBonusDescription,
+  getFirstProjectBonusDescription,
+  getKycBonusDescription,
   newCoinRequestKey,
   redeemGrowCoinsForCash,
   redeemGrowCoinsForPremium,
@@ -427,10 +430,8 @@ export function ReferralsPage() {
           </div>
         </div>
 
-        <p className="relative mt-4 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">
-          Redeeming to your wallet converts coins at ₹1 each and credits the same wallet used for escrow payouts —
-          withdraw it through your normal payout method. Coins can also pay for one month of Premium instead.
-          Minimum redemption is {GROW_COIN.minRedemption} coins.
+        <p className="relative mt-4 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">Redeeming to your wallet converts coins at ₹1 each and credits the same wallet used for escrow payouts — withdraw it through your normal payout method. Coins can also pay for one month of Premium instead. Minimum redemption is {GROW_COIN.minRedemption} coins.
+        {getReferralBonusDescription(user?.role ?? 'freelancer')}
         </p>
       </section>
 
@@ -492,7 +493,7 @@ export function ReferralsPage() {
                   <CheckCircle className="text-emerald-500 mt-0.5 w-5 h-5" />
                   <div>
                     <p className="font-bold">Or Identity Verified</p>
-                    <p className="text-xs text-slate-400">A KYC-approved referral pays the same bonus, whichever happens first.</p>
+                    <p className="text-xs text-slate-400">{getKycBonusDescription(user?.role ?? 'freelancer')}</p>
                   </div>
                 </li>
               </ul>

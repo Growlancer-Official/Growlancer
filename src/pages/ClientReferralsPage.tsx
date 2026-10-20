@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { useReferralsData, shareReferralLink } from '../hooks/useReferralsData';
 import { useGrowCoinBalance } from '../hooks/useGrowCoinBalance';
 import { GrowCoinIcon } from '../components/GrowCoinIcon';
-import { GROW_COIN, formatCoinAmount } from '../lib/growCoins';
+import { GROW_COIN, formatCoinAmount, getReferralBonusDescription, getKycBonusDescription } from '../lib/growCoins';
 
 function tierFromCount(count: number) {
   if (count >= 25) return { label: 'Elite', next: null, progress: 100, target: 25 };
@@ -63,11 +63,8 @@ export function ClientReferralsPage() {
             Use coins at checkout
           </Link>
         </div>
-        <p className="relative mt-3 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">
-          You earn <span className="font-bold">10 Grow Coins</span> when a freelancer you referred completes their first
-          project (or passes identity verification) — never at signup. Your own milestones pay too: 10 coins when your
-          identity is verified and 20 coins when your first project completes (once each). At checkout you can apply
-          coins as a ₹1-per-coin discount on a contract or package payment, from {GROW_COIN.minRedemption} coins upward.
+        <p className="relative mt-3 border-t border-amber-200/70 pt-3 text-xs leading-relaxed text-amber-900/70">You earn <span className="font-bold">10 Grow Coins</span> when a freelancer you referred completes their first project (or passes identity verification) — never at signup. Your own milestones pay too: 10 coins when your identity is verified and 20 coins when your first project completes (once each). At checkout you can apply coins as a ₹1-per-coin discount on a contract or package payment, from {GROW_COIN.minRedemption} coins upward.
+<p className="mt-1 text-xs text-amber-900/70">{getReferralBonusDescription(user?.role ?? 'freelancer')}</p>
         </p>
       </section>
 
@@ -254,7 +251,7 @@ export function ClientReferralsPage() {
                 <div>
                   <p className="text-sm font-bold">Post First Project</p>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Referral only counts once the new client posts a valid project with defined budget.
+                    Referral only counts once the new client posts a valid project with defined budget. For clients, referral rewards apply when the referred client passes KYC verification.
                   </p>
                 </div>
               </li>

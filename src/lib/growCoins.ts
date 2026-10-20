@@ -19,6 +19,7 @@ import { supabase } from './supabase';
 export const GROW_COIN = {
   /** ₹ value of one coin. Used for display only; the server owns the math. */
   valueInr: 1,
+  /** Role-aware: freelancer gets 10 coins when their referral completes a contract; client gets 10 coins when their referral passes KYC. Both pay only after real engagement, never on signup. */
   referralBonus: 10,
   /** Milestone bonuses (once per user each, server-enforced). */
   kycBonus: 10,
@@ -115,6 +116,41 @@ export function previewCoinDiscount(
   const coinsUsed = Math.min(requested, available, maxDiscount);
   const discountInr = coinsUsed * GROW_COIN.valueInr;
   return { coinsUsed, discountInr, payableInr: total - discountInr };
+}
+
+/**
+ * Returns the referral bonus description for the given role.
+ * Freelancer referrals pay when their referral completes a contract as freelancer.
+ * Client referrals pay when their referral passes KYC verification.
+ * Admin sees the default freelancer description.
+ * Both pay only after real engagement, never on signup.
+ */
+export function getReferralBonusDescription(role: 'freelancer' | 'client' | 'admin'): string {
+  if (role === 'freelancer') {
+    return '10 Grow Coins when your referral completes their first contract as a freelancer (or passes KYC verification) — never at signup.';
+  }
+  if (role === 'client') {
+    return '10 Grow Coins when your referral passes KYC verification — never at signup.';
+  }
+  // admin
+  return '10 Grow Coins when your referral completes their first contract as a freelancer (or passes KYC verification) — never at signup.';
+}
+
+/**
+ * Returns the first-project bonus description for the given role.
+ * Both freelancer and client earn 20 coins on their first completed project.
+ * Admin sees the same description.
+ */
+export function getFirstProjectBonusDescription(role: 'freelancer' | 'client' | 'admin'): string {
+  return '20 Grow Coins when your first project completes (once per user).';
+}
+
+/**
+ * Returns the KYC bonus description (same for all roles).
+ * Admin sees the same description.
+ */
+export function getKycBonusDescription(role: 'freelancer' | 'client' | 'admin'): string {
+  return '10 Grow Coins when your identity verification is verified by a real provider.';
 }
 
 /** Stable per-action key so a double click cannot debit twice. */
