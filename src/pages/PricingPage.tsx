@@ -25,7 +25,7 @@ export function PricingPage() {
   }, []);
 
   const clientFeatures = [
-    '5% flat platform fee on every successful payment — no hidden charges',
+    '5% flat commission, deducted from the freelancer’s payout — never added to the client’s invoice',
     'Your money sits in Growlancer Escrow until you approve the work',
     'AI-powered freelancer matching, tailored to your project',
     'AI writing for project titles & descriptions — free, with a fair-use daily cap',
@@ -56,7 +56,7 @@ export function PricingPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-            One flat 5% commission from clients. Free forever for freelancers, with one optional
+            One flat 5% commission, deducted from each freelancer payout. Nothing is added to what clients pay, and one optional
             Premium plan ({formatCurrency(299)}/month) for AI + productivity tools. No hidden fees, no pay-to-win.
           </p>
 
@@ -66,9 +66,9 @@ export function PricingPage() {
                 For Clients
               </p>
               <p className="text-sm text-slate-700">
-                <strong className="text-emerald-700">5% platform fee</strong> — one flat rate on
-                every successful payment. The freelancer receives <strong>100%</strong> of the
-                project amount.
+                <strong className="text-emerald-700">₹0 platform fee</strong> — you pay exactly the
+                agreed project amount. Our 5% commission comes out of the freelancer’s payout,
+                never out of your invoice.
               </p>
             </div>
             <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 text-left">
@@ -76,16 +76,16 @@ export function PricingPage() {
                 For Freelancers
               </p>
               <p className="text-sm text-slate-300">
-                <strong className="text-white">{formatCurrency(0)} to start</strong> — no commission, no fees on
-                your earnings. 3-tier service packages are free for everyone. Optional Premium
+                <strong className="text-white">{formatCurrency(0)} to start</strong> — no upfront fees. A flat
+                5% commission is deducted only when your work is paid out, never before. 3-tier service packages are free for everyone. Optional Premium
                 ({formatCurrency(299)}/month) adds extra AI capacity and a Pro badge — never ranking or visibility.
               </p>
             </div>
           </div>
 
           <TipNote tone="protection" className="mt-8 max-w-3xl mx-auto text-left">
-            <strong>How the platform fee works:</strong> the 5% fee is paid by the client and
-            deducted <em>only</em> when a payment succeeds — never upfront. Your money is held in
+            <strong>How the platform fee works:</strong> the 5% commission is deducted from the freelancer’s payout
+            <em>only</em> when a payment succeeds — never upfront. Your money is held in
             Growlancer Escrow until the work is delivered and approved, and it is auto-released to
             the freelancer only after that approval (or after the review window passes). Refunds on
             unapproved work are processed through our fair dispute process.
@@ -356,9 +356,9 @@ export function PricingPage() {
             <div className="bg-white rounded-xl p-3 border border-slate-200">
               <h3 className="font-bold text-slate-900 mb-1">Who pays the platform fee?</h3>
               <p className="text-sm text-slate-600">
-                The <strong>client</strong>. A flat 5% fee is charged on each successful payment.
-                The freelancer receives <strong>100% of the project amount</strong> — commission is
-                never deducted from freelancer earnings.
+                The <strong>freelancer</strong>. A flat 5% commission is deducted from the amount released
+                to them. Nothing is added to the client’s invoice — the client pays the agreed
+                project amount.
               </p>
             </div>
             <div className="bg-white rounded-xl p-3 border border-slate-200">
@@ -379,7 +379,7 @@ export function PricingPage() {
               <p className="text-sm text-slate-600">
                 In a Team Project, every freelancer has their own <strong>independent contract</strong> —
                 with their own escrow, milestones and dispute. The flat <strong>5% commission applies
-                per contract</strong> (client-side, same as a single hire). There is no separate "team fee"
+                per contract</strong> (deducted from each freelancer’s payout, same as a single hire). There is no separate "team fee"
                 — and one member's dispute or cancellation never affects the other contracts in
                 the project.
               </p>

@@ -66,18 +66,18 @@ const termsSections: Section[] = [
             <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
                 <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Client Fee</span>
-                <h2 className="text-3xl font-black text-slate-900 mt-1">5%</h2>
+                <h2 className="text-3xl font-black text-slate-900 mt-1">0%</h2>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  Calculated and applied to the total project contract at checkout. Covers secure escrow processing, workspace creation, and dispute mediation rights.
+                  You pay the agreed project amount. Growlancer adds no commission, service charge or platform fee at checkout — escrow processing, the workspace and dispute mediation are included.
                 </p>
               </div>
             </div>
             <div className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm flex flex-col justify-between">
               <div>
-                <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Freelancer Fee</span>
-                <h2 className="text-3xl font-black text-slate-900 mt-1">0%</h2>
+                <span className="text-xs font-black uppercase text-emerald-600 tracking-wider">Freelancer Commission</span>
+                <h2 className="text-3xl font-black text-slate-900 mt-1">5%</h2>
                 <p className="text-xs text-slate-500 mt-2 leading-relaxed">
-                  We believe in empowering creators. Growlancer charges freelancers zero percentage fees on standard contracts. The amount earned is the amount received in your wallet.
+                  Deducted from the amount you earn when it is released to your wallet — never charged upfront. ₹10,000 released means ₹9,500 in your wallet.
                 </p>
                 <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-xl">
                   <p className="text-xs text-amber-800 font-medium">
@@ -105,7 +105,7 @@ const termsSections: Section[] = [
           <div className="relative border-l-2 border-emerald-500 pl-4 space-y-4 mb-3">
             <div>
               <h3 className="font-bold text-slate-900 text-sm">A. Contract Funding</h3>
-              <p className="text-slate-600 text-xs mt-1">Clients must fully fund the contract amount (milestone or project total + the 5% platform fee) into a secure Growlancer Escrow balance before the Freelancer starts working. This is designed to help confirm that funds are available before work begins.</p>
+              <p className="text-slate-600 text-xs mt-1">Clients must fully fund the agreed contract amount (the milestone or project total) into a secure Growlancer Escrow balance before the Freelancer starts working. No platform commission is added to this amount. This is designed to help confirm that funds are available before work begins.</p>
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-sm">B. Real-Time Workspace Canvas</h3>

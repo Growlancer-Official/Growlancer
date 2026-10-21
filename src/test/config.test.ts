@@ -66,53 +66,74 @@ describe('calculatePlatformFee', () => {
 });
 
 describe('calculateTotalWithFee', () => {
-  it('returns amount + 5% fee', () => {
-    expect(calculateTotalWithFee(10000)).toBe(10500);
+  // Freelancer-side commission: the client pays the agreed amount and nothing
+  // is added on top (migration 20270203000000).
+  it('returns the agreed amount unchanged', () => {
+    expect(calculateTotalWithFee(10000)).toBe(10000);
   });
 
-  it('returns 1.05x the input', () => {
+  it('adds no commission for any amount', () => {
     const amounts = [1000, 5000, 50000];
     for (const amount of amounts) {
-      expect(calculateTotalWithFee(amount)).toBeCloseTo(amount * 1.05, 5);
+      expect(calculateTotalWithFee(amount)).toBe(amount);
     }
   });
 
-  it('total = amount + fee', () => {
+  it('total is the amount, never amount + fee', () => {
     const amount = 20000;
-    expect(calculateTotalWithFee(amount)).toBe(amount + calculatePlatformFee(amount));
+    expect(calculateTotalWithFee(amount)).toBe(amount);
+    expect(calculateTotalWithFee(amount)).not.toBe(amount + calculatePlatformFee(amount));
+  });
+
+  it('never charges a negative or non-finite amount', () => {
+    expect(calculateTotalWithFee(-500)).toBe(0);
+    expect(calculateTotalWithFee(Number.NaN)).toBe(0);
   });
 });
 
 describe('calculateFreelancerAmount', () => {
-  it('freelancer receives the full bid amount — zero platform cut from freelancer', () => {
-    expect(calculateFreelancerAmount(10000)).toBe(10000);
+  it('deducts the 5% commission from the released gross', () => {
+    expect(calculateFreelancerAmount(10000)).toBe(9500);
   });
 
-  it('freelancer amount equals input for all values', () => {
-    const amounts = [0, 1000, 50000, 1000000];
+  it('is gross − fee for every amount, rounded to paisa', () => {
+    const amounts = [0, 1000, 50000, 299, 999.99];
     for (const amount of amounts) {
-      expect(calculateFreelancerAmount(amount)).toBe(amount);
+      expect(calculateFreelancerAmount(amount)).toBeCloseTo(
+        Math.max(amount - calculatePlatformFee(amount), 0),
+        2,
+      );
     }
+  });
+
+  it('never returns a negative payout', () => {
+    expect(calculateFreelancerAmount(-100)).toBe(0);
+    expect(calculateFreelancerAmount(0)).toBe(0);
   });
 });
 
-// ─── Business-model invariant ────────────────────────────────────────────────
-// The platform charges 5% on top of the bid. The freelancer gets the full bid.
-// Client pays: bid + fee. Freelancer receives: bid. Platform earns: fee.
+// ─── Business-model invariant (freelancer-side 5%) ───────────────────────────
+// Client pays the agreed amount. The freelancer receives it minus 5%.
+// freeloancer_net + platform_fee = client_total_charged.
 describe('business model invariants', () => {
-  it('client total = freelancer amount + platform fee', () => {
+  it('client total = freelancer net + platform fee', () => {
     const bid = 15000;
     const clientTotal = calculateTotalWithFee(bid);
     const freelancerGets = calculateFreelancerAmount(bid);
     const fee = calculatePlatformFee(bid);
-    expect(clientTotal).toBeCloseTo(freelancerGets + fee, 5);
+    expect(clientTotal).toBeCloseTo(freelancerGets + fee, 2);
+    expect(clientTotal).toBe(bid);
   });
 
-  it('platform earns exactly 5% on every transaction', () => {
+  it('platform earns exactly 5% of the released gross', () => {
     const bid = 8000;
     const fee = calculatePlatformFee(bid);
-    const pctEarned = (fee / calculateTotalWithFee(bid)) * 100;
-    // ~4.76% of total (5% on top of bid = 5/105 of total)
-    expect(pctEarned).toBeCloseTo(4.762, 2);
+    expect((fee / bid) * 100).toBeCloseTo(5, 5);
+  });
+
+  it('matches the documented example: ₹10,000 → ₹500 fee → ₹9,500 net', () => {
+    expect(calculatePlatformFee(10000)).toBe(500);
+    expect(calculateFreelancerAmount(10000)).toBe(9500);
+    expect(calculateTotalWithFee(10000)).toBe(10000);
   });
 });

@@ -192,8 +192,8 @@ function HeroSection({
                           performance numbers ("0.3s / 95% fit / 5min") that the
                           product never measured. */}
                       {[
-                        { value: '5%', label: 'Flat Fee' },
-                        { value: '100%', label: 'To Freelancer' },
+                        { value: '5%', label: 'Commission' },
+                        { value: '0%', label: 'Client Fee' },
                         { value: '₹0', label: 'To Start' },
                       ].map((stat) => (
                         <div key={stat.label} className="bg-white/10 rounded-xl p-2.5 text-center">
@@ -584,7 +584,7 @@ function ClientSection({
               {[
                 { icon: ShieldCheck, label: 'Escrow protection' },
                 { icon: Zap, label: 'Real-time updates' },
-                { icon: BadgeCheck, label: 'KYC-verified talent' },
+                { icon: BadgeCheck, label: 'Profile verification' },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} className="rounded-lg bg-slate-50 ring-1 ring-slate-200/70 px-2 py-2.5 flex items-center justify-center gap-1.5">
                   <Icon className="text-emerald-600 w-4 h-4 flex-shrink-0" />
@@ -1094,10 +1094,10 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
 
             <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {[
-                { icon: Receipt, title: 'Only 5% commission', desc: 'Flat and transparent — charged from the client. No hidden fees.' },
+                { icon: Receipt, title: 'Only 5% commission', desc: 'Flat and transparent — deducted from the freelancer’s payout. Never added to the client’s invoice.' },
                 { icon: LockKeyhole, title: 'Escrow protection', desc: 'Money releases only when you approve the delivered work.' },
                 { icon: Timer, title: 'Auto-release safety net', desc: 'Silent client? Verified work auto-releases after the review window.' },
-                { icon: BadgeCheck, title: 'Verification badges', desc: 'Freelancers can complete identity verification and skill tests — badges appear on their profile when verified.' },
+                { icon: BadgeCheck, title: 'Verification badges', desc: 'Identity verification is rolling out in phases. A badge appears on a profile only after a check is actually completed — never on an unverified account.' },
                 { icon: Sparkles, title: 'AI matching, free for clients', desc: 'Instant help finding the right freelancer — free for life.' },
                 { icon: Users, title: 'Independent contracts', desc: 'One member dispute/cancellation never affects the rest of the team.' },
                 { icon: ShieldCheck, title: 'Fair dispute resolution', desc: 'Clear published process — admin-reviewed, split option when fair.' },

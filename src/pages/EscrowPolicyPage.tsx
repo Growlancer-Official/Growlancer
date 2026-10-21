@@ -7,7 +7,7 @@ export function EscrowPolicyPage() {
     {
       icon: Lock,
       title: '1. Secure Funding Lock',
-      description: 'The client funds the full contract amount (plus the 5% platform fee) into Growlancer Escrow. Freelancers receive instant alerts confirming that funds are secured before any work begins.',
+      description: 'The client funds the full agreed contract amount into Growlancer Escrow — no platform fee is added on top. Freelancers receive instant alerts confirming that funds are secured before any work begins.',
       color: 'from-emerald-500 to-emerald-600'
     },
     {
@@ -98,9 +98,9 @@ export function EscrowPolicyPage() {
           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
             <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Growlancer commission: 5%</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Paid by the <strong>client</strong>, on top of the package price, only when a contract is
-              successfully funded. The freelancer receives <strong>100% of the package price</strong>.
-              There is no listing fee, no hidden charge, and no other platform fee.
+              Deducted from the freelancer’s payout, never added to the client’s price. The client pays
+              the agreed amount; when it is released, 5% is withheld and 95% reaches the
+              freelancer’s wallet. There is no listing fee and no other platform fee.
             </p>
           </div>
           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
@@ -140,7 +140,7 @@ export function EscrowPolicyPage() {
           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
             <h3 className="font-display text-lg font-bold text-slate-900 mb-2">How we make money</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
-              Only the <strong>5% commission when work is successfully funded</strong>. No listing fee,
+              Only the <strong>5% commission when work is successfully released</strong>. No listing fee,
               no hidden charge, no forced subscription. Premium ({formatCurrency(299)}/month) is
               optional and only unlocks AI tools and analytics — never ranking or visibility.
             </p>

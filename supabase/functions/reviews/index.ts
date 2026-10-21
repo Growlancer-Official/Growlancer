@@ -66,6 +66,17 @@ Deno.serve(async (req) => {
       }
     )
 
+    // Writes to "reviews" use the service role. Direct PostgREST INSERT /
+    // UPDATE was revoked (migration 20270203100000) so that every write must
+    // pass the contract-completion, participation and other-party checks above.
+    // The caller's JWT still identifies them; the service role only bypasses
+    // the table grants a browser could otherwise reach directly.
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      { auth: { persistSession: false } }
+    )
+
     const {
       data: { user },
       error: userError,
@@ -164,7 +175,7 @@ Deno.serve(async (req) => {
         }
 
         // Check if review already exists
-        const { data: existingReview } = await supabaseClient
+        const { data: existingReview } = await supabaseAdmin
           .from('reviews')
           .select('id')
           .eq('contract_id', contract_id)
@@ -179,7 +190,7 @@ Deno.serve(async (req) => {
         }
 
         // Create review
-        const { data: review, error: reviewError } = await supabaseClient
+        const { data: review, error: reviewError } = await supabaseAdmin
           .from('reviews')
           .insert({
             contract_id,
@@ -260,7 +271,7 @@ Deno.serve(async (req) => {
       }
 
       // No duplicate contest reviews from the same reviewer
-      const { data: existingContestReview } = await supabaseClient
+      const { data: existingContestReview } = await supabaseAdmin
         .from('reviews')
         .select('id')
         .eq('contest_id', contest_id)
@@ -274,7 +285,7 @@ Deno.serve(async (req) => {
         )
       }
 
-      const { data: review, error: reviewError } = await supabaseClient
+      const { data: review, error: reviewError } = await supabaseAdmin
         .from('reviews')
         .insert({
           contest_id,
@@ -314,7 +325,7 @@ Deno.serve(async (req) => {
 
       if (contestId) {
         // Get reviews for a contest (winner + client mutual reviews)
-        const { data: reviews, error } = await supabaseClient
+        const { data: reviews, error } = await supabaseAdmin
           .from('reviews')
           .select(`
             *,
@@ -331,7 +342,7 @@ Deno.serve(async (req) => {
         )
       } else if (contractId) {
         // Get reviews for a contract
-        const { data: reviews, error } = await supabaseClient
+        const { data: reviews, error } = await supabaseAdmin
           .from('reviews')
           .select(`
             *,
@@ -348,7 +359,7 @@ Deno.serve(async (req) => {
         )
       } else if (revieweeId) {
         // Get reviews for a user
-        const { data: reviews, error } = await supabaseClient
+        const { data: reviews, error } = await supabaseAdmin
           .from('reviews')
           .select(`
             *,
@@ -417,7 +428,7 @@ Deno.serve(async (req) => {
       }
 
       // Verify ownership
-      const { data: existingReview } = await supabaseClient
+      const { data: existingReview } = await supabaseAdmin
         .from('reviews')
         .select('reviewer_id, reviewee_id')
         .eq('id', review_id)
@@ -430,7 +441,7 @@ Deno.serve(async (req) => {
         )
       }
 
-      const { data: review, error } = await supabaseClient
+      const { data: review, error } = await supabaseAdmin
         .from('reviews')
         .update(updateData)
         .eq('id', review_id)

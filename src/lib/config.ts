@@ -4,7 +4,9 @@
 export const PLATFORM_CONFIG = {
   // Platform Fees
   fees: {
-    platform_percentage: 5, // 5% platform fee (client pays on top of bid)
+    // 5% platform commission, withheld from the FREELANCER's released
+    // earnings. It is never added on top of the client's agreed amount.
+    platform_percentage: 5,
     payment_processing_percentage: 2, // payout processing fee (charged to freelancer on withdrawal)
     razorpay_payout_percentage: 2, // payout fee for Indian bank/UPI transfers
     withdrawal_fee_fixed: 0, // Free withdrawals (no additional fixed fee)
@@ -81,15 +83,35 @@ export const PLATFORM_CONFIG = {
 export type PlatformConfig = typeof PLATFORM_CONFIG;
 
 // Helper functions
+//
+// One money model everywhere (migration 20270203000000 is the SQL source of
+// truth — public.platform_commission):
+//   client pays      = agreed amount                      (no fee on top)
+//   platform fee     = 5% of the freelancer's released gross
+//   freelancer keeps = agreed amount − fee
+//
+// Rounding happens here in currency minor units so the client UI, the escrow
+// checkout and the SQL release path agree to the paisa.
+const round2 = (n: number): number => Math.round(n * 100) / 100;
+
+/** 5 % commission on the freelancer's released gross. */
 export function calculatePlatformFee(amount: number): number {
-  return amount * (PLATFORM_CONFIG.fees.platform_percentage / 100);
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  return round2(amount * (PLATFORM_CONFIG.fees.platform_percentage / 100));
 }
 
+/**
+ * What the CLIENT pays: exactly the agreed amount. Kept under its historical
+ * name so every existing call site keeps compiling — the value is no longer
+ * `amount + fee` because the commission is freelancer-side.
+ */
 export function calculateTotalWithFee(amount: number): number {
-  return amount + calculatePlatformFee(amount);
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  return round2(amount);
 }
 
+/** What the FREELANCER receives when the amount is released (gross − 5 %). */
 export function calculateFreelancerAmount(amount: number): number {
-  // Per Terms of Service: client pays 5% on top, freelancer gets full bid amount
-  return amount;
+  if (!Number.isFinite(amount) || amount <= 0) return 0;
+  return round2(Math.max(amount - calculatePlatformFee(amount), 0));
 }

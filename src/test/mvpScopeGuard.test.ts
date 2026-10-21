@@ -179,6 +179,87 @@ describe('subscription charges reserve the billing period first', () => {
   });
 });
 
+describe('commission model — freelancer-side 5%, no client-side fee', () => {
+  // The client pays the agreed amount; the 5% commission is withheld from the
+  // freelancer's RELEASED earnings. Asserted on the LATEST definition of each
+  // function (timestamped migration names sort in apply order), with line
+  // comments stripped, so a later re-creation cannot quietly restore the old
+  // "client pays +5% AND freelancer loses 5%" double-take.
+  const MIGRATIONS_DIR = path.join(ROOT, 'supabase/migrations');
+  const migrationFiles = fs
+    .readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+
+  const stripSqlComments = (sql: string) =>
+    sql
+      .split('\n')
+      .map((line) => {
+        const i = line.indexOf('--');
+        return i >= 0 ? line.slice(0, i) : line;
+      })
+      .join('\n');
+
+  function latestDefining(fn: string): { file: string; sql: string } {
+    const defining = migrationFiles.filter((f) =>
+      read(`supabase/migrations/${f}`).includes(`FUNCTION public.${fn}(`),
+    );
+    expect(defining.length, `no migration defines ${fn}`).toBeGreaterThan(0);
+    const file = defining[defining.length - 1];
+    return { file, sql: stripSqlComments(read(`supabase/migrations/${file}`)) };
+  }
+
+  it('release withholds the 5% commission and credits the net amount', () => {
+    const { file, sql } = latestDefining('_release_escrow_internal');
+    expect(sql, `${file} does not use the canonical commission helper`)
+      .toContain('public.platform_commission(v_gross)');
+    expect(sql, `${file} payout is not gross minus commission`)
+      .toContain('v_net := GREATEST(v_gross - v_fee, 0)');
+    expect(sql, `${file} does not credit the net amount`)
+      .toContain('balance = balance + v_net');
+  });
+
+  it('books gross/fee/net and an invoice for the pool only', () => {
+    const { file, sql } = latestDefining('_book_escrow_release');
+    expect(sql, `${file} revenue row is not gross/fee/net`).toContain('v_gross, v_fee, v_net');
+    expect(sql, `${file} invoice total is not the amount the client paid`)
+      .toContain('v_gross, 0, v_net, v_gross');
+    expect(sql, `${file} ledger wallet credit is not the net amount`)
+      .toContain("'wallet', 'credit', v_net");
+  });
+
+  it('invite-created contracts store the net payout and no client fee', () => {
+    const { file, sql } = latestDefining('accept_invite_create_contract');
+    expect(sql, `${file} still charges the client a fee or stores the gross`)
+      .toContain('v_amount, 0, v_net');
+  });
+});
+
+describe('KYC-driven coin bonuses require a REAL provider (no dev_mode farming)', () => {
+  // §3.1 of the launch review: dev-mode auto-verifies every submission, so a
+  // referrer could farm the KYC bonus with throwaway accounts. The guard must
+  // survive any future re-creation of the award function — asserted on the
+  // LATEST definition, comments stripped (the header documents the rule).
+  const files = fs
+    .readdirSync(path.join(ROOT, 'supabase/migrations'))
+    .filter((f) => f.endsWith('.sql'))
+    .sort();
+  const defining = files.filter((f) =>
+    read(`supabase/migrations/${f}`).includes('FUNCTION public.award_referral_bonus_if_eligible('),
+  );
+  const file = defining[defining.length - 1];
+  const sql = read(`supabase/migrations/${file}`)
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/--[^\n]*/g, '');
+
+  it('the latest award function excludes dev_mode and dev-sandbox rows', () => {
+    expect(defining.length, 'no migration defines award_referral_bonus_if_eligible').toBeGreaterThan(0);
+    expect(sql, `${file} counts dev-mode verifications as real engagement`).toMatch(
+      /verification_provider[^;]*NOT IN \('dev_mode', 'dev-sandbox'\)/,
+    );
+  });
+});
+
 describe('webhook functions can build their own CORS headers', () => {
   it('every function that calls getCorsHeaders imports it', () => {
     const offenders: string[] = [];

@@ -77,8 +77,8 @@ export const FREELANCER_SUPPORT_TOPICS: SupportTopic[] = [
         options: [{ label: 'Got it — thanks!', done: 'Anytime! Your wallet updates in real time — keep earning. 💪' }, { label: 'Tell me about fees', next: 2 }],
       },
       {
-        text: 'The **2% payout processing fee** is charged by the payment processor (Razorpay/PayPal) when you withdraw — it\u2019s their actual transfer cost, not a Growlancer fee, and it\u2019s shown separately before you confirm. The 5% platform commission is paid by the client, never from your earnings.',
-        options: [{ label: 'Clear — thanks!', done: 'You keep 100% of every project amount — only the processor\u2019s 2% applies when you withdraw. 🎉' }, { label: 'Back to payments', next: 0 }],
+        text: 'The **2% payout processing fee** is charged by the payment processor (Razorpay/PayPal) when you withdraw — it\u2019s their actual transfer cost, not a Growlancer fee, and it\u2019s shown separately before you confirm. A flat 5% commission is deducted once, when your earnings are released — nothing else is taken from your wallet.',
+        options: [{ label: 'Clear — thanks!', done: 'You keep 95% of every project amount — the 5% commission is deducted before it reaches your wallet; only the processor’s 2% applies when you withdraw. 🎉' }, { label: 'Back to payments', next: 0 }],
       },
       {
         text: 'If a released payment is not showing in your wallet, check your **Transaction History** — releases post in real time. Common reasons for delay: (1) the client hasn\u2019t approved the milestone yet, (2) the escrow is still in the review window (72h auto-release), or (3) the contract status is still "In Progress".',
@@ -204,7 +204,7 @@ export const CLIENT_SUPPORT_TOPICS: SupportTopic[] = [
         ],
       },
       {
-        text: 'Clients pay **the package price + a flat 5% platform fee** — that\u2019s the only platform charge, and it\u2019s shown clearly before you pay. The freelancer receives 100% of the package price. When you withdraw from your wallet later, the payment processor\u2019s 2% transfer fee applies separately — that\u2019s their cost, passed through at cost.',
+        text: 'Clients pay **exactly the package price** — no platform fee is added at checkout. Growlancer’s flat 5% commission is deducted from the freelancer’s payout when the work is paid. When you withdraw from your wallet later, the payment processor’s 2% transfer fee applies separately — that’s their cost, passed through at cost.',
         options: [{ label: 'Clear — thanks!', done: 'Simple and transparent — that\u2019s the Growlancer promise. 🎉' }, { label: 'Tell me about refunds', next: 2 }],
       },
       {

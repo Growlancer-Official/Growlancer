@@ -71,7 +71,8 @@ describe('platform fee calculation in contract creation', () => {
     const { calculatePlatformFee, calculateTotalWithFee } = await import('../lib/config');
     const bid = 10000;
     expect(calculatePlatformFee(bid)).toBe(500);
-    expect(calculateTotalWithFee(bid)).toBe(10500);
+    // Client pays the agreed bid; the 5% commission is freelancer-side.
+    expect(calculateTotalWithFee(bid)).toBe(10000);
   });
 });
 
@@ -255,7 +256,7 @@ describe('hireFreelancerFromProposal', () => {
 // ─── contractsService fee invariants ─────────────────────────────────────────
 
 describe('contract fee math invariants', () => {
-  it('platform fee is always 5% of bid, freelancer gets full bid', async () => {
+  it('platform fee is always 5% of bid and is deducted from the freelancer', async () => {
     const { calculatePlatformFee, calculateFreelancerAmount } = await import('../lib/config');
 
     // Simulate multiple bid amounts
@@ -265,11 +266,11 @@ describe('contract fee math invariants', () => {
       const freelancerGets = calculateFreelancerAmount(bid);
 
       expect(fee).toBeCloseTo(bid * 0.05, 5);
-      expect(freelancerGets).toBe(bid); // Freelancer always gets full bid
+      expect(freelancerGets).toBeCloseTo(bid - fee, 5); // net of the 5% commission
     }
   });
 
-  it('client always pays more than freelancer receives (platform takes its cut)', async () => {
+  it('client pays the bid; freelancer receives it minus the commission', async () => {
     const { calculatePlatformFee, calculateFreelancerAmount, calculateTotalWithFee } = await import('../lib/config');
     const bid = 20000;
     const clientPays = calculateTotalWithFee(bid);
@@ -277,6 +278,7 @@ describe('contract fee math invariants', () => {
     const platformEarns = calculatePlatformFee(bid);
 
     expect(clientPays).toBeGreaterThan(freelancerGets);
+    expect(clientPays).toBe(bid);
     expect(clientPays).toBe(freelancerGets + platformEarns);
   });
 });

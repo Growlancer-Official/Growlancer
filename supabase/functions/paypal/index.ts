@@ -5,6 +5,7 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import { getCorsHeaders } from '../_shared/cors.ts'
 import { SITE_URL } from '../_shared/site.ts'
+import { isPaypalEnabled, paypalDisabledResponse } from '../_shared/paypalGate.ts'
 
 // PayPal API configuration
 const PAYPAL_CLIENT_ID = Deno.env.get('PAYPAL_CLIENT_ID') || '';
@@ -43,7 +44,11 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
     .eq('route', ROUTE)
     .gte('window_start', windowStart.toISOString());
 
-  if (error) return true;
+  // Fail closed: a limiter read failure must not grant unlimited money calls.
+  if (error) {
+    console.error('Rate limiter unavailable — refusing the request (fail closed):', error.message);
+    return false;
+  }
   if (count !== null && count >= RATE_LIMIT) return false;
 
   await supabaseClient.from('rate_limits').insert({
@@ -220,6 +225,12 @@ serve(async req => {
   const origin = req.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
 
+  // SERVER-side kill switch (default off). Blocks create/capture/refund before
+  // any provider call or side effect; the VITE_ flag is presentation only.
+  if (!isPaypalEnabled()) {
+    return paypalDisabledResponse(corsHeaders);
+  }
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -339,8 +350,10 @@ serve(async req => {
             .single();
           serverAmount = Number(plan?.price) || 0;
         } else if (validOrderType === 'contest_prize') {
-          // Contest prize pool (1st + 2nd + 3rd) + 5% platform fee, recomputed
-          // server-side from the contest row — never trusted from the body.
+          // Contest prize pool (1st + 2nd + 3rd), recomputed server-side from
+          // the contest row — never trusted from the body. No platform fee is
+          // added here: the 5% commission is withheld from the freelancer's
+          // released prize (migration 20270203000000).
           const contestId = data.contest_id || metadata?.contest_id;
           if (!contestId) throw new Error('contest_id is required for contest_prize');
           const { data: contest } = await supabaseClient
@@ -356,8 +369,7 @@ serve(async req => {
           }
           const pool = Math.round((Number(contest.prize_amount || 0) + Number(contest.second_prize || 0) + Number(contest.third_prize || 0)) * 100) / 100;
           if (pool <= 0) throw new Error('Invalid prize pool');
-          const fee = Math.round(pool * 0.05 * 100) / 100; // 5% platform fee
-          serverAmount = Math.round((pool + fee) * 100) / 100;
+          serverAmount = Math.round(pool * 100) / 100;
         } else if (validOrderType === 'service_purchase') {
           const serviceId = metadata?.service_id || data.service_id;
           if (!serviceId) throw new Error('service_id is required for service_purchase');

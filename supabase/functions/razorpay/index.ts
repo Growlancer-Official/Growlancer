@@ -53,7 +53,14 @@ async function checkRateLimit(supabaseClient: any, identifier: string): Promise<
     .eq('route', ROUTE)
     .gte('window_start', windowStart.toISOString());
 
-  if (error) return true;
+  // FAIL CLOSED on a limiter error. This endpoint creates charges and refunds;
+  // if the store cannot be read we cannot prove the budget is respected, so the
+  // safe answer is to refuse rather than let an attacker induce the error and
+  // get unlimited attempts. The caller returns 429.
+  if (error) {
+    console.error('Rate limiter unavailable — refusing the request (fail closed):', error.message);
+    return false;
+  }
   if (count !== null && count >= RATE_LIMIT) return false;
 
   await supabaseClient.from('rate_limits').insert({ identifier, route: ROUTE, count: 1, window_start: now.toISOString() });
@@ -265,9 +272,11 @@ serve(async req => {
           if (!contract || contract.client_id !== user.id) {
             throw new Error('Unauthorized: You do not own this contract');
           }
-          // AUTHORITATIVE AMOUNT = funding amount + 5% platform fee (parity with
-          // the PayPal path). The client may only pick WHICH milestones to fund;
-          // their amounts are read from the DB, never from the request body.
+          // AUTHORITATIVE AMOUNT = the agreed funding amount ONLY. The platform
+          // commission is freelancer-side (5% withheld at release), so NOTHING
+          // is added to the client checkout. The client may only pick WHICH
+          // milestones to fund; their amounts are read from the DB, never from
+          // the request body.
           let fundingAmount = Number(contract.amount) || 0;
           const milestoneIndices = Array.isArray(metadata?.milestone_indices)
             ? metadata.milestone_indices.map((i: unknown) => Number(i))
@@ -285,12 +294,10 @@ serve(async req => {
             }, 0);
             if (sum > 0) fundingAmount = sum;
           }
-          // Server-side fee: use the stored contract fee for full funding, else
-          // compute 5% (matches PLATFORM_CONFIG.fees.platform_percentage).
-          const fee = milestoneIndices.length === 0 && Number(contract.platform_fee) > 0
-            ? Number(contract.platform_fee)
-            : Math.round(fundingAmount * 0.05 * 100) / 100;
-          serverAmount = Math.round((fundingAmount + fee) * 100) / 100;
+          // No platform fee on the client: `platform_fee` is deliberately NOT
+          // read here any more (legacy contracts used to have one stored and
+          // were charged on top). See migration 20270203000000.
+          serverAmount = Math.round(fundingAmount * 100) / 100;
         } else if (validOrderType === 'subscription') {
           if (!subscription_id) throw new Error('subscription_id is required for subscription');
           const { data: subscription } = await supabaseClient
@@ -374,10 +381,9 @@ serve(async req => {
             }
           }
 
-          // FINAL MODEL: client pays package + add-ons + tip + flat 5% platform
-          // fee on top (same calculatePlatformFee rule as contracts).
-          const platformFee = Math.round(effectivePrice * 0.05 * 100) / 100;
-          serverAmount = Math.round((effectivePrice + tipAmount + platformFee) * 100) / 100;
+          // Client pays package + add-ons + tip. The 5% commission is withheld
+          // from the freelancer at release, so it is NOT added on top here.
+          serverAmount = Math.round((effectivePrice + tipAmount) * 100) / 100;
         } else if (validOrderType === 'card_verification') {
           // ₹1 authorization used purely to tokenize a card for one-click future
           // payments (Settings → Billing → Add Card). The amount is fixed
@@ -414,8 +420,8 @@ serve(async req => {
           }
           const pool = Math.round((Number(contest.prize_amount || 0) + Number(contest.second_prize || 0) + Number(contest.third_prize || 0)) * 100) / 100;
           if (pool <= 0) throw new Error('Invalid prize pool');
-          const fee = Math.round(pool * 0.05 * 100) / 100; // 5% platform fee
-          serverAmount = Math.round((pool + fee) * 100) / 100;
+          // Freelancer-side commission: the client funds the prize pool only.
+          serverAmount = Math.round(pool * 100) / 100;
         } else if (validOrderType === 'revision_payment') {
           // Client pays for EXTRA REVISIONS beyond the free included ones.
           // The amount is the revision_requests.total_amount (set when the
@@ -945,84 +951,33 @@ serve(async req => {
       }
 
       // ─── REFUND ──────────────────────────────
+      // ─── REFUND (DISABLED — refund-request workflow only) ─────────────
+      // A payer — and even an admin through this endpoint — must never be able
+      // to call Razorpay's refund API directly with a client-supplied amount:
+      // it bypasses eligibility checks, duplicate-refund protection and the
+      // pending_unknown reconciliation state. Refunds are created as
+      // refund_requests and executed only by the trusted, secret-guarded
+      // `execute_refund` action after approval.
       case 'refund_payment': {
-        const { razorpay_payment_id, amount: refundAmount } = data;
-        if (!razorpay_payment_id) throw new Error('Missing razorpay_payment_id');
-
-        // Ownership check: only the order owner or an admin may refund
-        const { data: orderRec } = await supabaseClient
-          .from('razorpay_orders')
-          .select('user_id, contract_id')
-          .eq('razorpay_payment_id', razorpay_payment_id)
-          .maybeSingle();
-
-        // is_admin moved to profiles_private (migration 20261221000000)
-        const [{ data: profile }, { data: privData }] = await Promise.all([
-          supabaseClient.from('profiles').select('role').eq('id', user.id).maybeSingle(),
-          supabaseClient.from('profiles_private').select('is_admin').eq('id', user.id).maybeSingle(),
-        ]);
-        const isAdmin = profile?.role === 'admin' || privData?.is_admin === true;
-
-        if (!orderRec || (orderRec.user_id !== user.id && !isAdmin)) {
-          throw new Error('Unauthorized to refund this payment');
-        }
-
-        const refundBody: any = { payment_id: razorpay_payment_id };
-        if (refundAmount) {
-          refundBody.amount = Math.round(parseFloat(refundAmount) * 100);
-        }
-
-        const refundResult = await razorpayFetch('/refunds', {
-          method: 'POST',
-          body: JSON.stringify(refundBody),
-        });
-
-        await supabaseAdmin.from('razorpay_transactions').insert({
-          razorpay_payment_id,
-          razorpay_transaction_id: refundResult.id,
-          transaction_type: 'refund',
-          amount: parseFloat(refundResult.amount) / 100,
-          currency: refundResult.currency || 'INR',
-          status: refundResult.status,
-          processor_response: refundResult,
-        });
-
-        // Track the refund so the webhook (refund.processed) completes the ledger
-        // row and reconciles escrow idempotently. Manual refunds used to skip this
-        // — no provider_refund_id meant the refund never appeared in the refunds
-        // ledger/timeline and the refund_request was never closed.
-        await supabaseAdmin.from('refunds').insert({
-          contract_id: orderRec.contract_id || null,
-          provider: 'razorpay',
-          provider_refund_id: refundResult.id,
-          provider_payment_id: razorpay_payment_id,
-          amount: parseFloat(refundResult.amount) / 100,
-          currency: refundResult.currency || 'INR',
-          status: 'processing',
-          timeline: [{ event: 'created', at: new Date().toISOString(), razorpay_refund_id: refundResult.id }],
-        });
-
-        // Financial audit trail + notify the client
-        await insertAuditLog(supabaseAdmin, {
-          action: 'refund_issued',
-          entity_type: 'razorpay_order',
-          entity_id: orderRec.id,
-          user_id: orderRec.user_id,
-          amount: parseFloat(refundResult.amount) / 100,
-          currency: refundResult.currency || 'INR',
-          metadata: { payment_id: razorpay_payment_id, refund_id: refundResult.id, actor: isAdmin ? 'admin' : 'client' },
-          ip_address: req.headers.get('x-forwarded-for') || null,
-        });
-        await notify(
-          supabaseAdmin, orderRec.user_id, 'payment',
-          'Refund processed',
-          `Your refund of ${refundResult.currency || 'INR'} ${(parseFloat(refundResult.amount) / 100).toFixed(2)} has been processed.`,
-          '/client/payments',
-          { refund_id: refundResult.id }
+        try {
+          await insertAuditLog(supabaseAdmin, {
+            action: 'refund_payment_blocked',
+            entity_type: 'razorpay_payment',
+            entity_id: String(data?.razorpay_payment_id || 'unknown'),
+            user_id: user.id,
+            amount: null,
+            metadata: { reason: 'direct_refund_endpoint_disabled', requested_amount: data?.amount ?? null },
+            ip_address: req.headers.get('x-forwarded-for') || null,
+          });
+        } catch { /* audit is best-effort; never block the refusal */ }
+        return new Response(
+          JSON.stringify({
+            error: 'refunds_require_request',
+            message:
+              'Refunds are handled through the refund-request workflow. Submit a refund request for the contract; an approved request is executed by the platform and confirmed by the provider webhook.',
+          }),
+          { status: 409, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
         );
-
-        result = { refund: refundResult };
-        break;
       }
 
       // ─── SAVE CARD TOKEN ──────────────────────────────

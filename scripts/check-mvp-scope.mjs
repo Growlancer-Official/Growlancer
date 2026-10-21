@@ -173,6 +173,66 @@ check('subscription charges reserve the billing period first', () => {
   return 'UNIQUE(subscription_id, billing_period) blocks a second charge';
 });
 
+check('commission is freelancer-side: client pays the pool, freelancer gets pool - 5%', () => {
+  // The client checkout must never add a platform fee, and the release path
+  // must withhold exactly the 5% commission from the freelancer. Asserted on
+  // the LATEST definition of each function (timestamped names sort in apply
+  // order), with line comments stripped so a migration header that documents
+  // the old model is never mistaken for the implementation.
+  const dir = path.join(ROOT, 'supabase/migrations');
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
+  const strip = (sql) => sql
+    .split('\n')
+    .map((line) => {
+      const i = line.indexOf('--');
+      return i >= 0 ? line.slice(0, i) : line;
+    })
+    .join('\n');
+  const latest = (fn) => {
+    const hits = files.filter((f) => read('supabase/migrations/' + f).includes('FUNCTION public.' + fn + '('));
+    if (!hits.length) throw new Error('no migration defines ' + fn);
+    const f = hits[hits.length - 1];
+    return { f, sql: strip(read('supabase/migrations/' + f)) };
+  };
+  const need = (hay, needle, msg) => {
+    if (!hay.includes(needle)) throw new Error(msg);
+  };
+
+  const rel = latest('_release_escrow_internal');
+  need(rel.sql, 'public.platform_commission(v_gross)', rel.f + ' does not apply the canonical 5% commission at release');
+  need(rel.sql, 'v_net := GREATEST(v_gross - v_fee, 0)', rel.f + ' payout is not pool minus commission');
+  need(rel.sql, 'balance = balance + v_net', rel.f + ' does not credit the net amount');
+
+  const book = latest('_book_escrow_release');
+  need(book.sql, 'v_gross, v_fee, v_net', book.f + ' revenue row is not gross/fee/net');
+  need(book.sql, 'v_gross, 0, v_net, v_gross', book.f + ' invoice total is not what the client paid');
+  need(book.sql, "'wallet', 'credit', v_net", book.f + ' ledger wallet credit is not the net amount');
+
+  const invite = latest('accept_invite_create_contract');
+  need(invite.sql, 'v_amount, 0, v_net', invite.f + ' stores a client-paid fee or the gross as the payout');
+
+  const rz = read('supabase/functions/razorpay/index.ts');
+  if (rz.includes('fundingAmount + fee')) throw new Error('razorpay checkout adds a platform fee on top');
+  return 'client pays the pool; release credits pool - 5%; invoice.total = pool';
+});
+
+check('KYC coin bonuses ignore dev-mode verifications', () => {
+  const dir = path.join(ROOT, 'supabase/migrations');
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.sql')).sort();
+  const hits = files.filter((f) =>
+    read(`supabase/migrations/${f}`).includes('FUNCTION public.award_referral_bonus_if_eligible('),
+  );
+  if (!hits.length) throw new Error('no migration defines award_referral_bonus_if_eligible');
+  const f = hits[hits.length - 1];
+  const sql = read(`supabase/migrations/${f}`)
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/--[^\n]*/g, '');
+  if (!/verification_provider[^;]*NOT IN \('dev_mode', 'dev-sandbox'\)/.test(sql)) {
+    throw new Error(`${f} counts dev-mode verifications as real engagement (referral farming)`);
+  }
+  return `${f} excludes dev_mode rows from KYC bonuses`;
+});
+
 check('the scope decision is documented', () => {
   if (!exists('docs/MVP-SCOPE-AND-E2E-TEST-PLAN.md')) throw new Error('MVP scope doc missing');
   return 'docs/MVP-SCOPE-AND-E2E-TEST-PLAN.md present';

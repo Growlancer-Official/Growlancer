@@ -9,6 +9,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 // defined` before signature verification ran. The import is the fix; the
 // regression test in src/test/mvpScopeGuard.test.ts pins it.
 import { getCorsHeaders } from '../_shared/cors.ts';
+import { isPaypalEnabled, paypalDisabledResponse } from '../_shared/paypalGate.ts';
 
 // PayPal API configuration for verification
 const PAYPAL_CLIENT_ID = Deno.env.get('PAYPAL_CLIENT_ID') || '';
@@ -75,6 +76,11 @@ async function verifyWebhookSignature(
 serve(async req => {
   const origin = req.headers.get('origin')
   const corsHeaders = getCorsHeaders(origin)
+
+  // Deferred payment rail: acknowledge nothing and change nothing while off.
+  if (!isPaypalEnabled()) {
+    return paypalDisabledResponse(corsHeaders)
+  }
 
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });

@@ -2,7 +2,7 @@
 import { supabase, realtimeChannels } from './supabase';
 import { captureError } from './telemetry';
 import { CacheManager } from './services/cacheManager';
-import { calculatePlatformFee } from './config';
+import { calculateFreelancerAmount } from './config';
 
 // Types
 export interface Project {
@@ -453,11 +453,12 @@ export const contractsService = {
       }
 
       const bidAmount = Number(proposal.proposed_rate || 0);
-      // Client pays bid + 5% platform fee (added on top). Freelancer gets full bid amount.
-      // This matches the Terms of Service: "Client Fee 5%, Freelancer Fee 0%"
-      const platformFee = calculatePlatformFee(bidAmount);
-      // freelancer_amount = full bid amount (freelancer gets paid in full)
-      const freelancerAmount = bidAmount;
+      // Money model (migration 20270203000000): the client pays the agreed bid
+      // with NO fee added on top; the 5% commission is withheld from the
+      // freelancer when the earnings are released. platform_fee therefore stays
+      // 0 here and freelancer_amount stores the NET the freelancer will receive.
+      const platformFee = 0;
+      const freelancerAmount = calculateFreelancerAmount(bidAmount);
 
       const { data, error } = await supabase
         .from('contracts')

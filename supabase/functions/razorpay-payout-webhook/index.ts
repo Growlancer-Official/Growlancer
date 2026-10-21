@@ -17,24 +17,42 @@ Deno.serve(async (req) => {
   try {
     // Verify webhook secret — FAIL CLOSED: if not configured, reject the
     // webhook rather than processing unverified payout events.
-    const webhookSecret = Deno.env.get('RAZORPAY_WEBHOOK_SECRET')
+    // A RazorpayX payout webhook is configured with its own secret; accept the
+    // payout-specific name first and fall back to the shared one so existing
+    // deployments keep working. Never default to an empty string.
+    const webhookSecret =
+      Deno.env.get('RAZORPAY_PAYOUT_WEBHOOK_SECRET') || Deno.env.get('RAZORPAY_WEBHOOK_SECRET')
     if (!webhookSecret) {
-      console.error('RAZORPAY_WEBHOOK_SECRET is not configured — rejecting webhook (fail closed)')
+      console.error('Payout webhook secret is not configured — rejecting webhook (fail closed)')
       return new Response(JSON.stringify({ error: 'Webhook not configured' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-    const signature = req.headers.get('x-razorpay-signature') || ''
+    const signature = (req.headers.get('x-razorpay-signature') || '').trim().toLowerCase()
     const bodyText = await req.text()
-    // Basic HMAC-SHA256 verification
+
+    // HMAC-SHA256 over the EXACT raw request bytes. The previous code imported
+    // the key with the verify-only usage and then called crypto.subtle.sign(),
+    // which throws InvalidAccessError — so no delivery could ever verify.
     const encoder = new TextEncoder()
-    const key = await crypto.subtle.importKey('raw', encoder.encode(webhookSecret), { name: 'HMAC', hash: 'SHA-256' }, false, ['verify'])
+    const key = await crypto.subtle.importKey(
+      'raw', encoder.encode(webhookSecret),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'],
+    )
     const signatureBytes = await crypto.subtle.sign('HMAC', key, encoder.encode(bodyText))
-    const expectedSig = Array.from(new Uint8Array(signatureBytes)).map(b => b.toString(16).padStart(2, '0')).join('')
-    // Constant-time comparison to prevent timing attacks
-    let diff = 0;
-    for (let i = 0; i < Math.max(signature.length, expectedSig.length); i++) {
-      diff |= (signature.charCodeAt(i % signature.length) ^ expectedSig.charCodeAt(i % expectedSig.length));
+    const expectedSig = Array.from(new Uint8Array(signatureBytes))
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('')
+
+    // Length check first (a mismatched length is a forgery, not a near miss),
+    // then a constant-time comparison of equal-length hex strings.
+    if (signature.length === 0 || signature.length !== expectedSig.length) {
+      console.error('Invalid webhook signature (length mismatch)')
+      return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
-    if (diff !== 0 || signature.length !== expectedSig.length) {
+    let diff = 0
+    for (let i = 0; i < expectedSig.length; i++) {
+      diff |= signature.charCodeAt(i) ^ expectedSig.charCodeAt(i)
+    }
+    if (diff !== 0) {
       console.error('Invalid webhook signature')
       return new Response(JSON.stringify({ error: 'Invalid signature' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }

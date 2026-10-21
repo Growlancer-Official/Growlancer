@@ -18,7 +18,7 @@ import { PAYMENTS_CONFIG } from '../lib/payments';
 import { formatCurrency } from '../lib/currency';
 import { supabase } from '../lib/supabase';
 import { withdrawalService } from '../lib/withdrawal';
-import { PLATFORM_CONFIG, calculatePlatformFee, calculateTotalWithFee } from '../lib/config';
+import { calculateFreelancerAmount, calculateTotalWithFee } from '../lib/config';
 import { milestoneService, getMilestoneProgress } from '../lib/contractMilestones';
 import type { MilestoneItem } from '../lib/contractMilestones';
 
@@ -257,9 +257,11 @@ export function EscrowPayPalPayment({
   };
 
   const fundingAmount = calculateFundingAmount();
-  const platformFee = calculatePlatformFee(fundingAmount);
+  // The client pays the agreed amount only — the 5% commission is withheld
+  // from the freelancer when the earnings are released.
+  const platformFee = 0;
+  const freelancerReceives = calculateFreelancerAmount(fundingAmount);
   const totalAmount = calculateTotalWithFee(fundingAmount);
-  const feePercentage = PLATFORM_CONFIG.fees.platform_percentage;
 
   // Calculate already funded amount
   const fundedAmount = milestones
@@ -597,8 +599,8 @@ export function EscrowPayPalPayment({
               </div>
             )}
             <div className="flex justify-between text-slate-600">
-              <span>Platform Fee ({feePercentage}%)</span>
-              <span>{formatCurrency(platformFee)}</span>
+              <span>Freelancer receives (after 5% commission)</span>
+              <span>{formatCurrency(freelancerReceives)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total</span>
@@ -655,8 +657,8 @@ export function EscrowPayPalPayment({
               <span className="font-semibold text-slate-900">{formatCurrency(fundingAmount)}</span>
             </div>
             <div className="flex justify-between text-slate-600">
-              <span>Platform Fee ({feePercentage}%)</span>
-              <span>{formatCurrency(platformFee)}</span>
+              <span>Freelancer receives (after 5% commission)</span>
+              <span>{formatCurrency(freelancerReceives)}</span>
             </div>
             <div className="flex justify-between font-semibold text-slate-900 pt-2 border-t border-slate-200">
               <span>Total to Pay</span>
@@ -730,8 +732,8 @@ export function EscrowPayPalPayment({
             </div>
           )}
           <div className="flex justify-between text-slate-600">
-            <span>Platform Fee ({feePercentage}%)</span>
-            <span className="font-medium text-slate-900">{formatCurrency(platformFee)}</span>
+            <span>Freelancer receives (after 5% commission)</span>
+            <span className="font-medium text-slate-900">{formatCurrency(freelancerReceives)}</span>
           </div>
           <div className="flex justify-between font-semibold text-slate-900 pt-3 border-t border-slate-200 text-lg">
             <span>Total to Pay</span>
