@@ -12,6 +12,7 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.7';
 import { sendEmail } from '../_shared/brevo.ts'
 import { SITE_URL } from '../_shared/site.ts';
+import { isFeatureEnabled } from '../_shared/features.ts';
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -187,6 +188,24 @@ serve(async (req: Request) => {
       status: 401,
       headers: { 'Content-Type': 'application/json' },
     });
+  }
+
+  // ── Subscription billing is DEFERRED for early access ───────────────────
+  // This function performs REAL saved-card charges for trial conversion and
+  // renewal against the Razorpay API. It is fail-closed: unless the operator
+  // explicitly sets FEATURE_SUBSCRIPTION_BILLING_ENABLED=true, the function
+  // returns before any gateway call. It never cancels, downgrades or deletes
+  // an existing subscription — history and paid access are left exactly as
+  // they are, so re-enabling restores the previous behaviour with no repair
+  // step. `charged: false` is explicit so a monitor cannot read 503 as a
+  // successful sweep.
+  if (!isFeatureEnabled('subscription_billing')) {
+    return new Response(JSON.stringify({
+      success: false,
+      charged: false,
+      deferred: true,
+      error: 'Subscription billing is deferred during early access. No charge was attempted.',
+    }), { status: 503, headers: { 'Content-Type': 'application/json' } });
   }
 
   try {

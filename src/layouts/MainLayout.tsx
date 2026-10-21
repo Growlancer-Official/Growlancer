@@ -7,6 +7,7 @@ import { LoginModal } from '../components/LoginModal';
 import { SignupModal } from '../components/SignupModal';
 import { SiteFooter } from '../components/SiteFooter';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { buildModalCleanupUrl } from '../lib/referralCode';
 
 export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -37,12 +38,13 @@ export function MainLayout() {
     if (modal === 'login') {
       setIsLoginModalOpen(true);
       // Clean URL params without triggering React Router navigation (prevents race conditions with lazy-loaded components)
-      window.history.replaceState(null, '', location.pathname);
+      window.history.replaceState(null, '', buildModalCleanupUrl(location.pathname, location.search));
     } else if (modal === 'signup') {
       if (roleParam) setSignupRole(roleParam);
       setIsSignupModalOpen(true);
-      // Clean URL params without triggering React Router navigation
-      window.history.replaceState(null, '', location.pathname);
+      // Clean URL params without triggering React Router navigation — but keep
+      // `ref`: the OAuth call reads it later, after the modal is open.
+      window.history.replaceState(null, '', buildModalCleanupUrl(location.pathname, location.search));
     }
   }, [location.search, location.pathname, navigate]);
 

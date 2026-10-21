@@ -47,6 +47,12 @@ const KYC_DEV_TOKEN = Deno.env.get('KYC_DEV_TOKEN') ?? '';
 const DEV_PROJECT_REF = Deno.env.get('KYC_DEV_PROJECT_REF') ?? '';
 const LIVE_PROJECT_REF = SUPABASE_URL.replace(/^https?:\/\//, '').split('.')[0];
 const DEV_MODE_ACTIVE = KYC_DEV_MODE && KYC_DEV_TOKEN.length > 0 && LIVE_PROJECT_REF === DEV_PROJECT_REF && DEV_PROJECT_REF !== '';
+// Second, independent gate for the DB-driven development adapter. A row in
+// kyc_provider_config saying mode='development' must never be enough on its
+// own: that switch is editable from the admin panel and, without this flag, a
+// mis-click (or a compromised admin session) would auto-verify every PAN in
+// production. Default OFF; enabling it is an explicit deploy-time decision.
+const KYC_DEV_MODE_ALLOWED = Deno.env.get('KYC_DEV_MODE_ALLOWED') === 'true';
 
 const ROUTE = 'kyc-submit';
 const RATE_LIMIT = 5; // submissions per window (provider calls cost money)
@@ -70,7 +76,11 @@ async function resolveProviderConfig(service: any): Promise<{
       .maybeSingle();
     if (!error && data) {
       const token = data?.api_token && String(data.api_token).trim().length > 0 ? String(data.api_token).trim() : null;
-      const mode = data?.mode === 'development' ? 'development' : 'production';
+      // Fail closed: development mode is only honoured when the deploy itself
+      // opted in. Otherwise the row's mode is reported as production and the
+      // real provider (or the safe 'review' outcome) is used.
+      const wantsDev = data?.mode === 'development';
+      const mode: 'production' | 'development' = wantsDev && KYC_DEV_MODE_ALLOWED ? 'development' : 'production';
       return { token, mode, source: 'database' };
     }
   } catch {
@@ -257,7 +267,10 @@ const devModeAdapter: KycProviderAdapter = {
 };
 
 function getAdapter(token: string | null, dbDevMode: boolean): KycProviderAdapter | null {
-  if (dbDevMode) return devModeAdapter;
+  // Defence in depth: even if a future caller passes dbDevMode=true directly,
+  // the adapter cannot be reached without the deploy-time opt-in. With no
+  // adapter the caller fails safe to 'review' — never to 'verified'.
+  if (dbDevMode) return KYC_DEV_MODE_ALLOWED ? devModeAdapter : null;
   if (DEV_MODE_ACTIVE) return devAdapter;
   if (KYC_PROVIDER === 'surepass' && token) return surepassAdapter;
   return null; // No provider configured → fail safe (review), never a fake verdict

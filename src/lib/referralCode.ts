@@ -130,3 +130,30 @@ export function buildReferralLink(
     .replace(/\/+$/, '');
   return `${base}/signup?ref=${encodeURIComponent(formatted)}`;
 }
+
+/**
+ * Where `/signup?ref=…` must redirect.
+ *
+ * `/signup` is not a page — it opens the signup modal on the homepage. A plain
+ * `<Navigate to="/?modal=signup">` drops the query string, which silently
+ * breaks every referral link (the code never reaches `signInWithOAuth`). This
+ * helper carries `ref` across the redirect.
+ */
+export function buildSignupRedirectTarget(search: string): string {
+  const ref = new URLSearchParams(search).get('ref');
+  return ref
+    ? `/?modal=signup&ref=${encodeURIComponent(ref)}`
+    : '/?modal=signup';
+}
+
+/**
+ * The URL MainLayout leaves behind after it opens a login/signup modal.
+ *
+ * It strips `modal`/`role` so a refresh does not reopen the modal, but it must
+ * keep `ref`: `signInWithOAuth` reads the code from the URL at the moment the
+ * user picks a provider, which can be after this cleanup has run.
+ */
+export function buildModalCleanupUrl(pathname: string, search: string): string {
+  const ref = new URLSearchParams(search).get('ref');
+  return ref ? `${pathname}?ref=${encodeURIComponent(ref)}` : pathname;
+}

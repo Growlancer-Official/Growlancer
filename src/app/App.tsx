@@ -1,5 +1,6 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { buildSignupRedirectTarget } from '../lib/referralCode';
 import { AuthProvider } from '../context/AuthContext';
 import { CurrencyProvider } from '../context/CurrencyContext';
 import { ThemeProvider } from '../context/ThemeContext';
@@ -11,6 +12,7 @@ import { ToastProvider } from '../components/Toast';
 import { RouteFallback } from '../components/LoadingSkeleton';
 import { CookieConsent } from '../components/CookieConsent';
 import { OAuthReturnNotice } from '../components/OAuthReturnNotice';
+import { FeatureUnavailablePage } from '../components/FeatureUnavailablePage';
 
 // ═══════════════════════════════════════════════════════════════
 // EAGER IMPORTS — only what the entry itself renders
@@ -41,7 +43,6 @@ const AboutPage = lazy(() => import('@pages/AboutPage').then(m => ({ default: m.
 const PhilosophyPage = lazy(() => import('@pages/PhilosophyPage').then(m => ({ default: m.PhilosophyPage })));
 const ContactPage = lazy(() => import('@pages/ContactPage').then(m => ({ default: m.ContactPage })));
 const ReportFeedbackPage = lazy(() => import('@pages/ReportFeedbackPage').then(m => ({ default: m.ReportFeedbackPage })));
-const InternshipsPage = lazy(() => import('@pages/InternshipsPage').then(m => ({ default: m.InternshipsPage })));
 const HelpCenterPage = lazy(() => import('@pages/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })));
 const SafetyPage = lazy(() => import('@pages/SafetyPage').then(m => ({ default: m.SafetyPage })));
 const GuidelinesPage = lazy(() => import('@pages/GuidelinesPage').then(m => ({ default: m.GuidelinesPage })));
@@ -64,7 +65,6 @@ const ProjectDetailsPage = lazy(() => import('@pages/ProjectDetailsPage').then(m
 const PaymentCallbackPage = lazy(() => import('@pages/PaymentCallbackPage').then(m => ({ default: m.PaymentCallbackPage })));
 const ContestsPage = lazy(() => import('@pages/ContestsPage').then(m => ({ default: m.ContestsPage })));
 const ContestDetailPage = lazy(() => import('@pages/ContestDetailPage').then(m => ({ default: m.ContestDetailPage })));
-const CertificateVerifyPage = lazy(() => import('@pages/CertificateVerifyPage').then(m => ({ default: m.CertificateVerifyPage })));
 
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const WaitlistPage = lazy(() => import('@pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
@@ -158,6 +158,15 @@ const DevDebugPage = import.meta.env.DEV
 
 // RouteFallback now imported from LoadingSkeleton component
 
+/**
+ * `/signup?ref=…` is a redirect, not a page. It must carry the referral code
+ * across to the homepage modal or every shared invite link loses attribution.
+ */
+function SignupRedirect() {
+  const location = useLocation();
+  return <Navigate to={buildSignupRedirectTarget(location.search)} replace />;
+}
+
 function App() {
   const isDev = import.meta.env.DEV;
 
@@ -193,15 +202,18 @@ function App() {
               <Route path="/" element={<MainLayout />}>
                 <Route index element={<HomePage />} />
                 <Route path="login" element={<Navigate to="/?modal=login" replace />} />
-                <Route path="signup" element={<Navigate to="/?modal=signup" replace />} />
+                <Route path="signup" element={<SignupRedirect />} />
                 <Route path="how-it-works" element={<HowItWorksPage />} />
                 <Route path="features" element={<FeaturesPage />} />
                 <Route path="categories" element={<CategoriesPage />} />
                 <Route path="pricing" element={<PricingPage />} />
                 <Route path="about" element={<AboutPage />} />
                 <Route path="philosophy" element={<PhilosophyPage />} />
-                <Route path="internships" element={<InternshipsPage />} />
-                <Route path="careers" element={<InternshipsPage />} />
+                {/* Deferred for early access. The page stays routed (so a shared
+                    link lands on an honest explanation, not a 404) but renders
+                    the unavailable screen; the internship function answers 410. */}
+                <Route path="internships" element={<FeatureUnavailablePage />} />
+                <Route path="careers" element={<FeatureUnavailablePage />} />
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="report" element={<ReportFeedbackPage />} />
                 <Route path="help-center" element={<HelpCenterPage />} />
@@ -223,11 +235,13 @@ function App() {
                 <Route path="contests/:contestId" element={<ContestDetailPage />} />
               </Route>
 
-              {/* Public Certificate Verification Routes — /certificate and /verify-certificate both work */}
-              <Route path="certificate/:code" element={<CertificateVerifyPage />} />
-              <Route path="certificate" element={<CertificateVerifyPage />} />
-              <Route path="verify-certificate/:code" element={<CertificateVerifyPage />} />
-              <Route path="verify-certificate" element={<CertificateVerifyPage />} />
+              {/* Certificate verification is deferred for early access: the
+                  public route it called returned applicant PII, and the product
+                  no longer issues certificates in this release. */}
+              <Route path="certificate/:code" element={<FeatureUnavailablePage />} />
+              <Route path="certificate" element={<FeatureUnavailablePage />} />
+              <Route path="verify-certificate/:code" element={<FeatureUnavailablePage />} />
+              <Route path="verify-certificate" element={<FeatureUnavailablePage />} />
 
               {/* Auth Email Action Routes */}
               <Route path="auth/callback" element={<AuthCallbackPage />} />

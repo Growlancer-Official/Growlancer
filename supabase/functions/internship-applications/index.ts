@@ -9,6 +9,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendEmail } from '../_shared/brevo.ts'
 import { getCorsHeaders } from '../_shared/cors.ts'
 import { SITE_URL } from '../_shared/site.ts'
+import { featureDisabledResponse, isFeatureEnabled } from '../_shared/features.ts'
 
 // Transactional email via Brevo (shared helper).
 const ADMIN_EMAIL = 'growlancer.own@gmail.com'
@@ -953,6 +954,18 @@ Deno.serve(async (req) => {
   const corsHeaders = getCorsHeaders(origin);
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
+  }
+
+  // ── Internships are deferred for early access ───────────────────────────
+  // Every method is closed, not just the write path. POST used to UPDATE an
+  // existing application when the caller merely knew the applicant's email
+  // (no mailbox proof), and GET/PATCH exposed full applicant PII. Nothing is
+  // read or written now; historical rows stay in the database untouched and
+  // remain reachable only through the admin-data proxy's authenticated
+  // `query` action. 410 tells a direct API caller the truth instead of a
+  // misleading 200 with an empty list.
+  if (!isFeatureEnabled('internships')) {
+    return featureDisabledResponse(corsHeaders, 'internships')
   }
 
   try {

@@ -299,8 +299,59 @@ async function serviceCount(table, query = 'select=id') {
   return Array.isArray(body) ? body.length : 0;
 }
 
+/**
+ * Remove every row this audit seeded, including rows left by an earlier failed
+ * run. Order is not cosmetic: `workspaces` references `projects`,
+ * `workspace_members`/`workspace_activity_logs` reference `workspaces`, so a
+ * project delete that runs first fails silently under the FK and the workspace
+ * survives as the "leftover" the audit then reports against itself.
+ *
+ * Titles are the stable marker (`surface-audit …`), not the in-memory ids: a
+ * previous run's interrupted teardown has to be repairable by the next run.
+ */
+async function cleanupSurfaceAuditRows() {
+  const notes = [];
+
+  const projects = await serviceRest('GET', 'projects?select=id&title=like.surface-audit*');
+  const projectIds = Array.isArray(projects.body) ? projects.body.map((row) => row.id) : [];
+
+  for (const projectId of projectIds) {
+    const workspaces = await serviceRest(
+      'GET',
+      `workspaces?select=id&project_id=eq.${projectId}`,
+    );
+    const workspaceIds = Array.isArray(workspaces.body)
+      ? workspaces.body.map((row) => row.id)
+      : [];
+
+    for (const workspaceId of workspaceIds) {
+      await serviceRest('DELETE', `workspace_activity_logs?workspace_id=eq.${workspaceId}`);
+      await serviceRest('DELETE', `workspace_members?workspace_id=eq.${workspaceId}`);
+      const deletedWorkspace = await serviceRest('DELETE', `workspaces?id=eq.${workspaceId}`);
+      if (!deletedWorkspace.ok) {
+        notes.push(`workspace delete failed (${workspaceId}): ${errorReason(deletedWorkspace)}`);
+      }
+    }
+
+    const deletedProject = await serviceRest('DELETE', `projects?id=eq.${projectId}`);
+    if (!deletedProject.ok) {
+      notes.push(`project delete failed (${projectId}): ${errorReason(deletedProject)}`);
+    }
+  }
+
+  await serviceRest('DELETE', 'notifications?title=eq.surface-audit sentinel');
+
+  return notes;
+}
+
 const accounts = [];
-const seeded = { payoutMethodIds: [], notificationIds: [], workspaceIds: [], usageLogIds: [] };
+const seeded = {
+  payoutMethodIds: [],
+  notificationIds: [],
+  projectIds: [],
+  workspaceIds: [],
+  usageLogIds: [],
+};
 
 try {
   // ══════════════════════════════════════════════════════════════════════════
@@ -848,7 +899,7 @@ try {
     if (!projectAId || !projectBId) {
       vacuous('cross-tenant workspace isolation', 'could not seed the two workspaces');
     } else {
-      seeded.workspaceIds.push(projectAId, projectBId);
+      seeded.projectIds.push(projectAId, projectBId);
       const wsA = await serviceInsert('workspaces', {
         project_id: projectAId,
         client_id: victim.id,
@@ -868,6 +919,7 @@ try {
           `workspace seed failed: ${errorReason(wsA)} | ${errorReason(wsB)}`,
         );
       } else {
+        seeded.workspaceIds.push(wsAId, wsBId);
         // `workspace_members.role` is CHECK-constrained to
         // client|lead|contributor|reviewer — an invalid value fails the INSERT,
         // and ignoring that response is how the first run of this suite reported
@@ -1143,19 +1195,25 @@ try {
       notes.push(`teardown threw for ${a.tag}: ${err.message}`);
     }
   }
-  // The seeded workspace/project rows cascade with the accounts, but assert it.
-  for (const id of seeded.workspaceIds) {
-    await serviceRest('DELETE', `projects?id=eq.${id}`);
-  }
+  // The seeded workspace/project rows cascade with the accounts only partially:
+  // `workspaces` holds its own FK to `projects`, so delete children first.
+  notes.push(...(await cleanupSurfaceAuditRows()));
+
   const leftovers = [];
   for (const [table, query] of [
     ['projects', 'select=id&title=like.surface-audit*'],
-    ['workspaces', 'select=id'],
     ['workspace_activity_logs', 'select=id&action=like.surface-audit*'],
     ['notifications', 'select=id&title=eq.surface-audit sentinel'],
   ]) {
     const n = await serviceCount(table, query);
     if (n > 0) leftovers.push(`${table}=${n}`);
+  }
+  // Check only the workspaces this run seeded, never `select=id` on the whole
+  // table: real users' workspaces are not this harness's property, and an
+  // unfiltered count made every run fail on someone else's data.
+  for (const id of seeded.workspaceIds) {
+    const n = await serviceCount('workspaces', `select=id&id=eq.${id}`);
+    if (n > 0) leftovers.push(`workspaces[id=${id}]=${n}`);
   }
   console.log(
     notes.length ? `  teardown notes: ${notes.join(' | ')}` : '  teardown clean (no cascade errors)',

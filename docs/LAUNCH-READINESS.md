@@ -10,14 +10,15 @@ blocker remains. The full ordered operator playbook (RazorpayX, one real test-mo
 KYC, the `.com` domain switch, branch protection) is
 [FOUNDER-RUNBOOK.md](FOUNDER-RUNBOOK.md).
 
-Last verified: **2026-10-20**. Live state: 7 real members, 0 active services,
-**0** contracts / escrow / withdrawals / orders / transactions / invoices / revenue / KYC rows,
-0 orphan profiles, **4 open HIGH security alerts** (created 16 Oct by the drift monitor — three
-money RPCs lost their NULL-safe guards when `20270122000000` re-created them from pre-hardening
-bodies; fix written as `20270130000000_restore_null_safe_money_guards.sql` but **not yet deployed**,
-see [LAUNCH-REVIEW-2026-10-20.md](LAUNCH-REVIEW-2026-10-20.md) §2.0), the full browser layer (anonymous + authenticated
-sweeps + logout security) green in CI (runs `36237099675` and `36253003439`), and the last flagged
-engineering leak (`ai-matching` ownership, §B1) fixed and live (Backend Deploy `36253003395`).
+Last verified: **2026-10-20 19:30 IST**. Live state (surface audit run `39429630144`, after
+`db push`): **9 signable profiles**, 0 active services, **0** contracts / escrow / withdrawals /
+orders / transactions / invoices / revenue / KYC rows, 0 orphan profiles, **0 open security
+alerts**, and `20270130000000` + `20270129000000` + `20270201000000` applied. That deploy run is
+still **red at the whole-surface audit's teardown** (probe leftovers), not at a migration or money
+check. The last fully green browser layer was run `36237099675` (Sep 26); the 20 Oct referral
+commits did **not** get an authenticated browser pass (CI was red on lint/guards first).
+**New blocker A12 (commission is charged twice) was found on 20 Oct and needs your decision
+before any real payment.**
 
 > Honest scope: this lists what is *proven to work* and what is *still unproven*. Nobody can promise
 > "no error, anywhere, ever" — the same pass that wrote this found four defects in its own probes.
@@ -283,8 +284,10 @@ logged no-op with `email_sent:false` — the platform is fully silent by email.
 incorporation" but never names the entity, address or jurisdiction. Privacy §9 promises a
 "designated Data Protection Officer" with no name or contact. India's IT Rules 2021 and the DPDP
 Act expect a named grievance/redressal contact, and payment providers ask for the same details.
-A whole-site grep on 2026-10-20 found **no** company name, registered address, CIN, GSTIN or
-grievance officer anywhere.
+
+**Partial progress (20 Oct):** Terms §14 and Privacy §9 now name **Muhammad (Founder & CEO),
+India** and a working `support@growlancer.com` grievance/DPO contact. Still missing: registered
+legal entity name, registered address, CIN/GSTIN. A grep for those terms returns nothing.
 
 **Your action:** supply the legal name, registered address, jurisdiction and a monitored contact
 address (grievance/DPO). I can wire them into Terms §14 + Privacy §9 the same day — but the values
@@ -293,39 +296,67 @@ must come from you, not be invented.
 **How to verify it is done:** all three legal pages name the entity and show a working contact;
 `grep -ri "grievance officer" src/pages` returns the real name/address.
 
-### A11. Grow Coin is built but not deployed — and its KYC trigger interacts with A4 ⚠️
+### A11. Grow Coin is live in the database but has no terms — and its KYC trigger interacts with A4 ⚠️
 
-**Why:** `20270129000000_grow_coin_referral_rewards.sql` + the `razorpay` / `razorpay-webhook`
-changes are in the working tree only; production has none of it. Separately, the award RPC accepts
-any `identity_verifications.status = 'verified'` row as real engagement, and in **development
-mode** every submission verifies instantly — so one referrer could farm 10 coins per throwaway
+**Why:** `20270129000000_grow_coin_referral_rewards.sql` and the Grow Coin deploy landed in
+`e517864` and were applied by Backend Deploy `39429630144` (`db push` ✓, post drift-check ✓).
+The legal/product gap is still open: the programme has no Terms/Privacy coverage, and the award
+RPC's KYC leg accepts any `identity_verifications.status = 'verified'` row. In **development
+mode** every submission verifies instantly, so one referrer could farm 10 coins per throwaway
 account (cap: 20 paid/month = up to ₹200 cashable) for no real work.
 
-**Your decision (before enabling coins):** either exclude `provider = 'dev_mode'` from eligibility
+**Your decision (before promoting coins):** either exclude `provider = 'dev_mode'` from eligibility
 (no KYC-sourced bonuses until A4), or hold cash redemption until A4, or accept the capped cost.
 
-**Your action:** deploy (commit + push → Backend Deploy), then add the coin programme to Terms
-(no cash value except redemption, no expiry, clawback on fraud, tax on recipient, public
-leaderboard name) and a line to Privacy about the leaderboard.
+**Your action:** add the coin programme to Terms (no cash value except redemption, no expiry,
+clawback on fraud, tax on recipient, public leaderboard name) and a line to Privacy about the
+leaderboard. The code is already live, so this is a content/decision task now.
 
 **How to verify it is done:** `select proname from pg_proc where proname like '%grow_coin%';`
 returns the RPCs; `select * from get_grow_coin_leaderboard(10);` returns rows without email/phone;
 a coin redemption moves a real subscription row to `payment_provider = 'grow_coins'`.
 
+### A12. The 5% commission is currently charged twice — decide the model before real money 🔴
+
+**Why (measured in the repo, 20 Oct):** the contract RPC says the client pays 5% on top and the
+freelancer receives 100% (`20270102000001_contract_amount_from_proposal.sql:121-124`). The funding
+path charges `contract.amount + 5%` (`supabase/functions/razorpay/index.ts:268-293`). The release
+path then computes `fee = 5% of escrow` and credits `net = gross − fee`
+(`20270124000000_restore_release_escrow_cron_and_fee_base.sql:85-95`), and books that fee as
+platform revenue (`:250-271`). For a ₹5,000 contract the client pays ₹5,250, the freelancer
+receives ₹4,750, and the platform books ₹500 — a ~10% effective take, with the extra ₹250 not
+represented in the booking.
+
+**Your decision (pick one, then engineering implements and reconciles the ledger):**
+
+- **A — model-faithful:** release pays the full escrow amount; book the 5% when the client pays
+  (order − contract); invoice subtotal = contract, fee = 5%, total = contract + fee.
+- **B — release-fee:** charge only the contract amount at checkout and withhold 5% at release;
+  then the public promise and `contracts.freelancer_amount` must change too.
+
+Option A matches `CLAUDE.md`; option B matches the current release code but not the promise.
+Do not mix them. Until this is decided, **do not take a real payment** (A2 stays closed).
+
+**How to verify it is done:** for every released contract,
+`client_charged = freelancer_credit + platform_fee`; the freelancer wallet credit equals
+`contracts.amount` (Option A) or `amount − fee` (Option B, with copy updated); and
+`select * from platform_revenue` reconciles to the Razorpay captured amount.
+
 ### Recommended order
 
 ```
-A2 (prove money in by hand once)  → A1 (prove money out once)
+A12 (decide the commission model)  → A2 (prove money in by hand once) → A1 (prove money out once)
  → A9 (Brevo IP restriction — 2 minutes, unblocks ALL email)
- → A10 (legal entity + grievance contact — blocks the policy pages)
+ → A10 (legal entity + registered address — grievance contact is now present)
  → A4, A5, A6 (one-time config decisions)
  → A7 (lock the gates)
- → A8 (supply)                    → A11 (deploy + coin terms) → §B backlog
+ → A8 (supply) → A11 (coin terms) → §B backlog
 ```
 
-A2 and A1 together are the "can this platform actually move money" gate. Everything else in §A is a
-setting or a supply problem. (A3 was the old first step — it is done, and everything it unblocked
-runs green on every push.)
+A12 must come first: charging a real card before the fee model is decided would take the wrong
+amount from a real customer. A2 and A1 together are the "can this platform actually move money"
+gate. Everything else in §A is a setting or a supply problem. (A3 was the old first step — it is
+done, and everything it unblocked runs green on every push.)
 
 ---
 

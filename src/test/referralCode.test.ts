@@ -1,7 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
   REFERRAL_CODE_ALPHABET,
+  buildModalCleanupUrl,
   buildReferralLink,
+  buildSignupRedirectTarget,
   formatReferralCode,
   generateReferralCode,
   isValidReferralCode,
@@ -101,5 +103,38 @@ describe('buildReferralLink', () => {
 
   it('returns an empty string when there is no code', () => {
     expect(buildReferralLink('', 'https://growlancer.com')).toBe('');
+  });
+});
+
+describe('referral attribution survives the signup redirect', () => {
+  // `/signup` is a redirect to the homepage modal. The regression this locks:
+  // `<Navigate to="/?modal=signup">` dropped `?ref=`, so every shared invite
+  // link opened a signup modal with no code and the OAuth path never attributed
+  // the referral. Both halves of the hop must keep the code.
+  it('carries ref from /signup to the homepage modal', () => {
+    expect(buildSignupRedirectTarget('?ref=GRW-7K2M-9QXT')).toBe(
+      '/?modal=signup&ref=GRW-7K2M-9QXT'
+    );
+  });
+
+  it('still opens the modal when there is no referral code', () => {
+    expect(buildSignupRedirectTarget('')).toBe('/?modal=signup');
+    expect(buildSignupRedirectTarget('?utm_source=x')).toBe('/?modal=signup');
+  });
+
+  it('keeps ref after the modal query is cleaned, so OAuth can read it later', () => {
+    expect(buildModalCleanupUrl('/', '?modal=signup&ref=GRW-7K2M-9QXT')).toBe(
+      '/?ref=GRW-7K2M-9QXT'
+    );
+  });
+
+  it('removes modal/role params when there is no referral code', () => {
+    expect(buildModalCleanupUrl('/', '?modal=signup&role=client')).toBe('/');
+  });
+
+  it('handles a percent-encoded code without double-encoding it', () => {
+    expect(buildSignupRedirectTarget('?ref=GRW-7K2M-9QXT%20')).toBe(
+      '/?modal=signup&ref=GRW-7K2M-9QXT%20'
+    );
   });
 });

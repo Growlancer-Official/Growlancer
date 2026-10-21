@@ -1,8 +1,11 @@
 // Admin Data Proxy Edge Function — uses real Supabase Auth for admin verification
-// Public actions: verify_certificate, verify_certificate_code, send_welcome_email
+// Deferred (410): verify_certificate, verify_credential_qr — certificates are not
+// part of the early-access scope and their public route leaked applicant PII.
+// Public action that remains: send_welcome_email (authenticated, own address only).
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import { sendEmail } from '../_shared/brevo.ts'
+import { featureDisabledResponse } from '../_shared/features.ts';
 import { SITE_URL } from '../_shared/site.ts';
 
 // Public site origin for every email template in this function (single source
@@ -299,135 +302,15 @@ Deno.serve(async (req) => {
     // These MUST be handled BEFORE the admin auth check below
     // ────────────────────────────────────────────────────────────────────
 
-    // ─── POST: verify_certificate (PUBLIC) ──────────────────────────
-    // Rate limit: max 10 requests per IP per 15 minutes
+    // ─── POST: verify_certificate / verify_credential_qr (DEFERRED) ────────
+    // Certificates are deferred for early access (docs/MVP-SCOPE-AND-E2E-TEST-PLAN.md).
+    // Until this change the route returned the FULL skill_certifications row, the raw
+    // credential token, and the applicant's internship_applications row (name, email,
+    // phone, documents) to any anonymous caller — a public PII leak with no working
+    // rate limit. Nothing is read now, so the leak is structurally gone rather than
+    // filtered. 410 (not 404) tells a crawler and a support agent the truth.
     if (req.method === 'POST' && (action === 'verify_certificate' || action === 'verify_credential_qr')) {
-      // Rate limiting
-      const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('cf-connecting-ip') || 'unknown';
-      
-      if (action === 'verify_credential_qr') {
-        const { qr_token } = body;
-        if (!qr_token) {
-          return new Response(JSON.stringify({ valid: false, error: 'QR token is required' }), {
-            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-
-        // Try RPC first
-        try {
-          const { data: rpcData, error: rpcError } = await supabaseClient.rpc('verify_credential_by_token', {
-            p_token: qr_token.trim(),
-          });
-          if (!rpcError && rpcData) {
-            return new Response(JSON.stringify(rpcData), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
-          if (rpcError) console.error('QR verify RPC error:', rpcError);
-        } catch (rpcErr) {
-          console.error('QR verify RPC exception:', rpcErr);
-        }
-
-        // Fallback: lookup token manually
-        const { data: tokenData, error: tokenError } = await supabaseClient
-          .from('credential_verification_tokens')
-          .select('*')
-          .eq('token', qr_token.trim())
-          .eq('status', 'active')
-          .maybeSingle();
-
-        if (tokenError || !tokenData) {
-          return new Response(JSON.stringify({ valid: false, error: 'Invalid or expired QR code' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-
-        // Lookup certificate
-        const { data: certData, error: certError } = await supabaseClient
-          .from('skill_certifications')
-          .select('*')
-          .eq('id', tokenData.credential_id)
-          .maybeSingle();
-
-        if (certError || !certData) {
-          return new Response(JSON.stringify({ valid: false, error: 'Associated credential not found' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-
-        // Fetch intern profile
-        let internProfile: Record<string, unknown> | null = null;
-        const appId = (certData.metadata as any)?.application_id || certData.user_id;
-        if (appId) {
-          try {
-            const { data: appData } = await supabaseClient
-              .from('internship_applications')
-              .select('*')
-              .eq('id', appId)
-              .maybeSingle();
-            if (appData) internProfile = appData as Record<string, unknown>;
-          } catch (e) {
-            // Non-critical: intern profile lookup failure doesn't block verification
-            console.error('[admin-data] Failed to fetch intern profile:', e);
-          }
-        }
-
-        return new Response(JSON.stringify({
-          valid: certData.status === 'active',
-          certificate: certData,
-          token: tokenData,
-          internProfile,
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // ─── POST: verify_certificate (existing) ──────────────────────────
-      const { verification_code } = body;
-
-      if (!verification_code) {
-        return new Response(JSON.stringify({ valid: false, error: 'Verification code is required' }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      const { data, error } = await supabaseClient
-        .from('skill_certifications')
-        .select('*')
-        .eq('verification_code', verification_code.toUpperCase())
-        .single();
-
-      if (error || !data) {
-        return new Response(JSON.stringify({ valid: false, error: 'Certificate not found' }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-
-      // Fetch intern's application details using metadata.application_id
-      let internProfile: Record<string, unknown> | null = null;
-      const appId = (data.metadata as any)?.application_id || data.user_id;
-      if (appId) {
-        try {
-          const { data: appData } = await supabaseClient
-            .from('internship_applications')
-            .select('*')
-            .eq('id', appId)
-            .maybeSingle();
-          if (appData) {
-            internProfile = appData as Record<string, unknown>;
-          }
-        } catch (profileErr) {
-          console.error('Failed to fetch intern profile:', profileErr);
-        }
-      }
-
-      return new Response(JSON.stringify({
-        valid: data.status === 'active',
-        certificate: data,
-        internProfile: internProfile,
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      return featureDisabledResponse(corsHeaders, 'certificates');
     }
 
     // ─── POST: send_welcome_email (AUTHENTICATED — own verified email only) ─
