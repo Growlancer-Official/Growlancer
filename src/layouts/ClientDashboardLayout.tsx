@@ -38,6 +38,7 @@ import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { GrowCoinBadge } from '../components/GrowCoinBadge';
 import { resolveDashboardSection } from '../lib/dashboardSection';
+import { isDeferredRoute } from '../lib/featureFlags';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -95,6 +96,15 @@ const accountLinks: SidebarLink[] = [
   { id: 'verification', path: '/client/verification', icon: Shield, label: 'Verification' },
 ];
 
+/**
+ * Deferred modules are removed from the sidebar entirely — not routed to an
+ * "unavailable" page from the menu — so the release never advertises what it
+ * does not ship. The routes themselves still exist for old links.
+ */
+const visibleSidebarGroups: SidebarGroup[] = sidebarGroups
+  .map((group) => ({ ...group, links: group.links.filter((link) => !isDeferredRoute(link.path)) }))
+  .filter((group) => group.links.length > 0);
+
 const supportLinks: SidebarLink[] = [
   { id: 'support-tickets', path: '/client/support-tickets', icon: LifeBuoy, label: 'Support Tickets' },
   { id: 'help-center', path: '/client/help-center', icon: HelpCircle, label: 'Help Center' },
@@ -110,7 +120,7 @@ export function ClientDashboardLayout() {
   // non-sidebar route "Workspace": Post a Project, Post a Team Project,
   // Verification, Support Tickets …
   const sectionLabel = resolveDashboardSection(currentPath, [
-    ...sidebarGroups.flatMap((group) => group.links),
+    ...visibleSidebarGroups.flatMap((group) => group.links),
     ...accountLinks,
     ...supportLinks,
   ]);
@@ -301,7 +311,7 @@ export function ClientDashboardLayout() {
 
         <div className="flex-1 min-h-0 overflow-y-auto">
           <nav className="space-y-1">
-            {sidebarGroups.map((group) => (
+            {visibleSidebarGroups.map((group) => (
               <div key={group.label} className="mb-1">
                 <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                   {group.label}
@@ -450,7 +460,7 @@ export function ClientDashboardLayout() {
         
         {/* Navigation */}
         <nav className="flex-1 space-y-1">
-          {sidebarGroups.map((group) => (
+          {visibleSidebarGroups.map((group) => (
             <div key={group.label} className="mb-1">
               <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                 {group.label}

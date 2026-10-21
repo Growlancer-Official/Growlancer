@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **654 files** across 12 groups.
+Total tracked structure: **656 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -12,12 +12,12 @@ Total tracked structure: **654 files** across 12 groups.
 | Layouts | 4 |
 | Components | 51 |
 | Context & hooks | 10 |
-| Client libraries & services | 64 |
+| Client libraries & services | 65 |
 | Edge functions | 33 |
 | Edge shared modules | 7 |
 | Database migrations | 297 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 51 |
+| Test suite | 52 |
 | Operational scripts | 32 |
 | CI / deploy workflows | 4 |
 
@@ -201,7 +201,7 @@ Cross-page state (auth, theme, currency) and reusable data hooks.
 - `src/hooks/useProStatus.ts`
 - `src/hooks/useReferralsData.ts`
 
-## Client libraries & services (64)
+## Client libraries & services (65)
 
 All data access, business rules and formatting live here — pages call services, not Supabase directly (with few explicit exceptions).
 
@@ -230,6 +230,7 @@ All data access, business rules and formatting live here — pages call services
 - `src/lib/disposableEmails.ts`
 - `src/lib/disputeService.ts`
 - `src/lib/emailNotificationService.ts`
+- `src/lib/featureFlags.ts`
 - `src/lib/fileUpload.ts`
 - `src/lib/growCoins.ts`
 - `src/lib/gst.ts`
@@ -633,7 +634,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (51)
+## Test suite (52)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -658,6 +659,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/earningsChart.test.tsx`
 - `src/test/errorBoundary.test.tsx`
 - `src/test/escrow.test.ts`
+- `src/test/featureFlags.test.ts`
 - `src/test/growCoins.test.ts`
 - `src/test/iconPackConsolidation.test.ts`
 - `src/test/mobileMenuEscape.test.tsx`

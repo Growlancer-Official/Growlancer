@@ -13,6 +13,7 @@ import { RouteFallback } from '../components/LoadingSkeleton';
 import { CookieConsent } from '../components/CookieConsent';
 import { OAuthReturnNotice } from '../components/OAuthReturnNotice';
 import { FeatureUnavailablePage } from '../components/FeatureUnavailablePage';
+import { isFeatureEnabled } from '../lib/featureFlags';
 
 // ═══════════════════════════════════════════════════════════════
 // EAGER IMPORTS — only what the entry itself renders
@@ -43,6 +44,7 @@ const AboutPage = lazy(() => import('@pages/AboutPage').then(m => ({ default: m.
 const PhilosophyPage = lazy(() => import('@pages/PhilosophyPage').then(m => ({ default: m.PhilosophyPage })));
 const ContactPage = lazy(() => import('@pages/ContactPage').then(m => ({ default: m.ContactPage })));
 const ReportFeedbackPage = lazy(() => import('@pages/ReportFeedbackPage').then(m => ({ default: m.ReportFeedbackPage })));
+const InternshipsPage = lazy(() => import('@pages/InternshipsPage').then(m => ({ default: m.InternshipsPage })));
 const HelpCenterPage = lazy(() => import('@pages/HelpCenterPage').then(m => ({ default: m.HelpCenterPage })));
 const SafetyPage = lazy(() => import('@pages/SafetyPage').then(m => ({ default: m.SafetyPage })));
 const GuidelinesPage = lazy(() => import('@pages/GuidelinesPage').then(m => ({ default: m.GuidelinesPage })));
@@ -65,6 +67,7 @@ const ProjectDetailsPage = lazy(() => import('@pages/ProjectDetailsPage').then(m
 const PaymentCallbackPage = lazy(() => import('@pages/PaymentCallbackPage').then(m => ({ default: m.PaymentCallbackPage })));
 const ContestsPage = lazy(() => import('@pages/ContestsPage').then(m => ({ default: m.ContestsPage })));
 const ContestDetailPage = lazy(() => import('@pages/ContestDetailPage').then(m => ({ default: m.ContestDetailPage })));
+const CertificateVerifyPage = lazy(() => import('@pages/CertificateVerifyPage').then(m => ({ default: m.CertificateVerifyPage })));
 
 const NotFoundPage = lazy(() => import('@pages/NotFoundPage').then(m => ({ default: m.NotFoundPage })));
 const WaitlistPage = lazy(() => import('@pages/WaitlistPage').then(m => ({ default: m.WaitlistPage })));
@@ -167,6 +170,12 @@ function SignupRedirect() {
   return <Navigate to={buildSignupRedirectTarget(location.search)} replace />;
 }
 
+// Deferred-module switches, read once at module load (they are build-time
+// VITE_* values, so they cannot change while the app is running).
+const INTERNSHIPS_ENABLED = isFeatureEnabled('internships');
+const CERTIFICATES_ENABLED = isFeatureEnabled('certificates');
+const CONTESTS_ENABLED = isFeatureEnabled('contests');
+
 function App() {
   const isDev = import.meta.env.DEV;
 
@@ -209,11 +218,18 @@ function App() {
                 <Route path="pricing" element={<PricingPage />} />
                 <Route path="about" element={<AboutPage />} />
                 <Route path="philosophy" element={<PhilosophyPage />} />
-                {/* Deferred for early access. The page stays routed (so a shared
-                    link lands on an honest explanation, not a 404) but renders
-                    the unavailable screen; the internship function answers 410. */}
-                <Route path="internships" element={<FeatureUnavailablePage />} />
-                <Route path="careers" element={<FeatureUnavailablePage />} />
+                {/* Deferred for early access (switch: src/lib/featureFlags.ts).
+                    The route always exists so a shared link lands on an honest
+                    explanation instead of a 404; the internship function answers
+                    410 while the flag is off. */}
+                <Route
+                  path="internships"
+                  element={INTERNSHIPS_ENABLED ? <InternshipsPage /> : <FeatureUnavailablePage />}
+                />
+                <Route
+                  path="careers"
+                  element={INTERNSHIPS_ENABLED ? <InternshipsPage /> : <FeatureUnavailablePage />}
+                />
                 <Route path="contact" element={<ContactPage />} />
                 <Route path="report" element={<ReportFeedbackPage />} />
                 <Route path="help-center" element={<HelpCenterPage />} />
@@ -231,17 +247,35 @@ function App() {
                 <Route path="services" element={<ServicesCatalogPage />} />
                 <Route path="freelancer/:freelancerId" element={<PublicFreelancerProfilePage />} />
                 <Route path="services/:serviceId" element={<ServiceDetailPage />} />
-                <Route path="contests" element={<ContestsPage />} />
-                <Route path="contests/:contestId" element={<ContestDetailPage />} />
+                <Route
+                  path="contests"
+                  element={CONTESTS_ENABLED ? <ContestsPage /> : <FeatureUnavailablePage />}
+                />
+                <Route
+                  path="contests/:contestId"
+                  element={CONTESTS_ENABLED ? <ContestDetailPage /> : <FeatureUnavailablePage />}
+                />
               </Route>
 
               {/* Certificate verification is deferred for early access: the
                   public route it called returned applicant PII, and the product
                   no longer issues certificates in this release. */}
-              <Route path="certificate/:code" element={<FeatureUnavailablePage />} />
-              <Route path="certificate" element={<FeatureUnavailablePage />} />
-              <Route path="verify-certificate/:code" element={<FeatureUnavailablePage />} />
-              <Route path="verify-certificate" element={<FeatureUnavailablePage />} />
+              <Route
+                path="certificate/:code"
+                element={CERTIFICATES_ENABLED ? <CertificateVerifyPage /> : <FeatureUnavailablePage />}
+              />
+              <Route
+                path="certificate"
+                element={CERTIFICATES_ENABLED ? <CertificateVerifyPage /> : <FeatureUnavailablePage />}
+              />
+              <Route
+                path="verify-certificate/:code"
+                element={CERTIFICATES_ENABLED ? <CertificateVerifyPage /> : <FeatureUnavailablePage />}
+              />
+              <Route
+                path="verify-certificate"
+                element={CERTIFICATES_ENABLED ? <CertificateVerifyPage /> : <FeatureUnavailablePage />}
+              />
 
               {/* Auth Email Action Routes */}
               <Route path="auth/callback" element={<AuthCallbackPage />} />
@@ -317,9 +351,19 @@ function App() {
                 <Route path="dispute-resolution" element={<Navigate to="/dashboard/disputes" replace />} />
                 <Route path="support-tickets" element={<SupportTicketsPage />} />
                 <Route path="identity-verification" element={<IdentityVerificationPage />} />
-                <Route path="certifications" element={<SkillCertificationsPage />} />
-                <Route path="certifications/:testId" element={<SkillTestPage />} />
-                <Route path="time-tracking" element={<TimeTrackingPage />} />                <Route path="contests" element={<ContestsDashboardPage />} />
+                <Route
+                  path="certifications"
+                  element={CERTIFICATES_ENABLED ? <SkillCertificationsPage /> : <FeatureUnavailablePage />}
+                />
+                <Route
+                  path="certifications/:testId"
+                  element={CERTIFICATES_ENABLED ? <SkillTestPage /> : <FeatureUnavailablePage />}
+                />
+                <Route path="time-tracking" element={<TimeTrackingPage />} />
+                <Route
+                  path="contests"
+                  element={CONTESTS_ENABLED ? <ContestsDashboardPage /> : <FeatureUnavailablePage />}
+                />
                 <Route path="help-center" element={<HelpCenterPage dashboard />} />
               </Route>
 
@@ -359,8 +403,14 @@ function App() {
                 <Route path="ai-assistant" element={<ClientAIAssistantPage />} />
                 <Route path="find-talent" element={<ClientFreelancerSearchPage />} />
                 <Route path="reviews" element={<ClientReviewsPage />} />
-                <Route path="contests" element={<ClientContestsPage />} />
-                <Route path="contests/create" element={<ClientContestCreatePage />} />
+                <Route
+                  path="contests"
+                  element={CONTESTS_ENABLED ? <ClientContestsPage /> : <FeatureUnavailablePage />}
+                />
+                <Route
+                  path="contests/create"
+                  element={CONTESTS_ENABLED ? <ClientContestCreatePage /> : <FeatureUnavailablePage />}
+                />
                 <Route path="help-center" element={<HelpCenterPage dashboard />} />
               </Route>
 
@@ -383,8 +433,14 @@ function App() {
                 <Route path="disputes" element={<AdminDisputesPage />} />
                 <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
                 <Route path="reports" element={<AdminReportsPage />} />
-                <Route path="internships" element={<AdminInternshipsPage />} />
-                <Route path="certificates" element={<AdminCertificatesPage />} />
+                <Route
+                  path="internships"
+                  element={INTERNSHIPS_ENABLED ? <AdminInternshipsPage /> : <FeatureUnavailablePage />}
+                />
+                <Route
+                  path="certificates"
+                  element={CERTIFICATES_ENABLED ? <AdminCertificatesPage /> : <FeatureUnavailablePage />}
+                />
                 <Route path="identity-verification" element={<AdminIdentityVerificationPage />} />
                 <Route path="support-tickets" element={<AdminSupportTicketsPage />} />
                 <Route path="user-reports" element={<AdminUserReportsPage />} />

@@ -126,6 +126,59 @@ describe('KYC development mode cannot auto-verify in production', () => {
   });
 });
 
+describe('every deferred page is behind a switch in the router', () => {
+  it('renders FeatureUnavailablePage whenever its flag is off', () => {
+    const APP = read('src/app/App.tsx');
+    const gated: Record<string, string> = {
+      InternshipsPage: 'INTERNSHIPS_ENABLED',
+      AdminInternshipsPage: 'INTERNSHIPS_ENABLED',
+      CertificateVerifyPage: 'CERTIFICATES_ENABLED',
+      SkillCertificationsPage: 'CERTIFICATES_ENABLED',
+      SkillTestPage: 'CERTIFICATES_ENABLED',
+      AdminCertificatesPage: 'CERTIFICATES_ENABLED',
+      ContestsPage: 'CONTESTS_ENABLED',
+      ContestDetailPage: 'CONTESTS_ENABLED',
+      ContestsDashboardPage: 'CONTESTS_ENABLED',
+      ClientContestsPage: 'CONTESTS_ENABLED',
+      ClientContestCreatePage: 'CONTESTS_ENABLED',
+    };
+    const ungated = Object.entries(gated).filter(
+      ([page, flag]) => !APP.includes(`${flag} ? <${page} /> : <FeatureUnavailablePage />`),
+    );
+    expect(ungated.map(([p]) => p), 'these pages are rendered without a switch').toEqual([]);
+  });
+
+  it('does not advertise them in the header, footer or sidebars', () => {
+    expect(read('src/layouts/MainLayout.tsx')).toMatch(/isFeatureEnabled\('contests'\)/);
+    expect(read('src/layouts/MainLayout.tsx')).toMatch(/isFeatureEnabled\('internships'\)/);
+    expect(read('src/components/SiteFooter.tsx')).toMatch(/isFeatureEnabled\('internships'\)/);
+    expect(read('src/layouts/DashboardLayout.tsx')).toMatch(/isDeferredRoute/);
+    expect(read('src/layouts/ClientDashboardLayout.tsx')).toMatch(/isDeferredRoute/);
+    // The admin shell and in-page CTAs advertise the same modules — they are
+    // part of the same promise: navigation never links to what is not shipped.
+    expect(read('src/layouts/AdminDashboardLayout.tsx')).toMatch(/isDeferredRoute/);
+    expect(read('src/layouts/AdminDashboardLayout.tsx')).toMatch(/isFeatureEnabled\('internships'\)/);
+    expect(read('src/pages/AboutPage.tsx')).toMatch(/isFeatureEnabled\('internships'\)/);
+    expect(read('src/pages/dashboard/OverviewPage.tsx')).toMatch(/isFeatureEnabled\('contests'\)/);
+  });
+});
+
+describe('subscription charges reserve the billing period first', () => {
+  // Billing ships disabled, so this is the guard that makes RE-ENABLING safe.
+  const handler = CRON.slice(CRON.indexOf('serve(async (req: Request) => {'));
+
+  it('inserts the UNIQUE(subscription_id, billing_period) row before charging', () => {
+    const reserve = handler.indexOf('reserveBillingPeriod(sub.id');
+    const charge = handler.indexOf('await attemptRenewalCharge');
+    expect(reserve, 'billing ledger is not used').toBeGreaterThan(-1);
+    expect(charge).toBeGreaterThan(reserve);
+    // The helper is defined above the handler, so the 23505 branch is checked on
+    // the whole file while the call ORDER is checked inside the handler.
+    expect(CRON).toMatch(/error\.code === '23505'/);
+    expect(handler).toMatch(/if \(!reservationId\)/);
+  });
+});
+
 describe('webhook functions can build their own CORS headers', () => {
   it('every function that calls getCorsHeaders imports it', () => {
     const offenders: string[] = [];

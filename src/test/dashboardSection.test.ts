@@ -120,7 +120,14 @@ describe('the shells actually use the resolver', () => {
       const source = read(rel);
       // sidebarGroups alone was the cause; account + support links matter too
       // (Verification, Wallet, Support Tickets, Help Center, Disputes).
-      expect(source).toContain('...sidebarGroups.flatMap((group) => group.links)');
+      //
+      // Deferred modules (contests, certificates) are filtered out of the
+      // sidebar, so the resolver receives the FILTERED list. The invariant is
+      // unchanged: it must still be the sidebar groups plus account + support,
+      // and the filtered list must still be derived from `sidebarGroups`.
+      expect(source).toContain('...visibleSidebarGroups.flatMap((group) => group.links)');
+      expect(source).toMatch(/visibleSidebarGroups:\s*SidebarGroup\[\]\s*=\s*sidebarGroups/);
+      expect(source).toContain('isDeferredRoute');
       expect(source).toContain('...accountLinks');
       expect(source).toContain('...supportLinks');
     }

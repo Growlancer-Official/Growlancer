@@ -8,6 +8,7 @@ import { SignupModal } from '../components/SignupModal';
 import { SiteFooter } from '../components/SiteFooter';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { buildModalCleanupUrl } from '../lib/referralCode';
+import { isFeatureEnabled } from '../lib/featureFlags';
 
 export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -121,13 +122,15 @@ export function MainLayout() {
               <Link to={ROUTES.CATEGORIES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Categories</Link>
               <Link to={ROUTES.FREELANCERS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Find Talent</Link>
               <Link to={ROUTES.SERVICES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Services</Link>
-              <Link to={ROUTES.CONTESTS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Contests</Link>
+              {/* Deferred modules are not advertised — the route still answers
+                  with an honest unavailable page for old links. */}
+              {isFeatureEnabled('contests') && <Link to={ROUTES.CONTESTS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Contests</Link>}
               <Link to={ROUTES.FEATURES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Features</Link>
               <Link to={ROUTES.PRICING} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Pricing</Link>
               <Link to={ROUTES.ABOUT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">About</Link>
               <Link to={ROUTES.CONTACT} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Contact</Link>
               <Link to={ROUTES.HELP_CENTER} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Help</Link>
-              <Link to={ROUTES.INTERNSHIPS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Internships</Link>
+              {isFeatureEnabled('internships') && <Link to={ROUTES.INTERNSHIPS} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Internships</Link>}
               <Link to={ROUTES.PHILOSOPHY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Philosophy</Link>
               <Link to={ROUTES.SAFETY} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Safety</Link>
               <Link to={ROUTES.GUIDELINES} className="px-2.5 py-1.5 rounded-md hover:text-slate-900 hover:bg-slate-50 transition-colors font-medium whitespace-nowrap shrink-0">Guidelines</Link>
@@ -193,10 +196,12 @@ export function MainLayout() {
               <Users className="w-4 h-4 text-slate-400 flex-shrink-0" />
               Freelancers
             </Link>
-            <Link to={ROUTES.CONTESTS} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
-              <Trophy className="w-4 h-4 text-amber-500 flex-shrink-0" />
-              Contests
-            </Link>
+            {isFeatureEnabled('contests') && (
+              <Link to={ROUTES.CONTESTS} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+                <Trophy className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                Contests
+              </Link>
+            )}
             <Link to={ROUTES.FEATURES} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
               <LayoutGrid className="w-4 h-4 text-slate-400" />
               Features
@@ -214,10 +219,12 @@ export function MainLayout() {
               <Info className="w-4 h-4 text-slate-400" />
               About
             </Link>
-            <Link to={ROUTES.INTERNSHIPS} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
-              <Briefcase className="w-4 h-4 text-slate-400" />
-              Internships
-            </Link>
+            {isFeatureEnabled('internships') && (
+              <Link to={ROUTES.INTERNSHIPS} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
+                <Briefcase className="w-4 h-4 text-slate-400" />
+                Internships
+              </Link>
+            )}
             <Link to={ROUTES.CONTACT} onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium text-slate-700 hover:text-slate-900 hover:bg-slate-50 transition-colors">
               <Mail className="w-4 h-4 text-slate-400" />
               Contact

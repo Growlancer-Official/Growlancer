@@ -31,6 +31,11 @@ export type FeatureKey =
   | 'inhouse_kyc'
   | 'subscription_billing';
 
+// NOTE: `contests` is returned by isFeatureEnabled() but contests are enforced
+// in the SPA (src/lib/featureFlags.ts >> App.tsx routes) rather than by an edge
+// function — contest actions run through the shared razorpay/contract RPCs, so
+// there is no separate endpoint to gate.
+
 /** Fail-closed defaults for the launch scope. */
 const DEFAULTS: Record<FeatureKey, boolean> = {
   internships: false,

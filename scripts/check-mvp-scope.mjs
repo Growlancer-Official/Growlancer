@@ -115,15 +115,62 @@ check('every getCorsHeaders caller imports it', () => {
   return `${functionEntrypoints(path.join(ROOT, 'supabase/functions')).length} entrypoints checked`;
 });
 
-check('deferred public routes render the honest unavailable screen', () => {
-  for (const route of ['internships', 'careers', 'certificate', 'verify-certificate']) {
-    const re = new RegExp(`<Route path="${route}"[^>]*element=\\{<FeatureUnavailablePage />\\}`);
-    if (!re.test(APP)) throw new Error(`/​${route} is not gated`);
+check('every deferred page is behind a switch in the router', () => {
+  const gated = {
+    InternshipsPage: 'INTERNSHIPS_ENABLED',
+    AdminInternshipsPage: 'INTERNSHIPS_ENABLED',
+    CertificateVerifyPage: 'CERTIFICATES_ENABLED',
+    SkillCertificationsPage: 'CERTIFICATES_ENABLED',
+    SkillTestPage: 'CERTIFICATES_ENABLED',
+    AdminCertificatesPage: 'CERTIFICATES_ENABLED',
+    ContestsPage: 'CONTESTS_ENABLED',
+    ContestDetailPage: 'CONTESTS_ENABLED',
+    ContestsDashboardPage: 'CONTESTS_ENABLED',
+    ClientContestsPage: 'CONTESTS_ENABLED',
+    ClientContestCreatePage: 'CONTESTS_ENABLED',
+  };
+  const ungated = Object.entries(gated).filter(
+    ([page, flag]) => !APP.includes(`${flag} ? <${page} /> : <FeatureUnavailablePage />`),
+  );
+  if (ungated.length) throw new Error(ungated.map(([p]) => p).join(', '));
+  return `${Object.keys(gated).length} deferred pages gated`;
+});
+
+check('navigation does not advertise deferred modules', () => {
+  const MAIN = read('src/layouts/MainLayout.tsx');
+  const FOOTER = read('src/components/SiteFooter.tsx');
+  const DASH = read('src/layouts/DashboardLayout.tsx');
+  const CLIENT_DASH = read('src/layouts/ClientDashboardLayout.tsx');
+  const ADMIN = read('src/layouts/AdminDashboardLayout.tsx');
+  const ABOUT = read('src/pages/AboutPage.tsx');
+  const OVERVIEW = read('src/pages/dashboard/OverviewPage.tsx');
+  for (const [name, src, needle] of [
+    ['MainLayout contests', MAIN, "isFeatureEnabled('contests')"],
+    ['MainLayout internships', MAIN, "isFeatureEnabled('internships')"],
+    ['SiteFooter internships', FOOTER, "isFeatureEnabled('internships')"],
+    ['DashboardLayout sidebar filter', DASH, 'isDeferredRoute'],
+    ['ClientDashboardLayout sidebar filter', CLIENT_DASH, 'isDeferredRoute'],
+    ['AdminDashboardLayout sidebar filter', ADMIN, 'isDeferredRoute'],
+    ['AdminDashboardLayout mobile bar', ADMIN, "isFeatureEnabled('internships')"],
+    ['AboutPage internships CTA', ABOUT, "isFeatureEnabled('internships')"],
+    ['OverviewPage contests shortcut', OVERVIEW, "isFeatureEnabled('contests')"],
+  ]) {
+    if (!src.includes(needle)) throw new Error(`${name} still advertises a deferred module`);
   }
-  if (/element=\{<InternshipsPage \/>\}|element=\{<CertificateVerifyPage \/>\}/.test(APP)) {
-    throw new Error('a deferred page is still rendered by a route');
-  }
-  return 'internships, careers and certificate verification gated';
+  return 'header, footer, three sidebars, About CTA and dashboard shortcuts filter deferred modules';
+});
+
+check('subscription charges reserve the billing period first', () => {
+  const handler = CRON.slice(CRON.indexOf('serve(async (req: Request) => {'));
+  const reserve = handler.indexOf('reserveBillingPeriod(sub.id');
+  const charge = handler.indexOf('await attemptRenewalCharge');
+  if (reserve < 0) throw new Error('billing ledger is not used');
+  if (charge < 0 || reserve > charge) throw new Error('a charge can happen before the ledger reservation');
+  // The helper is defined above the handler, so the 23505 branch is checked on
+  // the whole file while the call ORDER is checked inside the handler.
+  if (!/error\.code === '23505'/.test(CRON)) throw new Error('duplicate-period detection missing');
+  if (!/if \(!reservationId\)/.test(handler)) throw new Error('charge is not skipped when the period is taken');
+  return 'UNIQUE(subscription_id, billing_period) blocks a second charge';
 });
 
 check('the scope decision is documented', () => {

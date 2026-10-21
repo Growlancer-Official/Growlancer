@@ -21,6 +21,7 @@ import { InfoTip } from '../../components/InfoTip';
 import { useProStatus } from '../../hooks/useProStatus';
 import { ACTIVE_STATUSES, PENDING_STATUSES } from '../../lib/contractStatuses';
 import { getSellerLevelInfo, getSellerLevelProgress, type SellerLevel } from '../../lib/sellerLevels';
+import { isFeatureEnabled } from '../../lib/featureFlags';
 
 interface DashboardStats {
   activeContracts: number;
@@ -692,13 +693,15 @@ export function OverviewPage() {
                     <Wallet className="w-4 h-4 text-slate-600" />
                     <span className="font-medium text-slate-700 text-xs">Earnings</span>
                   </Link>
-                  <Link
-                    to="/contests"
-                    className="flex items-center gap-3 p-2 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
-                  >
-                    <Trophy className="w-4 h-4 text-amber-500" />
-                    <span className="font-medium text-slate-700 text-xs">Contests</span>
-                  </Link>
+                  {isFeatureEnabled('contests') && (
+                    <Link
+                      to="/contests"
+                      className="flex items-center gap-3 p-2 rounded-lg border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 hover:shadow-sm transition-all duration-200"
+                    >
+                      <Trophy className="w-4 h-4 text-amber-500" />
+                      <span className="font-medium text-slate-700 text-xs">Contests</span>
+                    </Link>
+                  )}
                 </>
               ) : (
                 <>

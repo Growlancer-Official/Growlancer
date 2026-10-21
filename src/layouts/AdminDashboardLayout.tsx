@@ -26,6 +26,7 @@ import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { adminLogout, getAdminSession } from '../components/AdminAuthGuard';
+import { isDeferredRoute, isFeatureEnabled } from '../lib/featureFlags';
 
 interface SidebarItem {
   id: string;
@@ -63,6 +64,24 @@ const sidebarSections: SidebarItem[] = [
   { id: 'data-isolation', path: '/admin/data-isolation', icon: Database, label: 'Data Isolation' },
 ];
 
+/**
+ * Deferred modules (internships, certificates) are removed from the admin
+ * navigation too — the routes still render FeatureUnavailablePage when a stale
+ * link is opened, but the shell must never advertise what this release does
+ * not ship. Children are filtered individually so a section with mixed
+ * visibility keeps only its live entries.
+ */
+const visibleSidebarSections: SidebarItem[] = sidebarSections
+  .map((section) => {
+    if (!section.children) return section;
+    const children = section.children.filter((child) => !isDeferredRoute(child.path));
+    return children.length === section.children.length ? section : { ...section, children };
+  })
+  .filter((section) => {
+    if (section.children) return section.children.length > 0;
+    return !isDeferredRoute(section.path);
+  });
+
 export function AdminDashboardLayout() {
   const location = useLocation();
   const currentPath = location.pathname;
@@ -86,7 +105,7 @@ export function AdminDashboardLayout() {
 
   // Auto-expand section if a sub-item is active
   useEffect(() => {
-    sidebarSections.forEach(section => {
+    visibleSidebarSections.forEach(section => {
       if (section.children) {
         const isChildActive = section.children.some(child => {
           const childPath = child.path.split('?')[0];
@@ -127,7 +146,7 @@ export function AdminDashboardLayout() {
     const q = query.toLowerCase();
     const results: { label: string; path: string; icon: React.ReactNode }[] = [];
     
-    sidebarSections.forEach(item => {
+    visibleSidebarSections.forEach(item => {
       const Icon = item.icon;
       // Check parent
       if (item.path && (item.label.toLowerCase().includes(q) || item.id.toLowerCase().includes(q))) {
@@ -204,7 +223,7 @@ export function AdminDashboardLayout() {
 
         {/* Navigation */}
         <nav className="flex-1 space-y-0.5 overflow-y-auto" style={{ scrollbarWidth: 'thin' }}>
-          {sidebarSections.map((item) => {
+          {visibleSidebarSections.map((item) => {
             const hasChildren = item.children && item.children.length > 0;
             const isExpanded = expandedSections.has(item.id);
             
@@ -442,14 +461,18 @@ export function AdminDashboardLayout() {
             <BarChart3 className="w-5 h-5" />
             <span className="text-[10px] font-bold uppercase whitespace-nowrap">Reports</span>
           </Link>
-          <Link to="/admin/internships" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/internships') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
-            <Users className="w-5 h-5" />
-            <span className="text-[10px] font-bold uppercase whitespace-nowrap">Internships</span>
-          </Link>
-          <Link to="/admin/certificates" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/certificates') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
-            <Award className="w-5 h-5" />
-            <span className="text-[10px] font-bold uppercase whitespace-nowrap">Certificates</span>
-          </Link>
+          {isFeatureEnabled('internships') && (
+            <Link to="/admin/internships" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/internships') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+              <Users className="w-5 h-5" />
+              <span className="text-[10px] font-bold uppercase whitespace-nowrap">Internships</span>
+            </Link>
+          )}
+          {isFeatureEnabled('certificates') && (
+            <Link to="/admin/certificates" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/certificates') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
+              <Award className="w-5 h-5" />
+              <span className="text-[10px] font-bold uppercase whitespace-nowrap">Certificates</span>
+            </Link>
+          )}
           <Link to="/admin/identity-verification" className={`flex flex-col items-center gap-0.5 px-2.5 py-2 rounded-lg shrink-0 ${isActive('/admin/identity-verification') ? 'text-emerald-500 bg-emerald-500/5' : 'text-slate-400'}`}>
             <ShieldCheck className="w-5 h-5" />
             <span className="text-[10px] font-bold uppercase whitespace-nowrap">Verification</span>

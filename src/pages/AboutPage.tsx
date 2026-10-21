@@ -4,6 +4,7 @@ import { ArrowRight, Globe, Heart, Quote, ShieldCheck, Sparkles, Star, Target, T
 import { LiveCodeTerminal, type TerminalLine } from '@/components/LiveCodeTerminal';
 import { useAboutPageMetrics } from '@/hooks/useAboutPageMetrics';
 import { formatCurrency } from '@/lib/currency';
+import { isFeatureEnabled } from '@/lib/featureFlags';
 
 function formatInrFull(inr: number): string {
   if (!Number.isFinite(inr) || inr < 0) return formatCurrency(0);
@@ -368,12 +369,16 @@ export function AboutPage() {
               >
                 Sign Up Free
               </Link>
-              <Link
-                to="/internships"
-                className="w-full sm:w-auto inline-flex h-12 px-6 items-center justify-center font-bold text-white border border-white/30 rounded-xl hover:bg-white/10 transition-all"
-              >
-                View Internships <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
+              {/* Internships ship behind VITE_FEATURE_INTERNSHIPS_ENABLED — the
+                  CTA must not promise a page this release may not have. */}
+              {isFeatureEnabled('internships') && (
+                <Link
+                  to="/internships"
+                  className="w-full sm:w-auto inline-flex h-12 px-6 items-center justify-center font-bold text-white border border-white/30 rounded-xl hover:bg-white/10 transition-all"
+                >
+                  View Internships <ArrowRight className="w-4 h-4 ml-2" />
+                </Link>
+              )}
             </div>
           </div>
         </div>

@@ -179,6 +179,56 @@ async function attemptRenewalCharge(
   }
 }
 
+/**
+ * Reserve this subscription's billing period BEFORE any gateway call.
+ *
+ * MR-11/SEC-002: `subscription_billing_charges` has
+ * UNIQUE(subscription_id, billing_period). A retry, an overlapping invocation
+ * or a double cron therefore hits 23505 on the second attempt and is skipped —
+ * which is what makes re-enabling this function safe.
+ *
+ * Returns the reservation id, or null when the period already has a row or the
+ * ledger itself failed. Null means DO NOT CHARGE: losing one renewal is
+ * recoverable, double-debiting a user is not.
+ */
+async function reserveBillingPeriod(
+  subscriptionId: string,
+  billingPeriod: string,
+  amount: number,
+): Promise<string | null> {
+  const { data, error } = await supabase
+    .from('subscription_billing_charges')
+    .insert({
+      subscription_id: subscriptionId,
+      billing_period: billingPeriod,
+      amount,
+      status: 'pending',
+    })
+    .select('id')
+    .single();
+
+  if (!error) return (data?.id as string) ?? null;
+  if (error.code === '23505') return null; // already attempted for this period
+  console.error(`billing ledger reservation failed for ${subscriptionId}:`, error.message);
+  return null;
+}
+
+/** Mark a reserved period as settled. Best-effort: the reservation already blocks a second charge. */
+async function settleBillingPeriod(
+  reservationId: string,
+  status: 'charged' | 'failed',
+  razorpayPaymentId?: string | null,
+) {
+  await supabase
+    .from('subscription_billing_charges')
+    .update({
+      status,
+      razorpay_payment_id: razorpayPaymentId ?? null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', reservationId);
+}
+
 serve(async (req: Request) => {
   // ── Cron auth: CRON_SECRET bearer (same pattern as razorpay execute_refund)
   const authHeader = req.headers.get('Authorization') || '';
@@ -252,7 +302,18 @@ serve(async (req: Request) => {
 
           // Convert: attempt a REAL first charge on the saved card. Only a
           // successful charge upgrades the subscription to active.
+          const billingPeriod = now.slice(0, 7); // 'YYYY-MM'
+          const reservationId = await reserveBillingPeriod(sub.id, billingPeriod, price);
+          if (!reservationId) {
+            results.push(`Skipped — period ${billingPeriod} already attempted: ${sub.id}`);
+            continue;
+          }
           const charge = await attemptRenewalCharge(sub.user_id, price);
+          await settleBillingPeriod(
+            reservationId,
+            charge.success ? 'charged' : 'failed',
+            charge.paymentId,
+          );
 
           if (charge.success) {
             const newEnd = new Date();
@@ -385,7 +446,18 @@ serve(async (req: Request) => {
         }
 
         // Attempt a REAL renewal charge against the saved card.
+        const billingPeriod = now.slice(0, 7); // 'YYYY-MM'
+        const reservationId = await reserveBillingPeriod(sub.id, billingPeriod, price);
+        if (!reservationId) {
+          results.push(`Skipped — period ${billingPeriod} already attempted: ${sub.id}`);
+          continue;
+        }
         const charge = await attemptRenewalCharge(sub.user_id, price);
+        await settleBillingPeriod(
+          reservationId,
+          charge.success ? 'charged' : 'failed',
+          charge.paymentId,
+        );
 
         if (charge.success) {
           const newEnd = new Date();

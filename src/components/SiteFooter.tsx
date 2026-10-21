@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, MapPin, ShieldCheck } from 'lucide-react';
+import { isFeatureEnabled } from '../lib/featureFlags';
 
 type SiteFooterProps = {
   onOpenSignup?: (role?: 'freelancer' | 'client') => void;
@@ -49,7 +50,8 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <li><Link to="/features" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Features</Link></li>
               <li><Link to="/categories" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Categories</Link></li>
               <li><Link to="/pricing" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Pricing</Link></li>
-              <li><Link to="/internships" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Internships</Link></li>
+              {/* Deferred for early access — not advertised in the footer. */}
+              {isFeatureEnabled('internships') && <li><Link to="/internships" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Internships</Link></li>}
             </ul>
           </div>
 
@@ -60,7 +62,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
               <li><Link to="/about" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">About</Link></li>
               <li><Link to="/philosophy" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Philosophy</Link></li>
               <li><Link to="/contact" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Contact</Link></li>
-              <li><Link to="/careers" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Careers</Link></li>
+              {isFeatureEnabled('internships') && <li><Link to="/careers" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Careers</Link></li>}
               <li><Link to="/freelancers" className="text-sm text-slate-600 hover:text-emerald-600 transition-colors duration-200">Find Freelancers</Link></li>
             </ul>
           </div>
