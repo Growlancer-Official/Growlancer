@@ -1,6 +1,6 @@
-# CLAUDE.md — Growlancer Project Context
+# CLAUDE.md — Growlanzo Project Context
 
-Ye file Growlancer repo ke root me rakho (`/CLAUDE.md`). Claude Code isse automatically padhta
+Ye file Growlanzo repo ke root me rakho (`/CLAUDE.md`). Claude Code isse automatically padhta
 hai har session ke shuru me — isliye ye poora context hamesha available rahega, bina baar-baar
 explain kiye.
 
@@ -8,7 +8,7 @@ explain kiye.
 
 ## Project kya hai
 
-Growlancer — India-first AI-powered freelancing platform. Founder/CEO: Muhammad. Tech stack:
+Growlanzo — India-first AI-powered freelancing platform. Founder/CEO: Muhammad. Tech stack:
 React/Vite frontend, Supabase (Postgres + Auth + Edge Functions + Storage), Razorpay + PayPal
 for payments, RazorpayX for payouts.
 

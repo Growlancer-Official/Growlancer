@@ -4,7 +4,7 @@ import { useId } from 'react';
  * Grow Coin — the platform's own currency mark.
  *
  * Deliberately NOT a lucide coin or the rupee symbol: a golden coin with the
- * Growlancer "G" embossed, so a screenshot of the coin is recognisably ours.
+ * Growlanzo "G" embossed, so a screenshot of the coin is recognisably ours.
  * The gradient ids are unique per instance (useId) — two copies of an SVG with
  * the same hard-coded gradient id make the second one render black in Safari.
  */

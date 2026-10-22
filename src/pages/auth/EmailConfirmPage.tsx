@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { BrandLogo } from '../../components/BrandLogo';
 
 type ConfirmStatus = 'processing' | 'success' | 'error';
 
@@ -118,7 +119,7 @@ export function EmailConfirmPage() {
         // homepage/onboarding. The user continues in the ORIGINAL tab via the
         // "I've verified, continue" button (or the real-time listener).
         setMessage(
-          'Your email is verified. Your account is ready — finish setup in your original Growlancer tab.'
+          'Your email is verified. Your account is ready — finish setup in your original Growlanzo tab.'
         );
       } catch (err) {
         if (!cancelled) {
@@ -143,11 +144,7 @@ export function EmailConfirmPage() {
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-6 sm:p-8 text-center">
           <div className="flex justify-center mb-6">
-            <img
-              src="/UpdatedLogo.webp"
-              alt="Growlancer"
-              className="h-12 w-12 rounded-xl"
-            />
+            <BrandLogo variant="full" className="h-14 w-auto" />
           </div>
 
           {status === 'processing' && (
@@ -178,7 +175,7 @@ export function EmailConfirmPage() {
               <ol className="text-left space-y-3 mb-6">
                 {[
                   'Close this window',
-                  'Go back to the Growlancer tab where you signed up',
+                  'Go back to the Growlanzo tab where you signed up',
                   'Click "I\'ve verified, continue" to set up your profile',
                 ].map((step, idx) => (
                   <li key={step} className="flex items-start gap-3">
@@ -191,7 +188,7 @@ export function EmailConfirmPage() {
               </ol>
               {/* 🎯 Only "Close this window" — this tab was opened from the email
                   link; navigating here would just open the homepage as a new page.
-                  The user continues in their original Growlancer tab instead. */}
+                  The user continues in their original Growlanzo tab instead. */}
               <button
                 onClick={() => {
                   try { window.close(); } catch { /* ignore */ }

@@ -194,7 +194,7 @@ export function ClientContractsPage() {
         </div>
       </div>
 
-      <InfoTip title="Your money is protected until you approve" text="A contract is only active after escrow is funded. The freelancer can't touch the funds — they release only when you approve the delivered work. If you're not satisfied, request a revision or raise a dispute instead of paying outside the platform. Never pay a freelancer directly; it voids Growlancer's protection." />
+      <InfoTip title="Your money is protected until you approve" text="A contract is only active after escrow is funded. The freelancer can't touch the funds — they release only when you approve the delivered work. If you're not satisfied, request a revision or raise a dispute instead of paying outside the platform. Never pay a freelancer directly; it voids Growlanzo's protection." />
 
       <div className="flex gap-3 border-b border-slate-200 overflow-x-auto">
         {(['all', 'active', 'completed', 'pending'] as const).map((f) => (

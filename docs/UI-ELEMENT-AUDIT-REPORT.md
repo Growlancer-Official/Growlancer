@@ -1,4 +1,4 @@
-# Growlancer — Element-Level UI Audit Report (Section-1 Universal Checklist)
+# Growlanzo — Element-Level UI Audit Report (Section-1 Universal Checklist)
 
 **Date:** 2026-09-16 · **Branch:** `freebuff/ab-bro-listen-end-to-end-comphrensive-testing-from-aff63013` (base `72c6ffb`)
 **Method:** NEW automated element-audit harness (`scripts/e2e/element-audit.mjs` — checks "is everything ON the page correct", not just "does it load") + interactive preview spot-checks + source-level inventories + unit tests.

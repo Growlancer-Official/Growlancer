@@ -675,9 +675,9 @@ export function IdentityVerificationPage() {
                           className="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
                         />
                         <span className="text-xs text-slate-600 leading-relaxed">
-                          <span className="font-semibold text-slate-800">I agree</span> to share my PAN and name with Growlancer for
+                          <span className="font-semibold text-slate-800">I agree</span> to share my PAN and name with Growlanzo for
                           verification purposes only. Verification may be processed automatically (including automated platform checks
-                          during Growlancer's development phase). My data is stored securely, never shared with third parties without my
+                          during Growlanzo's development phase). My data is stored securely, never shared with third parties without my
                           consent, and I may withdraw consent or delete my data at any time. Read the{' '}
                           <Link to="/privacy" className="text-emerald-600 hover:underline font-medium">Privacy Policy</Link> and{' '}
                           <Link to="/terms" className="text-emerald-600 hover:underline font-medium">Terms</Link>.

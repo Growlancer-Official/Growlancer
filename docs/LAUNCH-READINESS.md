@@ -1,4 +1,4 @@
-# Growlancer — Launch Readiness Checklist
+# Growlanzo — Launch Readiness Checklist
 
 **Owner: Muhammad (founder).** Every item below is an **action only you can take** — a dashboard
 setting, a secret, a product decision — followed by the exact way to prove it is done. Anything that
@@ -143,7 +143,7 @@ Nothing else is missing: the six `E2E_*` secrets and `VITE_SUPABASE_URL` already
 `SUPABASE_URL` now falls back to `VITE_SUPABASE_URL`, so it does not need adding.
 
 **How to verify it is done**
-- `gh secret list -R Growlancer-Official/Growlancer` shows `SUPABASE_SERVICE_ROLE_KEY`.
+- `gh secret list -R Growlanzo-Official/Growlanzo` shows `SUPABASE_SERVICE_ROLE_KEY`.
 - CI's **Element audit** job turns green and its step list shows *Seed E2E test accounts*,
   *Authenticated audit + logout security* and *Remove E2E test accounts* **ran** (today they cannot).
 - A backend deploy reaches the pentest step and passes:
@@ -234,7 +234,7 @@ for you (and the local `.env` value) without printing either.
 **Typecheck (tsc)**, **Lint (eslint)**, **Unit tests + Production build**, **Element audit
 (375/768/1280)**. (A3 must be done first, or the audit check can never pass.)
 
-**How to verify it is done:** `gh api repos/Growlancer-Official/Growlancer/branches/main/protection`
+**How to verify it is done:** `gh api repos/Growlanzo-Official/Growlanzo/branches/main/protection`
 returns the rule with `required_status_checks` listing the four checks; a deliberately failing push
 shows *"merging is blocked"*.
 
@@ -278,7 +278,7 @@ restriction or (if your org requires it) whitelist the *range*, not one address.
    `.e2e/brevo-test.mjs` — the verdict must be `{"success":true}`.
 
 **How to verify it is done:** `node .e2e/brevo-test.mjs` → `{"success":{"success":true}}` and a
-"Growlancer Test Email ✅" lands in `growlancer.own@gmail.com`. Until then **every** Brevo send
+"Growlanzo Test Email ✅" lands in `growlancer.own@gmail.com`. Until then **every** Brevo send
 (welcome, proposals, milestones, withdrawals, security alerts, admin notifications) is a
 logged no-op with `email_sent:false` — the platform is fully silent by email.
 

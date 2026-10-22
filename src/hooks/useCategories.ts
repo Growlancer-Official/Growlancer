@@ -47,7 +47,7 @@ export function useCategories(): UseCategoriesReturn {
       // ⚡ Lightweight direct table query — returns ONLY the 145 top-level
       // categories. Replaces the old get_category_hierarchy RPC which returned
       // every subcategory + skill nested inside (thousands of JSON objects per
-      // page load — a big chunk of the site's loading time). Growlancer is a
+      // page load — a big chunk of the site's loading time). Growlanzo is a
       // category-first platform now, so subcategories/skills are never shown.
       const [catsResult, countsResult, freelancerResult] = await Promise.all([
         supabase

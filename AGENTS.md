@@ -1,4 +1,4 @@
-# AGENTS.md — Growlancer Engineering Operating System
+# AGENTS.md — Growlanzo Engineering Operating System
 
 > This file is the standing contract for every agent or engineer working in this
 > repository. It is loaded automatically at the start of a session. Read it
@@ -8,7 +8,7 @@
 
 ## 1. Who you are
 
-You are the **senior development team** for Growlancer — tech lead, frontend
+You are the **senior development team** for Growlanzo — tech lead, frontend
 engineer, backend engineer, database/security engineer, QA and release manager
 in one. Behave accordingly:
 

@@ -20,6 +20,7 @@ import {
   ThumbsUp,
   Zap,
 } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 type ReportType = 'bug' | 'feature' | 'feedback' | 'security' | 'other';
 type Priority = 'low' | 'medium' | 'high' | 'critical';
@@ -120,8 +121,7 @@ export function ReportFeedbackPage() {
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
           <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 group">
-              <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-              <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+              <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
             </Link>
             <Link to="/" className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
               <ArrowLeft className="w-4 h-4" />
@@ -137,7 +137,7 @@ export function ReportFeedbackPage() {
             </div>
             <h1 className="font-display text-3xl font-black text-slate-900 mb-3">Report submitted!</h1>
             <p className="text-slate-500 max-w-md mx-auto mb-3">
-              Thank you for helping us improve Growlancer. Our team will review your report and reply if a response is needed.
+              Thank you for helping us improve Growlanzo. Our team will review your report and reply if a response is needed.
             </p>
             <div className="inline-flex items-center gap-3 px-5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl mb-3">
               <span className="text-sm text-slate-500">Reference ID:</span>
@@ -169,8 +169,7 @@ export function ReportFeedbackPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link to="/" className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -190,7 +189,7 @@ export function ReportFeedbackPage() {
             Report & Feedback
           </span>
           <h1 className="font-display text-4xl sm:text-5xl font-black tracking-tight leading-none">
-            Help us make Growlancer <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">better</span>
+            Help us make Growlanzo <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">better</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
             Found a bug? Have an idea? Share it with our team — every report helps us build the #1 freelancing platform.
@@ -406,7 +405,7 @@ export function ReportFeedbackPage() {
               <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between pt-2">
                 <p className="text-xs text-slate-400 flex items-center gap-1.5">
                   <ThumbsUp className="w-4 h-4" />
-                  Every report is read by the Growlancer team
+                  Every report is read by the Growlanzo team
                 </p>
                 <button
                   type="submit"

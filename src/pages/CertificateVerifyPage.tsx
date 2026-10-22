@@ -10,6 +10,7 @@ import {
 import { type Certificate, type InternProfile } from '../lib/certificateService';
 import { verifyCredentialByCode, verifyCredentialByQR } from '../lib/credentialVerification';
 import { useTheme } from '../context/ThemeContext';
+import { BrandLogo } from '../components/BrandLogo';
 
 // ─── Types ──────────────────────────────────────────────────────────
 type VerifyMode = 'idle' | 'verifying' | 'verified' | 'revoked' | 'replaced' | 'invalid' | 'rate_limited';
@@ -127,7 +128,7 @@ function VerifiedCard({
     { label: 'Credential ID', value: cert.id?.slice(0, 8) + '...', icon: Hash },
     { label: 'Verification ID', value: cert.verification_code || '—', icon: Lock },
     { label: 'QR Version', value: `v${meta.qr_version || 1}`, icon: QrCode },
-    { label: 'Issued By', value: 'Growlancer', icon: Award },
+    { label: 'Issued By', value: 'Growlanzo', icon: Award },
     { label: 'Founder', value: 'Mohammed Miran Khan', icon: User },
   ];
 
@@ -143,7 +144,7 @@ function VerifiedCard({
             Credential Successfully Verified
           </h2>
           <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mx-auto">
-            This credential has been officially issued and verified by Growlancer. The information below confirms its authenticity.
+            This credential has been officially issued and verified by Growlanzo. The information below confirms its authenticity.
           </p>
         </div>
       </div>
@@ -294,7 +295,7 @@ function VerifiedCard({
             <User className="w-9 h-9 text-white" />
           </div>
           <p className="text-base font-bold text-slate-900 dark:text-white">Mohammed Miran Khan</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Founder & CEO, Growlancer</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">Founder & CEO, Growlanzo</p>
           <div className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-800/30">
             <BadgeCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
@@ -629,7 +630,7 @@ export function CertificateVerifyPage() {
             Credential Verification Portal
           </h1>
           <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm leading-relaxed">
-            Verify the authenticity of Growlancer-issued Internship Certificates and Letters of Recommendation.
+            Verify the authenticity of Growlanzo-issued Internship Certificates and Letters of Recommendation.
           </p>
         </div>
 
@@ -707,7 +708,7 @@ export function CertificateVerifyPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 max-w-3xl mx-auto mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
           {[
             { icon: Shield, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-100 dark:bg-emerald-500/10', title: 'Real-Time Verification', desc: 'Instant credential verification with live data from our secure database.' },
-            { icon: FileText, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-500/10', title: 'Certificates & LOR', desc: 'Verify internship certificates and letters of recommendation issued by Growlancer.' },
+            { icon: FileText, color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-100 dark:bg-violet-500/10', title: 'Certificates & LOR', desc: 'Verify internship certificates and letters of recommendation issued by Growlanzo.' },
             { icon: Lock, color: 'text-blue-600 dark:text-blue-400', bg: 'bg-blue-100 dark:bg-blue-500/10', title: 'Tamper-Proof', desc: 'Each credential is cryptographically signed and cannot be altered.' },
           ].map((card, i) => (
             <div key={i} className={`p-3 rounded-xl border text-center transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 bg-white/60 border-slate-200 hover:border-slate-300 dark:bg-slate-900/60 dark:border-slate-700/50 dark:hover:border-slate-600`}>
@@ -766,7 +767,7 @@ export function CertificateVerifyPage() {
               <div>
                 <p className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-widest mb-1">Important Notice</p>
                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  This credential verification page is hosted on the Growlancer platform. In the event of a domain change, platform migration, or service discontinuation, this verification service and its associated records may be removed or relocated.
+                  This credential verification page is hosted on the Growlanzo platform. In the event of a domain change, platform migration, or service discontinuation, this verification service and its associated records may be removed or relocated.
                 </p>
               </div>
             </div>
@@ -794,12 +795,10 @@ function HeaderBar({ onToggleTheme, onHome, showNewSearch }: {
         <button onClick={onHome || (() => navigate('/verify-certificate', { replace: true }))}
           className="flex items-center gap-3 py-1 hover:opacity-80 transition-opacity group">
           <div className="relative">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-9 w-9 rounded-xl" />
+            <BrandLogo variant="wordmark" className="h-9 w-auto" />
             <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />
-          </div>
-          <div className="hidden sm:block">
-            <p className="text-sm font-bold text-slate-900 dark:text-white leading-none">Growlancer</p>
-            <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">Verification Portal</p>
+          </div>            <div className="hidden sm:block">
+              <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 dark:text-emerald-400">Verification Portal</p>
           </div>
         </button>
         <div className="flex items-center gap-3">
@@ -827,10 +826,9 @@ function FooterBar() {
     <footer className="border-t py-4 px-4 border-slate-200 bg-slate-50 dark:border-slate-800/50 dark:bg-slate-950">
       <div className="max-w-4xl mx-auto text-center">
         <div className="flex items-center justify-center gap-3 mb-3">
-          <img src="/UpdatedLogo.webp" alt="" className="h-6 w-6 rounded-lg opacity-40" />
-          <span className="text-xs font-bold text-slate-400 dark:text-slate-500">Growlancer</span>
+          <BrandLogo variant="wordmark" className="h-6 opacity-40 w-auto" />
         </div>
-        <p className="text-xs text-slate-400 dark:text-slate-500">© {new Date().getFullYear()} Growlancer. All rights reserved.</p>
+        <p className="text-xs text-slate-400 dark:text-slate-500">© {new Date().getFullYear()} Growlanzo. All rights reserved.</p>
         <div className="flex items-center justify-center gap-3 mt-2">
           {['Terms', 'Privacy', 'Contact'].map(item => (
             <button key={item} onClick={() => navigate(`/${item.toLowerCase()}`)}

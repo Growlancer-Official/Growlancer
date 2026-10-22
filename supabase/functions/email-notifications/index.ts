@@ -64,7 +64,7 @@ function buildSupportTicketHtml(name: string, ticketId: string, ticketSubject?: 
     `
     <p style="margin:0 0 16px;color:#334155;">Hi ${safeName},</p>
     <p style="margin:0 0 16px;color:#334155;">
-      Your request <strong>${safeSubject}</strong> has been received by the Growlancer support team.
+      Your request <strong>${safeSubject}</strong> has been received by the Growlanzo support team.
     </p>
     <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin:0 0 16px;">
       <p style="margin:0 0 4px;color:#475569;font-size:13px;">Ticket ID</p>
@@ -74,7 +74,7 @@ function buildSupportTicketHtml(name: string, ticketId: string, ticketSubject?: 
       Our support team typically reviews and responds within <strong>24 hours</strong>. If you don't hear from us,
       check your spam folder or reply to this email.
     </p>
-    <p style="margin:0;color:#64748b;font-size:13px;">— Growlancer Support Team</p>
+    <p style="margin:0;color:#64748b;font-size:13px;">— Growlanzo Support Team</p>
     `
   )
 }
@@ -103,7 +103,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
   <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);">
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="${APP_URL}/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto;" />
+      <img src="${APP_URL}/growlanzo-full-light.png" alt="Growlanzo" style="height: 40px; width: auto;" />
     </div>
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
@@ -127,7 +127,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
         </tr>
         <tr>
           <td>
-            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlancer — AI-Powered Freelancing Marketplace</p>
+            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlanzo — AI-Powered Freelancing Marketplace</p>
           </td>
         </tr>
       </table>
@@ -172,7 +172,7 @@ function buildWithdrawalCompletedHtml(name: string, amount: number, netAmount: n
         </table>
       </td></tr>
     </table>
-    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlancer Team</p>`
+    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlanzo Team</p>`
   return baseEmailHtml('Withdrawal Processed ✅', body)
 }
 
@@ -192,7 +192,7 @@ function buildWithdrawalFailedHtml(name: string, amount: number, reason: string)
       <p style="font-size: 14px; color: #7f1d1d; margin: 0; line-height: 1.5;">${escapeHtml(reason || 'An unexpected error occurred. Please try again.')}</p>
     </div>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 24px;">
-      The full amount of <strong>${formatCurrency(amount)}</strong> has been returned to your Growlancer wallet.
+      The full amount of <strong>${formatCurrency(amount)}</strong> has been returned to your Growlanzo wallet.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 20px;">
       <tr><td align="center">
@@ -206,7 +206,7 @@ function buildWithdrawalFailedHtml(name: string, amount: number, reason: string)
       </td></tr>
     </table>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-      If the issue persists, please <a href="mailto:support@growlancer.com" style="color: #059669; font-weight: 600;">contact support</a>.
+      If the issue persists, please <a href="mailto:support@growlanzo.com" style="color: #059669; font-weight: 600;">contact support</a>.
     </p>`
   return baseEmailHtml('Withdrawal Failed 💔', body)
 }
@@ -242,7 +242,7 @@ function buildDisputeOpenedHtml(name: string, disputeId: string, reason: string,
         </table>
       </td></tr>
     </table>
-    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlancer Team</p>`
+    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlanzo Team</p>`
   return baseEmailHtml('Dispute Opened ⚠️', body)
 }
 
@@ -280,7 +280,7 @@ function buildDisputeResolvedHtml(name: string, disputeId: string, resolution: s
       </td></tr>
     </table>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-      If you have any questions about this resolution, please <a href="mailto:support@growlancer.com" style="color: #059669; font-weight: 600;">contact our support team</a>.
+      If you have any questions about this resolution, please <a href="mailto:support@growlanzo.com" style="color: #059669; font-weight: 600;">contact our support team</a>.
     </p>`
   return baseEmailHtml(isFavorable ? 'Dispute Resolved ✅' : 'Dispute Updated 💙', body)
 }
@@ -320,7 +320,7 @@ function buildEscrowFundedHtml(name: string, projectTitle: string, amount: numbe
         </table>
       </td></tr>
     </table>
-    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlancer Team</p>`
+    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlanzo Team</p>`
   return baseEmailHtml('Escrow Funded — Start Working! 🚀', body)
 }
 
@@ -341,7 +341,7 @@ function buildMilestoneReleasedHtml(name: string, projectTitle: string, amount: 
       <p style="font-size: 13px; color: #047857; margin: 0;">✅ Funds added to your wallet balance</p>
     </div>
     <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 24px;">
-      The funds are now available in your Growlancer wallet. You can withdraw them at any time.
+      The funds are now available in your Growlanzo wallet. You can withdraw them at any time.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 20px;">
       <tr><td align="center">
@@ -354,7 +354,7 @@ function buildMilestoneReleasedHtml(name: string, projectTitle: string, amount: 
         </table>
       </td></tr>
     </table>
-    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlancer Team</p>`
+    <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">— The Growlanzo Team</p>`
   return baseEmailHtml('Milestone Payment Released 💵', body)
 }
 
@@ -424,7 +424,7 @@ function buildAccountSuspendedHtml(name: string, reason?: string): string {
       <p style="font-size: 36px; margin: 0 0 8px; line-height: 1;">⚠️</p>
       <h2 style="font-size: 18px; color: #991b1b; margin: 0 0 4px; font-weight: 800;">Account Suspended</h2>
       <p style="font-size: 14px; color: #7f1d1d; margin: 0;">
-        Your Growlancer account has been temporarily suspended.
+        Your Growlanzo account has been temporarily suspended.
       </p>
     </div>
     ${reason ? `
@@ -436,7 +436,7 @@ function buildAccountSuspendedHtml(name: string, reason?: string): string {
       During this time, you will not be able to access your dashboard, submit proposals, or communicate with clients.
     </p>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-      If you believe this was done in error or would like more information, please <a href="mailto:support@growlancer.com" style="color: #059669; font-weight: 600;">contact our support team</a>.
+      If you believe this was done in error or would like more information, please <a href="mailto:support@growlanzo.com" style="color: #059669; font-weight: 600;">contact our support team</a>.
     </p>`
   return baseEmailHtml('Account Suspended ⚠️', body)
 }

@@ -80,7 +80,7 @@ describe('describeOAuthFailure', () => {
       const copy = describeOAuthFailure({ provider: 'linkedin_oidc', error: code });
       expect(copy.title).toContain('LinkedIn');
       expect(copy.title.toLowerCase()).toContain('cancel');
-      expect(copy.message).toMatch(/no Growlancer account was created/i);
+      expect(copy.message).toMatch(/no Growlanzo account was created/i);
     }
   });
 

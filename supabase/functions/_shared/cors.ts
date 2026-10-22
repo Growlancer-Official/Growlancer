@@ -8,6 +8,12 @@
 const ALLOWED_ORIGINS = [
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer.vercel.app',
+  'https://growlanzo.com',
+  'https://www.growlanzo.com',
+  // The former brand domain. Kept until its DNS points at the new deployment:
+  // while the cutover is in progress both hosts serve the same app, and a
+  // browser on the old origin must still be able to read authenticated API
+  // responses. Remove these two once growlancer.com redirects.
   'https://growlancer.com',
   'https://www.growlancer.com',
   'http://localhost:5173',
@@ -17,7 +23,8 @@ const ALLOWED_ORIGINS = [
 // - Vercel preview / branch-alias deployments of THIS project only. The team
 //   slug suffix is REQUIRED on purpose: a bare `growlancer-*.vercel.app`
 //   pattern would also match any third-party Vercel project that simply names
-//   itself `growlancer-something`.
+//   itself `growlancer-something`. (The Vercel project slug is unchanged by
+//   the Growlanzo rename — the deployment hostnames still read `growlancer`.)
 // - local dev / E2E on any loopback port (loopback is not attacker-reachable).
 // No `Access-Control-Allow-Credentials` is ever sent and every edge function
 // authenticates via JWT, so a reflected origin only controls browser

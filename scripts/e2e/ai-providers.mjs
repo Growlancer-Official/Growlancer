@@ -1,4 +1,4 @@
-// Are Growlancer's AI features actually calling a model in production, or
+// Are Growlanzo's AI features actually calling a model in production, or
 // silently returning deterministic results?
 //
 // Why this exists: the three AI functions fail in *three different* ways, and

@@ -41,7 +41,7 @@ const SUPABASE_URL = (
 // on a malformed APP_URL so a broken value can never masquerade as a probe result.
 const SITE_URL = (() => {
   const raw = (getEnv('APP_URL') || '').trim();
-  if (!raw) return 'https://growlancer.com';
+  if (!raw) return 'https://growlanzo.com';
   try {
     const parsed = new globalThis.URL(raw);
     if (!/^https?:$/.test(parsed.protocol)) throw new Error('not http(s)');

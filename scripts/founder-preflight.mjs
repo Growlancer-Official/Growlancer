@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Growlancer — founder launch pre-flight (READ-ONLY).
+ * Growlanzo — founder launch pre-flight (READ-ONLY).
  *
  * Answers one question: "what is left before real money can move?"
  *
@@ -124,8 +124,8 @@ const CURATED = {
 /** Digest verification lets us confirm a VALUE without printing it. */
 const DIGEST_CANDIDATES = {
   APP_URL: [
-    'https://growlancer.com',
-    'https://www.growlancer.com',
+    'https://growlanzo.com',
+    'https://www.growlanzo.com',
     'https://growlancer.vercel.app',
     'http://localhost:5173',
   ],
@@ -200,7 +200,7 @@ function secretInventory() {
   if (appUrl === sha256('https://growlancer.vercel.app')) {
     warn(
       'APP_URL still points at the Vercel origin',
-      'switch to https://growlancer.com after the custom domain is live (see runbook §5)',
+      'switch to https://growlanzo.com after the custom domain is live (see runbook §5)',
     );
   }
   const sandbox = configured.get('PAYPAL_SANDBOX');
@@ -239,7 +239,7 @@ function frontendEnv() {
       bad(
         'local APP_URL is not an absolute http(s) URL',
         `got ${JSON.stringify(localEnv.APP_URL)} — push_redirect_urls.mjs will refuse to run; ` +
-          'use a full origin such as https://growlancer.com',
+          'use a full origin such as https://growlanzo.com',
       );
     }
   }
@@ -355,7 +355,7 @@ function domainReadiness() {
         if (p === resolver || p === 'supabase/functions/_shared/cors.ts') continue;
         const content = read(p);
         const readsAppUrl = /Deno\.env\.get\(\s*'APP_URL'\s*\)/.test(content);
-        const hardcodes = /https:\/\/(?:www\.)?growlancer\.(?:com|vercel\.app)/.test(content);
+        const hardcodes = /https:\/\/(?:www\.)?growl(?:ancer|anzo)\.(?:com|vercel\.app)/.test(content);
         if (readsAppUrl || hardcodes) offenders.push(p);
       }
     }
@@ -365,26 +365,26 @@ function domainReadiness() {
   else ok('every edge function goes through the resolver');
 
   const corsOk =
-    read('supabase/functions/_shared/cors.ts').includes("'https://growlancer.com'") &&
-    read('supabase/functions/_shared/cors.ts').includes("'https://www.growlancer.com'");
+    read('supabase/functions/_shared/cors.ts').includes("'https://growlanzo.com'") &&
+    read('supabase/functions/_shared/cors.ts').includes("'https://www.growlanzo.com'");
   corsOk ? ok('CORS allow-list covers apex + www') : bad('CORS allow-list is missing the .com origins');
 
-  const sitemapOk = read('public/sitemap.xml').includes('<loc>https://growlancer.com/</loc>');
-  const robotsOk = read('public/robots.txt').includes('https://growlancer.com/sitemap.xml');
-  sitemapOk ? ok('sitemap.xml uses the custom domain') : warn('sitemap.xml does not use growlancer.com');
-  robotsOk ? ok('robots.txt points at the custom sitemap') : warn('robots.txt is not on growlancer.com');
+  const sitemapOk = read('public/sitemap.xml').includes('<loc>https://growlanzo.com/</loc>');
+  const robotsOk = read('public/robots.txt').includes('https://growlanzo.com/sitemap.xml');
+  sitemapOk ? ok('sitemap.xml uses the custom domain') : warn('sitemap.xml does not use growlanzo.com');
+  robotsOk ? ok('robots.txt points at the custom sitemap') : warn('robots.txt is not on growlanzo.com');
 
   const configToml = read('supabase/config.toml');
   const authListed =
-    configToml.includes('"https://growlancer.com/auth/callback"') &&
-    configToml.includes('"https://www.growlancer.com/auth/callback"');
+    configToml.includes('"https://growlanzo.com/auth/callback"') &&
+    configToml.includes('"https://www.growlanzo.com/auth/callback"');
   authListed
     ? ok('supabase/config.toml auth redirects list apex + www')
     : bad('supabase/config.toml is missing the .com auth redirects');
 
   const pusher = read('scripts/push_redirect_urls.mjs');
   // The custom-domain redirect entries are DERIVED from APP_URL (no hard-coded
-  // `growlancer.com` literal left — a literal list silently missed every other
+  // `growlanzo.com` literal left — a literal list silently missed every other
   // domain when the switch target changed).
   pusher.includes('new URL(SITE_URL).host') && pusher.includes('UNIQUE_REDIRECT_URLS')
     ? ok('scripts/push_redirect_urls.mjs derives the custom-domain redirects from APP_URL')
@@ -400,7 +400,7 @@ function domainReadiness() {
 
 async function main() {
   console.log('\n═══════════════════════════════════════════════════════════');
-  console.log(' Growlancer — founder launch pre-flight (read-only)');
+  console.log(' Growlanzo — founder launch pre-flight (read-only)');
   console.log(` project: ${PROJECT_REF}   mode: ${STRICT ? 'strict' : 'report'}`);
   console.log('═══════════════════════════════════════════════════════════');
 
@@ -418,7 +418,7 @@ async function main() {
   console.log('  A2  Make ONE real test-mode payment end-to-end (webhook → escrow → 5% → invoice)');
   console.log('  A4  Move KYC off development mode + set the provider token');
   console.log('  A5  PayPal: set live keys + PAYPAL_SANDBOX=false FIRST, then VITE_PAYPAL_ENABLED=true');
-  console.log('  A6  APP_URL → https://growlancer.com (single change now covers every email link)');
+  console.log('  A6  APP_URL → https://growlanzo.com (single change now covers every email link)');
   console.log('  A7  Turn on branch protection for main');
   console.log('  A8  Real supply: publish services + collect reviews');
   console.log('  §5  Custom domain: follow the .com switch checklist in order');

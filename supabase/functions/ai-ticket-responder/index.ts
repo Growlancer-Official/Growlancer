@@ -81,11 +81,11 @@ interface TicketData {
 }
 
 const CATEGORY_PROMPTS: Record<string, string> = {
-  general: 'Provide helpful general assistance and guidance about using the Growlancer platform.',
-  billing: 'Address billing concerns, payment issues, or subscription questions. Explain how payments, escrow, and the 5% platform commission work on Growlancer.',
+  general: 'Provide helpful general assistance and guidance about using the Growlanzo platform.',
+  billing: 'Address billing concerns, payment issues, or subscription questions. Explain how payments, escrow, and the 5% platform commission work on Growlanzo.',
   account: 'Help with account-related issues such as login problems, profile setup, verification, and account settings.',
-  technical: 'Provide technical support for platform features, troubleshooting steps, and guidance on using Growlancer tools and functionalities.',
-  dispute: 'Explain the dispute resolution process on Growlancer, how to open a dispute, what information is needed, and how disputes are resolved.',
+  technical: 'Provide technical support for platform features, troubleshooting steps, and guidance on using Growlanzo tools and functionalities.',
+  dispute: 'Explain the dispute resolution process on Growlanzo, how to open a dispute, what information is needed, and how disputes are resolved.',
   feature_request: 'Acknowledge the feature request positively, explain how the team reviews suggestions, and ask for any additional details if needed.',
   other: 'Provide general assistance and route the user to the appropriate resources or team members.',
 };
@@ -107,7 +107,7 @@ async function generateAIResponse(ticket: TicketData): Promise<string | null> {
   const categoryGuidance = CATEGORY_PROMPTS[ticket.category] || CATEGORY_PROMPTS.general;
   const priorityResponse = PRIORITY_RESPONSES[ticket.priority] || PRIORITY_RESPONSES.normal;
 
-  const systemPrompt = `You are a professional AI support agent for GROWLANCER, a freelancing platform.
+  const systemPrompt = `You are a professional AI support agent for GROWLANZO, a freelancing platform.
 
 Your task is to respond to a support ticket helpfully and professionally.
 
@@ -269,7 +269,7 @@ Deno.serve(async (req: Request) => {
 
     if (!aiResponse) {
       // Fallback response if AI fails
-      const fallbackResponse = `Thank you for reaching out to Growlancer Support. 
+      const fallbackResponse = `Thank you for reaching out to Growlanzo Support. 
 
 We have received your ticket regarding "${subject}" and our team will review it shortly. 
 
@@ -281,7 +281,7 @@ Here's what to expect:
 If you need immediate assistance, please visit our Help Center or try asking our AI Assistant for quick answers to common questions.
 
 Best regards,
-Growlancer Support Team`;
+Growlanzo Support Team`;
 
       // Create the fallback message
       const { error: msgError } = await supabase

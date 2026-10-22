@@ -804,7 +804,7 @@ export function WorkspacePage() {
           events.push({
             id: 'escrow-funded',
             title: 'Escrow protection active',
-            description: `Client funded ${formatCurrency(escrowRow.amount)} in Growlancer Escrow protection.`,
+            description: `Client funded ${formatCurrency(escrowRow.amount)} in Growlanzo Escrow protection.`,
             timestamp: selectedContract.updated_at || selectedContract.created_at,
             type: 'escrow',
             icon: ShieldCheck,
@@ -814,7 +814,7 @@ export function WorkspacePage() {
           events.push({
             id: 'escrow-released',
             title: 'Payment Released',
-            description: `Growlancer Escrow released ${formatCurrency(escrowRow.amount)} to your Freelancer Wallet!`,
+            description: `Growlanzo Escrow released ${formatCurrency(escrowRow.amount)} to your Freelancer Wallet!`,
             timestamp: selectedContract.updated_at || selectedContract.created_at,
             type: 'escrow',
             icon: FileCheck,
@@ -1002,7 +1002,7 @@ export function WorkspacePage() {
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="font-bold text-white text-sm">Growlancer Payment, Refund & Safety Policy</p>
+            <p className="font-bold text-white text-sm">Growlanzo Payment, Refund & Safety Policy</p>
             <p className="text-xs text-emerald-100">Your earnings and work are always protected — everything stays on the platform</p>
           </div>
         </div>
@@ -1013,7 +1013,7 @@ export function WorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Escrow Protection + Auto-Release.</span> All payments are
-              held in Growlancer Escrow. When you deliver work, the client can approve and release it — but if they
+              held in Growlanzo Escrow. When you deliver work, the client can approve and release it — but if they
               don't respond within the review window (default 72h), the funds{' '}
               <span className="font-bold text-emerald-700">auto-release to your wallet automatically</span>. Your
               payment can never be held hostage.
@@ -1024,7 +1024,7 @@ export function WorkspacePage() {
               <AlertTriangle className="w-4 h-4 text-amber-600" />
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
-              <span className="font-bold text-slate-900">Never work outside Growlancer.</span> If a client asks you
+              <span className="font-bold text-slate-900">Never work outside Growlanzo.</span> If a client asks you
               to work or pay outside the platform, refuse and report them immediately.
             </p>
           </div>
@@ -1073,7 +1073,7 @@ export function WorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">Legal.</span> All payments, refunds and disputes are governed by
-              Growlancer's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
+              Growlanzo's Terms of Service, Escrow Policy and Refund Policy. These rules apply to every project on the platform.
             </p>
           </div>
           <div className="flex items-start gap-3.5">
@@ -1082,7 +1082,7 @@ export function WorkspacePage() {
             </div>
             <p className="text-xs text-slate-700 leading-relaxed">
               <span className="font-bold text-slate-900">You keep 100%.</span> The 5% platform fee is paid by the client
-              at checkout — the full contract value goes into escrow and is released to your wallet. Growlancer never
+              at checkout — the full contract value goes into escrow and is released to your wallet. Growlanzo never
               deducts from your earnings.
             </p>
           </div>
@@ -1549,7 +1549,7 @@ export function WorkspacePage() {
                       <h3 className="font-semibold text-slate-900 text-lg">
                         {selectedContract.project?.title || 'Project'}
                       </h3>
-                      <p className="text-xs text-slate-500 mt-0.5">Budget protected in Growlancer Escrow protection</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Budget protected in Growlanzo Escrow protection</p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                       {!workStarted && selectedContract.status !== 'disputed' && !pendingCancellation && (
@@ -1606,7 +1606,7 @@ export function WorkspacePage() {
                         <ShieldCheck className="w-4 h-4 text-emerald-600" />
                         <div>
                           <p className="font-semibold text-slate-900">Escrow Security active</p>
-                          <p className="text-xs text-slate-500">Funds are held by Growlancer until you finish mockups and deliverables.</p>
+                          <p className="text-xs text-slate-500">Funds are held by Growlanzo until you finish mockups and deliverables.</p>
                         </div>
                       </div>
                       <span className="px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-semibold uppercase tracking-wider">

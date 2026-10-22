@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {ArrowLeft, BookOpen, ChevronDown, CreditCard, FileText, HelpCircle, LifeBuoy, MessageSquare, Search, Users, } from 'lucide-react';
 import { InfoTip } from '../components/InfoTip';
+import { BrandLogo } from '../components/BrandLogo';
 
 interface FAQ {
   category: string;
@@ -12,18 +13,18 @@ interface FAQ {
 const faqs: FAQ[] = [
   {
     category: 'Getting Started',
-    question: 'How do I create an account and get started on Growlancer?',
-    answer: 'Creating an account on Growlancer is completely free. Simply click the "Sign Up" button on the landing page, choose your role as a Freelancer or a Client, verify your email, and fill out your profile details. Clients can immediately post projects, and freelancers can complete professional profile onboarding to unlock the real-time AI matchmaking system.',
+    question: 'How do I create an account and get started on Growlanzo?',
+    answer: 'Creating an account on Growlanzo is completely free. Simply click the "Sign Up" button on the landing page, choose your role as a Freelancer or a Client, verify your email, and fill out your profile details. Clients can immediately post projects, and freelancers can complete professional profile onboarding to unlock the real-time AI matchmaking system.',
   },
   {
     category: 'Getting Started',
-    question: 'What makes Growlancer different from Upwork or Fiverr?',
-    answer: 'Unlike transactional legacy platforms, Growlancer introduces a state-of-the-art Real-Time Collaboration Canvas directly built into contract workspaces. This includes shared Kanban boards, a live synced scratchpad for note sharing with type collision locks, real-time messaging, and interactive escrow tracking. We eliminate the friction of switching back and forth between MessageSquare, Columns, and static dashboard screens.',
+    question: 'What makes Growlanzo different from Upwork or Fiverr?',
+    answer: 'Unlike transactional legacy platforms, Growlanzo introduces a state-of-the-art Real-Time Collaboration Canvas directly built into contract workspaces. This includes shared Kanban boards, a live synced scratchpad for note sharing with type collision locks, real-time messaging, and interactive escrow tracking. We eliminate the friction of switching back and forth between MessageSquare, Columns, and static dashboard screens.',
   },
   {
     category: 'Getting Started',
     question: 'How does the AI Matchmaking system work?',
-    answer: 'Growlancer runs an intelligent matching algorithm that cross-analyzes freelancer skills, experience, availability, and base rates with the client\'s specific project requirements (skills required, budget, and deadlines). Best matches are fed directly onto the client\'s "AI Matches" dashboard and the freelancer\'s project feed, enabling immediate invites and hires.',
+    answer: 'Growlanzo runs an intelligent matching algorithm that cross-analyzes freelancer skills, experience, availability, and base rates with the client\'s specific project requirements (skills required, budget, and deadlines). Best matches are fed directly onto the client\'s "AI Matches" dashboard and the freelancer\'s project feed, enabling immediate invites and hires.',
   },
   {
     category: 'Project Management',
@@ -43,7 +44,7 @@ const faqs: FAQ[] = [
   {
     category: 'Payments & Escrow',
     question: 'What is Escrow Protection and how does it secure transactions?',
-    answer: 'When a contract is created, the client funds the contract total into a secure escrow pool. The funds are held by Growlancer and are not released to either party until the client approves the deliverables, the review window passes, or both sides mutually cancel the agreement. Either party can also open a dispute, which freezes that escrow until a neutral admin review decides how the funds move.',
+    answer: 'When a contract is created, the client funds the contract total into a secure escrow pool. The funds are held by Growlanzo and are not released to either party until the client approves the deliverables, the review window passes, or both sides mutually cancel the agreement. Either party can also open a dispute, which freezes that escrow until a neutral admin review decides how the funds move.',
   },
   {
     category: 'Payments & Escrow',
@@ -53,7 +54,7 @@ const faqs: FAQ[] = [
   {
     category: 'Payments & Escrow',
     question: 'What happens if a dispute or coordination breakdown occurs?',
-    answer: 'If conflict arises, clients can trigger the "Raise Dispute" resolution button in the Milestones & Escrow tab. Once submitted, the contract status is changed to "disputed", which freezes all file uploads, locks escrow funds, and alerts the Growlancer mediation team who will step in to audit the workspace canvases, logs, and coordinate a fair settlement.',
+    answer: 'If conflict arises, clients can trigger the "Raise Dispute" resolution button in the Milestones & Escrow tab. Once submitted, the contract status is changed to "disputed", which freezes all file uploads, locks escrow funds, and alerts the Growlanzo mediation team who will step in to audit the workspace canvases, logs, and coordinate a fair settlement.',
   },
   {
     category: 'For Freelancers',
@@ -62,7 +63,7 @@ const faqs: FAQ[] = [
   },
   {
     category: 'For Freelancers',
-    question: 'How do I withdraw my earnings from the Growlancer Wallet?',
+    question: 'How do I withdraw my earnings from the Growlanzo Wallet?',
     answer: 'Go to your Wallet dashboard, click "Withdraw Funds", select your withdrawal method (UPI or Bank Account), add your credentials (e.g. UPI ID or bank account details with IFSC), and confirm. Withdrawals are processed via RazorpayX in INR, usually within 24 hours, with a transparent 2% processing fee. The current processing timeline is always shown to you before you confirm. PayPal withdrawals are coming soon.',
   },
   {
@@ -124,8 +125,7 @@ export function HelpCenterPage({ dashboard = false }: { dashboard?: boolean } = 
           <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
             <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
               <Link to="/" className="flex items-center gap-3">
-                <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg" />
-                <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+                <BrandLogo variant="wordmark" className="h-9 w-auto" />
               </Link>
               <Link
                 to="/"

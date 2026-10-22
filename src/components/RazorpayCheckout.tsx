@@ -67,8 +67,8 @@ export function RazorpayCheckout({
         key: razorpay_key_id,
         amount: Math.round(amount * 100), // Razorpay expects paise/cents
         currency: currency,
-        name: 'Growlancer',
-        description: orderData.description || 'Growlancer Payment',
+        name: 'Growlanzo',
+        description: orderData.description || 'Growlanzo Payment',
         order_id: order.razorpay_order_id,
         // Razorpay Checkout Config (dashboard → Settings → Checkout Configurations)
         // controls which payment methods show (UPI/cards/net banking/EMI).

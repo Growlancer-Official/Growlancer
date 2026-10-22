@@ -1,4 +1,4 @@
-# Growlancer — Quality Gates, CI/CD and Operations
+# Growlanzo — Quality Gates, CI/CD and Operations
 
 **Last verified: 2026-10-20.** Scope: how any change to this repository is verified, deployed, monitored and recovered —
 the exact commands, gates, and the places where a green check is **not** proof. Documentation only.
@@ -6,7 +6,7 @@ the exact commands, gates, and the places where a green check is **not** proof. 
 **Basis.** HEAD `59be15a`, branch `main`, **working tree dirty** (uncommitted referral work, and `docs/blueprint/**`
 being written concurrently). File counts are from the working tree; CI statements were read from the GitHub API on
 2026-10-20 (`gh run list` / `gh run view` / `check-runs …/annotations` / `gh secret list` / `gh variable list` /
-`branches/main/protection`). Repo `Growlancer-Official/Growlancer`; production Supabase project `zttwsjehcgaicziqyxpq`.
+`branches/main/protection`). Repo `Growlanzo-Official/Growlanzo`; production Supabase project `zttwsjehcgaicziqyxpq`.
 No secret value appears in this file.
 
 | Label | Means |

@@ -4,6 +4,7 @@ import { ArrowRight, Check, Crown, ShieldCheck, Users, Zap } from 'lucide-react'
 import { TipNote } from '../components/TipNote';
 import { subscriptionService, type AIPlan } from '../lib/subscriptionHelpers';
 import { formatCurrency } from '../lib/currency';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function PricingPage() {
   const [plans, setPlans] = useState<AIPlan[]>([]);
@@ -26,7 +27,7 @@ export function PricingPage() {
 
   const clientFeatures = [
     '5% flat commission, deducted from the freelancer’s payout — never added to the client’s invoice',
-    'Your money sits in Growlancer Escrow until you approve the work',
+    'Your money sits in Growlanzo Escrow until you approve the work',
     'AI-powered freelancer matching, tailored to your project',
     'AI writing for project titles & descriptions — free, with a fair-use daily cap',
     'Milestone-based payments — pay as the work progresses',
@@ -40,8 +41,7 @@ export function PricingPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link to="/" className="inline-block py-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">
             Back to Home
@@ -86,7 +86,7 @@ export function PricingPage() {
           <TipNote tone="protection" className="mt-8 max-w-3xl mx-auto text-left">
             <strong>How the platform fee works:</strong> the 5% commission is deducted from the freelancer’s payout
             <em>only</em> when a payment succeeds — never upfront. Your money is held in
-            Growlancer Escrow until the work is delivered and approved, and it is auto-released to
+            Growlanzo Escrow until the work is delivered and approved, and it is auto-released to
             the freelancer only after that approval (or after the review window passes). Refunds on
             unapproved work are processed through our fair dispute process.
           </TipNote>
@@ -151,7 +151,7 @@ export function PricingPage() {
               FOR FREELANCERS
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-bold text-slate-900 mb-2">
-              Growlancer Pro — Optional Upgrade
+              Growlanzo Pro — Optional Upgrade
             </h2>
             <p className="text-slate-600 max-w-xl mx-auto text-sm sm:text-base">
               Join free, earn 100% of every payment, and build services with <strong>3 package
@@ -362,7 +362,7 @@ export function PricingPage() {
               </p>
             </div>
             <div className="bg-white rounded-xl p-3 border border-slate-200">
-              <h3 className="font-bold text-slate-900 mb-1">Do freelancers pay anything to use Growlancer?</h3>
+              <h3 className="font-bold text-slate-900 mb-1">Do freelancers pay anything to use Growlanzo?</h3>
               <p className="text-sm text-slate-600">
                 No. Creating a profile, building 3-tier packages, applying to projects, and
                 receiving payments are completely free — including <strong>5 free AI-written
@@ -407,7 +407,7 @@ export function PricingPage() {
               <p className="text-sm text-slate-600">
                 When a freelancer withdraws wallet funds, the payment processor (Razorpay/PayPal)
                 charges a <strong>2% transfer fee</strong>. This is the processor's actual cost,
-                passed through at cost — it is <strong>not</strong> Growlancer revenue and is shown
+                passed through at cost — it is <strong>not</strong> Growlanzo revenue and is shown
                 separately from the 5% commission. Withdrawal limits and the exact fee are always
                 displayed before you confirm.
               </p>

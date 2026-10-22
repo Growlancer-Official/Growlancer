@@ -4,7 +4,7 @@ import { ReferralInviteCard } from '../components/ReferralInviteCard';
 import { ToastProvider } from '../components/Toast';
 
 const CODE = 'GRW-7K2M-9QXT';
-const LINK = `https://growlancer.com/signup?ref=${CODE}`;
+const LINK = `https://growlanzo.com/signup?ref=${CODE}`;
 
 function renderCard(overrides: Partial<React.ComponentProps<typeof ReferralInviteCard>> = {}) {
   return render(
@@ -59,13 +59,13 @@ describe('ReferralInviteCard', () => {
     renderCard();
     expect(screen.getByRole('button', { name: /share with invite card/i })).toBeTruthy();
     expect(
-      screen.getByRole('button', { name: /download the growlancer invite card/i })
+      screen.getByRole('button', { name: /download the growlanzo invite card/i })
     ).toBeTruthy();
   });
 
   it('opens the professional WhatsApp intent with the code', () => {
     renderCard();
-    fireEvent.click(screen.getByRole('button', { name: /share your growlancer invite on whatsapp/i }));
+    fireEvent.click(screen.getByRole('button', { name: /share your growlanzo invite on whatsapp/i }));
 
     expect(open).toHaveBeenCalledTimes(1);
     const url = String(open.mock.calls[0][0]);
@@ -77,7 +77,7 @@ describe('ReferralInviteCard', () => {
   it('previews the professional message without emoji', () => {
     renderCard();
     fireEvent.click(screen.getByText(/preview the message people receive/i));
-    const preview = screen.getByText(/you're invited to growlancer\./i).textContent || '';
+    const preview = screen.getByText(/you're invited to growlanzo\./i).textContent || '';
     expect(preview).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
     expect(preview).toContain('Invite from Aarav Mehta.');
   });

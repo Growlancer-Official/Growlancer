@@ -61,7 +61,7 @@ export function isFeatureEnabled(key: FeatureKey): boolean {
 
 /** Line the UI and the function agree on, so the user sees one explanation. */
 export const FEATURE_DISABLED_MESSAGE =
-  'This feature is not available during Growlancer early access. It has been deferred and no data was read or changed.';
+  'This feature is not available during Growlanzo early access. It has been deferred and no data was read or changed.';
 
 /**
  * 410 Gone with no record data. Used by every deferred edge function.

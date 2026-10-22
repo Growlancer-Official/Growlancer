@@ -9,6 +9,7 @@ import { SiteFooter } from '../components/SiteFooter';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { buildModalCleanupUrl } from '../lib/referralCode';
 import { isFeatureEnabled } from '../lib/featureFlags';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function MainLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -89,15 +90,13 @@ export function MainLayout() {
       <header className="sticky top-0 z-50 bg-white border-b border-slate-200">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12">
           <div className="h-16 flex items-center justify-between gap-3">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group shrink-0">
-              <img 
-                src="/UpdatedLogo.webp" 
-                alt="Growlancer" 
-                className="h-9 w-9 rounded-xl"
-              />
-              <div className="leading-tight">
-                <div className="font-semibold tracking-tight text-[15px] sm:text-base font-display flex items-center gap-1.5">Growlancer
+            {/* Logo — the wordmark is wide (700:123). Below `sm` the badge and
+                tagline are dropped so the logo + theme toggle + Signup + menu
+                stay inside a 360px header instead of overflowing it. */}
+            <Link to="/" className="flex items-center gap-3 group min-w-0">
+              <BrandLogo variant="wordmark" className="h-7 sm:h-10 w-auto max-w-full object-contain object-left" />
+              <div className="leading-tight hidden sm:block">
+                <div className="flex items-center gap-1.5">
                   <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-700 ring-1 ring-amber-200 text-[9px] font-bold uppercase tracking-wide">Beta</span>
                 </div>
                 <div className="text-[10px] sm:text-xs text-slate-500 -mt-0.5">AI freelancing marketplace</div>

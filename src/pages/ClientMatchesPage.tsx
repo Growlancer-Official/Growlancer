@@ -168,7 +168,7 @@ export function ClientMatchesPage() {
       user.id,
       projectId,
       freelancerId,
-      'We would like you to review this project on Growlancer.'
+      'We would like you to review this project on Growlanzo.'
     );
     if (!result.success) toast.error('Invite Failed', result.error || 'Invite failed');
     setInviteBusy(null);

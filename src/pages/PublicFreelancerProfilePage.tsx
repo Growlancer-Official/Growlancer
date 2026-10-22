@@ -418,7 +418,7 @@ export function PublicFreelancerProfilePage() {
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: `${profile?.profile?.name || 'Freelancer'} on Growlancer`, url });
+        await navigator.share({ title: `${profile?.profile?.name || 'Freelancer'} on Growlanzo`, url });
       } else {
         await navigator.clipboard.writeText(url);
         toast.success('Link copied!', 'Profile link copied to clipboard.');

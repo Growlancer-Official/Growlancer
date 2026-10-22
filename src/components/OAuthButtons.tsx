@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
 
 /**
- * OAuthButtons — the single sign-in surface for Growlancer.
+ * OAuthButtons — the single sign-in surface for Growlanzo.
  *
  * GitHub and LinkedIn are the only auth methods: no email/password form
  * anywhere in the product. Both providers are configured in Supabase
@@ -32,7 +32,10 @@ const PROVIDERS: {
     id: 'github',
     label: 'Continue with GitHub',
     pendingLabel: 'Connecting to GitHub…',
-    className: 'bg-slate-900 text-white hover:bg-slate-800 focus-visible:ring-slate-900/30',
+    // GitHub's own dark-mode treatment: the navy button is the modal surface in
+    // dark mode (both remap to the same slate), so it flips to white-on-dark.
+    className:
+      'bg-slate-900 text-white hover:bg-slate-800 focus-visible:ring-slate-900/30 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 dark:focus-visible:ring-white/40',
     icon: (
       <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path

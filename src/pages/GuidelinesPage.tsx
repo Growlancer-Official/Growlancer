@@ -1,19 +1,20 @@
 import { Link } from 'react-router-dom';
 import { AlertTriangle, ArrowRight, CheckCircle, Compass, XCircle,  } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function GuidelinesPage() {
   const dos = [
     'Communicate clearly and professionally in the workspace',
     'Set realistic milestone expectations and agreed delivery timelines',
-    'Ensure all payments are made through Growlancer Escrow — before any work begins',
+    'Ensure all payments are made through Growlanzo Escrow — before any work begins',
     'Review delivered work within the auto-release window (default 72h)',
     'Provide constructive, objective, and respectful reviews',
     'Respond to messages and coordination requests promptly — ideally within 24 hours',
-    'Take Growlancer skill assessments to earn verified badges and build trust',
+    'Take Growlanzo skill assessments to earn verified badges and build trust',
   ];
 
   const donts = [
-    'Pay, or ask to be paid, outside Growlancer — no direct bank transfers, UPI, PayPal or crypto for platform projects',
+    'Pay, or ask to be paid, outside Growlanzo — no direct bank transfers, UPI, PayPal or crypto for platform projects',
     'Attempt to bypass escrow, or exchange personal contact details before a contract is funded',
     'Share sensitive passwords or private credentials in raw text',
     'Upload malicious scripts, spam links, or unvetted bundles',
@@ -29,8 +30,7 @@ export function GuidelinesPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"
@@ -121,7 +121,7 @@ export function GuidelinesPage() {
           <p className="text-xs text-violet-900/80 leading-relaxed font-semibold">
             In a Team Project, the Client hires each freelancer under a <strong>separate, independent
             contract</strong> — with its own escrow, milestones and dispute process. There is no single
-            mega-contract covering the team, and Growlancer provides no cross-freelancer
+            mega-contract covering the team, and Growlanzo provides no cross-freelancer
             coordination or delivery guarantee — only escrow payment protection per contract. If
             one member's work is disputed or cancelled, the other contracts remain unaffected.
             Treat every team member as an independent professional: communicate scope clearly per
@@ -139,7 +139,7 @@ export function GuidelinesPage() {
           <div>
             <h2 className="font-bold text-amber-950 text-sm">Enforcement Protocol</h2>
             <p className="text-xs text-amber-900/80 leading-relaxed mt-1 font-semibold">
-              Growlancer may use automated and human review processes to help maintain community standards. Violating these directives may result in actions such as workspace restrictions, wallet holds, or profile limitations, depending on the nature and severity of the violation. You can submit appeals via support tickets.
+              Growlanzo may use automated and human review processes to help maintain community standards. Violating these directives may result in actions such as workspace restrictions, wallet holds, or profile limitations, depending on the nature and severity of the violation. You can submit appeals via support tickets.
             </p>
           </div>
         </div>

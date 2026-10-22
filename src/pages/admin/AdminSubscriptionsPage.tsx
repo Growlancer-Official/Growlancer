@@ -198,7 +198,7 @@ export function AdminSubscriptionsPage() {
   };
 
   const handleSendEmail = (email: string) => {
-    window.open(`mailto:${email}?subject=Growlancer%20Subscription%20Update`, '_blank');
+    window.open(`mailto:${email}?subject=Growlanzo%20Subscription%20Update`, '_blank');
   };
 
   // ─── STATS ────────────────────────────────────────────────────────

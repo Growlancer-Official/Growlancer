@@ -102,7 +102,7 @@ function EscrowStatusBadge({ balance }: { balance: EscrowState['balance'] | unde
         label="Fully Funded"
         icon={<Shield className="w-3.5 h-3.5" />}
         classes="bg-emerald-100 text-emerald-700"
-        tooltip="The client has deposited the FULL contract amount into escrow. This money is protected by Growlancer and is released to you only after the client approves your completed work."
+        tooltip="The client has deposited the FULL contract amount into escrow. This money is protected by Growlanzo and is released to you only after the client approves your completed work."
       />
     );
   }
@@ -496,7 +496,7 @@ export function ContractsPage() {
             <Handshake className="w-4 h-4 text-white" />
           </div>
           <div className="min-w-0">
-            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">My Contracts <InfoTip title="How contracts & money work" text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlancer." /></h1>
+            <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2 flex-wrap">My Contracts <InfoTip title="How contracts & money work" text="1) Client hires you → contract is Pending. 2) Client funds escrow → contract becomes Active. 3) You deliver work in the Workspace → client approves. 4) Funds release to your wallet. If the client doesn't respond after delivery, funds auto-release after the review window. Everything stays protected in escrow — no payment ever happens outside Growlanzo." /></h1>
             <p className="text-slate-500">
               {activeCount} active contract{activeCount !== 1 ? 's' : ''}
             </p>
@@ -1152,7 +1152,7 @@ export function ContractsPage() {
                 <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
                   <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
                   <p className="text-xs text-blue-700 leading-relaxed">
-                    This contract is protected by Growlancer Escrow. Funds are only released after the
+                    This contract is protected by Growlanzo Escrow. Funds are only released after the
                     client approves your completed work — payments never go outside the platform.
                   </p>
                 </div>
@@ -1340,7 +1340,7 @@ export function ContractsPage() {
                 <div className="flex items-start gap-3 p-3 bg-blue-50 border border-blue-100 rounded-xl">
                   <Shield className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
                   <p className="text-xs text-blue-700 leading-relaxed">
-                    Funds are held securely in Growlancer Escrow protection and are released to your
+                    Funds are held securely in Growlanzo Escrow protection and are released to your
                     wallet only after the client approves the work. Escrow keeps payments safe for both sides.
                   </p>
                 </div>

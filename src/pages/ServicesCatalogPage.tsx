@@ -124,7 +124,7 @@ export function ServicesCatalogPage() {
           <p className="text-slate-300 text-lg mb-3">Discover pre-packaged services from top freelancers — order instantly.</p>
           <div className="mb-3">
             <TipNote tone="protection" title="Every order is protected" compact>
-              Pay through <strong>Growlancer Escrow</strong> — your money is held safely and released to the freelancer only after you approve the completed work. Every card shows the starting price, delivery time and rating — open a service to compare all three Basic, Standard and Premium packages.
+              Pay through <strong>Growlanzo Escrow</strong> — your money is held safely and released to the freelancer only after you approve the completed work. Every card shows the starting price, delivery time and rating — open a service to compare all three Basic, Standard and Premium packages.
             </TipNote>
           </div>
           <div className="flex gap-3 max-w-3xl">

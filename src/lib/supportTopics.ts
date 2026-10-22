@@ -77,7 +77,7 @@ export const FREELANCER_SUPPORT_TOPICS: SupportTopic[] = [
         options: [{ label: 'Got it — thanks!', done: 'Anytime! Your wallet updates in real time — keep earning. 💪' }, { label: 'Tell me about fees', next: 2 }],
       },
       {
-        text: 'The **2% payout processing fee** is charged by the payment processor (Razorpay/PayPal) when you withdraw — it\u2019s their actual transfer cost, not a Growlancer fee, and it\u2019s shown separately before you confirm. A flat 5% commission is deducted once, when your earnings are released — nothing else is taken from your wallet.',
+        text: 'The **2% payout processing fee** is charged by the payment processor (Razorpay/PayPal) when you withdraw — it\u2019s their actual transfer cost, not a Growlanzo fee, and it\u2019s shown separately before you confirm. A flat 5% commission is deducted once, when your earnings are released — nothing else is taken from your wallet.',
         options: [{ label: 'Clear — thanks!', done: 'You keep 95% of every project amount — the 5% commission is deducted before it reaches your wallet; only the processor’s 2% applies when you withdraw. 🎉' }, { label: 'Back to payments', next: 0 }],
       },
       {
@@ -101,8 +101,8 @@ export const FREELANCER_SUPPORT_TOPICS: SupportTopic[] = [
         ],
       },
       {
-        text: 'When a client funds a contract, the full amount sits in **Growlancer Escrow** — protected for both sides. Once you deliver, the client gets a review window (default 72h). If they don\u2019t respond in time, the escrow **auto-releases** to your wallet — a client can never hold your payment hostage. You can never be paid before delivering, and the client can never be charged for work not done.',
-        options: [{ label: 'Perfect — thanks!', done: 'That\u2019s the Growlancer guarantee — safe for you, safe for the client. 🛡️' }, { label: 'Tell me about milestones', next: 1 }],
+        text: 'When a client funds a contract, the full amount sits in **Growlanzo Escrow** — protected for both sides. Once you deliver, the client gets a review window (default 72h). If they don\u2019t respond in time, the escrow **auto-releases** to your wallet — a client can never hold your payment hostage. You can never be paid before delivering, and the client can never be charged for work not done.',
+        options: [{ label: 'Perfect — thanks!', done: 'That\u2019s the Growlanzo guarantee — safe for you, safe for the client. 🛡️' }, { label: 'Tell me about milestones', next: 1 }],
       },
       {
         text: 'The freelancer only starts after escrow is funded — that\u2019s by design. Politely remind the client in the workspace chat. Most clients fund within 24–48h. If the contract has been stuck unfunded for over a week, you can withdraw your proposal and move on to other projects.',
@@ -177,7 +177,7 @@ export const FREELANCER_SUPPORT_TOPICS: SupportTopic[] = [
         ],
       },
       {
-        text: 'Growlancer signs you in with **GitHub** or **LinkedIn** — we never store a password for your account, so there is nothing to reset here. If you can\u2019t sign in, make sure you\u2019re still able to log in to your GitHub/LinkedIn account (recover it on their site if needed), then come back and continue with the same provider you used to sign up.',
+        text: 'Growlanzo signs you in with **GitHub** or **LinkedIn** — we never store a password for your account, so there is nothing to reset here. If you can\u2019t sign in, make sure you\u2019re still able to log in to your GitHub/LinkedIn account (recover it on their site if needed), then come back and continue with the same provider you used to sign up.',
         options: [{ label: 'Got it — thanks!', done: 'Use the same GitHub/LinkedIn account you signed up with and you\u2019re back in — no password involved. 🔐' }, { label: 'Email issues', next: 2 }],
       },
       {
@@ -204,8 +204,8 @@ export const CLIENT_SUPPORT_TOPICS: SupportTopic[] = [
         ],
       },
       {
-        text: 'Clients pay **exactly the package price** — no platform fee is added at checkout. Growlancer’s flat 5% commission is deducted from the freelancer’s payout when the work is paid. When you withdraw from your wallet later, the payment processor’s 2% transfer fee applies separately — that’s their cost, passed through at cost.',
-        options: [{ label: 'Clear — thanks!', done: 'Simple and transparent — that\u2019s the Growlancer promise. 🎉' }, { label: 'Tell me about refunds', next: 2 }],
+        text: 'Clients pay **exactly the package price** — no platform fee is added at checkout. Growlanzo’s flat 5% commission is deducted from the freelancer’s payout when the work is paid. When you withdraw from your wallet later, the payment processor’s 2% transfer fee applies separately — that’s their cost, passed through at cost.',
+        options: [{ label: 'Clear — thanks!', done: 'Simple and transparent — that\u2019s the Growlanzo promise. 🎉' }, { label: 'Tell me about refunds', next: 2 }],
       },
       {
         text: 'Refunds are available for work **not yet delivered or approved** — just open the contract workspace and request a refund. Funded escrow is returned minus any platform fees already incurred. Once work is delivered and approved, payment is final unless there\u2019s verified fraud or a clear Terms violation.',
@@ -298,7 +298,7 @@ export const CLIENT_SUPPORT_TOPICS: SupportTopic[] = [
       },
       {
         text: 'Invites let you reach out to specific freelancers before they even see your project. Go to **Find Talent**, browse profiles, and tap **Invite** on any freelancer you like. They\u2019ll get a notification and can accept or decline. You can also post your project publicly and let proposals come to you.',
-        options: [{ label: 'Open Find Talent', done: 'Head to Find Talent to browse freelancers and send invites. The best match is just a click away! 🔍' }, { label: 'Got it — thanks!', done: 'Hiring is easy on Growlancer — invite or post, the talent comes to you. 🚀' }],
+        options: [{ label: 'Open Find Talent', done: 'Head to Find Talent to browse freelancers and send invites. The best match is just a click away! 🔍' }, { label: 'Got it — thanks!', done: 'Hiring is easy on Growlanzo — invite or post, the talent comes to you. 🚀' }],
       },
     ],
   },

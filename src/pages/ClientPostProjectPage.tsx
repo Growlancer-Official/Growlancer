@@ -350,7 +350,7 @@ export function ClientPostProjectPage() {
           </div>
 
           <div className="mt-4">
-            <InfoTip title="How you'll pay — always protected" text="You only pay once a contract starts, and the money goes into{' '} Growlancer Escrow — never directly to the freelancer. It's released only after you approve the completed work (a small platform fee applies at payment). This keeps your money safe on every project." />
+            <InfoTip title="How you'll pay — always protected" text="You only pay once a contract starts, and the money goes into{' '} Growlanzo Escrow — never directly to the freelancer. It's released only after you approve the completed work (a small platform fee applies at payment). This keeps your money safe on every project." />
           </div>
         </div>
 
@@ -361,7 +361,7 @@ export function ClientPostProjectPage() {
             Category & Skills
           </h2>
           <p className="text-sm text-slate-500 mb-2">
-            Pick the category for your project, then type the skills you need. Growlancer matches freelancers by category.
+            Pick the category for your project, then type the skills you need. Growlanzo matches freelancers by category.
           </p>
 
           {/* Industry — which business sector this project belongs to (optional) */}

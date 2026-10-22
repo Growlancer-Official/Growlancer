@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════════════════════
- * Button — single source of truth for all buttons in Growlancer.
+ * Button — single source of truth for all buttons in Growlanzo.
  *
  * Variants:
  *   • primary   — emerald gradient (main CTAs: Submit, Pay, Approve)

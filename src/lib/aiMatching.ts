@@ -63,7 +63,7 @@ export interface AIMatchWithProject extends AIMatch {
 }
 
 // Category-Based Matchmaking Engine — matches freelancers to projects by CATEGORY (the primary signal).
-// Growlancer works on 145 top-level categories: the project's category must overlap with the
+// Growlanzo works on 145 top-level categories: the project's category must overlap with the
 // freelancer's selected categories to qualify; skills are a secondary boost.
 async function runSkillBasedMatching(projectId: string): Promise<{ success: boolean; matches?: AIMatch[]; error?: string }> {
   try {

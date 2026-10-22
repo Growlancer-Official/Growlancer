@@ -203,7 +203,7 @@ export async function fetchGrowCoinLeaderboard(limit = 10): Promise<GrowCoinLead
   if (error) throw new Error(error.message);
   return ((data || []) as any[]).map((row) => ({
     rank: Number(row.rank) || 0,
-    name: String(row.display_name || 'Growlancer member'),
+    name: String(row.display_name || 'Growlanzo member'),
     avatar: (row.avatar as string | null) ?? null,
     referrals: Number(row.referrals) || 0,
     isYou: row.is_self === true,

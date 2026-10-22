@@ -70,8 +70,8 @@ describe('domain-switch fails closed', () => {
 
 describe('redirect pusher derives the domain instead of hard-coding it', () => {
   it('has no literal custom-domain redirect entries left', () => {
-    expect(pusher).not.toContain("'https://growlancer.com'");
-    expect(pusher).not.toContain("'https://www.growlancer.com'");
+    expect(pusher).not.toContain("'https://growlanzo.com'");
+    expect(pusher).not.toContain("'https://www.growlanzo.com'");
   });
 
   it('builds apex + www entries from APP_URL', () => {

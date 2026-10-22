@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════
-// Shared Brevo email sender for all Growlancer edge functions.
+// Shared Brevo email sender for all Growlanzo edge functions.
 //
 // Reads BREVO_API_KEY from edge function secrets (never exposed to the
 // frontend, never committed to git). When the key is missing the helper
@@ -46,14 +46,14 @@ export async function sendEmail(opts: SendEmailOptions): Promise<boolean> {
   // drops / spams the mail). Verified sender: growlancer.own@gmail.com.
   // If you want a different address (e.g. noreply@...), verify it in Brevo
   // Dashboard > Senders first, then set EMAIL_FROM to it.
-  const fromRaw = Deno.env.get('EMAIL_FROM') ?? 'Growlancer <growlancer.own@gmail.com>';
+  const fromRaw = Deno.env.get('EMAIL_FROM') ?? 'Growlanzo <growlancer.own@gmail.com>';
   const replyTo = opts.replyTo ?? Deno.env.get('EMAIL_REPLY_TO');
 
   // Parse "Name <email>" into Brevo's { name, email } shape.
   const fromMatch = fromRaw.match(/^(.*?)\s*<([^>]+)>$/);
   const sender = fromMatch
     ? { name: fromMatch[1].trim(), email: fromMatch[2].trim() }
-    : { name: 'Growlancer', email: fromRaw.trim() };
+    : { name: 'Growlanzo', email: fromRaw.trim() };
 
   try {
     const payload: Record<string, unknown> = {

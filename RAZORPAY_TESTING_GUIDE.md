@@ -1,6 +1,6 @@
 # 💳 Razorpay Testing Guide — Test Mode, Escrow Funding & Full Payment Flow
 
-> **Purpose:** Step-by-step runbook for testing Growlancer's Razorpay integration end-to-end in **test mode** — from setting up test keys to funding escrow and verifying the money path in the database. No real money is involved while in test mode.
+> **Purpose:** Step-by-step runbook for testing Growlanzo's Razorpay integration end-to-end in **test mode** — from setting up test keys to funding escrow and verifying the money path in the database. No real money is involved while in test mode.
 >
 > ## §0. A real webhook secret was committed here — rotate it (2026-10-07)
 >
@@ -68,13 +68,13 @@
 | Pro Starter | ₹2,999 | yearly | 14 days |
 | Pro Yearly | ₹4,999 | yearly | 14 days |
 
-> **Pay from wallet:** freelancers can pay for Pro with their Growlancer wallet balance (server-validated, atomic). The **PRO badge** (blue verified style) appears in the sidebar, dashboard, profile and public profile once active.
+> **Pay from wallet:** freelancers can pay for Pro with their Growlanzo wallet balance (server-validated, atomic). The **PRO badge** (blue verified style) appears in the sidebar, dashboard, profile and public profile once active.
 
 ---
 
 ## 1. System Overview — How Payments & Escrow Work
 
-Growlancer uses **Razorpay as the primary payment gateway** (INR). Escrow payments flow like this:
+Growlanzo uses **Razorpay as the primary payment gateway** (INR). Escrow payments flow like this:
 
 ```
 Client hires freelancer → Contract created (e.g. ₹5,000)
@@ -135,8 +135,8 @@ Freelancer withdraws → `withdrawal` edge function → RazorpayX payout (UPI/Ba
 ## 2. Prerequisites
 
 - [ ] A **Razorpay account** (free) — https://dashboard.razorpay.com
-- [ ] A **Supabase project** (Growlancer backend) with the `razorpay` edge function deployed
-- [ ] Two Growlancer accounts for testing: **1 client + 1 freelancer**
+- [ ] A **Supabase project** (Growlanzo backend) with the `razorpay` edge function deployed
+- [ ] Two Growlanzo accounts for testing: **1 client + 1 freelancer**
 - [ ] Supabase CLI installed (for secrets via CLI) — or use the Supabase Dashboard
 
 ---

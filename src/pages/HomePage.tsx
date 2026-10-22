@@ -156,7 +156,7 @@ function HeroSection({
                     playsInline
                     preload="auto"
                     className="w-full aspect-video object-cover"
-                    poster="/UpdatedLogo.webp"
+                    poster="/hero-poster.png"
                     onError={() => startTransition(() => setVideoFailed(true))}
                   >
                     <source src="/videos/hero-demo.mp4" type="video/mp4" />
@@ -168,7 +168,7 @@ function HeroSection({
                         <Layers className="w-6 h-6 text-emerald-400" strokeWidth={1.5} />
                       </div>
                       <div>
-                        <div className="text-lg font-bold font-display text-white">Growlancer</div>
+                        <div className="text-lg font-bold font-display text-white">Growlanzo</div>
                         <div className="text-emerald-400 text-xs font-sans font-medium">
                           Brief → ranked shortlist → escrow
                         </div>
@@ -682,7 +682,7 @@ function PricingSection() {
       audience: 'Clients',
       price: '₹0',
       unit: 'platform fee',
-      desc: 'You fund the agreed project amount. Growlancer adds nothing at checkout.',
+      desc: 'You fund the agreed project amount. Growlanzo adds nothing at checkout.',
       points: ['Escrow included', 'AI matching free for life', 'Unlimited projects'],
       highlight: false,
     },

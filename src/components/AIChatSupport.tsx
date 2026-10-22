@@ -55,7 +55,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
   const [streamingContent, setStreamingContent] = useState('');
   // Real-time model name — defaults to the configured model, updates live from
   // the AI stream (the edge function relays the actual model on first chunk).
-  const [modelName, setModelName] = useState(() => (import.meta.env.VITE_AI_MODEL as string | undefined) || 'Growlancer AI');
+  const [modelName, setModelName] = useState(() => (import.meta.env.VITE_AI_MODEL as string | undefined) || 'Growlanzo AI');
   const toast = useToast();
   const [verifyCta, _setVerifyCta] = useState(false);
   const [resendingVerification, setResendingVerification] = useState(false);
@@ -109,7 +109,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
       {
         id: `greeting-${Date.now()}`,
         role: 'assistant',
-        content: `Hi ${name}! 👋 I'm your Growlancer ${assistantLabel}. How can I help you today?`,
+        content: `Hi ${name}! 👋 I'm your Growlanzo ${assistantLabel}. How can I help you today?`,
         timestamp: new Date(),
       },
     ]);
@@ -401,7 +401,7 @@ export function AIChatSupport({ context = 'freelancer', title = 'AI Assistant', 
         {
           id: (Date.now() + 1).toString(),
           role: 'assistant',
-          content: `Thanks for reaching out! 💚 To chat with our 24/7 AI support and get help with your account, please create a **free Growlancer account** first (it takes under a minute) — or log in if you already have one. Your question matters to us, and we'll be right here waiting.`,
+          content: `Thanks for reaching out! 💚 To chat with our 24/7 AI support and get help with your account, please create a **free Growlanzo account** first (it takes under a minute) — or log in if you already have one. Your question matters to us, and we'll be right here waiting.`,
           timestamp: new Date(),
         },
       ]);

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowLeft, Award, BookOpen, Briefcase, Calendar, CheckCircle, CheckCircle2, ChevronDown, ChevronUp, Clock, Code, Database, FileText, Globe, GraduationCap, HelpCircle, Lightbulb, Link2, Loader2, Lock, MessageSquare, Palette, Send, Sparkles, Target, Upload, User, Users, X,  } from 'lucide-react';
 import { internshipService, INTERNSHIP_ROLES, type InternshipRole } from '../lib/internshipService';
 import { useToast } from '../components/Toast';
+import { BrandLogo } from '../components/BrandLogo';
 
 // ─── Icon resolver ───────────────────────────────────────────────────────────
 function RoleIcon({ icon, className }: { icon: string; className?: string }) {
@@ -278,7 +279,7 @@ function ApplicationForm({
   const [resumeUrl, setResumeUrl] = useState('');
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [coverLetter, setCoverLetter] = useState('');
-  const [whyGrowlancer, setWhyGrowlancer] = useState('');
+  const [whyGrowlanzo, setWhyGrowlanzo] = useState('');
   const [weeklyAvailability, setWeeklyAvailability] = useState(20);
   const [availableFrom, setAvailableFrom] = useState('');
   const [availableTo, setAvailableTo] = useState('');
@@ -323,7 +324,7 @@ function ApplicationForm({
       resume_file_path: resumeFilePath,
       resume_file_name: resumeFileName,
       cover_letter: coverLetter,
-      why_growlancer: whyGrowlancer || undefined,
+      why_growlancer: whyGrowlanzo || undefined,
       weekly_availability: weeklyAvailability,
       available_from: availableFrom || undefined,
       available_to: availableTo || undefined,
@@ -649,11 +650,11 @@ function ApplicationForm({
                   Motivation
                 </h4>
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Why Growlancer? (optional)</label>
+                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Why Growlanzo? (optional)</label>
                   <textarea
                     rows={3}
-                    value={whyGrowlancer}
-                    onChange={(e) => setWhyGrowlancer(e.target.value)}
+                    value={whyGrowlanzo}
+                    onChange={(e) => setWhyGrowlanzo(e.target.value)}
                     placeholder="What excites you about working at an early-stage startup? What do you hope to learn?"
                     className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 text-sm transition-all resize-none"
                   />
@@ -723,7 +724,7 @@ function ApplicationForm({
               </button>
 
               <p className="text-xs text-slate-400 text-center">
-                By submitting, you agree that Growlancer may store and process your application data.
+                By submitting, you agree that Growlanzo may store and process your application data.
               </p>
             </form>
           )}
@@ -737,7 +738,7 @@ function ApplicationForm({
 const FAQS = [
   {
     q: 'Is this a paid internship?',
-    a: 'Growlancer is a pre-launch startup, and this is an educational internship program. The internship is unpaid but offers significant learning value, portfolio-building opportunities, mentorship, and a certificate of completion. We cover all software/tool costs.',
+    a: 'Growlanzo is a pre-launch startup, and this is an educational internship program. The internship is unpaid but offers significant learning value, portfolio-building opportunities, mentorship, and a certificate of completion. We cover all software/tool costs.',
   },
   {
     q: 'What is the time commitment?',
@@ -757,15 +758,15 @@ const FAQS = [
   },
   {
     q: 'Will I own the code/designs I create?',
-    a: 'All work created during the internship is owned by Growlancer. However, you are absolutely allowed to showcase the work in your portfolio (with our permission) and list the experience on your resume.',
+    a: 'All work created during the internship is owned by Growlanzo. However, you are absolutely allowed to showcase the work in your portfolio (with our permission) and list the experience on your resume.',
   },
   {
     q: 'Can I get a certificate or letter of recommendation?',
     a: 'Yes. Interns who successfully complete the program receive a certificate (Bronze/Silver/Gold tier based on performance). Exceptional contributors also receive a detailed letter of recommendation from the founder.',
   },
   {
-    q: 'Does this guarantee a job at Growlancer?',
-    a: 'No. This is an educational internship and does not guarantee future employment. However, exceptional interns who demonstrate strong skills and culture fit may be considered for future paid roles as Growlancer grows.',
+    q: 'Does this guarantee a job at Growlanzo?',
+    a: 'No. This is an educational internship and does not guarantee future employment. However, exceptional interns who demonstrate strong skills and culture fit may be considered for future paid roles as Growlanzo grows.',
   },
 ];
 
@@ -826,8 +827,7 @@ export function InternshipsPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-bold text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"
@@ -848,7 +848,7 @@ export function InternshipsPage() {
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-3 px-3.5 py-1.5 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
-            Growlancer Internship Program
+            Growlanzo Internship Program
           </span>
           <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-none">
             Build the Future of{' '}
@@ -874,7 +874,7 @@ export function InternshipsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div className="space-y-4">
               <p className="text-sm text-slate-600 leading-relaxed">
-                Growlancer is an AI-powered freelancing marketplace currently in pre-launch. We're building a platform
+                Growlanzo is an AI-powered freelancing marketplace currently in pre-launch. We're building a platform
                 that uses intelligent matching, escrow payments, and collaborative workspaces to make freelancing
                 faster and less noisy.
               </p>
@@ -928,7 +928,7 @@ export function InternshipsPage() {
       {/* Program Benefits */}
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
         <div className="text-center mb-10">
-          <h2 className="font-display text-2xl font-bold text-slate-900">Why Join Growlancer's Internship?</h2>
+          <h2 className="font-display text-2xl font-bold text-slate-900">Why Join Growlanzo's Internship?</h2>
           <p className="text-slate-500 text-sm mt-2">More than just an internship — it's a launchpad for your career.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">

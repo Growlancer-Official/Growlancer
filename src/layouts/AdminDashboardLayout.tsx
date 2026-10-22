@@ -27,6 +27,7 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { adminLogout, getAdminSession } from '../components/AdminAuthGuard';
 import { isDeferredRoute, isFeatureEnabled } from '../lib/featureFlags';
+import { BrandLogo } from '../components/BrandLogo';
 
 interface SidebarItem {
   id: string;
@@ -210,13 +211,8 @@ export function AdminDashboardLayout() {
       >
         {/* Logo */}
         <Link to="/" className="flex items-center gap-3 mb-10 px-2">
-          <img 
-            src="/UpdatedLogo.webp" 
-            alt="Growlancer" 
-            className="h-10 w-10 rounded-xl shadow-lg"
-          />
+          <BrandLogo variant="wordmark" theme="dark" className="h-11 w-auto" />
           <div>
-            <h1 className="font-display text-lg font-bold leading-none text-white">Growlancer</h1>
             <span className="text-[10px] uppercase tracking-widest text-emerald-100 font-bold">Admin Panel</span>
           </div>
         </Link>

@@ -1,4 +1,4 @@
-# Growlancer — Pre-Launch E2E Test Report
+# Growlanzo — Pre-Launch E2E Test Report
 
 **Date:** 2026-09-15 · **Branch:** `freebuff/ab-bro-listen-end-to-end-comphrensive-testing-from-aff63013-7e2c-44e0-8b44-a7785db81cc7`
 **Test environments:** Vite dev server (5173) + production build served by `server.js` on 4173 (mirrors Vercel's static-first fallback)

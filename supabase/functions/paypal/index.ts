@@ -207,7 +207,7 @@ async function cancelPayPalSubscription(subscriptionId: string, accessToken: str
         Authorization: `Bearer ${accessToken}`,
       },
       body: JSON.stringify({
-        reason: 'Cancelled by Growlancer admin',
+        reason: 'Cancelled by Growlanzo admin',
       }),
     }
   );
@@ -395,11 +395,11 @@ serve(async req => {
               },
               description: description
                 ? validateString(description, 'description', 200)
-                : 'Growlancer Payment',
+                : 'Growlanzo Payment',
               custom_id: contract_id || subscription_id || '',
             }],
             application_context: {
-              brand_name: 'Growlancer',
+              brand_name: 'Growlanzo',
               landing_page: 'LOGIN',
               user_action: 'PAY_NOW',
               return_url: `${SITE_URL}/payment/success`,

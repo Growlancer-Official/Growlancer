@@ -147,7 +147,7 @@ async function aiSemanticBoost(
     bio: c.bio ? c.bio.slice(0, 200) : '',
   }));
 
-  const systemPrompt = `You are Growlancer's AI matchmaking engine. Given a project and a list of freelancer candidates, score how well each candidate fits the project from 0-100 and give a short one-line reason.
+  const systemPrompt = `You are Growlanzo's AI matchmaking engine. Given a project and a list of freelancer candidates, score how well each candidate fits the project from 0-100 and give a short one-line reason.
 
 Respond with STRICT JSON ONLY — an object of the form:
 {"<candidate_id>": {"score": <0-100 integer>, "reason": "<one short line>"}}

@@ -1,6 +1,6 @@
 # Wave 6 — P0 Remediation Worklog
 
-**Program:** Growlancer forensic audit-and-fix
+**Program:** Growlanzo forensic audit-and-fix
 **Scope:** Master-fix-plan P0 items (`docs/AUDIT_MASTER_FIX_PLAN.md`), master IDs **MR-01 … MR-09**
 **Repo root:** `c:/Users/mdmir/Documents/GROWLANCER`
 **Date:** 2026-09-11

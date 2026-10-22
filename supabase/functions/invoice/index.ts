@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Invoice ${esc(invoice.invoice_number)} — Growlancer</title>
+<title>Invoice ${esc(invoice.invoice_number)} — Growlanzo</title>
 <style>
   * { box-sizing: border-box; margin: 0; }
   @page { size: A4; margin: 0; }
@@ -171,14 +171,14 @@ Deno.serve(async (req) => {
 
       <div class="totals">
         <div class="row"><span>Subtotal</span><span>${fmt(invoice.subtotal, currency)}</span></div>
-        <div class="row fee"><span>Growlancer Platform Fee (5%)</span><span>- ${fmt(invoice.platform_fee, currency)}</span></div>
+        <div class="row fee"><span>Growlanzo Platform Fee (5%)</span><span>- ${fmt(invoice.platform_fee, currency)}</span></div>
         <div class="row"><span>Freelancer Net</span><span>${fmt(invoice.freelancer_amount, currency)}</span></div>
         <div class="row total"><span>Total Billed</span><span>${fmt(invoice.total, currency)}</span></div>
       </div>
     </div>
     <div class="foot">
       <div class="row1">
-        <span><strong>Growlancer</strong> — AI-Powered Freelancing Marketplace</span>
+        <span><strong>Growlanzo</strong> — AI-Powered Freelancing Marketplace</span>
         <span>Invoice ${esc(invoice.invoice_number)} · ${esc(new Date(invoice.issued_at).getFullYear())}</span>
       </div>
       <div class="row2">

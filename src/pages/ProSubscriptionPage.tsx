@@ -235,7 +235,7 @@ export function ProSubscriptionPage() {
         <div className="min-w-0">
           <h1 className="font-display text-xl font-bold text-slate-900 flex items-center gap-2">
             Premium
-            <InfoTip title="Growlancer Premium" text="Premium removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Premium badge. It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone." />
+            <InfoTip title="Growlanzo Premium" text="Premium removes the monthly cap on AI assistant messages, raises AI writing to 100 generations per day and adds a Premium badge. It never affects your packages, visibility, ranking or matching — those are always merit-based and free for everyone." />
           </h1>
           <p className="text-slate-500 mt-0.5 text-sm">AI-powered productivity tools, on top of the free marketplace</p>
         </div>
@@ -442,7 +442,7 @@ export function ProSubscriptionPage() {
       <section>
         <h2 className="font-display text-lg font-bold text-slate-900 mb-1">Common questions</h2>
         <p className="text-sm text-slate-500 mb-4">
-          Everything you need to know about Growlancer Premium — honest answers, no fine print.
+          Everything you need to know about Growlanzo Premium — honest answers, no fine print.
         </p>
         <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100 overflow-hidden">
           {FAQ_ITEMS.map((item, idx) => {

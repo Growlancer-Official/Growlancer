@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-# Growlancer — Complete Deployment Setup & Verification
+# Growlanzo — Complete Deployment Setup & Verification
 # ============================================================================
 # This script verifies and sets up the full deployment pipeline:
 #   1. Git remote + branch protection
@@ -18,7 +18,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 echo -e "${CYAN}══════════════════════════════════════════════════════════════${NC}"
-echo -e "${CYAN}   Growlancer Deployment Setup & Verification${NC}"
+echo -e "${CYAN}   Growlanzo Deployment Setup & Verification${NC}"
 echo -e "${CYAN}══════════════════════════════════════════════════════════════${NC}"
 echo ""
 

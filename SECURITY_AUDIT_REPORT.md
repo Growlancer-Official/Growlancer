@@ -1,7 +1,7 @@
-# Growlancer Security Audit Report
+# Growlanzo Security Audit Report
 
 **Audit date:** 2026-08-02
-**Scope:** All 5 checks from `Growlancer-Security-Audit-Prompts.pdf` (Secret Leak Prevention → Attacker's Perspective Review)
+**Scope:** All 5 checks from `Growlanzo-Security-Audit-Prompts.pdf` (Secret Leak Prevention → Attacker's Perspective Review)
 **Target:** React 19 + Vike (SSR) + Express + Supabase · Razorpay + PayPal · escrow/wallets · Supabase Auth + custom MFA · Gemini AI · admin Edge Functions
 
 **Status: 5/5 checks completed. Migration applied to production (`zttwsjehcgaicziqyxpq`), 14 Edge Functions redeployed.**

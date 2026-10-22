@@ -1,4 +1,4 @@
-# Growlancer — Architecture Map (Forensic Audit Reconnaissance)
+# Growlanzo — Architecture Map (Forensic Audit Reconnaissance)
 
 > Scope: READ-ONLY reconnaissance. This document maps the system as observed in the repository at
 > `c:/Users/mdmir/Documents/GROWLANCER`. No source code was modified. Where a fact could not be

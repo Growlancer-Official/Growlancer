@@ -1,10 +1,10 @@
-# Growlancer — Standing Security Checklist (5 checks)
+# Growlanzo — Standing Security Checklist (5 checks)
 
 **MANDATORY.** Every implemented / edited / updated / deleted change touching the codebase
 (`src/`, `supabase/**`, `server.js`, `Dockerfile/nginx`) MUST pass the relevant checks below
 **before** it is committed or pushed. Failure to run these = the change is not done.
 
-Source: `Growlancer-Security-Audit-Prompts.pdf` (5 Growlancer-specific prompts) + the prior
+Source: `Growlanzo-Security-Audit-Prompts.pdf` (5 Growlanzo-specific prompts) + the prior
 run recorded in `SECURITY_AUDIT_REPORT.md`. If a full audit was already done, still re-check the
 surfaces YOUR diff touches.
 

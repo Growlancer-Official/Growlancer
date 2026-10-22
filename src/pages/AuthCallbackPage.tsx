@@ -10,6 +10,7 @@ import {
 } from '../lib/oauthDiagnostics';
 import { CheckCircle2, Loader2, XCircle, MapPin, ArrowRight } from 'lucide-react';
 import { CountrySelect } from '../components/CountrySelect';
+import { BrandLogo } from '../components/BrandLogo';
 
 const isDev = import.meta.env.DEV;
 function devLog(...args: unknown[]) {
@@ -110,11 +111,11 @@ export function AuthCallbackPage() {
           setStatus('error');
           const rawDescription = errorDescription?.replace(/\+/g, ' ') || '';
           // 🆕 Friendly duplicate-email message: the GitHub/LinkedIn account's
-          // email is already used on Growlancer — log in with the original
+          // email is already used on Growlanzo — log in with the original
           // method instead of creating a second account.
           if (/already registered|already exists|already.*in use|duplicate/i.test(rawDescription)) {
             setErrorMessage(
-              'This email is already used professionally on Growlancer. Continue with the provider the account was created with — or contact support if you previously signed up with email.'
+              'This email is already used professionally on Growlanzo. Continue with the provider the account was created with — or contact support if you previously signed up with email.'
             );
           } else {
             // Provider / GoTrue codes → the next action the user should take.
@@ -448,7 +449,7 @@ export function AuthCallbackPage() {
           // An old reset link must not dead-end on a removed route.
           setStatus('error');
           setErrorMessage(
-            'Password reset is no longer available on Growlancer. Please sign in with GitHub or LinkedIn instead.'
+            'Password reset is no longer available on Growlanzo. Please sign in with GitHub or LinkedIn instead.'
           );
           return;
         }          if (detectedAction === 'email_change') {
@@ -732,7 +733,7 @@ export function AuthCallbackPage() {
     recovery: 'Password reset link verified!',
     magiclink: 'Signing you in...',
     email_change: 'Email updated successfully!',
-    invite: 'Welcome to Growlancer!',
+    invite: 'Welcome to Growlanzo!',
     reauthentication: 'Identity verified!',
     unknown: 'Processing...',
   };
@@ -753,11 +754,7 @@ export function AuthCallbackPage() {
         <div className="bg-white rounded-3xl shadow-lg border border-slate-200 p-8 text-center">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <img
-              src="/UpdatedLogo.webp"
-              alt="Growlancer"
-              className="h-12 w-12 rounded-xl"
-            />
+            <BrandLogo variant="full" className="h-14 w-auto" />
           </div>
 
           {status === 'processing' && (
@@ -804,7 +801,7 @@ export function AuthCallbackPage() {
                 Where are you located?
               </h2>
               <p className="text-sm text-slate-500 mb-6">
-                Growlancer is currently available in <strong>India</strong>. Select your country to continue.
+                Growlanzo is currently available in <strong>India</strong>. Select your country to continue.
               </p>
 
               {/* Country Options */}
@@ -844,7 +841,7 @@ export function AuthCallbackPage() {
                     onPick={(country) => void handleCountrySelect(country.name)}
                   />
                   <p className="px-1 pt-2 text-[11px] text-slate-400">
-                    Not India yet? Pick your country and we'll email you the moment Growlancer
+                    Not India yet? Pick your country and we'll email you the moment Growlanzo
                     launches there.
                   </p>
                 </div>

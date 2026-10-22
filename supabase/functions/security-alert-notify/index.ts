@@ -66,7 +66,7 @@ function buildAlertHtml(count: number, alerts: Array<{ severity: string; categor
       </table>
     </div>
     <div style="padding:20px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;text-align:center;">
-      <p style="color:#94a3b8;font-size:11px;margin:0;line-height:1.5;">Growlancer — automated security monitoring. Resolve alerts in the admin dashboard or run <code>node scripts/security-audit.mjs</code>.</p>
+      <p style="color:#94a3b8;font-size:11px;margin:0;line-height:1.5;">Growlanzo — automated security monitoring. Resolve alerts in the admin dashboard or run <code>node scripts/security-audit.mjs</code>.</p>
     </div>
   </div>
 </body>
@@ -126,7 +126,7 @@ Deno.serve(async (req) => {
 
     const emailed = await sendEmail({
       to: ADMIN_EMAIL,
-      subject: `🚨 Growlancer Security: ${critical} critical / ${high} high finding(s)`,
+      subject: `🚨 Growlanzo Security: ${critical} critical / ${high} high finding(s)`,
       html: buildAlertHtml(list.length, list),
     });
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Eye, EyeOff, Shield, Loader2, AlertCircle } from 'lucide-react';
 import { supabase, clearSupabaseAuthStorage } from '../../lib/supabase';
+import { BrandLogo } from '../../components/BrandLogo';
 
 /**
  * AdminLoginPage — Real-time login via Supabase Auth.
@@ -121,13 +122,8 @@ export function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <img 
-              src="/UpdatedLogo.webp" 
-              alt="Growlancer" 
-              className="h-12 w-12 rounded-xl shadow-lg"
-            />
+            <BrandLogo variant="full" theme="dark" className="h-12 w-auto" />
             <div className="text-left">
-              <h1 className="font-display text-xl font-bold text-white">Growlancer</h1>
               <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">Admin Panel</span>
             </div>
           </div>
@@ -167,7 +163,7 @@ export function AdminLoginPage() {
                 aria-label="Admin email"
                 value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="admin@growlancer.com"
+              placeholder="admin@growlanzo.com"
               autoFocus
               className="w-full px-4 py-3 bg-slate-800/50 border border-white/5 rounded-xl text-sm text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
             />

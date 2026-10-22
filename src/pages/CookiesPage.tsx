@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Cookie, Settings, Shield } from 'lucide-react';
 import { formatLegalLastUpdatedLine } from '@/lib/legalLastUpdated';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function CookiesPage() {
   const cookieTypes = [
@@ -30,8 +31,7 @@ export function CookiesPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link to="/" className="inline-block py-1 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors">Back to Home</Link>
         </div>
@@ -44,7 +44,7 @@ export function CookiesPage() {
           
           <div className="prose prose-slate max-w-none">
             <p className="text-slate-600 mb-8">
-              This Cookie Policy explains how Growlancer uses cookies and similar technologies 
+              This Cookie Policy explains how Growlanzo uses cookies and similar technologies 
               to recognize you when you visit our platform.
             </p>
 
@@ -100,7 +100,7 @@ export function CookiesPage() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Contact</h2>
             <p className="text-slate-600">
               Questions about cookies or this policy? Email{' '}
-              <a href="mailto:support@growlancer.com" className="text-emerald-600 hover:underline">support@growlancer.com</a>{' '}
+              <a href="mailto:support@growlanzo.com" className="text-emerald-600 hover:underline">support@growlanzo.com</a>{' '}
               — we acknowledge requests within 24 hours and aim to resolve them within 15 days.
             </p>
           </div>

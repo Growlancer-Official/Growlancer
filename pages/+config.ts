@@ -5,10 +5,10 @@ export default {
   extends: [vikeReact],
 
   // ─── Global <head> defaults ──────────────────────────────
-  title: 'Growlancer — AI-Powered Freelancing Marketplace',
+  title: 'Growlanzo — AI-Powered Freelancing Marketplace',
   description:
-    'Growlancer is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly.',
-  image: 'https://growlancer.com/og-image.png',
+    'Growlanzo is an AI-powered freelancing marketplace connecting talented freelancers with innovative clients. Find work, hire talent, and collaborate seamlessly.',
+  image: 'https://growlanzo.com/og-image.png',
   // ⚠️ vike-react only understands 'responsive' | number here — any other
   // string makes getViewportTag() return an EMPTY string, which silently
   // dropped the <meta name="viewport"> tag from every rendered page. Without
@@ -16,7 +16,7 @@ export default {
   // whole site out (the entire mobile UI rendered as a shrunken desktop).
   // 'responsive' emits: width=device-width,initial-scale=1
   viewport: 'responsive',
-  favicon: '/UpdatedLogo.webp',
+  favicon: '/growlanzo-icon-192.png',
 
   // ─── Render mode ─────────────────────────────────────────
   // SSR enabled globally. Protected/dashboard routes handle auth

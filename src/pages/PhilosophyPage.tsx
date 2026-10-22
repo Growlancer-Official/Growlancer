@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Compass, Cpu, Heart, Scale, TrendingUp,  } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function PhilosophyPage() {
   const principles = [
@@ -20,7 +21,7 @@ export function PhilosophyPage() {
     {
       icon: Heart,
       title: 'Real-Time Co-Working Synced Canvas',
-      description: 'The era of sending emails, MessageSquare messages, and Columns boards back and forth is over. Growlancer workspaces feature live canvas boards, type-locked shared notes, WebRTC peer sessions, and transaction ledgers directly side by side.',
+      description: 'The era of sending emails, MessageSquare messages, and Columns boards back and forth is over. Growlanzo workspaces feature live canvas boards, type-locked shared notes, WebRTC peer sessions, and transaction ledgers directly side by side.',
       color: 'from-orange-500 to-orange-600',
       badge: 'Collaboration'
     },
@@ -38,8 +39,7 @@ export function PhilosophyPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"
@@ -65,7 +65,7 @@ export function PhilosophyPage() {
             Rewriting the rules of <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">remote partnership</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
-            Traditional freelancing is noisy, fragmented, and full of friction. Growlancer is built from first principles to bridge the gap between clients and creators.
+            Traditional freelancing is noisy, fragmented, and full of friction. Growlanzo is built from first principles to bridge the gap between clients and creators.
           </p>
         </div>
       </section>

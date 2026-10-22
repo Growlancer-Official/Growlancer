@@ -1,5 +1,5 @@
 // Admin Commission Withdrawal Edge Function
-// Lets Growlancer admins withdraw the platform's 5% commission to their own
+// Lets Growlanzo admins withdraw the platform's 5% commission to their own
 // bank account in real time via RazorpayX Payouts.
 //
 //   POST  → book a withdrawal (validated server-side against the commission
@@ -79,7 +79,7 @@ async function ensureContact(supabaseClient: any, userId: string, name: string, 
   } catch { /* ignore lookup failure */ }
 
   const contactPayload: Record<string, unknown> = {
-    name: name || 'Growlancer Admin',
+    name: name || 'Growlanzo Admin',
     type: 'customer',
     reference_id: `admin_${userId.slice(0, 20)}`,
   };
@@ -94,7 +94,7 @@ async function createFundAccount(contact: any, method: string, details: any): Pr
       contact_id: contact.id,
       account_type: 'bank_account',
       bank_account: {
-        name: details.account_holder_name || contact.name || 'Growlancer Admin',
+        name: details.account_holder_name || contact.name || 'Growlanzo Admin',
         ifsc: details.ifsc_code || '',
         account_number: details.account_number || '',
       },
@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
       let payoutStatus = 'processing'
 
       try {
-        const contact = await ensureContact(supabaseClient, user.id, profile?.name || user.email?.split('@')[0] || 'Growlancer Admin', user.email || undefined)
+        const contact = await ensureContact(supabaseClient, user.id, profile?.name || user.email?.split('@')[0] || 'Growlanzo Admin', user.email || undefined)
         const fundAccountId = await createFundAccount(contact, wdMethod, { account_holder_name, ifsc_code, account_number, upi_id })
 
         // Persist the fund account id on the withdrawal row
@@ -209,7 +209,7 @@ Deno.serve(async (req) => {
             purpose: 'payout',
             queue_if_low_balance: true,
             reference_id: `adwd_${withdrawal.id.slice(0, 12)}`,
-            narration: `Growlancer Commission Withdrawal - ${user.email || user.id.slice(0, 8)}`,
+            narration: `Growlanzo Commission Withdrawal - ${user.email || user.id.slice(0, 8)}`,
           }),
         })
 

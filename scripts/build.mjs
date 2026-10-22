@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Build script for Growlancer.
+ * Build script for Growlanzo.
  *
  * 1. Runs Vite build (with Vike prerender + copy plugin)
  * 2. Deterministically copies dist/client/ → dist/
@@ -308,14 +308,14 @@ function generateFallbackIndexHtml() {
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Growlancer — AI-Powered Freelancing Marketplace</title>
-    <meta name="description" content="Growlancer is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
-    <link rel="icon" href="/UpdatedLogo.webp?v=3" type="image/webp">
-    <link rel="icon" href="/UpdatedLogo.png?v=2" type="image/png">
+    <title>Growlanzo — AI-Powered Freelancing Marketplace</title>
+    <meta name="description" content="Growlanzo is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
+    <link rel="icon" href="/growlanzo-icon-192.png?v=1" type="image/png">
+    <link rel="icon" href="/favicon-growlanzo.png?v=1" type="image/png">
     <meta name="theme-color" content="#10b981">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Growlancer — AI-Powered Freelancing Marketplace">
-    <meta property="og:description" content="Hire top freelancers or get hired for high-quality work with Growlancer.">
+    <meta property="og:title" content="Growlanzo — AI-Powered Freelancing Marketplace">
+    <meta property="og:description" content="Hire top freelancers or get hired for high-quality work with Growlanzo.">
     <meta name="twitter:card" content="summary_large_image">
     <!-- Design fonts (Cabinet Grotesk + Satoshi) — must stay identical to
          pages/+Head.tsx and index.html, or fallback-shell routes (served when the

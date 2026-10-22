@@ -3,9 +3,10 @@ import { Mail, Clock, Globe, ArrowLeft, Loader2, CheckCircle2 } from 'lucide-rea
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { validateEmail } from '../utils/validation';
+import { BrandLogo } from '../components/BrandLogo';
 
 /**
- * Waitlist page for visitors from countries where Growlancer is not yet live.
+ * Waitlist page for visitors from countries where Growlanzo is not yet live.
  *
  * Design intent (v2, replaces the old static placeholder): the previous version
  * had NO input form at all and hardcoded "You're on the waitlist!" — telling
@@ -84,11 +85,7 @@ export function WaitlistPage() {
 
           {/* Logo */}
           <div className="flex justify-center mb-3">
-            <img
-              src="/UpdatedLogo.webp"
-              alt="Growlancer"
-              className="h-12 w-12 rounded-xl"
-            />
+            <BrandLogo variant="full" className="h-14 w-auto" />
           </div>
 
           <h1 className="font-display text-2xl md:text-3xl font-bold text-slate-900 mb-3">
@@ -96,7 +93,7 @@ export function WaitlistPage() {
           </h1>
 
           <p className="text-slate-500 mb-8 leading-relaxed">
-            Growlancer is currently available in <strong>India</strong> only.
+            Growlanzo is currently available in <strong>India</strong> only.
             We are working hard to expand to other countries and would love
             to keep you updated on our launch progress.
           </p>
@@ -127,7 +124,7 @@ export function WaitlistPage() {
                   You're on the waitlist!
                 </strong>{' '}
                 We'll notify you at <strong>{email.trim()}</strong> as soon as
-                Growlancer becomes available in your country. No action needed
+                Growlanzo becomes available in your country. No action needed
                 from you right now.
               </p>
             </div>
@@ -186,7 +183,7 @@ export function WaitlistPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-slate-400 mt-6">
-          &copy; {new Date().getFullYear()} Growlancer. All rights reserved.
+          &copy; {new Date().getFullYear()} Growlanzo. All rights reserved.
         </p>
       </div>
     </div>

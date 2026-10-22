@@ -1,9 +1,9 @@
-# Growlancer — Project Blueprint
+# Growlanzo — Project Blueprint
 
 **Last verified: 2026-10-20** · repo `main` @ `2f31d6d` + working-tree fixes
 **Audience:** the senior development team (human or agent) who will change this
 product next.
-**Purpose:** one end-to-end picture of how Growlancer is built, where every kind
+**Purpose:** one end-to-end picture of how Growlanzo is built, where every kind
 of change belongs, which invariants must never break, and what is actually true
 about the running product today.
 
@@ -26,7 +26,7 @@ about the running product today.
 
 ## 1. What the product is
 
-Growlancer is an India-first, AI-assisted freelancing marketplace: clients post
+Growlanzo is an India-first, AI-assisted freelancing marketplace: clients post
 projects, AI ranks freelancers, the two sides agree a proposal, work runs in a
 contract workspace, and money is held in escrow until milestones are released.
 

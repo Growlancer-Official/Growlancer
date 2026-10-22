@@ -438,7 +438,7 @@ export function ProjectDetailsPage() {
 
             {/* How it works note */}
             <TipNote tone="protection" compact>
-              <strong>Safe by design:</strong> no money moves outside Growlancer. You hire → contract + escrow → freelancer
+              <strong>Safe by design:</strong> no money moves outside Growlanzo. You hire → contract + escrow → freelancer
               delivers → you approve → funds release. Disputes and refunds go through our fair resolution process.
             </TipNote>
 

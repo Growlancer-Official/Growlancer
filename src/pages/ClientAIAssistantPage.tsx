@@ -36,7 +36,7 @@ export function ClientAIAssistantPage() {
           AI Support
         </button>
         {tab === 'support' && (
-          <InfoTip title="Support vs. AI Assistant" text="This is Growlancer Support — for payments, refunds, escrow, verification, disputes and hiring issues. Pick a topic below and follow the guided flow; for anything else use the AI Assistant tab. The two chats stay completely separate." />
+          <InfoTip title="Support vs. AI Assistant" text="This is Growlanzo Support — for payments, refunds, escrow, verification, disputes and hiring issues. Pick a topic below and follow the guided flow; for anything else use the AI Assistant tab. The two chats stay completely separate." />
         )}
       </div>
 

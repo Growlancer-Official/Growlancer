@@ -1,4 +1,4 @@
-// Whole-surface runtime audit against a deployed Growlancer backend.
+// Whole-surface runtime audit against a deployed Growlanzo backend.
 //
 // Why this exists: `pentest-privileges.mjs` proves a *curated* set of paths
 // (admin flag, suspension, reputation, wallet, escrow lifecycle). It is deep

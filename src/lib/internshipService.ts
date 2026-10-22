@@ -70,7 +70,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
     department: 'Engineering',
     commitment: '15–30 hrs/week',
     duration: '8–12 weeks',
-    summary: 'Help build and polish the Growlancer React/TypeScript frontend — a modern, AI-powered freelancing marketplace. You\'ll work on real UI components used by freelancers and clients, from dashboard pages to interactive workspace features.',
+    summary: 'Help build and polish the Growlanzo React/TypeScript frontend — a modern, AI-powered freelancing marketplace. You\'ll work on real UI components used by freelancers and clients, from dashboard pages to interactive workspace features.',
     responsibilities: [
       'Build and maintain React/TypeScript components using TailwindCSS',
       'Implement responsive, accessible UI for dashboard pages',
@@ -123,7 +123,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
     department: 'Engineering',
     commitment: '15–30 hrs/week',
     duration: '8–12 weeks',
-    summary: 'Work on Growlancer\'s Supabase-backed backend infrastructure — edge functions, database queries, RLS policies, and API integrations. You\'ll be responsible for backend services that power the entire platform.',
+    summary: 'Work on Growlanzo\'s Supabase-backed backend infrastructure — edge functions, database queries, RLS policies, and API integrations. You\'ll be responsible for backend services that power the entire platform.',
     responsibilities: [
       'Develop and deploy Supabase Edge Functions (Deno/TypeScript)',
       'Write and review PostgreSQL queries, RLS policies, and database functions',
@@ -180,7 +180,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
     department: 'Quality Assurance',
     commitment: '15–30 hrs/week',
     duration: '8–12 weeks',
-    summary: 'Establish Growlancer\'s testing infrastructure from the ground up. You\'ll write automated tests, perform manual QA, create test plans, and help ensure the platform is launch-ready.',
+    summary: 'Establish Growlanzo\'s testing infrastructure from the ground up. You\'ll write automated tests, perform manual QA, create test plans, and help ensure the platform is launch-ready.',
     responsibilities: [
       'Write unit tests for frontend components and backend services',
       'Create integration tests for critical user flows',
@@ -237,7 +237,7 @@ export const INTERNSHIP_ROLES: InternshipRole[] = [
     department: 'Design',
     commitment: '15–30 hrs/week',
     duration: '8–12 weeks',
-    summary: 'Shape the visual identity and user experience of Growlancer. You\'ll work on design consistency, user flows, component design, and interaction patterns across the entire platform.',
+    summary: 'Shape the visual identity and user experience of Growlanzo. You\'ll work on design consistency, user flows, component design, and interaction patterns across the entire platform.',
     responsibilities: [
       'Audit and document current UI inconsistencies across all 50+ pages',
       'Create and maintain a design system (colors, typography, spacing, components)',

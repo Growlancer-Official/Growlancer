@@ -2,7 +2,7 @@
  * Credential Verification Service
  * 
  * Manages QR tokens, version history, and audit logging for
- * Growlancer certificates and Letters of Recommendation.
+ * Growlanzo certificates and Letters of Recommendation.
  * 
  * Design goals:
  * - QR tokens are signed/secure, never expose DB IDs

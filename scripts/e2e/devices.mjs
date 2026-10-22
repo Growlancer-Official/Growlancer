@@ -1,4 +1,4 @@
-// Device profiles + route lists for the Growlancer E2E device-matrix audit.
+// Device profiles + route lists for the Growlanzo E2E device-matrix audit.
 //
 // Widths/brands mirror the real-world device spread for an India-first
 // marketplace (cheap Android 320–360px up to 4K desktop). Keep this list in

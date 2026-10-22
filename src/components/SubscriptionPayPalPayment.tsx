@@ -313,11 +313,11 @@ export function SubscriptionPayPalPayment({
         </div>
       </div>
 
-      {/* Pay from Growlancer Wallet */}
+      {/* Pay from Growlanzo Wallet */}
       <div className="p-4 bg-blue-50 rounded-lg border border-blue-100 mb-2">
         <div className="flex items-center gap-3 text-blue-700 mb-1">
           <Wallet className="w-4 h-4" />
-          <span className="font-semibold">Pay from Growlancer Wallet</span>
+          <span className="font-semibold">Pay from Growlanzo Wallet</span>
         </div>
         <p className="text-sm text-blue-600 mb-3">
           {walletBalance !== null

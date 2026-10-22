@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Briefcase, Cpu, FileText, Handshake, Lock, Sparkles, TrendingUp,  } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function HowItWorksPage() {
   const [activeTab, setActiveTab] = useState<'client' | 'freelancer'>('client');
@@ -67,8 +68,7 @@ export function HowItWorksPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"
@@ -93,7 +93,7 @@ export function HowItWorksPage() {
             A secure pathway to <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">getting work done</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto font-medium">
-            From smart AI matchmaking to secure escrow payment locks, Growlancer guarantees a clear, transparent flow for both parties.
+            From smart AI matchmaking to secure escrow payment locks, Growlanzo guarantees a clear, transparent flow for both parties.
           </p>
 
           {/* Interactive Toggle */}
@@ -144,7 +144,7 @@ export function HowItWorksPage() {
       <section className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 mt-20">
         <div className="bg-white rounded-[2.5rem] border border-slate-200/50 p-4 sm:p-12 shadow-sm space-y-4">
           <div className="text-center space-y-4">
-            <h3 className="font-display text-2xl font-extrabold text-slate-900">Why Growlancer is superior</h3>
+            <h3 className="font-display text-2xl font-extrabold text-slate-900">Why Growlanzo is superior</h3>
             <p className="text-xs text-slate-500">We replace outdated transaction mechanisms with live synchronization.</p>
           </div>
 

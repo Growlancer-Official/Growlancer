@@ -69,7 +69,7 @@ function resolveSiteUrl() {
     parsed = new URL(raw);
   } catch {
     console.error(`❌ APP_URL is not an absolute URL: ${JSON.stringify(raw)}`);
-    console.error('   Use a full origin, e.g. https://growlancer.com');
+    console.error('   Use a full origin, e.g. https://growlanzo.com');
     process.exit(1);
   }
   if (!/^https?:$/.test(parsed.protocol)) {
@@ -82,7 +82,7 @@ function resolveSiteUrl() {
 const SITE_URL = resolveSiteUrl();
 
 // Custom-domain entries are DERIVED from APP_URL instead of being a hard-coded
-// `growlancer.com` list. The old literal list silently missed any other domain
+// `growlanzo.com` list. The old literal list silently missed any other domain
 // (the switch to growlancing.com would have pushed redirects without it), so a
 // domain switch must never require editing this file — it is one variable.
 const AUTH_PATHS = ['', '/auth/callback', '/auth/email-confirm', '/auth/callback*', '/auth/email-confirm*'];

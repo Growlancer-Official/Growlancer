@@ -1,4 +1,4 @@
-# Growlancer — Founder Runbook
+# Growlanzo — Founder Runbook
 
 **Owner: Muhammad.** This is the *operator* playbook: the exact clicks, the exact commands, and the
 exact way to prove each step worked. It is the companion to
@@ -271,7 +271,7 @@ scripts now **refuse to run** on one rather than writing a broken `site_url`.
 | 3 | Supabase Auth config | Set `.env`'s `APP_URL=https://growlancer.com`, then `node scripts/push_redirect_urls.mjs` — sets `site_url` + the full redirect allow-list (apex, `www`, vercel.app, previews, localhost) for **every** auth email and OAuth return | Auth emails must land on the new domain *before* you announce it. The script reads `APP_URL`, so it writes the `.com` value only if the line is switched first — and it refuses to run at all on a scheme-less value |
 | 4 | Edge function secret | `npx supabase secrets set APP_URL=https://growlancer.com --project-ref zttwsjehcgaicziqyxpq` | Instant on next invocation — **no redeploy needed**. This single change moves every email logo, footer link, subscription/dashboard button, PayPal return URL and AI-attribution header |
 | 5 | Sentry (if enabled) | Add `growlancer.com` / `www.growlancer.com` to the project's allowed origins / domain settings | Otherwise browser events from the new origin are dropped |
-| 6 | Brevo | Verify the **sender domain** (`growlancer.com`) — SPF + DKIM records. Then set `EMAIL_FROM="Growlancer <no-reply@growlancer.com>"` and `EMAIL_REPLY_TO=support@growlancer.com` | Until the domain is verified, Brevo only delivers to your own inbox |
+| 6 | Brevo | Verify the **sender domain** (`growlancer.com`) — SPF + DKIM records. Then set `EMAIL_FROM="Growlanzo <no-reply@growlancer.com>"` and `EMAIL_REPLY_TO=support@growlancer.com` | Until the domain is verified, Brevo only delivers to your own inbox |
 | 7 | Google Search Console (+ Bing) | Add the `growlancer.com` property and submit `https://growlancer.com/sitemap.xml` | The sitemap already points at `.com`, so indexing can start immediately |
 
 ### 5.2 What does **not** need changing (verified, do not waste time)
@@ -324,12 +324,12 @@ matches contexts by job name, not by workflow name, and a context that never rep
 merge forever. Read them from the API before you trust this list:
 
 ```bash
-gh api repos/Growlancer-Official/Growlancer/commits/main/check-runs \
+gh api repos/Growlanzo-Official/Growlanzo/commits/main/check-runs \
   --jq '.check_runs[].name' | sort -u
 ```
 
 ```bash
-gh api -X PUT repos/Growlancer-Official/Growlancer/branches/main/protection \
+gh api -X PUT repos/Growlanzo-Official/Growlanzo/branches/main/protection \
   --input - <<'JSON'
 {
   "required_status_checks": {
@@ -351,7 +351,7 @@ JSON
 ```
 
 **How to verify:** GitHub → Settings → Branches → `main` shows "Protected"; `gh api
-repos/Growlancer-Official/Growlancer/branches/main/protection` returns JSON instead of `404`; and a
+repos/Growlanzo-Official/Growlanzo/branches/main/protection` returns JSON instead of `404`; and a
 deliberately failing push shows *"merging is blocked"*.
 
 > Requiring these four means **a red run really does stop a merge** — including the element audit,
@@ -398,7 +398,7 @@ non-zero; the homepage trust line updates by itself.
 
 - **One place for the site URL.** `supabase/functions/_shared/site.ts` reads the `APP_URL` secret. A
   guard test (`src/test/siteUrlGuard.test.ts`) **fails CI** if any edge function hardcodes a
-  Growlancer URL again, or reads `APP_URL` directly instead of going through the resolver.
+  Growlanzo URL again, or reads `APP_URL` directly instead of going through the resolver.
 - **Domain-switch pre-flight.** `scripts/founder-preflight.mjs` verifies the deployed `APP_URL`
   *by digest* — you can confirm the exact value without it ever being printed.
 - **Fail-closed config writers.** `scripts/push_redirect_urls.mjs` refuses to write a malformed

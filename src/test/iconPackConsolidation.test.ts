@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 /**
  * Locks the icon-pack consolidation (founder directive, task 1).
  *
- * Growlancer's icon pack is lucide-react (already the standard across ~130
+ * Growlanzo's icon pack is lucide-react (already the standard across ~130
  * files). These assertions read the source so the hand-drawn, inconsistent
  * inline SVGs cannot creep back into the files that were migrated, and so the
  * justified exceptions — official brand logos and the certificate seal —

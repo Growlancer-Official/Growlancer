@@ -171,7 +171,7 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
     
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="${APP_URL}/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto; border-radius: 10px;" />
+      <img src="${APP_URL}/growlanzo-full-light.png" alt="Growlanzo" style="height: 40px; width: auto; border-radius: 10px;" />
     </div>
 
     <!-- Header -->
@@ -198,8 +198,8 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
         </tr>
         <tr>
           <td>
-            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlancer — AI-Powered Freelancing Marketplace</p>
-            <p style="color: #cbd5e1; font-size: 10px; margin: 4px 0 0; line-height: 1.5;">© 2026 Growlancer. All rights reserved.</p>
+            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlanzo — AI-Powered Freelancing Marketplace</p>
+            <p style="color: #cbd5e1; font-size: 10px; margin: 4px 0 0; line-height: 1.5;">© 2026 Growlanzo. All rights reserved.</p>
           </td>
         </tr>
       </table>
@@ -315,7 +315,7 @@ Deno.serve(async (req) => {
 
     // ─── POST: send_welcome_email (AUTHENTICATED — own verified email only) ─
     // Was PUBLIC with an arbitrary recipient → anyone could spam any address
-    // with branded Growlancer emails (phishing + Brevo quota abuse). Now the
+    // with branded Growlanzo emails (phishing + Brevo quota abuse). Now the
     // caller must be signed in AND the recipient must be their own verified
     // email; IP rate-limited to prevent abuse.
     if (req.method === 'POST' && action === 'send_welcome_email') {
@@ -366,11 +366,11 @@ Deno.serve(async (req) => {
       const recipient_name = _eh(rawRecipientName);
 
       const rawName = rawRecipientName;
-      const subject = `Welcome to Growlancer, ${rawName}! Your AI-powered journey begins now 🚀`;
+      const subject = `Welcome to Growlanzo, ${rawName}! Your AI-powered journey begins now 🚀`;
 
       const bodyContent = `
         <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 6px;">Hey <strong style="color: #059669;">${recipient_name}</strong> 👋</p>
-        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 28px;">Welcome to <strong>Growlancer</strong> — India's first AI-powered freelancing marketplace. We're thrilled to have you on board!</p>
+        <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 28px;">Welcome to <strong>Growlanzo</strong> — India's first AI-powered freelancing marketplace. We're thrilled to have you on board!</p>
         <div style="margin-bottom: 28px;">
           ${[
             { emoji: '🔍', title: 'Explore Top Projects', desc: 'Discover freelance opportunities tailored to your unique skills and expertise from top clients worldwide.' },
@@ -414,10 +414,10 @@ Deno.serve(async (req) => {
         <div style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
           <p style="font-size: 14px; color: #64748b; margin: 0 0 2px; line-height: 1.6;">Warm regards,</p>
           <p style="font-size: 15px; color: #059669; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
-          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlancer</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlanzo</p>
         </div>`;
 
-      const bodyHtml = baseEmailHtml('Welcome to Growlancer! 🎉', bodyContent);
+      const bodyHtml = baseEmailHtml('Welcome to Growlanzo! 🎉', bodyContent);
       const emailResult = await sendNotificationEmail(subject, bodyHtml, { email: recipient_email, name: recipient_name });
 
       if (!emailResult.success) {
@@ -659,8 +659,8 @@ Deno.serve(async (req) => {
 
     // ─── POST: test_email — sends a live Brevo test email ──
     if (req.method === 'POST' && action === 'test_email') {
-      const testTo = body?.to || 'admin@growlancer.com'
-      const sent = await sendNotificationEmail('Growlancer Test Email ✅', '<p>This is a test email from Growlancer via Brevo.</p>', { email: testTo, name: 'Test' })
+      const testTo = body?.to || 'admin@growlanzo.com'
+      const sent = await sendNotificationEmail('Growlanzo Test Email ✅', '<p>This is a test email from Growlanzo via Brevo.</p>', { email: testTo, name: 'Test' })
       return new Response(JSON.stringify({ success: sent, error: sent ? undefined : 'Email delivery failed (Brevo not configured or API error)' }), {
         status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -715,7 +715,7 @@ Deno.serve(async (req) => {
       const emailResult = await sendNotificationEmail(
         subject,
         bodyContent,
-        { email: ADMIN_EMAIL, name: 'Growlancer Admin' }
+        { email: ADMIN_EMAIL, name: 'Growlanzo Admin' }
       );
 
       if (!emailResult.success) {
@@ -771,8 +771,8 @@ Deno.serve(async (req) => {
       </div>` : '';
 
       const subject = isLOR
-        ? `Letter of Recommendation — ${role_name || 'Internship'} at Growlancer`
-        : `Internship Completion Certificate — ${role_name || 'Internship'} at Growlancer`;
+        ? `Letter of Recommendation — ${role_name || 'Internship'} at Growlanzo`
+        : `Internship Completion Certificate — ${role_name || 'Internship'} at Growlanzo`;
 
       const bodyContent = isLOR ? `
         <!-- LOR Content -->
@@ -783,7 +783,7 @@ Deno.serve(async (req) => {
         <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 6px;">Dear ${recipient_name},</p>
 
         <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 18px;">
-          On behalf of the entire team at <strong>Growlancer</strong>, it is my distinct privilege to provide you with this
+          On behalf of the entire team at <strong>Growlanzo</strong>, it is my distinct privilege to provide you with this
           <strong style="color: #7c3aed;">Letter of Recommendation</strong> in recognition of your exceptional performance during your
           <strong>${role_name || 'Internship'}</strong> with us.
         </p>
@@ -827,7 +827,7 @@ Deno.serve(async (req) => {
         </div>
 
         <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0 0 24px;">
-          We have no doubt that you will continue to excel in all your future endeavors. Your time at Growlancer has been truly valued, and we are confident you will achieve great things ahead.
+          We have no doubt that you will continue to excel in all your future endeavors. Your time at Growlanzo has been truly valued, and we are confident you will achieve great things ahead.
         </p>
 
         <p style="font-size: 15px; color: #0f172a; line-height: 1.7; margin: 0 0 28px;">
@@ -838,7 +838,7 @@ Deno.serve(async (req) => {
         <div style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
           <p style="font-size: 14px; color: #64748b; margin: 0 0 2px; line-height: 1.6;">With warm regards,</p>
           <p style="font-size: 15px; color: #7c3aed; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
-          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlancer</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlanzo</p>
           <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
             <tr>
               <td style="padding: 8px 16px; background: #faf5ff; border-radius: 8px;">
@@ -859,7 +859,7 @@ Deno.serve(async (req) => {
         <div style="margin: 0 0 24px; padding: 20px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border: 1px solid #bbf7d0; border-radius: 14px; text-align: center;">
           <h2 style="font-size: 18px; color: #065f46; margin: 0 0 6px; font-weight: 800;">Congratulations, ${recipient_name}! 🎉</h2>
           <p style="font-size: 14px; color: #047857; margin: 0; line-height: 1.5;">
-            You have successfully completed your <strong>${role_name || 'Internship'}</strong> at <strong>Growlancer</strong>.
+            You have successfully completed your <strong>${role_name || 'Internship'}</strong> at <strong>Growlanzo</strong>.
           </p>
         </div>
 
@@ -911,7 +911,7 @@ Deno.serve(async (req) => {
         <div style="padding-top: 20px; border-top: 1px solid #e2e8f0;">
           <p style="font-size: 14px; color: #64748b; margin: 0 0 2px; line-height: 1.6;">Warm regards,</p>
           <p style="font-size: 15px; color: #059669; margin: 0 0 2px; font-weight: 700;">Mohammad Miran Khan</p>
-          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlancer</p>
+          <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Founder &amp; CEO, Growlanzo</p>
           <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
             <tr>
               <td style="padding: 8px 16px; background: #f0fdf4; border-radius: 8px;">

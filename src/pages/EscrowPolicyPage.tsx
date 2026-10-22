@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle, Clock, Lock, RefreshCcw, Scale,  } from 'lucide-react';
 import { formatCurrency } from '../lib/currency';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function EscrowPolicyPage() {
   const steps = [
     {
       icon: Lock,
       title: '1. Secure Funding Lock',
-      description: 'The client funds the full agreed contract amount into Growlancer Escrow — no platform fee is added on top. Freelancers receive instant alerts confirming that funds are secured before any work begins.',
+      description: 'The client funds the full agreed contract amount into Growlanzo Escrow — no platform fee is added on top. Freelancers receive instant alerts confirming that funds are secured before any work begins.',
       color: 'from-emerald-500 to-emerald-600'
     },
     {
@@ -42,8 +43,7 @@ export function EscrowPolicyPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"
@@ -62,7 +62,7 @@ export function EscrowPolicyPage() {
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Lock className="w-4 h-4" />
-            Growlancer Escrow Protection
+            Growlanzo Escrow Protection
           </span>
           <h1 className="font-display text-4xl sm:text-6xl font-black tracking-tight leading-none">
             Designed to protect <span className="bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">every transaction</span>
@@ -96,7 +96,7 @@ export function EscrowPolicyPage() {
         <h2 className="font-display text-2xl font-black text-slate-900 mb-3 text-center">Fees & Transparency</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="bg-white rounded-xl p-3 border border-slate-200/50 shadow-sm">
-            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Growlancer commission: 5%</h3>
+            <h3 className="font-display text-lg font-bold text-slate-900 mb-2">Growlanzo commission: 5%</h3>
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               Deducted from the freelancer’s payout, never added to the client’s price. The client pays
               the agreed amount; when it is released, 5% is withheld and 95% reaches the
@@ -108,7 +108,7 @@ export function EscrowPolicyPage() {
             <p className="text-xs text-slate-600 leading-relaxed font-medium">
               When a freelancer withdraws wallet funds, the payment processor (Razorpay/PayPal)
               charges a <strong>2% transfer fee</strong>. This is the processor's actual cost — it is
-              <strong> not</strong> Growlancer profit and is shown separately from the 5% commission,
+              <strong> not</strong> Growlanzo profit and is shown separately from the 5% commission,
               before you confirm any withdrawal.
             </p>
           </div>

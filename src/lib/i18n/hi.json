@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Growlancer",
+    "appName": "Growlanzo",
     "loading": "लोड हो रहा है...",
     "error": "कुछ गड़बड़ हो गई",
     "retry": "पुनः प्रयास करें",
@@ -64,7 +64,7 @@
     "feedback": "प्रतिक्रिया",
     "about": "हमारे बारे में",
     "version": "संस्करण",
-    "poweredBy": "Growlancer द्वारा संचालित"
+    "poweredBy": "Growlanzo द्वारा संचालित"
   },
   "nav": {
     "home": "होम",
@@ -108,7 +108,7 @@
   },
   "auth": {
     "welcomeBack": "वापस स्वागत है",
-    "joinUs": "Growlancer से जुड़ें",
+    "joinUs": "Growlanzo से जुड़ें",
     "email": "ईमेल",
     "password": "पासवर्ड",
     "confirmPassword": "पासवर्ड की पुष्टि करें",

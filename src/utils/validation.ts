@@ -1,4 +1,4 @@
-// Validation Utilities for Growlancer
+// Validation Utilities for Growlanzo
 import { isDisposableEmailDomain } from '../lib/disposableEmails';
 
 /**

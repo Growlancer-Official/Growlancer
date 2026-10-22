@@ -119,7 +119,7 @@ export function OAuthReturnNotice() {
         <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-slate-50 border border-slate-100 p-3">
           <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
           <p className="text-xs text-slate-500 leading-relaxed">
-            No account was created and nothing on Growlancer was changed — an unfinished sign-in
+            No account was created and nothing on Growlanzo was changed — an unfinished sign-in
             leaves no trace. Support can see which provider was started if you need help.
           </p>
         </div>

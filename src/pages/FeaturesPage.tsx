@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight, BarChart3, Calendar, Code, ShieldCheck, Sparkles, Users, Wallet, Wrench, Zap,  } from 'lucide-react';
+import { BrandLogo } from '../components/BrandLogo';
 
 export function FeaturesPage() {
   const mainFeatures = [
@@ -67,8 +68,7 @@ export function FeaturesPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link
             to="/"
@@ -87,13 +87,13 @@ export function FeaturesPage() {
         <div className="relative mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 2xl:px-12 text-center space-y-3">
           <span className="inline-flex items-center gap-3 px-3.5 py-1 bg-emerald-500/20 text-emerald-300 font-bold rounded-full border border-emerald-500/30 text-xs uppercase tracking-wider">
             <Wrench className="w-4 h-4" />
-            Growlancer Toolkit
+            Growlanzo Toolkit
           </span>
           <h1 className="font-display text-4xl sm:text-7xl font-black tracking-tight leading-none">
             Features built for <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">frictionless build</span>
           </h1>
           <p className="text-slate-300 text-sm sm:text-base max-w-2xl mx-auto font-medium leading-relaxed">
-            We built Growlancer from the ground up to replace outdated bidding platforms, static dashboards, and fragmented payment tools.
+            We built Growlanzo from the ground up to replace outdated bidding platforms, static dashboards, and fragmented payment tools.
           </p>
         </div>
       </section>

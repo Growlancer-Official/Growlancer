@@ -1,5 +1,5 @@
 // Admin Commission Withdrawal Service
-// Lets Growlancer admins see the 5% commission ledger in real time and
+// Lets Growlanzo admins see the 5% commission ledger in real time and
 // withdraw it to their own bank account via the admin-withdrawal edge
 // function (RazorpayX payout). Bank limits: min ₹100 · max ₹5,00,000.
 

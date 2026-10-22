@@ -1,4 +1,4 @@
-// Growlancer E2E — authenticated AUTH LIFECYCLE (sign-in → session → verification
+// Growlanzo E2E — authenticated AUTH LIFECYCLE (sign-in → session → verification
 // → logout), driven in a real browser against a real backend session.
 //
 //   node scripts/e2e/auth-lifecycle.mjs --base=http://127.0.0.1:4174
@@ -594,7 +594,7 @@ const artifact = path.join(OUT_DIR, `auth-lifecycle-${stamp}.md`);
 fs.writeFileSync(
   artifact,
   [
-    '# Growlancer E2E — authenticated auth lifecycle',
+    '# Growlanzo E2E — authenticated auth lifecycle',
     `Base: ${BASE}`,
     `Roles: ${requested.join(', ')}`,
     `Pass: ${results.length - failed.length} · Fail: ${failed.length} · Total: ${results.length}`,

@@ -130,7 +130,7 @@ async function attemptRenewalCharge(
         amount: Math.round(amountInr * 100),
         currency: 'INR',
         token: { card: { token_id: token } },
-        description: 'Growlancer Pro subscription renewal',
+        description: 'Growlanzo Pro subscription renewal',
         notes: { user_id: userId, purpose: 'subscription_renewal' },
       }),
     });

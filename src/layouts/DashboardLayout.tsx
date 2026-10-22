@@ -44,6 +44,7 @@ import { resolveDashboardSection } from '../lib/dashboardSection';
 import { isDeferredRoute } from '../lib/featureFlags';
 import { useProStatus } from '../hooks/useProStatus';
 import { getSellerLevelInfo, type SellerLevel } from '../lib/sellerLevels';
+import { BrandLogo } from '../components/BrandLogo';
 
 // ─── Sidebar Link Groups with Section Headers ───────────────────────────
 interface SidebarLink {
@@ -396,13 +397,8 @@ export function DashboardLayout() {
         <div className="flex h-full flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-5">
           <Link to="/" className="flex items-center gap-2.5">
-            <img
-              src="/UpdatedLogo.webp"
-              alt="Growlancer"
-              className="h-9 w-9 rounded-xl shadow-lg"
-            />
+            <BrandLogo variant="wordmark" className="h-10 w-auto" />
             <div>
-              <h1 className="font-display text-sm font-bold leading-none">Growlancer</h1>
               <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Freelancer</span>
             </div>
           </Link>
@@ -538,13 +534,8 @@ export function DashboardLayout() {
       <aside className="w-64 sticky top-0 h-[calc(100vh-var(--consent-banner-h,0px))] hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 mb-5 px-2">
-          <img 
-            src="/UpdatedLogo.webp" 
-            alt="Growlancer" 
-            className="h-9 w-9 rounded-xl shadow-md"
-          />
+          <BrandLogo variant="wordmark" className="h-10 w-auto" />
           <div>
-            <h1 className="font-display text-sm font-bold leading-none">Growlancer</h1>
             <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Freelancer</span>
           </div>
         </Link>

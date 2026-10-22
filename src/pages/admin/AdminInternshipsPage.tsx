@@ -604,7 +604,7 @@ export function AdminInternshipsPage() {
   };
 
   const handleExportCSV = () => {
-    const headers = ['Full Name', 'Email', 'Role', 'Status', 'Applied Date', 'LinkedIn', 'GitHub', 'Portfolio', 'University', 'Degree', 'Country', 'Phone', 'Cover Letter', 'Why Growlancer', 'Weekly Availability', 'Notes'];
+    const headers = ['Full Name', 'Email', 'Role', 'Status', 'Applied Date', 'LinkedIn', 'GitHub', 'Portfolio', 'University', 'Degree', 'Country', 'Phone', 'Cover Letter', 'Why Growlanzo', 'Weekly Availability', 'Notes'];
     const rows = filteredApplications.map(a => [
       a.full_name, a.email, a.role_name, a.status, a.created_at,
       a.linkedin_url || '', a.github_url || '', a.portfolio_url || '',
@@ -1275,10 +1275,10 @@ export function AdminInternshipsPage() {
                     </div>
                   </div>
 
-                  {/* Why Growlancer */}
+                  {/* Why Growlanzo */}
                   {app.why_growlancer && (
                     <div>
-                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Why Growlancer?</h4>
+                      <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Why Growlanzo?</h4>
                       <div className="p-4 rounded-xl text-sm text-slate-300 leading-relaxed" style={{ background: 'rgba(15, 23, 42, 0.5)' }}>
                         {app.why_growlancer}
                       </div>

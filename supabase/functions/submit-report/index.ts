@@ -56,7 +56,7 @@ async function sendReportEmail(payload: {
 <html><body style="margin:0;padding:0;background:#f8fafc;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
   <div style="max-width:640px;margin:24px auto;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #e2e8f0;">
     <div style="background:linear-gradient(135deg,#059669,#0d9488);padding:24px 32px;">
-      <h1 style="margin:0;color:#ffffff;font-size:20px;">New User Report — Growlancer</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:20px;">New User Report — Growlanzo</h1>
       <p style="margin:6px 0 0;color:#d1fae5;font-size:13px;">Report ID: <strong>${escapeHtml(payload.reportId.slice(0, 8))}</strong></p>
     </div>
     <div style="padding:32px;">

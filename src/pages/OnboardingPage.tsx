@@ -27,6 +27,7 @@ import { avatarUploadService } from '../lib/avatarUpload';
 import { avatarPackService } from '../lib/avatarPack';
 import { fetchUserProfile, createUserProfile } from '../lib/services/authService';
 import { useToast } from '../components/Toast';
+import { BrandLogo } from '../components/BrandLogo';
 
 interface FreelancerForm {
   name: string;
@@ -532,8 +533,7 @@ export function OnboardingPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3 group">
-            <img src="/UpdatedLogo.webp" alt="Growlancer" className="h-8 w-8 rounded-lg transition-transform group-hover:scale-105" />
-            <span className="font-display font-black text-xl tracking-tight text-slate-900">Growlancer</span>
+            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
           </div>
           <button
             onClick={handleSkip}
@@ -598,7 +598,7 @@ export function OnboardingPage() {
                 </div>
 
                 <h1 className="font-display text-3xl sm:text-4xl font-bold text-slate-900 mb-2">
-                  Welcome to Growlancer!
+                  Welcome to Growlanzo!
                 </h1>
                 <p className="text-slate-600 text-lg leading-relaxed mb-2 max-w-lg mx-auto">
                   Set up your profile so our AI can match you with the perfect projects — it only takes a few minutes.
@@ -652,7 +652,7 @@ export function OnboardingPage() {
                     </button>
                   </div>
                   {!chosenRole && (
-                    <p className="text-xs text-amber-600 mt-2">Choose how you'll use Growlancer to continue.</p>
+                    <p className="text-xs text-amber-600 mt-2">Choose how you'll use Growlanzo to continue.</p>
                   )}
                 </div>
 
@@ -833,7 +833,7 @@ export function OnboardingPage() {
                       />
                       <p className="text-xs text-slate-400 mt-1">
                         India is live today. Pick any other country to join its waitlist — we will email
-                        you the moment Growlancer launches there, and your profile keeps working normally.
+                        you the moment Growlanzo launches there, and your profile keeps working normally.
                       </p>
                     </div>
 
@@ -1138,7 +1138,7 @@ export function OnboardingPage() {
                         />
                         <p className="text-xs text-slate-400 mt-1">
                           India is live today. Pick any other country to join its waitlist — we will email
-                          you the moment Growlancer launches there, and your profile keeps working normally.
+                          you the moment Growlanzo launches there, and your profile keeps working normally.
                         </p>
                       </div>
                     </div>
@@ -1179,7 +1179,7 @@ export function OnboardingPage() {
                       type="text"
                       value={referralCode}
                       onChange={e => setReferralCode(e.target.value)}
-                      placeholder="Have a Growlancer referral code? Enter it here"
+                      placeholder="Have a Growlanzo referral code? Enter it here"
                       className="w-full px-4 py-3 pr-10 rounded-xl border border-slate-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 outline-none transition-all"
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -1239,7 +1239,7 @@ export function OnboardingPage() {
                     <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl mb-3">
                       <p className="text-sm text-purple-700">
                         <strong>Tip:</strong> Pick up to 3 categories that describe your work, then add your own skills.
-                        Growlancer matches you to projects based on your categories — you can update these anytime from your profile settings.
+                        Growlanzo matches you to projects based on your categories — you can update these anytime from your profile settings.
                       </p>
                     </div>
                     <CategoryPicker

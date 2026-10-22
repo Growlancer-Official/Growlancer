@@ -7,6 +7,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { fetchUserProfile, createUserProfile } from '../../lib/services/authService';
 import { redirectAfterAuth } from '../../lib/authAction';
+import { BrandLogo } from '../../components/BrandLogo';
 
 export function VerifyEmailPage() {
   const navigate = useNavigate();
@@ -314,11 +315,7 @@ export function VerifyEmailPage() {
         <div className="bg-white rounded-[2rem] shadow-xl border border-slate-200 p-8 md:p-10">
           {/* Logo */}
           <div className="flex justify-center mb-8">
-            <img
-              src="/UpdatedLogo.webp"
-              alt="Growlancer"
-              className="h-12 w-12 rounded-xl"
-            />
+            <BrandLogo variant="full" className="h-14 w-auto" />
           </div>
 
           <div className="text-center mb-8">
@@ -332,7 +329,7 @@ export function VerifyEmailPage() {
             <p className="text-sm font-semibold text-slate-900 mt-1 break-all">{email || 'your email'}</p>
             <ol className="mt-6 space-y-2.5 text-left max-w-sm mx-auto">
               {[
-                'Open your inbox and find the verification email from Growlancer',
+                'Open your inbox and find the verification email from Growlanzo',
                 'Click the “Verify email” button inside it',
                 'Come back here and tap “I\'ve verified, continue” to finish',
               ].map((step, idx) => (

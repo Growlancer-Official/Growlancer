@@ -66,7 +66,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
   <div style="max-width: 600px; width: 100%; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.06);">
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="${APP_URL}/UpdatedLogo.webp" alt="Growlancer" style="height: 40px; width: auto;" />
+      <img src="${APP_URL}/growlanzo-full-light.png" alt="Growlanzo" style="height: 40px; width: auto;" />
     </div>
     <!-- Header -->
     <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
@@ -90,7 +90,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
         </tr>
         <tr>
           <td>
-            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlancer — AI-Powered Freelancing Marketplace</p>
+            <p style="color: #94a3b8; font-size: 11px; margin: 0; line-height: 1.5;">Growlanzo — AI-Powered Freelancing Marketplace</p>
           </td>
         </tr>
       </table>
@@ -150,7 +150,7 @@ function buildRejectedEmailHtml(freelancerName: string, projectTitle: string): s
       <p style="font-size: 28px; margin: 0 0 8px; line-height: 1;">💡</p>
       <h3 style="font-size: 16px; color: #991b1b; margin: 0 0 6px; font-weight: 700;">Don't Lose Heart</h3>
       <p style="font-size: 14px; color: #991b1b; margin: 0; line-height: 1.5;">
-        There are many more projects waiting for you on Growlancer. Keep applying — the right match is out there!
+        There are many more projects waiting for you on Growlanzo. Keep applying — the right match is out there!
       </p>
     </div>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px;">

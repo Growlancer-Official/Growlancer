@@ -486,7 +486,7 @@ export function getKycFriendlyError(failureCategory: string | null | undefined):
     case 'invalid_pan':
       return 'This identity number could not be verified. Please check it and try again.';
     case 'duplicate_identity':
-      return 'This identity is already verified on another Growlancer account.';
+      return 'This identity is already verified on another Growlanzo account.';
     case 'rate_limited':
       return 'Too many verification attempts. Please try again in a while.';
     case 'email_unverified':

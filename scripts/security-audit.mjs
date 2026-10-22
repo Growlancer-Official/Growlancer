@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // ────────────────────────────────────────────────────────────────────────────
-// GROWLANCER SECURITY AUDIT — automated full sweep (cross-platform)
+// GROWLANZO SECURITY AUDIT — automated full sweep (cross-platform)
 // Usage:  node scripts/security-audit.mjs
 //
 // Checks the repo + LIVE database for the most common attack vectors and
@@ -87,7 +87,7 @@ const SENSITIVE_TABLES = [
 const tblList = SENSITIVE_TABLES.map(t => `'${t}'`).join(',');
 
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-console.log('  GROWLANCER SECURITY AUDIT');
+console.log('  GROWLANZO SECURITY AUDIT');
 console.log(`  ${new Date().toISOString()}`);
 console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 

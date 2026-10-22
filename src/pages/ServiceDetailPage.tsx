@@ -304,7 +304,7 @@ export function ServiceDetailPage() {
         key: razorpay_key_id,
         amount: Math.round(amount * 100), // paise
         currency,
-        name: 'Growlancer',
+        name: 'Growlanzo',
         description: `Service: ${service.title}`,
         order_id: order.razorpay_order_id,
         config_id: import.meta.env.VITE_RAZORPAY_CONFIG_ID || undefined,
@@ -483,7 +483,7 @@ export function ServiceDetailPage() {
                         <p className="text-sm font-semibold text-slate-800">Extra revisions</p>
                         <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                           Beyond the free revisions, any additional revision is subject to a mutually agreed price
-                          between you and the freelancer. All payments stay protected by Growlancer Escrow.
+                          between you and the freelancer. All payments stay protected by Growlanzo Escrow.
                         </p>
                       </div>
                     </div>

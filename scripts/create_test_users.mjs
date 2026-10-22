@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * ────────────────────────────────────────────────────────────────────────────
- * GROWLANCER — TEST USER CREATION SCRIPT
+ * GROWLANZO — TEST USER CREATION SCRIPT
  * ────────────────────────────────────────────────────────────────────────────
  * Ready-to-run. Creates fully-confirmed test users (freelancer + client +
  * optional admin) on the LIVE Supabase project, so you can test the whole

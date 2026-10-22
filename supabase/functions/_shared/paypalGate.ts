@@ -23,7 +23,7 @@ export function paypalDisabledResponse(corsHeaders: Record<string, string>): Res
       success: false,
       error: 'paypal_disabled',
       message:
-        'PayPal is not available during Growlancer early access. No payment was created, captured, refunded or acknowledged.',
+        'PayPal is not available during Growlanzo early access. No payment was created, captured, refunded or acknowledged.',
     }),
     { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   );

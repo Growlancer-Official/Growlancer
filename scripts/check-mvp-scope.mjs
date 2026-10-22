@@ -239,7 +239,7 @@ check('the scope decision is documented', () => {
 });
 
 const width = Math.max(...results.map((r) => r.name.length));
-console.log('\nGrowlancer early-access scope guard\n');
+console.log('\nGrowlanzo early-access scope guard\n');
 for (const r of results) {
   console.log(`${r.ok ? 'PASS' : 'FAIL'}  ${r.name.padEnd(width)}  ${r.detail}`);
 }
