@@ -34,17 +34,6 @@ const REDIRECT_URLS = [
   'https://growlancer.vercel.app/auth/email-confirm',
   'https://growlancer.vercel.app/auth/callback*',
   'https://growlancer.vercel.app/auth/email-confirm*',
-  // Custom domain
-  'https://growlancer.com',
-  'https://growlancer.com/auth/callback',
-  'https://growlancer.com/auth/email-confirm',
-  'https://growlancer.com/auth/callback*',
-  'https://growlancer.com/auth/email-confirm*',
-  'https://www.growlancer.com',
-  'https://www.growlancer.com/auth/callback',
-  'https://www.growlancer.com/auth/email-confirm',
-  'https://www.growlancer.com/auth/callback*',
-  'https://www.growlancer.com/auth/email-confirm*',
   // Preview deployments
   'https://growlancer-mrkhan154212s-projects.vercel.app',
   'https://growlancer-mrkhan154212s-projects.vercel.app/auth/callback',
@@ -68,7 +57,13 @@ const REDIRECT_URLS = [
  */
 function resolveSiteUrl() {
   const raw = (getEnv('APP_URL') || '').trim();
-  if (!raw) return 'https://growlancer.com';
+  // Fail closed: guessing a fallback here would write a domain the founder never
+  // asked for straight into the live `site_url` and break every auth email link.
+  if (!raw) {
+    console.error('❌ APP_URL is not set in .env — refusing to guess the site_url.');
+    console.error('   Set APP_URL=https://<your-domain> and run this again.');
+    process.exit(1);
+  }
   let parsed;
   try {
     parsed = new URL(raw);
@@ -86,11 +81,25 @@ function resolveSiteUrl() {
 
 const SITE_URL = resolveSiteUrl();
 
+// Custom-domain entries are DERIVED from APP_URL instead of being a hard-coded
+// `growlancer.com` list. The old literal list silently missed any other domain
+// (the switch to growlancing.com would have pushed redirects without it), so a
+// domain switch must never require editing this file — it is one variable.
+const AUTH_PATHS = ['', '/auth/callback', '/auth/email-confirm', '/auth/callback*', '/auth/email-confirm*'];
+{
+  const host = new URL(SITE_URL).host;
+  const altHost = host.startsWith('www.') ? host.slice(4) : `www.${host}`;
+  for (const h of [host, altHost]) {
+    for (const p of AUTH_PATHS) REDIRECT_URLS.push(`https://${h}${p}`);
+  }
+}
+const UNIQUE_REDIRECT_URLS = [...new Set(REDIRECT_URLS)];
+
 async function main() {
   console.log('🔧 Pushing Supabase Auth redirect URLs to production...');
   console.log(`   Project: ${PROJECT_REF}`);
   console.log(`   Site URL: ${SITE_URL}`);
-  console.log(`   Redirect URLs: ${REDIRECT_URLS.length} entries`);
+  console.log(`   Redirect URLs: ${UNIQUE_REDIRECT_URLS.length} entries`);
 
   // 1. Get current config
   const getRes = await fetch(
@@ -109,7 +118,7 @@ async function main() {
   // 2. Update config
   const patchBody = {
     site_url: SITE_URL,
-    redirect_urls: REDIRECT_URLS,
+    redirect_urls: UNIQUE_REDIRECT_URLS,
   };
 
   const patchRes = await fetch(

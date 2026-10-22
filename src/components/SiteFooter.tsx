@@ -33,7 +33,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 rounded-lg ring-1 ring-emerald-200/50">
                 <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span className="text-xs font-medium text-emerald-700">Udyam Registered</span>
+                <span className="text-xs font-medium text-emerald-700">Escrow protected</span>
               </div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 rounded-lg ring-1 ring-slate-200">
                 <MapPin className="w-4 h-4 text-slate-500" />
@@ -95,10 +95,19 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
         {/* Bottom Bar */}
         <div className="mt-6 pt-6 border-t border-slate-200">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
-            {/* Copyright */}
+            {/* Copyright + legal contact */}
             <div className="text-sm text-slate-500 text-center lg:text-left">
-              &copy; {new Date().getFullYear()} <span className="font-semibold text-slate-800">Growlancer</span>. 
-              Built for clarity, speed, and trust. All rights reserved.
+              <div>
+                &copy; {new Date().getFullYear()} <span className="font-semibold text-slate-800">Growlancer</span>. 
+                Built for clarity, speed, and trust. All rights reserved.
+              </div>
+              <div className="mt-1 text-xs text-slate-400">
+                Operated from India · Grievances:{' '}
+                <a href="mailto:support@growlancer.com" className="text-slate-500 hover:text-emerald-600 transition-colors">
+                  support@growlancer.com
+                </a>
+                {' '}— acknowledged within 24 hours, resolved within 15 days.
+              </div>
             </div>
 
             {/* Trust & Payment Badges */}
@@ -141,7 +150,7 @@ export function SiteFooter({ onOpenSignup }: SiteFooterProps) {
                   <span className="text-slate-300 text-xs">|</span>
                   <span className="inline-flex items-center gap-1 text-xs text-slate-500"><ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> SSL Secured</span>
                 </div>
-                <span className="text-xs text-slate-400">All payments are protected by Razorpay escrow</span>
+                <span className="text-xs text-slate-400">Payments processed by Razorpay · contract funds held in Growlancer escrow</span>
               </div>
 
               {/* CTA Buttons */}

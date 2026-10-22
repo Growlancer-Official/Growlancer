@@ -440,8 +440,9 @@ export function PricingPage() {
               <li className="flex items-start gap-3">
                 <Check className="w-5 h-5 flex-shrink-0 text-emerald-500" />
                 <p className="text-sm text-slate-600">
-                  <strong className="text-slate-900">5% commission</strong> — paid by the client,
-                  charged only when a contract is successfully funded and work completes.
+                  <strong className="text-slate-900">5% commission</strong> — deducted from the
+                  freelancer&apos;s payout, charged only when released work is paid. Nothing is added
+                  to the client&apos;s invoice.
                 </p>
               </li>
               <li className="flex items-start gap-3">

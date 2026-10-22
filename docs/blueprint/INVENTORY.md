@@ -4,7 +4,7 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **660 files** across 12 groups.
+Total tracked structure: **663 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
@@ -17,8 +17,8 @@ Total tracked structure: **660 files** across 12 groups.
 | Edge shared modules | 8 |
 | Database migrations | 299 |
 | Archived migrations (not applied) | 6 |
-| Test suite | 53 |
-| Operational scripts | 32 |
+| Test suite | 54 |
+| Operational scripts | 34 |
 | CI / deploy workflows | 4 |
 
 ## Pages (95)
@@ -637,7 +637,7 @@ Kept for history only. `db push` reads the top level of `supabase/migrations`, s
 - `supabase/migrations/archived/20260806000000_restore_auto_confirm_trigger.sql`
 - `supabase/migrations/archived/20260830000000_consolidated_email_verification_final.sql`
 
-## Test suite (53)
+## Test suite (54)
 
 Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invariants have guard tests here.
 
@@ -660,6 +660,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/darkFormControls.test.ts`
 - `src/test/darkThemeCoverage.test.ts`
 - `src/test/dashboardSection.test.ts`
+- `src/test/domainSwitchGuard.test.ts`
 - `src/test/earningsChart.test.tsx`
 - `src/test/errorBoundary.test.tsx`
 - `src/test/escrow.test.ts`
@@ -695,7 +696,7 @@ Vitest, jsdom, single worker (see `vitest.config.ts`). Security and money invari
 - `src/test/typographyFonts.test.ts`
 - `src/test/waitlistPage.test.tsx`
 
-## Operational scripts (32)
+## Operational scripts (34)
 
 Build, preflight, security audit and the E2E harnesses. Nothing here is imported by the app.
 
@@ -705,6 +706,7 @@ Build, preflight, security audit and the E2E harnesses. Nothing here is imported
 - `scripts/check_providers.mjs`
 - `scripts/check-mvp-scope.mjs`
 - `scripts/create_test_users.mjs`
+- `scripts/domain-switch.mjs`
 - `scripts/e2e/ai-providers.mjs`
 - `scripts/e2e/auth-flows.mjs`
 - `scripts/e2e/auth-lifecycle.mjs`
@@ -724,6 +726,7 @@ Build, preflight, security audit and the E2E harnesses. Nothing here is imported
 - `scripts/e2e/razorpay-webhook-rehearsal.mjs`
 - `scripts/e2e/remove-test-accounts.mjs`
 - `scripts/e2e/surface-audit.mjs`
+- `scripts/e2e/with-env.mjs`
 - `scripts/founder-preflight.mjs`
 - `scripts/gen-disposable-blocklist.mjs`
 - `scripts/live_signup_test.mjs`

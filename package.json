@@ -17,6 +17,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:mvp-scope": "node scripts/check-mvp-scope.mjs",
+    "domain:switch": "node scripts/domain-switch.mjs",
     "docs:map": "node scripts/project-map.mjs",
     "docs:check": "node scripts/project-map.mjs --check",
     "verify": "npm run typecheck && npm run lint && npm test && npm run build",

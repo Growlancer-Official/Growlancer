@@ -383,9 +383,17 @@ function domainReadiness() {
     : bad('supabase/config.toml is missing the .com auth redirects');
 
   const pusher = read('scripts/push_redirect_urls.mjs');
-  pusher.includes("'https://growlancer.com'")
-    ? ok('scripts/push_redirect_urls.mjs seeds the .com redirects')
-    : bad('scripts/push_redirect_urls.mjs does not include .com');
+  // The custom-domain redirect entries are DERIVED from APP_URL (no hard-coded
+  // `growlancer.com` literal left — a literal list silently missed every other
+  // domain when the switch target changed).
+  pusher.includes('new URL(SITE_URL).host') && pusher.includes('UNIQUE_REDIRECT_URLS')
+    ? ok('scripts/push_redirect_urls.mjs derives the custom-domain redirects from APP_URL')
+    : bad('scripts/push_redirect_urls.mjs no longer derives redirects from APP_URL');
+
+  const switcher = read('scripts/domain-switch.mjs');
+  switcher.includes("mode !== '--check'") && switcher.includes('await check()')
+    ? ok('scripts/domain-switch.mjs fails closed — no APP_URL flip until DNS + HTTPS verify')
+    : bad('scripts/domain-switch.mjs lost its pre-flight gate');
 }
 
 // ─── main ───────────────────────────────────────────────────────────────────

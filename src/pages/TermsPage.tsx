@@ -55,7 +55,7 @@ const termsSections: Section[] = [
     },
     {
       id: 'fees',
-      title: '3. Growlancer 5% Platform Fees',
+      title: '3. Platform Fees & 5% Commission',
       icon: IndianRupee,
       content: (
         <>

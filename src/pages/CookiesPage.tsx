@@ -81,9 +81,27 @@ export function CookiesPage() {
               <a href="https://www.aboutcookies.org" target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:underline"> aboutcookies.org</a>.
             </p>
 
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Your Consent Choices</h2>
+            <p className="text-slate-600 mb-4">
+              On your first visit we ask which categories you allow. Essential storage is always
+              on; analytics and functional preferences are optional. Your choice is stored on
+              your device under <code className="rounded bg-slate-100 px-1 py-0.5 text-xs">growlancer_consent</code>{' '}
+              so we do not ask again. You can change your mind at any time by clearing that entry
+              in your browser&apos;s site-data settings and reloading the page — the banner will
+              reappear and you can choose again. Withdrawing analytics consent stops new
+              measurements; it does not delete aggregate counts already recorded.
+            </p>
+
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Changes to This Policy</h2>
-            <p className="text-slate-600">
+            <p className="text-slate-600 mb-8">
               We may update this policy from time to time. Changes will be posted on this page with an updated date.
+            </p>
+
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Contact</h2>
+            <p className="text-slate-600">
+              Questions about cookies or this policy? Email{' '}
+              <a href="mailto:support@growlancer.com" className="text-emerald-600 hover:underline">support@growlancer.com</a>{' '}
+              — we acknowledge requests within 24 hours and aim to resolve them within 15 days.
             </p>
           </div>
         </div>

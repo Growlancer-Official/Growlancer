@@ -2,14 +2,11 @@ import React, { useState, startTransition, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { ROUTES } from '../routes';
-import { 
-  Activity, AlertCircle, ArrowRight, BadgeCheck, BarChart3, 
-  BriefcaseBusiness, CalendarCheck, CheckCircle2, CheckSquare, 
-  ClipboardCheck, ClipboardList, Clock3, Cpu, Eye, Flag, 
-  FolderKanban, GitCompare, Handshake, IndianRupee, Layers,
-  Loader2, Lock, LockKeyhole, MessageSquareText, MessagesSquare,
-  Package, Receipt, ScanText, ShieldCheck, Sparkles, Target, Timer,
-  Users, Wallet, Wand2, X, Zap,
+import {
+  AlertCircle, ArrowRight, BriefcaseBusiness, CheckCircle2,
+  ClipboardCheck, ClipboardList, Clock3, Eye, FolderKanban, Handshake,
+  IndianRupee, Layers, Loader2, LockKeyhole, MessagesSquare, Package,
+  Receipt, ShieldCheck, Sparkles, Timer, Users, Wallet, Wand2, Zap,
 } from 'lucide-react';
 import { useCategories } from '../hooks/useCategories';
 import { useCountries } from '../hooks/useCountries';
@@ -23,19 +20,20 @@ import { validateEmail } from '../utils/validation';
 // Constants
 // ═══════════════════════════════════════════════════════════════
 const SECTION_PADDING = 'py-6 sm:py-8 lg:py-10';
-const SECTION_PADDING_SM = 'py-5 sm:py-14 lg:py-8';
 const CONTAINER = 'mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12';
 const CARD_CLASS = 'rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm';
 
+type SignupHandler = (role?: 'freelancer' | 'client') => void;
+
 // ═══════════════════════════════════════════════════════════════
-// Hero Section
+// Hero — what we are, how it works, why it is different
 // ═══════════════════════════════════════════════════════════════
 function HeroSection({
   onOpenSignup,
   members,
   countries,
 }: {
-  onOpenSignup: (role?: 'freelancer' | 'client') => void;
+  onOpenSignup: SignupHandler;
   // Supplied by HomePage from its single live-metrics instance: the hero trust
   // line shows the real member/country counts, never a hardcoded number.
   members: number | null;
@@ -67,37 +65,40 @@ function HeroSection({
 
   return (
     <section className="relative overflow-hidden">
-      {/* Subtle background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/40 via-white to-white pointer-events-none" />
-      
+
       <div className={`${CONTAINER} relative pt-12 sm:pt-16 lg:pt-20 pb-10 sm:pb-14 lg:pb-16`}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-10 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center">
           {/* ── Left Content ── */}
           <div className="lg:col-span-6 lg:pr-4">
-            <div className="inline-flex items-center gap-3 rounded-full bg-white ring-1 ring-slate-200 px-3 py-1.5 shadow-sm opacity-0 translate-y-2 animate-fade-up">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white ring-1 ring-slate-200 px-3 py-1.5 shadow-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="text-xs font-sans font-medium text-slate-600">Growlancer · AI-Powered Freelancing Marketplace</span>
+              <span className="text-xs font-sans font-medium text-slate-600">
+                India-first freelancing · escrow-protected
+              </span>
             </div>
 
-            <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 opacity-0 translate-y-2 animate-fade-up animation-delay-80 font-display leading-[1.1]">
-              Hire the right talent,
+            <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 font-display leading-[1.1]">
+              Hire the right freelancer.
               <br />
-              <span className="text-emerald-600">instantly. With AI.</span>
+              <span className="text-emerald-600">Not the loudest proposal.</span>
             </h1>
 
-            <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed max-w-lg opacity-0 translate-y-2 animate-fade-up animation-delay-140">
-              <strong className="text-slate-800">Growlancer</strong> is India's AI-powered freelancing marketplace. AI ranks the best-fit profiles in seconds — not a flood of generic proposals. Protected escrow, a shared workspace, and real-time updates from brief to paid.
+            <p className="mt-4 text-sm sm:text-base text-slate-600 leading-relaxed max-w-lg">
+              Post a brief and get a shortlist ranked on fit — skills, availability and
+              proof of work. Every contract runs on protected escrow, and we earn one
+              flat 5% only when the freelancer gets paid.
             </p>
 
-            <div className="mt-7 flex flex-col sm:flex-row gap-3 opacity-0 translate-y-2 animate-fade-up animation-delay-200">
-              <button 
+            <div className="mt-7 flex flex-col sm:flex-row gap-3">
+              <button
                 onClick={handleStartHiring}
                 className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-600 text-white font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
               >
                 {isAuthenticated ? (role === 'client' ? 'Post a Project' : 'Browse Projects') : 'Start Hiring'}
                 <ArrowRight className="ml-2 w-4 h-4" />
               </button>
-              <button 
+              <button
                 onClick={handleStartFreelancing}
                 className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
               >
@@ -106,30 +107,32 @@ function HeroSection({
               </button>
             </div>
 
-            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600 opacity-0 translate-y-2 animate-fade-up animation-delay-260">
-              <span className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="text-emerald-600 w-4 h-4" />
-                <span>Protected escrow</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Clock3 className="text-emerald-600 w-4 h-4" />
-                <span>Instant AI matches</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <BadgeCheck className="text-emerald-600 w-4 h-4" />
-                <span>No spam proposals</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Users className="text-emerald-600 w-4 h-4" />
-                <span>Shared workspace</span>
-              </span>
+            {/* The four facts that define the product — no inflated claims. */}
+            <div className="mt-6 grid grid-cols-2 gap-2">
+              {[
+                { icon: Wallet, title: '₹0 for clients', desc: 'No platform fee at checkout' },
+                { icon: Receipt, title: '5% flat', desc: 'Only when freelancers get paid' },
+                { icon: ShieldCheck, title: 'Escrow first', desc: 'Funded before work starts' },
+                { icon: Eye, title: 'Merit-only', desc: 'Ranking can never be bought' },
+              ].map(({ icon: Icon, title, desc }) => (
+                <div
+                  key={title}
+                  className="rounded-xl bg-white ring-1 ring-slate-200/70 px-3 py-2.5 shadow-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span className="text-sm font-sans font-semibold text-slate-900">{title}</span>
+                  </div>
+                  <div className="mt-0.5 text-xs text-slate-500 leading-snug">{desc}</div>
+                </div>
+              ))}
             </div>
 
             {/* Trusted by — DB-backed count from get_public_platform_metrics()
                 (same source as the About page). Renders nothing until the real
                 number arrives, so no visitor ever sees an inflated claim. */}
             {members !== null && (
-              <div className="mt-7 text-xs sm:text-sm text-slate-400 opacity-0 translate-y-2 animate-fade-up animation-delay-300">
+              <div className="mt-6 text-xs sm:text-sm text-slate-400">
                 Trusted by <span className="font-sans font-semibold text-slate-600">{members.toLocaleString('en-US')}</span>{' '}
                 member{members === 1 ? '' : 's'}
                 {countries !== null && countries > 0
@@ -137,30 +140,12 @@ function HeroSection({
                   : null}
               </div>
             )}
-
-            {/* Stats Cards */}
-            <div className="mt-6 grid grid-cols-3 gap-2 opacity-0 translate-y-2 animate-fade-up animation-delay-340">
-              {[
-                { label: 'For clients', title: 'Shortlist in seconds', desc: 'AI ranks best-fit profiles' },
-                { label: 'For freelancers', title: 'Get discovered', desc: 'Matched to relevant work' },
-                { label: 'For teams', title: 'One workspace', desc: 'Escrow, files, feedback' },
-              ].map((item) => (
-                <div key={item.label} className="rounded-xl bg-white ring-1 ring-slate-200/70 p-3 shadow-sm hover:shadow-md hover:ring-emerald-200/50 transition-all duration-200">
-                  <div className="text-xs font-sans font-semibold text-slate-400 uppercase tracking-wider">{item.label}</div>
-                  <div className="mt-1 text-sm font-sans font-semibold tracking-tight text-slate-900">{item.title}</div>
-                  <div className="mt-0.5 text-xs font-sans text-slate-500">{item.desc}</div>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* ── Right Visual ── */}
           <div className="lg:col-span-6 flex flex-col items-center">
-            <div className="relative w-full max-w-[640px] opacity-0 translate-y-2 animate-fade-up animation-delay-180">
-              {/* Background glow */}
+            <div className="relative w-full max-w-[640px]">
               <div className="absolute -inset-4 bg-gradient-to-br from-emerald-500/20 via-transparent to-teal-500/20 rounded-[32px] blur-2xl -z-10" />
-              <div className="absolute -top-4 -right-8 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl -z-10" />
-              <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl -z-10" />
 
               <div className="relative rounded-xl overflow-hidden shadow-xl ring-1 ring-black/5 bg-slate-900">
                 {!videoFailed ? (
@@ -177,70 +162,36 @@ function HeroSection({
                     <source src="/videos/hero-demo.mp4" type="video/mp4" />
                   </video>
                 ) : (
-                  <div className="w-full aspect-video flex flex-col items-center justify-center p-3 sm:p-4 bg-gradient-to-br from-slate-800 to-emerald-900">
+                  <div className="w-full aspect-video flex flex-col justify-center p-6 sm:p-8 bg-gradient-to-br from-slate-800 to-emerald-900">
                     <div className="flex items-center gap-3 mb-5">
-                      <div className="h-14 w-14 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                        <Layers className="w-7 h-7 text-emerald-400" strokeWidth={1.5} />
+                      <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                        <Layers className="w-6 h-6 text-emerald-400" strokeWidth={1.5} />
                       </div>
-                      <div className="text-left">
-                        <div className="text-xl font-bold font-display text-white">Growlancer</div>
-                        <div className="text-emerald-400 text-xs font-sans font-medium">AI-Powered Matching Engine</div>
+                      <div>
+                        <div className="text-lg font-bold font-display text-white">Growlancer</div>
+                        <div className="text-emerald-400 text-xs font-sans font-medium">
+                          Brief → ranked shortlist → escrow
+                        </div>
                       </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 w-full max-w-sm">
-                      {/* Only measurable facts here — these used to be invented
-                          performance numbers ("0.3s / 95% fit / 5min") that the
-                          product never measured. */}
+                    <div className="space-y-2.5">
                       {[
-                        { value: '5%', label: 'Commission' },
-                        { value: '0%', label: 'Client Fee' },
-                        { value: '₹0', label: 'To Start' },
-                      ].map((stat) => (
-                        <div key={stat.label} className="bg-white/10 rounded-xl p-2.5 text-center">
-                          <div className="text-xl font-bold text-emerald-400">{stat.value}</div>
-                          <div className="text-xs text-white/60">{stat.label}</div>
+                        'Post the brief once, with real scope and budget',
+                        'Review a shortlist ranked on fit, not bids',
+                        'Fund escrow, deliver in one workspace, release on approval',
+                      ].map((step, i) => (
+                        <div key={step} className="flex items-start gap-2.5">
+                          <span className="mt-0.5 h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-bold flex items-center justify-center shrink-0">
+                            {i + 1}
+                          </span>
+                          <span className="text-xs sm:text-sm text-white/75 leading-relaxed">{step}</span>
                         </div>
                       ))}
-                    </div>
-                    <div className="mt-5 flex items-center gap-3">
-                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <button
-                        onClick={() => isAuthenticated ? navigate(role === 'client' ? '/client/matches' : '/dashboard/feed') : onOpenSignup('client')}
-                        className="text-emerald-400 text-xs font-sans font-medium hover:text-emerald-300 transition-colors cursor-pointer"
-                      >
-                        Live AI Matching Engine — Try Now →
-                      </button>
                     </div>
                   </div>
                 )}
               </div>
             </div>
-
-            {/* Features row below video */}
-            <div className="mt-5 grid grid-cols-4 gap-3 w-full max-w-[640px] opacity-0 translate-y-2 animate-fade-up animation-delay-220">
-              {[
-                { icon: Zap, label: 'Instant', desc: 'AI matching in seconds', color: 'emerald' },
-                { icon: ShieldCheck, label: 'Secure', desc: 'Protected escrow', color: 'blue' },
-                { icon: Target, label: 'Precise', desc: 'Right-fit talent', color: 'purple' },
-                { icon: Clock3, label: 'Fast', desc: 'Quick delivery', color: 'orange' },
-              ].map(({ icon: Icon, label, desc, color }) => {
-                const colorMap = {
-                  emerald: 'from-emerald-50 to-emerald-100 ring-emerald-200 text-emerald-600 group-hover:shadow-emerald-200/50',
-                  blue: 'from-teal-50 to-teal-100 ring-teal-200 text-teal-600 group-hover:shadow-teal-200/50',
-                  purple: 'from-amber-50 to-amber-100 ring-amber-200 text-amber-600 group-hover:shadow-amber-200/50',
-                  orange: 'from-orange-50 to-orange-100 ring-orange-200 text-orange-600 group-hover:shadow-orange-200/50',
-                };
-                return (
-                  <div key={label} className="group text-center">
-                    <div className={`inline-flex items-center justify-center h-12 w-12 rounded-xl bg-gradient-to-br ring-1 mb-2 group-hover:scale-105 group-hover:shadow-lg transition-all duration-200 ${colorMap[color]}`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    <div className="text-xs font-sans font-semibold text-slate-800 group-hover:text-emerald-700 transition-colors">{label}</div>
-                    <div className="text-xs font-sans text-slate-500 mt-0.5 leading-tight">{desc}</div>
-                  </div>
-                );
-              })}
-            </div>
           </div>
         </div>
       </div>
@@ -249,511 +200,7 @@ function HeroSection({
 }
 
 // ═══════════════════════════════════════════════════════════════
-// How It Works
-// ═══════════════════════════════════════════════════════════════
-function HowItWorksSection() {
-  const steps = [
-    {
-      icon: ClipboardList,
-      number: '01',
-      title: 'Post project / create profile',
-      desc: 'Add requirements, timeline, and preferences. Or set your skills and availability.',
-      color: 'bg-slate-900',
-    },
-    {
-      icon: Wand2,
-      number: '02',
-      title: 'AI matches instantly',
-      desc: 'Get a ranked shortlist with fit explanations. No spam, just precision.',
-      color: 'bg-emerald-600',
-    },
-    {
-      icon: Handshake,
-      number: '03',
-      title: 'Start working with escrow',
-      desc: 'Milestones, escrow, and a shared workspace for confident delivery.',
-      color: 'bg-orange-500',
-    },
-  ];
-
-  return (
-    <section className={SECTION_PADDING}>
-      <div className={CONTAINER}>
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-10 lg:mb-12">
-          <div className="max-w-2xl">
-            <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">How it works</div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
-              A simple 3-step system
-            </h2>
-            <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
-              Post work (or a profile), get matched instantly, and collaborate with escrow from day one.
-            </p>
-          </div>
-          <div className="rounded-full bg-white ring-1 ring-slate-200 px-4 py-2 text-xs text-slate-500 shadow-sm w-fit lg:ml-auto">
-            Built for speed, built for clarity
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 lg:gap-3">
-          {steps.map((step) => (
-            <div key={step.number} className="group relative rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 hover:shadow-lg hover:ring-emerald-200/50 transition-all duration-300">
-              <div className="flex items-center justify-between mb-2">
-                <div className={`h-11 w-11 rounded-xl flex items-center justify-center ${step.color}`}>
-                  <step.icon className="text-white w-5 h-5" />
-                </div>
-                <span className="text-2xl font-bold text-slate-200 font-display">{step.number}</span>
-              </div>
-              <h3 className="text-base font-sans font-semibold tracking-tight text-slate-900">{step.title}</h3>
-              <p className="mt-1.5 text-sm text-slate-500 leading-relaxed">{step.desc}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// Why Different
-// ═══════════════════════════════════════════════════════════════
-function WhyDifferentSection() {
-  const comparisons = [
-    {
-      growlancer: 'AI-ranked shortlist from day one',
-      traditional: 'Hundreds of generic proposals to sort through',
-      icon: Zap,
-    },
-    {
-      growlancer: 'Invite-only matching based on fit',
-      traditional: 'Race-to-the-bottom price bidding',
-      icon: Target,
-    },
-    {
-      growlancer: 'Escrow + milestone payment structure',
-      traditional: 'Unclear payments and endless email threads',
-      icon: ShieldCheck,
-    },
-    {
-      growlancer: 'Unified workspace for files, feedback, updates',
-      traditional: 'Tools scattered across chats and docs',
-      icon: FolderKanban,
-    },
-  ];
-
-  const pillars = [
-    {
-      icon: Cpu,
-      title: 'AI-Powered Precision',
-      desc: 'Our multi-variable engine evaluates skills, experience, availability, and past performance to deliver ranked matches — not spam proposals.',
-      gradient: 'from-emerald-500/10 to-emerald-600/5',
-      iconBg: 'bg-emerald-100 text-emerald-600',
-      border: 'hover:border-emerald-200',
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Escrow-First Trust',
-      desc: 'Every contract is protected by secure escrow. Funds release only when milestones are approved — safety for both sides.',
-      gradient: 'from-teal-500/10 to-teal-600/5',
-      iconBg: 'bg-teal-100 text-teal-600',
-      border: 'hover:border-teal-200',
-    },
-    {
-      icon: Users,
-      title: 'Built for Collaboration',
-      desc: 'Shared workspaces with task boards, notes, and real-time updates keep everyone aligned. No context-switching across tools.',
-      gradient: 'from-amber-500/10 to-amber-600/5',
-      iconBg: 'bg-amber-100 text-amber-600',
-      border: 'hover:border-amber-200',
-    },
-    {
-      icon: BarChart3,
-      title: 'Data-Driven Growth',
-      desc: 'Actionable analytics and transparent success metrics help you make better hiring and freelancing decisions every time.',
-      gradient: 'from-orange-500/10 to-orange-600/5',
-      iconBg: 'bg-orange-100 text-orange-600',
-      border: 'hover:border-orange-200',
-    },
-  ];
-
-  return (
-    <section className={`${SECTION_PADDING} bg-white`}>
-      <div className={CONTAINER}>
-        {/* Header */}
-        <div className="text-center max-w-3xl mx-auto mb-12 lg:mb-14">
-          <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Why Growlancer</div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-sans font-bold text-slate-900 font-display mb-2">
-            Built Different — How We Stand Out
-          </h2>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            We fixed the broken parts of freelancing: no proposal spam, structured payments, 
-            and AI that matches on fit, not noise.
-          </p>
-        </div>
-
-        {/* Comparison Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-14 lg:mb-16">
-          {comparisons.map((item, i) => (
-            <div key={i} className={`${CARD_CLASS} overflow-hidden hover:shadow-md transition-all duration-200`}>
-              <div className="p-4 bg-emerald-50/60">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-emerald-100 ring-1 ring-emerald-200 flex items-center justify-center flex-shrink-0">
-                    <item.icon className="text-emerald-600 w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-sans font-bold text-emerald-600 uppercase tracking-widest">Growlancer</div>
-                    <div className="text-sm font-sans font-medium text-slate-800">{item.growlancer}</div>
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 border-t border-slate-100">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-slate-50 ring-1 ring-slate-200 flex items-center justify-center flex-shrink-0">
-                    <X className="text-slate-400 w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Traditional</div>
-                    <div className="text-sm text-slate-500">{item.traditional}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Pillar Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-3">
-          {pillars.map((pillar, i) => {
-            const Icon = pillar.icon;
-            return (
-              <div
-                key={i}
-                className={`group bg-white rounded-xl p-3 lg:p-7 border border-slate-200/60 shadow-sm hover:shadow-lg ${pillar.border} transition-all duration-300 relative overflow-hidden`}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${pillar.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-                <div className="relative flex items-start gap-3">
-                  <div className={`h-12 w-12 rounded-xl flex items-center justify-center shrink-0 ${pillar.iconBg} group-hover:scale-110 transition-transform duration-300`}>
-                    <Icon className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-sans font-bold text-slate-900 mb-1.5">{pillar.title}</h3>
-                    <p className="text-sm text-slate-500 leading-relaxed">{pillar.desc}</p>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// Freelancer Section
-// ═══════════════════════════════════════════════════════════════
-function FreelancerSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
-  return (
-    <section className={SECTION_PADDING}>
-      <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-3">
-          {/* Left Content */}
-          <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4 lg:p-10">
-            <div>
-              <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-1">For freelancers</div>
-              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
-                Stop chasing projects
-              </h2>
-              <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
-                Get matched automatically to work that fits your skills, availability, and preferences. 
-                Spend time delivering, not pitching.
-              </p>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {[
-                { icon: GitCompare, title: 'Get matched automatically', desc: 'Your profile acts like an always-on application, without spam.' },
-                { icon: BriefcaseBusiness, title: 'Relevant projects only', desc: 'Better fit means better outcomes and repeat work.' },
-                { icon: Wallet, title: 'Earn faster', desc: 'Milestones and escrow help you ship and get paid on time.' },
-                { icon: MessagesSquare, title: 'Collaborate easily', desc: 'Files, feedback, and updates stay connected to the project.' },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:bg-emerald-50/50 hover:ring-emerald-200/50 transition-all duration-200">
-                  <div className="flex items-center gap-3 mb-1.5">
-                    <Icon className="text-slate-600 w-4 h-4" />
-                    <div className="text-sm font-sans font-semibold text-slate-900">{title}</div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-500">{desc}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-7 flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={() => onOpenSignup('freelancer')} 
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
-              >
-                Create Freelancer Profile
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </button>
-              <Link 
-                to={ROUTES.FEATURES} 
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
-              >
-                Explore features
-              </Link>
-            </div>
-          </div>
-
-          {/* Right Dark Card */}
-          <div className="lg:col-span-5 rounded-xl bg-slate-900 text-white shadow-sm p-3 sm:p-4 lg:p-10 relative overflow-hidden">
-            <div className="absolute -top-16 -right-20 h-56 w-56 rounded-full bg-emerald-600/20" />
-            <div className="absolute -bottom-16 -left-20 h-56 w-56 rounded-full bg-orange-500/15" />
-            <div className="relative">
-              <div className="text-xs font-sans font-semibold text-white/50 uppercase tracking-widest">Freelancer-first detail</div>
-              <div className="mt-2 text-xl sm:text-2xl font-bold tracking-tight font-display">Signal-based matching</div>
-              <p className="mt-3 text-sm text-white/70 leading-relaxed">
-                Your availability, focus areas, and recent work matter. Growlancer prioritizes fit over volume.
-              </p>
-
-              <div className="mt-6 space-y-3">
-                {[
-                  { icon: ScanText, title: 'Profile clarity', desc: 'Skills, samples, and scope preference are structured.' },
-                  { icon: CalendarCheck, title: 'Availability signals', desc: 'Opt in to match windows, not constant bidding.' },
-                  { icon: CheckSquare, title: 'Workflow readiness', desc: 'Milestones and deliverables reduce misalignment.' },
-                ].map(({ icon: Icon, title, desc }) => (
-                  <div key={title} className="rounded-xl bg-white/10 ring-1 ring-white/10 p-3.5 hover:bg-white/15 transition-colors">
-                    <div className="flex items-center justify-between gap-3 mb-1">
-                      <div className="text-sm font-sans font-medium text-white">{title}</div>
-                      <Icon className="text-white/60 w-4 h-4" />
-                    </div>
-                    <div className="text-xs text-white/60">{desc}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// Client Section
-// ═══════════════════════════════════════════════════════════════
-function ClientSection({
-  onOpenSignup,
-  metrics,
-}: {
-  onOpenSignup: (role?: 'freelancer' | 'client') => void;
-  // Supplied by HomePage so the homepage runs ONE metrics instance, not two
-  // (each instance polls the RPC and holds a realtime subscription).
-  metrics: Array<{ value: string; label: string }>;
-}) {
-  return (
-    <section className={SECTION_PADDING_SM}>
-      <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-3">
-          {/* Left Card */}
-          <div className="lg:col-span-5 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4 flex flex-col">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="h-10 w-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center">
-                <Timer className="text-orange-600 w-5 h-5" />
-              </div>
-              <div>
-                <div className="text-xs font-sans font-semibold text-slate-400 uppercase tracking-widest">For clients</div>
-                <div className="text-lg font-bold tracking-tight text-slate-900">Stop wasting time hiring</div>
-              </div>
-            </div>
-
-            <ul className="space-y-3 text-sm text-slate-600">
-              {[
-                { bold: 'Instant AI recommendations', text: 'that fit your project constraints.' },
-                { bold: 'No spam proposals', text: '— you invite who you want to talk to.' },
-                { bold: 'Hire quickly', text: 'with milestones and escrow ready to go.' },
-                { bold: 'Track projects easily', text: 'with a shared workspace for delivery.' },
-              ].map(({ bold, text }) => (
-                <li key={bold} className="flex gap-3.5">
-                  <CheckCircle2 className="text-emerald-600 w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <div><span className="font-sans font-semibold text-slate-800">{bold}</span>{text}</div>
-                </li>
-              ))}
-            </ul>
-
-            {/* Trust strip */}
-            <div className="mt-5 grid grid-cols-3 gap-3">
-              {[
-                { icon: ShieldCheck, label: 'Escrow protection' },
-                { icon: Zap, label: 'Real-time updates' },
-                { icon: BadgeCheck, label: 'Profile verification' },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="rounded-lg bg-slate-50 ring-1 ring-slate-200/70 px-2 py-2.5 flex items-center justify-center gap-1.5">
-                  <Icon className="text-emerald-600 w-4 h-4 flex-shrink-0" />
-                  <span className="text-xs font-sans font-semibold text-slate-600 leading-tight">{label}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Live platform metrics — flex-1 fills the remaining card height (no blank space) */}
-            <div className="mt-4 flex-1 flex flex-col justify-center rounded-xl bg-gradient-to-br from-emerald-50 via-teal-50/60 to-white ring-1 ring-emerald-100/70 px-4 py-3.5">
-              <div className="flex items-center gap-3 mb-2.5">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-                </span>
-                <span className="text-xs font-sans font-semibold text-emerald-700 uppercase tracking-wider">Live platform metrics</span>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { value: metrics[0]?.value ?? '…', label: 'Members' },
-                  { value: metrics[1]?.value ?? '…', label: 'Escrow protected' },
-                  { value: metrics[2]?.value ?? '…', label: 'Satisfaction' },
-                ].map(({ value, label }) => (
-                  <div key={label} className="rounded-lg bg-white/90 ring-1 ring-emerald-100/70 py-2.5 px-1 text-center">
-                    <div className="text-base sm:text-lg font-sans font-bold text-slate-900 leading-none">{value}</div>
-                    <div className="text-xs text-slate-500 mt-1.5 leading-tight">{label}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="mt-5 flex flex-col sm:flex-row gap-3">
-              <button 
-                onClick={() => onOpenSignup('client')}
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
-              >
-                Get Started
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </button>
-              <Link 
-                to={ROUTES.CATEGORIES} 
-                className="inline-flex items-center justify-center h-11 px-5 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
-              >
-                Browse categories
-              </Link>
-            </div>
-          </div>
-
-          {/* Right Content */}
-          <div className="lg:col-span-7 rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-3 sm:p-4">
-            <div>
-              <div className="text-xs font-sans font-semibold text-slate-400 uppercase tracking-widest">Client workflow preview</div>
-              <h3 className="mt-2 text-xl sm:text-2xl font-bold tracking-tight text-slate-900 font-display">
-                From brief to escrow, without tool chaos
-              </h3>
-              <p className="mt-2 text-sm text-slate-600 leading-relaxed max-w-xl">
-                Define scope, invite matches, and collaborate in a structured workspace 
-                that keeps delivery predictable.
-              </p>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
-              {[
-                { icon: Flag, title: 'Milestones', desc: 'Break work into clear deliverables with approvals.' },
-                { icon: Lock, title: 'Escrow', desc: 'Secure escrow helps both sides move forward confidently.' },
-                { icon: MessageSquareText, title: 'Feedback loop', desc: 'Comments and revisions stay tied to the work.' },
-                { icon: Activity, title: 'Status clarity', desc: 'Track progress with simple, consistent states.' },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:bg-orange-50/50 hover:ring-orange-200/50 transition-all duration-200">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-sm font-sans font-semibold text-slate-900">{title}</div>
-                    <Icon className="text-slate-400 w-4 h-4" />
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-500">{desc}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5 rounded-xl bg-emerald-50 ring-1 ring-emerald-100/70 p-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <Zap className="text-emerald-600 w-4 h-4" />
-                  <span className="text-sm font-sans font-semibold text-slate-800">Real-time ready by design</span>
-                </div>
-                <span className="text-xs sm:text-sm text-slate-500">
-                  Messages, milestones, and escrow updates sync live.
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// Categories Section
-// ═══════════════════════════════════════════════════════════════
-function CategoriesSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
-  const { categories, loading, error, refresh } = useCategories();
-
-  return (
-    <section className={`${SECTION_PADDING} bg-white`}>
-      <div className={CONTAINER}>
-        {/* Error banner */}
-        {error && !loading && (
-          <div className="mb-3 flex items-center gap-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <span>Could not load live category data.</span>
-            <button onClick={refresh} className="ml-auto text-xs font-sans font-medium text-amber-700 underline hover:text-amber-800 whitespace-nowrap">
-              Retry
-            </button>
-          </div>
-        )}
-
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-2 lg:mb-10">
-          <div className="max-w-2xl">
-            <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Categories</div>
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
-              Browse All Categories
-            </h2>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
-              {loading 
-                ? 'Loading categories...' 
-                : `${categories.length} categories — from Development & IT to Sustainability.`
-              }
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link
-              to={ROUTES.CATEGORIES}
-              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
-            >
-              View All
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </Link><button
-                onClick={() => onOpenSignup('client')}
-                className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-sans font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
-              >
-              Hire talent
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <CategoriesSectionComponent mode="browse" maxInitial={10} />
-        </div>
-
-        <div className="mt-6 text-center">
-          <Link
-            to={ROUTES.CATEGORIES}
-            className="inline-flex items-center gap-3 px-5 py-2.5 bg-white text-emerald-600 font-sans font-semibold rounded-xl border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all text-sm shadow-sm"
-          >
-            <Layers className="w-4 h-4" />
-            Explore All {categories.length} Categories
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// Live Services Section (Browse Services)
-// Shows freshly published freelancer services in real time — freelancer
-// name, price and how long ago the service was listed.
+// Live Services — real supply, updated in real time
 // ═══════════════════════════════════════════════════════════════
 interface LiveService {
   id: string;
@@ -805,8 +252,8 @@ function LiveServicesSection() {
     };
     void load();
 
-    // 🔴 Real-time — a new service appears on the homepage the moment it is
-    // published; deletions drop off instantly too.
+    // Real-time: a published service appears immediately, and a deactivated
+    // one drops off instead of lingering until the next refresh.
     const channel = supabase
       .channel('homepage-live-services')
       .on(
@@ -816,8 +263,6 @@ function LiveServicesSection() {
       )
       .on(
         'postgres_changes',
-        // UPDATE matters: a freelancer DEACTIVATING a service must drop it off
-        // the homepage in real time, not just new publications appearing.
         { event: 'UPDATE', schema: 'public', table: 'services' },
         () => void load()
       )
@@ -837,20 +282,20 @@ function LiveServicesSection() {
   return (
     <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-2 lg:mb-10">
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-6 lg:mb-8">
           <div className="max-w-2xl">
-            <div className="inline-flex items-center gap-3 text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">
+            <div className="inline-flex items-center gap-2 text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
-              Browse Services
+              Live marketplace
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
-              Fresh services, listed live
+              What freelancers are offering right now
             </h2>
             <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
-              Freelancers publish their offerings in real time — see who is live right now.
+              Published packages, real prices, updated the moment a freelancer goes live.
             </p>
           </div>
           <Link
@@ -863,7 +308,7 @@ function LiveServicesSection() {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className={`${CARD_CLASS} animate-pulse`}>
                 <div className="aspect-video bg-slate-100" />
@@ -877,10 +322,10 @@ function LiveServicesSection() {
         ) : services.length === 0 ? (
           <div className={`${CARD_CLASS} p-10 text-center`}>
             <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
-            <p className="text-slate-500 text-sm">No services published yet — be the first to list one!</p>
+            <p className="text-slate-500 text-sm">No services published yet — be the first to list one.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
             {services.map((service) => (
               <Link
                 key={service.id}
@@ -889,8 +334,6 @@ function LiveServicesSection() {
               >
                 {service.image_url ? (
                   <div className="aspect-video bg-slate-50 overflow-hidden">
-                    {/* object-contain + padding → the FULL uploaded image shows,
-                        never cropped/cut (matches the "full size" requirement) */}
                     <img
                       src={service.image_url}
                       alt={service.title}
@@ -946,46 +389,59 @@ function LiveServicesSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Features Section
+// How it works — three steps, one contract
 // ═══════════════════════════════════════════════════════════════
-function FeaturesSection() {
-  const features = [
-    { icon: Sparkles, title: 'AI Matching', desc: 'Ranked recommendations with explainable fit signals — built to reduce noise.', color: 'emerald' },
-    { icon: ShieldCheck, title: 'Escrow Payments', desc: 'Secure escrow + milestone structure so both sides know what happens next.', color: 'orange' },
-    { icon: FolderKanban, title: 'Workspace', desc: 'Keep scope, files, feedback, and approvals connected to the project.', color: 'slate' },
-    { icon: Users, title: 'Collaboration', desc: 'Invite stakeholders, set expectations, and move decisions forward quickly.', color: 'emerald' },
+function HowItWorksSection() {
+  const steps = [
+    {
+      icon: ClipboardList,
+      number: '01',
+      title: 'Post a brief — or a profile',
+      desc: 'Clients add scope, budget and timeline. Freelancers publish skills, packages and availability.',
+      color: 'bg-slate-900',
+    },
+    {
+      icon: Wand2,
+      number: '02',
+      title: 'Match on fit, not bids',
+      desc: 'A shortlist ranked on skills, availability and past work — with the signals shown. Ranking can never be bought.',
+      color: 'bg-emerald-600',
+    },
+    {
+      icon: Handshake,
+      number: '03',
+      title: 'Fund escrow, deliver, release',
+      desc: 'Agree milestones, fund escrow before work starts, collaborate in one workspace and release on approval.',
+      color: 'bg-orange-500',
+    },
   ];
 
-  const colorStyles = {
-    emerald: { bg: 'bg-emerald-50 ring-emerald-100 text-emerald-600', hover: 'hover:ring-emerald-200' },
-    orange: { bg: 'bg-orange-50 ring-orange-100 text-orange-600', hover: 'hover:ring-orange-200' },
-    slate: { bg: 'bg-slate-50 ring-slate-200 text-slate-600', hover: 'hover:ring-slate-300' },
-  };
-
   return (
-    <section className={SECTION_PADDING_SM}>
+    <section className={`${SECTION_PADDING} bg-white`}>
       <div className={CONTAINER}>
-        <div className="max-w-2xl mb-2 lg:mb-10">
-          <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Features</div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">Product features</h2>
+        <div className="max-w-2xl mb-6 lg:mb-8">
+          <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">How it works</div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
+            One brief to one paid contract
+          </h2>
           <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
-            Minimal surface area, high leverage. Every feature supports speed, trust, and collaboration.
+            No proposal flood, no chasing invoices, no scattered tools.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-3">
-          {features.map((feat) => {
-            const styles = colorStyles[feat.color as keyof typeof colorStyles];
-            return (
-              <div key={feat.title} className={`${CARD_CLASS} p-3 ${styles.hover} hover:shadow-md transition-all duration-200 group`}>
-                <div className={`h-10 w-10 rounded-xl ring-1 flex items-center justify-center ${styles.bg} group-hover:scale-110 transition-transform`}>
-                  <feat.icon className="w-5 h-5" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {steps.map((step) => (
+            <div key={step.number} className="relative rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-5 hover:shadow-lg hover:ring-emerald-200/50 transition-all duration-300">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`h-11 w-11 rounded-xl flex items-center justify-center ${step.color}`}>
+                  <step.icon className="text-white w-5 h-5" />
                 </div>
-                <div className="mt-3.5 text-base font-sans font-semibold tracking-tight text-slate-900">{feat.title}</div>
-                <p className="mt-1 text-sm text-slate-500 leading-relaxed">{feat.desc}</p>
+                <span className="text-2xl font-bold text-slate-200 font-display">{step.number}</span>
               </div>
-            );
-          })}
+              <h3 className="text-base font-sans font-semibold tracking-tight text-slate-900">{step.title}</h3>
+              <p className="mt-1.5 text-sm text-slate-500 leading-relaxed">{step.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
@@ -993,53 +449,105 @@ function FeaturesSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Pricing Section
+// Both sides — replaces the old separate Freelancer/Client/Why/
+// Features/Trust sections, which repeated the same four promises.
 // ═══════════════════════════════════════════════════════════════
-function PricingSection() {
+function BothSidesSection({ onOpenSignup }: { onOpenSignup: SignupHandler }) {
+  const clientPoints = [
+    { icon: Zap, title: 'Shortlist in minutes', desc: 'Ranked on fit, with the reasons shown — not a wall of proposals.' },
+    { icon: LockKeyhole, title: 'Escrow before work', desc: 'You fund the agreed amount once. It releases only when you approve.' },
+    { icon: FolderKanban, title: 'One workspace', desc: 'Milestones, files, feedback and approvals stay on the contract.' },
+    { icon: Wallet, title: 'Nothing added at checkout', desc: 'No platform fee, no buyer premium, no surprise line items.' },
+  ];
+
+  const freelancerPoints = [
+    { icon: BriefcaseBusiness, title: 'Work that fits', desc: 'Your profile is matched to relevant briefs instead of constant bidding.' },
+    { icon: Receipt, title: 'Keep 95%', desc: 'One flat 5%, deducted when the payout is released. Nothing upfront.' },
+    { icon: Timer, title: 'Paid on delivery', desc: 'Approved work releases from escrow; a silent client cannot hold it forever.' },
+    { icon: MessagesSquare, title: 'Packages stay free', desc: 'Basic, Standard and Premium packages cost nothing to publish.' },
+  ];
+
   return (
-    <section className={`${SECTION_PADDING} bg-white`}>
+    <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className={`${CARD_CLASS} overflow-hidden`}>
-          <div className="p-3 sm:p-4 lg:p-10">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
-              <div className="max-w-2xl">
-                <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Pricing</div>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
-                  Pricing that stays transparent
-                </h2>
-                <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
-                  We keep pricing simple: clear fees, no pay-to-bid mechanics, and no incentives for spam.
-                </p>
+        <div className="max-w-2xl mb-6 lg:mb-8">
+          <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Built for both sides</div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
+            The same contract protects both of you
+          </h2>
+          <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
+            One escrow, one scope, one set of milestones — so neither side has to trust
+            the other&apos;s screenshots or inbox.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+          {/* Clients */}
+          <div className="rounded-xl bg-white ring-1 ring-slate-200/70 shadow-sm p-5 sm:p-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-orange-50 ring-1 ring-orange-100 flex items-center justify-center">
+                <Users className="text-orange-600 w-5 h-5" />
               </div>
-              <div className="rounded-xl bg-emerald-50 ring-1 ring-emerald-100/70 p-4 w-full lg:w-[380px] shrink-0">
-                <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-white ring-1 ring-emerald-100 flex items-center justify-center shrink-0">
-                    <Receipt className="text-emerald-600 w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-sans font-semibold text-slate-800">Fee clarity, upfront</div>
-                    <div className="mt-0.5 text-xs text-slate-500">Clients post without friction. Freelancers focus on fit, not bidding.</div>
-                  </div>
-                </div>
+              <div>
+                <div className="text-xs font-sans font-semibold text-slate-400 uppercase tracking-widest">For clients</div>
+                <div className="text-lg font-bold tracking-tight text-slate-900">Hire without the guesswork</div>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-3">
-              {[
-                { icon: ShieldCheck, title: 'No proposal spam', desc: 'The platform is designed around invites, not floods.' },
-                { icon: Wallet, title: 'Escrow-first workflow', desc: 'Milestones keep payments and deliverables aligned.' },
-                { icon: CheckCircle2, title: 'Predictable experience', desc: 'Clear fees, clear next steps, fewer moving parts.' },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:shadow-sm transition-all">
-                  <div className="flex items-start gap-3">
-                    <Icon className="text-emerald-600 w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <div className="text-sm font-sans font-semibold text-slate-800">{title}</div>
-                      <div className="mt-0.5 text-xs text-slate-500">{desc}</div>
-                    </div>
+            <ul className="mt-5 space-y-3">
+              {clientPoints.map(({ icon: Icon, title, desc }) => (
+                <li key={title} className="flex gap-3">
+                  <Icon className="text-emerald-600 w-4 h-4 mt-0.5 shrink-0" />
+                  <div>
+                    <div className="text-sm font-sans font-semibold text-slate-800">{title}</div>
+                    <div className="text-xs sm:text-sm text-slate-500 leading-relaxed">{desc}</div>
                   </div>
-                </div>
+                </li>
               ))}
+            </ul>
+
+            <button
+              onClick={() => onOpenSignup('client')}
+              className="mt-6 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
+            >
+              Post a project
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Freelancers */}
+          <div className="rounded-xl bg-slate-900 text-white shadow-sm p-5 sm:p-6 relative overflow-hidden">
+            <div className="absolute -top-16 -right-20 h-56 w-56 rounded-full bg-emerald-600/20 pointer-events-none" />
+            <div className="relative">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-white/10 ring-1 ring-white/10 flex items-center justify-center">
+                  <Sparkles className="text-emerald-400 w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs font-sans font-semibold text-white/50 uppercase tracking-widest">For freelancers</div>
+                  <div className="text-lg font-bold tracking-tight">Get paid for the work</div>
+                </div>
+              </div>
+
+              <ul className="mt-5 space-y-3">
+                {freelancerPoints.map(({ icon: Icon, title, desc }) => (
+                  <li key={title} className="flex gap-3">
+                    <Icon className="text-emerald-400 w-4 h-4 mt-0.5 shrink-0" />
+                    <div>
+                      <div className="text-sm font-sans font-semibold text-white">{title}</div>
+                      <div className="text-xs sm:text-sm text-white/60 leading-relaxed">{desc}</div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => onOpenSignup('freelancer')}
+                className="mt-6 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-500 text-slate-900 font-sans font-semibold hover:bg-emerald-400 transition-all text-sm"
+              >
+                Create a freelancer profile
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
@@ -1049,70 +557,114 @@ function PricingSection() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Team Projects + Trust Content Section
+// Categories
 // ═══════════════════════════════════════════════════════════════
-function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
+function CategoriesSection({ onOpenSignup }: { onOpenSignup: SignupHandler }) {
+  const { categories, loading, error, refresh } = useCategories();
+
   return (
     <section className={`${SECTION_PADDING} bg-white`}>
       <div className={CONTAINER}>
+        {error && !loading && (
+          <div className="mb-3 flex items-center gap-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-xs">
+            <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <span>Could not load live category data.</span>
+            <button onClick={refresh} className="ml-auto text-xs font-sans font-medium text-amber-700 underline hover:text-amber-800 whitespace-nowrap">
+              Retry
+            </button>
+          </div>
+        )}
+
+        <div className="flex flex-col items-center text-center lg:text-left lg:flex-row lg:items-end lg:justify-between gap-3 mb-6 lg:mb-8">
+          <div className="max-w-2xl">
+            <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Categories</div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
+              Browse by what you need done
+            </h2>
+            <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl mx-auto lg:mx-0">
+              {loading
+                ? 'Loading categories...'
+                : `${categories.length} live categories — from development and design to marketing and operations.`}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link
+              to={ROUTES.CATEGORIES}
+              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm"
+            >
+              View All
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </Link>
+            <button
+              onClick={() => onOpenSignup('client')}
+              className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-emerald-600 text-white font-sans font-semibold hover:bg-emerald-700 transition-all text-sm shadow-sm"
+            >
+              Hire talent
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        <CategoriesSectionComponent mode="browse" maxInitial={10} />
+
+        <div className="mt-6 text-center">
+          <Link
+            to={ROUTES.CATEGORIES}
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-emerald-600 font-sans font-semibold rounded-xl border border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 transition-all text-sm shadow-sm"
+          >
+            <Layers className="w-4 h-4" />
+            Explore all {categories.length} categories
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// Team projects — the one differentiator that needs explaining
+// ═══════════════════════════════════════════════════════════════
+function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: SignupHandler }) {
+  return (
+    <section className={SECTION_PADDING}>
+      <div className={CONTAINER}>
         <div className={`${CARD_CLASS} overflow-hidden`}>
-          <div className="p-3 sm:p-4 lg:p-10">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-3">
+          <div className="p-5 sm:p-6 lg:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               <div className="max-w-2xl">
                 <div className="text-xs font-sans font-semibold text-violet-600 uppercase tracking-widest mb-2">Team Projects</div>
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
-                  Hire a whole team for big projects
+                  Hire a whole team without one contract covering everyone
                 </h2>
-                <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
-                  Designer, Developer, Writer — all in one place. Each freelancer has their{' '}
-                  <strong className="text-slate-800">own protected escrow</strong>, and each role gets its own
-                  independent contract — one member's issue never affects the rest of the team.
+                <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
+                  Add each role once. Every freelancer gets their own contract, their own
+                  escrow and their own milestones — so one delayed member never freezes
+                  the rest of the team.
                 </p>
                 <button
                   onClick={() => onOpenSignup('client')}
                   className="mt-5 inline-flex items-center justify-center h-11 px-5 rounded-xl bg-emerald-600 text-white font-sans font-semibold shadow-sm hover:bg-emerald-700 hover:shadow-md transition-all text-sm"
                 >
-                  Post a Team Project
+                  Post a team project
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </button>
               </div>
-              <div className="rounded-xl bg-emerald-50 ring-1 ring-emerald-100/70 p-4 w-full lg:w-[380px] shrink-0">
-                <div className="flex items-start gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-white ring-1 ring-violet-100 flex items-center justify-center shrink-0">
-                    <Users className="text-violet-600 w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-sans font-semibold text-slate-800">How team hiring works</div>
-                    <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">
-                      Add a role → AI matches in real time → each role gets its own independent escrow contract.
-                      Commission (5%) per contract — no separate team fee.
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
 
-            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              {[
-                { icon: Receipt, title: 'Only 5% commission', desc: 'Flat and transparent — deducted from the freelancer’s payout. Never added to the client’s invoice.' },
-                { icon: LockKeyhole, title: 'Escrow protection', desc: 'Money releases only when you approve the delivered work.' },
-                { icon: Timer, title: 'Auto-release safety net', desc: 'Silent client? Verified work auto-releases after the review window.' },
-                { icon: BadgeCheck, title: 'Verification badges', desc: 'Identity verification is rolling out in phases. A badge appears on a profile only after a check is actually completed — never on an unverified account.' },
-                { icon: Sparkles, title: 'AI matching, free for clients', desc: 'Instant help finding the right freelancer — free for life.' },
-                { icon: Users, title: 'Independent contracts', desc: 'One member dispute/cancellation never affects the rest of the team.' },
-                { icon: ShieldCheck, title: 'Fair dispute resolution', desc: 'Clear published process — admin-reviewed, split option when fair.' },
-                { icon: Wallet, title: 'Wallet payouts', desc: 'Released funds land in your wallet, then withdraw to your bank or UPI.' },
-              ].map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-4 hover:shadow-sm transition-all">
-                  <div className="flex items-start gap-3">
-                    <Icon className="text-violet-600 w-4 h-4 mt-0.5 flex-shrink-0" />
-                    <div>
-                      <div className="text-sm font-sans font-semibold text-slate-800">{title}</div>
-                      <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">{desc}</div>
-                    </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full lg:w-[420px] shrink-0">
+                {[
+                  { icon: Users, title: 'Independent contracts', desc: 'One per role, never a mega-contract.' },
+                  { icon: LockKeyhole, title: 'Per-role escrow', desc: 'Each role is funded and released on its own.' },
+                  { icon: Receipt, title: 'Same 5%', desc: 'Per contract — there is no separate team fee.' },
+                  { icon: FolderKanban, title: 'Shared workspace', desc: 'The client sees every role in one project.' },
+                ].map(({ icon: Icon, title, desc }) => (
+                  <div key={title} className="rounded-xl bg-slate-50 ring-1 ring-slate-200/70 p-3.5">
+                    <Icon className="text-violet-600 w-4 h-4 mb-1.5" />
+                    <div className="text-sm font-sans font-semibold text-slate-800">{title}</div>
+                    <div className="mt-0.5 text-xs text-slate-500 leading-relaxed">{desc}</div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -1122,61 +674,103 @@ function TeamProjectsSection({ onOpenSignup }: { onOpenSignup: (role?: 'freelanc
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Trust Section
+// Pricing — the actual numbers, not "transparent pricing" fluff
 // ═══════════════════════════════════════════════════════════════
-function TrustSection() {
+function PricingSection() {
+  const tiers = [
+    {
+      audience: 'Clients',
+      price: '₹0',
+      unit: 'platform fee',
+      desc: 'You fund the agreed project amount. Growlancer adds nothing at checkout.',
+      points: ['Escrow included', 'AI matching free for life', 'Unlimited projects'],
+      highlight: false,
+    },
+    {
+      audience: 'Freelancers',
+      price: '5%',
+      unit: 'flat, on payout',
+      desc: 'Deducted from the amount released to you. Nothing upfront, nothing monthly.',
+      points: ['Free profile and packages', 'Merit-based ranking', 'Milestone payouts'],
+      highlight: true,
+    },
+    {
+      audience: 'Optional Pro',
+      price: '₹299',
+      unit: 'per month',
+      desc: 'Extra AI writing capacity for freelancers. Everything core stays free.',
+      points: ['Cancel anytime', 'No lock-in', 'Never affects ranking'],
+      highlight: false,
+    },
+  ];
+
   return (
-    <section className={SECTION_PADDING_SM}>
+    <section className={`${SECTION_PADDING} bg-white`}>
       <div className={CONTAINER}>
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-3">
-          <div className="lg:col-span-5">
-            <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Trust</div>
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 mb-6 lg:mb-8">
+          <div className="max-w-2xl">
+            <div className="text-xs font-sans font-semibold text-emerald-600 uppercase tracking-widest mb-2">Pricing</div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 font-display">
-              Built for trust from day one
+              One fee. Charged once. On the payout.
             </h2>
             <p className="mt-2 text-sm sm:text-base text-slate-600 leading-relaxed">
-              Growlancer builds trust by making the system understandable: how matching works, 
-              how payments are protected, and how projects stay organized.
+              No bidding fees, no buyer premium, no paid placement.
             </p>
-            <div className={`mt-6 ${CARD_CLASS} p-3 hover:shadow-md transition-all`}>
-              <div className="flex items-start gap-3">
-                <Eye className="text-emerald-600 w-5 h-5 mt-0.5 flex-shrink-0" />
-                <div>
-                  <div className="text-xs font-sans font-semibold text-slate-400 uppercase tracking-widest">Platform philosophy</div>
-                  <div className="mt-1 text-sm font-sans font-semibold text-slate-800">Clarity beats hype.</div>
-                  <div className="mt-1 text-xs text-slate-500">
-                    We avoid vanity metrics and focus on workflow transparency and safer collaboration.
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-
-          <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-3 gap-3">
-            {[
-              { icon: Eye, title: 'Transparency', desc: 'See fit reasons and key signals behind each recommendation.', bg: 'bg-slate-50 ring-slate-200 text-slate-600' },
-              { icon: LockKeyhole, title: 'Escrow safety', desc: 'Milestones + secure escrow support a safer payment flow.', bg: 'bg-emerald-50 ring-emerald-100 text-emerald-600' },
-              { icon: ClipboardCheck, title: 'Workflow control', desc: 'Scope and delivery stay structured, reducing misalignment.', bg: 'bg-orange-50 ring-orange-100 text-orange-600' },
-            ].map(({ icon: Icon, title, desc, bg }) => (
-              <div key={title} className={`${CARD_CLASS} p-3 hover:shadow-md transition-all duration-200 group`}>
-                <div className={`h-10 w-10 rounded-xl ring-1 flex items-center justify-center ${bg} group-hover:scale-110 transition-transform`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <div className="mt-3.5 text-base font-sans font-semibold tracking-tight text-slate-900">{title}</div>
-                <p className="mt-1 text-sm text-slate-500 leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
+          <Link
+            to={ROUTES.PRICING}
+            className="inline-flex items-center justify-center h-10 px-4 rounded-xl bg-white text-slate-700 font-sans font-semibold ring-1 ring-slate-300 hover:bg-slate-50 hover:ring-slate-400 transition-all text-sm w-fit"
+          >
+            Full pricing details
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Link>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {tiers.map((tier) => (
+            <div
+              key={tier.audience}
+              className={
+                tier.highlight
+                  ? 'rounded-xl bg-slate-900 text-white shadow-md p-5 ring-1 ring-slate-800'
+                  : `${CARD_CLASS} p-5`
+              }
+            >
+              <div className={`text-xs font-sans font-semibold uppercase tracking-widest ${tier.highlight ? 'text-emerald-400' : 'text-slate-400'}`}>
+                {tier.audience}
+              </div>
+              <div className="mt-2 flex items-baseline gap-1.5">
+                <span className={`text-3xl font-bold font-display ${tier.highlight ? 'text-white' : 'text-slate-900'}`}>{tier.price}</span>
+                <span className={`text-xs ${tier.highlight ? 'text-white/60' : 'text-slate-500'}`}>{tier.unit}</span>
+              </div>
+              <p className={`mt-2 text-sm leading-relaxed ${tier.highlight ? 'text-white/70' : 'text-slate-500'}`}>{tier.desc}</p>
+              <ul className="mt-4 space-y-2">
+                {tier.points.map((point) => (
+                  <li key={point} className="flex items-center gap-2">
+                    <CheckCircle2 className={`w-4 h-4 shrink-0 ${tier.highlight ? 'text-emerald-400' : 'text-emerald-600'}`} />
+                    <span className={`text-xs sm:text-sm ${tier.highlight ? 'text-white/80' : 'text-slate-600'}`}>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        <p className="mt-4 text-xs text-slate-500 leading-relaxed">
+          Withdrawals carry the payment provider&apos;s actual transfer cost (shown before you
+          confirm) — it is not a platform commission. 5% is charged per contract, including
+          each role in a Team Project.
+        </p>
       </div>
     </section>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Waitlist Section
+// Trust + final action. The waitlist form survives here instead of
+// taking a whole section of its own.
 // ═══════════════════════════════════════════════════════════════
-function WaitlistSection() {
+function TrustAndActionSection({ onOpenSignup }: { onOpenSignup: SignupHandler }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [country, setCountry] = useState('');
@@ -1191,7 +785,7 @@ function WaitlistSection() {
       setError('Please fill in your name, email, and country.');
       return;
     }
-    // 🚫 Disposable / temp emails are not acceptable anywhere on the platform
+    // Disposable / temp emails are not acceptable anywhere on the platform.
     const emailValidation = validateEmail(email.trim().toLowerCase());
     if (!emailValidation.isValid) {
       setError(emailValidation.error || 'Please enter a valid email address.');
@@ -1199,14 +793,14 @@ function WaitlistSection() {
     }
     setIsLoading(true);
     setError('');
-    
+
     try {
       const { data, error: fnError } = await supabase.functions.invoke('newsletter-subscribe', {
         method: 'POST',
         body: { name: name.trim(), email: email.trim(), country },
       });
 
-      // Surface the real server error (e.g. disposable-email rejection) when present.
+      // Surface the real server error (e.g. disposable-email rejection).
       let serverMessage: string | null = null;
       if (fnError && (fnError as { context?: Response }).context) {
         try {
@@ -1225,7 +819,7 @@ function WaitlistSection() {
         setIsLoading(false);
         return;
       }
-      
+
       setSubmitted(true);
       setIsLoading(false);
     } catch {
@@ -1234,160 +828,126 @@ function WaitlistSection() {
     }
   };
 
-  if (submitted) {
-    return (
-      <section className={SECTION_PADDING_SM}>
-        <div className={CONTAINER}>
-          <div className="rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-800 text-white shadow-lg p-4 sm:p-12 text-center">
-            <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-emerald-300" />
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight font-display mb-3">You're on the list!</h2>
-            <p className="text-emerald-100 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-              We'll notify you as soon as Growlancer launches. Stay tuned!
-            </p>
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const trustPoints = [
+    { icon: Eye, title: 'Merit-only ranking', desc: 'Subscription and payment never influence search, matching or placement.' },
+    { icon: LockKeyhole, title: 'Escrow, not promises', desc: 'Funds sit in escrow until you approve. Released money is final.' },
+    { icon: ClipboardCheck, title: 'A real dispute process', desc: 'Evidence-based review, escrow frozen while a dispute is open.' },
+  ];
 
   return (
-    <section className={SECTION_PADDING_SM}>
+    <section className={SECTION_PADDING}>
       <div className={CONTAINER}>
-        <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-emerald-900 text-white shadow-xl overflow-hidden">
-          <div className="absolute -top-16 -right-16 h-64 w-64 rounded-full bg-emerald-500/15" />
-          <div className="absolute -bottom-16 -left-16 h-64 w-64 rounded-full bg-emerald-600/10" />
-
-          <div className="relative p-4 sm:p-10 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-center">
-              <div>
-                <div className="inline-flex items-center gap-3 px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-2">
-                  <Clock3 className="w-3.5 h-3.5" />
-                  EARLY ACCESS
-                </div>
-                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-display">
-                  Be the first to know
-                </h2>
-                <p className="mt-2 text-sm sm:text-base text-white/70 leading-relaxed max-w-md">
-                  We're launching soon. Join the waitlist for early access, feature announcements, 
-                  and exclusive launch offers.
-                </p>
-              </div>
-              <div>
-                <form onSubmit={handleSubmit} className="space-y-3">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={e => setName(e.target.value)}
-                      id="waitlist-name"
-                      name="name"
-                      aria-label="Your name"
-                      placeholder="Your name"
-                      required
-                      autoComplete="name"
-                      className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
-                    />
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={e => setEmail(e.target.value)}
-                      id="waitlist-email"
-                      name="email"
-                      aria-label="Email address"
-                      placeholder="you@company.com"
-                      required
-                      autoComplete="email"
-                      className="w-full h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
-                    />
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <select
-                      value={country}
-                      onChange={e => setCountry(e.target.value)}
-                      id="waitlist-country"
-                      name="country"
-                      aria-label="Country"
-                      required
-                      /* ⚠️ `w-full sm:flex-1` (not `flex-1`): the parent is
-                         `flex flex-col sm:flex-row`, and `flex-1` sets
-                         `flex-basis: 0%` — in a COLUMN flex container that is the
-                         main axis, so it collapsed this select to its content
-                         height (23px) and silently overrode `h-12`, leaving a
-                         tiny, misaligned country picker next to 48px inputs. */
-                      className="w-full sm:flex-1 h-12 px-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-400 transition-all"
-                    >
-                      <option value="">{countriesLoading ? 'Loading countries...' : 'Select your country'}</option>
-                      {countries.map((c) => (
-                        <option key={c.id} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                    <button
-                      type="submit"
-                      disabled={isLoading}
-                      className="inline-flex items-center justify-center h-12 px-5 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-sans font-semibold text-slate-900 disabled:opacity-50 gap-3 whitespace-nowrap text-sm"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          Get Early Access
-                          <ArrowRight className="w-4 h-4" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
-                {error && (
-                  <p className="mt-2 text-xs text-red-400">{error}</p>
-                )}
-                <p className="mt-2 text-xs text-white/50">No spam. Unsubscribe anytime.</p>
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+          {trustPoints.map(({ icon: Icon, title, desc }) => (
+            <div key={title} className={`${CARD_CLASS} p-4`}>
+              <Icon className="text-emerald-600 w-5 h-5" />
+              <div className="mt-3 text-base font-sans font-semibold tracking-tight text-slate-900">{title}</div>
+              <p className="mt-1 text-sm text-slate-500 leading-relaxed">{desc}</p>
             </div>
-          </div>
+          ))}
         </div>
-      </div>
-    </section>
-  );
-}
 
-// ═══════════════════════════════════════════════════════════════
-// CTA Section
-// ═══════════════════════════════════════════════════════════════
-function CTASection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'client') => void }) {
-  return (
-    <section className={SECTION_PADDING_SM}>
-      <div className={CONTAINER}>
         <div className="relative rounded-xl bg-slate-900 text-white shadow-sm overflow-hidden ring-1 ring-slate-800">
-          <div className="absolute -top-20 -right-24 h-72 w-72 rounded-full bg-emerald-600/20" />
-          <div className="absolute -bottom-28 -left-28 h-80 w-80 rounded-full bg-orange-500/15" />
+          <div className="absolute -top-20 -right-24 h-72 w-72 rounded-full bg-emerald-600/20 pointer-events-none" />
+          <div className="absolute -bottom-28 -left-28 h-80 w-80 rounded-full bg-orange-500/15 pointer-events-none" />
 
-          <div className="relative p-4 sm:p-10 lg:p-12">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+          <div className="relative p-5 sm:p-8 lg:p-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
               <div className="lg:col-span-7">
                 <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight font-display">
-                  Start your freelancing journey today.
+                  Start with one brief.
                 </h2>
                 <p className="mt-2 text-sm sm:text-base text-white/70 leading-relaxed max-w-xl">
-                  Whether you're hiring or freelancing, Growlancer helps you move from intent 
-                  to work faster — with less noise and more clarity.
+                  Post a project for free, review a ranked shortlist, and fund escrow only
+                  when you decide to hire. Freelancers keep 95% of every payout.
                 </p>
+                <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                  <button
+                    onClick={() => onOpenSignup('client')}
+                    className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-colors font-sans font-semibold text-slate-900 text-sm"
+                  >
+                    Start hiring
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => onOpenSignup('freelancer')}
+                    className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-800 hover:bg-slate-100 transition-colors font-sans font-semibold text-sm"
+                  >
+                    Start freelancing
+                    <ArrowRight className="ml-2 w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div className="lg:col-span-5 flex flex-col sm:flex-row lg:flex-col gap-3 lg:items-stretch">
-                <button 
-                  onClick={() => onOpenSignup('client')}
-                  className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-emerald-500 hover:bg-emerald-600 transition-colors font-sans font-semibold text-slate-900 w-full text-sm"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </button>
-                <button 
-                  onClick={() => onOpenSignup('freelancer')} 
-                  className="inline-flex items-center justify-center h-12 px-6 rounded-xl bg-white text-slate-800 hover:bg-slate-100 transition-colors font-sans font-semibold w-full text-sm"
-                >
-                  Start Freelancing
-                  <ArrowRight className="ml-2 w-4 h-4" />
-                </button>
-                <div className="text-xs text-white/50 text-center lg:text-left">No spam. No pay-to-bid. Clear workflows.</div>
+
+              {/* Early-access updates — the same newsletter-subscribe backend,
+                  now one compact form instead of a full "launching soon" section. */}
+              <div className="lg:col-span-5">
+                {submitted ? (
+                  <div className="rounded-xl bg-white/10 ring-1 ring-white/15 p-5 text-center">
+                    <CheckCircle2 className="w-10 h-10 mx-auto mb-2 text-emerald-300" />
+                    <div className="text-base font-sans font-semibold">You&apos;re on the list</div>
+                    <p className="mt-1 text-xs text-white/60">
+                      We&apos;ll email you when new categories and payment rails go live.
+                    </p>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-2.5">
+                    <div className="text-xs font-sans font-semibold text-white/50 uppercase tracking-widest">
+                      Early access updates
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      <input
+                        type="text"
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                        id="waitlist-name"
+                        name="name"
+                        aria-label="Your name"
+                        placeholder="Your name"
+                        required
+                        autoComplete="name"
+                        className="w-full h-11 px-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                      />
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        id="waitlist-email"
+                        name="email"
+                        aria-label="Email address"
+                        placeholder="you@company.com"
+                        required
+                        autoComplete="email"
+                        className="w-full h-11 px-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                      />
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-2.5">
+                      <select
+                        value={country}
+                        onChange={e => setCountry(e.target.value)}
+                        id="waitlist-country"
+                        name="country"
+                        aria-label="Country"
+                        required
+                        className="w-full sm:flex-1 h-11 px-3 rounded-xl bg-white/10 border border-white/20 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                      >
+                        <option value="">{countriesLoading ? 'Loading countries...' : 'Select your country'}</option>
+                        {countries.map((c) => (
+                          <option key={c.id} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="inline-flex items-center justify-center h-11 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-colors font-sans font-semibold text-slate-900 disabled:opacity-50 gap-2 whitespace-nowrap text-sm"
+                      >
+                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Notify me <ArrowRight className="w-4 h-4" /></>}
+                      </button>
+                    </div>
+                    {error && <p className="text-xs text-red-400">{error}</p>}
+                    <p className="text-xs text-white/40">No spam. Unsubscribe anytime.</p>
+                  </form>
+                )}
               </div>
             </div>
           </div>
@@ -1402,10 +962,9 @@ function CTASection({ onOpenSignup }: { onOpenSignup: (role?: 'freelancer' | 'cl
 // ═══════════════════════════════════════════════════════════════
 export function HomePage() {
   const navigate = useNavigate();
-  // ONE live-metrics instance for the whole homepage: the hero trust line and
-  // the client stat cards both read it, so the RPC and realtime subscription
-  // are not duplicated per section.
-  const { stats: metrics, raw } = useAboutPageMetrics();
+  // ONE live-metrics instance for the whole homepage: the hero trust line reads
+  // it, so the RPC and realtime subscription are not duplicated per section.
+  const { raw } = useAboutPageMetrics();
 
   const handleOpenSignup = (role?: 'freelancer' | 'client') => {
     navigate('/?modal=signup&role=' + (role || 'freelancer'));
@@ -1414,19 +973,13 @@ export function HomePage() {
   return (
     <div id="top">
       <HeroSection onOpenSignup={handleOpenSignup} members={raw.members} countries={raw.countries} />
-      {/* 🔴 Live Browse Services — right under the hero (homepage header area) */}
       <LiveServicesSection />
       <HowItWorksSection />
-      <WhyDifferentSection />
-      <FreelancerSection onOpenSignup={handleOpenSignup} />
-      <ClientSection onOpenSignup={handleOpenSignup} metrics={metrics} />
+      <BothSidesSection onOpenSignup={handleOpenSignup} />
       <CategoriesSection onOpenSignup={handleOpenSignup} />
       <TeamProjectsSection onOpenSignup={handleOpenSignup} />
-      <FeaturesSection />
       <PricingSection />
-      <TrustSection />
-      <WaitlistSection />
-      <CTASection onOpenSignup={handleOpenSignup} />
+      <TrustAndActionSection onOpenSignup={handleOpenSignup} />
     </div>
   );
 }
