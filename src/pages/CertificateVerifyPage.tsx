@@ -795,7 +795,7 @@ function HeaderBar({ onToggleTheme, onHome, showNewSearch }: {
         <button onClick={onHome || (() => navigate('/verify-certificate', { replace: true }))}
           className="flex items-center gap-3 py-1 hover:opacity-80 transition-opacity group">
           <div className="relative">
-            <BrandLogo variant="wordmark" className="h-9 w-auto" />
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 w-auto" />
             <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />
           </div>            <div className="hidden sm:block">
               <p className="text-[10px] uppercase tracking-widest font-bold text-emerald-600 dark:text-emerald-400">Verification Portal</p>

@@ -210,11 +210,9 @@ export function AdminDashboardLayout() {
         }}
       >
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-3 mb-10 px-2">
-          <BrandLogo variant="wordmark" theme="dark" className="h-11 w-auto" />
-          <div>
-            <span className="text-[10px] uppercase tracking-widest text-emerald-100 font-bold">Admin Panel</span>
-          </div>
+        <Link to="/" className="block mb-10 px-2">
+          <BrandLogo variant="wordmark" theme="dark" className="h-9 w-auto max-w-full object-contain object-left" />
+          <span className="mt-1 block text-[10px] uppercase tracking-widest text-emerald-100 font-bold">Admin Panel</span>
         </Link>
 
         {/* Navigation */}

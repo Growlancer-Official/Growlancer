@@ -121,7 +121,7 @@ export function ReportFeedbackPage() {
         <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
           <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
             <Link to="/" className="flex items-center gap-3 group">
-              <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
+              <BrandLogo variant="wordmark" className="h-8 sm:h-9 transition-transform group-hover:scale-105 w-auto" />
             </Link>
             <Link to="/" className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
               <ArrowLeft className="w-4 h-4" />
@@ -169,7 +169,7 @@ export function ReportFeedbackPage() {
       <header className="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/50">
         <div className="mx-auto max-w-[100rem] px-4 sm:px-6 lg:px-8 2xl:px-12 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 group">
-            <BrandLogo variant="wordmark" className="h-9 transition-transform group-hover:scale-105 w-auto" />
+            <BrandLogo variant="wordmark" className="h-8 sm:h-9 transition-transform group-hover:scale-105 w-auto" />
           </Link>
           <Link to="/" className="flex items-center gap-1.5 py-1 text-sm font-bold text-slate-600 hover:text-emerald-600 transition-colors">
             <ArrowLeft className="w-4 h-4" />

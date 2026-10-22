@@ -142,7 +142,10 @@ export function MainLayout() {
               {!isAuthenticated && (
                 <>
                   <button onClick={handleOpenLogin} className="hidden sm:inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-medium text-slate-700 ring-1 ring-slate-200 bg-white hover:text-slate-900 hover:bg-slate-50 hover:ring-slate-300 transition-colors">Login</button>
-                  <button onClick={() => handleOpenSignup()} className="inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-semibold text-emerald-700 ring-2 ring-emerald-500 bg-white hover:bg-emerald-50 hover:ring-emerald-600 transition-colors shadow-sm">Signup</button>
+                  {/* Below 360px the header cannot hold the wordmark, the theme
+                      toggle, this CTA and the menu at once — the CTA moves into
+                      the menu ("Sign Up Free") instead of squeezing the logo. */}
+                  <button onClick={() => handleOpenSignup()} className="inline-flex items-center justify-center h-10 px-3 rounded-lg text-sm font-semibold text-emerald-700 ring-2 ring-emerald-500 bg-white hover:bg-emerald-50 hover:ring-emerald-600 transition-colors shadow-sm max-[359px]:hidden">Signup</button>
                 </>
               )}
               {isAuthenticated && (

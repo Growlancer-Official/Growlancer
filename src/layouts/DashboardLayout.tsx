@@ -396,11 +396,9 @@ export function DashboardLayout() {
       >
         <div className="flex h-full flex-col overflow-hidden">
         <div className="flex items-center justify-between mb-5">
-          <Link to="/" className="flex items-center gap-2.5">
-            <BrandLogo variant="wordmark" className="h-10 w-auto" />
-            <div>
-              <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Freelancer</span>
-            </div>
+          <Link to="/" className="block min-w-0">
+            <BrandLogo variant="wordmark" className="h-10 w-auto max-w-full object-contain object-left" />
+            <span className="mt-1 block text-[10px] uppercase tracking-widest text-slate-400 font-bold">Freelancer</span>
           </Link>
           <button
             onClick={() => setMobileNavOpen(false)}
@@ -533,11 +531,9 @@ export function DashboardLayout() {
       }
       <aside className="w-64 sticky top-0 h-[calc(100vh-var(--consent-banner-h,0px))] hidden lg:flex flex-col p-4 z-50 overflow-y-auto bg-white border-r border-slate-200">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2.5 mb-5 px-2">
-          <BrandLogo variant="wordmark" className="h-10 w-auto" />
-          <div>
-            <span className="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Freelancer</span>
-          </div>
+        <Link to="/" className="block mb-5 px-2">
+          <BrandLogo variant="wordmark" className="h-9 w-auto max-w-full object-contain object-left" />
+          <span className="mt-1 block text-[10px] uppercase tracking-widest text-slate-400 font-bold">Freelancer</span>
         </Link>
 
         {/* Navigation */}
