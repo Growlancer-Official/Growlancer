@@ -210,6 +210,12 @@ scheme**, and `scripts/push_redirect_urls.mjs` used that value to write the live
 **Your action:** if growlancer.com is canonical, set it:
 `npx supabase secrets set APP_URL=https://growlancer.com --project-ref zttwsjehcgaicziqyxpq`
 
+**Checked 22 Oct:** `APP_URL` is still `https://growlancer.vercel.app`, but `pages/+Head.tsx`
+(canonical + OG/Twitter URLs), `public/robots.txt` and `public/sitemap.xml` still hardcode
+`https://growlancer.com` — and that host **does not resolve** (`curl https://growlancer.com` →
+connection failure). Either point the domain at Vercel before launch, or update those three files
+to the live origin; a canonical URL on a dead host keeps search engines from indexing the site.
+
 **How to verify it is done:** the `APP_URL` digest changes away from
 `d7273ed7f18aa479214f09c76cebd8a72ca844349b08e861cf883676465870d1`; click a link in a real
 notification email → it opens on the production domain. `npm run preflight` re-checks this digest
@@ -286,8 +292,10 @@ incorporation" but never names the entity, address or jurisdiction. Privacy §9 
 Act expect a named grievance/redressal contact, and payment providers ask for the same details.
 
 **Partial progress (20 Oct):** Terms §14 and Privacy §9 now name **Muhammad (Founder & CEO),
-India** and a working `support@growlancer.com` grievance/DPO contact. Still missing: registered
-legal entity name, registered address, CIN/GSTIN. A grep for those terms returns nothing.
+India** and a working `support@growlancer.com` grievance/DPO contact. **22 Oct:** the site footer
+also carries the grievance address and the 24-hour / 15-day response commitment on every page.
+Still missing: registered legal entity name, registered address, CIN/GSTIN. A grep for those terms
+returns nothing.
 
 **Your action:** supply the legal name, registered address, jurisdiction and a monitored contact
 address (grievance/DPO). I can wire them into Terms §14 + Privacy §9 the same day — but the values
@@ -316,31 +324,22 @@ leaderboard. The code is already live, so this is a content/decision task now.
 returns the RPCs; `select * from get_grow_coin_leaderboard(10);` returns rows without email/phone;
 a coin redemption moves a real subscription row to `payment_provider = 'grow_coins'`.
 
-### A12. The 5% commission is currently charged twice — decide the model before real money 🔴
+### A12. The 5% commission model — ✅ DECIDED (Option B shipped 2026-10-21)
 
-**Why (measured in the repo, 20 Oct):** the contract RPC says the client pays 5% on top and the
-freelancer receives 100% (`20270102000001_contract_amount_from_proposal.sql:121-124`). The funding
-path charges `contract.amount + 5%` (`supabase/functions/razorpay/index.ts:268-293`). The release
-path then computes `fee = 5% of escrow` and credits `net = gross − fee`
-(`20270124000000_restore_release_escrow_cron_and_fee_base.sql:85-95`), and books that fee as
-platform revenue (`:250-271`). For a ₹5,000 contract the client pays ₹5,250, the freelancer
-receives ₹4,750, and the platform books ₹500 — a ~10% effective take, with the extra ₹250 not
-represented in the booking.
+**Decision:** Option B — the client pays exactly the agreed contract amount; the flat 5% is
+withheld from the freelancer at release. Commit `d45b388` and migration
+`20270203000000_commission_model_option_a.sql` implement it, and the pricing/terms/refund copy
+now states the freelancer-side model.
 
-**Your decision (pick one, then engineering implements and reconciles the ledger):**
+**What to verify before taking real money:** for a released contract,
+`client_charged = contract.amount` (no client-side fee), `freelancer_credit = amount − 5%`, and
+`platform_revenue` books exactly that 5%; a cancelled-before-work contract refunds the full amount
+with no commission. `scripts/e2e/pentest-privileges.mjs` now asserts both legs as hard gates
+(103 checks, 0 failures).
 
-- **A — model-faithful:** release pays the full escrow amount; book the 5% when the client pays
-  (order − contract); invoice subtotal = contract, fee = 5%, total = contract + fee.
-- **B — release-fee:** charge only the contract amount at checkout and withhold 5% at release;
-  then the public promise and `contracts.freelancer_amount` must change too.
-
-Option A matches `CLAUDE.md`; option B matches the current release code but not the promise.
-Do not mix them. Until this is decided, **do not take a real payment** (A2 stays closed).
-
-**How to verify it is done:** for every released contract,
-`client_charged = freelancer_credit + platform_fee`; the freelancer wallet credit equals
-`contracts.amount` (Option A) or `amount − fee` (Option B, with copy updated); and
-`select * from platform_revenue` reconciles to the Razorpay captured amount.
+**Still to do (doc only, no code):** `CLAUDE.md` §Business Model still says the client pays 5% on
+top. Update that paragraph to Option B so the next change does not “fix” the money path back to
+the retired model.
 
 ### Recommended order
 
