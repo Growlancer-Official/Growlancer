@@ -310,8 +310,8 @@ function generateFallbackIndexHtml() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Growlanzo — AI-Powered Freelancing Marketplace</title>
     <meta name="description" content="Growlanzo is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
-    <link rel="icon" href="/growlanzo-icon-192.png?v=2" type="image/png">
-    <link rel="icon" href="/favicon-growlanzo.png?v=2" type="image/png">
+    <link rel="icon" href="/UpdatedLogo.webp?v=4" type="image/webp">
+    <link rel="apple-touch-icon" href="/UpdatedLogo.png?v=4" type="image/png">
     <meta name="theme-color" content="#24ba35">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Growlanzo — AI-Powered Freelancing Marketplace">

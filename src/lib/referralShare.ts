@@ -31,7 +31,7 @@ const SITE_URL = 'https://growlanzo.com';
 const CARD_WIDTH = 1200;
 const CARD_HEIGHT = 630;
 // The green ring mark, square — it lands inside the white tile the card draws.
-const LOGO_SOURCES = ['/favicon-growlanzo.png'];
+const LOGO_SOURCES = ['/UpdatedLogo.png'];
 
 function resolvedLink(ctx: ReferralShareContext): string {
   const code = formatReferralCode(ctx.code);
