@@ -101,7 +101,7 @@ function welcomeEmailHtml(name: string, email: string): string {
 <head><meta charset="utf-8"></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
   <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 32px; text-align: center;">
+    <div style="background: linear-gradient(135deg, #14861f 0%, #0f6f1a 100%); padding: 32px; text-align: center;">
       <h1 style="color: white; font-size: 22px; font-weight: 700; margin: 0;">Welcome to Growlanzo! 🎉</h1>
     </div>
     <div style="padding: 32px;">
@@ -109,8 +109,8 @@ function welcomeEmailHtml(name: string, email: string): string {
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">
         Thanks for subscribing to the Growlanzo newsletter! You'll now receive:
       </p>
-      <div style="margin: 24px 0; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
-        <ul style="font-size: 14px; color: #166534; line-height: 2; padding-left: 20px; margin: 0;">
+      <div style="margin: 24px 0; padding: 20px; background: #f1fcef; border: 1px solid #bbefb4; border-radius: 12px;">
+        <ul style="font-size: 14px; color: #10591a; line-height: 2; padding-left: 20px; margin: 0;">
           <li>🚀 Product updates & new features</li>
           <li>💡 Freelancing tips & best practices</li>
           <li>🎯 Exclusive early access opportunities</li>
@@ -121,7 +121,7 @@ function welcomeEmailHtml(name: string, email: string): string {
         We're building the future of AI-powered freelancing, and we're excited to have you along for the journey!
       </p>
       <div style="margin-top: 28px; text-align: center;">
-        <a href="${APP_URL}" style="display: inline-block; padding: 12px 32px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">
+        <a href="${APP_URL}" style="display: inline-block; padding: 12px 32px; background: #14861f; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">
           Explore Growlanzo →
         </a>
       </div>

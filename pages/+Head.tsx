@@ -3,10 +3,10 @@ import React from 'react';
 export default function Head() {
   return (
     <>
-      {/* ── Growlanzo ring mark (public/growlanzo-icon-*.png) ── */}
-      <link rel="icon" type="image/png" sizes="192x192" href="/growlanzo-icon-192.png?v=1" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/growlanzo-icon-180.png?v=1" />
-      <link rel="shortcut icon" href="/growlanzo-icon-192.png?v=1" />
+      {/* ── Growlanzo "G" emblem (public/growlanzo-icon-*.png) ── */}
+      <link rel="icon" type="image/png" sizes="192x192" href="/growlanzo-icon-192.png?v=2" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/growlanzo-icon-180.png?v=2" />
+      <link rel="shortcut icon" href="/growlanzo-icon-192.png?v=2" />
 
       {/* ── Mobile viewport — CRITICAL: without this, phones fall back to the
           980px desktop layout viewport and the whole site renders zoomed-out
@@ -15,7 +15,7 @@ export default function Head() {
       <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
       {/* ── Theme ── */}
-      <meta name="theme-color" content="#10b981" />
+      <meta name="theme-color" content="#24ba35" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       <meta name="apple-mobile-web-app-title" content="Growlanzo" />

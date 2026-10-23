@@ -956,7 +956,7 @@ export function ClientSettingsPage() {
         description: `Card verification — ${formatCurrency(1)} will be refunded`,
         order_id: order.razorpay_order_id,
         prefill: { name: user.name || '', email: user.email || '' },
-        theme: { color: '#059669' },
+        theme: { color: '#14861f' },
         card: { save: true },
         handler: async (response) => {
           // Server-side signature verification

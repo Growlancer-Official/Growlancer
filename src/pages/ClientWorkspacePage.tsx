@@ -520,7 +520,7 @@ export function ClientWorkspacePage() {
         order_id: order.razorpay_order_id,
         config_id: import.meta.env.VITE_RAZORPAY_CONFIG_ID || undefined,
         prefill: { name: user?.name || '', email: user?.email || '' },
-        theme: { color: '#059669' },
+        theme: { color: '#14861f' },
         method: { card: true, upi: true, netbanking: true, wallet: true, emi: true },
         handler: async () => {
           toast.success('Payment received', 'Extra revision funds are now held in escrow.')

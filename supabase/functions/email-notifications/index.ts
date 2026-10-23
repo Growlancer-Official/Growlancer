@@ -106,7 +106,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
       <img src="${APP_URL}/growlanzo-full-light.png" alt="Growlanzo" style="height: 40px; width: auto;" />
     </div>
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
+    <div style="background: linear-gradient(135deg, #14861f 0%, #0f6f1a 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
       <h1 style="color: #ffffff; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.3px;">${title}</h1>
     </div>
     <!-- Body -->
@@ -118,11 +118,11 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
       <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
         <tr>
           <td style="padding-bottom: 12px;">
-            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
+            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
+            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
+            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
           </td>
         </tr>
         <tr>
@@ -144,10 +144,10 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
 function buildWithdrawalCompletedHtml(name: string, amount: number, netAmount: number, method: string): string {
   const body = `
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Hi ${escapeHtml(name)},</p>
-    <div style="margin: 0 0 24px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 14px; text-align: center;">
+    <div style="margin: 0 0 24px; padding: 20px; background: #f1fcef; border: 1px solid #89e07f; border-radius: 14px; text-align: center;">
       <p style="font-size: 36px; margin: 0 0 8px; line-height: 1;">🎉</p>
-      <h2 style="font-size: 18px; color: #065f46; margin: 0 0 4px; font-weight: 800;">Withdrawal Processed!</h2>
-      <p style="font-size: 14px; color: #047857; margin: 0;">
+      <h2 style="font-size: 18px; color: #10591a; margin: 0 0 4px; font-weight: 800;">Withdrawal Processed!</h2>
+      <p style="font-size: 14px; color: #0f6f1a; margin: 0;">
         Your withdrawal of <strong>${formatCurrency(amount)}</strong> has been successfully processed.
       </p>
     </div>
@@ -165,7 +165,7 @@ function buildWithdrawalCompletedHtml(name: string, amount: number, netAmount: n
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/wallet" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">View Wallet →</a>
             </td>
           </tr>
@@ -198,7 +198,7 @@ function buildWithdrawalFailedHtml(name: string, amount: number, reason: string)
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/wallet" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">Check Wallet →</a>
             </td>
           </tr>
@@ -206,7 +206,7 @@ function buildWithdrawalFailedHtml(name: string, amount: number, reason: string)
       </td></tr>
     </table>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-      If the issue persists, please <a href="mailto:support@growlanzo.com" style="color: #059669; font-weight: 600;">contact support</a>.
+      If the issue persists, please <a href="mailto:support@growlanzo.com" style="color: #14861f; font-weight: 600;">contact support</a>.
     </p>`
   return baseEmailHtml('Withdrawal Failed 💔', body)
 }
@@ -235,7 +235,7 @@ function buildDisputeOpenedHtml(name: string, disputeId: string, reason: string,
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/disputes" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">View Dispute Details →</a>
             </td>
           </tr>
@@ -251,9 +251,9 @@ function buildDisputeResolvedHtml(name: string, disputeId: string, resolution: s
   const isFavorable = outcome === 'resolved';
   const emoji = isFavorable ? '✅' : '🔄';
   const titleText = isFavorable ? 'Dispute Resolved in Your Favor' : 'Dispute Resolved';
-  const color = isFavorable ? '#065f46' : '#92400e';
-  const bgColor = isFavorable ? '#f0fdf4' : '#fffbeb';
-  const borderColor = isFavorable ? '#86efac' : '#fde68a';
+  const color = isFavorable ? '#10591a' : '#92400e';
+  const bgColor = isFavorable ? '#f1fcef' : '#fffbeb';
+  const borderColor = isFavorable ? '#89e07f' : '#fde68a';
 
   const body = `
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Hi ${escapeHtml(name)},</p>
@@ -272,7 +272,7 @@ function buildDisputeResolvedHtml(name: string, disputeId: string, resolution: s
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/disputes" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">View Details →</a>
             </td>
           </tr>
@@ -280,7 +280,7 @@ function buildDisputeResolvedHtml(name: string, disputeId: string, resolution: s
       </td></tr>
     </table>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-      If you have any questions about this resolution, please <a href="mailto:support@growlanzo.com" style="color: #059669; font-weight: 600;">contact our support team</a>.
+      If you have any questions about this resolution, please <a href="mailto:support@growlanzo.com" style="color: #14861f; font-weight: 600;">contact our support team</a>.
     </p>`
   return baseEmailHtml(isFavorable ? 'Dispute Resolved ✅' : 'Dispute Updated 💙', body)
 }
@@ -289,17 +289,17 @@ function buildDisputeResolvedHtml(name: string, disputeId: string, resolution: s
 function buildEscrowFundedHtml(name: string, projectTitle: string, amount: number): string {
   const body = `
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Hi ${escapeHtml(name)},</p>
-    <div style="margin: 0 0 24px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 14px; text-align: center;">
+    <div style="margin: 0 0 24px; padding: 20px; background: #f1fcef; border: 1px solid #89e07f; border-radius: 14px; text-align: center;">
       <p style="font-size: 36px; margin: 0 0 8px; line-height: 1;">💰</p>
-      <h2 style="font-size: 18px; color: #065f46; margin: 0 0 4px; font-weight: 800;">Escrow Funded!</h2>
-      <p style="font-size: 14px; color: #047857; margin: 0;">
+      <h2 style="font-size: 18px; color: #10591a; margin: 0 0 4px; font-weight: 800;">Escrow Funded!</h2>
+      <p style="font-size: 14px; color: #0f6f1a; margin: 0;">
         The client has funded the escrow for <strong>${escapeHtml(projectTitle)}</strong>.
       </p>
     </div>
-    <div style="margin: 0 0 24px; padding: 18px 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
-      <h3 style="font-size: 14px; color: #065f46; margin: 0 0 8px; font-weight: 700;">💰 Amount Funded</h3>
-      <p style="font-size: 24px; color: #059669; margin: 0; font-weight: 800;">${formatCurrency(amount)}</p>
-      <p style="font-size: 13px; color: #047857; margin: 4px 0 0;">✅ Ready to start working</p>
+    <div style="margin: 0 0 24px; padding: 18px 20px; background: #f1fcef; border: 1px solid #bbefb4; border-radius: 12px;">
+      <h3 style="font-size: 14px; color: #10591a; margin: 0 0 8px; font-weight: 700;">💰 Amount Funded</h3>
+      <p style="font-size: 24px; color: #14861f; margin: 0; font-weight: 800;">${formatCurrency(amount)}</p>
+      <p style="font-size: 13px; color: #0f6f1a; margin: 4px 0 0;">✅ Ready to start working</p>
     </div>
     <div style="margin: 0 0 24px; padding: 18px 20px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;">
       <h3 style="font-size: 14px; color: #1e40af; margin: 0 0 12px; font-weight: 700;">🚀 Your Next Steps</h3>
@@ -313,7 +313,7 @@ function buildEscrowFundedHtml(name: string, projectTitle: string, amount: numbe
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/contracts" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">Go to Workspace →</a>
             </td>
           </tr>
@@ -328,17 +328,17 @@ function buildEscrowFundedHtml(name: string, projectTitle: string, amount: numbe
 function buildMilestoneReleasedHtml(name: string, projectTitle: string, amount: number): string {
   const body = `
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Hi ${escapeHtml(name)},</p>
-    <div style="margin: 0 0 24px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 14px; text-align: center;">
+    <div style="margin: 0 0 24px; padding: 20px; background: #f1fcef; border: 1px solid #89e07f; border-radius: 14px; text-align: center;">
       <p style="font-size: 36px; margin: 0 0 8px; line-height: 1;">💵</p>
-      <h2 style="font-size: 18px; color: #065f46; margin: 0 0 4px; font-weight: 800;">Milestone Payment Released!</h2>
-      <p style="font-size: 14px; color: #047857; margin: 0;">
+      <h2 style="font-size: 18px; color: #10591a; margin: 0 0 4px; font-weight: 800;">Milestone Payment Released!</h2>
+      <p style="font-size: 14px; color: #0f6f1a; margin: 0;">
         A milestone payment has been released for <strong>${escapeHtml(projectTitle)}</strong>.
       </p>
     </div>
-    <div style="margin: 0 0 24px; padding: 18px 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; text-align: center;">
-      <h3 style="font-size: 13px; color: #065f46; margin: 0 0 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Amount Received</h3>
-      <p style="font-size: 28px; color: #059669; margin: 0 0 4px; font-weight: 800;">${formatCurrency(amount)}</p>
-      <p style="font-size: 13px; color: #047857; margin: 0;">✅ Funds added to your wallet balance</p>
+    <div style="margin: 0 0 24px; padding: 18px 20px; background: #f1fcef; border: 1px solid #bbefb4; border-radius: 12px; text-align: center;">
+      <h3 style="font-size: 13px; color: #10591a; margin: 0 0 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Amount Received</h3>
+      <p style="font-size: 28px; color: #14861f; margin: 0 0 4px; font-weight: 800;">${formatCurrency(amount)}</p>
+      <p style="font-size: 13px; color: #0f6f1a; margin: 0;">✅ Funds added to your wallet balance</p>
     </div>
     <p style="font-size: 14px; color: #475569; line-height: 1.7; margin: 0 0 24px;">
       The funds are now available in your Growlanzo wallet. You can withdraw them at any time.
@@ -347,7 +347,7 @@ function buildMilestoneReleasedHtml(name: string, projectTitle: string, amount: 
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/wallet" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">View Wallet →</a>
             </td>
           </tr>
@@ -363,14 +363,14 @@ function buildVerificationEmailHtml(name: string, status: 'approved' | 'rejected
   const isApproved = status === 'approved';
   const body = isApproved ? `
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Hi ${escapeHtml(name)},</p>
-    <div style="margin: 0 0 24px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 14px; text-align: center;">
+    <div style="margin: 0 0 24px; padding: 20px; background: #f1fcef; border: 1px solid #89e07f; border-radius: 14px; text-align: center;">
       <p style="font-size: 36px; margin: 0 0 8px; line-height: 1;">✅</p>
-      <h2 style="font-size: 18px; color: #065f46; margin: 0 0 4px; font-weight: 800;">Identity Verified!</h2>
-      <p style="font-size: 14px; color: #047857; margin: 0;">Your identity verification has been approved.</p>
+      <h2 style="font-size: 18px; color: #10591a; margin: 0 0 4px; font-weight: 800;">Identity Verified!</h2>
+      <p style="font-size: 14px; color: #0f6f1a; margin: 0;">Your identity verification has been approved.</p>
     </div>
-    <div style="margin: 0 0 24px; padding: 18px 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
-      <h3 style="font-size: 14px; color: #065f46; margin: 0 0 8px; font-weight: 700;">🎉 You're Verified!</h3>
-      <p style="font-size: 14px; color: #047857; margin: 0; line-height: 1.5;">
+    <div style="margin: 0 0 24px; padding: 18px 20px; background: #f1fcef; border: 1px solid #bbefb4; border-radius: 12px;">
+      <h3 style="font-size: 14px; color: #10591a; margin: 0 0 8px; font-weight: 700;">🎉 You're Verified!</h3>
+      <p style="font-size: 14px; color: #0f6f1a; margin: 0; line-height: 1.5;">
         Your account now has the verified badge. This increases trust with clients and unlocks additional platform features.
       </p>
     </div>
@@ -381,7 +381,7 @@ function buildVerificationEmailHtml(name: string, status: 'approved' | 'rejected
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/settings" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">View Profile →</a>
             </td>
           </tr>
@@ -406,7 +406,7 @@ function buildVerificationEmailHtml(name: string, status: 'approved' | 'rejected
       <tr><td align="center">
         <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
           <tr>
-            <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+            <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
               <a href="${APP_URL}/dashboard/settings" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">Resubmit Verification →</a>
             </td>
           </tr>
@@ -436,7 +436,7 @@ function buildAccountSuspendedHtml(name: string, reason?: string): string {
       During this time, you will not be able to access your dashboard, submit proposals, or communicate with clients.
     </p>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-      If you believe this was done in error or would like more information, please <a href="mailto:support@growlanzo.com" style="color: #059669; font-weight: 600;">contact our support team</a>.
+      If you believe this was done in error or would like more information, please <a href="mailto:support@growlanzo.com" style="color: #14861f; font-weight: 600;">contact our support team</a>.
     </p>`
   return baseEmailHtml('Account Suspended ⚠️', body)
 }

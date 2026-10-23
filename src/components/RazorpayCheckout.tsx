@@ -45,7 +45,7 @@ export function RazorpayCheckout({
   buttonText = 'Pay with Razorpay',
   className = '',
   userInfo,
-  themeColor = '#059669',
+  themeColor = '#14861f',
 }: RazorpayCheckoutProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'creating' | 'checkout' | 'verifying' | 'success' | 'error'>('idle');

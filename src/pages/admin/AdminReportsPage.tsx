@@ -149,7 +149,7 @@ export function AdminReportsPage() {
           <h2 className="text-lg font-bold text-white">Platform Health</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="p-4 rounded-xl" style={{ background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)' }}>
+          <div className="p-4 rounded-xl" style={{ background: 'rgba(36,186,53,0.1)', border: '1px solid rgba(36,186,53,0.2)' }}>
             <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-2">User Growth</p>
             <p className="text-2xl font-bold text-white">{metrics.userGrowth > 0 ? '+' : ''}{metrics.userGrowth}%</p>
             <p className="text-xs text-slate-500 mt-1">Month over Month</p>

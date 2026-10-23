@@ -310,9 +310,9 @@ function generateFallbackIndexHtml() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Growlanzo — AI-Powered Freelancing Marketplace</title>
     <meta name="description" content="Growlanzo is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
-    <link rel="icon" href="/growlanzo-icon-192.png?v=1" type="image/png">
-    <link rel="icon" href="/favicon-growlanzo.png?v=1" type="image/png">
-    <meta name="theme-color" content="#10b981">
+    <link rel="icon" href="/growlanzo-icon-192.png?v=2" type="image/png">
+    <link rel="icon" href="/favicon-growlanzo.png?v=2" type="image/png">
+    <meta name="theme-color" content="#24ba35">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Growlanzo — AI-Powered Freelancing Marketplace">
     <meta property="og:description" content="Hire top freelancers or get hired for high-quality work with Growlanzo.">
@@ -348,8 +348,8 @@ ${THEME_FOUC_GUARD}
         background: #070b14;
       }
       html.dark #boot-overlay .boot-spinner {
-        border-color: #123b31;
-        border-top-color: #10b981;
+        border-color: #123b20;
+        border-top-color: #24ba35;
       }
     </style>
   </head>

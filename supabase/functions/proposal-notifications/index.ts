@@ -69,7 +69,7 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
       <img src="${APP_URL}/growlanzo-full-light.png" alt="Growlanzo" style="height: 40px; width: auto;" />
     </div>
     <!-- Header -->
-    <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
+    <div style="background: linear-gradient(135deg, #14861f 0%, #0f6f1a 100%); margin: 12px 12px 0; border-radius: 12px; padding: 28px 24px; text-align: center;">
       <h1 style="color: #ffffff; font-size: 20px; font-weight: 800; margin: 0; letter-spacing: -0.3px;">${title}</h1>
     </div>
     <!-- Body -->
@@ -81,11 +81,11 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
       <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
         <tr>
           <td style="padding-bottom: 12px;">
-            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
+            <a href="${APP_URL}" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Website</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
+            <a href="${APP_URL}/help-center" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Help Center</a>
             <span style="color: #cbd5e1; font-size: 12px;">|</span>
-            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #059669; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
+            <a href="${APP_URL}/contact" target="_blank" rel="noopener noreferrer" style="color: #14861f; font-size: 12px; font-weight: 600; text-decoration: none; padding: 0 8px;">Contact</a>
           </td>
         </tr>
         <tr>
@@ -105,19 +105,19 @@ function baseEmailHtml(title: string, bodyHtml: string): string {
 function buildAcceptedEmailHtml(freelancerName: string, projectTitle: string, clientName: string): string {
   const body = `
     <p style="font-size: 16px; color: #0f172a; line-height: 1.7; margin: 0 0 20px;">Hi ${escapeHtml(freelancerName)},</p>
-    <div style="margin: 0 0 24px; padding: 20px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 14px; text-align: center;">
+    <div style="margin: 0 0 24px; padding: 20px; background: #f1fcef; border: 1px solid #89e07f; border-radius: 14px; text-align: center;">
       <p style="font-size: 36px; margin: 0 0 8px; line-height: 1;">🎉</p>
-      <h2 style="font-size: 18px; color: #065f46; margin: 0 0 4px; font-weight: 800;">Congratulations, You're Hired!</h2>
-      <p style="font-size: 14px; color: #047857; margin: 0; line-height: 1.5;">
+      <h2 style="font-size: 18px; color: #10591a; margin: 0 0 4px; font-weight: 800;">Congratulations, You're Hired!</h2>
+      <p style="font-size: 14px; color: #0f6f1a; margin: 0; line-height: 1.5;">
         Your proposal for <strong>"${escapeHtml(projectTitle)}"</strong> has been accepted by <strong>${escapeHtml(clientName)}</strong>!
       </p>
     </div>
     <div style="margin: 0 0 24px; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
       <h3 style="font-size: 14px; color: #0f172a; margin: 0 0 14px; font-weight: 700;">📋 Next Steps</h3>
       <table width="100%" cellpadding="0" cellspacing="0" style="font-size: 14px; color: #475569;">
-        <tr><td width="28" style="padding: 6px 8px 6px 0; vertical-align: top; font-weight: 700; color: #059669;">1.</td><td style="padding: 6px 0;">A contract has been created and is awaiting your review</td></tr>
-        <tr><td width="28" style="padding: 6px 8px 6px 0; vertical-align: top; font-weight: 700; color: #059669;">2.</td><td style="padding: 6px 0;">The client will fund escrow to activate the contract</td></tr>
-        <tr><td width="28" style="padding: 6px 8px 6px 0; vertical-align: top; font-weight: 700; color: #059669;">3.</td><td style="padding: 6px 0;">Start working and submit milestones for payment</td></tr>
+        <tr><td width="28" style="padding: 6px 8px 6px 0; vertical-align: top; font-weight: 700; color: #14861f;">1.</td><td style="padding: 6px 0;">A contract has been created and is awaiting your review</td></tr>
+        <tr><td width="28" style="padding: 6px 8px 6px 0; vertical-align: top; font-weight: 700; color: #14861f;">2.</td><td style="padding: 6px 0;">The client will fund escrow to activate the contract</td></tr>
+        <tr><td width="28" style="padding: 6px 8px 6px 0; vertical-align: top; font-weight: 700; color: #14861f;">3.</td><td style="padding: 6px 0;">Start working and submit milestones for payment</td></tr>
       </table>
     </div>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px;">
@@ -125,7 +125,7 @@ function buildAcceptedEmailHtml(freelancerName: string, projectTitle: string, cl
         <td align="center">
           <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
             <tr>
-              <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+              <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
                 <a href="${APP_URL}/dashboard/contracts" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">View Contract Dashboard →</a>
               </td>
             </tr>
@@ -134,7 +134,7 @@ function buildAcceptedEmailHtml(freelancerName: string, projectTitle: string, cl
       </tr>
     </table>
     <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">
-      If you have any questions, reach out to <a href="mailto:${ADMIN_EMAIL}" style="color: #059669; font-weight: 600;">${ADMIN_EMAIL}</a>.
+      If you have any questions, reach out to <a href="mailto:${ADMIN_EMAIL}" style="color: #14861f; font-weight: 600;">${ADMIN_EMAIL}</a>.
     </p>`
   return baseEmailHtml('You\'re Hired! 🎉', body)
 }
@@ -158,7 +158,7 @@ function buildRejectedEmailHtml(freelancerName: string, projectTitle: string): s
         <td align="center">
           <table cellpadding="0" cellspacing="0" style="border-collapse: collapse;">
             <tr>
-              <td style="background: #059669; border-radius: 12px; padding: 14px 32px;" bgcolor="#059669">
+              <td style="background: #14861f; border-radius: 12px; padding: 14px 32px;" bgcolor="#14861f">
                 <a href="${APP_URL}/dashboard/projects" target="_blank" rel="noopener noreferrer" style="display: inline-block; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 700;">Browse More Projects →</a>
               </td>
             </tr>

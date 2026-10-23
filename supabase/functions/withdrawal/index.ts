@@ -54,15 +54,15 @@ function buildWithdrawalEmail(name: string, amount: number, netAmount: number, m
 <head><meta charset="utf-8"></head>
 <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; padding: 40px 20px; margin: 0;">
   <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05);">
-    <div style="background: linear-gradient(135deg, ${isSuccess ? '#059669 0%, #047857' : '#dc2626 0%, #b91c1c'} 100%); padding: 32px; text-align: center;">
+    <div style="background: linear-gradient(135deg, ${isSuccess ? '#14861f 0%, #0f6f1a' : '#dc2626 0%, #b91c1c'} 100%); padding: 32px; text-align: center;">
       <h1 style="color: white; font-size: 22px; font-weight: 700; margin: 0;">${isSuccess ? 'Withdrawal Processed ✅' : 'Withdrawal Failed 💔'}</h1>
     </div>
     <div style="padding: 32px;">
       <p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Hi ${name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')},</p>
       ${isSuccess
-        ? `<p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Your withdrawal of <strong style="color: #059669;">${formatCurrency(amount)}</strong> has been processed successfully!</p>
-           <div style="margin: 28px 0; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
-             <p style="font-size: 14px; color: #166534; margin: 0;"><strong>Amount:</strong> ${formatCurrency(amount)}<br/><strong>Net Received:</strong> ${formatCurrency(netAmount)}<br/><strong>Method:</strong> ${method}</p>
+        ? `<p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Your withdrawal of <strong style="color: #14861f;">${formatCurrency(amount)}</strong> has been processed successfully!</p>
+           <div style="margin: 28px 0; padding: 20px; background: #f1fcef; border: 1px solid #bbefb4; border-radius: 12px;">
+             <p style="font-size: 14px; color: #10591a; margin: 0;"><strong>Amount:</strong> ${formatCurrency(amount)}<br/><strong>Net Received:</strong> ${formatCurrency(netAmount)}<br/><strong>Method:</strong> ${method}</p>
            </div>
            <p style="font-size: 14px; color: #64748b; line-height: 1.7;">Funds should appear in 1-3 business days.</p>`
         : `<p style="font-size: 15px; color: #0f172a; line-height: 1.7;">Your withdrawal of <strong style="color: #dc2626;">${formatCurrency(amount)}</strong> could not be processed.</p>
@@ -72,7 +72,7 @@ function buildWithdrawalEmail(name: string, amount: number, netAmount: number, m
            <p style="font-size: 14px; color: #64748b; line-height: 1.7;">The full amount has been returned to your wallet.</p>`
       }
       <div style="margin: 24px 0; text-align: center;">
-        <a href="${APP_URL}/dashboard/wallet" style="display: inline-block; padding: 12px 32px; background: #059669; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">View Wallet →</a>
+        <a href="${APP_URL}/dashboard/wallet" style="display: inline-block; padding: 12px 32px; background: #14861f; color: white; text-decoration: none; border-radius: 10px; font-weight: 600; font-size: 14px;">View Wallet →</a>
       </div>
       <p style="font-size: 14px; color: #64748b; line-height: 1.7;">— The Growlanzo Team</p>
     </div>

@@ -312,7 +312,7 @@ export function ServiceDetailPage() {
           name: user.name || '',
           email: user.email || '',
         },
-        theme: { color: '#059669' },
+        theme: { color: '#14861f' },
         method: {
           card: true,
           upi: true,

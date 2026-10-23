@@ -362,7 +362,7 @@ serve(async (req: Request) => {
               htmlBody: `<p>Hi ${escapeHtml(userName)},</p>
                 <p>Your <strong>${escapeHtml(planName)}</strong> trial has ended. We tried to charge your saved payment method but it could not be completed (${escapeHtml(charge.error || 'no payment method on file')}).</p>
                 <p>Please add or update your payment method to keep using Pro features.</p>
-                <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Resume Subscription</a></p>
+                <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#14861f;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Resume Subscription</a></p>
                 <p style="color:#94a3b8;font-size:12px">Your subscription is paused until payment is completed.</p>`,
             });
             results.push(`Trial expired → past_due (${charge.error}): ${sub.id}`);
@@ -400,7 +400,7 @@ serve(async (req: Request) => {
           htmlBody: `<p>Hi ${escapeHtml(userName)},</p>
             <p>Your <strong>${escapeHtml(planName)}</strong> trial is ending in <strong>2 days</strong>.</p>
             <p>After the trial, your subscription will continue on a paid plan and your saved payment method will be charged. If you'd like to cancel, you can do so from your account settings.</p>
-            <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Manage Subscription</a></p>`,
+            <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#14861f;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Manage Subscription</a></p>`,
         });
         results.push(`Reminder sent: ${sub.id}`);
       }
@@ -489,7 +489,7 @@ serve(async (req: Request) => {
             htmlBody: `<p>Hi ${escapeHtml(userName)},</p>
               <p>Your <strong>${escapeHtml(planName)}</strong> subscription (₹${price}/mo) has been renewed.</p>
               <p>You were charged ₹${price} via your saved payment method. Your access continues uninterrupted.</p>
-              <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">View Subscription</a></p>`,
+              <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#14861f;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">View Subscription</a></p>`,
           });
           results.push(`Sub renewed (charged ₹${price}): ${sub.id}`);
         } else {
@@ -506,7 +506,7 @@ serve(async (req: Request) => {
             htmlBody: `<p>Hi ${escapeHtml(userName)},</p>
               <p>We attempted to renew your <strong>${escapeHtml(planName)}</strong> subscription (₹${price}/mo) but the charge could not be completed (${escapeHtml(charge.error || 'payment failed')}).</p>
               <p>Your Pro features are paused until the payment succeeds. Please update your payment method and retry.</p>
-              <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#059669;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Update Payment Method</a></p>`,
+              <p><a href="${SITE_URL}/dashboard/subscription" style="display:inline-block;padding:12px 24px;background:#14861f;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">Update Payment Method</a></p>`,
           });
           results.push(`Sub past_due (${charge.error}): ${sub.id}`);
         }

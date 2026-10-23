@@ -241,7 +241,7 @@ export function AdminDashboardLayout() {
                         ? 'bg-emerald-500/10 text-emerald-500'
                         : 'text-slate-400 hover:text-white hover:bg-white/5'
                     }`}
-                    style={isChildActive || isExpanded ? { borderLeft: '3px solid #10B981' } : {}}
+                    style={isChildActive || isExpanded ? { borderLeft: '3px solid #24ba35' } : {}}
                   >
                     <div className="flex items-center gap-3">
                       <item.icon className="w-5 h-5" />
@@ -294,7 +294,7 @@ export function AdminDashboardLayout() {
                     ? 'bg-emerald-500/10 text-emerald-500'
                     : 'text-slate-400 hover:text-white hover:bg-white/5'
                 }`}
-                style={isSectionActive ? { borderLeft: '3px solid #10B981' } : {}}
+                style={isSectionActive ? { borderLeft: '3px solid #24ba35' } : {}}
               >
                 <div className="flex items-center gap-3">
                   <item.icon className="w-5 h-5" />

@@ -228,7 +228,7 @@ export function AdminSubscriptionsPage() {
       {/* Plans Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {plans.map(plan => (
-          <div key={plan.id} className="p-4 rounded-2xl" style={{ background: '#1E293B', border: `1px solid ${plan.active ? 'rgba(16,185,129,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
+          <div key={plan.id} className="p-4 rounded-2xl" style={{ background: '#1E293B', border: `1px solid ${plan.active ? 'rgba(36,186,53,0.2)' : 'rgba(255,255,255,0.05)'}` }}>
             <div className="flex items-center gap-2 mb-2">
               {plan.price > 0 ? <Crown className="w-4 h-4 text-amber-400" /> : <Zap className="w-4 h-4 text-slate-400" />}
               <h3 className="font-bold text-white text-sm">{plan.name}</h3>
@@ -239,7 +239,7 @@ export function AdminSubscriptionsPage() {
             <p className="mt-2 text-[9px] text-slate-500">{subscriptions.filter(s => s.plan_id === plan.id && s.status === 'active').length} active</p>
           </div>
         ))}
-        <div className="p-4 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(16,185,129,0.2)' }}>
+        <div className="p-4 rounded-2xl" style={{ background: '#1E293B', border: '1px solid rgba(36,186,53,0.2)' }}>
           <p className="text-slate-500 text-[9px] font-bold uppercase tracking-widest mb-1">Monthly Recurring Revenue</p>
           <p className="text-xl font-bold text-emerald-400">{formatCurrency(monthlyMRR)}</p>
           <p className="text-[9px] text-slate-500 mt-1">{activeSubs.length} active subscriptions</p>
