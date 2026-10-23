@@ -35,7 +35,6 @@ import { NotificationsPanel } from '../components/NotificationsPanel';
 import { NotificationToastBridge } from '../components/NotificationToastBridge';
 import { VerifiedBadge } from '../components/VerifiedBadge';
 import { VerifyNowHeaderButton } from '../components/VerifyNowHeaderButton';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { GrowCoinBadge } from '../components/GrowCoinBadge';
 import { resolveDashboardSection } from '../lib/dashboardSection';
 import { isDeferredRoute } from '../lib/featureFlags';
@@ -628,8 +627,6 @@ export function ClientDashboardLayout() {
             <VerifyNowHeaderButton />
 
             <GrowCoinBadge userId={user?.id} role={user?.role} />
-
-            <ThemeToggle variant="pill" />
 
             {/* Notifications */}
             <NotificationsPanel />

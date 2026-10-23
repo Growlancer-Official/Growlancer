@@ -13,7 +13,7 @@
   "categories": ["business", "productivity", "freelancing"],
   "icons": [
     {
-      "src": "/growlanzo-mark-512.png",
+      "src": "/UpdatedLogo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"
@@ -30,7 +30,7 @@
       "url": "/dashboard",
       "icons": [
         {
-          "src": "/growlanzo-mark-512.png",
+          "src": "/UpdatedLogo.png",
           "sizes": "512x512",
           "type": "image/png"
         }
@@ -43,7 +43,7 @@
       "url": "/dashboard/feed",
       "icons": [
         {
-          "src": "/growlanzo-mark-512.png",
+          "src": "/UpdatedLogo.png",
           "sizes": "512x512",
           "type": "image/png"
         }
@@ -56,7 +56,7 @@
       "url": "/dashboard/notifications",
       "icons": [
         {
-          "src": "/growlanzo-mark-512.png",
+          "src": "/UpdatedLogo.png",
           "sizes": "512x512",
           "type": "image/png"
         }
@@ -69,7 +69,7 @@
       "url": "/dashboard/wallet",
       "icons": [
         {
-          "src": "/growlanzo-mark-512.png",
+          "src": "/UpdatedLogo.png",
           "sizes": "512x512",
           "type": "image/png"
         }

@@ -4,12 +4,11 @@ import {
   Shield, XCircle, Loader2, Search, User, Calendar, Clock, Copy,
   CheckCheck, AlertTriangle, Share2, Printer, Zap,
   BadgeCheck, Star, QrCode,
-  Award, Hash, Info, RefreshCw, FileText, Sun, Moon,
+  Award, Hash, Info, RefreshCw, FileText,
   ChevronRight, CheckCircle2, Lock, Globe, Scan,
 } from 'lucide-react';
 import { type Certificate, type InternProfile } from '../lib/certificateService';
 import { verifyCredentialByCode, verifyCredentialByQR } from '../lib/credentialVerification';
-import { useTheme } from '../context/ThemeContext';
 import { BrandLogo } from '../components/BrandLogo';
 
 // ─── Types ──────────────────────────────────────────────────────────
@@ -513,17 +512,9 @@ export function CertificateVerifyPage() {
   const [verifying, setVerifying] = useState(false);
   const [activeTab, setActiveTab] = useState<'code' | 'qr'>(urlCode ? 'code' : urlQrToken ? 'qr' : 'code');
   const [qrInput, setQrInput] = useState(urlQrToken || '');
-  // The theme is the app-wide one (`ThemeContext` -> `.dark` on <html>). This
-  // page used to own a private "gl-verify-theme" preference and toggle the same
-  // `dark` class itself, so two independent sources wrote the same element and
-  // a visitor who switched theme here and on any other page could leave the two
-  // out of step until a reload.
-  const { resolved, setPreference } = useTheme();
-  const dark = resolved === 'dark';
-  const toggleTheme = useCallback(
-    () => setPreference(dark ? 'light' : 'dark'),
-    [dark, setPreference]
-  );
+  // The site is light-only (see ThemeContext), so the credential cards always
+  // render their light variant.
+  const dark = false;
 
   const handleVerifyByCode = useCallback(async (code?: string) => {
     const codeToVerify = (code || searchInput).trim();
@@ -588,7 +579,7 @@ export function CertificateVerifyPage() {
   if (verifying) {
     return (
       <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-slate-950">
-        <HeaderBar onToggleTheme={toggleTheme} onHome={handleReset} />
+        <HeaderBar onHome={handleReset} />
         <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
           <VerificationSkeleton />
         </main>
@@ -600,7 +591,7 @@ export function CertificateVerifyPage() {
   if (result) {
     return (
       <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-slate-950">
-        <HeaderBar onToggleTheme={toggleTheme} onHome={handleReset} showNewSearch />
+        <HeaderBar onHome={handleReset} showNewSearch />
         <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
           {result.mode === 'verified' && result.certificate && <VerifiedCard cert={result.certificate} internProfile={result.internProfile} dark={dark} />}
           {result.mode === 'revoked' && result.certificate && <RevokedCard cert={result.certificate} dark={dark} />}
@@ -616,7 +607,7 @@ export function CertificateVerifyPage() {
   // ═══ RENDER — LANDING/HUB PAGE ═════════════════════════════════
   return (
     <div className="min-h-screen transition-colors duration-300 bg-slate-50 dark:bg-slate-950">
-      <HeaderBar onToggleTheme={toggleTheme} />
+      <HeaderBar />
 
       <main className="max-w-4xl mx-auto px-4 py-6 md:py-16">
         {/* Hero Section */}
@@ -785,8 +776,8 @@ export function CertificateVerifyPage() {
 // here rendered different markup than the server had produced (the server
 // cannot know the visitor's saved preference), which is a React #418 hydration
 // mismatch on a prerendered page. CSS cannot mismatch.
-function HeaderBar({ onToggleTheme, onHome, showNewSearch }: {
-  onToggleTheme: () => void; onHome?: () => void; showNewSearch?: boolean;
+function HeaderBar({ onHome, showNewSearch }: {
+  onHome?: () => void; showNewSearch?: boolean;
 }) {
   const navigate = useNavigate();
   return (
@@ -802,13 +793,6 @@ function HeaderBar({ onToggleTheme, onHome, showNewSearch }: {
           </div>
         </button>
         <div className="flex items-center gap-3">
-          <button onClick={onToggleTheme}
-            className="inline-flex items-center justify-center gap-3 px-3 min-h-[44px] rounded-xl text-xs font-medium transition-all border bg-white border-slate-200 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700">
-            <Moon className="w-4 h-4 dark:hidden" />
-            <Sun className="w-4 h-4 hidden dark:block" />
-            <span className="hidden sm:inline dark:hidden">Dark</span>
-            <span className="hidden sm:dark:inline">Light</span>
-          </button>
           <a href={showNewSearch ? undefined : '/'} onClick={showNewSearch ? (e) => { e.preventDefault(); onHome?.(); } : undefined}
             className="text-xs font-medium px-3 py-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all">
             {showNewSearch ? '← New Search' : '← Home'}

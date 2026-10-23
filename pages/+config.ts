@@ -16,7 +16,7 @@ export default {
   // whole site out (the entire mobile UI rendered as a shrunken desktop).
   // 'responsive' emits: width=device-width,initial-scale=1
   viewport: 'responsive',
-  favicon: '/growlanzo-mark-512.png',
+  favicon: '/UpdatedLogo.png',
 
   // ─── Render mode ─────────────────────────────────────────
   // SSR enabled globally. Protected/dashboard routes handle auth

@@ -24,7 +24,6 @@ import {
 } from 'lucide-react';
 import { AdminDashboardFallback } from '../components/LoadingSkeleton';
 import { NotificationsPanel } from '../components/NotificationsPanel';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { adminLogout, getAdminSession } from '../components/AdminAuthGuard';
 import { isDeferredRoute, isFeatureEnabled } from '../lib/featureFlags';
 import { BrandLogo } from '../components/BrandLogo';
@@ -211,7 +210,7 @@ export function AdminDashboardLayout() {
       >
         {/* Logo */}
         <Link to="/" className="block mb-10 px-2">
-          <BrandLogo variant="wordmark" theme="dark" className="h-9 w-auto max-w-full object-contain object-left" />
+          <BrandLogo variant="wordmark" theme="inverse" className="h-9 w-auto max-w-full object-contain object-left" />
           <span className="mt-1 block text-[10px] uppercase tracking-widest text-emerald-100 font-bold">Admin Panel</span>
         </Link>
 
@@ -366,14 +365,8 @@ export function AdminDashboardLayout() {
               <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Live Monitoring</span>
             </div>
 
-            {/* App-wide theme. The console in front of you is dark in BOTH
-                themes by design (see the remap notes in globals.css), so this
-                would look broken without saying so — hence the `hint`, which
-                is announced in the tooltip and the accessible name. */}
-            <ThemeToggle
-              variant="pill"
-              hint="The admin console itself stays dark in both themes."
-            />
+            {/* The admin console is a permanently dark surface by design; the
+                public site is light-only, so there is no theme switch here. */}
 
             {/* Notifications Panel - Real-time with Supabase */}
             <NotificationsPanel />

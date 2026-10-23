@@ -3,11 +3,11 @@ import React from 'react';
 export default function Head() {
   return (
     <>
-      {/* ── Favicon + app icon — the Growlanzo mark (public/growlanzo-mark-*).
+      {/* ── Favicon + app icon — the Growlanzo ring mark (public/UpdatedLogo.*).
            `?v=` busts the cached copy some returning visitors still hold. ── */}
-      <link rel="icon" type="image/webp" sizes="32x32" href="/growlanzo-mark-64.webp?v=5" />
-      <link rel="apple-touch-icon" sizes="180x180" href="/growlanzo-mark-512.png?v=5" />
-      <link rel="shortcut icon" href="/growlanzo-mark-512.png?v=5" />
+      <link rel="icon" type="image/webp" sizes="32x32" href="/UpdatedLogo.webp?v=6" />
+      <link rel="apple-touch-icon" sizes="180x180" href="/UpdatedLogo.png?v=6" />
+      <link rel="shortcut icon" href="/UpdatedLogo.png?v=6" />
 
       {/* ── Mobile viewport — CRITICAL: without this, phones fall back to the
           980px desktop layout viewport and the whole site renders zoomed-out

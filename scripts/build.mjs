@@ -93,16 +93,13 @@ const start = Date.now();
 const THEME_FOUC_GUARD = `<!-- __theme_guard_marker__ -->
 <script>
   (function () {
+    var root = document.documentElement;
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
     try {
-      var stored = localStorage.getItem('growlancer-theme');
-      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      var dark = stored === 'dark' || ((stored === 'system' || !stored) && systemDark);
-      var root = document.documentElement;
-      if (dark) root.classList.add('dark');
-      root.style.colorScheme = dark ? 'dark' : 'light';
+      localStorage.removeItem('growlancer-theme');
     } catch (e) {
-      // localStorage blocked (private mode) — fall back to the light theme
-      // rather than failing to boot.
+      // Storage blocked (private mode) — nothing to clean up.
     }
   })();
 </script>`;
@@ -310,8 +307,8 @@ function generateFallbackIndexHtml() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Growlanzo — AI-Powered Freelancing Marketplace</title>
     <meta name="description" content="Growlanzo is the AI-powered freelancing marketplace. Hire top freelancers or get hired for high-quality work.">
-    <link rel="icon" href="/growlanzo-mark-64.webp?v=5" type="image/webp">
-    <link rel="apple-touch-icon" href="/growlanzo-mark-512.png?v=5" type="image/png">
+    <link rel="icon" href="/UpdatedLogo.webp?v=6" type="image/webp">
+    <link rel="apple-touch-icon" href="/UpdatedLogo.png?v=6" type="image/png">
     <meta name="theme-color" content="#24ba35">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Growlanzo — AI-Powered Freelancing Marketplace">

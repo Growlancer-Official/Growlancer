@@ -171,7 +171,7 @@ function baseEmailHtml(title: string, bodyHtml: string, headerGradient?: string)
     
     <!-- Logo Bar -->
     <div style="background: #ffffff; padding: 20px 24px 0; text-align: center;">
-      <img src="${APP_URL}/growlanzo-full-light.png" alt="Growlanzo" style="height: 40px; width: auto; border-radius: 10px;" />
+      <img src="${APP_URL}/growlanzo-full.png" alt="Growlanzo" style="height: 40px; width: auto; border-radius: 10px;" />
     </div>
 
     <!-- Header -->

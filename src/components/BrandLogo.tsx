@@ -1,35 +1,25 @@
 /**
- * BrandLogo — the official Growlanzo wordmark, theme-aware.
+ * BrandLogo — the official Growlanzo lockup.
  *
- * Two assets are shipped for each variant (see public/):
- *   - growlanzo-wordmark-*.png — the "Growlanzo" name only (headers, sidebars)
- *   - growlanzo-full-*.png     — name + "Freelance work. Grown together."
- * Each comes in a light flavour (near-black type + green "zo" + green tagline,
- * for white surfaces) and a dark flavour (silver type, for dark surfaces) —
- * both share identical geometry so swapping the theme never shifts layout.
- * The flat green "G" is the same mark as the favicon/app icon
- * (public/growlanzo-mark-512.png).
+ * The site is light-only, so there is exactly one flavour of each variant:
+ *   - growlanzo-wordmark.png — the "Growlanzo" name (headers, sidebars)
+ *   - growlanzo-full.png     — name + "Freelance work. Grown together."
  *
- * The default `theme="auto"` renders BOTH flavours and lets the `.dark` class on
- * <html> show exactly one (`darkMode: 'class'` in tailwind.config.js + the
- * ThemeContext palette remap in globals.css). That is deliberate:
- *   - it swaps with the same switch every other surface uses, so the logo can
- *     never disagree with the header/sidebar it sits in;
- *   - it is pure CSS, so a dark-mode user never flashes the light logo while
- *     React hydrates (the FOUC guard sets `.dark` before first paint).
- * Both files are downloaded (CSS decides which paints), which is the accepted
- * cost of the no-flash guarantee: the pair is ~17 KB at the shipped size.
+ * `theme="inverse"` swaps in the -inverse artwork (white name, same greens) for
+ * the two surfaces that are dark by design and never follow the page theme: the
+ * admin console sidebar and the admin sign-in plate. It is a logo variant, not
+ * a theme: nothing else on the site ever needs it.
  *
- * `theme="light" | "dark"` pins a flavour for surfaces that never flip with the
- * theme (the admin console's permanently-dark sidebar, the #0F172A sign-in
- * page, static share cards).
+ * Both files are cut from the master artwork (black name, green G / "ZO", grey
+ * and green tagline) and share identical geometry, so switching variant never
+ * shifts layout.
  */
 import type { ImgHTMLAttributes } from 'react';
 
 export type BrandLogoVariant = 'wordmark' | 'full';
-export type BrandLogoTheme = 'auto' | 'light' | 'dark';
+export type BrandLogoTheme = 'light' | 'inverse';
 
-/** Intrinsic pixels of public/growlanzo-{variant}-{light,dark}.png (both identical). */
+/** Intrinsic pixels of public/growlanzo-{variant}*.png (both identical). */
 const SIZES: Record<BrandLogoVariant, { width: number; height: number }> = {
   wordmark: { width: 480, height: 94 },
   full: { width: 480, height: 113 },
@@ -38,7 +28,7 @@ const SIZES: Record<BrandLogoVariant, { width: number; height: number }> = {
 interface BrandLogoProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src' | 'alt' | 'width' | 'height'> {
   /** `wordmark` (name only) or `full` (name + tagline). Default: wordmark. */
   variant?: BrandLogoVariant;
-  /** Follow the `.dark` class (default), or pin to one surface flavour. */
+  /** `light` (default) for the site, `inverse` for the deliberately dark admin chrome. */
   theme?: BrandLogoTheme;
   /** Tailwind sizing; width is intrinsic (`w-auto` keeps the 480:94/113 ratio). */
   className?: string;
@@ -47,7 +37,7 @@ interface BrandLogoProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'
 
 export function BrandLogo({
   variant = 'wordmark',
-  theme = 'auto',
+  theme = 'light',
   className = 'h-8 w-auto',
   alt = 'Growlanzo',
   ...rest
@@ -56,21 +46,8 @@ export function BrandLogo({
   // `?v=` busts any cached copy of a previous artwork revision: the file name
   // is stable across rebrands, so without it a returning visitor keeps the old
   // logo until their cache expires.
-  const lightSrc = `/growlanzo-${variant}-light.png?v=5`;
-  const darkSrc = `/growlanzo-${variant}-dark.png?v=5`;
-  const shared = { width, height, ...rest };
+  const suffix = theme === 'inverse' ? '-inverse' : '';
+  const src = `/growlanzo-${variant}${suffix}.png?v=6`;
 
-  if (theme === 'light') {
-    return <img src={lightSrc} alt={alt} className={className} {...shared} />;
-  }
-  if (theme === 'dark') {
-    return <img src={darkSrc} alt={alt} className={className} {...shared} />;
-  }
-
-  return (
-    <>
-      <img src={lightSrc} alt={alt} className={`${className} dark:hidden`} {...shared} />
-      <img src={darkSrc} alt="" aria-hidden="true" className={`${className} hidden dark:block`} {...shared} />
-    </>
-  );
+  return <img src={src} alt={alt} className={className} width={width} height={height} {...rest} />;
 }

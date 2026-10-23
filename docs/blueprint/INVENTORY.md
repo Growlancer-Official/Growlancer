@@ -4,13 +4,13 @@
 > `src/test/projectMap.test.ts` fails when this file is stale, so a new page,
 > function, migration or test cannot land without refreshing the map.
 
-Total tracked structure: **666 files** across 12 groups.
+Total tracked structure: **665 files** across 12 groups.
 
 | Group | Files |
 | --- | ---: |
 | Pages | 95 |
 | Layouts | 4 |
-| Components | 52 |
+| Components | 51 |
 | Context & hooks | 10 |
 | Client libraries & services | 65 |
 | Edge functions | 33 |
@@ -130,7 +130,7 @@ The four shells: public, freelancer dashboard, client dashboard, admin console.
 - `src/layouts/DashboardLayout.tsx`
 - `src/layouts/MainLayout.tsx`
 
-## Components (52)
+## Components (51)
 
 Shared UI. Feature-specific components live next to their page instead.
 
@@ -181,7 +181,6 @@ Shared UI. Feature-specific components live next to their page instead.
 - `src/components/SignupModal.tsx`
 - `src/components/SiteFooter.tsx`
 - `src/components/SubscriptionPayPalPayment.tsx`
-- `src/components/ThemeToggle.tsx`
 - `src/components/TipNote.tsx`
 - `src/components/Toast.tsx`
 - `src/components/VerifiedBadge.tsx`

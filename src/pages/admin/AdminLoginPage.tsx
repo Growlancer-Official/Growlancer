@@ -122,7 +122,7 @@ export function AdminLoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
-            <BrandLogo variant="full" theme="dark" className="h-12 w-auto" />
+            <BrandLogo variant="full" theme="inverse" className="h-12 w-auto" />
             <div className="text-left">
               <span className="text-[10px] uppercase tracking-widest text-emerald-400 font-bold">Admin Panel</span>
             </div>
