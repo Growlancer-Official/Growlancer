@@ -131,7 +131,7 @@ export function OnboardingPage() {
 
   // Referral code state (optional, validated live against profiles.referral_code)
   const [referralCode, setReferralCode] = useState('');
-  const [referralStatus, setReferralStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid'>('idle');
+  const [referralStatus, setReferralStatus] = useState<'idle' | 'checking' | 'valid' | 'invalid' | 'wrong-role'>('idle');
   const [referrerName, setReferrerName] = useState<string | null>(null);
 
   // Category + free-text skills state (freelancer only)
@@ -148,7 +148,9 @@ export function OnboardingPage() {
     setSelectedCategoryNames(names);
   }, [selectedCategoryIds, categories]);
 
-  // Real-time referral code validation (debounced)
+  // Real-time referral code validation (debounced). Same-side rule: a
+  // freelancer's code only works for freelancers, a client's for clients —
+  // mirrored here so the mistake is caught while typing, not at submit.
   useEffect(() => {
     const code = referralCode.trim();
     if (!code) {
@@ -165,13 +167,19 @@ export function OnboardingPage() {
         .eq('referral_code', code)
         .neq('id', user.id)
         .maybeSingle();
-      let data = null;
+      let data: { id: string; name: string | null; role: string | null } | null = null;
       if (privData) {
-        const { data: pub } = await supabase.from('profiles').select('id, name').eq('id', privData.id).maybeSingle();
+        const { data: pub } = await supabase.from('profiles').select('id, name, role').eq('id', privData.id).maybeSingle();
         data = pub ? { ...pub } : null;
       }
       if (error) { setReferralStatus('invalid'); return; }
       if (data) {
+        const effectiveRole = chosenRole ?? (user.role === 'freelancer' || user.role === 'client' ? user.role : null);
+        if (effectiveRole && data.role && data.role !== effectiveRole && data.role !== 'admin') {
+          setReferralStatus('wrong-role');
+          setReferrerName(null);
+          return;
+        }
         setReferralStatus('valid');
         setReferrerName(data.name);
       } else {
@@ -180,7 +188,7 @@ export function OnboardingPage() {
       }
     }, 600);
     return () => clearTimeout(t);
-  }, [referralCode, user?.id]);
+  }, [referralCode, user?.id, user?.role, chosenRole]);
 
   // Role-aware rendering: the welcome-step choice (chosenRole) wins over the
   // context role so switching roles mid-onboarding updates the form instantly.
@@ -1185,7 +1193,7 @@ export function OnboardingPage() {
                     <span className="absolute right-3 top-1/2 -translate-y-1/2">
                       {referralStatus === 'checking' && <Loader2 className="w-4 h-4 text-slate-400 animate-spin" />}
                       {referralStatus === 'valid' && <Check className="w-4 h-4 text-emerald-600" />}
-                      {referralStatus === 'invalid' && <X className="w-4 h-4 text-red-500" />}
+                      {(referralStatus === 'invalid' || referralStatus === 'wrong-role') && <X className="w-4 h-4 text-red-500" />}
                     </span>
                   </div>
                   {referralStatus === 'valid' && (
@@ -1195,6 +1203,11 @@ export function OnboardingPage() {
                   )}
                   {referralStatus === 'invalid' && (
                     <p className="mt-1.5 text-xs text-red-500">This referral code doesn't exist.</p>
+                  )}
+                  {referralStatus === 'wrong-role' && (
+                    <p className="mt-1.5 text-xs text-red-500">
+                      Referral codes are same-side only — a {(chosenRole ?? user?.role) === 'client' ? 'client' : 'freelancer'} code can't be used by a {(chosenRole ?? user?.role) === 'client' ? 'freelancer' : 'client'} account.
+                    </p>
                   )}
                 </div>
 

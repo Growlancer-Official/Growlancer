@@ -53,10 +53,20 @@ export function buildReferralShareMessage(ctx: ReferralShareContext): string {
       : ctx.role === 'freelancer'
         ? 'Growlanzo is an AI-powered freelancing marketplace: real client work, escrow-protected payments, and projects matched to your skills.'
         : 'Growlanzo is an AI-powered freelancing marketplace: verified talent, escrow-protected payments, and matching that fits the brief.';
+  // Referral codes are same-side: a client's code only works for clients and a
+  // freelancer's for freelancers (enforced in process_referral). Saying so in
+  // the invite keeps the recipient from hitting that rejection at signup.
+  const audience =
+    ctx.role === 'client'
+      ? 'Growlanzo clients only — I run my projects here and you should too.'
+      : ctx.role === 'freelancer'
+        ? 'Growlanzo freelancers only — I find my projects here and you should too.'
+        : null;
   const lines = [
     "You're invited to Growlanzo.",
     '',
     pitch,
+    ...(audience ? ['', audience] : []),
     '',
     'Use my invite code when you sign up:',
     code,
@@ -190,8 +200,8 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
   ctx2d.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
 
   const glow = ctx2d.createRadialGradient(980, 90, 0, 980, 90, 620);
-  glow.addColorStop(0, 'rgba(16, 185, 129, 0.30)');
-  glow.addColorStop(1, 'rgba(16, 185, 129, 0)');
+  glow.addColorStop(0, 'rgba(36, 186, 53, 0.30)');
+  glow.addColorStop(1, 'rgba(36, 186, 53, 0)');
   ctx2d.fillStyle = glow;
   ctx2d.fillRect(0, 0, CARD_WIDTH, CARD_HEIGHT);
 
@@ -222,7 +232,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
     );
     ctx2d.restore();
   } else {
-    ctx2d.fillStyle = '#059669';
+    ctx2d.fillStyle = '#14861f';
     ctx2d.font = 'bold 56px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
     ctx2d.textAlign = 'center';
     ctx2d.textBaseline = 'middle';
@@ -261,9 +271,9 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
   const panelWidth = 640;
   const panelHeight = 148;
   roundedRect(ctx2d, panelX, panelY, panelWidth, panelHeight, 24);
-  ctx2d.fillStyle = 'rgba(16, 185, 129, 0.14)';
+  ctx2d.fillStyle = 'rgba(36, 186, 53, 0.14)';
   ctx2d.fill();
-  ctx2d.strokeStyle = 'rgba(16, 185, 129, 0.75)';
+  ctx2d.strokeStyle = 'rgba(36, 186, 53, 0.75)';
   ctx2d.lineWidth = 2;
   ctx2d.stroke();
 
@@ -280,7 +290,7 @@ export async function createReferralInviteCard(ctx: ReferralShareContext): Promi
   ctx2d.font = '22px -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
   bullets.forEach((line, index) => {
     const y = 420 + index * 44;
-    ctx2d.fillStyle = '#10B981';
+    ctx2d.fillStyle = '#24ba35';
     ctx2d.beginPath();
     ctx2d.arc(788, y - 7, 7, 0, Math.PI * 2);
     ctx2d.fill();
